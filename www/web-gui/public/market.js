@@ -152,20 +152,18 @@ Vue.component('market-offers', {
 		ask: null,
 		limit: Number
 	},
-	emits: [
-		"accept-offer"
-	],
 	data() {
 		return {
 			data: null,
 			offer: {},
 			tokens: null,
-			accepted: new Set(),
 			timer: null,
 			result: null,
 			error: null,
 			loading: false,
-			dialog: false
+			dialog: false,
+			trade_amount: null,
+			trade_estimate: null
 		}
 	},
 	methods: {
@@ -197,22 +195,22 @@ Vue.component('market-offers', {
 					});
 			}
 		},
-		confirm(offer) {
+		trade(offer) {
 			this.offer = offer;
+			this.trade_amount = null;
 			this.dialog = true;
 		},
-		accept(offer) {
+		submit(offer, amount) {
 			const req = {};
 			req.index = this.wallet;
 			req.address = offer.address;
-			fetch('/wapi/wallet/accept', {body: JSON.stringify(req), method: "post"})
+			req.amount = parseFloat(amount);
+			fetch('/wapi/wallet/offer_trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
 							this.error = null;
 							this.result = data;
-							this.accepted.add(offer.address);
-							this.$emit('accept-offer', {offer: offer, result: data});
 						});
 					} else {
 						response.text().then(data => {
@@ -220,8 +218,19 @@ Vue.component('market-offers', {
 							this.result = null;
 						});
 					}
-					this.dialog = false;
 				});
+			this.dialog = false;
+		}
+	},
+	watch: {
+		trade_amount(value) {
+			if(this.offer) {
+				if(value > 0) {
+					this.trade_estimate = (value / this.offer.price).toFixed(this.offer.bid_decimals);
+				} else {
+					this.trade_estimate = null;
+				}
+			}
 		}
 	},
 	created() {
@@ -243,42 +252,25 @@ Vue.component('market-offers', {
 			<v-dialog v-model="dialog" max-width="800">
 				<template v-slot:default="dialog">
 					<v-card>
-						<v-toolbar color="primary" dark>
-							{{ $t('market_offers.accept_offer') }}
-						</v-toolbar>
+						<v-toolbar color="primary" dark></v-toolbar>
+						<v-card-title>
+							{{offer.address}}
+						</v-card-title>
 						<v-card-text>
-							<v-container>
-								<v-simple-table>
-									<tbody>
-									<tr>
-										<td>{{ $t('common.address') }}</td>
-										<td><router-link :to="'/explore/address/' + offer.address">{{offer.address}}</router-link></td>
-									</tr>
-									<tr>
-										<td>{{ $t('market_offers.you_receive') }}</td>
-										<td>
-											<b>{{offer.bid_value}}</b> {{offer.bid_symbol}}
-											<template v-if="offer.bid_symbol != 'MMX'">
-												- [<router-link :to="'/explore/address/' + offer.bid_currency">{{offer.bid_currency}}</router-link>]
-											</template>
-										</td>
-									</tr>
-									<tr>
-										<td>{{ $t('market_offers.you_pay') }}</td>
-										<td>
-											<b>{{offer.ask_value}}</b> {{offer.ask_symbol}}
-											<template v-if="offer.ask_symbol != 'MMX'">
-												- [<router-link :to="'/explore/address/' + offer.ask_currency">{{offer.ask_currency}}</router-link>]
-											</template>
-										</td>
-									</tr>
-									</tbody>
-								</v-simple-table>
-							</v-container>
+							<v-text-field class="text-align-right"
+								v-model="trade_amount"
+								label="You send"
+								:suffix="offer.ask_symbol">
+							</v-text-field>
+							<v-text-field class="text-align-right"
+								v-model="trade_estimate"
+								label="You receive"
+								:suffix="offer.bid_symbol" disabled>
+							</v-text-field>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn text color="primary" @click="accept(offer)">{{ $t('market_offers.accept') }}</v-btn>
-							<v-btn text @click="dialog.value = false">{{ $t('market_offers.cancel') }}</v-btn>
+							<v-btn color="primary" @click="submit(offer, trade_amount)">Trade</v-btn>
+							<v-btn @click="dialog.value = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</template>
@@ -304,9 +296,9 @@ Vue.component('market-offers', {
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
+							<tr v-for="item in data" :key="item.address">
 								<td>
-									<b>{{item.bid_value}}</b>&nbsp;
+									<b>{{item.bid_balance_value}}</b>&nbsp;
 									<template v-if="item.bid_symbol == 'MMX'">MMX</template>
 									<template v-else>
 										<router-link :to="'/explore/address/' + item.bid_currency">
@@ -316,7 +308,7 @@ Vue.component('market-offers', {
 									</template>
 								</td>
 								<td>
-									<b>{{item.ask_value}}</b>&nbsp;
+									<b>{{(item.bid_balance_value * item.price).toPrecision(6)}}</b>&nbsp;
 									<template v-if="item.ask_symbol == 'MMX'">MMX</template>
 									<template v-else>
 										<router-link :to="'/explore/address/' + item.ask_currency">
@@ -330,9 +322,7 @@ Vue.component('market-offers', {
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
 								<td>
-									<template v-if="!accepted.has(item.address)">
-										<v-btn outlined text @click="confirm(item)">{{ $t('market_offers.accept') }}</v-btn>
-									</template>
+									<v-btn outlined text @click="trade(item)">Trade</v-btn>
 								</td>
 							</tr>
 						</tbody>
