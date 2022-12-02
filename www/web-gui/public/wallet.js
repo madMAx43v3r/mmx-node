@@ -1931,7 +1931,7 @@ Vue.component('account-offers', {
 					<td>{{item.ask_symbol}}</td>
 					<td class="collapsing"><b>{{item.price}}</b></td>
 					<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
-					<td><router-link :to="'/explore/address/' + item.address">{{item.address.substring(0, 10)}}...{{item.address.substring(55)}}</router-link></td>
+					<td><router-link :to="'/explore/address/' + item.address">{{get_short_addr(item.address, 8)}}</router-link></td>
 					<td>
 						<template v-if="item.bid_balance && !canceled.has(item.address)">
 							<v-btn outlined text @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>

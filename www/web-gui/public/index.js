@@ -3,6 +3,13 @@ function validate_address(address) {
 	return address && address.length == 62 && address.startsWith("mmx1");
 }
 
+function get_short_addr(address, length) {
+	if(!length) {
+		length = 10;
+	}
+	return address.substring(0, length) + '...' + address.substring(62 - length);
+}
+
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
 const Wallet = {
