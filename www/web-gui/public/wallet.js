@@ -939,9 +939,10 @@ Vue.component('account-plots', {
 						<v-toolbar color="primary"></v-toolbar>
 						<v-card-title>{{dialog_mode}} {{dialog_mode == "Deposit" ? "to" : "from"}} {{dialog_address}}</v-card-title>
 						<v-card-text class="pb-0">
-							<v-text-field
+							<v-text-field class="text-align-right"
 								v-model="dialog_amount"
-								label="Amount (MMX)">
+								label="Amount"
+								suffix="MMX">
 							</v-text-field>
 							<v-alert
 								border="left"
@@ -954,8 +955,7 @@ Vue.component('account-plots', {
 								Only 90% of the amount will be returned, the rest is burned.
 							</v-alert>
 						</v-card-text>
-						<v-card-actions>
-							<v-spacer></v-spacer>
+						<v-card-actions class="justify-end">
 							<v-btn @click="submit()" color="primary" :disabled="!(dialog_amount > 0)">{{dialog_mode}}</v-btn>
 							<v-btn @click="dialog.value = false">Abort</v-btn>
 						</v-card-actions>
@@ -1777,12 +1777,14 @@ Vue.component('account-offer-form', {
 					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_offer_form.offer') }}</v-btn>
 				</v-card-text>
 			</v-card>
+			
 			<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
 				{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
 			</v-alert>
 			<v-alert border="left" colored-border type="error" elevation="2" v-if="error" class="my-2">
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
+			
 			<account-offers :index="index" ref="offers"></account-offers>
 		</div>
 		`
@@ -1798,23 +1800,25 @@ Vue.component('account-offers', {
 			error: null,
 			result: null,
 			timer: null,
-			state: 'OPEN',
-			canceled: new Set()
+			state: true,
+			dialog: false,
+			dialog_item: null,
+			dialog_amount: null,
+			canceled: new Set(),
+			withdrawn: new Set()
 		}
 	},
 	computed: {
 		select_states() {
 			return [
-				{text: this.$t('account_offers.any'), value: null},
-				{text: this.$t('account_offers.open'), value: 'OPEN'},
-				{text: this.$t('account_offers.accepted'), value: 'CLOSED'},
-				{text: this.$t('account_offers.revoked'), value: 'REVOKED'}
+				{text: this.$t('account_offers.any'), value: false},
+				{text: this.$t('account_offers.open'), value: true},
 			];
 		},
 	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/offers?index=' + this.index + '&state=' + (this.state || ''))
+			fetch('/wapi/wallet/offers?index=' + this.index + '&state=' + this.state)
 				.then(response => response.json())
 				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
@@ -1822,7 +1826,7 @@ Vue.component('account-offers', {
 			const args = {};
 			args.index = this.index;
 			args.address = item.address;
-			fetch('/wapi/wallet/cancel', {body: JSON.stringify(args), method: "post"})
+			fetch('/wapi/wallet/cancel_offer', {body: JSON.stringify(args), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
@@ -1833,6 +1837,45 @@ Vue.component('account-offers', {
 						response.text().then(data => this.error = data);
 					}
 				});
+		},
+		withdraw(item) {
+			const args = {};
+			args.index = this.index;
+			args.address = item.address;
+			fetch('/wapi/wallet/offer_withdraw', {body: JSON.stringify(args), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							this.withdrawn.add(item.address);
+							this.result = data;
+						});
+					} else {
+						response.text().then(data => this.error = data);
+					}
+				});
+		},
+		deposit(item) {
+			this.dialog_item = item;
+			this.dialog_amount = null;
+			this.dialog = true;
+		},
+		submit_deposit(item, amount) {
+			const args = {};
+			args.index = this.index;
+			args.amount = parseFloat(amount);
+			args.currency = item.bid_currency
+			args.dst_addr = item.address;
+			fetch('/wapi/wallet/send', {body: JSON.stringify(args), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							this.result = data;
+						});
+					} else {
+						response.text().then(data => this.error = data);
+					}
+				});
+			this.dialog = false;
 		}
 	},
 	watch: {
@@ -1873,41 +1916,55 @@ Vue.component('account-offers', {
 			<v-simple-table>
 				<thead>
 				<tr>
-					<th>{{ $t('account_offers.height') }}</th>
-					<th colspan="2">{{ $t('account_offers.offer') }}</th>
-					<th colspan="2">{{ $t('account_offers.receive') }}</th>
+					<th colspan="2">Offering</th>
+					<th colspan="2">Received</th>
+					<th colspan="2">Price</th>
 					<th>{{ $t('account_offers.address') }}</th>
-					<th>{{ $t('account_offers.status') }}</th>
-					<th>{{ $t('account_offers.time') }}</th>
 					<th>{{ $t('account_offers.actions') }}</th>
 				</tr>
 				</thead>
 				<tbody>
 				<tr v-for="item in data" :key="item.address">
-					<td>{{item.height}}</td>
-					<td class="collapsing"><b>{{item.bid_value}}</b></td>
+					<td class="collapsing"><b>{{item.bid_balance_value}}</b></td>
 					<td>{{item.bid_symbol}}</td>
-					<td class="collapsing"><b>{{item.ask_value}}</b></td>
+					<td class="collapsing"><b>{{item.ask_balance_value}}</b></td>
 					<td>{{item.ask_symbol}}</td>
+					<td class="collapsing">{{item.price}}</td>
+					<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
 					<td><router-link :to="'/explore/address/' + item.address">{{item.address.substring(0, 10)}}...{{item.address.substring(55)}}</router-link></td>
-					<td :class="{'green--text': item.state == 'OPEN', 'red--text text--lighten-2': item.state == 'REVOKED'}">
-						<template v-if="item.state == 'CLOSED'">
-							<router-link :to="'/explore/transaction/' + item.close_txid">{{ $t('account_offers.accepted') }}</router-link>
-						</template>
-						<template v-else>
-							{{item.state == 'REVOKED' ? $t('account_offers.revoked') : $t('account_offers.open') }}
-						</template>
-					</td>
-					<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 					<td>
-						<template v-if="item.state == 'OPEN' && !canceled.has(item.address)">
+						<template v-if="item.bid_balance && !canceled.has(item.address)">
 							<v-btn outlined text @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
 						</template>
+						<template v-if="item.ask_balance && !withdrawn.has(item.address)">
+							<v-btn outlined text @click="withdraw(item)">Withdraw</v-btn>
+						</template>
+						<v-btn outlined text @click="deposit(item)">Deposit</v-btn>
 					</td>
 				</tr>
 				</tbody>
 			</v-simple-table>
 		</v-card>
+		
+		<v-dialog v-model="dialog" max-width="1000">
+			<template v-slot:default="dialog">
+				<v-card>
+					<v-toolbar color="primary"></v-toolbar>
+					<v-card-title>Deposit to {{dialog_item.address}}</v-card-title>
+					<v-card-text class="pb-0">
+						<v-text-field class="text-align-right"
+							v-model="dialog_amount"
+							label="Amount"
+							:suffix="dialog_item.bid_symbol">
+						</v-text-field>
+					</v-card-text>
+					<v-card-actions class="justify-end">
+						<v-btn @click="submit_deposit(dialog_item, dialog_amount)" color="primary" :disabled="!(dialog_amount > 0)">Deposit</v-btn>
+						<v-btn @click="dialog.value = false">Abort</v-btn>
+					</v-card-actions>
+				</v-card>
+			</template>
+		</v-dialog>
 		
 		<v-alert border="left" colored-border type="success" elevation="2" v-if="result" class="my-2">
 			{{ $t('common.transaction_has_been_sent') }}: <router-link :to="'/explore/transaction/' + result.id">{{result.id}}</router-link>
