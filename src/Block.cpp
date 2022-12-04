@@ -15,14 +15,11 @@ namespace mmx {
 vnx::bool_t Block::is_valid() const
 {
 	if(!farmer_sig) {
-		if(nonce) {
-			throw std::logic_error("invalid dummy block nonce");
+		if(nonce && height > 0) {
+			return false;
 		}
-		if(proof) {
-			throw std::logic_error("dummy cannot have proof");
-		}
-		if(tx_base || tx_list.size()) {
-			throw std::logic_error("dummy cannot have transactions");
+		if(proof || tx_base || tx_list.size()) {
+			return false;
 		}
 	}
 	uint64_t static_cost_sum = 0;
