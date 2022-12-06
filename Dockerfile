@@ -18,7 +18,7 @@ ENV MMX_HOME="/data/"
 VOLUME /data
 
 # node p2p port
-EXPOSE 12338/tcp
+EXPOSE 12339/tcp
 # http api port
 EXPOSE 11380/tcp
 
