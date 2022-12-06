@@ -12,8 +12,8 @@
 	"max_vdf_segments": 2048,
 	"vdf_seed": "test9",
 	"reward_factor": {
-		"value": 2,
-		"inverse": 100000000000
+		"value": 4,
+		"inverse": 10000000000
 	},
 	"min_reward": 250000,
 	"min_txfee": 2000,
