@@ -226,7 +226,7 @@ Vue.component('market-offers', {
 		trade_amount(value) {
 			if(this.offer) {
 				if(value > 0) {
-					this.trade_estimate = (value / this.offer.price).toFixed(this.offer.bid_decimals);
+					this.trade_estimate = (value / this.offer.display_price).toFixed(this.offer.bid_decimals);
 				} else {
 					this.trade_estimate = null;
 				}
@@ -308,7 +308,7 @@ Vue.component('market-offers', {
 									</template>
 								</td>
 								<td>
-									<b>{{(item.bid_balance_value * item.price).toPrecision(6)}}</b>&nbsp;
+									<b>{{(item.bid_balance_value * item.display_price).toPrecision(6)}}</b>&nbsp;
 									<template v-if="item.ask_symbol == 'MMX'">MMX</template>
 									<template v-else>
 										<router-link :to="'/explore/address/' + item.ask_currency">
@@ -317,8 +317,8 @@ Vue.component('market-offers', {
 										</router-link>
 									</template>
 								</td>
-								<td><b>{{ parseFloat( (item.price).toPrecision(3) ) }}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-								<td><b>{{ parseFloat( (1 / item.price).toPrecision(3) ) }}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
+								<td><b>{{ parseFloat( (item.display_price).toPrecision(3) ) }}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+								<td><b>{{ parseFloat( (1 / item.display_price).toPrecision(3) ) }}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
 								<td>
@@ -427,8 +427,8 @@ Vue.component('market-history', {
 										</router-link>
 									</template>
 								</td>
-								<td><b>{{parseFloat((item.price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-								<td><b>{{parseFloat((1 / item.price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
+								<td><b>{{parseFloat((item.display_price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+								<td><b>{{parseFloat((1 / item.display_price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
 								<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>

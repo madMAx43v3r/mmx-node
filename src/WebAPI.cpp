@@ -421,7 +421,7 @@ public:
 				tmp["ask_decimals"] = ask_currency->decimals;
 			}
 			if(bid_currency && ask_currency) {
-				tmp["display_price"] = value.price * pow(2, ask_currency->decimals - bid_currency->decimals);
+				tmp["display_price"] = value.price * pow(10, bid_currency->decimals - ask_currency->decimals);
 			}
 			tmp["time"] = context->get_time(value.height);
 		}
@@ -442,7 +442,7 @@ public:
 				tmp["ask_symbol"] = ask_currency->symbol;
 			}
 			if(bid_currency && ask_currency) {
-				tmp["display_price"] = value.price * pow(2, ask_currency->decimals - bid_currency->decimals);
+				tmp["display_price"] = value.price * pow(10, bid_currency->decimals - ask_currency->decimals);
 			}
 			tmp["time"] = context->get_time(value.height);
 		}
@@ -479,6 +479,7 @@ public:
 			tmp["fees_paid"] = fees_paid;
 			tmp["user_total"] = user_total;
 			tmp["price"] = value.get_price();
+			tmp["display_price"] = value.get_price() * pow(10, decimals[0] - decimals[1]);
 		}
 		set(tmp);
 	}

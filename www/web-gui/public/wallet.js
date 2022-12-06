@@ -1929,7 +1929,7 @@ Vue.component('account-offers', {
 					<td>{{item.bid_symbol}}</td>
 					<td class="collapsing"><b>{{item.ask_balance_value}}</b></td>
 					<td>{{item.ask_symbol}}</td>
-					<td class="collapsing"><b>{{item.price}}</b></td>
+					<td class="collapsing"><b>{{item.display_price}}</b></td>
 					<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
 					<td><router-link :to="'/explore/address/' + item.address">{{get_short_addr(item.address, 8)}}</router-link></td>
 					<td>
