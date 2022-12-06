@@ -2074,7 +2074,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					swap_log.insert(std::make_pair(block->height, ticket), tx->id);
 				}
 				if(exec->binary == params->offer_binary) {
-					if(exec->init_args.size() >= 2) {
+					if(exec->init_args.size() >= 3) {
 						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), tx->id);
 						offer_bid_map.insert(std::make_tuple(exec->init_args[1].to<addr_t>(), block->height, ticket), tx->id);
 						offer_ask_map.insert(std::make_tuple(exec->init_args[2].to<addr_t>(), block->height, ticket), tx->id);
