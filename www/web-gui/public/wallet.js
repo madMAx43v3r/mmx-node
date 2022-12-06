@@ -928,8 +928,8 @@ Vue.component('account-plots', {
 				</template>
 				
 				<template v-slot:item.actions="{ item }">
-					<v-btn @click="deposit(item.address, item.owner)" outlined>Deposit</v-btn>
-					<v-btn @click="withdraw(item.address, item.owner)" outlined>Withdraw</v-btn>
+					<v-btn color="green darken-1" @click="deposit(item.address, item.owner)" outlined>Deposit</v-btn>
+					<v-btn color="red darken-1" @click="withdraw(item.address, item.owner)" outlined>Withdraw</v-btn>
 				</template>
 			</v-data-table>
 			
@@ -1934,12 +1934,12 @@ Vue.component('account-offers', {
 					<td><router-link :to="'/explore/address/' + item.address">{{get_short_addr(item.address, 8)}}</router-link></td>
 					<td>
 						<template v-if="item.bid_balance && !canceled.has(item.address)">
-							<v-btn outlined text color="red" @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
+							<v-btn outlined text color="red darken-1" @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
 						</template>
 						<template v-if="item.ask_balance && !withdrawn.has(item.address)">
 							<v-btn outlined text @click="withdraw(item)">Withdraw</v-btn>
 						</template>
-						<v-btn outlined text color="green" @click="deposit(item)">Deposit</v-btn>
+						<v-btn outlined text color="green darken-1" @click="deposit(item)">Deposit</v-btn>
 					</td>
 				</tr>
 				</tbody>
