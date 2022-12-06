@@ -30,7 +30,6 @@
 *.exe
 *.out
 *.app
-*.dat
 
 *.bak
 CMakeUserPresets.json
@@ -48,3 +47,4 @@ CMakeUserPresets.json
 /tmp
 /.idea
 /_deps
+/*.dat

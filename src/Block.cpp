@@ -14,8 +14,8 @@ namespace mmx {
 
 vnx::bool_t Block::is_valid() const
 {
-	if(!farmer_sig) {
-		if(nonce && height > 0) {
+	if(!farmer_sig && height) {
+		if(nonce) {
 			return false;
 		}
 		if(proof || tx_base || tx_list.size()) {
@@ -29,7 +29,7 @@ vnx::bool_t Block::is_valid() const
 		if(const auto& res = tx->exec_result) {
 			total_cost_sum += res->total_cost;
 			tx_fees_sum += res->total_fee;
-		} else {
+		} else if(height) {
 			return false;
 		}
 		static_cost_sum += tx->static_cost;

@@ -10,6 +10,7 @@
 #include <mmx/vm/varptr_t.hpp>
 #include <mmx/vm/Engine.h>
 
+#include <mmx/Transaction.hxx>
 #include <mmx/contract/Binary.hxx>
 
 using namespace mmx;
@@ -428,6 +429,15 @@ int main(int argc, char** argv)
 		}
 	}
 	vnx::write_to_file(argc > 1 ? argv[1] : "swap_binary.dat", bin);
+
+	auto tx = Transaction::create();
+	tx->deploy = bin;
+	tx->id = tx->calc_hash(true);
+	tx->content_hash = tx->calc_hash(true);
+
+	vnx::write_to_file("data/tx_swap_binary.dat", tx);
+
+	std::cout << addr_t(tx->id).to_string() << std::endl;
 
 	return 0;
 }

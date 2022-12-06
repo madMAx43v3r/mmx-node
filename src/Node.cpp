@@ -248,6 +248,10 @@ void Node::main()
 		block->space_diff = params->initial_space_diff;
 		block->vdf_output[0] = hash_t(params->vdf_seed);
 		block->vdf_output[1] = hash_t(params->vdf_seed);
+
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
 		block->finalize();
 
 		if(!block->is_valid()) {
@@ -315,6 +319,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = balance_map.size();
 			info->genesis_hash = get_genesis_hash();
+			info->netspace_ratio = peak->netspace_ratio / 1024.;
 			{
 				size_t num_blocks = 0;
 				for(const auto& fork : get_fork_line()) {
@@ -2021,10 +2026,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const Transaction> tx,
 					balance_cache_t& balance_cache, uint32_t& counter)
 {
-	if(!tx->exec_result) {
-		throw std::logic_error("apply(): exec_result missing");
-	}
-	if(tx->sender)
+	if(tx->exec_result && tx->sender)
 	{
 		txin_t in;
 		in.address = *tx->sender;
@@ -2037,7 +2039,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			clamped_sub_assign(*balance, in.amount);
 		}
 	}
-	if(!tx->exec_result->did_fail)
+	if(!tx->exec_result || !tx->exec_result->did_fail)
 	{
 		const auto outputs = tx->get_outputs();
 		for(size_t i = 0; i < outputs.size(); ++i)
