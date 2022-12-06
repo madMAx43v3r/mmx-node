@@ -248,10 +248,15 @@ void Node::main()
 		block->space_diff = params->initial_space_diff;
 		block->vdf_output[0] = hash_t(params->vdf_seed);
 		block->vdf_output[1] = hash_t(params->vdf_seed);
-
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
+
+		for(auto tx : block->tx_list) {
+			if(!tx) {
+				throw std::logic_error("failed to load genesis transactions");
+			}
+		}
 		block->finalize();
 
 		if(!block->is_valid()) {
@@ -1964,9 +1969,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	balance_cache_t balance_cache(&balance_map);
 
 	for(const auto& tx : block->get_all_transactions()) {
-		tx_set.insert(tx->id);
-		tx_ids.push_back(tx->id);
-		apply(block, context, tx, balance_cache, counter);
+		if(tx) {
+			tx_set.insert(tx->id);
+			tx_ids.push_back(tx->id);
+			apply(block, context, tx, balance_cache, counter);
+		}
 	}
 	tx_log.insert(block->height, tx_ids);
 
