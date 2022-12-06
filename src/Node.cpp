@@ -319,7 +319,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = balance_map.size();
 			info->genesis_hash = get_genesis_hash();
-			info->netspace_ratio = peak->netspace_ratio / 1024.;
+			info->netspace_ratio = (peak->netspace_ratio >> params->max_diff_adjust) / 1024.;
 			{
 				size_t num_blocks = 0;
 				for(const auto& fork : get_fork_line()) {

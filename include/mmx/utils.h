@@ -185,10 +185,10 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
-uint32_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, const uint32_t prev_ratio, const bool is_og_proof)
+uint32_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, const uint64_t prev_ratio, const bool is_og_proof)
 {
-	const uint32_t value = is_og_proof ? 1 : 0;
-	return ((uint64_t(prev_ratio) * ((1 << params->max_diff_adjust) - 1)) + (value << params->max_diff_adjust)) >> params->max_diff_adjust;
+	const uint64_t value = is_og_proof ? 1024 : 0;
+	return ((prev_ratio * ((1 << params->max_diff_adjust) - 1)) + (value << params->max_diff_adjust)) >> params->max_diff_adjust;
 }
 
 inline

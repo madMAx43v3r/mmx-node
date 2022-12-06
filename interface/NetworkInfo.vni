@@ -18,6 +18,8 @@ class NetworkInfo {
 	
 	double block_size;			// 0 to 1
 	
+	double netspace_ratio;		// physical space [0 to 1]
+	
 	hash_t genesis_hash;
 	
 }
