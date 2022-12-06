@@ -1455,19 +1455,19 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_id != query.end() && iter_index != query.end() && iter_amount != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
 			const auto index = vnx::from_string_value<uint32_t>(iter_index->second);
-			const auto amount = vnx::from_string_value<uint64_t>(iter_amount->second);
+			const auto value = vnx::from_string_value<double>(iter_amount->second);
 			node->get_swap_info(address,
-				[this, request_id, index, amount](const swap_info_t& info) {
+				[this, request_id, index, value](const swap_info_t& info) {
 					get_context({info.tokens[0], info.tokens[1]}, request_id,
-						[this, request_id, index, info, amount](std::shared_ptr<RenderContext> context) {
+						[this, request_id, index, info, value](std::shared_ptr<RenderContext> context) {
 							vnx::Object out;
 							const auto token = context->find_currency(info.tokens[index]);
 							const auto currency = context->find_currency(info.tokens[(index + 1) % 2]);
 							if(token && currency) {
-								const auto value = to_amount_exact(amount, token->decimals);
-								const auto trade_amount = info.get_trade_amount(index, value);
+								const auto amount = to_amount_exact(value, token->decimals);
+								const auto trade_amount = info.get_trade_amount(index, amount);
 								const auto trade_value = to_value(trade_amount, currency->decimals);
-								out["price"] = index ? value / trade_value : trade_value / value;
+								out["price"] = index ? amount / trade_value : trade_value / amount;
 								out["trade_amount"] = trade_value;
 							}
 							respond(request_id, render_value(out));
@@ -2017,7 +2017,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 								throw std::logic_error("invalid currency");
 							}
 							const auto index = args["index"].to<uint32_t>();
-							const auto value = args["amount"].to<uint64_t>();
+							const auto value = args["amount"].to<double>();
 							const auto options = args["options"].to<spend_options_t>();
 							const auto amount = to_amount_exact(value, token->decimals);
 
