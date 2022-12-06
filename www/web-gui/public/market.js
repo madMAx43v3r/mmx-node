@@ -226,7 +226,7 @@ Vue.component('market-offers', {
 		trade_amount(value) {
 			if(this.offer) {
 				if(value > 0) {
-					this.trade_estimate = (Math.max(value / this.offer.display_price - 0.5, 0)).toFixed(this.offer.bid_decimals);
+					this.trade_estimate = (value / this.offer.display_price).toFixed(this.offer.bid_decimals);
 				} else {
 					this.trade_estimate = null;
 				}
