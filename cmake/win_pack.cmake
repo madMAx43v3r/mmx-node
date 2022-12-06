@@ -10,6 +10,9 @@ add_custom_command(TARGET mmx PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${CMAKE_SOURCE_DIR}/www/ $<TARGET_FILE_DIR:mmx>/www/)
 add_custom_command(TARGET mmx PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${CMAKE_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:mmx>/data/)
+add_custom_command(TARGET mmx PRE_BUILD
  	COMMAND ${CMAKE_COMMAND} -E copy_directory
  		${CMAKE_SOURCE_DIR}/scripts/win/ $<TARGET_FILE_DIR:mmx>)
 
@@ -107,6 +110,7 @@ install(FILES
 install(DIRECTORY kernel/ DESTINATION kernel COMPONENT applications)
 install(DIRECTORY config/ DESTINATION config COMPONENT applications)
 install(DIRECTORY www/ DESTINATION www COMPONENT applications)
+install(DIRECTORY data/ DESTINATION data COMPONENT applications)
 install(DIRECTORY scripts/win/ DESTINATION ./ COMPONENT applications)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT applications)
 
