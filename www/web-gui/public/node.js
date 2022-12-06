@@ -238,7 +238,7 @@ Vue.component('node-peers', {
 			</template>
 			
 			<template v-slot:item.action="{ item }">
-				<v-btn @click="kick_peer(item.address)" outlined>Kick</v-btn>
+				<v-btn @click="kick_peer(item.address)" outlined text>Kick</v-btn>
 			</template>
 		</v-data-table>	
 		`

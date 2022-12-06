@@ -562,7 +562,7 @@ Vue.component('status', {
 			// console.log('connectedToNetwork', this.connectedToNetwork);
 
 			// console.log('synced_fails', this.synced_fails);
-			// console.log('synced', this.synced);			
+			// console.log('synced', this.synced);
 		},
 	},
 	computed: {
@@ -608,6 +608,8 @@ Vue.component('status', {
 	template: `
 		<div class="d-flex align-center px-5">
 
+			<git-update-checker class="pr-5"/>
+
 			<t-icon v-if="status == AppStatus.Connecting"
 				color="red"
 				:tooltip="AppStatus.Connecting">mdi-connection</t-icon>
@@ -636,7 +638,7 @@ Vue.component('t-icon', {
 	props: {
 		color: String,
 		tooltip: String
-	},	
+	},
 	template: `
 		<v-tooltip bottom v-if="tooltip">
 			<template v-slot:activator="{ on, attrs }">
@@ -647,6 +649,69 @@ Vue.component('t-icon', {
 		<v-icon :color="color" v-else><slot /></v-icon>		
 	`
 })
+
+Vue.component('git-update-checker', {
+	data() {
+		return {
+			timer: null,
+			show: false,
+			commit_status_message: ''
+		}
+	},
+	methods: {
+		async update() {
+			this.commit_status_message = '';
+			this.show = false;
+			fetch('GIT_COMMIT_HASH.json')
+			.then( response => response.json() )
+			.then( data => {
+				var hash = data.GIT_COMMIT_HASH;
+				if(hash) {
+					fetch(`https://api.github.com/repos/madMAx43v3r/mmx-node/compare/master...${hash}`)
+					.then( response => response.json() )
+					.then( data => {
+						if(data && (data.behind_by > 0 || data.ahead_by > 0)) {
+							this.show = true;
+
+							if(data.ahead_by > 0) {
+								this.commit_status_message += `${data.ahead_by} commits ahead`;
+							}
+
+							if(data.behind_by > 0) {
+								if (this.commit_status_message) this.commit_status_message += ', ';
+								this.commit_status_message += `${data.behind_by} commits behind`;
+							}
+
+						}
+					});
+				}
+			})
+		}
+	},
+	created() {
+		if(!this.$isWinGUI)
+		{
+			this.update();
+			this.timer = setInterval(() => { this.update(); }, 60*60*1000);
+		}
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	computed: {
+		tooltip() {
+			return `This build is ${this.commit_status_message} madMAx43v3r:master`;
+		}
+	},
+	template: `
+		<div>
+			<t-icon v-if="show"
+				color="yellow darken-3"
+				:tooltip="tooltip"
+			>mdi-alert-decagram-outline</t-icon>
+		</div>
+	`
+}),
 
 Vue.component('app', {
 	computed: {
@@ -679,7 +744,7 @@ Vue.component('app', {
 							<router-view></router-view>
 						</v-col>
 					</v-row>
-				</v-container>                
+				</v-container>
 			</v-main>
 			<!--v-footer app>
 			</v-footer-->

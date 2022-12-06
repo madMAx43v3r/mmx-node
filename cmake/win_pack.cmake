@@ -129,8 +129,8 @@ FetchContent_MakeAvailable(plotter_k34)
 set (MMX_PLOTTER_K34_PATH ${plotter_k34_SOURCE_DIR}/chia_plot_k34-1.1.8.exe)
 
 FetchContent_Declare(plotter_bladebit
-URL https://github.com/MMX-World/bladebit/releases/download/v1.2.4-mmx/bladebit.exe
-URL_HASH SHA256=9DB89C4EDE962789E3808F3E69E252DB9B5958B1FE98FEC6EDB93D7D2287D13F
+URL https://github.com/MMX-World/bladebit/releases/download/v2.0.1-mmx/bladebit.exe
+URL_HASH SHA256=6025F777709F52754690C262C9463DB17F8BA5C8757ACE7DB352C103252ACCA5
 DOWNLOAD_NO_EXTRACT true
 )
 FetchContent_MakeAvailable(plotter_bladebit)

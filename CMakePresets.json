@@ -40,6 +40,17 @@
             "warnings": {
                 "dev": false
             }
+        },
+
+        {
+            "name": "windows-debug",
+            "displayName": "Windows x64 Debug",
+            "description": "Sets Visual Studio generator, build directory",
+            "inherits": "windows-base",
+            "cacheVariables": {
+                "CUSTOM_ADD_DEFINITIONS": "/EHsc /MP /W1",
+                "MMX_VERSION": "$env{MMX_VERSION}"
+            }
         }
 
     ],
@@ -49,7 +60,12 @@
             "name": "windows-release",
             "configurePreset": "windows-release",
             "configuration": "Release"
-        }        
-    ] 
+        },
+        {
+            "name": "windows-debug",
+            "configurePreset": "windows-debug",
+            "configuration": "Debug"
+        }
+    ]
 
 }
