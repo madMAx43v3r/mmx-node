@@ -21,4 +21,6 @@ struct offer_data_t {
 	
 	bool is_open() const;
 	
+	ulong get_trade_amount(ulong amount) const;
+	
 }

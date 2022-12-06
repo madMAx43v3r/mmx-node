@@ -173,19 +173,19 @@ void WebAPI::handle(std::shared_ptr<const vnx::LogMsg> value)
 	}
 }
 
-vnx::Object to_amount_object(const int64_t& value, const int decimals)
+vnx::Object to_amount_object(const uint64_t& amount, const int decimals)
 {
 	vnx::Object res;
-	res["value"] = value * pow(10, -decimals);
-	res["amount"] = value;
+	res["value"] = to_value(amount, decimals);
+	res["amount"] = amount;
 	return res;
 }
 
-vnx::Object to_amount_object(const uint128& value, const int decimals)
+vnx::Object to_amount_object(const uint128& amount, const int decimals)
 {
 	vnx::Object res;
-	res["value"] = value.to_double() * pow(10, -decimals);
-	res["amount"] = value.str();
+	res["value"] = to_value(amount, decimals);
+	res["amount"] = amount.str();
 	return res;
 }
 
@@ -1461,14 +1461,12 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					get_context({info.tokens[0], info.tokens[1]}, request_id,
 						[this, request_id, index, info, value](std::shared_ptr<RenderContext> context) {
 							vnx::Object out;
-							const auto token = context->find_currency(info.tokens[index]);
-							const auto currency = context->find_currency(info.tokens[(index + 1) % 2]);
-							if(token && currency) {
-								const auto amount = to_amount_exact(value, token->decimals);
+							const auto token_i = context->find_currency(info.tokens[index]);
+							const auto token_k = context->find_currency(info.tokens[(index + 1) % 2]);
+							if(token_i && token_k) {
+								const auto amount = to_amount_exact(value, token_i->decimals);
 								const auto trade_amount = info.get_trade_amount(index, amount);
-								const auto trade_value = to_value(trade_amount, currency->decimals);
-								out["price"] = index ? amount / trade_value : trade_value / amount;
-								out["trade_amount"] = trade_value;
+								out["trade"] = to_amount_object(trade_amount, token_k->decimals);
 							}
 							respond(request_id, render_value(out));
 					});
@@ -1476,6 +1474,32 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "swap/trade_estimate?id|index|amount");
+		}
+	}
+	else if(sub_path == "/offer/trade_estimate") {
+		const auto iter_id = query.find("id");
+		const auto iter_amount = query.find("amount");
+		if(iter_id != query.end() && iter_amount != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
+			const auto value = vnx::from_string_value<double>(iter_amount->second);
+			node->get_offer(address,
+				[this, request_id, value](const offer_data_t& info) {
+					get_context({info.bid_currency, info.ask_currency}, request_id,
+						[this, request_id, info, value](std::shared_ptr<RenderContext> context) {
+							vnx::Object out;
+							const auto bid_currency = context->find_currency(info.bid_currency);
+							const auto ask_currency = context->find_currency(info.ask_currency);
+							if(bid_currency && ask_currency) {
+								const auto amount = to_amount_exact(value, ask_currency->decimals);
+								const auto trade_amount = info.get_trade_amount(amount);
+								out["trade"] = to_amount_object(trade_amount, bid_currency->decimals);
+							}
+							respond(request_id, render_value(out));
+					});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "offer/trade_estimate?id|amount");
 		}
 	}
 	else if(sub_path == "/farmers") {

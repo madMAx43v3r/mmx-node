@@ -500,20 +500,20 @@ Vue.component('swap-trade', {
 		buy_amount(value) {
 			this.buy_estimate = null;
 			if(value > 0) {
-				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1' + '&amount=' + value)
+				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1&amount=' + value)
 					.then(response => response.json())
 					.then(data => {
-						this.buy_estimate = data.trade_amount;
+						this.buy_estimate = data.trade.value;
 					});
 			}
 		},
 		sell_amount(value) {
 			this.sell_estimate = null;
 			if(value > 0) {
-				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0' + '&amount=' + value)
+				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0&amount=' + value)
 					.then(response => response.json())
 					.then(data => {
-						this.sell_estimate = data.trade_amount;
+						this.sell_estimate = data.trade.value;
 					});
 			}
 		}

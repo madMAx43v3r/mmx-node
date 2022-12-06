@@ -225,10 +225,13 @@ Vue.component('market-offers', {
 	watch: {
 		trade_amount(value) {
 			if(this.offer) {
+				this.trade_estimate = null;
 				if(value > 0) {
-					this.trade_estimate = (value / this.offer.display_price).toFixed(this.offer.bid_decimals);
-				} else {
-					this.trade_estimate = null;
+					fetch('/wapi/offer/trade_estimate?id=' + this.offer.address + '&amount=' + value)
+						.then(response => response.json())
+						.then(data => {
+							this.trade_estimate = (data.trade.value).toFixed(this.offer.bid_decimals);
+						});
 				}
 			}
 		}

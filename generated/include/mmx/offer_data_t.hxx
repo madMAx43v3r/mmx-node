@@ -37,6 +37,7 @@ struct MMX_EXPORT offer_data_t {
 	
 	vnx::bool_t is_scam() const;
 	vnx::bool_t is_open() const;
+	uint64_t get_trade_amount(const uint64_t& amount = 0) const;
 	
 	static std::shared_ptr<offer_data_t> create();
 	std::shared_ptr<offer_data_t> clone() const;
