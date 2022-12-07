@@ -372,6 +372,7 @@ void Node::update()
 				const auto challenge = get_challenge(prev, vdf_challenge, 1);
 				const auto proof_list = find_proof(challenge);
 
+				// Note: proof_list already limited to max_blocks_per_height
 				for(size_t k = 0; k < proof_list.size(); ++k)
 				{
 					const auto& proof = proof_list[k];
