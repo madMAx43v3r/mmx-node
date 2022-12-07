@@ -51,8 +51,8 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
-	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4" || params->vdf_seed == "test5" || params->vdf_seed == "test6" || params->vdf_seed == "test7") {
-		std::cerr << "This version is not compatible with testnet 1-7, please remove NETWORK file and try again to switch to testnet8." << std::endl;
+	if(params->vdf_seed == "test1" || params->vdf_seed == "test2" || params->vdf_seed == "test3" || params->vdf_seed == "test4" || params->vdf_seed == "test5" || params->vdf_seed == "test6" || params->vdf_seed == "test7" || params->vdf_seed == "test8") {
+		std::cerr << "This version is not compatible with testnet 1-8, please remove NETWORK file and try again to switch to testnet9." << std::endl;
 		vnx::close();
 		return -1;
 	}
