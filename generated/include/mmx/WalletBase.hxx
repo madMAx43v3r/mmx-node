@@ -93,6 +93,7 @@ protected:
 	virtual std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> offer_withdraw(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> cancel_offer(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const ::mmx::addr_t& currency, const vnx::optional<uint64_t>& min_trade, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<uint64_t, 2>& amount, const ::mmx::spend_options_t& options) const = 0;

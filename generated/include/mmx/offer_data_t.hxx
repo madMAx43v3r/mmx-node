@@ -16,11 +16,13 @@ struct MMX_EXPORT offer_data_t {
 	
 	
 	uint32_t height = 0;
+	::mmx::addr_t owner;
 	::mmx::addr_t address;
 	::mmx::addr_t bid_currency;
 	::mmx::addr_t ask_currency;
 	uint64_t bid_balance = 0;
 	uint64_t ask_balance = 0;
+	uint64_t ask_amount = 0;
 	::mmx::uint128 inv_price;
 	vnx::float64_t price = 0;
 	
@@ -68,16 +70,18 @@ struct MMX_EXPORT offer_data_t {
 
 template<typename T>
 void offer_data_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<offer_data_t>(8);
+	_visitor.template type_begin<offer_data_t>(10);
 	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("address", 1); _visitor.accept(address);
-	_visitor.type_field("bid_currency", 2); _visitor.accept(bid_currency);
-	_visitor.type_field("ask_currency", 3); _visitor.accept(ask_currency);
-	_visitor.type_field("bid_balance", 4); _visitor.accept(bid_balance);
-	_visitor.type_field("ask_balance", 5); _visitor.accept(ask_balance);
-	_visitor.type_field("inv_price", 6); _visitor.accept(inv_price);
-	_visitor.type_field("price", 7); _visitor.accept(price);
-	_visitor.template type_end<offer_data_t>(8);
+	_visitor.type_field("owner", 1); _visitor.accept(owner);
+	_visitor.type_field("address", 2); _visitor.accept(address);
+	_visitor.type_field("bid_currency", 3); _visitor.accept(bid_currency);
+	_visitor.type_field("ask_currency", 4); _visitor.accept(ask_currency);
+	_visitor.type_field("bid_balance", 5); _visitor.accept(bid_balance);
+	_visitor.type_field("ask_balance", 6); _visitor.accept(ask_balance);
+	_visitor.type_field("ask_amount", 7); _visitor.accept(ask_amount);
+	_visitor.type_field("inv_price", 8); _visitor.accept(inv_price);
+	_visitor.type_field("price", 9); _visitor.accept(price);
+	_visitor.template type_end<offer_data_t>(10);
 }
 
 
