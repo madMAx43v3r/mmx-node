@@ -142,7 +142,7 @@ protected:
 
 	offer_data_t get_offer(const addr_t& address) const override;
 
-	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& addresses, const vnx::bool_t& state) const override;
+	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& addresses, const vnx::bool_t& state, const vnx::bool_t& closed = false) const override;
 
 	std::vector<offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& state) const override;
 
@@ -313,7 +313,7 @@ private:
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof, const bool full_block);
 
-	bool get_offer_state(const addr_t& address) const;
+	int get_offer_state(const addr_t& address) const;
 
 	std::vector<offer_data_t> fetch_offers_for(
 			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
@@ -528,6 +528,7 @@ private:
 	std::shared_ptr<const contract::Binary> offer_binary;
 	vnx::optional<uint32_t> swap_users_addr;
 	vnx::optional<uint32_t> offer_bid_currency_addr;
+	vnx::optional<uint32_t> offer_ask_currency_addr;
 	std::shared_ptr<RouterAsyncClient> router;
 	std::shared_ptr<TimeLordAsyncClient> timelord;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;

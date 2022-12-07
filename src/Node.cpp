@@ -273,6 +273,7 @@ void Node::main()
 	}
 	if(offer_binary) {
 		offer_bid_currency_addr = offer_binary->find_field("bid_currency");
+		offer_ask_currency_addr = offer_binary->find_field("ask_currency");
 	}
 
 	subscribe(input_vdfs, max_queue_ms);
@@ -1039,20 +1040,27 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	return out;
 }
 
-bool Node::get_offer_state(const addr_t& address) const
+int Node::get_offer_state(const addr_t& address) const
 {
 	if(offer_bid_currency_addr) {
-		const auto bid_currency = to_addr(read_storage_var(address, *offer_bid_currency_addr));
-		return get_balance(address, bid_currency) > 0;
+		if(get_balance(address, to_addr(read_storage_var(address, *offer_bid_currency_addr)))) {
+			return 1;
+		}
 	}
-	return false;
+	if(offer_ask_currency_addr) {
+		if(get_balance(address, to_addr(read_storage_var(address, *offer_ask_currency_addr)))) {
+			return 2;
+		}
+	}
+	return 0;
 }
 
-std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& addresses, const vnx::bool_t& state) const
+std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& addresses, const vnx::bool_t& state, const vnx::bool_t& closed) const
 {
 	std::vector<offer_data_t> out;
 	for(const auto& address : addresses) {
-		if(!state || get_offer_state(address)) {
+		const int offer_state = state ? get_offer_state(address) : -1;
+		if(!state || offer_state == 1 || (closed && offer_state == 2)) {
 			const auto data = get_offer(address);
 			if(!data.is_scam()) {
 				out.push_back(data);
@@ -1068,7 +1076,7 @@ std::vector<offer_data_t> Node::fetch_offers_for(	const std::vector<addr_t>& add
 {
 	std::vector<offer_data_t> out;
 	for(const auto& address : addresses) {
-		if(!state || get_offer_state(address)) {
+		if(!state || get_offer_state(address) == 1) {
 			const auto data = get_offer(address);
 			if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
 				if(!filter || !data.is_scam()) {
@@ -1096,7 +1104,7 @@ std::vector<offer_data_t> Node::get_offers_by(const std::vector<addr_t>& owners,
 			list.push_back(address);
 		}
 	}
-	return fetch_offers(list, state);
+	return fetch_offers(list, state, true);
 }
 
 std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const
