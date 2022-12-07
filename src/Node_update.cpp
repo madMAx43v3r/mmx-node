@@ -66,6 +66,18 @@ void Node::pre_validate_blocks()
 			}
 			// need to verify farmer_sig before adding to fork tree
 			block->validate();
+
+			// compute balance deltas
+			for(const auto& tx : block->get_all_transactions()) {
+				if(!tx->did_fail()) {
+					for(const auto& out : tx->get_outputs()) {
+						fork->balance.added[std::make_pair(out.address, out.contract)] += out.amount;
+					}
+					for(const auto& in : tx->get_inputs()) {
+						fork->balance.removed[std::make_pair(in.address, in.contract)] += in.amount;
+					}
+				}
+			}
 		}
 		catch(const std::exception& ex) {
 			fork->is_invalid = true;
@@ -139,18 +151,6 @@ void Node::verify_block_proofs()
 				if(auto proof = block->proof) {
 #pragma omp critical
 					add_proof(block->height, challenge, proof, vnx::Hash64());
-				}
-
-				// compute balance deltas
-				for(const auto& tx : block->get_all_transactions()) {
-					if(!tx->did_fail()) {
-						for(const auto& out : tx->get_outputs()) {
-							fork->balance.added[std::make_pair(out.address, out.contract)] += out.amount;
-						}
-						for(const auto& in : tx->get_inputs()) {
-							fork->balance.removed[std::make_pair(in.address, in.contract)] += in.amount;
-						}
-					}
 				}
 			}
 		} catch(const std::exception& ex) {
