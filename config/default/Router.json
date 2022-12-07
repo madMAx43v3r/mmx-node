@@ -17,5 +17,6 @@
 	"max_hash_cache": 200000,
 	"max_sent_cache": 20000,
 	"max_tx_upload" : 2,
-	"max_pending_cost": 0.2
+	"max_pending_cost": 0.2,
+	"compress_level": 1
 }
