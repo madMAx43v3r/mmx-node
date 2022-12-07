@@ -891,19 +891,19 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				throw std::logic_error("execution output count mismatch: "
 						+ std::to_string(result->outputs.size()) + " != " + std::to_string(exec_outputs.size()));
 			}
-		}
-		for(size_t i = 0; i < exec_inputs.size(); ++i) {
-			const auto& lhs = exec_inputs[i];
-			const auto& rhs = result->inputs[i];
-			if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.flags != rhs.flags) {
-				throw std::logic_error("execution input mismatch at index " + std::to_string(i));
+			for(size_t i = 0; i < exec_inputs.size(); ++i) {
+				const auto& lhs = exec_inputs[i];
+				const auto& rhs = result->inputs[i];
+				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.flags != rhs.flags) {
+					throw std::logic_error("execution input mismatch at index " + std::to_string(i));
+				}
 			}
-		}
-		for(size_t i = 0; i < exec_outputs.size(); ++i) {
-			const auto& lhs = exec_outputs[i];
-			const auto& rhs = result->outputs[i];
-			if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount) {
-				throw std::logic_error("execution output mismatch at index " + std::to_string(i));
+			for(size_t i = 0; i < exec_outputs.size(); ++i) {
+				const auto& lhs = exec_outputs[i];
+				const auto& rhs = result->outputs[i];
+				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount) {
+					throw std::logic_error("execution output mismatch at index " + std::to_string(i));
+				}
 			}
 		}
 	}
