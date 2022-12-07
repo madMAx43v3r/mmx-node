@@ -603,6 +603,7 @@ Vue.component('swap-liquid', {
 	data() {
 		return {
 			data: null,
+			paid: false,
 			user: null,
 			user_address: null,
 			amount_0: null,
@@ -657,6 +658,7 @@ Vue.component('swap-liquid', {
 						response.json().then(data => {
 							this.result = data;
 							this.error = null;
+							this.paid = true;
 						});
 					} else {
 						response.text().then(data => {
@@ -699,7 +701,7 @@ Vue.component('swap-liquid', {
 				<v-card-actions class="justify-end">
 					<v-btn color="green lighten-1" @click="submit(true)" :disabled="!(amount_0 || amount_1)">Add Liquidity</v-btn>
 					<v-btn color="red lighten-1" @click="submit(false)" :disabled="!(amount_0 || amount_1)">Remove Liquidity</v-btn>
-					<v-btn @click="payout()" :disabled="!user || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
+					<v-btn @click="payout()" :disabled="!user || paid || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
 				</v-card-actions>
 			</v-card>
 			
