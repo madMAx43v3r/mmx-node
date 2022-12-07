@@ -118,8 +118,8 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 			return 0;
 		}
 	}
-	auto fork = find_fork(hash);
-	auto block = fork ? fork->block : get_header(hash);
+	auto head = find_fork(hash);
+	auto block = head ? head->block : get_header(hash);
 	if(!block) {
 		throw std::logic_error("no such block");
 	}
@@ -129,11 +129,7 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 	uint128 balance = 0;
 	balance_table.find(key, balance, std::min(root->height, block->height));
 
-	while(fork) {
-		const auto& block = fork->block;
-		if(block->height <= root->height) {
-			break;
-		}
+	for(const auto& fork : get_fork_line(head)) {
 		{
 			auto iter = fork->balance.added.find(key);
 			if(iter != fork->balance.added.end()) {
@@ -146,7 +142,6 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 				clamped_sub_assign(balance, iter->second);
 			}
 		}
-		fork = fork->prev.lock();
 	}
 	if(balance.upper()) {
 		throw std::logic_error("balance overflow");
