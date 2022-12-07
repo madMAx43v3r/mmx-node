@@ -4,6 +4,7 @@ struct offer_data_t {
 	
 	uint height;
 	
+	addr_t owner;
 	addr_t address;
 	
 	addr_t bid_currency;
@@ -11,6 +12,8 @@ struct offer_data_t {
 	
 	ulong bid_balance;
 	ulong ask_balance;
+	
+	ulong ask_amount;			// ask amount needed to fully trade offer
 	
 	uint128 inv_price;			// 64-bit fractional [bid / ask]
 	

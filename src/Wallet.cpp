@@ -390,34 +390,47 @@ std::shared_ptr<const Transaction> Wallet::offer_trade(
 			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
+	const auto offer = node->get_offer(address);
 
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
 
-	const auto currency = to_addr(node->read_storage_field(address, "ask_currency").first);
+	auto options_ = options;
+	options_.note = tx_note_e::TRADE;
+	return deposit(index, address, "trade", args, amount, offer.ask_currency, options_);
+}
+
+std::shared_ptr<const Transaction> Wallet::accept_offer(
+			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	const auto offer = node->get_offer(address);
+
+	std::vector<vnx::Variant> args;
+	args.emplace_back(wallet->get_address(dst_addr).to_string());
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;
-	return deposit(index, address, "trade", args, amount, currency, options_);
+	return deposit(index, address, "trade", args, offer.ask_amount, offer.ask_currency, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::cancel_offer(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
 {
-	const auto owner = to_addr(node->read_storage_field(address, "owner").first);
+	const auto offer = node->get_offer(address);
 
 	auto options_ = options;
-	options_.user = owner;
+	options_.user = offer.owner;
 	return execute(index, address, "cancel", {}, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::offer_withdraw(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
 {
-	const auto owner = to_addr(node->read_storage_field(address, "owner").first);
+	const auto offer = node->get_offer(address);
 
 	auto options_ = options;
-	options_.user = owner;
+	options_.user = offer.owner;
 	return execute(index, address, "withdraw", {}, options_);
 }
 

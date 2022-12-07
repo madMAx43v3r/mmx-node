@@ -157,11 +157,13 @@ Vue.component('market-offers', {
 			data: null,
 			offer: {},
 			tokens: null,
+			accepted: new Set(),
 			timer: null,
 			result: null,
 			error: null,
 			loading: false,
-			dialog: false,
+			trade_dialog: false,
+			accept_dialog: false,
 			trade_amount: null,
 			trade_estimate: null
 		}
@@ -198,7 +200,11 @@ Vue.component('market-offers', {
 		trade(offer) {
 			this.offer = offer;
 			this.trade_amount = null;
-			this.dialog = true;
+			this.trade_dialog = true;
+		},
+		accept(offer) {
+			this.offer = offer;
+			this.accept_dialog = true;
 		},
 		submit(offer, amount) {
 			const req = {};
@@ -219,7 +225,28 @@ Vue.component('market-offers', {
 						});
 					}
 				});
-			this.dialog = false;
+			this.trade_dialog = false;
+		},
+		submit_accept(offer) {
+			const req = {};
+			req.index = this.wallet;
+			req.address = offer.address;
+			fetch('/wapi/wallet/accept_offer', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							this.error = null;
+							this.result = data;
+							this.accepted.add(offer.address);
+						});
+					} else {
+						response.text().then(data => {
+							this.error = data;
+							this.result = null;
+						});
+					}
+				});
+			this.accept_dialog = false;
 		}
 	},
 	watch: {
@@ -252,7 +279,7 @@ Vue.component('market-offers', {
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
 
-			<v-dialog v-model="dialog" max-width="800">
+			<v-dialog v-model="trade_dialog" max-width="800">
 				<template v-slot:default="dialog">
 					<v-card>
 						<v-toolbar color="primary" dark></v-toolbar>
@@ -273,7 +300,34 @@ Vue.component('market-offers', {
 						</v-card-text>
 						<v-card-actions class="justify-end">
 							<v-btn color="primary" @click="submit(offer, trade_amount)">Trade</v-btn>
-							<v-btn @click="dialog.value = false">{{ $t('market_offers.cancel') }}</v-btn>
+							<v-btn @click="trade_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
+						</v-card-actions>
+					</v-card>
+				</template>
+			</v-dialog>
+			
+			<v-dialog v-model="accept_dialog" max-width="800">
+				<template v-slot:default="dialog">
+					<v-card>
+						<v-toolbar color="primary" dark></v-toolbar>
+						<v-card-title>
+							{{offer.address}}
+						</v-card-title>
+						<v-card-text>
+							<v-text-field class="text-align-right"
+								v-model="offer.ask_value"
+								label="You send"
+								:suffix="offer.ask_symbol" disabled>
+							</v-text-field>
+							<v-text-field class="text-align-right"
+								v-model="offer.bid_balance_value"
+								label="You receive"
+								:suffix="offer.bid_symbol" disabled>
+							</v-text-field>
+						</v-card-text>
+						<v-card-actions class="justify-end">
+							<v-btn color="primary" @click="submit_accept(offer)">Accept</v-btn>
+							<v-btn @click="accept_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</template>
@@ -326,6 +380,9 @@ Vue.component('market-offers', {
 								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
 								<td>
 									<v-btn outlined text @click="trade(item)">Trade</v-btn>
+									<template v-if="!accepted.has(item.address)">
+										<v-btn outlined text color="green darken-1" @click="accept(item)">Accept</v-btn>
+									</template>
 								</td>
 							</tr>
 						</tbody>

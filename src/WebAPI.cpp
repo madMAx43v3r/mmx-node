@@ -419,6 +419,7 @@ public:
 				tmp["ask_balance_value"] = to_value(value.ask_balance, ask_currency->decimals);
 				tmp["ask_symbol"] = ask_currency->symbol;
 				tmp["ask_decimals"] = ask_currency->decimals;
+				tmp["ask_value"] = to_value(value.ask_amount, ask_currency->decimals);
 			}
 			if(bid_currency && ask_currency) {
 				tmp["display_price"] = value.price * pow(10, bid_currency->decimals - ask_currency->decimals);
@@ -2057,6 +2058,27 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "POST wallet/offer_trade {...}");
 		}
 	}
+	else if(sub_path == "/wallet/accept_offer") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto address = args["address"].to<addr_t>();
+			node->get_offer(address,
+				[this, request_id, address, args](const offer_data_t& offer) {
+					const auto index = args["index"].to<uint32_t>();
+					const auto options = args["options"].to<spend_options_t>();
+					wallet->accept_offer(index, address, 0, options,
+						[this, request_id](std::shared_ptr<const Transaction> tx) {
+							respond(request_id, render(tx));
+						},
+						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/accept_offer {...}");
+		}
+	}
 	else if(sub_path == "/wallet/swap/liquid") {
 		const auto iter_index = query.find("index");
 		const auto iter_limit = query.find("limit");
@@ -2342,7 +2364,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"config/get", "config/set", "farmer", "farmers",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/address_info", "wallet/coins",
-			"wallet/history", "wallet/send", "wallet/cancel_offer", "wallet/offer_withdraw", "wallet/offer_trade",
+			"wallet/history", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap_trade",
 			"farmer/info", "farmer/blocks", "farmer/proofs",
 			"node/offers", "node/trade_history"

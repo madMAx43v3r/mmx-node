@@ -58,6 +58,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	Transaction* offer_withdraw(uint index, addr_t address, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
+	Transaction* accept_offer(uint index, addr_t address, uint dst_addr, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
 	Transaction* cancel_offer(uint index, addr_t address, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)

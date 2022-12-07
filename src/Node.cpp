@@ -1028,12 +1028,14 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	if(auto height = get_tx_height(address)) {
 		out.height = *height;
 	}
+	out.owner = to_addr(data["owner"]);
 	out.bid_currency = to_addr(data["bid_currency"]);
 	out.ask_currency = to_addr(data["ask_currency"]);
 	out.bid_balance = get_balance(address, out.bid_currency);
 	out.ask_balance = get_balance(address, out.ask_currency);
 	out.inv_price = to_uint(data["inv_price"]);
 	out.price = pow(2, 64) / out.inv_price.to_double();
+	out.ask_amount = ((uint256_t(out.bid_balance) << 64) + out.inv_price - 1) / out.inv_price;
 	return out;
 }
 
