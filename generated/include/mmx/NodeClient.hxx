@@ -146,7 +146,7 @@ public:
 	
 	std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners = {}, const vnx::bool_t& state = 0);
 	
-	std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses = {}, const vnx::bool_t& state = 0);
+	std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses = {}, const vnx::bool_t& state = 0, const vnx::bool_t& closed = 0);
 	
 	std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit = 100, const vnx::bool_t& state = true);
 	

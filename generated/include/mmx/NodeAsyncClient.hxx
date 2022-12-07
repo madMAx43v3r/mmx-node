@@ -240,7 +240,7 @@ public:
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t fetch_offers(const std::vector<::mmx::addr_t>& addresses = {}, const vnx::bool_t& state = 0, 
+	uint64_t fetch_offers(const std::vector<::mmx::addr_t>& addresses = {}, const vnx::bool_t& state = 0, const vnx::bool_t& closed = 0, 
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

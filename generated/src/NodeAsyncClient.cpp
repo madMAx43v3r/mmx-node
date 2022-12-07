@@ -859,10 +859,11 @@ uint64_t NodeAsyncClient::get_offers_by(const std::vector<::mmx::addr_t>& owners
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state, const vnx::bool_t& closed, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_fetch_offers::create();
 	_method->addresses = addresses;
 	_method->state = state;
+	_method->closed = closed;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

@@ -164,7 +164,7 @@ protected:
 	virtual ::mmx::offer_data_t get_offer(const ::mmx::addr_t& address) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& state) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners, const vnx::bool_t& state) const = 0;
-	virtual std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state, const vnx::bool_t& closed) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const vnx::bool_t& state) const = 0;
 	virtual std::vector<::mmx::trade_entry_t> get_trade_history(const int32_t& limit, const uint32_t& since) const = 0;

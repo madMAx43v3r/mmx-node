@@ -1093,7 +1093,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0xfca08ee41b997129ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_fetch_offers>(_method);
 			auto _return_value = ::mmx::Node_fetch_offers_return::create();
-			_return_value->_ret_0 = fetch_offers(_args->addresses, _args->state);
+			_return_value->_ret_0 = fetch_offers(_args->addresses, _args->state, _args->closed);
 			return _return_value;
 		}
 		case 0x2d75c226dece94f8ull: {

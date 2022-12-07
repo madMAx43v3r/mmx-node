@@ -858,10 +858,11 @@ std::vector<::mmx::offer_data_t> NodeClient::get_offers_by(const std::vector<::m
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state) {
+std::vector<::mmx::offer_data_t> NodeClient::fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state, const vnx::bool_t& closed) {
 	auto _method = ::mmx::Node_fetch_offers::create();
 	_method->addresses = addresses;
 	_method->state = state;
+	_method->closed = closed;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_fetch_offers_return>(_return_value)) {
 		return _result->_ret_0;
