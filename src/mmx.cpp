@@ -653,50 +653,71 @@ int main(int argc, char** argv)
 					}
 				}
 			}
+			else if(command == "accept")
+			{
+				mmx::addr_t address;
+				vnx::read_config("$3", address);
+
+				const auto data = node.get_offer(address);
+				const auto bid_token = get_token(node, data.bid_currency);
+				const auto ask_token = get_token(node, data.ask_currency);
+
+				std::cout << "You pay:     "
+						<< mmx::to_value(data.ask_amount, ask_token->decimals) << " " << ask_token->symbol << " [" << data.ask_currency << "]" << std::endl;
+				std::cout << "You receive: "
+						<< mmx::to_value(data.bid_balance, bid_token->decimals) << " " << bid_token->symbol << " [" << data.bid_currency << "]" << std::endl;
+
+				if(pre_accept || accept_prompt()) {
+					if(wallet.is_locked(index)) {
+						spend_options.passphrase = vnx::input_password("Passphrase: ");
+					}
+					if(auto tx = wallet.accept_offer(index, address, offset, spend_options)) {
+						std::cout << "Transaction ID: " << tx->id << std::endl;
+					}
+				}
+			}
+			else if(command == "buy" || command == "sell")
+			{
+				if(ask_amount > 1) {
+					std::cerr << "Invalid ask amount: " << ask_amount << " (needs to be between 0 and 1, ie. between 0% and 100%)" << std::endl;
+					goto failed;
+				}
+				if(ask_amount < 0) {
+					ask_amount = 0.95;
+				}
+				const auto i = (command == "sell" ? 0 : 1);
+				const auto k = (i + 1) % 2;
+				const auto info = node.get_swap_info(contract);
+				const auto token_i = get_token(node, info.tokens[i]);
+				const auto token_k = get_token(node, info.tokens[k]);
+				const uint64_t deposit_amount = mmx::to_amount(amount, token_i->decimals);
+				const uint128_t expected_amount = info.get_trade_amount(i, deposit_amount);
+				if(expected_amount.upper()) {
+					throw std::logic_error("amount overflow");
+				}
+				const uint64_t min_trade_amount = expected_amount.lower() * ask_amount;
+
+				std::cout << "You send: " << mmx::to_value(deposit_amount, token_i->decimals) << " " << token_i->symbol << std::endl;
+				std::cout << "You receive at least:  " << mmx::to_value(min_trade_amount, token_k->decimals) << " " << token_k->symbol << std::endl;
+				std::cout << "You expect to receive: " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (approximately)" << std::endl;
+				std::cout << "Price: " << (command == "sell" ? double(expected_amount.lower()) / deposit_amount : double(deposit_amount) / expected_amount.lower())
+						<< " " << (command == "sell" ? token_k : token_i)->symbol << " / " << (command == "sell" ? token_i : token_k)->symbol << std::endl;
+
+				if(pre_accept || accept_prompt()) {
+					if(wallet.is_locked(index)) {
+						spend_options.passphrase = vnx::input_password("Passphrase: ");
+					}
+					if(auto tx = wallet.swap_trade(index, contract, deposit_amount, info.tokens[i], min_trade_amount, spend_options)) {
+						std::cout << "Transaction ID: " << tx->id << std::endl;
+					}
+				}
+			}
 			else if(command == "swap")
 			{
 				std::string action;
-				if(!vnx::read_config("$3", action)) {
-					std::cerr << "mmx wallet swap [buy | sell | add | remove | payout] [-a <amount>] -x <contract>" << std::endl;
-					goto failed;
-				}
-				if(action == "buy" || action == "sell")
-				{
-					if(ask_amount > 1) {
-						std::cerr << "Invalid ask amount: " << ask_amount << " (needs to be between 0 and 1, ie. between 0% and 100%)" << std::endl;
-						goto failed;
-					}
-					if(ask_amount < 0) {
-						ask_amount = 0.95;
-					}
-					const auto i = (action == "sell" ? 0 : 1);
-					const auto k = (i + 1) % 2;
-					const auto info = node.get_swap_info(contract);
-					const auto token_i = get_token(node, info.tokens[i]);
-					const auto token_k = get_token(node, info.tokens[k]);
-					const uint64_t deposit_amount = mmx::to_amount(amount, token_i->decimals);
-					const uint128_t expected_amount = info.get_trade_amount(i, deposit_amount);
-					if(expected_amount.upper()) {
-						throw std::logic_error("amount overflow");
-					}
-					const uint64_t min_trade_amount = expected_amount.lower() * ask_amount;
+				vnx::read_config("$3", action);
 
-					std::cout << "You send: " << mmx::to_value(deposit_amount, token_i->decimals) << " " << token_i->symbol << std::endl;
-					std::cout << "You receive at least:  " << mmx::to_value(min_trade_amount, token_k->decimals) << " " << token_k->symbol << std::endl;
-					std::cout << "You expect to receive: " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (approximately)" << std::endl;
-					std::cout << "Price: " << (action == "sell" ? double(expected_amount.lower()) / deposit_amount : double(deposit_amount) / expected_amount.lower())
-							<< " " << (action == "sell" ? token_k : token_i)->symbol << " / " << (action == "sell" ? token_i : token_k)->symbol << std::endl;
-
-					if(pre_accept || accept_prompt()) {
-						if(wallet.is_locked(index)) {
-							spend_options.passphrase = vnx::input_password("Passphrase: ");
-						}
-						if(auto tx = wallet.swap_trade(index, contract, deposit_amount, info.tokens[i], min_trade_amount, spend_options)) {
-							std::cout << "Transaction ID: " << tx->id << std::endl;
-						}
-					}
-				}
-				else if(action == "add")
+				if(action == "add")
 				{
 					const auto usage = "mmx wallet swap add -a <amount> -b <amount> -x <contract>";
 					std::array<uint64_t, 2> add_amount = {};
@@ -831,7 +852,7 @@ int main(int argc, char** argv)
 					std::cout << "Unlock height: " << user_info.unlock_height << std::endl;
 				}
 				else {
-					std::cerr << "mmx wallet swap [info | buy | sell | add | remove | payout] [-a <amount>] [-b <amount>] -x <contract>" << std::endl;
+					std::cerr << "mmx wallet swap [info | add | remove | payout] [-a <amount>] [-b <amount>] -x <contract>" << std::endl;
 				}
 			}
 			else if(command == "log")
@@ -889,7 +910,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | transfer | offer | trade | swap | mint | deploy | mutate | exec | create | accounts | keys | lock | unlock]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | mutate | exec | transfer | create | accounts | keys | lock | unlock]" << std::endl;
 			}
 		}
 		else if(module == "node")
