@@ -634,7 +634,7 @@ void Node::validate_new()
 	}
 }
 
-std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limit, const uint64_t select_limit)
+std::vector<Node::tx_pool_t> Node::validate_for_block()
 {
 	const auto peak = get_peak();
 	if(!peak) {
@@ -666,7 +666,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 		if(!check_tx_inclusion(entry.tx->id, context->block->height)) {
 			continue;
 		}
-		if(total_verify_cost + entry.cost <= verify_limit) {
+		if(total_verify_cost + entry.cost <= params->max_block_cost) {
 			tx_list.push_back(entry);
 			total_verify_cost += entry.cost;
 		}
@@ -722,7 +722,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const uint64_t verify_limi
 		}
 		const auto tx = entry.tx;
 
-		if(static_cost + tx->static_cost > params->max_block_size || total_cost + entry.cost > select_limit) {
+		if(static_cost + tx->static_cost > params->max_block_size || total_cost + entry.cost > params->max_block_cost) {
 			continue;
 		}
 		bool passed = true;
@@ -783,7 +783,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 
 	uint64_t total_fees = 0;
 	if(full_block) {
-		const auto tx_list = validate_for_block((3 * params->max_block_cost) / 2, params->max_block_cost);
+		const auto tx_list = validate_for_block();
 		// select transactions
 		for(const auto& entry : tx_list) {
 			block->tx_list.push_back(entry.tx);
