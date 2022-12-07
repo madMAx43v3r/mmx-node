@@ -662,7 +662,7 @@ int main(int argc, char** argv)
 				const auto bid_token = get_token(node, data.bid_currency);
 				const auto ask_token = get_token(node, data.ask_currency);
 
-				std::cout << "You pay:     "
+				std::cout << "You send:    "
 						<< mmx::to_value(data.ask_amount, ask_token->decimals) << " " << ask_token->symbol << " [" << data.ask_currency << "]" << std::endl;
 				std::cout << "You receive: "
 						<< mmx::to_value(data.bid_balance, bid_token->decimals) << " " << bid_token->symbol << " [" << data.bid_currency << "]" << std::endl;
