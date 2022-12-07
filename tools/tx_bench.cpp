@@ -20,6 +20,7 @@ int main(int argc, char** argv)
 	options["j"] = "index";
 	options["a"] = "amount";
 	options["t"] = "target";
+	options["w"] = "swap";
 	options["r"] = "fee-ratio";
 	options["x"] = "contract";
 	options["node"] = "address";
@@ -27,6 +28,7 @@ int main(int argc, char** argv)
 	options["index"] = "0";
 	options["amount"] = "1000";
 	options["target"] = "address";
+	options["swap"] = "address";
 	options["fee-ratio"] = "1";
 	options["contract"] = "address";
 
@@ -35,8 +37,9 @@ int main(int argc, char** argv)
 	vnx::init("tx_bench", argc, argv, options);
 
 	std::string node_url = ":11331";
-	std::string target_addr;
-	std::string contract_addr;
+	vnx::optional<mmx::addr_t> target;
+	vnx::optional<mmx::addr_t> swap;
+	mmx::addr_t contract;
 	int64_t index = 0;
 	int64_t amount = 1000;
 	double speed = 1;
@@ -45,9 +48,10 @@ int main(int argc, char** argv)
 	vnx::read_config("speed", speed);
 	vnx::read_config("index", index);
 	vnx::read_config("amount", amount);
-	vnx::read_config("target", target_addr);
+	vnx::read_config("target", target);
+	vnx::read_config("swap", swap);
 	vnx::read_config("fee-ratio", fee_ratio);
-	vnx::read_config("contract", contract_addr);
+	vnx::read_config("contract", contract);
 
 	const int64_t interval = 1e6 / speed;
 
@@ -56,14 +60,6 @@ int main(int argc, char** argv)
 	mmx::NodeClient node("Node");
 	mmx::WalletClient wallet("Wallet");
 
-	mmx::addr_t target;
-	mmx::addr_t contract;
-	if(!target_addr.empty()) {
-		target.from_string(target_addr);
-	}
-	if(!contract_addr.empty()) {
-		contract.from_string(contract_addr);
-	}
 	{
 		vnx::Handle<vnx::Proxy> module = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 		module->forward_list = {"Wallet", "Node"};
@@ -79,7 +75,12 @@ int main(int argc, char** argv)
 	while(true)
 	{
 		try {
-			wallet.send(index, amount, target, contract, spend_options);
+			if(target) {
+				wallet.send(index, amount, *target, contract, spend_options);
+			}
+			if(swap) {
+				wallet.swap_trade(index, *swap, amount, contract, nullptr, spend_options);
+			}
 			counter++;
 			total++;
 		} catch(...) {
