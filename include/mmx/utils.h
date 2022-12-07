@@ -85,8 +85,7 @@ uint64_t to_amount_exact(const double value, const int decimals)
 		throw std::runtime_error("invalid amount: " + std::to_string(value));
 	}
 	if(fmod(amount, 1)) {
-		throw std::invalid_argument("cannot represent value: "
-				+ std::to_string(value) + " -> " + std::to_string(to_value(amount, decimals)));
+		throw std::invalid_argument("cannot represent value: " + std::to_string(value));
 	}
 	return amount;
 }
