@@ -66,18 +66,6 @@ void Node::pre_validate_blocks()
 			}
 			// need to verify farmer_sig before adding to fork tree
 			block->validate();
-
-			// compute balance deltas
-			for(const auto& tx : block->get_all_transactions()) {
-				if(!tx->did_fail()) {
-					for(const auto& out : tx->get_outputs()) {
-						fork->balance.added[std::make_pair(out.address, out.contract)] += out.amount;
-					}
-					for(const auto& in : tx->get_inputs()) {
-						fork->balance.removed[std::make_pair(in.address, in.contract)] += in.amount;
-					}
-				}
-			}
 		}
 		catch(const std::exception& ex) {
 			fork->is_invalid = true;
@@ -117,7 +105,9 @@ void Node::verify_block_proofs()
 				fork->diff_block = find_diff_header(block);
 			}
 			if(auto prev = fork->prev.lock()) {
-				fork->is_invalid = prev->is_invalid;
+				if(prev->is_invalid) {
+					fork->is_invalid = true;
+				}
 				fork->is_connected = prev->is_connected;
 			} else if(block->prev == root->hash) {
 				fork->is_connected = true;
@@ -446,7 +436,9 @@ void Node::update()
 			auto value = Challenge::create();
 			value->height = peak->height + i;
 			value->challenge = get_challenge(peak, vdf_block->vdf_output[1], i);
-			value->space_diff = get_diff_header(peak, i)->space_diff;
+			const auto diff_block = get_diff_header(peak, i);
+			value->space_diff = diff_block->space_diff;
+			value->diff_block_hash = diff_block->hash;
 			publish(value, output_challenges);
 		}
 	}

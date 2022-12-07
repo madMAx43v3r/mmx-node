@@ -129,17 +129,19 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 	uint128 balance = 0;
 	balance_table.find(key, balance, std::min(root->height, block->height));
 
-	for(const auto& fork : get_fork_line(head)) {
-		{
-			auto iter = fork->balance.added.find(key);
-			if(iter != fork->balance.added.end()) {
-				balance += iter->second;
+	if(head) {
+		for(const auto& fork : get_fork_line(head)) {
+			{
+				auto iter = fork->balance.added.find(key);
+				if(iter != fork->balance.added.end()) {
+					balance += iter->second;
+				}
 			}
-		}
-		{
-			auto iter = fork->balance.removed.find(key);
-			if(iter != fork->balance.removed.end()) {
-				clamped_sub_assign(balance, iter->second);
+			{
+				auto iter = fork->balance.removed.find(key);
+				if(iter != fork->balance.removed.end()) {
+					clamped_sub_assign(balance, iter->second);
+				}
 			}
 		}
 	}
@@ -188,7 +190,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		}
 		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
 		if(balance == 0) {
-			throw std::logic_error("virtual plot (still) has zero balance: " + stake->contract.to_string());
+			throw std::logic_error("virtual plot has zero balance: " + stake->contract.to_string());
 		}
 		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
 	}

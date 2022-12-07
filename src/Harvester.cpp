@@ -110,10 +110,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	for(const auto& entry : virtual_map)
 	{
-		if(entry.second.balance) {
-			if(check_plot_filter(params, value->challenge, entry.first)) {
-				virtual_plots.push_back(entry);
-			}
+		if(check_plot_filter(params, value->challenge, entry.first)) {
+			virtual_plots.push_back(entry);
 		}
 	}
 	std::vector<std::vector<uint256_t>> scores(plots.size());
@@ -154,15 +152,18 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 	for(const auto& entry : virtual_plots)
 	{
-		const auto score = calc_virtual_score(params, value->challenge, entry.first, entry.second.balance, value->space_diff);
-		if(score < params->score_threshold) {
-			if(score < best_score) {
-				best_plot = nullptr;
-				best_vplot = entry;
+		const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
+		if(balance) {
+			const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
+			if(score < params->score_threshold) {
+				if(score < best_score) {
+					best_plot = nullptr;
+					best_vplot = entry;
+				}
 			}
-		}
-		if(score < best_score) {
-			best_score = score;
+			if(score < best_score) {
+				best_score = score;
+			}
 		}
 	}
 
