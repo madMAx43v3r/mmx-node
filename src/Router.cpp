@@ -78,8 +78,8 @@ void Router::main()
 			throw std::logic_error("min_sync_peers > max_connections");
 		}
 	}
-	tx_upload_bandwidth = max_tx_upload * to_value(params->max_block_cost, params) / params->block_time;
-	max_pending_cost_value = max_pending_cost * to_value(params->max_block_cost, params);
+	tx_upload_bandwidth = max_tx_upload * to_value(params->max_block_size, params) / params->block_time;
+	max_pending_cost_value = max_pending_cost * to_value(params->max_block_size, params);
 
 	log(INFO) << "Global TX upload limit: " << tx_upload_bandwidth << " MMX/s";
 	log(INFO) << "Peer TX pending limit: " << max_pending_cost_value << " MMX";
