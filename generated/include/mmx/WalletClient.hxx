@@ -21,6 +21,7 @@
 #include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/Object.hpp>
 #include <vnx/Variant.hpp>
@@ -120,6 +121,8 @@ public:
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr);
 	
 	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr);
+	
+	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const uint32_t& index = 0);
 	
 	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& index = 0, const vnx::bool_t& state = 0);
 	

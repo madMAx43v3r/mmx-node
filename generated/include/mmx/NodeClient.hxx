@@ -27,6 +27,7 @@
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/vm/varptr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -134,9 +135,11 @@ public:
 	
 	::mmx::address_info_t get_address_info(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& address = {}, const int32_t& since = 0);
+	std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses = {}, const int32_t& since = 0);
 	
-	std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key = ::mmx::bls_pubkey_t());
+	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses = {});
+	
+	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key = ::mmx::bls_pubkey_t());
 	
 	uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id = ::mmx::addr_t(), const vnx::optional<::mmx::hash_t>& block_hash = nullptr);
 	

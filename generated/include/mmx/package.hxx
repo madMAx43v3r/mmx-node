@@ -206,6 +206,8 @@ class Node_get_tx_info_for;
 class Node_get_tx_info_for_return;
 class Node_get_virtual_plot_balance;
 class Node_get_virtual_plot_balance_return;
+class Node_get_virtual_plots;
+class Node_get_virtual_plots_return;
 class Node_get_virtual_plots_for;
 class Node_get_virtual_plots_for_return;
 class Node_read_storage;
@@ -421,6 +423,8 @@ class Wallet_get_total_balances;
 class Wallet_get_total_balances_return;
 class Wallet_get_tx_log;
 class Wallet_get_tx_log_return;
+class Wallet_get_virtual_plots;
+class Wallet_get_virtual_plots_return;
 class Wallet_is_locked;
 class Wallet_is_locked_return;
 class Wallet_lock;
@@ -508,6 +512,7 @@ struct txout_t;
 class uint128;
 struct uint_fraction_t;
 struct ulong_fraction_t;
+struct virtual_plot_info_t;
 
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Block; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Block_calc_tx_hash; ///< \private
@@ -693,6 +698,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_in
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage; ///< \private
@@ -908,6 +915,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tot
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_total_balances_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tx_log; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tx_log_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_virtual_plots; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_get_virtual_plots_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_is_locked; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_is_locked_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_lock; ///< \private
@@ -987,6 +996,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_txio_t; ///< \
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_txout_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_uint_fraction_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ulong_fraction_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_virtual_plot_info_t; ///< \private
 
 } // namespace mmx
 
@@ -1177,6 +1187,8 @@ void read(TypeInput& in, ::mmx::Node_get_tx_info_for& value, const TypeCode* typ
 void read(TypeInput& in, ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plot_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plot_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_virtual_plots& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1392,6 +1404,8 @@ void read(TypeInput& in, ::mmx::Wallet_get_total_balances& value, const TypeCode
 void read(TypeInput& in, ::mmx::Wallet_get_total_balances_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_get_tx_log& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_get_tx_log_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Wallet_get_virtual_plots& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Wallet_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_is_locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_lock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1479,6 +1493,7 @@ void read(TypeInput& in, ::mmx::txout_t& value, const TypeCode* type_code, const
 void read(TypeInput& in, ::mmx::uint128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::uint_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ulong_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::virtual_plot_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void write(TypeOutput& out, const ::mmx::Block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Block_calc_tx_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1664,6 +1679,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for& value, const Type
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plot_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plot_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1879,6 +1896,8 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_total_balances& value, const
 void write(TypeOutput& out, const ::mmx::Wallet_get_total_balances_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_get_tx_log& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_get_tx_log_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Wallet_get_virtual_plots& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Wallet_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_is_locked& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_lock& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1966,6 +1985,7 @@ void write(TypeOutput& out, const ::mmx::txout_t& value, const TypeCode* type_co
 void write(TypeOutput& out, const ::mmx::uint128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::uint_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ulong_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::virtual_plot_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void read(std::istream& in, ::mmx::Block& value); ///< \private
 void read(std::istream& in, ::mmx::Block_calc_tx_hash& value); ///< \private
@@ -2151,6 +2171,8 @@ void read(std::istream& in, ::mmx::Node_get_tx_info_for& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_virtual_plots& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_virtual_plots_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage& value); ///< \private
@@ -2366,6 +2388,8 @@ void read(std::istream& in, ::mmx::Wallet_get_total_balances& value); ///< \priv
 void read(std::istream& in, ::mmx::Wallet_get_total_balances_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_get_tx_log& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_get_tx_log_return& value); ///< \private
+void read(std::istream& in, ::mmx::Wallet_get_virtual_plots& value); ///< \private
+void read(std::istream& in, ::mmx::Wallet_get_virtual_plots_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_is_locked& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_is_locked_return& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_lock& value); ///< \private
@@ -2453,6 +2477,7 @@ void read(std::istream& in, ::mmx::txout_t& value); ///< \private
 void read(std::istream& in, ::mmx::uint128& value); ///< \private
 void read(std::istream& in, ::mmx::uint_fraction_t& value); ///< \private
 void read(std::istream& in, ::mmx::ulong_fraction_t& value); ///< \private
+void read(std::istream& in, ::mmx::virtual_plot_info_t& value); ///< \private
 
 void write(std::ostream& out, const ::mmx::Block& value); ///< \private
 void write(std::ostream& out, const ::mmx::Block_calc_tx_hash& value); ///< \private
@@ -2638,6 +2663,8 @@ void write(std::ostream& out, const ::mmx::Node_get_tx_info_for& value); ///< \p
 void write(std::ostream& out, const ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_virtual_plots& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage& value); ///< \private
@@ -2853,6 +2880,8 @@ void write(std::ostream& out, const ::mmx::Wallet_get_total_balances& value); //
 void write(std::ostream& out, const ::mmx::Wallet_get_total_balances_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_get_tx_log& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_get_tx_log_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Wallet_get_virtual_plots& value); ///< \private
+void write(std::ostream& out, const ::mmx::Wallet_get_virtual_plots_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_is_locked& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_is_locked_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_lock& value); ///< \private
@@ -2940,6 +2969,7 @@ void write(std::ostream& out, const ::mmx::txout_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::uint128& value); ///< \private
 void write(std::ostream& out, const ::mmx::uint_fraction_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::ulong_fraction_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::virtual_plot_info_t& value); ///< \private
 
 void accept(Visitor& visitor, const ::mmx::Block& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Block_calc_tx_hash& value); ///< \private
@@ -3125,6 +3155,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for& value); ///< \p
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plot_balance& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plot_balance_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage& value); ///< \private
@@ -3340,6 +3372,8 @@ void accept(Visitor& visitor, const ::mmx::Wallet_get_total_balances& value); //
 void accept(Visitor& visitor, const ::mmx::Wallet_get_total_balances_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_get_tx_log& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_get_tx_log_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Wallet_get_virtual_plots& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Wallet_get_virtual_plots_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_is_locked& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_is_locked_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_lock& value); ///< \private
@@ -3427,6 +3461,7 @@ void accept(Visitor& visitor, const ::mmx::txout_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::uint128& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::uint_fraction_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ulong_fraction_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::virtual_plot_info_t& value); ///< \private
 
 /// \private
 template<>
@@ -7649,6 +7684,52 @@ struct type<::mmx::Node_get_virtual_plot_balance_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plot_balance_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_virtual_plots> {
+	void read(TypeInput& in, ::mmx::Node_get_virtual_plots& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_virtual_plots& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_virtual_plots& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_virtual_plots_return> {
+	void read(TypeInput& in, ::mmx::Node_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_virtual_plots_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_return& value, bool special = false);
 };
 
 /// \private
@@ -12586,6 +12667,52 @@ struct type<::mmx::Wallet_get_tx_log_return> {
 
 /// \private
 template<>
+struct type<::mmx::Wallet_get_virtual_plots> {
+	void read(TypeInput& in, ::mmx::Wallet_get_virtual_plots& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Wallet_get_virtual_plots& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Wallet_get_virtual_plots& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Wallet_get_virtual_plots& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Wallet_get_virtual_plots& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_virtual_plots& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Wallet_get_virtual_plots_return> {
+	void read(TypeInput& in, ::mmx::Wallet_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Wallet_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Wallet_get_virtual_plots_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Wallet_get_virtual_plots_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Wallet_get_virtual_plots_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_virtual_plots_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::Wallet_is_locked> {
 	void read(TypeInput& in, ::mmx::Wallet_is_locked& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -14580,6 +14707,29 @@ struct type<::mmx::ulong_fraction_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ulong_fraction_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::virtual_plot_info_t> {
+	void read(TypeInput& in, ::mmx::virtual_plot_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::virtual_plot_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::virtual_plot_info_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::virtual_plot_info_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::virtual_plot_info_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::virtual_plot_info_t& value, bool special = false);
 };
 
 

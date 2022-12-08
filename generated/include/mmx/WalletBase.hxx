@@ -21,6 +21,7 @@
 #include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/Object.hpp>
 #include <vnx/Variant.hpp>
@@ -117,6 +118,7 @@ protected:
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index, const vnx::optional<std::string>& type_name) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index, const vnx::optional<std::string>& type_name) const = 0;
+	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const uint32_t& index) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const = 0;
 	virtual std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity(const uint32_t& index) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;

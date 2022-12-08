@@ -73,6 +73,8 @@
 #include <mmx/Wallet_get_total_balances_return.hxx>
 #include <mmx/Wallet_get_tx_log.hxx>
 #include <mmx/Wallet_get_tx_log_return.hxx>
+#include <mmx/Wallet_get_virtual_plots.hxx>
+#include <mmx/Wallet_get_virtual_plots_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
 #include <mmx/Wallet_is_locked_return.hxx>
 #include <mmx/Wallet_lock.hxx>
@@ -133,6 +135,7 @@
 #include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
@@ -714,6 +717,19 @@ uint64_t WalletAsyncClient::get_contracts_owned(const uint32_t& index, const vnx
 	return _request_id;
 }
 
+uint64_t WalletAsyncClient::get_virtual_plots(const uint32_t& index, const std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Wallet_get_virtual_plots::create();
+	_method->index = index;
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 35;
+		vnx_queue_get_virtual_plots[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
 uint64_t WalletAsyncClient::get_offers(const uint32_t& index, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_offers::create();
 	_method->index = index;
@@ -721,7 +737,7 @@ uint64_t WalletAsyncClient::get_offers(const uint32_t& index, const vnx::bool_t&
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 35;
+		vnx_pending[_request_id] = 36;
 		vnx_queue_get_offers[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -734,7 +750,7 @@ uint64_t WalletAsyncClient::get_swap_liquidity(const uint32_t& index, const std:
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 36;
+		vnx_pending[_request_id] = 37;
 		vnx_queue_get_swap_liquidity[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -748,7 +764,7 @@ uint64_t WalletAsyncClient::get_address(const uint32_t& index, const uint32_t& o
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 37;
+		vnx_pending[_request_id] = 38;
 		vnx_queue_get_address[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -761,7 +777,7 @@ uint64_t WalletAsyncClient::get_all_addresses(const int32_t& index, const std::f
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 38;
+		vnx_pending[_request_id] = 39;
 		vnx_queue_get_all_addresses[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -775,7 +791,7 @@ uint64_t WalletAsyncClient::get_address_info(const uint32_t& index, const uint32
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 39;
+		vnx_pending[_request_id] = 40;
 		vnx_queue_get_address_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -788,7 +804,7 @@ uint64_t WalletAsyncClient::get_all_address_infos(const int32_t& index, const st
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 40;
+		vnx_pending[_request_id] = 41;
 		vnx_queue_get_all_address_infos[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -801,7 +817,7 @@ uint64_t WalletAsyncClient::get_account(const uint32_t& index, const std::functi
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 41;
+		vnx_pending[_request_id] = 42;
 		vnx_queue_get_account[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -813,7 +829,7 @@ uint64_t WalletAsyncClient::get_all_accounts(const std::function<void(const std:
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 42;
+		vnx_pending[_request_id] = 43;
 		vnx_queue_get_all_accounts[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -826,7 +842,7 @@ uint64_t WalletAsyncClient::is_locked(const uint32_t& index, const std::function
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 43;
+		vnx_pending[_request_id] = 44;
 		vnx_queue_is_locked[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -839,7 +855,7 @@ uint64_t WalletAsyncClient::lock(const uint32_t& index, const std::function<void
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 44;
+		vnx_pending[_request_id] = 45;
 		vnx_queue_lock[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -853,7 +869,7 @@ uint64_t WalletAsyncClient::unlock(const uint32_t& index, const std::string& pas
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 45;
+		vnx_pending[_request_id] = 46;
 		vnx_queue_unlock[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -868,7 +884,7 @@ uint64_t WalletAsyncClient::add_account(const uint32_t& index, const ::mmx::acco
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 46;
+		vnx_pending[_request_id] = 47;
 		vnx_queue_add_account[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -882,7 +898,7 @@ uint64_t WalletAsyncClient::create_account(const ::mmx::account_t& config, const
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 47;
+		vnx_pending[_request_id] = 48;
 		vnx_queue_create_account[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -897,7 +913,7 @@ uint64_t WalletAsyncClient::create_wallet(const ::mmx::account_t& config, const 
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 48;
+		vnx_pending[_request_id] = 49;
 		vnx_queue_create_wallet[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -910,7 +926,7 @@ uint64_t WalletAsyncClient::get_mnemonic_wordlist(const std::string& lang, const
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 49;
+		vnx_pending[_request_id] = 50;
 		vnx_queue_get_mnemonic_wordlist[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -922,7 +938,7 @@ uint64_t WalletAsyncClient::get_token_list(const std::function<void(const std::s
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 50;
+		vnx_pending[_request_id] = 51;
 		vnx_queue_get_token_list[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -935,7 +951,7 @@ uint64_t WalletAsyncClient::add_token(const ::mmx::addr_t& address, const std::f
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 51;
+		vnx_pending[_request_id] = 52;
 		vnx_queue_add_token[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -948,7 +964,7 @@ uint64_t WalletAsyncClient::rem_token(const ::mmx::addr_t& address, const std::f
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 52;
+		vnx_pending[_request_id] = 53;
 		vnx_queue_rem_token[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -961,7 +977,7 @@ uint64_t WalletAsyncClient::get_master_seed(const uint32_t& index, const std::fu
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 53;
+		vnx_pending[_request_id] = 54;
 		vnx_queue_get_master_seed[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -974,7 +990,7 @@ uint64_t WalletAsyncClient::get_mnemonic_seed(const uint32_t& index, const std::
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 54;
+		vnx_pending[_request_id] = 55;
 		vnx_queue_get_mnemonic_seed[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -987,7 +1003,7 @@ uint64_t WalletAsyncClient::get_farmer_keys(const uint32_t& index, const std::fu
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 55;
+		vnx_pending[_request_id] = 56;
 		vnx_queue_get_farmer_keys[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -999,7 +1015,7 @@ uint64_t WalletAsyncClient::get_all_farmer_keys(const std::function<void(const s
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 56;
+		vnx_pending[_request_id] = 57;
 		vnx_queue_get_all_farmer_keys[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1013,7 +1029,7 @@ uint64_t WalletAsyncClient::http_request(std::shared_ptr<const ::vnx::addons::Ht
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 57;
+		vnx_pending[_request_id] = 58;
 		vnx_queue_http_request[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1029,7 +1045,7 @@ uint64_t WalletAsyncClient::http_request_chunk(std::shared_ptr<const ::vnx::addo
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 58;
+		vnx_pending[_request_id] = 59;
 		vnx_queue_http_request_chunk[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1041,7 +1057,7 @@ uint64_t WalletAsyncClient::vnx_get_config_object(const std::function<void(const
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 59;
+		vnx_pending[_request_id] = 60;
 		vnx_queue_vnx_get_config_object[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1054,7 +1070,7 @@ uint64_t WalletAsyncClient::vnx_get_config(const std::string& name, const std::f
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 60;
+		vnx_pending[_request_id] = 61;
 		vnx_queue_vnx_get_config[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1067,7 +1083,7 @@ uint64_t WalletAsyncClient::vnx_set_config_object(const ::vnx::Object& config, c
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 61;
+		vnx_pending[_request_id] = 62;
 		vnx_queue_vnx_set_config_object[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1081,7 +1097,7 @@ uint64_t WalletAsyncClient::vnx_set_config(const std::string& name, const ::vnx:
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 62;
+		vnx_pending[_request_id] = 63;
 		vnx_queue_vnx_set_config[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1093,7 +1109,7 @@ uint64_t WalletAsyncClient::vnx_get_type_code(const std::function<void(const ::v
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 63;
+		vnx_pending[_request_id] = 64;
 		vnx_queue_vnx_get_type_code[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1105,7 +1121,7 @@ uint64_t WalletAsyncClient::vnx_get_module_info(const std::function<void(std::sh
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 64;
+		vnx_pending[_request_id] = 65;
 		vnx_queue_vnx_get_module_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1117,7 +1133,7 @@ uint64_t WalletAsyncClient::vnx_restart(const std::function<void()>& _callback, 
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 65;
+		vnx_pending[_request_id] = 66;
 		vnx_queue_vnx_restart[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1129,7 +1145,7 @@ uint64_t WalletAsyncClient::vnx_stop(const std::function<void()>& _callback, con
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 66;
+		vnx_pending[_request_id] = 67;
 		vnx_queue_vnx_stop[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1141,7 +1157,7 @@ uint64_t WalletAsyncClient::vnx_self_test(const std::function<void(const vnx::bo
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 67;
+		vnx_pending[_request_id] = 68;
 		vnx_queue_vnx_self_test[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1578,6 +1594,18 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			break;
 		}
 		case 35: {
+			const auto _iter = vnx_queue_get_virtual_plots.find(_request_id);
+			if(_iter != vnx_queue_get_virtual_plots.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_get_virtual_plots.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 36: {
 			const auto _iter = vnx_queue_get_offers.find(_request_id);
 			if(_iter != vnx_queue_get_offers.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1589,7 +1617,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 36: {
+		case 37: {
 			const auto _iter = vnx_queue_get_swap_liquidity.find(_request_id);
 			if(_iter != vnx_queue_get_swap_liquidity.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1601,7 +1629,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 37: {
+		case 38: {
 			const auto _iter = vnx_queue_get_address.find(_request_id);
 			if(_iter != vnx_queue_get_address.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1613,7 +1641,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 38: {
+		case 39: {
 			const auto _iter = vnx_queue_get_all_addresses.find(_request_id);
 			if(_iter != vnx_queue_get_all_addresses.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1625,7 +1653,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 39: {
+		case 40: {
 			const auto _iter = vnx_queue_get_address_info.find(_request_id);
 			if(_iter != vnx_queue_get_address_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1637,7 +1665,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 40: {
+		case 41: {
 			const auto _iter = vnx_queue_get_all_address_infos.find(_request_id);
 			if(_iter != vnx_queue_get_all_address_infos.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1649,7 +1677,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 41: {
+		case 42: {
 			const auto _iter = vnx_queue_get_account.find(_request_id);
 			if(_iter != vnx_queue_get_account.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1661,7 +1689,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 42: {
+		case 43: {
 			const auto _iter = vnx_queue_get_all_accounts.find(_request_id);
 			if(_iter != vnx_queue_get_all_accounts.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1673,7 +1701,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 43: {
+		case 44: {
 			const auto _iter = vnx_queue_is_locked.find(_request_id);
 			if(_iter != vnx_queue_is_locked.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1685,7 +1713,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 44: {
+		case 45: {
 			const auto _iter = vnx_queue_lock.find(_request_id);
 			if(_iter != vnx_queue_lock.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1697,7 +1725,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 45: {
+		case 46: {
 			const auto _iter = vnx_queue_unlock.find(_request_id);
 			if(_iter != vnx_queue_unlock.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1709,7 +1737,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 46: {
+		case 47: {
 			const auto _iter = vnx_queue_add_account.find(_request_id);
 			if(_iter != vnx_queue_add_account.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1721,7 +1749,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 47: {
+		case 48: {
 			const auto _iter = vnx_queue_create_account.find(_request_id);
 			if(_iter != vnx_queue_create_account.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1733,7 +1761,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 48: {
+		case 49: {
 			const auto _iter = vnx_queue_create_wallet.find(_request_id);
 			if(_iter != vnx_queue_create_wallet.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1745,7 +1773,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 49: {
+		case 50: {
 			const auto _iter = vnx_queue_get_mnemonic_wordlist.find(_request_id);
 			if(_iter != vnx_queue_get_mnemonic_wordlist.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1757,7 +1785,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 50: {
+		case 51: {
 			const auto _iter = vnx_queue_get_token_list.find(_request_id);
 			if(_iter != vnx_queue_get_token_list.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1769,7 +1797,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 51: {
+		case 52: {
 			const auto _iter = vnx_queue_add_token.find(_request_id);
 			if(_iter != vnx_queue_add_token.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1781,7 +1809,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 52: {
+		case 53: {
 			const auto _iter = vnx_queue_rem_token.find(_request_id);
 			if(_iter != vnx_queue_rem_token.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1793,7 +1821,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 53: {
+		case 54: {
 			const auto _iter = vnx_queue_get_master_seed.find(_request_id);
 			if(_iter != vnx_queue_get_master_seed.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1805,7 +1833,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 54: {
+		case 55: {
 			const auto _iter = vnx_queue_get_mnemonic_seed.find(_request_id);
 			if(_iter != vnx_queue_get_mnemonic_seed.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1817,7 +1845,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 55: {
+		case 56: {
 			const auto _iter = vnx_queue_get_farmer_keys.find(_request_id);
 			if(_iter != vnx_queue_get_farmer_keys.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1829,7 +1857,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 56: {
+		case 57: {
 			const auto _iter = vnx_queue_get_all_farmer_keys.find(_request_id);
 			if(_iter != vnx_queue_get_all_farmer_keys.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1841,7 +1869,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 57: {
+		case 58: {
 			const auto _iter = vnx_queue_http_request.find(_request_id);
 			if(_iter != vnx_queue_http_request.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1853,7 +1881,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 58: {
+		case 59: {
 			const auto _iter = vnx_queue_http_request_chunk.find(_request_id);
 			if(_iter != vnx_queue_http_request_chunk.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1865,7 +1893,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 59: {
+		case 60: {
 			const auto _iter = vnx_queue_vnx_get_config_object.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_config_object.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1877,7 +1905,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 60: {
+		case 61: {
 			const auto _iter = vnx_queue_vnx_get_config.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_config.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1889,7 +1917,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 61: {
+		case 62: {
 			const auto _iter = vnx_queue_vnx_set_config_object.find(_request_id);
 			if(_iter != vnx_queue_vnx_set_config_object.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1901,7 +1929,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 62: {
+		case 63: {
 			const auto _iter = vnx_queue_vnx_set_config.find(_request_id);
 			if(_iter != vnx_queue_vnx_set_config.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1913,7 +1941,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 63: {
+		case 64: {
 			const auto _iter = vnx_queue_vnx_get_type_code.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_type_code.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1925,7 +1953,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 64: {
+		case 65: {
 			const auto _iter = vnx_queue_vnx_get_module_info.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_module_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1937,7 +1965,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 65: {
+		case 66: {
 			const auto _iter = vnx_queue_vnx_restart.find(_request_id);
 			if(_iter != vnx_queue_vnx_restart.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1949,7 +1977,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 66: {
+		case 67: {
 			const auto _iter = vnx_queue_vnx_stop.find(_request_id);
 			if(_iter != vnx_queue_vnx_stop.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1961,7 +1989,7 @@ int32_t WalletAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::ex
 			}
 			break;
 		}
-		case 67: {
+		case 68: {
 			const auto _iter = vnx_queue_vnx_self_test.find(_request_id);
 			if(_iter != vnx_queue_vnx_self_test.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2610,6 +2638,25 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			break;
 		}
 		case 35: {
+			const auto _iter = vnx_queue_get_virtual_plots.find(_request_id);
+			if(_iter == vnx_queue_get_virtual_plots.end()) {
+				throw std::runtime_error("WalletAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_get_virtual_plots.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_virtual_plots_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::virtual_plot_info_t>>());
+				} else {
+					throw std::logic_error("WalletAsyncClient: invalid return value");
+				}
+			}
+			break;
+		}
+		case 36: {
 			const auto _iter = vnx_queue_get_offers.find(_request_id);
 			if(_iter == vnx_queue_get_offers.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2628,7 +2675,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 36: {
+		case 37: {
 			const auto _iter = vnx_queue_get_swap_liquidity.find(_request_id);
 			if(_iter == vnx_queue_get_swap_liquidity.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2647,7 +2694,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 37: {
+		case 38: {
 			const auto _iter = vnx_queue_get_address.find(_request_id);
 			if(_iter == vnx_queue_get_address.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2666,7 +2713,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 38: {
+		case 39: {
 			const auto _iter = vnx_queue_get_all_addresses.find(_request_id);
 			if(_iter == vnx_queue_get_all_addresses.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2685,7 +2732,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 39: {
+		case 40: {
 			const auto _iter = vnx_queue_get_address_info.find(_request_id);
 			if(_iter == vnx_queue_get_address_info.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2704,7 +2751,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 40: {
+		case 41: {
 			const auto _iter = vnx_queue_get_all_address_infos.find(_request_id);
 			if(_iter == vnx_queue_get_all_address_infos.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2723,7 +2770,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 41: {
+		case 42: {
 			const auto _iter = vnx_queue_get_account.find(_request_id);
 			if(_iter == vnx_queue_get_account.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2742,7 +2789,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 42: {
+		case 43: {
 			const auto _iter = vnx_queue_get_all_accounts.find(_request_id);
 			if(_iter == vnx_queue_get_all_accounts.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2761,7 +2808,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 43: {
+		case 44: {
 			const auto _iter = vnx_queue_is_locked.find(_request_id);
 			if(_iter == vnx_queue_is_locked.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2780,7 +2827,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 44: {
+		case 45: {
 			const auto _iter = vnx_queue_lock.find(_request_id);
 			if(_iter == vnx_queue_lock.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2793,7 +2840,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 45: {
+		case 46: {
 			const auto _iter = vnx_queue_unlock.find(_request_id);
 			if(_iter == vnx_queue_unlock.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2806,7 +2853,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 46: {
+		case 47: {
 			const auto _iter = vnx_queue_add_account.find(_request_id);
 			if(_iter == vnx_queue_add_account.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2819,7 +2866,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 47: {
+		case 48: {
 			const auto _iter = vnx_queue_create_account.find(_request_id);
 			if(_iter == vnx_queue_create_account.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2832,7 +2879,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 48: {
+		case 49: {
 			const auto _iter = vnx_queue_create_wallet.find(_request_id);
 			if(_iter == vnx_queue_create_wallet.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2845,7 +2892,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 49: {
+		case 50: {
 			const auto _iter = vnx_queue_get_mnemonic_wordlist.find(_request_id);
 			if(_iter == vnx_queue_get_mnemonic_wordlist.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2864,7 +2911,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 50: {
+		case 51: {
 			const auto _iter = vnx_queue_get_token_list.find(_request_id);
 			if(_iter == vnx_queue_get_token_list.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2883,7 +2930,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 51: {
+		case 52: {
 			const auto _iter = vnx_queue_add_token.find(_request_id);
 			if(_iter == vnx_queue_add_token.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2896,7 +2943,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 52: {
+		case 53: {
 			const auto _iter = vnx_queue_rem_token.find(_request_id);
 			if(_iter == vnx_queue_rem_token.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2909,7 +2956,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 53: {
+		case 54: {
 			const auto _iter = vnx_queue_get_master_seed.find(_request_id);
 			if(_iter == vnx_queue_get_master_seed.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2928,7 +2975,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 54: {
+		case 55: {
 			const auto _iter = vnx_queue_get_mnemonic_seed.find(_request_id);
 			if(_iter == vnx_queue_get_mnemonic_seed.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2947,7 +2994,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 55: {
+		case 56: {
 			const auto _iter = vnx_queue_get_farmer_keys.find(_request_id);
 			if(_iter == vnx_queue_get_farmer_keys.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2966,7 +3013,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 56: {
+		case 57: {
 			const auto _iter = vnx_queue_get_all_farmer_keys.find(_request_id);
 			if(_iter == vnx_queue_get_all_farmer_keys.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -2985,7 +3032,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 57: {
+		case 58: {
 			const auto _iter = vnx_queue_http_request.find(_request_id);
 			if(_iter == vnx_queue_http_request.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3004,7 +3051,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 58: {
+		case 59: {
 			const auto _iter = vnx_queue_http_request_chunk.find(_request_id);
 			if(_iter == vnx_queue_http_request_chunk.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3023,7 +3070,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 59: {
+		case 60: {
 			const auto _iter = vnx_queue_vnx_get_config_object.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_config_object.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3042,7 +3089,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 60: {
+		case 61: {
 			const auto _iter = vnx_queue_vnx_get_config.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_config.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3061,7 +3108,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 61: {
+		case 62: {
 			const auto _iter = vnx_queue_vnx_set_config_object.find(_request_id);
 			if(_iter == vnx_queue_vnx_set_config_object.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3074,7 +3121,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 62: {
+		case 63: {
 			const auto _iter = vnx_queue_vnx_set_config.find(_request_id);
 			if(_iter == vnx_queue_vnx_set_config.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3087,7 +3134,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 63: {
+		case 64: {
 			const auto _iter = vnx_queue_vnx_get_type_code.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_type_code.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3106,7 +3153,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 64: {
+		case 65: {
 			const auto _iter = vnx_queue_vnx_get_module_info.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_module_info.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3125,7 +3172,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 65: {
+		case 66: {
 			const auto _iter = vnx_queue_vnx_restart.find(_request_id);
 			if(_iter == vnx_queue_vnx_restart.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3138,7 +3185,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 66: {
+		case 67: {
 			const auto _iter = vnx_queue_vnx_stop.find(_request_id);
 			if(_iter == vnx_queue_vnx_stop.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");
@@ -3151,7 +3198,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 			}
 			break;
 		}
-		case 67: {
+		case 68: {
 			const auto _iter = vnx_queue_vnx_self_test.find(_request_id);
 			if(_iter == vnx_queue_vnx_self_test.end()) {
 				throw std::runtime_error("WalletAsyncClient: callback not found");

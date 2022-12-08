@@ -185,6 +185,8 @@
 #include <mmx/Node_get_tx_info_for_return.hxx>
 #include <mmx/Node_get_virtual_plot_balance.hxx>
 #include <mmx/Node_get_virtual_plot_balance_return.hxx>
+#include <mmx/Node_get_virtual_plots.hxx>
+#include <mmx/Node_get_virtual_plots_return.hxx>
 #include <mmx/Node_get_virtual_plots_for.hxx>
 #include <mmx/Node_get_virtual_plots_for_return.hxx>
 #include <mmx/Node_read_storage.hxx>
@@ -400,6 +402,8 @@
 #include <mmx/Wallet_get_total_balances_return.hxx>
 #include <mmx/Wallet_get_tx_log.hxx>
 #include <mmx/Wallet_get_tx_log_return.hxx>
+#include <mmx/Wallet_get_virtual_plots.hxx>
+#include <mmx/Wallet_get_virtual_plots_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
 #include <mmx/Wallet_is_locked_return.hxx>
 #include <mmx/Wallet_lock.hxx>
@@ -479,6 +483,7 @@
 #include <mmx/txout_t.hxx>
 #include <mmx/uint_fraction_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
@@ -2664,6 +2669,30 @@ void type<::mmx::Node_get_virtual_plot_balance_return>::create_dynamic_code(std:
 }
 
 void type<::mmx::Node_get_virtual_plot_balance_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plot_balance_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_virtual_plots>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_virtual_plots;
+}
+
+void type<::mmx::Node_get_virtual_plots>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_virtual_plots());
+}
+
+void type<::mmx::Node_get_virtual_plots>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_virtual_plots_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_virtual_plots_return;
+}
+
+void type<::mmx::Node_get_virtual_plots_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_virtual_plots_return());
+}
+
+void type<::mmx::Node_get_virtual_plots_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5199,6 +5228,30 @@ void type<::mmx::Wallet_get_tx_log_return>::create_dynamic_code(std::vector<uint
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_get_virtual_plots>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_virtual_plots;
+}
+
+void type<::mmx::Wallet_get_virtual_plots>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_get_virtual_plots());
+}
+
+void type<::mmx::Wallet_get_virtual_plots>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_virtual_plots& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_get_virtual_plots_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_get_virtual_plots_return;
+}
+
+void type<::mmx::Wallet_get_virtual_plots_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_get_virtual_plots_return());
+}
+
+void type<::mmx::Wallet_get_virtual_plots_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_get_virtual_plots_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::Wallet_is_locked>::get_type_code() {
 	return mmx::vnx_native_type_code_Wallet_is_locked;
 }
@@ -6247,6 +6300,18 @@ void type<::mmx::ulong_fraction_t>::create_dynamic_code(std::vector<uint16_t>& c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::virtual_plot_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_virtual_plot_info_t;
+}
+
+void type<::mmx::virtual_plot_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::virtual_plot_info_t());
+}
+
+void type<::mmx::virtual_plot_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::virtual_plot_info_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 
 } // namespace vnx
 
@@ -6439,6 +6504,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_tx_info_for_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plot_balance::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plot_balance_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_virtual_plots::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_virtual_plots_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plots_for::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plots_for_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage::static_create_type_code());
@@ -6654,6 +6721,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Wallet_get_total_balances_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_tx_log::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_tx_log_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_get_virtual_plots::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_get_virtual_plots_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_is_locked::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_is_locked_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_lock::static_create_type_code());
@@ -6733,6 +6802,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::txout_t::static_create_type_code());
 	vnx::register_type_code(::mmx::uint_fraction_t::static_create_type_code());
 	vnx::register_type_code(::mmx::ulong_fraction_t::static_create_type_code());
+	vnx::register_type_code(::mmx::virtual_plot_info_t::static_create_type_code());
 }
 
 static struct vnx_static_init {
@@ -6925,6 +6995,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for_return = vnx::get_type_code(vnx::Hash64(0xfd527dc84681a04ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance = vnx::get_type_code(vnx::Hash64(0x8d4bb6395747b2edull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plot_balance_return = vnx::get_type_code(vnx::Hash64(0x5f8806b53d8c9742ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots = vnx::get_type_code(vnx::Hash64(0x7b92eb82aa558418ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_return = vnx::get_type_code(vnx::Hash64(0xa96dbac13ea12597ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for = vnx::get_type_code(vnx::Hash64(0x2dadcbd2c7c72b6eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for_return = vnx::get_type_code(vnx::Hash64(0x9564674e5dba5be1ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage = vnx::get_type_code(vnx::Hash64(0xd74cd2b291cb9cd6ull));
@@ -7140,6 +7212,8 @@ const vnx::TypeCode* const vnx_native_type_code_Wallet_get_total_balances = vnx:
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_total_balances_return = vnx::get_type_code(vnx::Hash64(0x46f0368d7c4e45ddull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tx_log = vnx::get_type_code(vnx::Hash64(0xc5570936be29c0ebull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_tx_log_return = vnx::get_type_code(vnx::Hash64(0x5c6d4b8fc9820ec1ull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_get_virtual_plots = vnx::get_type_code(vnx::Hash64(0x59beb8c73d904ccdull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_get_virtual_plots_return = vnx::get_type_code(vnx::Hash64(0x44921a16936ac259ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_is_locked = vnx::get_type_code(vnx::Hash64(0x6087e83febcc233ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_is_locked_return = vnx::get_type_code(vnx::Hash64(0x1ea1b30193de8d7bull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_lock = vnx::get_type_code(vnx::Hash64(0x9072deb8ab538b2bull));
@@ -7219,5 +7293,6 @@ const vnx::TypeCode* const vnx_native_type_code_txio_t = vnx::get_type_code(vnx:
 const vnx::TypeCode* const vnx_native_type_code_txout_t = vnx::get_type_code(vnx::Hash64(0xaa91772752216576ull));
 const vnx::TypeCode* const vnx_native_type_code_uint_fraction_t = vnx::get_type_code(vnx::Hash64(0xe5632136b5a3ed5aull));
 const vnx::TypeCode* const vnx_native_type_code_ulong_fraction_t = vnx::get_type_code(vnx::Hash64(0xe9c2388a9c35ce06ull));
+const vnx::TypeCode* const vnx_native_type_code_virtual_plot_info_t = vnx::get_type_code(vnx::Hash64(0xcbcd7c49be95180eull));
 
 } // namespace mmx
