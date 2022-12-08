@@ -52,3 +52,13 @@ To access WebGUI, go to: http://localhost:11380/gui/
 Only available on localhost, because of _full access_ to your wallet.
 
 Login password is auto-generated at first launch, located in $MMX_HOME/PASSWD file.
+
+## Release Notes
+
+### Testnet9
+
+- New `Swap` contract, to trade via liquidity pools (similar to _UniSwap_, anyone can provide liquidity and earn fees)
+- Improved `Offer` contract: partial trades and extending offers are now possible
+- Re-designed `Virtual Plots`: withdrawal is now possible with a 10% fee (no lock duration, fee is burned), also there is no more expiration
+- Network traffic is now compressed via `deflate` level 1
+- Second best farmer will now create an empty block (just to get the reward), in case the first farmer fails or is too slow
