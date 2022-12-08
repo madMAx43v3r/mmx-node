@@ -22,7 +22,7 @@ class MMX_CONTRACT_EXPORT Executable : public ::mmx::contract::TokenBase {
 public:
 	
 	::mmx::addr_t binary;
-	std::string init_method;
+	std::string init_method = "init";
 	std::vector<::vnx::Variant> init_args;
 	std::map<std::string, ::mmx::addr_t> depends;
 	

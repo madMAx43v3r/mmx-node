@@ -229,9 +229,10 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 				throw std::logic_error("read-only memory");
 			}
 		}
-		var->flags |= FLAG_DIRTY;
-		var->flags &= ~FLAG_DELETED;
-
+		if(var->flags & FLAG_DELETED) {
+			var->flags |= FLAG_DIRTY;
+			var->flags &= ~FLAG_DELETED;
+		}
 		switch(src.type) {
 			case TYPE_NIL:
 			case TYPE_TRUE:
@@ -240,7 +241,10 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 					case TYPE_NIL:
 					case TYPE_TRUE:
 					case TYPE_FALSE:
-						var->type = src.type;
+						if(var->type != src.type) {
+							var->flags |= FLAG_DIRTY;
+							var->type = src.type;
+						}
 						return var.get();
 					default:
 						break;
@@ -249,16 +253,24 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 			case TYPE_REF:
 				if(var->type == TYPE_REF) {
 					auto ref = (ref_t*)var.get();
-					unref(ref->address);
-					ref->address = ((const ref_t&)src).address;
-					addref(ref->address);
+					const auto new_address = ((const ref_t&)src).address;
+					if(new_address != ref->address) {
+						unref(ref->address);
+						var->flags |= FLAG_DIRTY;
+						ref->address = new_address;
+						addref(ref->address);
+					}
 					return ref;
 				}
 				break;
 			case TYPE_UINT:
 				if(var->type == TYPE_UINT) {
 					auto uint = (uint_t*)var.get();
-					uint->value = ((const uint_t&)src).value;
+					const auto new_value = ((const uint_t&)src).value;
+					if(new_value != uint->value) {
+						var->flags |= FLAG_DIRTY;
+						uint->value = new_value;
+					}
 					return uint;
 				}
 				break;
@@ -590,12 +602,16 @@ var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 
 uint64_t Engine::alloc()
 {
-	auto& offset = read_fail<uint_t>(MEM_HEAP + GLOBAL_NEXT_ALLOC, TYPE_UINT);
-	offset.flags |= FLAG_DIRTY;
-	if(offset.value == 0) {
+	auto offset = read<uint_t>(MEM_HEAP + GLOBAL_NEXT_ALLOC, TYPE_UINT);
+	if(!offset) {
+		offset = (uint_t*)assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START));
+		offset->pin();
+	}
+	if(offset->value == 0) {
 		throw std::runtime_error("out of memory");
 	}
-	return offset.value++;
+	offset->flags |= FLAG_DIRTY;
+	return offset->value++;
 }
 
 void Engine::init()
@@ -603,12 +619,11 @@ void Engine::init()
 	if(have_init) {
 		throw std::logic_error("already initialized");
 	}
+	total_cost += code.size() * INSTR_READ_COST;
+
 	// Note: address 0 is not a valid key (used to denote "key not found")
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
 		key_map.emplace(iter->second.get(), iter->first);
-	}
-	if(!read(MEM_HEAP + GLOBAL_NEXT_ALLOC)) {
-		assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START))->pin();
 	}
 	have_init = true;
 }
@@ -679,7 +694,7 @@ void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, co
 			if(index.value < ((const array_t&)var).size) {
 				write(dst, read_entry_fail(addr, uint64_t(index.value)));
 			} else if(flags & OPFLAG_HARD_FAIL) {
-				throw std::runtime_error("index out of bounds");
+				throw std::runtime_error("array index out of bounds");
 			} else {
 				write(dst, var_t());
 			}
@@ -704,7 +719,7 @@ void Engine::set(const uint64_t addr, const uint64_t key, const uint64_t src, co
 		case TYPE_ARRAY: {
 			const auto& index = read_fail<uint_t>(key, TYPE_UINT);
 			if(index.value >= ((const array_t&)var).size) {
-				throw std::runtime_error("index out of bounds");
+				throw std::runtime_error("array index out of bounds");
 			}
 			write_entry(addr, uint64_t(index.value), read_fail(src));
 			break;
@@ -1495,8 +1510,10 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_FAIL:
-		throw std::runtime_error("failed with: " + to_string_value(read(
-				deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
+		error_code = instr.b;
+		throw std::runtime_error("failed with: "
+				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A)))
+				+ (instr.b ? " (code " + std::to_string(instr.b) : ""));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
@@ -1521,6 +1538,7 @@ void Engine::reset()
 {
 	clear_stack();
 	call_stack.clear();
+	error_code = 0;
 }
 
 void Engine::commit()

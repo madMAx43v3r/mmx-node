@@ -28,6 +28,7 @@ module Node implements vnx.addons.HttpComponent {
 	
 	uint max_history = 1000;				// max block header history
 	uint max_fork_length = 10000;			// to keep in memory at most (during sync)
+	uint max_blocks_per_height = 2;			// how many blocks to create at most per height
 	uint tx_pool_limit = 100;				// number of full blocks
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
@@ -80,6 +81,9 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	optional<hash_t> get_block_hash(uint height) const;
+	
+	@Permission(permission_e.PUBLIC)
+	optional<pair<hash_t, hash_t>> get_block_hash_ex(uint height) const;
 	
 	@Permission(permission_e.PUBLIC)
 	optional<uint> get_tx_height(hash_t id) const;
@@ -171,16 +175,22 @@ module Node implements vnx.addons.HttpComponent {
 	map<varptr_t, varptr_t> read_storage_map(addr_t contract, ulong address, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
+	map<string, varptr_t> read_storage_object(addr_t contract, ulong address, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
 	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args) const;
 	
 	@Permission(permission_e.PUBLIC)
 	address_info_t get_address_info(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<address_info_t> get_address_infos(vector<addr_t> address, int since) const;
+	vector<address_info_t> get_address_infos(vector<addr_t> addresses, int since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<pair<addr_t, Contract*>> get_virtual_plots_for(bls_pubkey_t farmer_key) const;
+	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<virtual_plot_info_t> get_virtual_plots_for(bls_pubkey_t farmer_key) const;
 	
 	@Permission(permission_e.PUBLIC)
 	ulong get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
@@ -189,25 +199,40 @@ module Node implements vnx.addons.HttpComponent {
 	offer_data_t get_offer(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_offers(uint since, string state) const;
+	vector<offer_data_t> get_offers(uint since, bool state) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_offers_by(vector<addr_t> owners, string state) const;
+	vector<offer_data_t> get_offers_by(vector<addr_t> owners, bool state) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> fetch_offers(vector<addr_t> addresses, string state) const;
+	vector<offer_data_t> fetch_offers(vector<addr_t> addresses, bool state, bool closed) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers(int limit = 100, string state = "OPEN") const;
+	vector<offer_data_t> get_recent_offers(int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, string state = "OPEN") const;
+	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_trade_history(int limit = 100, uint since) const;
+	vector<trade_entry_t> get_trade_history(int limit = 100, uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_trade_history_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, uint since) const;
+	vector<trade_entry_t> get_trade_history_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, uint since) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<swap_info_t> get_swaps(uint since, optional<addr_t> token, optional<addr_t> currency) const;
+	
+	@Permission(permission_e.PUBLIC)
+	swap_info_t get_swap_info(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
+	swap_user_info_t get_swap_user_info(addr_t address, addr_t user) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<swap_entry_t> get_swap_history(addr_t address, int limit = 100) const;
+	
+	@Permission(permission_e.PUBLIC)
+	map<addr_t, pair<addr_t, uint128>[2]> get_swap_liquidity_by(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_total_supply(addr_t currency) const;

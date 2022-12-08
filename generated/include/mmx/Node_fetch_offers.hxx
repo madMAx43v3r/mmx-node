@@ -15,7 +15,8 @@ class MMX_EXPORT Node_fetch_offers : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
-	std::string state;
+	vnx::bool_t state = 0;
+	vnx::bool_t closed = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,10 +60,11 @@ public:
 
 template<typename T>
 void Node_fetch_offers::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_fetch_offers>(2);
+	_visitor.template type_begin<Node_fetch_offers>(3);
 	_visitor.type_field("addresses", 0); _visitor.accept(addresses);
 	_visitor.type_field("state", 1); _visitor.accept(state);
-	_visitor.template type_end<Node_fetch_offers>(2);
+	_visitor.type_field("closed", 2); _visitor.accept(closed);
+	_visitor.template type_end<Node_fetch_offers>(3);
 }
 
 

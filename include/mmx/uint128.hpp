@@ -9,12 +9,13 @@
 #define INCLUDE_MMX_UINT128_HPP_
 
 #include <uint128_t.h>
+#include <uint256_t.h>
 
 #include <vnx/Input.hpp>
 #include <vnx/Output.hpp>
 #include <vnx/Variant.hpp>
 
-#include <algorithm>
+#include <cmath>
 
 
 namespace mmx {
@@ -28,6 +29,12 @@ public:
 	uint128(const uint64_t& value) : uint128_t(value) {}
 
 	uint128(const uint128_t& value) : uint128_t(value) {}
+
+	uint128(const uint256_t& value) : uint128_t(value.lower()) {}
+
+	double to_double() const {
+		return double(upper()) * pow(2, 64) + double(lower());
+	}
 
 };
 

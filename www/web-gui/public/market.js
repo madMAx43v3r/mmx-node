@@ -2,9 +2,7 @@
 Vue.component('market-menu', {
 	props: {
 		wallet_: Number,
-		bid_: null,
-		ask_: null,
-		page: String, 
+		page: String,
 		loading: false
 	},
 	data() {
@@ -55,11 +53,6 @@ Vue.component('market-menu', {
 		this.update();
 	},
 	watch: {
-		$route (to, from){				
-			if(to.path == '/market') {
-				this.submit();
-			}
-		},
 		wallet() {
 			this.submit();
 		},
@@ -109,7 +102,7 @@ Vue.component('market-menu', {
 
 			<div v-if="!loading">
 				<v-card>
-					<v-card-text>					
+					<v-card-text>
 
 						<v-select
 							v-model="wallet"
@@ -142,8 +135,8 @@ Vue.component('market-menu', {
 				</v-card>
 
 				<v-tabs>
-					<v-tab :to="'/market/offers/' + this.wallet + '/' + this.bid + '/' + this.ask">{{ $t('market_menu.offers') }}</v-tab>
-					<v-tab :to="'/market/history/' + this.wallet + '/' + this.bid + '/' + this.ask">History</v-tab>
+					<v-tab :to="'/market/offers/' + wallet + '/' + bid + '/' + ask">{{ $t('market_menu.offers') }}</v-tab>
+					<v-tab :to="'/market/history/' + wallet + '/' + bid + '/' + ask">History</v-tab>
 				</v-tabs>
 			</div>
 
@@ -159,9 +152,6 @@ Vue.component('market-offers', {
 		ask: null,
 		limit: Number
 	},
-	emits: [
-		"accept-offer"
-	],
 	data() {
 		return {
 			data: null,
@@ -172,7 +162,10 @@ Vue.component('market-offers', {
 			result: null,
 			error: null,
 			loading: false,
-			dialog: false
+			trade_dialog: false,
+			accept_dialog: false,
+			trade_amount: null,
+			trade_estimate: null
 		}
 	},
 	methods: {
@@ -204,22 +197,26 @@ Vue.component('market-offers', {
 					});
 			}
 		},
-		confirm(offer) {
+		trade(offer) {
 			this.offer = offer;
-			this.dialog = true;
+			this.trade_amount = null;
+			this.trade_dialog = true;
 		},
 		accept(offer) {
+			this.offer = offer;
+			this.accept_dialog = true;
+		},
+		submit(offer, amount) {
 			const req = {};
 			req.index = this.wallet;
 			req.address = offer.address;
-			fetch('/wapi/wallet/accept', {body: JSON.stringify(req), method: "post"})
+			req.amount = parseFloat(amount);
+			fetch('/wapi/wallet/offer_trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
 							this.error = null;
 							this.result = data;
-							this.accepted.add(offer.address);
-							this.$emit('accept-offer', {offer: offer, result: data});
 						});
 					} else {
 						response.text().then(data => {
@@ -227,8 +224,43 @@ Vue.component('market-offers', {
 							this.result = null;
 						});
 					}
-					this.dialog = false;
 				});
+			this.trade_dialog = false;
+		},
+		submit_accept(offer) {
+			const req = {};
+			req.index = this.wallet;
+			req.address = offer.address;
+			fetch('/wapi/wallet/accept_offer', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							this.error = null;
+							this.result = data;
+							this.accepted.add(offer.address);
+						});
+					} else {
+						response.text().then(data => {
+							this.error = data;
+							this.result = null;
+						});
+					}
+				});
+			this.accept_dialog = false;
+		}
+	},
+	watch: {
+		trade_amount(value) {
+			if(this.offer) {
+				this.trade_estimate = null;
+				if(value > 0) {
+					fetch('/wapi/offer/trade_estimate?id=' + this.offer.address + '&amount=' + value)
+						.then(response => response.json())
+						.then(data => {
+							this.trade_estimate = (data.trade.value).toFixed(this.offer.bid_decimals);
+						});
+				}
+			}
 		}
 	},
 	created() {
@@ -247,45 +279,55 @@ Vue.component('market-offers', {
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
 
-			<v-dialog v-model="dialog" max-width="800">
+			<v-dialog v-model="trade_dialog" max-width="800">
 				<template v-slot:default="dialog">
 					<v-card>
-						<v-toolbar color="primary" dark>
-							{{ $t('market_offers.accept_offer') }}
-						</v-toolbar>
+						<v-toolbar color="primary" dark></v-toolbar>
+						<v-card-title>
+							{{offer.address}}
+						</v-card-title>
 						<v-card-text>
-							<v-container>
-								<v-simple-table>
-									<tbody>
-									<tr>
-										<td>{{ $t('common.address') }}</td>
-										<td><router-link :to="'/explore/address/' + offer.address">{{offer.address}}</router-link></td>
-									</tr>
-									<tr>
-										<td>{{ $t('market_offers.you_receive') }}</td>
-										<td>
-											<b>{{offer.bid_value}}</b> {{offer.bid_symbol}}
-											<template v-if="offer.bid_symbol != 'MMX'">
-												- [<router-link :to="'/explore/address/' + offer.bid_currency">{{offer.bid_currency}}</router-link>]
-											</template>
-										</td>
-									</tr>
-									<tr>
-										<td>{{ $t('market_offers.you_pay') }}</td>
-										<td>
-											<b>{{offer.ask_value}}</b> {{offer.ask_symbol}}
-											<template v-if="offer.ask_symbol != 'MMX'">
-												- [<router-link :to="'/explore/address/' + offer.ask_currency">{{offer.ask_currency}}</router-link>]
-											</template>
-										</td>
-									</tr>
-									</tbody>
-								</v-simple-table>
-							</v-container>
+							<v-text-field class="text-align-right"
+								v-model="trade_amount"
+								label="You send"
+								:suffix="offer.ask_symbol">
+							</v-text-field>
+							<v-text-field class="text-align-right"
+								v-model="trade_estimate"
+								label="You receive"
+								:suffix="offer.bid_symbol" disabled>
+							</v-text-field>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn text color="primary" @click="accept(offer)">{{ $t('market_offers.accept') }}</v-btn>
-							<v-btn text @click="dialog.value = false">{{ $t('market_offers.cancel') }}</v-btn>
+							<v-btn color="primary" @click="submit(offer, trade_amount)">Trade</v-btn>
+							<v-btn @click="trade_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
+						</v-card-actions>
+					</v-card>
+				</template>
+			</v-dialog>
+			
+			<v-dialog v-model="accept_dialog" max-width="800">
+				<template v-slot:default="dialog">
+					<v-card>
+						<v-toolbar color="primary" dark></v-toolbar>
+						<v-card-title>
+							{{offer.address}}
+						</v-card-title>
+						<v-card-text>
+							<v-text-field class="text-align-right"
+								v-model="offer.ask_value"
+								label="You send"
+								:suffix="offer.ask_symbol" disabled>
+							</v-text-field>
+							<v-text-field class="text-align-right"
+								v-model="offer.bid_balance_value"
+								label="You receive"
+								:suffix="offer.bid_symbol" disabled>
+							</v-text-field>
+						</v-card-text>
+						<v-card-actions class="justify-end">
+							<v-btn color="primary" @click="submit_accept(offer)">Accept</v-btn>
+							<v-btn @click="accept_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</template>
@@ -311,9 +353,9 @@ Vue.component('market-offers', {
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="item in data" :key="item.address" :class="{positive: accepted.has(item.address)}">
+							<tr v-for="item in data" :key="item.address">
 								<td>
-									<b>{{item.bid_value}}</b>&nbsp;
+									<b>{{item.bid_balance_value}}</b>&nbsp;
 									<template v-if="item.bid_symbol == 'MMX'">MMX</template>
 									<template v-else>
 										<router-link :to="'/explore/address/' + item.bid_currency">
@@ -323,7 +365,7 @@ Vue.component('market-offers', {
 									</template>
 								</td>
 								<td>
-									<b>{{item.ask_value}}</b>&nbsp;
+									<b>{{(item.bid_balance_value * item.display_price).toPrecision(6)}}</b>&nbsp;
 									<template v-if="item.ask_symbol == 'MMX'">MMX</template>
 									<template v-else>
 										<router-link :to="'/explore/address/' + item.ask_currency">
@@ -332,13 +374,14 @@ Vue.component('market-offers', {
 										</router-link>
 									</template>
 								</td>
-								<td><b>{{ parseFloat( (item.price).toPrecision(3) ) }}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-								<td><b>{{ parseFloat( (1 / item.price).toPrecision(3) ) }}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
+								<td><b>{{ parseFloat( (item.display_price).toPrecision(3) ) }}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+								<td><b>{{ parseFloat( (1 / item.display_price).toPrecision(3) ) }}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
 								<td>
+									<v-btn outlined text @click="trade(item)">Trade</v-btn>
 									<template v-if="!accepted.has(item.address)">
-										<v-btn outlined text @click="confirm(item)">{{ $t('market_offers.accept') }}</v-btn>
+										<v-btn outlined text color="green darken-1" @click="accept(item)">Accept</v-btn>
 									</template>
 								</td>
 							</tr>
@@ -444,11 +487,11 @@ Vue.component('market-history', {
 										</router-link>
 									</template>
 								</td>
-								<td><b>{{parseFloat((item.price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
-								<td><b>{{parseFloat((1 / item.price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
-								<td>{{new Date(item.close_time * 1000).toLocaleString()}}</td>
+								<td><b>{{parseFloat((item.display_price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
+								<td><b>{{parseFloat((1 / item.display_price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
+								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
-								<td><router-link :to="'/explore/transaction/' + item.close_txid">TX</router-link></td>
+								<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
 							</tr>
 						</tbody>
 					</v-simple-table>

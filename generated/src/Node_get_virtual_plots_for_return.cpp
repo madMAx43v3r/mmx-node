@@ -3,8 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Node_get_virtual_plots_for_return.hxx>
-#include <mmx/Contract.hxx>
-#include <mmx/addr_t.hpp>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_virtual_plots_for_return::VNX_TYPE_HASH(0x9564674e5dba5be1ull);
-const vnx::Hash64 Node_get_virtual_plots_for_return::VNX_CODE_HASH(0x8ed1e8cd833a8077ull);
+const vnx::Hash64 Node_get_virtual_plots_for_return::VNX_CODE_HASH(0x4d79d5b770730ebdull);
 
 vnx::Hash64 Node_get_virtual_plots_for_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,18 +114,20 @@ std::shared_ptr<vnx::TypeCode> Node_get_virtual_plots_for_return::static_create_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_virtual_plots_for.return";
 	type_code->type_hash = vnx::Hash64(0x9564674e5dba5be1ull);
-	type_code->code_hash = vnx::Hash64(0x8ed1e8cd833a8077ull);
+	type_code->code_hash = vnx::Hash64(0x4d79d5b770730ebdull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
 	type_code->native_size = sizeof(::mmx::Node_get_virtual_plots_for_return);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_virtual_plots_for_return>(); };
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::virtual_plot_info_t::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {12, 23, 2, 4, 7, 11, 32, 1, 16};
+		field.code = {12, 19, 0};
 	}
 	type_code->build();
 	return type_code;

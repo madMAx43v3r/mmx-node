@@ -19,6 +19,8 @@ const routes = [
 			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
 			{ path: 'history', component: AccountHistory, meta: { page: 'history' } },
 			{ path: 'log', component: AccountLog, meta: { page: 'log' } },
+			{ path: 'plots', component: AccountPlots, meta: { page: 'plots' } },
+			{ path: 'liquid', component: AccountLiquid, meta: { page: 'liquid' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
 			{ path: 'create/locked', component: AccountCreateLocked },
@@ -27,15 +29,30 @@ const routes = [
 	},
 	{ path: '/market',
 		component: Market,
+		redirect: '/market/offers/null/null/null',
 		meta: { is_market: true },
 		props: route => ({
-			wallet: parseInt(route.params.wallet),
+			wallet: route.params.wallet == 'null' ? null : parseInt(route.params.wallet),
 			bid: route.params.bid == 'null' ? null : route.params.bid,
 			ask: route.params.ask == 'null' ? null : route.params.ask,
 		}),
 		children: [
 			{ path: 'offers/:wallet/:bid/:ask', component: MarketOffers, meta: { page: 'offers' } },
 			{ path: 'history/:wallet/:bid/:ask', component: MarketHistory, meta: { page: 'history' } },
+		]
+	},
+	{ path: '/swap',
+		component: Swap,
+		redirect: '/swap/market/null/null',
+		meta: { is_swap: true },
+		props: route => ({
+			address: route.params.address
+		}),
+		children: [
+			{ path: 'market/:token/:currency', component: SwapMarket, meta: { page: 'market' } },
+			{ path: 'trade/:address', component: SwapTrade, meta: { page: 'trade' } },
+			{ path: 'history/:address', component: SwapHistory, meta: { page: 'history' } },
+			{ path: 'liquid/:address', component: SwapLiquid, meta: { page: 'liquid' } },
 		]
 	},
 	{ path: '/explore',

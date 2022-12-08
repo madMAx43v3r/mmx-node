@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_address_infos::VNX_TYPE_HASH(0x66e77ec4c1c7bdddull);
-const vnx::Hash64 Node_get_address_infos::VNX_CODE_HASH(0xeee13f083f8919b2ull);
+const vnx::Hash64 Node_get_address_infos::VNX_CODE_HASH(0x6251650debf5d6eeull);
 
 vnx::Hash64 Node_get_address_infos::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,14 +47,14 @@ void Node_get_address_infos::write(vnx::TypeOutput& _out, const vnx::TypeCode* _
 void Node_get_address_infos::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_address_infos;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, addresses);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, since);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_address_infos::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_address_infos\"";
-	_out << ", \"address\": "; vnx::write(_out, address);
+	_out << ", \"addresses\": "; vnx::write(_out, addresses);
 	_out << ", \"since\": "; vnx::write(_out, since);
 	_out << "}";
 }
@@ -68,15 +68,15 @@ void Node_get_address_infos::read(std::istream& _in) {
 vnx::Object Node_get_address_infos::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_address_infos";
-	_object["address"] = address;
+	_object["addresses"] = addresses;
 	_object["since"] = since;
 	return _object;
 }
 
 void Node_get_address_infos::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "address") {
-			_entry.second.to(address);
+		if(_entry.first == "addresses") {
+			_entry.second.to(addresses);
 		} else if(_entry.first == "since") {
 			_entry.second.to(since);
 		}
@@ -84,8 +84,8 @@ void Node_get_address_infos::from_object(const vnx::Object& _object) {
 }
 
 vnx::Variant Node_get_address_infos::get_field(const std::string& _name) const {
-	if(_name == "address") {
-		return vnx::Variant(address);
+	if(_name == "addresses") {
+		return vnx::Variant(addresses);
 	}
 	if(_name == "since") {
 		return vnx::Variant(since);
@@ -94,8 +94,8 @@ vnx::Variant Node_get_address_infos::get_field(const std::string& _name) const {
 }
 
 void Node_get_address_infos::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "address") {
-		_value.to(address);
+	if(_name == "addresses") {
+		_value.to(addresses);
 	} else if(_name == "since") {
 		_value.to(since);
 	}
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_address_infos::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_address_infos";
 	type_code->type_hash = vnx::Hash64(0x66e77ec4c1c7bdddull);
-	type_code->code_hash = vnx::Hash64(0xeee13f083f8919b2ull);
+	type_code->code_hash = vnx::Hash64(0x6251650debf5d6eeull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -137,7 +137,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_address_infos::static_create_type_code()
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
-		field.name = "address";
+		field.name = "addresses";
 		field.code = {12, 11, 32, 1};
 	}
 	{
@@ -195,7 +195,7 @@ void read(TypeInput& in, ::mmx::Node_get_address_infos& value, const TypeCode* t
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -216,7 +216,7 @@ void write(TypeOutput& out, const ::mmx::Node_get_address_infos& value, const Ty
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.since);
-	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.addresses, type_code, type_code->fields[0].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_address_infos& value) {

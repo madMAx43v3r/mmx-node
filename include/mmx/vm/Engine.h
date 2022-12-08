@@ -29,6 +29,7 @@ namespace vm {
 class StorageProxy;
 
 static constexpr uint64_t INSTR_COST = 10;
+static constexpr uint64_t INSTR_READ_COST = 2;
 static constexpr uint64_t SEND_COST = 1000;
 static constexpr uint64_t MINT_COST = 500;
 static constexpr uint64_t WRITE_COST = 10;
@@ -45,7 +46,7 @@ enum externvar_e : uint32_t {
 	EXTERN_TXID,
 	EXTERN_USER,
 	EXTERN_BALANCE,
-	EXTERN_DEPOSIT,
+	EXTERN_DEPOSIT,		// [currency, amount]
 	EXTERN_ADDRESS,
 
 };
@@ -75,6 +76,7 @@ public:
 
 	uint64_t total_gas = 0;
 	uint64_t total_cost = 0;
+	uint32_t error_code = 0;
 
 	const addr_t contract;
 	const std::shared_ptr<StorageProxy> storage;

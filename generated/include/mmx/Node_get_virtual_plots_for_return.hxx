@@ -5,8 +5,7 @@
 #define INCLUDE_mmx_Node_get_virtual_plots_for_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/Contract.hxx>
-#include <mmx/addr_t.hpp>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Node_get_virtual_plots_for_return : public ::vnx::Value {
 public:
 	
-	std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> _ret_0;
+	std::vector<::mmx::virtual_plot_info_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

@@ -7,7 +7,7 @@ class Executable extends TokenBase {
 	
 	addr_t binary;
 	
-	string init_method;
+	string init_method = "init";
 	
 	vector<vnx.Variant> init_args;
 	

@@ -23,6 +23,7 @@ public:
 	uint64_t total_supply = 0;
 	uint64_t address_count = 0;
 	vnx::float64_t block_size = 0;
+	vnx::float64_t netspace_ratio = 0;
 	::mmx::hash_t genesis_hash;
 	
 	typedef ::vnx::Value Super;
@@ -70,7 +71,7 @@ protected:
 
 template<typename T>
 void NetworkInfo::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NetworkInfo>(10);
+	_visitor.template type_begin<NetworkInfo>(11);
 	_visitor.type_field("is_synced", 0); _visitor.accept(is_synced);
 	_visitor.type_field("height", 1); _visitor.accept(height);
 	_visitor.type_field("time_diff", 2); _visitor.accept(time_diff);
@@ -80,8 +81,9 @@ void NetworkInfo::accept_generic(T& _visitor) const {
 	_visitor.type_field("total_supply", 6); _visitor.accept(total_supply);
 	_visitor.type_field("address_count", 7); _visitor.accept(address_count);
 	_visitor.type_field("block_size", 8); _visitor.accept(block_size);
-	_visitor.type_field("genesis_hash", 9); _visitor.accept(genesis_hash);
-	_visitor.template type_end<NetworkInfo>(10);
+	_visitor.type_field("netspace_ratio", 9); _visitor.accept(netspace_ratio);
+	_visitor.type_field("genesis_hash", 10); _visitor.accept(genesis_hash);
+	_visitor.template type_end<NetworkInfo>(11);
 }
 
 

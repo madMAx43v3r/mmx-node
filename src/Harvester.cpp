@@ -110,10 +110,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	for(const auto& entry : virtual_map)
 	{
-		if(entry.second.balance) {
-			if(check_plot_filter(params, value->challenge, entry.first)) {
-				virtual_plots.push_back(entry);
-			}
+		if(check_plot_filter(params, value->challenge, entry.first)) {
+			virtual_plots.push_back(entry);
 		}
 	}
 	std::vector<std::vector<uint256_t>> scores(plots.size());
@@ -154,15 +152,18 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 	for(const auto& entry : virtual_plots)
 	{
-		const auto score = calc_virtual_score(params, value->challenge, entry.first, entry.second.balance, value->space_diff);
-		if(score < params->score_threshold) {
-			if(score < best_score) {
-				best_plot = nullptr;
-				best_vplot = entry;
+		const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
+		if(balance) {
+			const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
+			if(score < params->score_threshold) {
+				if(score < best_score) {
+					best_plot = nullptr;
+					best_vplot = entry;
+				}
 			}
-		}
-		if(score < best_score) {
-			best_score = score;
+			if(score < best_score) {
+				best_score = score;
+			}
 		}
 	}
 
@@ -207,6 +208,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 		try {
 			out->hash = out->calc_hash();
+			out->content_hash = out->calc_hash(true);
 			// TODO: have node sign it after verify
 			out->farmer_sig = farmer->sign_proof(out);
 			out->content_hash = out->calc_hash(true);
@@ -397,13 +399,11 @@ void Harvester::reload()
 	total_balance = 0;
 	if(farm_virtual_plots) {
 		for(const auto& farmer_key : farmer_keys) {
-			for(const auto& entry : node->get_virtual_plots_for(farmer_key)) {
-				if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(entry.second)) {
-					auto& info = virtual_map[entry.first];
-					info.farmer_key = farmer_key;
-					info.balance = node->get_virtual_plot_balance(entry.first);
-					total_balance += info.balance;
-				}
+			for(const auto& plot : node->get_virtual_plots_for(farmer_key)) {
+				auto& info = virtual_map[plot.address];
+				info.farmer_key = plot.farmer_key;
+				info.balance = plot.balance;
+				total_balance += plot.balance;
 			}
 		}
 	}

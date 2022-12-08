@@ -7,7 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/hash_t.hpp>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -16,14 +16,15 @@ struct MMX_EXPORT offer_data_t {
 	
 	
 	uint32_t height = 0;
+	::mmx::addr_t owner;
 	::mmx::addr_t address;
 	::mmx::addr_t bid_currency;
 	::mmx::addr_t ask_currency;
-	uint64_t bid_amount = 0;
+	uint64_t bid_balance = 0;
+	uint64_t ask_balance = 0;
 	uint64_t ask_amount = 0;
-	std::string state;
-	vnx::optional<uint32_t> close_height;
-	vnx::optional<::mmx::hash_t> close_txid;
+	::mmx::uint128 inv_price;
+	vnx::float64_t price = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -37,6 +38,8 @@ struct MMX_EXPORT offer_data_t {
 	const vnx::TypeCode* get_type_code() const;
 	
 	vnx::bool_t is_scam() const;
+	vnx::bool_t is_open() const;
+	uint64_t get_trade_amount(const uint64_t& amount = 0) const;
 	
 	static std::shared_ptr<offer_data_t> create();
 	std::shared_ptr<offer_data_t> clone() const;
@@ -67,17 +70,18 @@ struct MMX_EXPORT offer_data_t {
 
 template<typename T>
 void offer_data_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<offer_data_t>(9);
+	_visitor.template type_begin<offer_data_t>(10);
 	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("address", 1); _visitor.accept(address);
-	_visitor.type_field("bid_currency", 2); _visitor.accept(bid_currency);
-	_visitor.type_field("ask_currency", 3); _visitor.accept(ask_currency);
-	_visitor.type_field("bid_amount", 4); _visitor.accept(bid_amount);
-	_visitor.type_field("ask_amount", 5); _visitor.accept(ask_amount);
-	_visitor.type_field("state", 6); _visitor.accept(state);
-	_visitor.type_field("close_height", 7); _visitor.accept(close_height);
-	_visitor.type_field("close_txid", 8); _visitor.accept(close_txid);
-	_visitor.template type_end<offer_data_t>(9);
+	_visitor.type_field("owner", 1); _visitor.accept(owner);
+	_visitor.type_field("address", 2); _visitor.accept(address);
+	_visitor.type_field("bid_currency", 3); _visitor.accept(bid_currency);
+	_visitor.type_field("ask_currency", 4); _visitor.accept(ask_currency);
+	_visitor.type_field("bid_balance", 5); _visitor.accept(bid_balance);
+	_visitor.type_field("ask_balance", 6); _visitor.accept(ask_balance);
+	_visitor.type_field("ask_amount", 7); _visitor.accept(ask_amount);
+	_visitor.type_field("inv_price", 8); _visitor.accept(inv_price);
+	_visitor.type_field("price", 9); _visitor.accept(price);
+	_visitor.template type_end<offer_data_t>(10);
 }
 
 

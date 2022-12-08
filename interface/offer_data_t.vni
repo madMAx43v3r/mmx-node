@@ -4,20 +4,26 @@ struct offer_data_t {
 	
 	uint height;
 	
+	addr_t owner;
 	addr_t address;
 	
 	addr_t bid_currency;
 	addr_t ask_currency;
 	
-	ulong bid_amount;
-	ulong ask_amount;
+	ulong bid_balance;
+	ulong ask_balance;
 	
-	string state;
-
-	optional<uint> close_height;
-	optional<hash_t> close_txid;
+	ulong ask_amount;			// ask amount needed to fully trade offer
+	
+	uint128 inv_price;			// 64-bit fractional [bid / ask]
+	
+	double price;				// [ask / bid]
 	
 	
 	bool is_scam() const;
+	
+	bool is_open() const;
+	
+	ulong get_trade_amount(ulong amount) const;
 	
 }

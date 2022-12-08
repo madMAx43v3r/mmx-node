@@ -30,6 +30,8 @@ class ECDSA_Wallet {
 public:
 	const account_t config;
 
+	uint32_t default_expire = 100;
+
 	ECDSA_Wallet(	const hash_t& seed_value,
 					const account_t& config, std::shared_ptr<const ChainParams> params)
 		:	config(config), seed_value(seed_value), params(params)
@@ -434,6 +436,8 @@ public:
 			tx->expires = std::min(tx->expires, *options.expire_at);
 		} else if(options.expire_delta) {
 			tx->expires = std::min(tx->expires, height + *options.expire_delta);
+		} else {
+			tx->expires = std::min(tx->expires, height + default_expire);
 		}
 		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
 

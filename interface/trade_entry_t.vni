@@ -1,0 +1,19 @@
+package mmx;
+
+struct trade_entry_t {
+	
+	uint height;
+	
+	addr_t address;
+	
+	hash_t txid;
+	
+	addr_t bid_currency;
+	addr_t ask_currency;
+	
+	ulong bid_amount;
+	ulong ask_amount;
+	
+	double price;			// [ask / bid]
+	
+}

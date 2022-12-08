@@ -14,17 +14,30 @@ namespace mmx {
 
 vnx::bool_t Block::is_valid() const
 {
-	uint64_t total_cost = 0;
-	uint64_t total_fees = 0;
-	for(const auto& tx : tx_list) {
-		if(const auto& res = tx->exec_result) {
-			total_cost += res->total_cost;
-			total_fees += res->total_fee;
+	if(!farmer_sig && height) {
+		if(nonce) {
+			return false;
+		}
+		if(proof || tx_base || tx_list.size()) {
+			return false;
 		}
 	}
+	uint64_t static_cost_sum = 0;
+	uint64_t total_cost_sum = 0;
+	uint64_t tx_fees_sum = 0;
+	for(const auto& tx : tx_list) {
+		if(const auto& res = tx->exec_result) {
+			total_cost_sum += res->total_cost;
+			tx_fees_sum += res->total_fee;
+		} else if(height) {
+			return false;
+		}
+		static_cost_sum += tx->static_cost;
+	}
 	return BlockHeader::is_valid()
-			&& tx_cost == total_cost
-			&& tx_fees == total_fees
+			&& static_cost == static_cost_sum
+			&& total_cost == total_cost_sum
+			&& tx_fees == tx_fees_sum
 			&& tx_count == tx_list.size()
 			&& tx_hash == calc_tx_hash();
 }
@@ -47,13 +60,15 @@ hash_t Block::calc_tx_hash() const
 
 void Block::finalize()
 {
-	tx_cost = 0;
+	static_cost = 0;
+	total_cost = 0;
 	tx_fees = 0;
 	for(const auto& tx : tx_list) {
 		if(const auto& res = tx->exec_result) {
-			tx_cost += res->total_cost;
+			total_cost += res->total_cost;
 			tx_fees += res->total_fee;
 		}
+		static_cost += tx->static_cost;
 	}
 	tx_count = tx_list.size();
 	tx_hash = calc_tx_hash();
@@ -77,35 +92,6 @@ std::vector<std::shared_ptr<const Transaction>> Block::get_all_transactions() co
 	}
 	list.insert(list.end(), tx_list.begin(), tx_list.end());
 	return list;
-}
-
-void Block::validate() const
-{
-	Super::validate();
-
-	uint64_t total_tx_cost = 0;
-	uint64_t total_tx_fees = 0;
-	for(const auto& tx : tx_list) {
-		if(!tx || !tx->exec_result) {
-			throw std::logic_error("missing tx exec_result");
-		}
-		total_tx_cost += tx->exec_result->total_cost;
-		total_tx_fees += tx->exec_result->total_fee;
-	}
-	if(tx_cost != total_tx_cost) {
-		throw std::logic_error("invalid tx_cost");
-	}
-	if(tx_fees != total_tx_fees) {
-		throw std::logic_error("invalid tx_fees");
-	}
-	if(!farmer_sig) {
-		if(nonce) {
-			throw std::logic_error("invalid block nonce");
-		}
-		if(tx_base || tx_list.size()) {
-			throw std::logic_error("cannot have transactions");
-		}
-	}
 }
 
 

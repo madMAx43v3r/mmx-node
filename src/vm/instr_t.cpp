@@ -64,7 +64,7 @@ const struct global_init_t {
 		OPCODE_INFO(OP_SEND, 3);
 		OPCODE_INFO(OP_MINT, 2);
 		OPCODE_INFO(OP_EVENT, 2);
-		OPCODE_INFO(OP_FAIL, 1);
+		OPCODE_INFO(OP_FAIL, 2);
 		OPCODE_INFO(OP_RCALL, 4);
 	}
 } global_init;

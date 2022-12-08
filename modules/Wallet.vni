@@ -52,10 +52,25 @@ module Wallet implements vnx.addons.HttpComponent {
 							ulong ask_amount, addr_t ask_currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
+	Transaction* offer_trade(uint index, addr_t address, ulong amount, uint dst_addr, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
+	Transaction* offer_withdraw(uint index, addr_t address, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
 	Transaction* accept_offer(uint index, addr_t address, uint dst_addr, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* cancel_offer(uint index, addr_t address, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
+	Transaction* swap_trade(uint index, addr_t address, ulong amount, addr_t currency, optional<ulong> min_trade, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
+	Transaction* swap_add_liquid(uint index, addr_t address, ulong amount[2], spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
+	Transaction* swap_rem_liquid(uint index, addr_t address, ulong amount[2], spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
@@ -94,11 +109,15 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	map<addr_t, balance_t> get_contract_balances(addr_t address) const;
 	
-	map<addr_t, Contract*> get_contracts(uint index) const;
+	map<addr_t, Contract*> get_contracts(uint index, optional<string> type_name) const;
 	
-	map<addr_t, Contract*> get_contracts_owned(uint index) const;
+	map<addr_t, Contract*> get_contracts_owned(uint index, optional<string> type_name) const;
 	
-	vector<offer_data_t> get_offers(uint index, string state) const;
+	vector<virtual_plot_info_t> get_virtual_plots(uint index) const;
+	
+	vector<offer_data_t> get_offers(uint index, bool state) const;
+	
+	map<addr_t, pair<addr_t, uint128>[2]> get_swap_liquidity(uint index) const;
 	
 	addr_t get_address(uint index, uint offset) const;
 	

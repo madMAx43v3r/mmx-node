@@ -156,10 +156,11 @@ skey_t Farmer::find_skey(const bls_pubkey_t& pubkey) const
 
 bls_signature_t Farmer::sign_proof(std::shared_ptr<const ProofResponse> value) const
 {
-	if(!value || !value->proof) {
-		throw std::logic_error("!proof");
+	if(!value || !value->is_valid()) {
+		throw std::logic_error("invalid argument");
 	}
-	return bls_signature_t::sign(find_skey(value->proof->farmer_key), value->calc_hash());
+	// TODO: verify proof
+	return bls_signature_t::sign(find_skey(value->proof->farmer_key), value->hash);
 }
 
 std::shared_ptr<const BlockHeader>

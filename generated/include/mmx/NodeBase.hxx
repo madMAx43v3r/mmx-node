@@ -20,9 +20,14 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/swap_entry_t.hxx>
+#include <mmx/swap_info_t.hxx>
+#include <mmx/swap_user_info_t.hxx>
+#include <mmx/trade_entry_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/vm/varptr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -58,6 +63,7 @@ public:
 	int32_t sync_loss_delay = 60;
 	uint32_t max_history = 1000;
 	uint32_t max_fork_length = 10000;
+	uint32_t max_blocks_per_height = 2;
 	uint32_t tx_pool_limit = 100;
 	uint32_t max_sync_jobs = 64;
 	uint32_t max_sync_ahead = 1000;
@@ -120,6 +126,7 @@ protected:
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header(const ::mmx::hash_t& hash) const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header_at(const uint32_t& height) const = 0;
 	virtual vnx::optional<::mmx::hash_t> get_block_hash(const uint32_t& height) const = 0;
+	virtual vnx::optional<std::pair<::mmx::hash_t, ::mmx::hash_t>> get_block_hash_ex(const uint32_t& height) const = 0;
 	virtual vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id) const = 0;
 	virtual vnx::optional<::mmx::tx_info_t> get_tx_info(const ::mmx::hash_t& id) const = 0;
 	virtual vnx::optional<::mmx::tx_info_t> get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
@@ -149,19 +156,26 @@ protected:
 	virtual std::pair<::mmx::vm::varptr_t, uint64_t> read_storage_field(const ::mmx::addr_t& contract, const std::string& name, const uint32_t& height) const = 0;
 	virtual std::vector<::mmx::vm::varptr_t> read_storage_array(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> read_storage_map(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
+	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage_object(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args) const = 0;
 	virtual ::mmx::address_info_t get_address_info(const ::mmx::addr_t& address) const = 0;
-	virtual std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& address, const int32_t& since) const = 0;
-	virtual std::vector<std::pair<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>>> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) const = 0;
+	virtual std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
+	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses) const = 0;
+	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) const = 0;
 	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
 	virtual ::mmx::offer_data_t get_offer(const ::mmx::addr_t& address) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since, const std::string& state) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners, const std::string& state) const = 0;
-	virtual std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses, const std::string& state) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit, const std::string& state) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const std::string& state) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_trade_history(const int32_t& limit, const uint32_t& since) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_offers(const uint32_t& since, const vnx::bool_t& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners, const vnx::bool_t& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state, const vnx::bool_t& closed) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const vnx::bool_t& state) const = 0;
+	virtual std::vector<::mmx::trade_entry_t> get_trade_history(const int32_t& limit, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::trade_entry_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) const = 0;
+	virtual std::vector<::mmx::swap_info_t> get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency) const = 0;
+	virtual ::mmx::swap_info_t get_swap_info(const ::mmx::addr_t& address) const = 0;
+	virtual ::mmx::swap_user_info_t get_swap_user_info(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
+	virtual std::vector<::mmx::swap_entry_t> get_swap_history(const ::mmx::addr_t& address, const int32_t& limit) const = 0;
+	virtual std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual ::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since) const = 0;
 	virtual std::map<::mmx::bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const = 0;
@@ -184,7 +198,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(37);
+	_visitor.template type_begin<NodeBase>(38);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -206,23 +220,24 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("sync_loss_delay", 18); _visitor.accept(sync_loss_delay);
 	_visitor.type_field("max_history", 19); _visitor.accept(max_history);
 	_visitor.type_field("max_fork_length", 20); _visitor.accept(max_fork_length);
-	_visitor.type_field("tx_pool_limit", 21); _visitor.accept(tx_pool_limit);
-	_visitor.type_field("max_sync_jobs", 22); _visitor.accept(max_sync_jobs);
-	_visitor.type_field("max_sync_ahead", 23); _visitor.accept(max_sync_ahead);
-	_visitor.type_field("num_sync_retries", 24); _visitor.accept(num_sync_retries);
-	_visitor.type_field("replay_height", 25); _visitor.accept(replay_height);
-	_visitor.type_field("num_vdf_threads", 26); _visitor.accept(num_vdf_threads);
-	_visitor.type_field("vdf_check_divider", 27); _visitor.accept(vdf_check_divider);
-	_visitor.type_field("vdf_verify_divider", 28); _visitor.accept(vdf_verify_divider);
-	_visitor.type_field("opencl_device", 29); _visitor.accept(opencl_device);
-	_visitor.type_field("do_sync", 30); _visitor.accept(do_sync);
-	_visitor.type_field("db_replay", 31); _visitor.accept(db_replay);
-	_visitor.type_field("show_warnings", 32); _visitor.accept(show_warnings);
-	_visitor.type_field("storage_path", 33); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 34); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 35); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 36); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(37);
+	_visitor.type_field("max_blocks_per_height", 21); _visitor.accept(max_blocks_per_height);
+	_visitor.type_field("tx_pool_limit", 22); _visitor.accept(tx_pool_limit);
+	_visitor.type_field("max_sync_jobs", 23); _visitor.accept(max_sync_jobs);
+	_visitor.type_field("max_sync_ahead", 24); _visitor.accept(max_sync_ahead);
+	_visitor.type_field("num_sync_retries", 25); _visitor.accept(num_sync_retries);
+	_visitor.type_field("replay_height", 26); _visitor.accept(replay_height);
+	_visitor.type_field("num_vdf_threads", 27); _visitor.accept(num_vdf_threads);
+	_visitor.type_field("vdf_check_divider", 28); _visitor.accept(vdf_check_divider);
+	_visitor.type_field("vdf_verify_divider", 29); _visitor.accept(vdf_verify_divider);
+	_visitor.type_field("opencl_device", 30); _visitor.accept(opencl_device);
+	_visitor.type_field("do_sync", 31); _visitor.accept(do_sync);
+	_visitor.type_field("db_replay", 32); _visitor.accept(db_replay);
+	_visitor.type_field("show_warnings", 33); _visitor.accept(show_warnings);
+	_visitor.type_field("storage_path", 34); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 35); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 36); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 37); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(38);
 }
 
 

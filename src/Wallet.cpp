@@ -109,13 +109,9 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	tx->note = tx_note_e::TRANSFER;
 	tx->add_output(currency, dst_addr, amount);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
 	}
@@ -141,13 +137,9 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 		}
 		tx->add_output(currency, entry.first, entry.second);
 	}
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Sent many with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
@@ -163,9 +155,6 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	update_cache(index);
 
 	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
 	if(auto contract = node->get_contract(src_addr)) {
 		if(auto owner = contract->get_owner()) {
 			options_.owner_map.emplace(src_addr, *owner);
@@ -186,7 +175,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
 	}
@@ -228,14 +217,11 @@ Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	tx->execute.push_back(op);
 
 	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
 	options_.owner_map.emplace(currency, owner);
 
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Minted " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
 	}
@@ -258,13 +244,9 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 	tx->note = tx_note_e::DEPLOY;
 	tx->deploy = contract;
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Deployed " << contract->get_type_name() << " with cost " << tx->static_cost << " as " << addr_t(tx->id) << " (" << tx->id << ")";
 	}
@@ -297,14 +279,11 @@ Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& 
 		throw std::logic_error("contract not owned by wallet");
 	}
 	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
 	options_.owner_map.emplace(address, *owner);
 
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Mutated [" << address << "] via " << method["__type"] << " with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
@@ -328,13 +307,9 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	tx->note = tx_note_e::EXECUTE;
 	tx->execute.push_back(op);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
@@ -360,13 +335,9 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 	tx->note = tx_note_e::DEPOSIT;
 	tx->execute.push_back(op);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
@@ -389,8 +360,9 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	offer->binary = params->offer_binary;
 	offer->init_method = "init";
 	offer->init_args.emplace_back(owner_addr.to_string());
+	offer->init_args.emplace_back(bid_currency.to_string());
 	offer->init_args.emplace_back(ask_currency.to_string());
-	offer->init_args.emplace_back(ask_amount);
+	offer->init_args.emplace_back(((uint128_t(bid_amount) << 64) / ask_amount).str());
 	offer->init_args.emplace_back();
 
 	auto tx = Transaction::create();
@@ -398,19 +370,15 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	tx->deploy = offer;
 
 	auto op = operation::Deposit::create();
-	op->method = "open";
+	op->method = "deposit";
 	op->amount = bid_amount;
 	op->currency = bid_currency;
 	op->user = owner_addr;
 	tx->execute.push_back(op);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
-	wallet->complete(tx, options_);
+	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options_.auto_send) {
+	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Offering " << bid_amount << " [" << bid_currency << "] for " << ask_amount
 				<< " [" << ask_currency << "] with cost " << tx->static_cost << " (" << tx->id << ")";
@@ -418,30 +386,137 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	return tx;
 }
 
-std::shared_ptr<const Transaction> Wallet::accept_offer(
-			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const
+std::shared_ptr<const Transaction> Wallet::offer_trade(
+			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
+	const auto offer = node->get_offer(address);
 
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
 
-	const auto currency = to_addr(node->read_storage_field(address, "ask_currency").first);
-	const auto amount = to_uint(node->read_storage_field(address, "ask_amount").first);
+	auto options_ = options;
+	options_.note = tx_note_e::TRADE;
+	return deposit(index, address, "trade", args, amount, offer.ask_currency, options_);
+}
+
+std::shared_ptr<const Transaction> Wallet::accept_offer(
+			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	const auto offer = node->get_offer(address);
+
+	std::vector<vnx::Variant> args;
+	args.emplace_back(wallet->get_address(dst_addr).to_string());
+	args.emplace_back(offer.bid_balance);
+
+	auto options_ = options;
+	options_.note = tx_note_e::TRADE;
+	return deposit(index, address, "accept", args, offer.ask_amount, offer.ask_currency, options_);
+}
+
+std::shared_ptr<const Transaction> Wallet::cancel_offer(
+			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
+{
+	const auto offer = node->get_offer(address);
+
+	auto options_ = options;
+	options_.user = offer.owner;
+	return execute(index, address, "cancel", {}, options_);
+}
+
+std::shared_ptr<const Transaction> Wallet::offer_withdraw(
+			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
+{
+	const auto offer = node->get_offer(address);
+
+	auto options_ = options;
+	options_.user = offer.owner;
+	return execute(index, address, "withdraw", {}, options_);
+}
+
+std::shared_ptr<const Transaction> Wallet::swap_trade(
+		const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
+		const vnx::optional<uint64_t>& min_trade, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	const auto info = node->get_swap_info(address);
+	int token = -1;
+	for(int i = 0; i < 2; ++i) {
+		if(currency == info.tokens[i]) {
+			token = i;
+		}
+	}
+	if(token < 0) {
+		throw std::logic_error("invalid currency for swap");
+	}
+	std::vector<vnx::Variant> args;
+	args.emplace_back(token);
+	args.emplace_back(wallet->get_address(0).to_string());
+	args.emplace_back(min_trade);
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;
 	return deposit(index, address, "trade", args, amount, currency, options_);
 }
 
-std::shared_ptr<const Transaction> Wallet::cancel_offer(
-			const uint32_t& index, const addr_t& address, const spend_options_t& options) const
+std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
+		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const
 {
-	const auto owner = to_addr(node->read_storage_field(address, "owner").first);
+	const auto wallet = get_wallet(index);
+	update_cache(index);
 
-	auto options_ = options;
-	options_.user = owner;
-	return execute(index, address, "cancel", {}, options_);
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::DEPOSIT;
+
+	const auto info = node->get_swap_info(address);
+	for(size_t i = 0; i < 2; ++i) {
+		if(amount[i]) {
+			auto op = operation::Deposit::create();
+			op->address = address;
+			op->method = "add_liquid";
+			op->args = {vnx::Variant(i)};
+			op->amount = amount[i];
+			op->currency = info.tokens[i];
+			op->user = wallet->get_address(0);
+			tx->execute.push_back(op);
+		}
+	}
+	wallet->complete(tx, options);
+
+	if(tx->is_signed() && options.auto_send) {
+		send_off(index, tx);
+		log(INFO) << "Added liquidity to [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	}
+	return tx;
+}
+
+std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
+		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+	update_cache(index);
+
+	auto tx = Transaction::create();
+	tx->note = tx_note_e::WITHDRAW;
+
+	for(size_t i = 0; i < 2; ++i) {
+		if(amount[i]) {
+			auto op = operation::Execute::create();
+			op->address = address;
+			op->method = "rem_liquid";
+			op->args = {vnx::Variant(i), vnx::Variant(amount[i])};
+			op->user = wallet->get_address(0);
+			tx->execute.push_back(op);
+		}
+	}
+	wallet->complete(tx, options);
+
+	if(tx->is_signed() && options.auto_send) {
+		send_off(index, tx);
+		log(INFO) << "Removed liquidity from [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	}
+	return tx;
 }
 
 std::shared_ptr<const Transaction> Wallet::complete(
@@ -453,12 +528,8 @@ std::shared_ptr<const Transaction> Wallet::complete(
 	const auto wallet = get_wallet(index);
 	update_cache(index);
 
-	auto options_ = options;
-	if(!options_.expire_delta) {
-		options_.expire_delta = default_expire;
-	}
 	auto copy = vnx::clone(tx);
-	wallet->complete(copy, options_);
+	wallet->complete(copy, options);
 	return copy;
 }
 
@@ -544,12 +615,18 @@ void Wallet::update_cache(const uint32_t& index) const
 		const auto addresses = wallet->get_all_addresses();
 		const auto balances = node->get_all_balances(addresses);
 		const auto contracts = node->get_contracts_owned_by(addresses);
+		const auto liquidity = node->get_swap_liquidity_by(addresses);
 		const auto history = wallet->pending_tx.empty() ? std::vector<hash_t>() :
 				node->get_tx_ids_since(wallet->height - std::min(params->commit_delay, wallet->height));
 
 		wallet->external_balance_map.clear();
 		for(const auto& entry : node->get_total_balances(contracts)) {
 			wallet->external_balance_map[entry.first] += entry.second;
+		}
+		for(const auto& entry: liquidity) {
+			for(const auto& entry2 : entry.second) {
+				wallet->external_balance_map[entry2.first] += entry2.second;
+			}
 		}
 		wallet->update_cache(balances, history, height);
 		wallet->last_update = now;
@@ -672,7 +749,8 @@ std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address)
 	return amounts;
 }
 
-std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const uint32_t& index) const
+std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(
+		const uint32_t& index, const vnx::optional<std::string>& type_name) const
 {
 	const auto wallet = get_wallet(index);
 	const auto addresses = node->get_contracts_by(wallet->get_all_addresses());
@@ -680,12 +758,17 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(const ui
 
 	std::map<addr_t, std::shared_ptr<const Contract>> result;
 	for(size_t i = 0; i < addresses.size() && i < contracts.size(); ++i) {
-		result[addresses[i]] = contracts[i];
+		if(auto contract = contracts[i]) {
+			if(!type_name || contract->get_type_name() == *type_name) {
+				result[addresses[i]] = contract;
+			}
+		}
 	}
 	return result;
 }
 
-std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(const uint32_t& index) const
+std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(
+		const uint32_t& index, const vnx::optional<std::string>& type_name) const
 {
 	const auto wallet = get_wallet(index);
 	const auto addresses = node->get_contracts_owned_by(wallet->get_all_addresses());
@@ -693,15 +776,31 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(co
 
 	std::map<addr_t, std::shared_ptr<const Contract>> result;
 	for(size_t i = 0; i < addresses.size() && i < contracts.size(); ++i) {
-		result[addresses[i]] = contracts[i];
+		if(auto contract = contracts[i]) {
+			if(!type_name || contract->get_type_name() == *type_name) {
+				result[addresses[i]] = contract;
+			}
+		}
 	}
 	return result;
 }
 
-vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const std::string& state) const
+std::vector<virtual_plot_info_t> Wallet::get_virtual_plots(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+	return node->get_virtual_plots(node->get_contracts_owned_by(wallet->get_all_addresses()));
+}
+
+vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
 {
 	const auto wallet = get_wallet(index);
 	return node->get_offers_by(wallet->get_all_addresses(), state);
+}
+
+std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Wallet::get_swap_liquidity(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+	return node->get_swap_liquidity_by(wallet->get_all_addresses());
 }
 
 addr_t Wallet::get_address(const uint32_t& index, const uint32_t& offset) const
@@ -806,18 +905,19 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 		if(enable_bls) {
 			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
 		}
+		std::shared_ptr<ECDSA_Wallet> wallet;
 		if(config.with_passphrase && !passphrase) {
 			const auto info_path = database_path + "info_" + config.finger_print + ".dat";
 			const auto info = vnx::read_from_file<WalletFile>(info_path);
 			if(!info) {
 				log(WARN) << "Missing info file: " << info_path;
 			}
-			wallets[index] = std::make_shared<ECDSA_Wallet>(
+			wallet = std::make_shared<ECDSA_Wallet>(
 					key_file->seed_value, (info ? info->addresses : std::vector<addr_t>()), config, params);
-		} else {
-			auto wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config, params);
 			wallets[index] = wallet;
-
+		} else {
+			wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config, params);
+			wallets[index] = wallet;
 			if(passphrase) {
 				unlock(index, *passphrase);
 				wallet->lock();
@@ -825,6 +925,7 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 				unlock(index, "");
 			}
 		}
+		wallet->default_expire = default_expire;
 	} else {
 		throw std::runtime_error("failed to read key file: " + key_path);
 	}

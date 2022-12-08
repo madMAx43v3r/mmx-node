@@ -119,10 +119,10 @@ private:
 		std::unordered_set<uint64_t> failed;
 		std::unordered_set<uint64_t> pending;
 		std::unordered_set<uint64_t> succeeded;
-		std::unordered_map<uint64_t, hash_t> got_hash;
-		std::unordered_map<uint32_t, uint64_t> request_map;				// [request id, client]
-		std::unordered_map<hash_t, int64_t> pending_blocks;				// [hash, timeout]
-		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;
+		std::unordered_map<uint64_t, std::pair<hash_t, hash_t>> got_hash;	// [client, [block hash, content hash]]
+		std::unordered_map<uint32_t, uint64_t> request_map;					// [request id, client]
+		std::unordered_map<hash_t, int64_t> pending_blocks;					// [content hash, timeout]
+		std::unordered_map<hash_t, std::shared_ptr<const Block>> blocks;	// [content hash, block]
 	};
 
 	struct fetch_job_t {

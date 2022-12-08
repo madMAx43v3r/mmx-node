@@ -16,9 +16,11 @@ namespace mmx {
 struct MMX_EXPORT exec_entry_t {
 	
 	
+	uint32_t height = 0;
 	::mmx::hash_t txid;
 	std::string method;
 	std::vector<::vnx::Variant> args;
+	vnx::optional<::mmx::addr_t> user;
 	vnx::optional<std::pair<::mmx::addr_t, uint64_t>> deposit;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -61,12 +63,14 @@ struct MMX_EXPORT exec_entry_t {
 
 template<typename T>
 void exec_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<exec_entry_t>(4);
-	_visitor.type_field("txid", 0); _visitor.accept(txid);
-	_visitor.type_field("method", 1); _visitor.accept(method);
-	_visitor.type_field("args", 2); _visitor.accept(args);
-	_visitor.type_field("deposit", 3); _visitor.accept(deposit);
-	_visitor.template type_end<exec_entry_t>(4);
+	_visitor.template type_begin<exec_entry_t>(6);
+	_visitor.type_field("height", 0); _visitor.accept(height);
+	_visitor.type_field("txid", 1); _visitor.accept(txid);
+	_visitor.type_field("method", 2); _visitor.accept(method);
+	_visitor.type_field("args", 3); _visitor.accept(args);
+	_visitor.type_field("user", 4); _visitor.accept(user);
+	_visitor.type_field("deposit", 5); _visitor.accept(deposit);
+	_visitor.template type_end<exec_entry_t>(6);
 }
 
 

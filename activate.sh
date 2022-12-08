@@ -25,7 +25,7 @@ cp "${PASSWD_PATH}" "${MMX_HOME}PASSWD"
 if [ -f "${MMX_HOME}NETWORK" ]; then
 	NETWORK=$(cat "${MMX_HOME}NETWORK")
 else
-	NETWORK=testnet8
+	NETWORK=testnet9
 	echo ${NETWORK} > "${MMX_HOME}NETWORK"
 fi
 
@@ -43,5 +43,5 @@ if [ "${MMX_DATA}" != "${MMX_HOME}" ]; then
 fi
 
 export MMX_NETWORK=${MMX_DATA}${NETWORK}/
-export PATH=$PATH:$PWD/build:$PWD/build/vnx-base/tools
+export PATH=$PATH:$PWD/build:$PWD/build/tools:$PWD/build/vnx-base/tools
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/build:$PWD/build/vnx-base:$PWD/build/vnx-addons:$PWD/build/basic-opencl

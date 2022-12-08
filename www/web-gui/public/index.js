@@ -3,6 +3,13 @@ function validate_address(address) {
 	return address && address.length == 62 && address.startsWith("mmx1");
 }
 
+function get_short_addr(address, length) {
+	if(!length) {
+		length = 10;
+	}
+	return address.substring(0, length) + '...' + address.substring(62 - length);
+}
+
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
 const Wallet = {
@@ -111,6 +118,27 @@ const AccountLog = {
 		<account-tx-history :index="index" :limit="200"></account-tx-history>
 	`
 }
+const AccountPlots = {
+	props: {
+		index: Number
+	},
+	template: `
+		<div>
+			<router-link :to="'/wallet/account/' + index + '/create/virtualplot'">
+				<v-btn outlined>New Plot</v-btn>
+			</router-link>
+			<account-plots class="my-2" :index="index"></account-plots>
+		</div>
+	`
+}
+const AccountLiquid = {
+	props: {
+		index: Number
+	},
+	template: `
+		<account-liquid :index="index" :limit="1000"></account-liquid>
+	`
+}
 const AccountDetails = {
 	props: {
 		index: Number
@@ -155,7 +183,7 @@ const Market = {
 	},
 	template: `
 		<div>
-			<market-menu :wallet_="wallet" :bid_="bid" :ask_="ask" :page="$route.meta.page"></market-menu>
+			<market-menu :wallet_="wallet" :page="$route.meta.page"></market-menu>
 			<router-view :key="$route.path" :wallet="wallet" :bid="bid" :ask="ask"></router-view>
 		</div>
 		`
@@ -170,7 +198,6 @@ const MarketOffers = {
 		<market-offers :wallet="wallet" :bid="bid" :ask="ask" :limit="200"></market-offers>
 		`
 }
-
 const MarketHistory = {
 	props: {
 		bid: null,
@@ -178,6 +205,65 @@ const MarketHistory = {
 	},
 	template: `
 		<market-history :bid="bid" :ask="ask" :limit="200"></market-history>
+		`
+}
+
+const Swap = {
+	props: {
+		address: null,
+	},
+	data() {
+		return {
+			wallet: null,
+		}
+	},
+	template: `
+		<v-card>
+			<v-card-text>
+				<wallet-menu @wallet-select="(i) => wallet=i"></wallet-menu>
+				<template v-if="address">
+					<swap-info :address="address"></swap-info>
+					<swap-sub-menu :address="address"></swap-sub-menu>
+				</template>
+				<div class="my-2">
+					<router-view :address="address" :wallet="wallet"></router-view>
+				</div>
+			</v-card-text>
+		</v-card>
+		`
+}
+const SwapMarket = {
+	template: `
+		<div>
+			<swap-menu></swap-menu>
+			<swap-list :token="$route.params.token" :currency="$route.params.currency" :limit="200"></swap-list>
+		</div>
+		`
+}
+const SwapTrade = {
+	props: {
+		wallet: null,
+		address: null
+	},
+	template: `
+		<swap-trade :wallet="wallet" :address="address"></swap-trade>
+		`
+}
+const SwapHistory = {
+	props: {
+		address: null
+	},
+	template: `
+		<swap-history :address="address" :limit="200"></swap-history>
+		`
+}
+const SwapLiquid = {
+	props: {
+		wallet: null,
+		address: null
+	},
+	template: `
+		<swap-liquid :wallet="wallet" :address="address"></swap-liquid>
 		`
 }
 
@@ -400,6 +486,7 @@ Vue.component('main-menu', {
 			<v-tab to="/farmer">{{ $t('main_menu.farmer') }}</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
+			<v-tab to="/swap">Swap</v-tab>
 			<v-spacer></v-spacer>
 			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
 			<template v-if="!$route.meta.is_login && !$isWinGUI">

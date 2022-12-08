@@ -10,12 +10,15 @@ add_custom_command(TARGET mmx PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${CMAKE_SOURCE_DIR}/www/ $<TARGET_FILE_DIR:mmx>/www/)
 add_custom_command(TARGET mmx PRE_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${CMAKE_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:mmx>/data/)
+add_custom_command(TARGET mmx PRE_BUILD
  	COMMAND ${CMAKE_COMMAND} -E copy_directory
  		${CMAKE_SOURCE_DIR}/scripts/win/ $<TARGET_FILE_DIR:mmx>)
 
 if(NOT MMX_VERSION MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
 	string(TIMESTAMP BUILD_TIMESTAMP "%Y%m%d")
-	set(MMX_VERSION "v0.8.0.${BUILD_TIMESTAMP}")
+	set(MMX_VERSION "v0.9.0.${BUILD_TIMESTAMP}")
 endif()
 
 message(STATUS "MMX_VERSION=${MMX_VERSION}")
@@ -34,7 +37,7 @@ set(CPACK_PACKAGE_VERSION_MINOR ${MMX_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${MMX_VERSION_PATCH})
 
 include(cmake/product_version/generate_product_version.cmake)
-set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/mmx.ico")
+set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/cmake/mmx.ico")
 set(MMX_FRIENDLY_STRING "MMX Node ${MMX_VERSION}")
 
 list(APPEND APP_FILES
@@ -107,6 +110,7 @@ install(FILES
 install(DIRECTORY kernel/ DESTINATION kernel COMPONENT applications)
 install(DIRECTORY config/ DESTINATION config COMPONENT applications)
 install(DIRECTORY www/ DESTINATION www COMPONENT applications)
+install(DIRECTORY data/ DESTINATION data COMPONENT applications)
 install(DIRECTORY scripts/win/ DESTINATION ./ COMPONENT applications)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT applications)
 

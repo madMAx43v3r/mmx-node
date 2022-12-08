@@ -14,6 +14,7 @@ class MMX_EXPORT Wallet_get_contracts_owned : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
+	vnx::optional<std::string> type_name;
 	
 	typedef ::vnx::Value Super;
 	
@@ -57,9 +58,10 @@ public:
 
 template<typename T>
 void Wallet_get_contracts_owned::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_get_contracts_owned>(1);
+	_visitor.template type_begin<Wallet_get_contracts_owned>(2);
 	_visitor.type_field("index", 0); _visitor.accept(index);
-	_visitor.template type_end<Wallet_get_contracts_owned>(1);
+	_visitor.type_field("type_name", 1); _visitor.accept(type_name);
+	_visitor.template type_end<Wallet_get_contracts_owned>(2);
 }
 
 

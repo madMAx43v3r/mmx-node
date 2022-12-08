@@ -17,6 +17,8 @@ class BlockHeader {
 	uint128 weight;
 	uint128 total_weight;
 	
+	uint netspace_ratio;
+	
 	ulong vdf_iters;
 	hash_t vdf_output[2];
 	
@@ -24,8 +26,10 @@ class BlockHeader {
 	
 	Transaction* tx_base;
 	
+	uint static_cost;
+	uint total_cost;
+	
 	uint tx_count;
-	uint tx_cost;
 	uint tx_fees;
 	
 	hash_t tx_hash;

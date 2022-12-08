@@ -18,31 +18,35 @@
 
 namespace mmx {
 
-bool Node::add_proof(	const uint32_t height, const hash_t& challenge,
+void Node::add_proof(	const uint32_t height, const hash_t& challenge,
 						std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac)
 {
-	auto& map = proof_map[challenge];
-	const auto best_score = map.empty() ? params->score_threshold : map.begin()->second.proof->score;
+	auto& list = proof_map[challenge];
 
-	if(proof->score > best_score) {
-		return false;
-	}
-	if(map.empty()) {
-		challenge_map.emplace(height, challenge);
-	} else if(proof->score < best_score) {
-		map.clear();
-	}
 	const auto hash = proof->calc_hash();
-	if(map.count(hash)) {
-		return true;
+	for(const auto& entry : list) {
+		if(hash == entry.hash) {
+			return;
+		}
 	}
-	auto& data = map[hash];
+	if(list.empty()) {
+		challenge_map.emplace(height, challenge);
+	}
+	proof_data_t data;
+	data.hash = hash;
 	data.height = height;
-	data.farmer_mac = farmer_mac;
 	data.proof = proof;
+	data.farmer_mac = farmer_mac;
+	list.push_back(data);
 
-	log(DEBUG) << "Got new best proof for height " << height << " with score " << proof->score;
-	return true;
+	std::sort(list.begin(), list.end(),
+		[](const proof_data_t& L, const proof_data_t& R) -> bool {
+			return L.proof->score < R.proof->score;
+		});
+
+	if(list.size() > max_blocks_per_height) {
+		list.resize(max_blocks_per_height);
+	}
 }
 
 bool Node::verify(std::shared_ptr<const ProofResponse> value)
@@ -114,37 +118,32 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 			return 0;
 		}
 	}
-	auto fork = find_fork(hash);
-	auto block = fork ? fork->block : get_header(hash);
+	auto head = find_fork(hash);
+	auto block = head ? head->block : get_header(hash);
 	if(!block) {
 		throw std::logic_error("no such block");
 	}
 	const auto root = get_root();
-	const auto since = block->height - std::min(params->virtual_lifetime, block->height);
+	const auto key = std::make_pair(plot_id, addr_t());
 
 	uint128 balance = 0;
-	balance_table.find(std::make_pair(plot_id, addr_t()), balance, std::min(root->height, block->height));
+	balance_table.find(key, balance, std::min(root->height, block->height));
 
-	if(block->height > params->virtual_lifetime) {
-		uint128 offset = 0;
-		balance_table.find(std::make_pair(plot_id, addr_t()), offset, block->height - params->virtual_lifetime);
-		clamped_sub_assign(balance, offset);
-	}
-	while(fork) {
-		const auto& block = fork->block;
-		if(block->height <= root->height || block->height < since) {
-			break;
-		}
-		for(const auto& tx : block->get_all_transactions()) {
-			if(!tx->did_fail()) {
-				for(const auto& out : tx->get_outputs()) {
-					if(out.address == plot_id && out.contract == addr_t()) {
-						balance += out.amount;
-					}
+	if(head) {
+		for(const auto& fork : get_fork_line(head)) {
+			{
+				auto iter = fork->balance.added.find(key);
+				if(iter != fork->balance.added.end()) {
+					balance += iter->second;
+				}
+			}
+			{
+				auto iter = fork->balance.removed.find(key);
+				if(iter != fork->balance.removed.end()) {
+					clamped_sub_assign(balance, iter->second);
 				}
 			}
 		}
-		fork = fork->prev.lock();
 	}
 	if(balance.upper()) {
 		throw std::logic_error("balance overflow");
@@ -191,7 +190,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		}
 		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
 		if(balance == 0) {
-			throw std::logic_error("virtual plot (still) has zero balance: " + stake->contract.to_string());
+			throw std::logic_error("virtual plot has zero balance: " + stake->contract.to_string());
 		}
 		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
 	}
@@ -362,11 +361,11 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	// add dummy blocks
 	const auto root = get_root();
 	if(proof->height == root->height + 1) {
-		add_dummy_blocks(root);
+		add_dummy_block(root);
 	}
 	const auto range = fork_index.equal_range(proof->height - 1);
 	for(auto iter = range.first; iter != range.second; ++iter) {
-		add_dummy_blocks(iter->second->block);
+		add_dummy_block(iter->second->block);
 	}
 	trigger_update();
 }
@@ -404,7 +403,6 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 		point->output[1] = proof->get_output(1);
 		point->infused = proof->infuse[0];
 		point->proof = proof;
-		// TODO: use actual receive time
 		point->recv_time = time_begin;
 
 		add_task([this, proof, point]() {

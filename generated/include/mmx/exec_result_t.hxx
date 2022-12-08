@@ -20,6 +20,7 @@ struct MMX_EXPORT exec_result_t {
 	vnx::bool_t did_fail = 0;
 	uint32_t total_cost = 0;
 	uint32_t total_fee = 0;
+	uint32_t error_code = 0;
 	std::vector<::mmx::txin_t> inputs;
 	std::vector<::mmx::txout_t> outputs;
 	vnx::optional<std::string> message;
@@ -67,14 +68,15 @@ struct MMX_EXPORT exec_result_t {
 
 template<typename T>
 void exec_result_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<exec_result_t>(6);
+	_visitor.template type_begin<exec_result_t>(7);
 	_visitor.type_field("did_fail", 0); _visitor.accept(did_fail);
 	_visitor.type_field("total_cost", 1); _visitor.accept(total_cost);
 	_visitor.type_field("total_fee", 2); _visitor.accept(total_fee);
-	_visitor.type_field("inputs", 3); _visitor.accept(inputs);
-	_visitor.type_field("outputs", 4); _visitor.accept(outputs);
-	_visitor.type_field("message", 5); _visitor.accept(message);
-	_visitor.template type_end<exec_result_t>(6);
+	_visitor.type_field("error_code", 3); _visitor.accept(error_code);
+	_visitor.type_field("inputs", 4); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 5); _visitor.accept(outputs);
+	_visitor.type_field("message", 6); _visitor.accept(message);
+	_visitor.template type_end<exec_result_t>(7);
 }
 
 

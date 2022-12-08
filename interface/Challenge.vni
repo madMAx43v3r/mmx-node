@@ -6,6 +6,8 @@ class Challenge {
 	
 	hash_t challenge;
 	
+	hash_t diff_block_hash;
+	
 	ulong space_diff;
 	
 	

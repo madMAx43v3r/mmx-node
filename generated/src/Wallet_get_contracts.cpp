@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_contracts::VNX_TYPE_HASH(0x9ff1932bcec18d57ull);
-const vnx::Hash64 Wallet_get_contracts::VNX_CODE_HASH(0xec5adce57e4e0c0ull);
+const vnx::Hash64 Wallet_get_contracts::VNX_CODE_HASH(0x69ba1c3c779991e9ull);
 
 vnx::Hash64 Wallet_get_contracts::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,12 +47,14 @@ void Wallet_get_contracts::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_get_contracts;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, type_name);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_get_contracts::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_contracts\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
+	_out << ", \"type_name\": "; vnx::write(_out, type_name);
 	_out << "}";
 }
 
@@ -66,6 +68,7 @@ vnx::Object Wallet_get_contracts::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.get_contracts";
 	_object["index"] = index;
+	_object["type_name"] = type_name;
 	return _object;
 }
 
@@ -73,6 +76,8 @@ void Wallet_get_contracts::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "index") {
 			_entry.second.to(index);
+		} else if(_entry.first == "type_name") {
+			_entry.second.to(type_name);
 		}
 	}
 }
@@ -81,12 +86,17 @@ vnx::Variant Wallet_get_contracts::get_field(const std::string& _name) const {
 	if(_name == "index") {
 		return vnx::Variant(index);
 	}
+	if(_name == "type_name") {
+		return vnx::Variant(type_name);
+	}
 	return vnx::Variant();
 }
 
 void Wallet_get_contracts::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
+	} else if(_name == "type_name") {
+		_value.to(type_name);
 	}
 }
 
@@ -114,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_contracts::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_contracts";
 	type_code->type_hash = vnx::Hash64(0x9ff1932bcec18d57ull);
-	type_code->code_hash = vnx::Hash64(0xec5adce57e4e0c0ull);
+	type_code->code_hash = vnx::Hash64(0x69ba1c3c779991e9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -122,12 +132,18 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_contracts::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_contracts>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_get_contracts_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "index";
 		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.is_extended = true;
+		field.name = "type_name";
+		field.code = {33, 32};
 	}
 	type_code->build();
 	return type_code;
@@ -177,6 +193,7 @@ void read(TypeInput& in, ::mmx::Wallet_get_contracts& value, const TypeCode* typ
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
+			case 1: vnx::read(in, value.type_name, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -197,6 +214,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_contracts& value, const Type
 	}
 	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.index);
+	vnx::write(out, value.type_name, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_contracts& value) {

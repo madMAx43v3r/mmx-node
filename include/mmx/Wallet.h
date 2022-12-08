@@ -63,11 +63,27 @@ protected:
 			const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const addr_t& bid_currency,
 			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
 
+	std::shared_ptr<const Transaction> offer_trade(
+			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction> accept_offer(
 			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const override;
 
+	std::shared_ptr<const Transaction> offer_withdraw(
+			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction> cancel_offer(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> swap_trade(
+			const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
+			const vnx::optional<uint64_t>& min_trade, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> swap_add_liquid(
+			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> swap_rem_liquid(
+			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
@@ -108,11 +124,17 @@ protected:
 
 	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const override;
 
-	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(const uint32_t& index) const override;
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(
+			const uint32_t& index, const vnx::optional<std::string>& type_name) const override;
 
-	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(const uint32_t& index) const override;
+	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(
+			const uint32_t& index, const vnx::optional<std::string>& type_name) const override;
 
-	vector<offer_data_t> get_offers(const uint32_t& index, const std::string& state) const override;
+	std::vector<virtual_plot_info_t> get_virtual_plots(const uint32_t& index) const override;
+
+	vector<offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const override;
+
+	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity(const uint32_t& index) const override;
 
 	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 

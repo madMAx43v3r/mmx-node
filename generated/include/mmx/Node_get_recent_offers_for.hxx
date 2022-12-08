@@ -17,7 +17,7 @@ public:
 	vnx::optional<::mmx::addr_t> bid;
 	vnx::optional<::mmx::addr_t> ask;
 	int32_t limit = 100;
-	std::string state = "OPEN";
+	vnx::bool_t state = true;
 	
 	typedef ::vnx::Value Super;
 	

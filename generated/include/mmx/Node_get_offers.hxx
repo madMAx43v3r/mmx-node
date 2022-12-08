@@ -14,7 +14,7 @@ class MMX_EXPORT Node_get_offers : public ::vnx::Value {
 public:
 	
 	uint32_t since = 0;
-	std::string state;
+	vnx::bool_t state = 0;
 	
 	typedef ::vnx::Value Super;
 	

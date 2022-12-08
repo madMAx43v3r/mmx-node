@@ -16,6 +16,9 @@
 
 #include <uint128_t.h>
 #include <uint256_t.h>
+#include <cmath>
+
+static constexpr double UINT64_MAX_DOUBLE = 18446744073709549568.0;
 
 
 namespace mmx {
@@ -43,21 +46,46 @@ double to_value(const uint64_t amount, const int decimals) {
 }
 
 inline
+double to_value(const uint128_t amount, const int decimals) {
+	return (double(amount.upper()) * pow(2, 64) + double(amount.lower())) * pow(10, -decimals);
+}
+
+inline
 double to_value(const uint64_t amount, std::shared_ptr<const ChainParams> params) {
 	return to_value(amount, params->decimals);
 }
 
 inline
-uint64_t to_amount(const double value, const int decimals) {
-	return value * pow(10, decimals);
+uint64_t to_amount(const double value, const int decimals)
+{
+	const auto amount = value * pow(10, decimals);
+	if(amount < 0) {
+		throw std::runtime_error("negative amount: " + std::to_string(value));
+	}
+	if(amount > UINT64_MAX_DOUBLE) {
+		throw std::runtime_error("amount overflow: " + std::to_string(value));
+	}
+	if(amount == std::numeric_limits<double>::quiet_NaN()) {
+		throw std::runtime_error("invalid amount: " + std::to_string(value));
+	}
+	return amount;
 }
 
 inline
-uint64_t to_amount_exact(const double value, const int decimals) {
+uint64_t to_amount_exact(const double value, const int decimals)
+{
 	const auto amount = value * pow(10, decimals);
+	if(amount < 0) {
+		throw std::runtime_error("negative amount: " + std::to_string(value));
+	}
+	if(amount > UINT64_MAX_DOUBLE) {
+		throw std::runtime_error("amount overflow: " + std::to_string(value));
+	}
+	if(amount == std::numeric_limits<double>::quiet_NaN()) {
+		throw std::runtime_error("invalid amount: " + std::to_string(value));
+	}
 	if(fmod(amount, 1)) {
-		throw std::invalid_argument("cannot represent value: "
-				+ std::to_string(value) + " -> " + std::to_string(to_value(amount, decimals)));
+		throw std::invalid_argument("cannot represent value: " + std::to_string(value));
 	}
 	return amount;
 }
@@ -78,6 +106,25 @@ bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 						const hash_t& challenge, const hash_t& plot_id)
 {
 	return hash_t(challenge + plot_id).to_uint256() >> (256 - params->plot_filter) == 0;
+}
+
+
+inline
+uint64_t to_effective_space(const uint64_t& num_bytes)
+{
+	return (762 * uint128_t(num_bytes)) / 1000;
+}
+
+inline
+uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
+{
+	return ((uint256_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target;
+}
+
+inline
+uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
+{
+	return to_effective_space(calc_total_netspace_ideal(params, space_diff));
 }
 
 inline
@@ -105,8 +152,7 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 inline
 uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	return ((uint256_t(space_diff) * params->space_diff_constant * params->reward_factor.value) << (params->plot_filter + params->score_bits))
-			/ params->score_target / params->reward_factor.inverse;
+	return (uint128_t(calc_total_netspace_ideal(params, space_diff)) * params->reward_factor.value) / params->reward_factor.inverse;
 }
 
 inline
@@ -120,16 +166,9 @@ uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, cons
 }
 
 inline
-uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
-{
-	return 0.762 * uint64_t(
-			((uint256_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target);
-}
-
-inline
 uint64_t calc_virtual_plot_size(std::shared_ptr<const ChainParams> params, const uint64_t balance)
 {
-	return (762 * ((uint128_t(balance) * params->space_diff_constant) / (params->virtual_space_constant))) / 1000;
+	return to_effective_space((uint128_t(balance) * params->space_diff_constant) / (params->virtual_space_constant));
 }
 
 inline
@@ -145,15 +184,19 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
+uint32_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, const uint64_t prev_ratio, const bool is_og_proof)
+{
+	const uint64_t value = is_og_proof ? 1024 : 0;
+	return ((prev_ratio * ((1 << params->max_diff_adjust) - 1)) + (value << params->max_diff_adjust)) >> params->max_diff_adjust;
+}
+
+inline
 uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
-							std::shared_ptr<const BlockHeader> block, const bool have_farmer_sig)
+							std::shared_ptr<const BlockHeader> block)
 {
 	uint256_t weight = 0;
 	if(block->proof) {
-		if(have_farmer_sig) {
-			weight += params->score_threshold;
-		}
-		weight += params->score_threshold - block->proof->score;
+		weight += params->score_threshold + (params->score_threshold - block->proof->score);
 		weight *= diff_block->space_diff;
 	} else {
 		weight += 1;

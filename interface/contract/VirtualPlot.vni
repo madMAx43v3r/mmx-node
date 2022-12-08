@@ -4,7 +4,7 @@ import mmx.hash_t;
 import mmx.addr_t;
 import mmx.bls_pubkey_t;
 
-class VirtualPlot extends mmx.Contract {
+class VirtualPlot extends mmx.contract.Executable {
 	
 	bls_pubkey_t farmer_key;
 	
@@ -14,11 +14,5 @@ class VirtualPlot extends mmx.Contract {
 	bool is_valid() const;
 	
 	hash_t calc_hash(bool full_hash) const;
-	
-	ulong calc_cost(mmx.ChainParams* params) const;
-	
-	bool is_locked(mmx.Context* context) const;
-	
-	void bls_transfer(bls_pubkey_t new_farmer_key);
 	
 }

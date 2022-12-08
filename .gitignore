@@ -30,7 +30,6 @@
 *.exe
 *.out
 *.app
-*.dat
 
 *.bak
 CMakeUserPresets.json
@@ -48,4 +47,5 @@ CMakeUserPresets.json
 /tmp
 /.idea
 /_deps
+/*.dat
 /www/web-gui/public/GIT_COMMIT_HASH.json

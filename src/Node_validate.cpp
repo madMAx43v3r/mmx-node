@@ -6,6 +6,7 @@
  */
 
 #include <mmx/Node.h>
+#include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Binary.hxx>
@@ -233,12 +234,27 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_diff < params->min_time_diff) {
 		throw std::logic_error("time_diff < min_time_diff");
 	}
+	if(block->static_cost > params->max_block_size) {
+		throw std::logic_error("block size too high: " + std::to_string(uint64_t(block->static_cost)));
+	}
+	if(block->total_cost > params->max_block_cost) {
+		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(block->total_cost)));
+	}
 	if(block->farmer_sig) {
 		// Note: farmer_sig already verified together with proof
 		validate_diff_adjust(block->time_diff, prev->time_diff);
+
+		const auto netspace_ratio = calc_new_netspace_ratio(
+				params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
+		if(block->netspace_ratio != netspace_ratio) {
+			throw std::logic_error("invalid netspace_ratio: " + std::to_string(block->netspace_ratio) + " != " + std::to_string(netspace_ratio));
+		}
 	} else {
 		if(block->time_diff != prev->time_diff) {
 			throw std::logic_error("invalid time_diff adjust");
+		}
+		if(block->netspace_ratio != prev->netspace_ratio) {
+			throw std::logic_error("invalid netspace_ratio adjust");
 		}
 	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
@@ -246,12 +262,13 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		throw std::logic_error("invalid space_diff adjust");
 	}
 	const auto diff_block = get_diff_header(block);
-	const auto weight = calc_block_weight(params, diff_block, block, block->farmer_sig);
+	const auto weight = calc_block_weight(params, diff_block, block);
+	const auto total_weight = prev->total_weight + block->weight;
 	if(block->weight != weight) {
 		throw std::logic_error("invalid block weight: " + block->weight.str(10) + " != " + weight.str(10));
 	}
-	if(block->total_weight != prev->total_weight + block->weight) {
-		throw std::logic_error("invalid block total_weight");
+	if(block->total_weight != total_weight) {
+		throw std::logic_error("invalid total weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
 	}
 
 	auto context = new_exec_context();
@@ -307,8 +324,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	hash_t failed_tx;
 	std::exception_ptr failed_ex;
-	std::atomic<uint64_t> total_fees {0};
-	std::atomic<uint64_t> total_cost {0};
 
 	const auto tx_count = block->tx_list.size();
 #pragma omp parallel for if(is_synced || tx_count >= 16)
@@ -320,8 +335,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			if(validate(tx, context)) {
 				throw std::logic_error("missing exec_result");
 			}
-			total_fees += tx->exec_result->total_fee;
-			total_cost += tx->exec_result->total_cost;
 		} catch(...) {
 #pragma omp critical
 			{
@@ -338,15 +351,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			throw std::logic_error(std::string(ex.what()) + " (" + failed_tx.to_string() + ")");
 		}
 	}
-	if(total_cost > params->max_block_cost) {
-		throw std::logic_error("block cost too high: " + std::to_string(uint64_t(total_cost)));
-	}
 	if(auto tx = block->tx_base) {
 		if(validate(tx, context, block)) {
 			throw std::logic_error("missing exec_result");
 		}
 		const auto base_reward = calc_block_reward(block);
-		const auto base_allowed = calc_final_block_reward(params, base_reward, total_fees);
+		const auto base_allowed = calc_final_block_reward(params, base_reward, block->tx_fees);
 		if(tx->exec_result->total_fee > base_allowed) {
 			throw std::logic_error("coin base over-spend");
 		}
@@ -376,7 +386,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::unordered_map<addr_t, uint128>& amounts,
 					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
-					uint64_t& tx_cost, const bool is_public) const
+					uint64_t& tx_cost, uint32_t& error_code, const bool is_public) const
 {
 	const auto address = exec->address == addr_t() ? tx->id : exec->address;
 
@@ -420,6 +430,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	try {
 		execute(tx, context, state, exec_inputs, exec_outputs, contract_cache, storage_cache, engine, exec->method, tx_cost, is_public);
 	} catch(...) {
+		error_code = engine->error_code;
 		failed_ex = std::current_exception();
 	}
 	tx_cost += engine->total_cost;
@@ -547,8 +558,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	if(!tx->is_valid(params)) {
 		throw mmx::static_failure("invalid tx");
 	}
-	if(tx->static_cost > params->max_block_cost) {
-		throw mmx::static_failure("static_cost > max_block_cost");
+	if(tx->static_cost > params->max_block_size) {
+		throw mmx::static_failure("static_cost > max_block_size");
 	}
 	if(tx_index.count(tx->id)) {
 		throw mmx::static_failure("duplicate tx");
@@ -564,6 +575,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	contract_cache_t contract_cache(&context->contract_cache);
 	std::unordered_map<addr_t, uint128> amounts;
 	std::exception_ptr failed_ex;
+	uint32_t error_code = 0;
 
 	if(!base) {
 		if(static_fee > tx->max_fee_amount) {
@@ -722,7 +734,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				auto exec = operation::Execute::create();
 				exec->method = executable->init_method;
 				exec->args = executable->init_args;
-				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, false);
+				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error_code, false);
 			}
 		}
 
@@ -762,7 +774,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 			else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 			{
-				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, true);
+				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error_code, true);
 			}
 		}
 
@@ -825,8 +837,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		out = std::make_shared<exec_result_t>();
 		out->total_cost = tx_cost;
 		out->total_fee = tx_fee;
-		out->inputs = exec_inputs;
-		out->outputs = exec_outputs;
 
 		if(failed_ex) {
 			try {
@@ -837,6 +847,10 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				out->message = msg;
 			}
 			out->did_fail = true;
+			out->error_code = error_code;
+		} else {
+			out->inputs = exec_inputs;
+			out->outputs = exec_outputs;
 		}
 	} else {
 		const auto result = tx->exec_result;
@@ -860,26 +874,36 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			throw std::logic_error("tx fee mismatch: "
 					+ std::to_string(result->total_fee) + " != " + std::to_string(tx_fee));
 		}
-		if(result->inputs.size() != exec_inputs.size()) {
-			throw std::logic_error("execution input count mismatch: "
-					+ std::to_string(result->inputs.size()) + " != " + std::to_string(exec_inputs.size()));
+		if(result->error_code != error_code) {
+			throw std::logic_error("error code mismatch: "
+					+ std::to_string(result->error_code) + " != " + std::to_string(error_code));
 		}
-		if(result->outputs.size() != exec_outputs.size()) {
-			throw std::logic_error("execution output count mismatch: "
-					+ std::to_string(result->outputs.size()) + " != " + std::to_string(exec_outputs.size()));
-		}
-		for(size_t i = 0; i < exec_inputs.size(); ++i) {
-			const auto& lhs = exec_inputs[i];
-			const auto& rhs = result->inputs[i];
-			if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.flags != rhs.flags) {
-				throw std::logic_error("execution input mismatch at index " + std::to_string(i));
+		if(result->did_fail) {
+			if(result->inputs.size() || result->outputs.size()) {
+				throw std::logic_error("failed tx cannot have execution inputs / outputs");
 			}
-		}
-		for(size_t i = 0; i < exec_outputs.size(); ++i) {
-			const auto& lhs = exec_outputs[i];
-			const auto& rhs = result->outputs[i];
-			if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount) {
-				throw std::logic_error("execution output mismatch at index " + std::to_string(i));
+		} else {
+			if(result->inputs.size() != exec_inputs.size()) {
+				throw std::logic_error("execution input count mismatch: "
+						+ std::to_string(result->inputs.size()) + " != " + std::to_string(exec_inputs.size()));
+			}
+			if(result->outputs.size() != exec_outputs.size()) {
+				throw std::logic_error("execution output count mismatch: "
+						+ std::to_string(result->outputs.size()) + " != " + std::to_string(exec_outputs.size()));
+			}
+			for(size_t i = 0; i < exec_inputs.size(); ++i) {
+				const auto& lhs = exec_inputs[i];
+				const auto& rhs = result->inputs[i];
+				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.flags != rhs.flags) {
+					throw std::logic_error("execution input mismatch at index " + std::to_string(i));
+				}
+			}
+			for(size_t i = 0; i < exec_outputs.size(); ++i) {
+				const auto& lhs = exec_outputs[i];
+				const auto& rhs = result->outputs[i];
+				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount) {
+					throw std::logic_error("execution output mismatch at index " + std::to_string(i));
+				}
 			}
 		}
 	}

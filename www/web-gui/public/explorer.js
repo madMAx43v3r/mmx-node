@@ -65,7 +65,8 @@ Vue.component('blocks-table', {
 				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
 				{ text: this.$t('explore_blocks.score'), value: 'score' },
 				{ text: this.$t('explore_blocks.reward'), value: 'reward' },
-				{ text: "Size", value: 'tx_cost_ratio' },
+				{ text: "Size", value: 'static_cost_ratio' },
+				{ text: "Cost", value: 'total_cost_ratio' },
 				{ text: this.$t('explore_blocks.hash'), value: 'hash' },
 			]
 		}
@@ -101,8 +102,12 @@ Vue.component('blocks-table', {
 				{{item.tx_base && item.tx_base.exec_result ? (item.tx_base.exec_result.total_fee_value).toFixed(3) + "&nbsp;&nbsp;MMX" : null}}
 			</template>
 			
-			<template v-slot:item.tx_cost_ratio="{ item }">
-				{{(item.tx_cost_ratio * 100).toFixed(1)}}&nbsp;%
+			<template v-slot:item.static_cost_ratio="{ item }">
+				{{(item.static_cost_ratio * 100).toFixed(1)}}&nbsp;%
+			</template>
+			
+			<template v-slot:item.total_cost_ratio="{ item }">
+				{{(item.total_cost_ratio * 100).toFixed(1)}}&nbsp;%
 			</template>
 
 			<template v-slot:item.hash="{ item }">

@@ -15,6 +15,4 @@ class Block extends BlockHeader {
 	
 	vector<Transaction*> get_all_transactions() const;
 	
-	void validate() const;
-	
 }
