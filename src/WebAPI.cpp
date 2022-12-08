@@ -1363,10 +1363,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							node->get_swap_user_info(address, user,
 								[this, request_id, info, context](const swap_user_info_t& user_info) {
 									vnx::Object out;
+									const std::vector<vnx::Object> empty = {to_amount_object(0, 0), to_amount_object(0, 0)};
 									std::vector<std::string> symbols(2);
-									std::vector<vnx::Object> balance(2);
-									std::vector<vnx::Object> fees_earned(2);
-									std::vector<vnx::Object> remove_amount(2);
+									std::vector<vnx::Object> balance(empty);
+									std::vector<vnx::Object> fees_earned(empty);
+									std::vector<vnx::Object> remove_amount(empty);
 									const auto fees_earned_ = info.get_earned_fees(user_info);
 									const auto remove_amount_ = info.get_remove_amount(user_info, {user_info.balance[0], user_info.balance[1]});
 									for(int i = 0; i < 2; ++i) {
