@@ -184,12 +184,13 @@ void Node::main()
 					}
 					block_index.insert(block->height, std::make_pair(block_offset, std::make_pair(block->hash, block->content_hash)));
 
+					if(block->height) {
+						auto fork = std::make_shared<fork_t>();
+						fork->block = block;
+						fork->is_vdf_verified = true;
+						add_fork(fork);
+					}
 					apply(block, result, true);
-
-					auto fork = std::make_shared<fork_t>();
-					fork->block = block;
-					fork->is_vdf_verified = true;
-					add_fork(fork);
 
 					history.push_back(block);
 					if(history.size() > params->commit_delay || block->height == 0) {
