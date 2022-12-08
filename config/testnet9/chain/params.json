@@ -29,5 +29,6 @@
 	"initial_space_diff": 1,
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
-	"virtual_space_constant": 1524
+	"virtual_space_constant": 1524,
+	"swap_binary": "mmx1wnj287q353mn6wnjaay7shvw0447gmc9gtgdgams02jdvr40yghqe4vnlg"
 }

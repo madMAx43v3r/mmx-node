@@ -1,7 +1,7 @@
 {
 	"__type": "mmx.contract.Executable",
 	"name": "MMT / MMX Swap",
-	"binary": "mmx183fcx8p7fntt0uj0n60dstk9u3p32y6smvl9v2n0ahsjcwfuccnqdfar8m",
+	"binary": "mmx1wnj287q353mn6wnjaay7shvw0447gmc9gtgdgams02jdvr40yghqe4vnlg",
 	"init_method": "init",
 	"init_args": ["mmx1tnalsdp24s2scmd3tl8mrwtu2n6dpt5rfajnuxy4qv2mdwe4j8fswg3wfu", "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev"]
 }
