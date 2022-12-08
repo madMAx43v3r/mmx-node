@@ -304,7 +304,7 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 16, bin->fields["balance"], vm::MEM_STACK + 1);
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 17, bin->fields["user_total"], vm::MEM_STACK + 1);
 		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 16, vm::MEM_STACK + 17);
-		const auto jump_base = code.size();
+		const auto jump_base_1 = code.size();
 		code.emplace_back(vm::OP_JUMPN, 0, 0, vm::MEM_STACK + 10);
 		// ret_amount = (amount * balance[i]) / user_total[i];
 		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 15, vm::MEM_STACK + 16, vm::MEM_STACK + 2);
@@ -313,9 +313,13 @@ int main(int argc, char** argv)
 		code.emplace_back(vm::OP_COPY, 0, vm::MEM_STACK + 18, vm::MEM_STACK + 1);
 		code.emplace_back(vm::OP_ADD, 0, vm::MEM_STACK + 18, vm::MEM_STACK + 18, const_map["1"]);
 		code.emplace_back(vm::OP_AND, 0, vm::MEM_STACK + 18, vm::MEM_STACK + 18, const_map["1"]);
-		// const auto trade_amount = ((balance[k] - user_total[k]) * amount) / user_total[i];
+		// if(balance[k] > user_total[k]) {
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 20, bin->fields["balance"], vm::MEM_STACK + 18);
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 21, bin->fields["user_total"], vm::MEM_STACK + 18);
+		code.emplace_back(vm::OP_CMP_GT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 20, vm::MEM_STACK + 21);
+		const auto jump_base_2 = code.size();
+		code.emplace_back(vm::OP_JUMPN, 0, 0, vm::MEM_STACK + 10);
+		// const auto trade_amount = ((balance[k] - user_total[k]) * amount) / user_total[i];
 		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 19, vm::MEM_STACK + 20, vm::MEM_STACK + 21);
 		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 19, vm::MEM_STACK + 19, vm::MEM_STACK + 2);
 		code.emplace_back(vm::OP_DIV, 0, vm::MEM_STACK + 19, vm::MEM_STACK + 19, vm::MEM_STACK + 17);
@@ -325,7 +329,8 @@ int main(int argc, char** argv)
 		// balance[k] -= trade_amount;
 		code.emplace_back(vm::OP_SUB, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 20, vm::MEM_STACK + 20, vm::MEM_STACK + 19);
 		code.emplace_back(vm::OP_SET, 0, bin->fields["balance"], vm::MEM_STACK + 18, vm::MEM_STACK + 20);
-		code[jump_base].a = code.size();
+		code[jump_base_1].a = code.size();
+		code[jump_base_2].a = code.size();
 		// send ret_amount
 		code.emplace_back(vm::OP_GET, vm::OPFLAG_HARD_FAIL, vm::MEM_STACK + 18, bin->fields["tokens"], vm::MEM_STACK + 1);
 		code.emplace_back(vm::OP_SEND, 0, vm::MEM_EXTERN + vm::EXTERN_USER, vm::MEM_STACK + 15, vm::MEM_STACK + 18);

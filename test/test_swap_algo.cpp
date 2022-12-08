@@ -63,10 +63,12 @@ public:
 			ret_amount = (amount * balance[i]) / user_total[i];
 
 			const int k = (i + 1) % 2;
-			const auto trade_amount = ((balance[k] - user_total[k]) * amount) / user_total[i];
-			user.wallet[k] += trade_amount;
-			wallet[k] -= trade_amount;
-			balance[k] -= trade_amount;
+			if(balance[k] > user_total[k]) {
+				const auto trade_amount = ((balance[k] - user_total[k]) * amount) / user_total[i];
+				user.wallet[k] += trade_amount;
+				wallet[k] -= trade_amount;
+				balance[k] -= trade_amount;
+			}
 		}
 		user.wallet[i] += ret_amount;
 		user.balance[i] -= amount;
