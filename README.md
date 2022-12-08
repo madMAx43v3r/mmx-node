@@ -26,8 +26,8 @@ Roadmap
 | Release | Planned | Description |
 | :--- | :--- | :--- |
 | testnet7 | Sep 2022 | Finished. <sup>[1]</sup> |
-| testnet8 | Oct 2022 | Active. Incentivized testnet. <sup>[2]</sup> |
-| testnet9 | Dec 2022 | Planned. Incentivized testnet. <sup>[2]</sup> |
+| testnet8 | Oct 2022 | Finished. Incentivized testnet, until height 425k. <sup>[2]</sup> |
+| testnet9 | Dec 2022 | Active. Incentivized testnet. <sup>[2]</sup> |
 | testnetX | _tbd_ | As needed. <sup>[2]</sup> |
 | mainnet | _tbd_ | Expected Q1 2023. |
 
