@@ -460,19 +460,16 @@ public:
 
 	void accept(const swap_info_t& value) {
 		auto tmp = render(value, context);
+		const std::vector<vnx::Object> empty = {to_amount_object(0, 0), to_amount_object(0, 0)};
+		std::vector<int> decimals(2);
+		std::vector<std::string> symbols(2);
+		std::vector<vnx::Object> wallet(empty);
+		std::vector<vnx::Object> balance(empty);
+		std::vector<vnx::Object> fees_paid(empty);
+		std::vector<vnx::Object> user_total(empty);
 		if(context) {
-			const currency_t* tokens[2] = {};
 			for(int i = 0; i < 2; ++i) {
-				tokens[i] = context->find_currency(value.tokens[i]);
-			}
-			std::vector<int> decimals(2);
-			std::vector<std::string> symbols(2);
-			std::vector<vnx::Object> wallet(2);
-			std::vector<vnx::Object> balance(2);
-			std::vector<vnx::Object> fees_paid(2);
-			std::vector<vnx::Object> user_total(2);
-			for(int i = 0; i < 2; ++i) {
-				if(auto token = tokens[i]) {
+				if(auto token = context->find_currency(value.tokens[i])) {
 					symbols[i] = token->symbol;
 					decimals[i] = token->decimals;
 					wallet[i] = to_amount_object(value.wallet[i], token->decimals);
@@ -481,15 +478,15 @@ public:
 					user_total[i] = to_amount_object(value.user_total[i], token->decimals);
 				}
 			}
-			tmp["symbols"] = symbols;
-			tmp["decimals"] = decimals;
-			tmp["wallet"] = wallet;
-			tmp["balance"] = balance;
-			tmp["fees_paid"] = fees_paid;
-			tmp["user_total"] = user_total;
-			tmp["price"] = value.get_price();
-			tmp["display_price"] = value.get_price() * pow(10, decimals[0] - decimals[1]);
 		}
+		tmp["symbols"] = symbols;
+		tmp["decimals"] = decimals;
+		tmp["wallet"] = wallet;
+		tmp["balance"] = balance;
+		tmp["fees_paid"] = fees_paid;
+		tmp["user_total"] = user_total;
+		tmp["price"] = value.get_price();
+		tmp["display_price"] = value.get_price() * pow(10, decimals[0] - decimals[1]);
 		set(tmp);
 	}
 
