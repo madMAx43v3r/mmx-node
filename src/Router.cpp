@@ -955,8 +955,7 @@ void Router::exec_fork_check()
 								req->height = height;
 								for(const auto& entry : peer_map) {
 									const auto& peer = entry.second;
-									// TODO: only consider outbound peers for mainnet
-									if(peer->is_synced && peer->info.type == node_type_e::FULL_NODE) {
+									if(peer->is_outbound && peer->is_synced && peer->info.type == node_type_e::FULL_NODE) {
 										const auto id = send_request(peer, req);
 										fork_check.request_map[id] = peer->client;
 									}
