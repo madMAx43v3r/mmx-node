@@ -27,14 +27,14 @@ uint64_t swap_info_t::get_trade_amount(const uint32_t& i, const uint64_t& amount
 	const auto k = (i + 1) % 2;
 	const uint256_t trade_amount = (amount * balance[k]) / (balance[i] + amount);
 	if(trade_amount < 4) {
-		throw std::logic_error("trade amount < 4");
+		throw std::logic_error("get_trade_amount(): trade amount < 4");
 	}
 	const uint256_t fee_rate = std::max((trade_amount * max_fee_rate) / balance[k], min_fee_rate);
 	const uint256_t fee_amount = std::max((trade_amount * fee_rate) >> FRACT_BITS, uint256_t(1));
 
 	const auto actual_amount = std::min<uint128>(trade_amount - fee_amount, wallet[k]);
 	if(actual_amount.upper()) {
-		throw std::logic_error("trade amount overflow");
+		throw std::logic_error("get_trade_amount(): trade amount overflow");
 	}
 	return actual_amount;
 }
@@ -51,7 +51,7 @@ std::array<uint64_t, 2> swap_info_t::get_earned_fees(const swap_user_info_t& use
 	}
 	for(int i = 0; i < 2; ++i) {
 		if(result[i].upper()) {
-			throw std::logic_error("amount overflow");
+			throw std::logic_error("get_earned_fees(): amount overflow");
 		}
 	}
 	return {result[0], result[1]};
@@ -62,7 +62,7 @@ std::array<uint64_t, 2> swap_info_t::get_remove_amount(const swap_user_info_t& u
 	std::array<uint128_t, 2> result = {};
 	for(int i = 0; i < 2; ++i) {
 		if(amount[i] > user.balance[i]) {
-			throw std::logic_error("amount > user balance");
+			throw std::logic_error("get_remove_amount(): amount > user balance");
 		}
 		if(balance[i] < user_total[i]) {
 			const int k = (i + 1) % 2;
@@ -76,7 +76,7 @@ std::array<uint64_t, 2> swap_info_t::get_remove_amount(const swap_user_info_t& u
 	}
 	for(int i = 0; i < 2; ++i) {
 		if(result[i].upper()) {
-			throw std::logic_error("amount overflow");
+			throw std::logic_error("get_remove_amount(): amount overflow (i = " + std::to_string(i) + ")");
 		}
 	}
 	return {result[0], result[1]};
