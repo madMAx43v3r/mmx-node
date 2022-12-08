@@ -2,6 +2,8 @@ package mmx;
 
 struct swap_info_t {
 	
+	string name;
+	
 	addr_t address;
 	
 	addr_t tokens[2];

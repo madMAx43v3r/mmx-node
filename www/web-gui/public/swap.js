@@ -151,6 +151,7 @@ Vue.component('swap-list', {
 					<v-simple-table>
 						<thead>
 							<tr>
+								<th>Name</th>
 								<th>Token</th>
 								<th>Currency</th>
 								<th>Price</th>
@@ -161,6 +162,7 @@ Vue.component('swap-list', {
 						</thead>
 						<tbody>
 							<tr v-for="item in data" :key="item.address">
+								<td>{{item.name}}</td>
 								<td>
 									<template v-if="item.symbols[0] == 'MMX'">MMX</template>
 									<template v-else>

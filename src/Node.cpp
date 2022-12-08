@@ -1253,11 +1253,14 @@ std::vector<swap_info_t> Node::get_swaps(const uint32_t& since, const vnx::optio
 
 swap_info_t Node::get_swap_info(const addr_t& address) const
 {
-	auto data = read_storage(address);
-	if(data.empty()) {
+	auto swap = get_contract_as<const contract::Executable>(address);
+	if(!swap) {
 		throw std::runtime_error("no such swap: " + address.to_string());
 	}
+	auto data = read_storage(address);
+
 	swap_info_t out;
+	out.name = swap->name;
 	out.address = address;
 	const auto tokens = read_storage_array(address, to_ref(data["tokens"]));
 	const auto balance = read_storage_array(address, to_ref(data["balance"]));
