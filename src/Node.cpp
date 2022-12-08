@@ -266,16 +266,6 @@ void Node::main()
 		commit(block);
 	}
 
-	swap_binary = get_contract_as<const contract::Binary>(params->swap_binary);
-	offer_binary = get_contract_as<const contract::Binary>(params->offer_binary);
-	if(swap_binary) {
-		swap_users_addr = swap_binary->find_field("users");
-	}
-	if(offer_binary) {
-		offer_bid_currency_addr = offer_binary->find_field("bid_currency");
-		offer_ask_currency_addr = offer_binary->find_field("ask_currency");
-	}
-
 	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_proof, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
@@ -1042,15 +1032,11 @@ offer_data_t Node::get_offer(const addr_t& address) const
 
 int Node::get_offer_state(const addr_t& address) const
 {
-	if(offer_bid_currency_addr) {
-		if(get_balance(address, to_addr(read_storage_var(address, *offer_bid_currency_addr)))) {
-			return 1;
-		}
+	if(get_balance(address, to_addr(read_storage_var(address, vm::MEM_STATIC + 3)))) {
+		return 1;
 	}
-	if(offer_ask_currency_addr) {
-		if(get_balance(address, to_addr(read_storage_var(address, *offer_ask_currency_addr)))) {
-			return 2;
-		}
+	if(get_balance(address, to_addr(read_storage_var(address, vm::MEM_STATIC + 4)))) {
+		return 2;
 	}
 	return 0;
 }
@@ -1288,13 +1274,9 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 
 swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& user) const
 {
-	if(!swap_users_addr) {
-		throw std::logic_error("no swaps");
-	}
 	swap_user_info_t out;
-
 	const auto key = storage->lookup(address, vm::uint_t(user.to_uint256()));
-	const auto user_ref = storage->read(address, *swap_users_addr, key);
+	const auto user_ref = storage->read(address, vm::MEM_STATIC + 6, key);
 	if(!user_ref) {
 		return out;
 	}
