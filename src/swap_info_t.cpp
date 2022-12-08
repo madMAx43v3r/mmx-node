@@ -67,7 +67,9 @@ std::array<uint64_t, 2> swap_info_t::get_remove_amount(const swap_user_info_t& u
 		if(balance[i] < user_total[i]) {
 			const int k = (i + 1) % 2;
 			result[i] += (uint256_t(amount[i]) * balance[i]) / user_total[i];
-			result[k] += (uint256_t(balance[k] - user_total[k]) * amount[i]) / user_total[i];
+			if(balance[k] > user_total[k]) {
+				result[k] += (uint256_t(balance[k] - user_total[k]) * amount[i]) / user_total[i];
+			}
 		} else {
 			result[i] += amount[i];
 		}
