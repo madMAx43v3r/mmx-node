@@ -2157,7 +2157,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 						}
 					}
 					if(executable->binary == params->offer_binary) {
-						if(exec->method == "trade" && deposit) {
+						if((exec->method == "trade" || exec->method == "accept") && deposit) {
 							trade_log.insert(std::make_pair(block->height, ticket), std::make_tuple(address, tx->id, deposit->amount));
 						}
 					}

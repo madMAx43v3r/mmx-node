@@ -47,6 +47,9 @@ int main(int argc, char** argv)
 	const_map["fail_currency"] = constant.size();
 	constant.push_back(vm::binary_t::alloc("currency mismatch"));
 
+	const_map["fail_bid_amount"] = constant.size();
+	constant.push_back(vm::binary_t::alloc("not enough bid amount left"));
+
 	{
 		size_t off = 1;
 		bin->fields["owner"] = vm::MEM_STATIC + (off++);
@@ -142,6 +145,42 @@ int main(int argc, char** argv)
 		// send bid amount to dst_addr
 		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
 		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 13, vm::MEM_STACK + 12, bin->fields["bid_currency"]);
+		code.emplace_back(vm::OP_RET);
+		bin->methods[method.name] = method;
+	}
+	{
+		mmx::contract::method_t method;
+		method.name = "accept";
+		method.args = {"dst_addr", "min_bid_amount"};
+		method.is_public = true;
+		method.is_payable = true;
+		method.entry_point = code.size();
+		// check partner if set
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, bin->fields["partner"], const_map["null"]);
+		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 4, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, bin->fields["partner"], vm::MEM_EXTERN + vm::EXTERN_USER);
+		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_partner"]);
+		// check ask_currency
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["zero"]);
+		code.emplace_back(vm::OP_CMP_EQ, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 11, bin->fields["ask_currency"]);
+		code.emplace_back(vm::OP_JUMPI, 0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_currency"]);
+		// check for sufficient bid amount
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 13, vm::MEM_EXTERN + vm::EXTERN_BALANCE, bin->fields["bid_currency"]);
+		code.emplace_back(vm::OP_CMP_LT, 0, vm::MEM_STACK + 10, vm::MEM_STACK + 13, vm::MEM_STACK + 2);
+		code.emplace_back(vm::OP_JUMPN, 0, code.size() + 2, vm::MEM_STACK + 10);
+		code.emplace_back(vm::OP_FAIL, 0, const_map["fail_bid_amount"], 1);
+		// get ask amount
+		code.emplace_back(vm::OP_GET, 0, vm::MEM_STACK + 11, vm::MEM_EXTERN + vm::EXTERN_DEPOSIT, const_map["one"]);
+		// calc bid amount
+		code.emplace_back(vm::OP_MUL, vm::OPFLAG_CATCH_OVERFLOW, vm::MEM_STACK + 12, vm::MEM_STACK + 11, bin->fields["inv_price"]);
+		code.emplace_back(vm::OP_SHR, 0, vm::MEM_STACK + 12, vm::MEM_STACK + 12, FRACT_BITS);
+		// clamp to bid balance
+		code.emplace_back(vm::OP_MIN, 0, vm::MEM_STACK + 12, vm::MEM_STACK + 12, vm::MEM_STACK + 13);
+		// send bid amount to dst_addr
+		code.emplace_back(vm::OP_CONV, 0, vm::MEM_STACK + 14, vm::MEM_STACK + 1, vm::CONVTYPE_UINT, vm::CONVTYPE_ADDRESS);
+		code.emplace_back(vm::OP_SEND, 0, vm::MEM_STACK + 14, vm::MEM_STACK + 12, bin->fields["bid_currency"]);
 		code.emplace_back(vm::OP_RET);
 		bin->methods[method.name] = method;
 	}

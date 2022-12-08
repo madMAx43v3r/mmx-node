@@ -408,10 +408,11 @@ std::shared_ptr<const Transaction> Wallet::accept_offer(
 
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
+	args.emplace_back(offer.bid_balance);
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;
-	return deposit(index, address, "trade", args, offer.ask_amount, offer.ask_currency, options_);
+	return deposit(index, address, "accept", args, offer.ask_amount, offer.ask_currency, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::cancel_offer(
