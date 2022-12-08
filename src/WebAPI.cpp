@@ -1309,16 +1309,16 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const size_t limit = iter_limit != query.end() ? vnx::from_string_value<int64_t>(iter_limit->second) : -1;
 		const size_t offset = iter_offset != query.end() ? vnx::from_string_value<int64_t>(iter_offset->second) : 0;
 		node->get_swaps(0, token, currency,
-			[this, request_id, limit, offset](const std::vector<swap_info_t>& list_) {
-				const auto list = get_page(list_, limit, offset);
+			[this, request_id, limit, offset](const std::vector<swap_info_t>& list) {
+				const auto result = get_page(list, limit, offset);
 				std::unordered_set<addr_t> token_set;
-				for(const auto& entry : list) {
+				for(const auto& entry : result) {
 					token_set.insert(entry.tokens[0]);
 					token_set.insert(entry.tokens[1]);
 				}
 				get_context(token_set, request_id,
-					[this, request_id, list](std::shared_ptr<RenderContext> context) {
-						respond(request_id, render_value(list, context));
+					[this, request_id, result](std::shared_ptr<RenderContext> context) {
+						respond(request_id, render_value(result, context));
 					});
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
