@@ -20,7 +20,7 @@ using namespace mmx;
 int main(int argc, char** argv)
 {
 	auto bin = mmx::contract::Binary::create();
-	bin->name = "mmx/offer";
+	bin->name = "mmx/plot";
 
 	std::vector<vm::varptr_t> constant;
 	std::map<std::string, size_t> const_map;
