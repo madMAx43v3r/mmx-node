@@ -13,7 +13,7 @@
 	"vdf_seed": "test9",
 	"reward_factor": {
 		"value": 4,
-		"inverse": 10000000000
+		"inverse": 1000000000000
 	},
 	"min_reward": 250000,
 	"min_txfee": 2000,
