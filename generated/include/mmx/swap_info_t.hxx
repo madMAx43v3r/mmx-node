@@ -16,6 +16,7 @@ namespace mmx {
 struct MMX_EXPORT swap_info_t {
 	
 	
+	std::string name;
 	::mmx::addr_t address;
 	std::array<::mmx::addr_t, 2> tokens = {};
 	std::array<::mmx::uint128, 2> wallet = {};
@@ -68,14 +69,15 @@ struct MMX_EXPORT swap_info_t {
 
 template<typename T>
 void swap_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_info_t>(6);
-	_visitor.type_field("address", 0); _visitor.accept(address);
-	_visitor.type_field("tokens", 1); _visitor.accept(tokens);
-	_visitor.type_field("wallet", 2); _visitor.accept(wallet);
-	_visitor.type_field("balance", 3); _visitor.accept(balance);
-	_visitor.type_field("fees_paid", 4); _visitor.accept(fees_paid);
-	_visitor.type_field("user_total", 5); _visitor.accept(user_total);
-	_visitor.template type_end<swap_info_t>(6);
+	_visitor.template type_begin<swap_info_t>(7);
+	_visitor.type_field("name", 0); _visitor.accept(name);
+	_visitor.type_field("address", 1); _visitor.accept(address);
+	_visitor.type_field("tokens", 2); _visitor.accept(tokens);
+	_visitor.type_field("wallet", 3); _visitor.accept(wallet);
+	_visitor.type_field("balance", 4); _visitor.accept(balance);
+	_visitor.type_field("fees_paid", 5); _visitor.accept(fees_paid);
+	_visitor.type_field("user_total", 6); _visitor.accept(user_total);
+	_visitor.template type_end<swap_info_t>(7);
 }
 
 
