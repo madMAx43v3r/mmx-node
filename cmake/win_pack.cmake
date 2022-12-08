@@ -37,7 +37,7 @@ set(CPACK_PACKAGE_VERSION_MINOR ${MMX_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${MMX_VERSION_PATCH})
 
 include(cmake/product_version/generate_product_version.cmake)
-set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/mmx.ico")
+set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/cmake/mmx.ico")
 set(MMX_FRIENDLY_STRING "MMX Node ${MMX_VERSION}")
 
 list(APPEND APP_FILES
