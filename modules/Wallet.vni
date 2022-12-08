@@ -113,6 +113,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	map<addr_t, Contract*> get_contracts_owned(uint index, optional<string> type_name) const;
 	
+	vector<virtual_plot_info_t> get_virtual_plots(uint index) const;
+	
 	vector<offer_data_t> get_offers(uint index, bool state) const;
 	
 	map<addr_t, pair<addr_t, uint128>[2]> get_swap_liquidity(uint index) const;

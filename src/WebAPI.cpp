@@ -405,6 +405,14 @@ public:
 		set(tmp);
 	}
 
+	void accept(const virtual_plot_info_t& value) {
+		auto tmp = render(value, context);
+		if(context) {
+			tmp["balance"] = to_amount_object(value.balance, context->params->decimals);
+		}
+		set(tmp);
+	}
+
 	void accept(const offer_data_t& value) {
 		auto tmp = render(value, context);
 		if(context) {
@@ -1010,49 +1018,6 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 					respond(job->request_id, render_value(job->result));
 				}
 			});
-	}
-}
-
-void WebAPI::render_virtual_plots(const vnx::request_id_t& request_id, const std::map<addr_t, std::shared_ptr<const Contract>>& map) const
-{
-	struct job_t {
-		size_t num_left = 0;
-		vnx::request_id_t request_id;
-		std::vector<vnx::Object> result;
-	};
-	auto job = std::make_shared<job_t>();
-	job->num_left = map.size();
-	job->request_id = request_id;
-	job->result.resize(map.size());
-
-	if(!job->num_left) {
-		respond(request_id, render_value(job->result));
-		return;
-	}
-	const auto context = get_context();
-
-	size_t i = 0;
-	for(const auto& entry : map) {
-		const auto& address = entry.first;
-		if(auto contract = entry.second) {
-			job->result[i] = render(*contract, context);
-		}
-		node->get_balance(address, addr_t(),
-			[this, job, address, i](const uint128& balance) {
-				auto& out = job->result[i];
-				out["address"] = address.to_string();
-				out["balance"] = to_amount_object(balance, params->decimals);
-				out["size_bytes"] = calc_virtual_plot_size(params, balance.lower());
-
-				node->read_storage_field(address, "owner", -1,
-					[this, job, i](const std::pair<vm::varptr_t, uint64_t>& ret) {
-						job->result[i]["owner"] = to_addr(ret.first).to_string();
-						if(--job->num_left == 0) {
-							respond(job->request_id, render_value(job->result));
-						}
-					});
-			});
-		i++;
 	}
 }
 
@@ -1711,8 +1676,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_index = query.find("index");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			wallet->get_contracts_owned(index, std::string("mmx.contract.VirtualPlot"),
-				std::bind(&WebAPI::render_virtual_plots, this, request_id, std::placeholders::_1),
+			wallet->get_virtual_plots(index,
+				[this, request_id](const std::vector<virtual_plot_info_t>& plots) {
+					auto result = plots;
+					std::sort(result.begin(), result.end(),
+						[](const virtual_plot_info_t& L, const virtual_plot_info_t& R) -> bool {
+							return L.balance == R.balance ? L.address < R.address : L.balance > R.balance;
+						});
+					respond(request_id, render_value(result, get_context()));
+				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "wallet/plots?index");

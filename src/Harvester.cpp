@@ -399,13 +399,11 @@ void Harvester::reload()
 	total_balance = 0;
 	if(farm_virtual_plots) {
 		for(const auto& farmer_key : farmer_keys) {
-			for(const auto& entry : node->get_virtual_plots_for(farmer_key)) {
-				if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(entry.second)) {
-					auto& info = virtual_map[entry.first];
-					info.farmer_key = farmer_key;
-					info.balance = node->get_virtual_plot_balance(entry.first);
-					total_balance += info.balance;
-				}
+			for(const auto& plot : node->get_virtual_plots_for(farmer_key)) {
+				auto& info = virtual_map[plot.address];
+				info.farmer_key = plot.farmer_key;
+				info.balance = plot.balance;
+				total_balance += plot.balance;
 			}
 		}
 	}

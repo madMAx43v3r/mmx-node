@@ -784,6 +784,12 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(
 	return result;
 }
 
+std::vector<virtual_plot_info_t> Wallet::get_virtual_plots(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+	return node->get_virtual_plots(node->get_contracts_owned_by(wallet->get_all_addresses()));
+}
+
 vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
 {
 	const auto wallet = get_wallet(index);

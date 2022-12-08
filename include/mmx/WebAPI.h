@@ -72,8 +72,6 @@ private:
 
 	void render_tx_history(const vnx::request_id_t& request_id, const std::vector<tx_log_entry_t>& history) const;
 
-	void render_virtual_plots(const vnx::request_id_t& request_id, const std::map<addr_t, std::shared_ptr<const Contract>>& map) const;
-
 	void render_block_graph(const vnx::request_id_t& request_id, size_t limit, const size_t step, const uint32_t height) const;
 
 	void get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
