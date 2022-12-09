@@ -2308,6 +2308,22 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
+	else if(sub_path == "/node/offer") {
+		const auto iter_address = query.find("id");
+		if(iter_address != query.end()) {
+			const auto address = vnx::from_string_value<addr_t>(iter_address->second);
+			node->get_offer(address,
+				[this, request_id](const offer_data_t& offer) {
+					get_context({offer.bid_currency, offer.ask_currency}, request_id,
+						[this, request_id, offer](std::shared_ptr<RenderContext> context) {
+							respond(request_id, render_value(offer, context));
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "node/offer?id");
+		}
+	}
 	else if(sub_path == "/node/trade_history") {
 		vnx::optional<addr_t> bid;
 		vnx::optional<addr_t> ask;
@@ -2349,7 +2365,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"wallet/history", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap_trade",
 			"farmer/info", "farmer/blocks", "farmer/proofs",
-			"node/offers", "node/trade_history"
+			"node/offers", "node/offer", "node/trade_history"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
