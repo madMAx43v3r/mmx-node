@@ -149,6 +149,10 @@ Vue.component('farmer-plots', {
 				<template v-slot:item.ksize="{ item }">
 					K{{item.ksize}}
 				</template>
+				
+				<template v-slot:item.count="{ item }">
+					<b>{{item.count}}</b>
+				</template>
 			</v-data-table>
 
 			<v-data-table
@@ -161,7 +165,7 @@ Vue.component('farmer-plots', {
 				class="elevation-2"
 			>
 				<template v-slot:item.bytes="{ item }">
-					{{(item.bytes / Math.pow(1000, 4)).toFixed(3)}} TB
+					<b>{{(item.bytes / Math.pow(1000, 4)).toFixed(3)}}</b> TB
 				</template>
 			</v-data-table>
 
