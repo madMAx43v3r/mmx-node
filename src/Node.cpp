@@ -1245,7 +1245,11 @@ std::vector<swap_info_t> Node::get_swaps(const uint32_t& since, const vnx::optio
 	for(const auto& address : entries) {
 		const auto info = get_swap_info(address);
 		if((!token || info.tokens[0] == *token) && (!currency || info.tokens[1] == *currency)) {
-			result.push_back(info);
+			if((info.tokens[0] == addr_t() || contract_type_map.count(info.tokens[0]))
+				&& (info.tokens[1] == addr_t() || contract_type_map.count(info.tokens[1])))
+			{
+				result.push_back(info);
+			}
 		}
 	}
 	return result;
