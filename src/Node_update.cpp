@@ -270,7 +270,7 @@ void Node::update()
 				}
 			}
 			msg << ", took " << elapsed << " sec";
-			log(INFO) << msg.str();
+			log(proof || !is_synced ? INFO : DEBUG) << msg.str();
 		}
 		stuck_timer->reset();
 	}
