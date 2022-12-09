@@ -461,8 +461,10 @@ Vue.component('swap-trade', {
 		return {
 			data: null,
 			buy_amount: null,
+			buy_balance: null,
 			buy_estimate: null,
 			sell_amount: null,
+			sell_balance: null,
 			sell_estimate: null,
 			result: null,
 			error: null,
@@ -472,7 +474,18 @@ Vue.component('swap-trade', {
 		update() {
 			fetch('/wapi/swap/info?id=' + this.address)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.data = data;
+					this.update_wallet();
+				});
+		},
+		update_wallet() {
+			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + this.data.tokens[0])
+				.then(response => response.json())
+				.then(data => this.sell_balance = data ? data.spendable : 0);
+			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + this.data.tokens[1])
+				.then(response => response.json())
+				.then(data => this.buy_balance = data ? data.spendable : 0);
 		},
 		submit(index, amount) {
 			const req = {};
@@ -534,11 +547,22 @@ Vue.component('swap-trade', {
 					<v-card>
 						<v-toolbar color="green lighten-1" elevation="1" dense></v-toolbar>
 						<v-card-text>
-							<v-text-field class="text-align-right"
-								v-model="buy_amount"
-								label="Buy Amount"
-								:suffix="data.symbols[1]">
-							</v-text-field>
+							<v-row>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="buy_balance"
+										label="Wallet Balance"
+										:suffix="data.symbols[1]" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="buy_amount"
+										label="Buy Amount"
+										:suffix="data.symbols[1]">
+									</v-text-field>
+								</v-col>
+							</v-row>
 							<v-text-field class="text-align-right"
 								v-model="buy_estimate"
 								label="You receive (estimated)"
@@ -554,11 +578,22 @@ Vue.component('swap-trade', {
 					<v-card>
 						<v-toolbar color="red lighten-1" elevation="1" dense></v-toolbar>
 						<v-card-text>
-							<v-text-field class="text-align-right"
-								v-model="sell_amount"
-								label="Sell Amount"
-								:suffix="data.symbols[0]">
-							</v-text-field>
+							<v-row>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="sell_balance"
+										label="Wallet Balance"
+										:suffix="data.symbols[0]" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="sell_amount"
+										label="Sell Amount"
+										:suffix="data.symbols[0]">
+									</v-text-field>
+								</v-col>
+							</v-row>
 							<v-text-field class="text-align-right"
 								v-model="sell_estimate"
 								label="You receive (estimated)"

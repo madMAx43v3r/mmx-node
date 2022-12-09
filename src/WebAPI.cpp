@@ -916,14 +916,14 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 		[this, request_id, currency, balances](std::shared_ptr<const RenderContext> context) {
 			Render visitor(context);
 			std::vector<vnx::Object> rows;
-			std::vector<std::string> nfts;
+			std::vector<addr_t> nfts;
 			for(const auto& entry : balances) {
 				if(currency && entry.first != *currency) {
 					continue;
 				}
 				if(auto currency = context->find_currency(entry.first)) {
 					if(currency->is_nft) {
-						nfts.push_back(entry.first.to_string());
+						nfts.push_back(entry.first);
 					} else {
 						const auto& balance = entry.second;
 						vnx::Object row;
@@ -942,10 +942,22 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 					}
 				}
 			}
-			vnx::Object out;
-			out["nfts"] = nfts;
-			out["balances"] = rows;
-			respond(request_id, out);
+			if(currency) {
+				if(rows.empty()) {
+					if(nfts.empty()) {
+						respond(request_id, vnx::Variant());
+					} else {
+						respond(request_id, vnx::Variant(true));
+					}
+				} else {
+					respond(request_id, rows[0]);
+				}
+			} else {
+				vnx::Object out;
+				out["nfts"] = render_value(nfts);
+				out["balances"] = rows;
+				respond(request_id, out);
+			}
 		});
 }
 
@@ -1630,7 +1642,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			if(iter_currency != query.end()) {
 				currency = vnx::from_string<addr_t>(iter_currency->second);
 			}
-			wallet->get_balances(index, with_zero, show_all,
+			wallet->get_balances(index, with_zero, show_all || bool(currency),
 				std::bind(&WebAPI::render_balances, this, request_id, currency, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {

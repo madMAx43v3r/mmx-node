@@ -165,7 +165,8 @@ Vue.component('market-offers', {
 			trade_dialog: false,
 			accept_dialog: false,
 			trade_amount: null,
-			trade_estimate: null
+			trade_estimate: null,
+			wallet_balance: null
 		}
 	},
 	methods: {
@@ -198,6 +199,9 @@ Vue.component('market-offers', {
 			}
 		},
 		trade(offer) {
+			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + offer.ask_currency)
+				.then(response => response.json())
+				.then(data => this.wallet_balance = data ? data.spendable : 0);
 			this.offer = offer;
 			this.trade_amount = null;
 			this.trade_dialog = true;
@@ -287,11 +291,22 @@ Vue.component('market-offers', {
 							{{offer.address}}
 						</v-card-title>
 						<v-card-text>
-							<v-text-field class="text-align-right"
-								v-model="trade_amount"
-								label="You send"
-								:suffix="offer.ask_symbol">
-							</v-text-field>
+							<v-row>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="wallet_balance"
+										label="Wallet Balance"
+										:suffix="offer.ask_symbol" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="trade_amount"
+										label="You send"
+										:suffix="offer.ask_symbol">
+									</v-text-field>
+								</v-col>
+							</v-row>
 							<v-text-field class="text-align-right"
 								v-model="trade_estimate"
 								label="You receive"
