@@ -136,7 +136,6 @@ int main(int argc, char** argv)
 		module->components["/api/farmer/"] = "Farmer";
 		module->components["/api/router/"] = "Router";
 		module->components["/api/harvester/"] = "Harvester";
-		module->components["/api/exchange/"] = "ExchClient";
 		module->components["/gui/"] = "FileServer_1";
 		module.start_detached();
 	}
