@@ -645,6 +645,7 @@ Vue.component('swap-liquid', {
 			user_address: null,
 			amount_0: null,
 			amount_1: null,
+			price: null,
 			result: null,
 			error: null,
 		}
@@ -662,6 +663,20 @@ Vue.component('swap-liquid', {
 			fetch('/wapi/wallet/address?index=' + this.wallet)
 				.then(response => response.json())
 				.then(data => this.user_address = data[0]);
+		},
+		update_price() {
+			if(this.amount_0 && this.amount_1) {
+				this.price = this.amount_1 / this.amount_0;
+			} else {
+				this.price = null;
+			}
+		},
+		match() {
+			if(this.amount_0 && !this.amount_1) {
+				this.amount_1 = parseFloat((this.amount_0 * this.data.display_price).toFixed(this.data.decimals[1]));
+			} else if(!this.amount_0 && this.amount_1) {
+				this.amount_0 = parseFloat((this.amount_1 / this.data.display_price).toFixed(this.data.decimals[0]));
+			}
 		},
 		submit(mode) {
 			const req = {};
@@ -709,6 +724,12 @@ Vue.component('swap-liquid', {
 	watch: {
 		wallet() {
 			this.update_user();
+		},
+		amount_0() {
+			this.update_price();
+		},
+		amount_1() {
+			this.update_price();
 		}
 	},
 	created() {
@@ -724,21 +745,36 @@ Vue.component('swap-liquid', {
 			
 			<v-card v-if="data" class="my-2">
 				<v-card-text>
-					<v-text-field class="text-align-right"
-						v-model="amount_0"
-						label="Token Amount"
-						:suffix="data.symbols[0]">
-					</v-text-field>
-					<v-text-field class="text-align-right"
-						v-model="amount_1"
-						label="Currency Amount"
-						:suffix="data.symbols[1]">
-					</v-text-field>
+					<v-row>
+						<v-col>
+							<v-text-field class="text-align-right"
+								v-model="price"
+								label="Price"
+								:suffix="data.symbols[1] + ' / ' + data.symbols[0]"
+								disabled>
+							</v-text-field>
+						</v-col>
+						<v-col>
+							<v-text-field class="text-align-right"
+								v-model="amount_0"
+								label="Token Amount"
+								:suffix="data.symbols[0]">
+							</v-text-field>
+						</v-col>
+						<v-col>
+							<v-text-field class="text-align-right"
+								v-model="amount_1"
+								label="Currency Amount"
+								:suffix="data.symbols[1]">
+							</v-text-field>
+						</v-col>
+					</v-row>
 				</v-card-text>
 				<v-card-actions class="justify-end">
+					<v-btn @click="match()">Match</v-btn>
+					<v-btn @click="payout()" :disabled="!user || paid || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
 					<v-btn color="green lighten-1" @click="submit(true)" :disabled="!(amount_0 || amount_1)">Add Liquidity</v-btn>
 					<v-btn color="red lighten-1" @click="submit(false)" :disabled="!(amount_0 || amount_1)">Remove Liquidity</v-btn>
-					<v-btn @click="payout()" :disabled="!user || paid || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
 				</v-card-actions>
 			</v-card>
 			
