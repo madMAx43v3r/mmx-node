@@ -666,7 +666,7 @@ Vue.component('swap-liquid', {
 		},
 		update_price() {
 			if(this.amount_0 && this.amount_1) {
-				this.price = this.amount_1 / this.amount_0;
+				this.price = (this.amount_1 / this.amount_0).toPrecision(6);
 			} else {
 				this.price = null;
 			}
