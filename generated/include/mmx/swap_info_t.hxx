@@ -22,6 +22,7 @@ struct MMX_EXPORT swap_info_t {
 	std::array<::mmx::uint128, 2> wallet = {};
 	std::array<::mmx::uint128, 2> balance = {};
 	std::array<::mmx::uint128, 2> fees_paid = {};
+	std::array<::mmx::uint128, 2> fees_claimed = {};
 	std::array<::mmx::uint128, 2> user_total = {};
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -69,15 +70,16 @@ struct MMX_EXPORT swap_info_t {
 
 template<typename T>
 void swap_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_info_t>(7);
+	_visitor.template type_begin<swap_info_t>(8);
 	_visitor.type_field("name", 0); _visitor.accept(name);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("tokens", 2); _visitor.accept(tokens);
 	_visitor.type_field("wallet", 3); _visitor.accept(wallet);
 	_visitor.type_field("balance", 4); _visitor.accept(balance);
 	_visitor.type_field("fees_paid", 5); _visitor.accept(fees_paid);
-	_visitor.type_field("user_total", 6); _visitor.accept(user_total);
-	_visitor.template type_end<swap_info_t>(7);
+	_visitor.type_field("fees_claimed", 6); _visitor.accept(fees_claimed);
+	_visitor.type_field("user_total", 7); _visitor.accept(user_total);
+	_visitor.template type_end<swap_info_t>(8);
 }
 
 
