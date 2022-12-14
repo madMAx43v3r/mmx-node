@@ -314,7 +314,7 @@ Vue.component('market-offers', {
 							</v-text-field>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="primary" @click="submit(offer, trade_amount)">Trade</v-btn>
+							<v-btn color="primary" @click="submit(offer, trade_amount)" :disabled="!(trade_estimate > 0)">Trade</v-btn>
 							<v-btn @click="trade_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
