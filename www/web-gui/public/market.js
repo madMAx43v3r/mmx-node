@@ -267,6 +267,11 @@ Vue.component('market-offers', {
 					}
 				});
 			this.accept_dialog = false;
+		},
+		is_valid_trade() {
+			return this.trade_estimate_data && this.offer
+				&& this.trade_estimate_data.trade.amount > 0
+				&& this.trade_estimate_data.trade.amount <= this.offer.bid_balance;
 		}
 	},
 	watch: {
@@ -321,7 +326,7 @@ Vue.component('market-offers', {
 							</v-text-field>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="primary" @click="submit(offer, trade_amount)" :disabled="!(trade_estimate > 0)">Trade</v-btn>
+							<v-btn color="primary" @click="submit(offer, trade_amount)" :disabled="!is_valid_trade()">Trade</v-btn>
 							<v-btn @click="increase()">Increase</v-btn>
 							<v-btn @click="trade_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
