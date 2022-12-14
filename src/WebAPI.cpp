@@ -466,6 +466,7 @@ public:
 		std::vector<vnx::Object> wallet(empty);
 		std::vector<vnx::Object> balance(empty);
 		std::vector<vnx::Object> fees_paid(empty);
+		std::vector<vnx::Object> fees_claimed(empty);
 		std::vector<vnx::Object> user_total(empty);
 		if(context) {
 			for(int i = 0; i < 2; ++i) {
@@ -475,6 +476,7 @@ public:
 					wallet[i] = to_amount_object(value.wallet[i], token->decimals);
 					balance[i] = to_amount_object(value.balance[i], token->decimals);
 					fees_paid[i] = to_amount_object(value.fees_paid[i], token->decimals);
+					fees_claimed[i] = to_amount_object(value.fees_claimed[i], token->decimals);
 					user_total[i] = to_amount_object(value.user_total[i], token->decimals);
 				}
 			}
@@ -484,6 +486,7 @@ public:
 		tmp["wallet"] = wallet;
 		tmp["balance"] = balance;
 		tmp["fees_paid"] = fees_paid;
+		tmp["fees_claimed"] = fees_claimed;
 		tmp["user_total"] = user_total;
 		tmp["price"] = value.get_price();
 		tmp["display_price"] = value.get_price() * pow(10, decimals[0] - decimals[1]);

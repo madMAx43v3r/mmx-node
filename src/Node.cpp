@@ -1269,6 +1269,7 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 	const auto tokens = read_storage_array(address, to_ref(data["tokens"]));
 	const auto balance = read_storage_array(address, to_ref(data["balance"]));
 	const auto fees_paid = read_storage_array(address, to_ref(data["fees_paid"]));
+	const auto fees_claimed = read_storage_array(address, to_ref(data["fees_claimed"]));
 	const auto user_total = read_storage_array(address, to_ref(data["user_total"]));
 	for(size_t i = 0; i < 2 && i < tokens.size(); ++i) {
 		out.tokens[i] = to_addr(tokens[i]);
@@ -1279,6 +1280,9 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 	}
 	for(size_t i = 0; i < 2 && i < fees_paid.size(); ++i) {
 		out.fees_paid[i] = to_uint(fees_paid[i]);
+	}
+	for(size_t i = 0; i < 2 && i < fees_claimed.size(); ++i) {
+		out.fees_claimed[i] = to_uint(fees_claimed[i]);
 	}
 	for(size_t i = 0; i < 2 && i < user_total.size(); ++i) {
 		out.user_total[i] = to_uint(user_total[i]);
