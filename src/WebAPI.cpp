@@ -1467,8 +1467,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							const auto ask_currency = context->find_currency(info.ask_currency);
 							if(bid_currency && ask_currency) {
 								const auto amount = to_amount_exact(value, ask_currency->decimals);
-								const auto trade_amount = info.get_trade_amount(amount);
-								out["trade"] = to_amount_object(trade_amount, bid_currency->decimals);
+								const auto bid_amount = info.get_bid_amount(amount);
+								out["input"] = to_amount_object(amount, ask_currency->decimals);
+								out["trade"] = to_amount_object(bid_amount, bid_currency->decimals);
+								const auto ask_amount = info.get_ask_amount(bid_amount + 1);
+								if(!amount || double(bid_amount + 1) / ask_amount > double(bid_amount) / amount) {
+									out["next_input"] = to_amount_object(ask_amount, ask_currency->decimals);
+								} else {
+									out["next_input"] = to_amount_object(amount + 1, ask_currency->decimals);
+								}
 							}
 							respond(request_id, render_value(out));
 					});

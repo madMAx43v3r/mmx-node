@@ -166,6 +166,7 @@ Vue.component('market-offers', {
 			accept_dialog: false,
 			trade_amount: null,
 			trade_estimate: null,
+			trade_estimate_data: null,
 			wallet_balance: null
 		}
 	},
@@ -198,6 +199,17 @@ Vue.component('market-offers', {
 					});
 			}
 		},
+		update_estimate() {
+			if(this.offer) {
+				this.trade_estimate = null;
+				fetch('/wapi/offer/trade_estimate?id=' + this.offer.address + '&amount=' + (this.trade_amount > 0 ? this.trade_amount : 0))
+					.then(response => response.json())
+					.then(data => {
+						this.trade_estimate = (data.trade.value).toFixed(this.offer.bid_decimals);
+						this.trade_estimate_data = data;
+					});
+			}
+		},
 		trade(offer) {
 			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + offer.ask_currency)
 				.then(response => response.json())
@@ -205,10 +217,14 @@ Vue.component('market-offers', {
 			this.offer = offer;
 			this.trade_amount = null;
 			this.trade_dialog = true;
+			this.update_estimate();
 		},
 		accept(offer) {
 			this.offer = offer;
 			this.accept_dialog = true;
+		},
+		increase() {
+			this.trade_amount = this.trade_estimate_data.next_input.value;
 		},
 		submit(offer, amount) {
 			const req = {};
@@ -254,17 +270,8 @@ Vue.component('market-offers', {
 		}
 	},
 	watch: {
-		trade_amount(value) {
-			if(this.offer) {
-				this.trade_estimate = null;
-				if(value > 0) {
-					fetch('/wapi/offer/trade_estimate?id=' + this.offer.address + '&amount=' + value)
-						.then(response => response.json())
-						.then(data => {
-							this.trade_estimate = (data.trade.value).toFixed(this.offer.bid_decimals);
-						});
-				}
-			}
+		trade_amount() {
+			this.update_estimate();
 		}
 	},
 	created() {
@@ -315,6 +322,7 @@ Vue.component('market-offers', {
 						</v-card-text>
 						<v-card-actions class="justify-end">
 							<v-btn color="primary" @click="submit(offer, trade_amount)" :disabled="!(trade_estimate > 0)">Trade</v-btn>
+							<v-btn @click="increase()">Increase</v-btn>
 							<v-btn @click="trade_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
