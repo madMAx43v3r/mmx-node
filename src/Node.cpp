@@ -940,6 +940,7 @@ address_info_t Node::get_address_info(const addr_t& address) const
 	for(const auto& entry : get_history({address}, 0)) {
 		switch(entry.type) {
 			case tx_type_e::REWARD:
+			case tx_type_e::VDF_REWARD:
 			case tx_type_e::RECEIVE:
 				info.num_receive++;
 				info.total_receive[entry.contract] += entry.amount;
@@ -973,6 +974,7 @@ std::vector<address_info_t> Node::get_address_infos(const std::vector<addr_t>& a
 		auto& info = result[index_map[entry.address]];
 		switch(entry.type) {
 			case tx_type_e::REWARD:
+			case tx_type_e::VDF_REWARD:
 			case tx_type_e::RECEIVE:
 				info.num_receive++;
 				info.total_receive[entry.contract] += entry.amount;
@@ -2007,6 +2009,17 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	std::unordered_set<hash_t> tx_set;
 	balance_cache_t balance_cache(&balance_map);
 
+	if(block->vdf_reward)
+	{
+		txout_t out;
+		out.address = block->vdf_reward;
+		out.amount = block->vdf_iters / params->vdf_reward_divider;
+
+		recv_log.insert(std::make_tuple(out.address, block->height, counter++),
+					txio_entry_t::create_ex(hash_t(), block->height, tx_type_e::VDF_REWARD, out));
+
+		balance_cache.get(out.address, out.contract) += out.amount;
+	}
 	for(const auto& tx : block->get_all_transactions()) {
 		if(tx) {
 			tx_set.insert(tx->id);

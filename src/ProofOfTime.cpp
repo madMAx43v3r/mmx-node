@@ -37,8 +37,8 @@ std::pair<hash_t, hash_t> ProofOfTime::calc_hash() const
 	write_field(out, "start", 	start);
 	write_field(out, "input", 	input);
 	write_field(out, "infuse", 	infuse);
-	write_field(out, "segments", segments);
-	write_field(out, "timelord_reward", timelord_reward);
+	write_field(out, "segments",		segments);
+	write_field(out, "reward_addr", 	reward_addr);
 	write_field(out, "timelord_key", 	timelord_key);
 	out.flush();
 

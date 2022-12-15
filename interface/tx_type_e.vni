@@ -5,6 +5,7 @@ enum tx_type_e {
 	SPEND,
 	RECEIVE,
 	REWARD,
+	VDF_REWARD,
 	TXFEE
 	
 }

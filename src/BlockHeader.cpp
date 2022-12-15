@@ -38,6 +38,7 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "weight", 		weight);
 	write_field(out, "total_weight", total_weight);
 	write_field(out, "vdf_iters", 	vdf_iters);
+	write_field(out, "vdf_reward", 	vdf_reward);
 	write_field(out, "vdf_output", 	vdf_output);
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
 	write_field(out, "tx_base", 	tx_base ? tx_base->calc_hash(true) : hash_t());

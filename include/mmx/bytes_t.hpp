@@ -56,8 +56,8 @@ public:
 		return bytes != other.bytes;
 	}
 
-	bool operator!() const {
-		return is_zero();
+	operator bool() const {
+		return !is_zero();
 	}
 
 };

@@ -34,14 +34,14 @@ void TimeLordRewards::handle(std::shared_ptr<const ProofOfTime> value)
 	if(vnx::rand64() % reward_divider) {
 		return;
 	}
-	if(auto address = value->timelord_reward)
+	if(value->reward_addr)
 	{
 		spend_options_t options;
 		options.note = tx_note_e::TIMELORD_REWARD;
 
-		wallet->send(wallet_index, reward, *address, addr_t(), options);
+		wallet->send(wallet_index, reward, value->reward_addr, addr_t(), options);
 
-		log(INFO) << "Sent reward for height " << value->height << " to " << *address;
+		log(INFO) << "Sent reward for height " << value->height << " to " << value->reward_addr;
 	}
 }
 

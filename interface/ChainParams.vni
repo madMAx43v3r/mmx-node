@@ -24,6 +24,7 @@ class ChainParams {
 	
 	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
+	ulong vdf_reward_divider = 10000;		// reward = num_iters / vdf_reward_divider
 	
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 100000000;

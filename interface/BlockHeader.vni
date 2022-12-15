@@ -20,6 +20,7 @@ class BlockHeader {
 	uint netspace_ratio;
 	
 	ulong vdf_iters;
+	addr_t vdf_reward;
 	hash_t vdf_output[2];
 	
 	ProofOfSpace* proof;

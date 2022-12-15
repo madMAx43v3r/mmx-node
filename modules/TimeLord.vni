@@ -17,7 +17,7 @@ module TimeLord {
 	
 	string storage_path;
 	
-	optional<addr_t> reward_addr;					// default = first address of first wallet
+	addr_t reward_addr;					// default = first address of first wallet
 	
 	
 	void stop_vdf();

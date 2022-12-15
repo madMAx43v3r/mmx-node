@@ -243,7 +243,7 @@ private:
 		int64_t recv_time = 0;
 		std::array<hash_t, 2> input;
 		std::array<hash_t, 2> output;
-		vnx::optional<hash_t> infused;
+		vnx::optional<hash_t> infused;					// chain 0
 		std::shared_ptr<const ProofOfTime> proof;
 	};
 

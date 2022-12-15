@@ -43,10 +43,7 @@ void TimeLord::main()
 		log(WARN) << "Failed to get reward address from wallet: " << ex.what();
 	}
 	if(reward_addr) {
-		if(*reward_addr == addr_t()) {
-			throw std::logic_error("reward_addr == zero");
-		}
-		log(INFO) << "Reward address: " << reward_addr->to_string();
+		log(INFO) << "Reward address: " << reward_addr.to_string();
 	} else {
 		log(WARN) << "No reward address set!";
 	}
@@ -231,7 +228,7 @@ void TimeLord::update()
 					proof->segments.push_back(seg);
 				}
 
-				proof->timelord_reward = reward_addr;
+				proof->reward_addr = reward_addr;
 				proof->timelord_key = timelord_key;
 				proof->hash = proof->calc_hash().first;
 				proof->timelord_sig = signature_t::sign(timelord_sk, proof->hash);
@@ -298,6 +295,10 @@ void TimeLord::vdf_loop(vdf_point_t point)
 					auto iter = infuse[k].find(point.num_iters);
 					if(iter != infuse[k].end()) {
 						point.output[k] = hash_t(point.output[k] + iter->second);
+						if(k == 0) {
+							// infuse reward address
+							point.output[0] = hash_t(point.output[0] + reward_addr);
+						}
 						infuse_history[k].insert(*iter);
 					}
 				}

@@ -156,6 +156,9 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 {
 	if(auto vdf_point = find_next_vdf_point(prev))
 	{
+		if(!vdf_point->proof) {
+			throw std::logic_error("add_dummy_block(): missing VDF proof");
+		}
 		const auto diff_block = get_diff_header(prev, 1);
 
 		auto block = Block::create();
@@ -165,6 +168,7 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->time_diff = prev->time_diff;
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
 		block->vdf_iters = vdf_point->vdf_iters;
+		block->vdf_reward = vdf_point->proof->reward_addr;
 		block->vdf_output = vdf_point->output;
 		block->weight = calc_block_weight(params, diff_block, block);
 		block->total_weight = prev->total_weight + block->weight;
@@ -759,6 +763,9 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	if(!vdf_point) {
 		return nullptr;
 	}
+	if(!vdf_point->proof) {
+		throw std::logic_error("missing VDF proof");
+	}
 
 	// reset state to previous block
 	fork_to(prev->hash);
@@ -769,6 +776,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->time_diff = prev->time_diff;
 	block->space_diff = prev->space_diff;
 	block->vdf_iters = vdf_point->vdf_iters;
+	block->vdf_reward = vdf_point->proof->reward_addr;
 	block->vdf_output = vdf_point->output;
 	block->proof = proof.proof;
 	block->netspace_ratio = calc_new_netspace_ratio(
