@@ -693,6 +693,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				base_amount += out.amount;
 			}
 			else {
+				if(!amounts.count(out.contract) && !balance_cache.find(out.address, out.contract)) {
+					tx_cost += params->min_txfee_activate;
+				}
 				auto& value = amounts[out.contract];
 				if(out.amount > value) {
 					throw std::logic_error("tx over-spend");
