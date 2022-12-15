@@ -550,7 +550,7 @@ Vue.component('swap-trade', {
 		<div>
 			<v-row v-if="data">
 				<v-col>
-					<v-card>
+					<v-card style="border: 1px solid green;">
 						<v-toolbar color="green lighten-1" elevation="1" dense></v-toolbar>
 						<v-card-text>
 							<v-row>
@@ -581,7 +581,7 @@ Vue.component('swap-trade', {
 					</v-card>
 				</v-col>
 				<v-col>
-					<v-card>
+					<v-card style="border: 1px solid red;">
 						<v-toolbar color="red lighten-1" elevation="1" dense></v-toolbar>
 						<v-card-text>
 							<v-row>
