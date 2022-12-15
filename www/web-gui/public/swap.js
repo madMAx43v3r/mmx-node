@@ -257,6 +257,8 @@ Vue.component('swap-info', {
 							<th></th>
 							<th>Pool Balance</th>
 							<th>Symbol</th>
+							<th>APY (last day)</th>
+							<th>APY (last 7 days)</th>
 							<th>Contract</th>
 						</tr>
 					</thead>
@@ -265,6 +267,8 @@ Vue.component('swap-info', {
 							<td class="key-cell">Token</td>
 							<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
 							<td>{{data.symbols[0]}}</td>
+							<td>{{(data.avg_apy_1d[0] * 100).toFixed(2)}} %</td>
+							<td>{{(data.avg_apy_7d[0] * 100).toFixed(2)}} %</td>
 							<td>
 								<template v-if="data.symbols[0] != 'MMX'">
 									<router-link :to="'/explore/address/' + data.tokens[0]">{{data.tokens[0]}}</router-link>
@@ -275,6 +279,8 @@ Vue.component('swap-info', {
 							<td class="key-cell">Currency</td>
 							<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
 							<td>{{data.symbols[1]}}</td>
+							<td>{{(data.avg_apy_1d[1] * 100).toFixed(2)}} %</td>
+							<td>{{(data.avg_apy_7d[1] * 100).toFixed(2)}} %</td>
 							<td>
 								<template v-if="data.symbols[1] != 'MMX'">
 									<router-link :to="'/explore/address/' + data.tokens[1]">{{data.tokens[1]}}</router-link>

@@ -1287,6 +1287,22 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 	for(size_t i = 0; i < 2 && i < user_total.size(); ++i) {
 		out.user_total[i] = to_uint(user_total[i]);
 	}
+	const auto height = get_height();
+	const auto ref_fees_paid = to_ref(data["fees_paid"]);
+	{
+		const auto prev_fees_paid = read_storage_array(address, ref_fees_paid, height - std::min(8640u, height));
+		for(size_t i = 0; i < 2; ++i) {
+			const uint256_t prev_i = i < prev_fees_paid.size() ? to_uint(prev_fees_paid[i]) : uint256_0;
+			out.avg_apy_1d[i] = uint128(365 * (out.fees_paid[i] - prev_i)).to_double() / out.user_total[i].to_double();
+		}
+	}
+	{
+		const auto prev_fees_paid = read_storage_array(address, ref_fees_paid, height - std::min(60480u, height));
+		for(size_t i = 0; i < 2; ++i) {
+			const uint256_t prev_i = i < prev_fees_paid.size() ? to_uint(prev_fees_paid[i]) : uint256_0;
+			out.avg_apy_7d[i] = uint128(52 * (out.fees_paid[i] - prev_i)).to_double() / out.user_total[i].to_double();
+		}
+	}
 	return out;
 }
 
