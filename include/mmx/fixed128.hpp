@@ -19,34 +19,34 @@ namespace mmx {
 
 class fixed128 {
 public:
-	uint128 value = 0;
+	uint128 fixed = 0;
 
 	fixed128() = default;
 
-	fixed128(const uint128_t& v) {
-		value = v * divider;
+	fixed128(const uint128_t& value) {
+		fixed = value * divider;
 	}
 
-	fixed128(const double& v);
+	fixed128(const double& value);
 
 	fixed128(const std::string& str);
 
 	uint128 uint() const {
-		return value / divider;
+		return fixed / divider;
 	}
 
 	uint64_t fractional() const {
-		return value % divider;
+		return fixed % divider;
 	}
+
+	double to_value() const;
 
 	uint128_t to_amount(const int decimals) const;
 
 	std::string to_string() const;
 
-	double to_double() const;
-
 	operator bool() const {
-		return bool(value);
+		return bool(fixed);
 	}
 
 	static const uint64_t divider;
@@ -65,7 +65,7 @@ void read(vnx::TypeInput& in, mmx::fixed128& value, const vnx::TypeCode* type_co
 
 inline
 void write(vnx::TypeOutput& out, const mmx::fixed128& value, const vnx::TypeCode* type_code = nullptr, const uint16_t* code = nullptr) {
-	write(out, value.value);
+	write(out, value.fixed);
 }
 
 inline

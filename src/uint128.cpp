@@ -51,8 +51,7 @@ void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_cod
 					value = uint128_0;
 				}
 			} else {
-				std::array<uint8_t, 16> array = {};
-				tmp.to(array);
+				auto array = tmp.to<std::array<uint8_t, 16>>();
 				if(code[0] == CODE_ALT_DYNAMIC) {
 					std::reverse(array.begin(), array.end());
 				}

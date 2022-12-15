@@ -28,9 +28,9 @@ const uint64_t fixed128::divider = calc_divider(fixed128::decimals);
 
 fixed128::fixed128(const double& v)
 {
-	value = uint64_t(v);
-	value *= divider;
-	value += uint64_t(fmod(v, 1) * pow(10, decimals));
+	fixed = uint64_t(v);
+	fixed *= divider;
+	fixed += uint64_t(fmod(v, 1) * pow(10, decimals));
 }
 
 fixed128::fixed128(const std::string& str)
@@ -39,11 +39,11 @@ fixed128::fixed128(const std::string& str)
 	const auto exp_pos = str.find_first_of("eE");
 	if(dec_pos != std::string::npos || exp_pos != std::string::npos) {
 		if(dec_pos != std::string::npos) {
-			value = uint128_t(str.substr(0, dec_pos), 10);
+			fixed = uint128_t(str.substr(0, dec_pos), 10);
 		} else {
-			value = uint128_t(str.substr(0, exp_pos), 10);
+			fixed = uint128_t(str.substr(0, exp_pos), 10);
 		}
-		value *= divider;
+		fixed *= divider;
 
 		if(dec_pos != std::string::npos) {
 			std::string fract;
@@ -66,7 +66,7 @@ fixed128::fixed128(const std::string& str)
 				for(int i = 1 + num_zero; i < decimals; ++i) {
 					lower *= 10;
 				}
-				value += lower;
+				fixed += lower;
 			}
 		}
 		if(exp_pos != std::string::npos) {
@@ -76,16 +76,16 @@ fixed128::fixed128(const std::string& str)
 			}
 			if(exp_10 >= 0) {
 				for(int i = 0; i < exp_10; ++i) {
-					value *= 10;
+					fixed *= 10;
 				}
 			} else {
 				for(int i = exp_10; i < 0; ++i) {
-					value /= 10;
+					fixed /= 10;
 				}
 			}
 		}
 	} else {
-		value = uint128_t(str, 10) * divider;
+		fixed = uint128_t(str, 10) * divider;
 	}
 }
 
@@ -103,24 +103,24 @@ std::string fixed128::to_string() const
 	return str;
 }
 
-double fixed128::to_double() const
+double fixed128::to_value() const
 {
 	return uint().to_double() + double(fractional()) * pow(10, -decimals);
 }
 
 uint128_t fixed128::to_amount(const int decimals) const
 {
-	uint128_t res = value;
+	uint128_t amount = fixed;
 	if(decimals < fixed128::decimals) {
 		for(int i = decimals; i < fixed128::decimals; ++i) {
-			res /= 10;
+			amount /= 10;
 		}
 	} else {
 		for(int i = fixed128::decimals; i < decimals; ++i) {
-			res *= 10;
+			amount *= 10;
 		}
 	}
-	return res;
+	return amount;
 }
 
 
@@ -143,13 +143,6 @@ void read(vnx::TypeInput& in, mmx::fixed128& value, const vnx::TypeCode* type_co
 			}
 			break;
 		}
-		case CODE_UINT64:
-		case CODE_ALT_UINT64: {
-			uint64_t tmp = 0;
-			vnx::read(in, tmp, type_code, code);
-			value = mmx::fixed128(tmp);
-			break;
-		}
 		case CODE_FLOAT:
 		case CODE_DOUBLE:
 		case CODE_ALT_FLOAT:
@@ -169,17 +162,17 @@ void read(vnx::TypeInput& in, mmx::fixed128& value, const vnx::TypeCode* type_co
 				} catch(...) {
 					value = mmx::fixed128();
 				}
-			} else if(tmp.is_ulong()) {
+			} else if(tmp.is_long()) {
 				value = mmx::fixed128(tmp.to<uint64_t>());
 			} else if(tmp.is_double()) {
 				value = mmx::fixed128(tmp.to<double>());
 			} else {
-				vnx::read(in, value.value, type_code, code);
+				vnx::read(in, value.fixed, type_code, code);
 			}
 			break;
 		}
 		default:
-			vnx::read(in, value.value, type_code, code);
+			vnx::read(in, value.fixed, type_code, code);
 	}
 }
 
