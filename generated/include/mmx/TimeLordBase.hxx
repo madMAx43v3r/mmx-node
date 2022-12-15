@@ -25,7 +25,7 @@ public:
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	std::string storage_path;
-	vnx::optional<::mmx::addr_t> reward_addr;
+	::mmx::addr_t reward_addr;
 	
 	typedef ::vnx::Module Super;
 	

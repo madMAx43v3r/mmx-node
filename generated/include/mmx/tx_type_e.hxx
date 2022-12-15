@@ -17,6 +17,7 @@ struct MMX_EXPORT tx_type_e {
 		REWARD = 3842121424l,
 		SPEND = 2341768809l,
 		TXFEE = 3965595220l,
+		VDF_REWARD = 1923446990l,
 	};
 	
 	::mmx::tx_type_e::enum_t value = ::mmx::tx_type_e::enum_t(0);

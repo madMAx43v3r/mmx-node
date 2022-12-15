@@ -26,7 +26,7 @@ public:
 	std::array<::mmx::hash_t, 2> input = {};
 	std::array<vnx::optional<::mmx::hash_t>, 2> infuse = {};
 	std::vector<::mmx::time_segment_t> segments;
-	vnx::optional<::mmx::addr_t> timelord_reward;
+	::mmx::addr_t reward_addr;
 	::mmx::pubkey_t timelord_key;
 	::mmx::signature_t timelord_sig;
 	::mmx::hash_t content_hash;
@@ -91,7 +91,7 @@ void ProofOfTime::accept_generic(T& _visitor) const {
 	_visitor.type_field("input", 4); _visitor.accept(input);
 	_visitor.type_field("infuse", 5); _visitor.accept(infuse);
 	_visitor.type_field("segments", 6); _visitor.accept(segments);
-	_visitor.type_field("timelord_reward", 7); _visitor.accept(timelord_reward);
+	_visitor.type_field("reward_addr", 7); _visitor.accept(reward_addr);
 	_visitor.type_field("timelord_key", 8); _visitor.accept(timelord_key);
 	_visitor.type_field("timelord_sig", 9); _visitor.accept(timelord_sig);
 	_visitor.type_field("content_hash", 10); _visitor.accept(content_hash);

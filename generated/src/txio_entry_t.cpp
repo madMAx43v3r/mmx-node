@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txio_entry_t::VNX_TYPE_HASH(0x2d1c65e166ab244bull);
-const vnx::Hash64 txio_entry_t::VNX_CODE_HASH(0xabed24cabcc2457full);
+const vnx::Hash64 txio_entry_t::VNX_CODE_HASH(0xd3608d7631065342ull);
 
 vnx::Hash64 txio_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -165,7 +165,7 @@ std::shared_ptr<vnx::TypeCode> txio_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txio_entry_t";
 	type_code->type_hash = vnx::Hash64(0x2d1c65e166ab244bull);
-	type_code->code_hash = vnx::Hash64(0xabed24cabcc2457full);
+	type_code->code_hash = vnx::Hash64(0xd3608d7631065342ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txio_entry_t);
 	type_code->parents.resize(1);

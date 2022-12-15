@@ -68,7 +68,7 @@ protected:
 
 template<typename T>
 void Block::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Block>(22);
+	_visitor.template type_begin<Block>(23);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
@@ -80,18 +80,19 @@ void Block::accept_generic(T& _visitor) const {
 	_visitor.type_field("total_weight", 8); _visitor.accept(total_weight);
 	_visitor.type_field("netspace_ratio", 9); _visitor.accept(netspace_ratio);
 	_visitor.type_field("vdf_iters", 10); _visitor.accept(vdf_iters);
-	_visitor.type_field("vdf_output", 11); _visitor.accept(vdf_output);
-	_visitor.type_field("proof", 12); _visitor.accept(proof);
-	_visitor.type_field("tx_base", 13); _visitor.accept(tx_base);
-	_visitor.type_field("static_cost", 14); _visitor.accept(static_cost);
-	_visitor.type_field("total_cost", 15); _visitor.accept(total_cost);
-	_visitor.type_field("tx_count", 16); _visitor.accept(tx_count);
-	_visitor.type_field("tx_fees", 17); _visitor.accept(tx_fees);
-	_visitor.type_field("tx_hash", 18); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 19); _visitor.accept(farmer_sig);
-	_visitor.type_field("content_hash", 20); _visitor.accept(content_hash);
-	_visitor.type_field("tx_list", 21); _visitor.accept(tx_list);
-	_visitor.template type_end<Block>(22);
+	_visitor.type_field("vdf_reward", 11); _visitor.accept(vdf_reward);
+	_visitor.type_field("vdf_output", 12); _visitor.accept(vdf_output);
+	_visitor.type_field("proof", 13); _visitor.accept(proof);
+	_visitor.type_field("tx_base", 14); _visitor.accept(tx_base);
+	_visitor.type_field("static_cost", 15); _visitor.accept(static_cost);
+	_visitor.type_field("total_cost", 16); _visitor.accept(total_cost);
+	_visitor.type_field("tx_count", 17); _visitor.accept(tx_count);
+	_visitor.type_field("tx_fees", 18); _visitor.accept(tx_fees);
+	_visitor.type_field("tx_hash", 19); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 20); _visitor.accept(farmer_sig);
+	_visitor.type_field("content_hash", 21); _visitor.accept(content_hash);
+	_visitor.type_field("tx_list", 22); _visitor.accept(tx_list);
+	_visitor.template type_end<Block>(23);
 }
 
 
