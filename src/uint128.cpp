@@ -7,6 +7,10 @@
 
 #include <mmx/uint128.hpp>
 
+#include <vnx/Variant.hpp>
+
+#include <algorithm>
+
 
 namespace vnx {
 
