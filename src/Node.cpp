@@ -2013,7 +2013,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	{
 		txout_t out;
 		out.address = block->vdf_reward;
-		out.amount = block->vdf_iters / params->vdf_reward_divider;
+		out.amount = block->time_diff / params->vdf_reward_divider;
 
 		recv_log.insert(std::make_tuple(out.address, block->height, counter++),
 					txio_entry_t::create_ex(hash_t(), block->height, tx_type_e::VDF_REWARD, out));

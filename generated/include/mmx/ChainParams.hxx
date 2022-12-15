@@ -33,7 +33,7 @@ public:
 	uint32_t score_threshold = 65536;
 	uint64_t min_reward = 200000;
 	::mmx::ulong_fraction_t reward_factor;
-	uint64_t vdf_reward_divider = 10000;
+	uint64_t vdf_reward_divider = 100;
 	uint64_t time_diff_constant = 1000;
 	uint64_t space_diff_constant = 100000000;
 	uint64_t virtual_space_constant = 500;
