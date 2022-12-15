@@ -46,6 +46,7 @@ public:
 	uint64_t min_txfee_exec = 10000;
 	uint64_t min_txfee_deploy = 100000;
 	uint64_t min_txfee_byte = 10;
+	uint64_t min_txfee_activate = 100000;
 	uint64_t max_txbase_cost = 10000;
 	uint64_t max_block_size = 10000000;
 	uint64_t max_block_cost = 100000000;
@@ -100,7 +101,7 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(39);
+	_visitor.template type_begin<ChainParams>(40);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
@@ -132,15 +133,16 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("min_txfee_exec", 28); _visitor.accept(min_txfee_exec);
 	_visitor.type_field("min_txfee_deploy", 29); _visitor.accept(min_txfee_deploy);
 	_visitor.type_field("min_txfee_byte", 30); _visitor.accept(min_txfee_byte);
-	_visitor.type_field("max_txbase_cost", 31); _visitor.accept(max_txbase_cost);
-	_visitor.type_field("max_block_size", 32); _visitor.accept(max_block_size);
-	_visitor.type_field("max_block_cost", 33); _visitor.accept(max_block_cost);
-	_visitor.type_field("block_time", 34); _visitor.accept(block_time);
-	_visitor.type_field("vdf_seed", 35); _visitor.accept(vdf_seed);
-	_visitor.type_field("plot_binary", 36); _visitor.accept(plot_binary);
-	_visitor.type_field("swap_binary", 37); _visitor.accept(swap_binary);
-	_visitor.type_field("offer_binary", 38); _visitor.accept(offer_binary);
-	_visitor.template type_end<ChainParams>(39);
+	_visitor.type_field("min_txfee_activate", 31); _visitor.accept(min_txfee_activate);
+	_visitor.type_field("max_txbase_cost", 32); _visitor.accept(max_txbase_cost);
+	_visitor.type_field("max_block_size", 33); _visitor.accept(max_block_size);
+	_visitor.type_field("max_block_cost", 34); _visitor.accept(max_block_cost);
+	_visitor.type_field("block_time", 35); _visitor.accept(block_time);
+	_visitor.type_field("vdf_seed", 36); _visitor.accept(vdf_seed);
+	_visitor.type_field("plot_binary", 37); _visitor.accept(plot_binary);
+	_visitor.type_field("swap_binary", 38); _visitor.accept(swap_binary);
+	_visitor.type_field("offer_binary", 39); _visitor.accept(offer_binary);
+	_visitor.template type_end<ChainParams>(40);
 }
 
 
