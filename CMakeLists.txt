@@ -107,6 +107,7 @@ add_library(mmx_iface SHARED
 	src/ProofResponse.cpp
 	src/secp256k1.cpp
 	src/uint128.cpp
+	src/fixed128.cpp
 	src/skey_t.cpp
 	src/hash_t.cpp
 	src/addr_t.cpp
