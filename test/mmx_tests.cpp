@@ -5,6 +5,7 @@
  *      Author: mad
  */
 
+#include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
 
 #include <vnx/vnx.h>
@@ -20,6 +21,14 @@ int main(int argc, char** argv)
 	vnx::test::init("mmx");
 
 	vnx::init("mmx_tests", argc, argv);
+
+	VNX_TEST_BEGIN("uint128")
+	{
+		vnx::test::expect(uint128().to_double(), 0);
+		vnx::test::expect(uint128(11).to_double(), 11);
+		vnx::test::expect(uint128(1123456).to_double(), 1123456);
+	}
+	VNX_TEST_END()
 
 	VNX_TEST_BEGIN("fixed128")
 	{
