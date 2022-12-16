@@ -19,6 +19,7 @@
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/fixed128.hpp>
 #include <mmx/mnemonic.h>
 #include <mmx/utils.h>
 #include <mmx/vm/instr_t.h>
@@ -144,8 +145,8 @@ int main(int argc, char** argv)
 	int64_t index = 0;
 	int64_t offset = 0;
 	int64_t num_count = 0;
-	double amount = -1;
-	double ask_amount = -1;
+	mmx::fixed128 amount;
+	mmx::fixed128 ask_amount;
 	double fee_ratio = 1;
 	double gas_limit = 1;
 	bool pre_accept = false;
@@ -155,8 +156,8 @@ int main(int argc, char** argv)
 	vnx::read_config("file", file_name);
 	vnx::read_config("index", index);
 	vnx::read_config("offset", offset);
-	vnx::read_config("amount", amount);
-	vnx::read_config("ask-amount", ask_amount);
+	const auto have_amount = vnx::read_config("amount", amount);
+	const auto have_ask_amount = vnx::read_config("ask-amount", ask_amount);
 	vnx::read_config("count", num_count);
 	vnx::read_config("source", source_addr);
 	vnx::read_config("target", target_addr);
@@ -421,8 +422,8 @@ int main(int argc, char** argv)
 			{
 				const auto token = get_token(node, contract);
 
-				const int64_t mojo = amount * pow(10, token->decimals);
-				if(amount <= 0 || mojo <= 0) {
+				const auto mojo = mmx::to_amount(amount, token->decimals);
+				if(!mojo) {
 					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
 					goto failed;
 				}
@@ -434,15 +435,15 @@ int main(int argc, char** argv)
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
 				const auto tx = wallet.send(index, mojo, target, contract, spend_options);
-				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
+				std::cout << "Sent " << mmx::to_value(mojo, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "send_from")
 			{
 				const auto token = get_token(node, contract);
 
-				const int64_t mojo = amount * pow(10, token->decimals);
-				if(amount <= 0 || mojo <= 0) {
+				const auto mojo = mmx::to_amount(amount, token->decimals);
+				if(!mojo) {
 					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
 					goto failed;
 				}
@@ -458,7 +459,7 @@ int main(int argc, char** argv)
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
 				const auto tx = wallet.send_from(index, mojo, target, source, contract, spend_options);
-				std::cout << "Sent " << mojo / pow(10, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
+				std::cout << "Sent " << mmx::to_value(mojo, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "transfer")
@@ -478,8 +479,8 @@ int main(int argc, char** argv)
 			{
 				const auto token = get_token(node, contract);
 
-				const int64_t mojo = amount * pow(10, token->decimals);
-				if(amount <= 0 || mojo <= 0) {
+				const auto mojo = mmx::to_amount(amount, token->decimals);
+				if(!mojo) {
 					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
 					goto failed;
 				}
@@ -491,7 +492,7 @@ int main(int argc, char** argv)
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
 				const auto tx = wallet.mint(index, mojo, target, contract, spend_options);
-				std::cout << "Minted " << mojo / pow(10, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
+				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "deploy")
@@ -550,9 +551,9 @@ int main(int argc, char** argv)
 						method = "deposit";
 					}
 					const auto token = get_token(node, contract);
-					const int64_t mojo = amount * pow(10, token->decimals);
+					const auto mojo = mmx::to_amount(amount, token->decimals);
 					tx = wallet.deposit(index, target, method, args, mojo, contract, spend_options);
-					std::cout << "Deposited " << amount << " " << token->symbol << " via " << method << "() with ";
+					std::cout << "Deposited " << mmx::to_value(mojo, token->decimals) << " " << token->symbol << " via " << method << "() with ";
 				}
 				vnx::PrettyPrinter printer(std::cout);
 				vnx::accept(printer, args);
@@ -576,8 +577,8 @@ int main(int argc, char** argv)
 					const auto ask_token = get_token(node, ask);
 					const auto bid_symbol = bid_token->symbol;
 
-					const uint64_t bid_value = amount * pow(10, bid_token->decimals);
-					const uint64_t ask_value = ask_amount * pow(10, ask_token->decimals);
+					const uint64_t bid_value = mmx::to_amount(amount, bid_token->decimals);
+					const uint64_t ask_value = mmx::to_amount(ask_amount, ask_token->decimals);
 					if(bid_value == 0 || ask_value == 0) {
 						vnx::log_error() << "Invalid amount! (-a | -b)";
 						goto failed;
@@ -636,7 +637,7 @@ int main(int argc, char** argv)
 				const auto data = node.get_offer(address);
 				const auto bid_token = get_token(node, data.bid_currency);
 				const auto ask_token = get_token(node, data.ask_currency);
-				const uint64_t ask_amount = amount * pow(10, ask_token->decimals);
+				const uint64_t ask_amount = mmx::to_amount(amount, ask_token->decimals);
 				const uint64_t bid_amount = (uint256_t(ask_amount) * data.inv_price) >> 64;
 
 				std::cout << "You pay:     "
@@ -724,10 +725,10 @@ int main(int argc, char** argv)
 					const auto info = node.get_swap_info(contract);
 					const auto token_0 = get_token(node, info.tokens[0]);
 					const auto token_1 = get_token(node, info.tokens[1]);
-					if(amount > 0) {
+					if(have_amount) {
 						add_amount[0] = mmx::to_amount(amount, token_0->decimals);
-					} else if(amount < 0) {
-						if(ask_amount < 0) {
+					} else {
+						if(!have_ask_amount) {
 							std::cerr << usage << std::endl;
 							goto failed;
 						}
@@ -735,10 +736,10 @@ int main(int argc, char** argv)
 							add_amount[0] = (uint256_t(mmx::to_amount(ask_amount, token_1->decimals)) * info.balance[0]) / info.balance[1];
 						}
 					}
-					if(ask_amount > 0) {
+					if(have_ask_amount) {
 						add_amount[1] = mmx::to_amount(ask_amount, token_1->decimals);
-					} else if(ask_amount < 0) {
-						if(amount < 0) {
+					} else {
+						if(!have_amount) {
 							std::cerr << usage << std::endl;
 							goto failed;
 						}
@@ -780,15 +781,16 @@ int main(int argc, char** argv)
 					const auto user_info = node.get_swap_user_info(contract, wallet.get_address(index, offset));
 					const auto token_0 = get_token(node, info.tokens[0]);
 					const auto token_1 = get_token(node, info.tokens[1]);
-					if(amount > 0) {
+					if(have_amount) {
 						rem_amount[0] = mmx::to_amount(amount, token_0->decimals);
-					} else if(amount < 0) {
-						rem_amount[0] = user_info.balance[0];
 					}
-					if(ask_amount > 0) {
+					if(have_ask_amount) {
 						rem_amount[1] = mmx::to_amount(ask_amount, token_1->decimals);
-					} else if(ask_amount < 0) {
-						rem_amount[1] = user_info.balance[1];
+					}
+					if(!have_amount && !have_ask_amount) {
+						for(int i = 0; i < 2; ++i) {
+							rem_amount[i] = user_info.balance[i];
+						}
 					}
 					for(int i = 0; i < 2; ++i) {
 						if(!user_info.balance[i].upper()) {

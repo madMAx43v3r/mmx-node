@@ -205,7 +205,7 @@ Vue.component('market-offers', {
 				fetch('/wapi/offer/trade_estimate?id=' + this.offer.address + '&amount=' + (this.trade_amount > 0 ? this.trade_amount : 0))
 					.then(response => response.json())
 					.then(data => {
-						this.trade_estimate = (data.trade.value).toFixed(this.offer.bid_decimals);
+						this.trade_estimate = data.trade.value;
 						this.trade_estimate_data = data;
 					});
 			}
@@ -230,7 +230,7 @@ Vue.component('market-offers', {
 			const req = {};
 			req.index = this.wallet;
 			req.address = offer.address;
-			req.amount = parseFloat(amount);
+			req.amount = amount;
 			fetch('/wapi/wallet/offer_trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {

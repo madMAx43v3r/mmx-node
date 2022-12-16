@@ -845,7 +845,7 @@ Vue.component('account-plots', {
 			if(this.dialog_mode == "Deposit") {
 				url = "/wapi/wallet/send";
 				req.currency = null;
-				req.amount = parseFloat(this.dialog_amount);
+				req.amount = this.dialog_amount;
 				req.dst_addr = this.dialog_address;
 			} else {
 				url = "/wapi/wallet/execute";
@@ -1862,7 +1862,7 @@ Vue.component('account-offers', {
 		submit_deposit(item, amount) {
 			const args = {};
 			args.index = this.index;
-			args.amount = parseFloat(amount);
+			args.amount = amount;
 			args.currency = item.bid_currency
 			args.dst_addr = item.address;
 			fetch('/wapi/wallet/send', {body: JSON.stringify(args), method: "post"})

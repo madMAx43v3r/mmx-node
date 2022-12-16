@@ -7,6 +7,7 @@
 
 #include <mmx/WebAPI.h>
 #include <mmx/uint128.hpp>
+#include <mmx/fixed128.hpp>
 #include <mmx/mnemonic.h>
 #include <mmx/utils.h>
 
@@ -189,6 +190,14 @@ vnx::Object to_amount_object(const uint128& amount, const int decimals)
 	return res;
 }
 
+vnx::Object to_amount_object_str(const uint64_t& amount, const int decimals)
+{
+	vnx::Object res;
+	res["value"] = fixed128(amount, decimals).to_string();
+	res["amount"] = amount;
+	return res;
+}
+
 
 template<typename T>
 vnx::Object render(const T& value, std::shared_ptr<const RenderContext> context = nullptr);
@@ -233,6 +242,10 @@ public:
 
 	void accept(const uint128& value) {
 		set(value.str(10));
+	}
+
+	void accept(const fixed128& value) {
+		set(value.to_string());
 	}
 
 	void accept(const hash_t& value) {
@@ -1434,7 +1447,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_id != query.end() && iter_index != query.end() && iter_amount != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
 			const auto index = vnx::from_string_value<uint32_t>(iter_index->second);
-			const auto value = vnx::from_string_value<double>(iter_amount->second);
+			const auto value = vnx::from_string_value<fixed128>(iter_amount->second);
 			node->get_swap_info(address,
 				[this, request_id, index, value](const swap_info_t& info) {
 					get_context({info.tokens[0], info.tokens[1]}, request_id,
@@ -1443,9 +1456,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							const auto token_i = context->find_currency(info.tokens[index]);
 							const auto token_k = context->find_currency(info.tokens[(index + 1) % 2]);
 							if(token_i && token_k) {
-								const auto amount = to_amount_exact(value, token_i->decimals);
+								const auto amount = to_amount(value, token_i->decimals);
 								const auto trade_amount = info.get_trade_amount(index, amount);
-								out["trade"] = to_amount_object(trade_amount, token_k->decimals);
+								out["trade"] = to_amount_object_str(trade_amount, token_k->decimals);
 							}
 							respond(request_id, render_value(out));
 					});
@@ -1460,7 +1473,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_amount = query.find("amount");
 		if(iter_id != query.end() && iter_amount != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
-			const auto value = vnx::from_string_value<double>(iter_amount->second);
+			const auto value = vnx::from_string_value<fixed128>(iter_amount->second);
 			node->get_offer(address,
 				[this, request_id, value](const offer_data_t& info) {
 					get_context({info.bid_currency, info.ask_currency}, request_id,
@@ -1469,15 +1482,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							const auto bid_currency = context->find_currency(info.bid_currency);
 							const auto ask_currency = context->find_currency(info.ask_currency);
 							if(bid_currency && ask_currency) {
-								const auto amount = to_amount_exact(value, ask_currency->decimals);
+								const auto amount = to_amount(value, ask_currency->decimals);
 								const auto bid_amount = info.get_bid_amount(amount);
-								out["input"] = to_amount_object(amount, ask_currency->decimals);
-								out["trade"] = to_amount_object(bid_amount, bid_currency->decimals);
+								out["input"] = to_amount_object_str(amount, ask_currency->decimals);
+								out["trade"] = to_amount_object_str(bid_amount, bid_currency->decimals);
 								const auto ask_amount = info.get_ask_amount(bid_amount + 1);
 								if(!amount || double(bid_amount + 1) / ask_amount > double(bid_amount) / amount) {
-									out["next_input"] = to_amount_object(ask_amount, ask_currency->decimals);
+									out["next_input"] = to_amount_object_str(ask_amount, ask_currency->decimals);
 								} else {
-									out["next_input"] = to_amount_object(amount + 1, ask_currency->decimals);
+									out["next_input"] = to_amount_object_str(amount + 1, ask_currency->decimals);
 								}
 							}
 							respond(request_id, render_value(out));
@@ -1850,9 +1863,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
 					try {
 						uint64_t amount = 0;
-						const auto value = args["amount"].to<double>();
+						const auto value = args["amount"].to<fixed128>();
 						if(auto token = context->find_currency(currency)) {
-							amount = to_amount_exact(value, token->decimals);
+							amount = to_amount(value, token->decimals);
 						} else {
 							throw std::logic_error("invalid currency");
 						}
@@ -1895,8 +1908,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							throw std::logic_error("invalid currency");
 						}
 						std::map<addr_t, uint64_t> amounts;
-						for(const auto& entry : args["amounts"].to<std::map<addr_t, double>>()) {
-							amounts[entry.first] = to_amount_exact(entry.second, token->decimals);
+						for(const auto& entry : args["amounts"].to<std::map<addr_t, fixed128>>()) {
+							amounts[entry.first] = to_amount(entry.second, token->decimals);
 						}
 						const auto index = args["index"].to<uint32_t>();
 						const auto options = args["options"].to<spend_options_t>();
@@ -1961,12 +1974,12 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						uint64_t bid_amount = 0;
 						uint64_t ask_amount = 0;
 						if(auto currency = context->find_currency(bid_currency)) {
-							bid_amount = to_amount_exact(args["bid"].to<double>(), currency->decimals);
+							bid_amount = to_amount(args["bid"].to<fixed128>(), currency->decimals);
 						} else {
 							throw std::logic_error("invalid bid currency");
 						}
 						if(auto currency = context->find_currency(ask_currency)) {
-							ask_amount = to_amount_exact(args["ask"].to<double>(), currency->decimals);
+							ask_amount = to_amount(args["ask"].to<fixed128>(), currency->decimals);
 						} else {
 							throw std::logic_error("invalid ask currency");
 						}
@@ -2034,9 +2047,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 								throw std::logic_error("invalid currency");
 							}
 							const auto index = args["index"].to<uint32_t>();
-							const auto value = args["amount"].to<double>();
+							const auto value = args["amount"].to<fixed128>();
 							const auto options = args["options"].to<spend_options_t>();
-							const auto amount = to_amount_exact(value, token->decimals);
+							const auto amount = to_amount(value, token->decimals);
 
 							wallet->offer_trade(index, address, amount, 0, options,
 								[this, request_id](std::shared_ptr<const Transaction> tx) {
@@ -2127,7 +2140,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						[this, request_id, address, args, info](std::shared_ptr<RenderContext> context) {
 							const auto wallet_i = args["wallet"].to<uint32_t>();
 							const auto index = args["index"].to<uint32_t>();
-							const auto value = args["amount"].to<double>();
+							const auto value = args["amount"].to<fixed128>();
 							const auto min_value = args["min_amount"].to<vnx::optional<double>>();
 							const auto options = args["options"].to<spend_options_t>();
 
@@ -2136,7 +2149,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							if(!token_i || !token_k) {
 								throw std::logic_error("invalid token or currency");
 							}
-							const auto amount = to_amount_exact(value, token_i->decimals);
+							const auto amount = to_amount(value, token_i->decimals);
 
 							vnx::optional<uint64_t> min_amount;
 							if(min_value) {
@@ -2166,13 +2179,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					get_context({info.tokens[0], info.tokens[1]}, request_id,
 						[this, request_id, mode, address, args, info](std::shared_ptr<RenderContext> context) {
 							const auto index = args["index"].to<uint32_t>();
-							const auto value = args["amount"].to<std::array<double, 2>>();
+							const auto value = args["amount"].to<std::array<fixed128, 2>>();
 							const auto options = args["options"].to<spend_options_t>();
 
 							std::array<uint64_t, 2> amount = {};
 							for(int i = 0; i < 2; ++i) {
 								if(const auto token = context->find_currency(info.tokens[i])) {
-									amount[i] = to_amount_exact(value[i], token->decimals);
+									amount[i] = to_amount(value[i], token->decimals);
 								}
 							}
 							const auto callback =
