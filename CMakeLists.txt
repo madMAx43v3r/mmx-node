@@ -4,7 +4,24 @@ project(mmx-node C CXX ASM)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-if(NOT MSVC)
+if(MSVC)
+	include(GenerateExportHeader)
+	include_directories(${CMAKE_CURRENT_BINARY_DIR})
+	
+	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
+	add_definitions(/openmp ${CUSTOM_ADD_DEFINITIONS})
+	
+	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
+	add_library(secp256k1 INTERFACE IMPORTED)
+	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
+
+	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_LIBRARY}" PATH)
+	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_IMPORT_PREFIX}" PATH)
+
+	set_target_properties(secp256k1 PROPERTIES
+  		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
+	)
+else()
 	include(cmake/commit_hash_json.cmake)
 	
 	add_compile_options(-Wall -Wno-unused-function)
@@ -26,22 +43,6 @@ if(NOT MSVC)
 		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=thread")
 		set(DISABLE_OPENCL 1)
 	endif()
-else()
-	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
-	add_definitions(/openmp ${CUSTOM_ADD_DEFINITIONS})
-	
-	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
-	add_library(secp256k1 INTERFACE IMPORTED)
-	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
-
-	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_LIBRARY}" PATH)
-	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_IMPORT_PREFIX}" PATH)
-
-	set_target_properties(secp256k1 PROPERTIES
-  		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
-	)
-
-	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
 set(ARITH "easy" CACHE STRING "BLS ARITH")
@@ -84,6 +85,7 @@ endif()
 
 file(GLOB GENERATED_SOURCE_FILES
 	generated/src/*.cpp
+	generated/vm/src/*.cpp
 	generated/contract/src/*.cpp
 	generated/operation/src/*.cpp
 	generated/solution/src/*.cpp
@@ -114,6 +116,8 @@ add_library(mmx_iface SHARED
 	src/signature_t.cpp
 	src/bls_signature_t.cpp
 	src/exec_result_t.cpp
+	src/vm/var_t.cpp
+	src/vm/varptr_t.cpp
 	src/contract/NFT.cpp
 	src/contract/Data.cpp
 	src/contract/WebData.cpp
@@ -149,24 +153,6 @@ add_library(mmx_iface SHARED
 	src/mnemonic.cpp
 	src/offer_data_t.cpp
 	src/swap_info_t.cpp
-)
-
-if(MSVC)
-	include(GenerateExportHeader)
-	GENERATE_EXPORT_HEADER(mmx_iface)
-	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
-	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
-endif()
-
-file(GLOB GENERATED_VM_SOURCE_FILES
-	generated/vm/src/*.cpp
-)
-
-add_library(mmx_vm_iface SHARED
-	${GENERATED_VM_SOURCE_FILES}
-	src/vm/var_t.cpp
-	src/vm/varptr_t.cpp
 )
 
 add_library(mmx_vm SHARED
@@ -209,15 +195,10 @@ target_include_directories(mmx_iface
 	PUBLIC
 		include
 		generated/include
+		generated/vm/include
 		generated/contract/include
 		generated/operation/include
 		generated/solution/include
-)
-
-target_include_directories(mmx_vm_iface
-	PUBLIC
-		include
-		generated/vm/include
 )
 
 target_include_directories(uint256_t
@@ -231,32 +212,31 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
-target_include_directories(mmx_db PUBLIC include)
+target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons)
+
+target_link_libraries(mmx_db mmx_iface)
+
+target_link_libraries(mmx_vm mmx_db mmx_iface)
+
+target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
 
 if(MSVC)
+	GENERATE_EXPORT_HEADER(mmx_iface)
+	GENERATE_EXPORT_HEADER(mmx_modules)
+	GENERATE_EXPORT_HEADER(mmx_db)
+	GENERATE_EXPORT_HEADER(mmx_vm)
+	
+	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
+	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
+	
 	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
 
-	set_target_properties(mmx_vm_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-
-	GENERATE_EXPORT_HEADER(mmx_db)
-	#set_target_properties(mmx_db PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-endif()
-
-target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons mmx_vm_iface)
-
-target_link_libraries(mmx_vm_iface uint256_t vnx_base)
-
-target_link_libraries(mmx_vm mmx_db mmx_iface)
-
-target_link_libraries(mmx_db uint256_t vnx_base secp256k1)
-
-target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
-
-if(NOT MSVC)
+else()
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
 	
@@ -309,6 +289,6 @@ target_link_libraries(create_swap_binary mmx_vm)
 target_link_libraries(create_plot_binary mmx_vm)
 
 
-if (MSVC)
-include(cmake/win_pack.cmake)
+if(MSVC)
+	include(cmake/win_pack.cmake)
 endif()
