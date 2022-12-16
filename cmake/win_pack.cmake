@@ -42,7 +42,7 @@ set(MMX_FRIENDLY_STRING "MMX Node ${MMX_VERSION}")
 
 list(APPEND APP_FILES
 	mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester
-	mmx_db mmx_vm mmx_vm_iface mmx_iface mmx_modules mmx_chiapos
+	mmx_db mmx_vm mmx_iface mmx_modules mmx_chiapos
 	vnx_base vnx_addons url_cpp llhttp
 	vnxpasswd generate_passwd
 	automy_basic_opencl
