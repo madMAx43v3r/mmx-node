@@ -45,6 +45,8 @@ int main(int argc, char** argv)
 		vnx::test::expect(fixed128(1.00001).to_amount(6), 1000010);
 		vnx::test::expect(fixed128(1.000001).to_amount(6), 1000001);
 		vnx::test::expect(fixed128("1.").to_amount(0), 1);
+		vnx::test::expect(fixed128("1.0").to_amount(0), 1);
+		vnx::test::expect(fixed128("1.000000").to_amount(0), 1);
 		vnx::test::expect(fixed128("1.2").to_amount(0), 1);
 		vnx::test::expect(fixed128("1,3").to_amount(1), 13);
 		vnx::test::expect(fixed128("1,1e0").to_amount(2), 110);
