@@ -7,6 +7,7 @@ add_executable(test_swap_algo test_swap_algo.cpp)
 add_executable(create_test_contract create_test_contract.cpp)
 add_executable(create_test_contract2 create_test_contract2.cpp)
 
+add_executable(mmx_tests mmx_tests.cpp)
 add_executable(vm_engine_tests vm/engine_tests.cpp)
 
 target_link_libraries(test_engine mmx_vm)
@@ -17,5 +18,6 @@ target_link_libraries(test_swap_algo mmx_iface)
 target_link_libraries(create_test_contract mmx_vm)
 target_link_libraries(create_test_contract2 mmx_vm)
 
+target_link_libraries(mmx_tests mmx_iface)
 target_link_libraries(vm_engine_tests mmx_vm)
 

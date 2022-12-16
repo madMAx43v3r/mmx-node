@@ -54,16 +54,8 @@ fixed128::fixed128(const std::string& str)
 			}
 			fract.resize(std::min<size_t>(fract.size(), decimals));
 
-			int num_zero = 0;
-			for(const auto c : fract) {
-				if(c == '0') {
-					num_zero++;
-				} else if(!std::isspace(c)) {
-					break;
-				}
-			}
 			if(auto lower = uint128_t(fract, 10)) {
-				for(int i = 1 + num_zero; i < decimals; ++i) {
+				for(int i = fract.size(); i < decimals; ++i) {
 					lower *= 10;
 				}
 				fixed += lower;
@@ -95,6 +87,9 @@ std::string fixed128::to_string() const
 	if(auto lower = fractional()) {
 		str += '.';
 		auto fract = std::to_string(lower);
+		for(int i = fract.size(); i < decimals; ++i) {
+			str += '0';
+		}
 		while(fract.size() && fract.back() == '0') {
 			fract.pop_back();
 		}
