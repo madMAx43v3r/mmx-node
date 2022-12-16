@@ -59,6 +59,11 @@ public:
 };
 
 
+inline
+std::ostream& operator<<(std::ostream& out, const fixed128& value) {
+	return out << value.to_string();
+}
+
 } // mmx
 
 
