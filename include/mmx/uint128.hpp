@@ -8,6 +8,8 @@
 #ifndef INCLUDE_MMX_UINT128_HPP_
 #define INCLUDE_MMX_UINT128_HPP_
 
+#include <mmx/package.hxx>
+
 #include <uint128_t.h>
 #include <uint256_t.h>
 

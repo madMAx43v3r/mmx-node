@@ -31,7 +31,13 @@ void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_cod
 			}
 			break;
 		}
+		case CODE_UINT8:
+		case CODE_UINT16:
+		case CODE_UINT32:
 		case CODE_UINT64:
+		case CODE_ALT_UINT8:
+		case CODE_ALT_UINT16:
+		case CODE_ALT_UINT32:
 		case CODE_ALT_UINT64: {
 			uint64_t tmp = 0;
 			vnx::read(in, tmp, type_code, code);
@@ -42,21 +48,7 @@ void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_cod
 		case CODE_ALT_DYNAMIC: {
 			vnx::Variant tmp;
 			vnx::read(in, tmp, type_code, code);
-			if(tmp.is_string()) {
-				std::string str;
-				tmp.to(str);
-				try {
-					value = uint128_t(str, 10);
-				} catch(...) {
-					value = uint128_0;
-				}
-			} else {
-				auto array = tmp.to<std::array<uint8_t, 16>>();
-				if(code[0] == CODE_ALT_DYNAMIC) {
-					std::reverse(array.begin(), array.end());
-				}
-				::memcpy(&value, array.data(), array.size());
-			}
+			value = tmp.to<mmx::uint128>();
 			break;
 		}
 		default: {

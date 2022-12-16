@@ -108,9 +108,9 @@ double fixed128::to_value() const
 	return uint().to_double() + double(fractional()) * pow(10, -decimals);
 }
 
-uint128_t fixed128::to_amount(const int decimals) const
+uint128 fixed128::to_amount(const int decimals) const
 {
-	uint128_t amount = fixed;
+	uint128 amount = fixed;
 	if(decimals < fixed128::decimals) {
 		for(int i = decimals; i < fixed128::decimals; ++i) {
 			amount /= 10;
@@ -143,6 +143,19 @@ void read(vnx::TypeInput& in, mmx::fixed128& value, const vnx::TypeCode* type_co
 			}
 			break;
 		}
+		case CODE_UINT8:
+		case CODE_UINT16:
+		case CODE_UINT32:
+		case CODE_UINT64:
+		case CODE_ALT_UINT8:
+		case CODE_ALT_UINT16:
+		case CODE_ALT_UINT32:
+		case CODE_ALT_UINT64: {
+			uint64_t tmp = 0;
+			vnx::read(in, tmp, type_code, code);
+			value = mmx::fixed128(tmp);
+			break;
+		}
 		case CODE_FLOAT:
 		case CODE_DOUBLE:
 		case CODE_ALT_FLOAT:
@@ -156,19 +169,7 @@ void read(vnx::TypeInput& in, mmx::fixed128& value, const vnx::TypeCode* type_co
 		case CODE_ALT_DYNAMIC: {
 			vnx::Variant tmp;
 			vnx::read(in, tmp, type_code, code);
-			if(tmp.is_string()) {
-				try {
-					value = mmx::fixed128(tmp.to<std::string>());
-				} catch(...) {
-					value = mmx::fixed128();
-				}
-			} else if(tmp.is_long()) {
-				value = mmx::fixed128(tmp.to<uint64_t>());
-			} else if(tmp.is_double()) {
-				value = mmx::fixed128(tmp.to<double>());
-			} else {
-				vnx::read(in, value.fixed, type_code, code);
-			}
+			value = tmp.to<mmx::fixed128>();
 			break;
 		}
 		default:

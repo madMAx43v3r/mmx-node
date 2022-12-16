@@ -8,6 +8,7 @@
 #ifndef INCLUDE_MMX_FIXED128_HPP_
 #define INCLUDE_MMX_FIXED128_HPP_
 
+#include <mmx/package.hxx>
 #include <mmx/uint128.hpp>
 
 #include <vnx/Input.hpp>
@@ -31,6 +32,8 @@ public:
 
 	fixed128(const std::string& str);
 
+	fixed128(const char* str) : fixed128(std::string(str)) {}
+
 	uint128 uint() const {
 		return fixed / divider;
 	}
@@ -41,7 +44,7 @@ public:
 
 	double to_value() const;
 
-	uint128_t to_amount(const int decimals) const;
+	uint128 to_amount(const int decimals) const;
 
 	std::string to_string() const;
 
@@ -51,7 +54,7 @@ public:
 
 	static const uint64_t divider;
 
-	static constexpr int decimals = 18;
+	static constexpr int decimals = 15;
 
 };
 
