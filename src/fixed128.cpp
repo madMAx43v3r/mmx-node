@@ -30,7 +30,7 @@ fixed128::fixed128(const double& v)
 {
 	fixed = uint64_t(v);
 	fixed *= divider;
-	fixed += uint64_t(fmod(v, 1) * pow(10, decimals));
+	fixed += uint64_t(fmod(v, 1) * pow(10, decimals) + 0.5);
 }
 
 fixed128::fixed128(const std::string& str)
