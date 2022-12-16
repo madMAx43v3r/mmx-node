@@ -36,12 +36,15 @@ int main(int argc, char** argv)
 		vnx::test::expect(fixed128().to_amount(6), 0);
 		vnx::test::expect(fixed128(1).to_amount(0), 1);
 		vnx::test::expect(fixed128(11).to_amount(6), 11000000);
+		vnx::test::expect(fixed128(111, 3).to_string(), "0.111");
+		vnx::test::expect(fixed128(1111, 3).to_string(), "1.111");
 		vnx::test::expect(fixed128(1.1).to_amount(1), 11);
 		vnx::test::expect(fixed128(1.01).to_amount(4), 10100);
 		vnx::test::expect(fixed128(1.001).to_amount(4), 10010);
 		vnx::test::expect(fixed128(1.0001).to_amount(4), 10001);
 		vnx::test::expect(fixed128(1.00001).to_amount(6), 1000010);
 		vnx::test::expect(fixed128(1.000001).to_amount(6), 1000001);
+		vnx::test::expect(fixed128("1.").to_amount(0), 1);
 		vnx::test::expect(fixed128("1.2").to_amount(0), 1);
 		vnx::test::expect(fixed128("1,3").to_amount(1), 13);
 		vnx::test::expect(fixed128("1,1e0").to_amount(2), 110);

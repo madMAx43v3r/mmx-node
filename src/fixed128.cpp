@@ -33,6 +33,15 @@ fixed128::fixed128(const double& v)
 	fixed += uint64_t(fmod(v, 1) * pow(10, decimals) + 0.5);
 }
 
+fixed128::fixed128(const uint128_t& value, const int decimals)
+{
+	fixed = value;
+	fixed *= divider;
+	for(int i = 0; i < decimals; ++i) {
+		fixed /= 10;
+	}
+}
+
 fixed128::fixed128(const std::string& str)
 {
 	const auto dec_pos = str.find_first_of(".,");

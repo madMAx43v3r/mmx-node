@@ -28,6 +28,8 @@ public:
 		fixed = value * divider;
 	}
 
+	fixed128(const uint128_t& value, const int decimals);
+
 	fixed128(const double& value);
 
 	fixed128(const std::string& str);
