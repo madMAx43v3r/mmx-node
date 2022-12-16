@@ -693,9 +693,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				base_amount += out.amount;
 			}
 			else {
-				if(!amounts.count(out.contract) && !balance_cache.find(out.address, out.contract)) {
-					tx_cost += params->min_txfee_activate;
-				}
 				auto& value = amounts[out.contract];
 				if(out.amount > value) {
 					throw std::logic_error("tx over-spend");
@@ -778,6 +775,16 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 			{
 				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error_code, true);
+			}
+		}
+
+		// check for activation fee
+		auto all_outputs = tx->outputs;
+		all_outputs.insert(all_outputs.end(), exec_outputs.begin(), exec_outputs.end());
+		for(const auto& out : all_outputs) {
+			if(!balance_cache.find(out.address, out.contract)) {
+				balance_cache.get(out.address, out.contract);
+				tx_cost += params->min_txfee_activate;
 			}
 		}
 
