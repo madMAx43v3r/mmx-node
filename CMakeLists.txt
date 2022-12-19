@@ -24,7 +24,7 @@ if(MSVC)
 else()
 	include(cmake/commit_hash_json.cmake)
 	
-	add_compile_options(-Wall -Wno-unused-function)
+	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs)
 
 	if(WITH_SECP256K1)
 		message(STATUS "Using secp256k1")
@@ -157,11 +157,12 @@ add_library(mmx_iface SHARED
 
 add_library(mmx_vm SHARED
 	src/vm/Engine.cpp
-	src/vm/instr_t.cpp
+	src/vm/Compiler.cpp
 	src/vm/StorageProxy.cpp
 	src/vm/StorageRAM.cpp
 	src/vm/StorageCache.cpp
 	src/vm/StorageDB.cpp
+	src/vm/instr_t.cpp
 	src/vm_interface.cpp
 )
 
@@ -194,6 +195,7 @@ add_library(uint256_t STATIC
 target_include_directories(mmx_iface
 	PUBLIC
 		include
+		lib/lexy/include
 		generated/include
 		generated/vm/include
 		generated/contract/include
