@@ -949,10 +949,14 @@ Vue.component('account-plots', {
 								colored-border
 								type="error"
 								elevation="2"
-								v-if="dialog_mode == 'Withdraw'"
 								class="my-2"
 							>
-								Only 90% of the amount will be returned, the rest is burned.
+								<template v-if="dialog_mode == 'Deposit'">
+									Only 90% of the amount deposited will be returned on withdraw, the rest is burned as fee.
+								</template>
+								<template v-else>
+									Only 90% of the amount will be returned, the rest is burned as fee.
+								</template>
 							</v-alert>
 						</v-card-text>
 						<v-card-actions class="justify-end">
