@@ -56,6 +56,7 @@ struct integer_traits<uint256_t>
 
 namespace mmx {
 namespace vm {
+
 namespace lang {
 
 namespace dsl = lexy::dsl;
@@ -64,51 +65,63 @@ struct source;
 struct expression;
 struct statement;
 
-static constexpr auto identifier = dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
+static constexpr auto kw_id = dsl::identifier(dsl::ascii::alpha);
 
-static constexpr auto kw_var = LEXY_KEYWORD("var", dsl::identifier(dsl::ascii::alpha));
-static constexpr auto kw_const = LEXY_KEYWORD("const", dsl::identifier(dsl::ascii::alpha));
-static constexpr auto kw_return = LEXY_KEYWORD("return", dsl::identifier(dsl::ascii::alpha));
-static constexpr auto kw_function = LEXY_KEYWORD("function", dsl::identifier(dsl::ascii::alpha));
+static constexpr auto kw_var = LEXY_KEYWORD("var", kw_id);
+static constexpr auto kw_null = LEXY_KEYWORD("null", kw_id);
+static constexpr auto kw_true = LEXY_KEYWORD("true", kw_id);
+static constexpr auto kw_false = LEXY_KEYWORD("false", kw_id);
+static constexpr auto kw_const = LEXY_KEYWORD("const", kw_id);
+static constexpr auto kw_return = LEXY_KEYWORD("return", kw_id);
+static constexpr auto kw_function = LEXY_KEYWORD("function", kw_id);
 
-struct id_name {
-	static constexpr auto name = "vm.lang.id_name";
-	static constexpr auto rule = identifier;
+struct identifier {
+	static constexpr auto name = "vm.lang.identifier";
+	static constexpr auto rule = dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
 	static constexpr auto value = lexy::as_string<std::string>;
 };
 
 struct primitive : lexy::token_production {
 	static constexpr auto name = "vm.lang.primitive";
-	static constexpr auto rule = dsl::literal_set(LEXY_LIT("null"), LEXY_LIT("true"), LEXY_LIT("false"));
+	static constexpr auto rule = dsl::literal_set(kw_null, kw_true, kw_false);
 	static constexpr auto value = lexy::as_string<std::string>;
 };
 
-struct integer_literal : lexy::token_production {
-	static constexpr auto name = "vm.lang.integer_literal";
-	static constexpr auto rule = dsl::peek(dsl::digit<>) >> (
-			  (LEXY_LIT("0b") >> dsl::integer<uint256_t, dsl::binary>)
-			| (LEXY_LIT("0x") >> dsl::integer<uint256_t, dsl::hex>)
-			| dsl::else_ >> dsl::integer<uint256_t, dsl::decimal>);
+struct integer : lexy::token_production {
+	struct hex {
+		static constexpr auto name = "vm.lang.integer.hex";
+		static constexpr auto rule = LEXY_LIT("0x") >> dsl::integer<uint256_t, dsl::hex>;
+	};
+	struct binary {
+		static constexpr auto name = "vm.lang.integer.binary";
+		static constexpr auto rule = LEXY_LIT("0b") >> dsl::integer<uint256_t, dsl::binary>;
+	};
+	struct decimal {
+		static constexpr auto name = "vm.lang.integer.decimal";
+		static constexpr auto rule = dsl::integer<uint256_t, dsl::decimal>;
+	};
+	static constexpr auto name = "vm.lang.integer";
+	static constexpr auto rule = dsl::p<binary> | dsl::p<hex> | dsl::p<decimal>;
 	static constexpr auto value = lexy::as_integer<uint256_t>;
 };
 
-struct string_literal : lexy::token_production {
-	static constexpr auto name = "vm.lang.string_literal";
+struct string : lexy::token_production {
+	static constexpr auto name = "vm.lang.string";
 	static constexpr auto rule = dsl::quoted(-dsl::ascii::control, dsl::backslash_escape);
 	static constexpr auto value = lexy::as_string<std::string>;
 };
 
-struct address_literal : lexy::token_production {
-	static constexpr auto name = "vm.lang.address_literal";
+struct address : lexy::token_production {
+	static constexpr auto name = "vm.lang.address";
 	static constexpr auto rule =
-			dsl::peek(LEXY_LIT("mmx1")) >> dsl::list(dsl::capture(dsl::ascii::alpha_digit));
+			dsl::peek(LEXY_LIT("mmx1")) >> dsl::identifier(dsl::ascii::alpha_digit);
 	static constexpr auto value = lexy::as_string<std::string>;
 };
 
 struct literal {
 	static constexpr auto name = "vm.lang.literal";
 	static constexpr auto rule =
-			dsl::p<primitive> | dsl::p<address_literal> | dsl::p<string_literal> | dsl::p<integer_literal>;
+			dsl::p<primitive> | dsl::p<address> | dsl::p<string> | dsl::p<integer>;
 };
 
 struct scope_ex {
@@ -124,13 +137,13 @@ struct function {
 				static constexpr auto rule = dsl::recurse<expression>;
 			};
 			static constexpr auto name = "vm.lang.function.arguments.item";
-			static constexpr auto rule = dsl::p<id_name> + dsl::opt(dsl::equal_sign >> dsl::p<value>);
+			static constexpr auto rule = dsl::p<identifier> + dsl::opt(dsl::equal_sign >> dsl::p<value>);
 		};
 		static constexpr auto name = "vm.lang.function.arguments";
 		static constexpr auto rule = dsl::parenthesized.opt_list(dsl::p<item>, dsl::sep(dsl::comma));
 	};
 	static constexpr auto name = "vm.lang.function";
-	static constexpr auto rule = dsl::peek(kw_function) >> kw_function + dsl::p<id_name> + dsl::p<arguments> + dsl::p<scope_ex>;
+	static constexpr auto rule = kw_function >> dsl::p<identifier> + dsl::p<arguments> + dsl::p<scope_ex>;
 };
 
 struct qualifier : lexy::token_production {
@@ -156,7 +169,7 @@ struct op_literal : lexy::token_production {
 struct variable {
 	static constexpr auto name = "vm.lang.variable";
 	static constexpr auto rule = dsl::p<qualifier> >>
-			dsl::p<id_name> + dsl::opt(dsl::equal_sign >> dsl::recurse<expression>);
+			dsl::p<identifier> + dsl::opt(dsl::equal_sign >> dsl::recurse<expression>);
 };
 
 struct list_ex {
@@ -169,13 +182,13 @@ struct array_ex {
 	static constexpr auto rule = dsl::square_bracketed.opt_list(dsl::recurse<expression>, dsl::trailing_sep(dsl::comma));
 };
 
-struct expression : lexy::transparent_production {
+struct expression {
 	static constexpr auto name = "vm.lang.expression";
 	static constexpr auto whitespace = dsl::ascii::space;
 	static constexpr auto rule = dsl::loop(
-			dsl::peek_not(dsl::lit_c<','> | dsl::lit_c<';'> | dsl::lit_c<')'> | dsl::lit_c<']'> | dsl::lit_c<'}'> | dsl::eof) >> (
+			dsl::peek_not(dsl::comma | dsl::semicolon | dsl::lit_c<')'> | dsl::lit_c<']'> | dsl::lit_c<'}'> | dsl::eof) >> (
 				dsl::p<function> | dsl::p<variable> | dsl::p<list_ex> | dsl::p<array_ex> | dsl::p<scope_ex> |
-				dsl::p<op_literal> | dsl::p<literal> | dsl::p<id_name>
+				dsl::p<op_literal> | dsl::p<literal> | dsl::p<identifier>
 			) | dsl::break_);
 };
 
@@ -183,7 +196,7 @@ struct statement {
 	static constexpr auto name = "vm.lang.statement";
 	static constexpr auto whitespace = dsl::ascii::space;
 	static constexpr auto rule = dsl::p<expression>
-			+ dsl::if_(dsl::peek_not(dsl::lit_c<'}'> | dsl::eof) >> (dsl::lit_c<','> | dsl::lit_c<';'>));
+			+ dsl::if_(dsl::peek_not(dsl::lit_c<'}'> | dsl::eof) >> (dsl::comma | dsl::semicolon));
 };
 
 struct source {
