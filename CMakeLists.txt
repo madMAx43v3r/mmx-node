@@ -25,6 +25,9 @@ else()
 	include(cmake/commit_hash_json.cmake)
 	
 	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs)
+	
+	set_source_files_properties(src/vm/Compiler.cpp
+		PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
 
 	if(WITH_SECP256K1)
 		message(STATUS "Using secp256k1")

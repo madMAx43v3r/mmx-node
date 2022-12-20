@@ -15,11 +15,20 @@ using namespace mmx;
 
 int main(int argc, char** argv)
 {
-	vnx::init("test_compiler", argc, argv);
+	std::map<std::string, std::string> options;
+	options["f"] = "file";
 
-	vm::compile("1337");
-//	vm::compile("\"1337\"");
+	vnx::init("test_compiler", argc, argv, options);
 
+	std::string file_name;
+	if(vnx::read_config("file", file_name))
+	{
+		std::ifstream stream(file_name);
+		std::stringstream buffer;
+		buffer << stream.rdbuf();
+
+		vm::compile(buffer.str());
+	}
 
 	vnx::close();
 
