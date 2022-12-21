@@ -13,6 +13,7 @@ namespace mmx {
 struct MMX_EXPORT tx_type_e {
 	
 	enum enum_t : uint32_t {
+		PROJECT_REWARD = 795347438l,
 		RECEIVE = 940023181l,
 		REWARD = 3842121424l,
 		SPEND = 2341768809l,

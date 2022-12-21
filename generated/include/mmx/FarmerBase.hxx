@@ -26,8 +26,6 @@ public:
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	vnx::optional<::mmx::addr_t> reward_addr;
-	vnx::optional<::mmx::addr_t> project_addr;
-	vnx::float64_t devfee_ratio = 0.05;
 	
 	typedef ::vnx::Module Super;
 	
@@ -78,15 +76,13 @@ protected:
 
 template<typename T>
 void FarmerBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmerBase>(7);
+	_visitor.template type_begin<FarmerBase>(5);
 	_visitor.type_field("input_info", 0); _visitor.accept(input_info);
 	_visitor.type_field("harvester_timeout", 1); _visitor.accept(harvester_timeout);
 	_visitor.type_field("node_server", 2); _visitor.accept(node_server);
 	_visitor.type_field("wallet_server", 3); _visitor.accept(wallet_server);
 	_visitor.type_field("reward_addr", 4); _visitor.accept(reward_addr);
-	_visitor.type_field("project_addr", 5); _visitor.accept(project_addr);
-	_visitor.type_field("devfee_ratio", 6); _visitor.accept(devfee_ratio);
-	_visitor.template type_end<FarmerBase>(7);
+	_visitor.template type_end<FarmerBase>(5);
 }
 
 

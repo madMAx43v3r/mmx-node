@@ -6,10 +6,14 @@
 #include <mmx/Block_calc_tx_hash_return.hxx>
 #include <mmx/Block_finalize.hxx>
 #include <mmx/Block_finalize_return.hxx>
-#include <mmx/Block_get_all_transactions.hxx>
-#include <mmx/Block_get_all_transactions_return.hxx>
 #include <mmx/Block_get_header.hxx>
 #include <mmx/Block_get_header_return.hxx>
+#include <mmx/Block_get_inputs.hxx>
+#include <mmx/Block_get_inputs_return.hxx>
+#include <mmx/Block_get_outputs.hxx>
+#include <mmx/Block_get_outputs_return.hxx>
+#include <mmx/Block_get_transactions.hxx>
+#include <mmx/Block_get_transactions_return.hxx>
 #include <mmx/Block_is_valid.hxx>
 #include <mmx/Block_is_valid_return.hxx>
 #include <mmx/BlockHeader.hxx>
@@ -560,30 +564,6 @@ void type<::mmx::Block_finalize_return>::create_dynamic_code(std::vector<uint16_
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::Block_get_all_transactions>::get_type_code() {
-	return mmx::vnx_native_type_code_Block_get_all_transactions;
-}
-
-void type<::mmx::Block_get_all_transactions>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Block_get_all_transactions());
-}
-
-void type<::mmx::Block_get_all_transactions>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_all_transactions& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Block_get_all_transactions_return>::get_type_code() {
-	return mmx::vnx_native_type_code_Block_get_all_transactions_return;
-}
-
-void type<::mmx::Block_get_all_transactions_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Block_get_all_transactions_return());
-}
-
-void type<::mmx::Block_get_all_transactions_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_all_transactions_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::Block_get_header>::get_type_code() {
 	return mmx::vnx_native_type_code_Block_get_header;
 }
@@ -605,6 +585,78 @@ void type<::mmx::Block_get_header_return>::create_dynamic_code(std::vector<uint1
 }
 
 void type<::mmx::Block_get_header_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_header_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Block_get_inputs>::get_type_code() {
+	return mmx::vnx_native_type_code_Block_get_inputs;
+}
+
+void type<::mmx::Block_get_inputs>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Block_get_inputs());
+}
+
+void type<::mmx::Block_get_inputs>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_inputs& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Block_get_inputs_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Block_get_inputs_return;
+}
+
+void type<::mmx::Block_get_inputs_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Block_get_inputs_return());
+}
+
+void type<::mmx::Block_get_inputs_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_inputs_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Block_get_outputs>::get_type_code() {
+	return mmx::vnx_native_type_code_Block_get_outputs;
+}
+
+void type<::mmx::Block_get_outputs>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Block_get_outputs());
+}
+
+void type<::mmx::Block_get_outputs>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_outputs& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Block_get_outputs_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Block_get_outputs_return;
+}
+
+void type<::mmx::Block_get_outputs_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Block_get_outputs_return());
+}
+
+void type<::mmx::Block_get_outputs_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_outputs_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Block_get_transactions>::get_type_code() {
+	return mmx::vnx_native_type_code_Block_get_transactions;
+}
+
+void type<::mmx::Block_get_transactions>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Block_get_transactions());
+}
+
+void type<::mmx::Block_get_transactions>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_transactions& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Block_get_transactions_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Block_get_transactions_return;
+}
+
+void type<::mmx::Block_get_transactions_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Block_get_transactions_return());
+}
+
+void type<::mmx::Block_get_transactions_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Block_get_transactions_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -6325,10 +6377,14 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Block_calc_tx_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_finalize::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_finalize_return::static_create_type_code());
-	vnx::register_type_code(::mmx::Block_get_all_transactions::static_create_type_code());
-	vnx::register_type_code(::mmx::Block_get_all_transactions_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_get_header::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_get_header_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Block_get_inputs::static_create_type_code());
+	vnx::register_type_code(::mmx::Block_get_inputs_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Block_get_outputs::static_create_type_code());
+	vnx::register_type_code(::mmx::Block_get_outputs_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Block_get_transactions::static_create_type_code());
+	vnx::register_type_code(::mmx::Block_get_transactions_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::BlockHeader::static_create_type_code());
@@ -6816,10 +6872,14 @@ const vnx::TypeCode* const vnx_native_type_code_Block_calc_tx_hash = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Block_calc_tx_hash_return = vnx::get_type_code(vnx::Hash64(0xb8b6e09b2d550b9cull));
 const vnx::TypeCode* const vnx_native_type_code_Block_finalize = vnx::get_type_code(vnx::Hash64(0xc19dfeaa6a6a3814ull));
 const vnx::TypeCode* const vnx_native_type_code_Block_finalize_return = vnx::get_type_code(vnx::Hash64(0x2f3dbe687d86f682ull));
-const vnx::TypeCode* const vnx_native_type_code_Block_get_all_transactions = vnx::get_type_code(vnx::Hash64(0x2a8ee6c560a7bfadull));
-const vnx::TypeCode* const vnx_native_type_code_Block_get_all_transactions_return = vnx::get_type_code(vnx::Hash64(0xb95ddf33de46d1d9ull));
 const vnx::TypeCode* const vnx_native_type_code_Block_get_header = vnx::get_type_code(vnx::Hash64(0xb94157aaa956f7d7ull));
 const vnx::TypeCode* const vnx_native_type_code_Block_get_header_return = vnx::get_type_code(vnx::Hash64(0x8e93adc1629c3522ull));
+const vnx::TypeCode* const vnx_native_type_code_Block_get_inputs = vnx::get_type_code(vnx::Hash64(0x16e934fbe65f06c8ull));
+const vnx::TypeCode* const vnx_native_type_code_Block_get_inputs_return = vnx::get_type_code(vnx::Hash64(0x6eb8b3f85e8ef751ull));
+const vnx::TypeCode* const vnx_native_type_code_Block_get_outputs = vnx::get_type_code(vnx::Hash64(0x7d53bfabf2cc6cc4ull));
+const vnx::TypeCode* const vnx_native_type_code_Block_get_outputs_return = vnx::get_type_code(vnx::Hash64(0x1a885217b374975aull));
+const vnx::TypeCode* const vnx_native_type_code_Block_get_transactions = vnx::get_type_code(vnx::Hash64(0xc0ecab9ec5e9015dull));
+const vnx::TypeCode* const vnx_native_type_code_Block_get_transactions_return = vnx::get_type_code(vnx::Hash64(0x8afb502c5406edb4ull));
 const vnx::TypeCode* const vnx_native_type_code_Block_is_valid = vnx::get_type_code(vnx::Hash64(0xa203b4d10b9ca39bull));
 const vnx::TypeCode* const vnx_native_type_code_Block_is_valid_return = vnx::get_type_code(vnx::Hash64(0xd134bed3cdddc939ull));
 const vnx::TypeCode* const vnx_native_type_code_BlockHeader = vnx::get_type_code(vnx::Hash64(0xcaae941a2fc712a6ull));

@@ -49,7 +49,7 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmerBase::VNX_TYPE_HASH(0xff732ba14d9d1abull);
-const vnx::Hash64 FarmerBase::VNX_CODE_HASH(0x157dc19985ba1f33ull);
+const vnx::Hash64 FarmerBase::VNX_CODE_HASH(0x5298bfb15991e010ull);
 
 FarmerBase::FarmerBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -59,8 +59,6 @@ FarmerBase::FarmerBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".node_server", node_server);
 	vnx::read_config(vnx_name + ".wallet_server", wallet_server);
 	vnx::read_config(vnx_name + ".reward_addr", reward_addr);
-	vnx::read_config(vnx_name + ".project_addr", project_addr);
-	vnx::read_config(vnx_name + ".devfee_ratio", devfee_ratio);
 }
 
 vnx::Hash64 FarmerBase::get_type_hash() const {
@@ -83,8 +81,6 @@ void FarmerBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, node_server);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, wallet_server);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, reward_addr);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, project_addr);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, devfee_ratio);
 	_visitor.type_end(*_type_code);
 }
 
@@ -95,8 +91,6 @@ void FarmerBase::write(std::ostream& _out) const {
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << ", \"wallet_server\": "; vnx::write(_out, wallet_server);
 	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
-	_out << ", \"project_addr\": "; vnx::write(_out, project_addr);
-	_out << ", \"devfee_ratio\": "; vnx::write(_out, devfee_ratio);
 	_out << "}";
 }
 
@@ -114,23 +108,17 @@ vnx::Object FarmerBase::to_object() const {
 	_object["node_server"] = node_server;
 	_object["wallet_server"] = wallet_server;
 	_object["reward_addr"] = reward_addr;
-	_object["project_addr"] = project_addr;
-	_object["devfee_ratio"] = devfee_ratio;
 	return _object;
 }
 
 void FarmerBase::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "devfee_ratio") {
-			_entry.second.to(devfee_ratio);
-		} else if(_entry.first == "harvester_timeout") {
+		if(_entry.first == "harvester_timeout") {
 			_entry.second.to(harvester_timeout);
 		} else if(_entry.first == "input_info") {
 			_entry.second.to(input_info);
 		} else if(_entry.first == "node_server") {
 			_entry.second.to(node_server);
-		} else if(_entry.first == "project_addr") {
-			_entry.second.to(project_addr);
 		} else if(_entry.first == "reward_addr") {
 			_entry.second.to(reward_addr);
 		} else if(_entry.first == "wallet_server") {
@@ -155,12 +143,6 @@ vnx::Variant FarmerBase::get_field(const std::string& _name) const {
 	if(_name == "reward_addr") {
 		return vnx::Variant(reward_addr);
 	}
-	if(_name == "project_addr") {
-		return vnx::Variant(project_addr);
-	}
-	if(_name == "devfee_ratio") {
-		return vnx::Variant(devfee_ratio);
-	}
 	return vnx::Variant();
 }
 
@@ -175,10 +157,6 @@ void FarmerBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(wallet_server);
 	} else if(_name == "reward_addr") {
 		_value.to(reward_addr);
-	} else if(_name == "project_addr") {
-		_value.to(project_addr);
-	} else if(_name == "devfee_ratio") {
-		_value.to(devfee_ratio);
 	}
 }
 
@@ -206,7 +184,7 @@ std::shared_ptr<vnx::TypeCode> FarmerBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Farmer";
 	type_code->type_hash = vnx::Hash64(0xff732ba14d9d1abull);
-	type_code->code_hash = vnx::Hash64(0x157dc19985ba1f33ull);
+	type_code->code_hash = vnx::Hash64(0x5298bfb15991e010ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::FarmerBase);
 	type_code->methods.resize(14);
@@ -224,7 +202,7 @@ std::shared_ptr<vnx::TypeCode> FarmerBase::static_create_type_code() {
 	type_code->methods[11] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
 	type_code->methods[12] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
 	type_code->methods[13] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->fields.resize(7);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -258,19 +236,6 @@ std::shared_ptr<vnx::TypeCode> FarmerBase::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "reward_addr";
 		field.code = {33, 11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[5];
-		field.is_extended = true;
-		field.name = "project_addr";
-		field.code = {33, 11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[6];
-		field.data_size = 8;
-		field.name = "devfee_ratio";
-		field.value = vnx::to_string(0.05);
-		field.code = {10};
 	}
 	type_code->build();
 	return type_code;
@@ -424,9 +389,6 @@ void read(TypeInput& in, ::mmx::FarmerBase& value, const TypeCode* type_code, co
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.harvester_timeout, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[6]) {
-			vnx::read_value(_buf + _field->offset, value.devfee_ratio, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -434,7 +396,6 @@ void read(TypeInput& in, ::mmx::FarmerBase& value, const TypeCode* type_code, co
 			case 2: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.wallet_server, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.project_addr, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -453,14 +414,12 @@ void write(TypeOutput& out, const ::mmx::FarmerBase& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(12);
+	char* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.harvester_timeout);
-	vnx::write_value(_buf + 4, value.devfee_ratio);
 	vnx::write(out, value.input_info, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.node_server, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.wallet_server, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.reward_addr, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.project_addr, type_code, type_code->fields[5].code.data());
 }
 
 void read(std::istream& in, ::mmx::FarmerBase& value) {
