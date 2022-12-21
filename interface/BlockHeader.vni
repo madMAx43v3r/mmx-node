@@ -9,6 +9,9 @@ class BlockHeader {
 	
 	uint height;
 	
+	// TODO: uint time_hour;				// hours since chain start
+	// TODO: uint time_counter;			// blocks since last hour increment
+	
 	ulong nonce;
 	
 	ulong time_diff;
