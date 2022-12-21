@@ -10,9 +10,6 @@ module Farmer {
 	string wallet_server = "Wallet";
 	
 	optional<addr_t> reward_addr;					// default = first address of first wallet
-	optional<addr_t> project_addr;					// where developer fee goes
-	
-	double devfee_ratio = 0.05;
 	
 	
 	vnx.Hash64 get_mac_addr() const;

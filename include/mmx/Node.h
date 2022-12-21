@@ -374,9 +374,8 @@ private:
 					const std::string& method_name,
 					uint64_t& tx_cost, const bool is_public) const;
 
-	std::shared_ptr<const exec_result_t>
-	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context,
-				std::shared_ptr<const Block> base = nullptr) const;
+	std::shared_ptr<const exec_result_t> validate(
+			std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context) const;
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
 
@@ -411,7 +410,7 @@ private:
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const execution_context_t> context,
 				std::shared_ptr<const Transaction> tx,
-				balance_cache_t& balance_cache, uint32_t& counter);
+				uint32_t& counter);
 
 	void revert(const uint32_t height);
 

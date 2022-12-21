@@ -28,7 +28,8 @@ class BlockHeader {
 	
 	ProofOfSpace* proof;
 	
-	Transaction* tx_base;
+	ulong reward_amount;
+	optional<addr_t> reward_addr;
 	
 	uint static_cost;
 	uint total_cost;

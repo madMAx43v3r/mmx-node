@@ -174,46 +174,10 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	}
 	const auto farmer_sk = find_skey(block->proof->farmer_key);
 
-	auto base = Transaction::create();
-	base->expires = block->height;
-	base->note = tx_note_e::REWARD;
-	base->salt = block->prev;
-
-	auto amount_left = reward_amount;
-	if(project_addr && amount_left > 0)
-	{
-		txout_t out;
-		out.address = *project_addr;
-		out.amount = double(amount_left) * devfee_ratio;
-		if(out.amount > 0) {
-			amount_left -= out.amount;
-			base->outputs.push_back(out);
-		}
-	}
-	if(reward_addr && amount_left > 0)
-	{
-		txout_t out;
-		out.address = *reward_addr;
-		out.amount = amount_left;
-		amount_left -= out.amount;
-		base->outputs.push_back(out);
-	}
-	base->finalize();
-
-	base->static_cost = base->calc_cost(params);
-	{
-		exec_result_t res;
-		res.total_cost = base->static_cost;
-		for(const auto& out : base->outputs) {
-			res.total_fee += out.amount;
-		}
-		base->exec_result = res;
-	}
-	base->content_hash = base->calc_hash(true);
-
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
-	out->tx_base = base;
+	out->reward_amount = reward_amount;
+	out->reward_addr = reward_addr;
 	out->hash = out->calc_hash().first;
 	out->farmer_sig = bls_signature_t::sign(farmer_sk, out->hash);
 	return out;

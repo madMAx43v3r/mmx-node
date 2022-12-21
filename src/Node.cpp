@@ -538,13 +538,6 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 		if(auto tx = std::dynamic_pointer_cast<const Transaction>(value)) {
 			return tx;
 		}
-		if(auto header = std::dynamic_pointer_cast<const BlockHeader>(value)) {
-			if(auto tx = header->tx_base) {
-				if(tx->id == id) {
-					return std::dynamic_pointer_cast<const Transaction>(tx);
-				}
-			}
-		}
 	}
 	return nullptr;
 }
@@ -675,7 +668,7 @@ std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, con
 	if(fork) {
 		for(const auto& fork_i : get_fork_line(fork)) {
 			const auto& block_i = fork_i->block;
-			for(const auto& tx : block_i->get_all_transactions()) {
+			for(const auto& tx : block_i->get_transactions()) {
 				if(!tx->did_fail()) {
 					if(tx->id == address) {
 						contract = tx->deploy;
@@ -941,6 +934,7 @@ address_info_t Node::get_address_info(const addr_t& address) const
 		switch(entry.type) {
 			case tx_type_e::REWARD:
 			case tx_type_e::VDF_REWARD:
+			case tx_type_e::PROJECT_REWARD:
 			case tx_type_e::RECEIVE:
 				info.num_receive++;
 				info.total_receive[entry.contract] += entry.amount;
@@ -975,6 +969,7 @@ std::vector<address_info_t> Node::get_address_infos(const std::vector<addr_t>& a
 		switch(entry.type) {
 			case tx_type_e::REWARD:
 			case tx_type_e::VDF_REWARD:
+			case tx_type_e::PROJECT_REWARD:
 			case tx_type_e::RECEIVE:
 				info.num_receive++;
 				info.total_receive[entry.contract] += entry.amount;
@@ -1500,15 +1495,11 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(auto block = fork->block) {
 		// compute balance deltas
 		fork->balance = balance_log_t();
-		for(const auto& tx : block->get_all_transactions()) {
-			if(!tx->did_fail()) {
-				for(const auto& out : tx->get_outputs()) {
-					fork->balance.added[std::make_pair(out.address, out.contract)] += out.amount;
-				}
-				for(const auto& in : tx->get_inputs()) {
-					fork->balance.removed[std::make_pair(in.address, in.contract)] += in.amount;
-				}
-			}
+		for(const auto& out : block->get_outputs()) {
+			fork->balance.added[std::make_pair(out.address, out.contract)] += out.amount;
+		}
+		for(const auto& in : block->get_inputs()) {
+			fork->balance.removed[std::make_pair(in.address, in.contract)] += in.amount;
 		}
 		if(fork_tree.emplace(block->hash, fork).second) {
 			fork_index.emplace(block->height, fork);
@@ -2009,22 +2000,25 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	std::unordered_set<hash_t> tx_set;
 	balance_cache_t balance_cache(&balance_map);
 
-	if(block->vdf_reward)
+	for(const auto& out : block->get_outputs(params))
 	{
-		txout_t out;
-		out.address = block->vdf_reward;
-		out.amount = block->time_diff / params->vdf_reward_divider;
-
-		recv_log.insert(std::make_tuple(out.address, block->height, counter++),
-					txio_entry_t::create_ex(hash_t(), block->height, tx_type_e::VDF_REWARD, out));
-
+		if(out.type != tx_type_e::PROJECT_REWARD) {
+			recv_log.insert(std::make_tuple(out.address, block->height, counter++), out);
+		}
 		balance_cache.get(out.address, out.contract) += out.amount;
 	}
-	for(const auto& tx : block->get_all_transactions()) {
+	for(const auto& in : block->get_inputs(params))
+	{
+		if(auto balance = balance_cache.find(in.address, in.contract)) {
+			clamped_sub_assign(*balance, in.amount);
+		}
+		spend_log.insert(std::make_tuple(in.address, block->height, counter++), in);
+	}
+	for(const auto& tx : block->get_transactions()) {
 		if(tx) {
 			tx_set.insert(tx->id);
 			tx_ids.push_back(tx->id);
-			apply(block, context, tx, balance_cache, counter);
+			apply(block, context, tx, counter);
 		}
 	}
 	tx_log.insert(block->height, tx_ids);
@@ -2083,43 +2077,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const execution_context_t> context,
 					std::shared_ptr<const Transaction> tx,
-					balance_cache_t& balance_cache, uint32_t& counter)
+					uint32_t& counter)
 {
-	if(tx->exec_result && tx->sender)
-	{
-		txin_t in;
-		in.address = *tx->sender;
-		in.amount = tx->exec_result->total_fee;
-
-		spend_log.insert(std::make_tuple(in.address, block->height, counter++),
-				txio_entry_t::create_ex(tx->id, block->height, tx_type_e::TXFEE, in));
-
-		if(auto balance = balance_cache.find(*tx->sender, addr_t())) {
-			clamped_sub_assign(*balance, in.amount);
-		}
-	}
 	if(!tx->exec_result || !tx->exec_result->did_fail)
 	{
-		const auto outputs = tx->get_outputs();
-		for(size_t i = 0; i < outputs.size(); ++i)
-		{
-			const auto& out = outputs[i];
-			recv_log.insert(std::make_tuple(out.address, block->height, counter++),
-					txio_entry_t::create_ex(tx->id, block->height, tx->sender ? tx_type_e::RECEIVE : tx_type_e::REWARD, out));
-
-			balance_cache.get(out.address, out.contract) += out.amount;
-		}
-		const auto inputs = tx->get_inputs();
-		for(size_t i = 0; i < inputs.size(); ++i)
-		{
-			const auto& in = inputs[i];
-			spend_log.insert(std::make_tuple(in.address, block->height, counter++),
-					txio_entry_t::create_ex(tx->id, block->height, tx_type_e::SPEND, in));
-
-			if(auto balance = balance_cache.find(in.address, in.contract)) {
-				clamped_sub_assign(*balance, in.amount);
-			}
-		}
 		if(auto contract = tx->deploy)
 		{
 			const auto ticket = counter++;
@@ -2426,11 +2387,6 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 	}
 	try {
 		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
-			if(tx_offsets) {
-				if(auto tx = header->tx_base) {
-					tx_offsets->emplace_back(tx->id, offset);
-				}
-			}
 			if(full_block) {
 				auto block = Block::create();
 				block->BlockHeader::operator=(*header);
@@ -2465,12 +2421,9 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	auto& out = block_chain->out;
 	const auto offset = out.get_output_pos();
 
-	std::vector<std::pair<hash_t, int64_t>> tx_list;
-	if(auto tx = block->tx_base) {
-		tx_list.emplace_back(tx->id, offset);
-	}
 	vnx::write(out, block->get_header());
 
+	std::vector<std::pair<hash_t, int64_t>> tx_list;
 	for(const auto& tx : block->tx_list) {
 		tx_list.emplace_back(tx->id, out.get_output_pos());
 		vnx::write(out, tx);

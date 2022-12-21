@@ -734,13 +734,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					} else {
 						out["score"] = nullptr;
 					}
-					uint64_t total = 0;
-					if(auto tx = block->tx_base) {
-						for(const auto& out : tx->outputs) {
-							total += out.amount;
-						}
-					}
-					out["reward"] = total / pow(10, params->decimals);
+					out["reward"] = to_value(block->reward_amount, params->decimals);
 					out["tx_fees"] = block->tx_fees / pow(10, params->decimals);
 					out["base_reward"] = calc_block_reward(params, block->space_diff) / pow(10, params->decimals);
 				}
@@ -1529,11 +1523,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					std::map<addr_t, uint64_t> reward_map;
 					for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
 						const auto& block = *iter;
-						if(auto tx = block->tx_base) {
-							for(const auto& out : tx->outputs) {
-								total_reward += out.amount;
-								reward_map[out.address] += out.amount;
-							}
+						if(block->reward_addr) {
+							total_reward += block->reward_amount;
+							reward_map[*block->reward_addr] += block->reward_amount;
 						}
 						if(recent.size() < limit) {
 							recent.push_back(block);

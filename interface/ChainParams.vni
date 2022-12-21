@@ -42,7 +42,6 @@ class ChainParams {
 	ulong min_txfee_byte = 10;				// per byte of data
 	ulong min_txfee_activate = 100000;		// sending to a new address
 	
-	ulong max_txbase_cost = 10000;
 	ulong max_block_size = 10000000;		// max static size
 	ulong max_block_cost = 100000000;		// includes dynamic cost
 	
@@ -53,5 +52,9 @@ class ChainParams {
 	addr_t plot_binary;
 	addr_t swap_binary;
 	addr_t offer_binary;
+	
+	addr_t project_addr;
+	ulong fixed_project_reward = 50000;
+	ulong_fraction_t project_ratio;
 	
 }

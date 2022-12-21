@@ -30,5 +30,10 @@
 	"initial_space_diff": 1,
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
-	"virtual_space_constant": 1524
+	"virtual_space_constant": 1524,
+	"project_ratio": {
+		"value": 1,
+		"inverse": 100
+	},
+	"project_addr": "mmx1cvc060jcsk3ywg36c5sm7zmrgth0ex7wp9s7jxvh4kgjgy2c90ss46rhwp"
 }
