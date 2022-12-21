@@ -1,7 +1,5 @@
 
-function func() {}
-
-for(var i = 0, k = 0; i < 10, k < 100; ++i) {
+for(const entry of list) {
 	printf("blubb");
 }
 

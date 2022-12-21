@@ -232,6 +232,31 @@ struct source {
 } // lang
 
 
+template<typename Node>
+void dump_parse_tree(const Node& node, std::ostream& out, int depth = 0)
+{
+	const std::string name(node.kind().name());
+	if(name == "whitespace") {
+		return;
+	}
+	out << depth << (depth < 10 ? " " : "");
+
+	for(int i = 0; i < depth; ++i) {
+		out << "  ";
+	}
+	out << name;
+
+	if(node.kind().is_token()) {
+		const auto token = node.lexeme();
+		out << ": " << vnx::to_string(std::string(token.begin(), token.end()));
+	}
+	out << std::endl;
+
+	for(const auto& child : node.children()) {
+		dump_parse_tree(child, out, depth + 1);
+	}
+}
+
 std::shared_ptr<const contract::Binary> compile(const std::string& source)
 {
 	typedef lang::source test_t;
@@ -244,6 +269,10 @@ std::shared_ptr<const contract::Binary> compile(const std::string& source)
 	lexy::parse_tree<lexy::input_reader<lexy::string_input<lexy::utf8_encoding>>> tree;
 	auto result = lexy::parse_as_tree<test_t>(
 			tree, lexy::string_input<lexy::utf8_encoding>(source), lexy_ext::report_error);
+
+	std::cout << std::endl;
+	dump_parse_tree(tree.root(), std::cout);
+	std::cout << std::endl;
 
 	if(result.is_success()) {
 		std::cout << "Success" << std::endl;
