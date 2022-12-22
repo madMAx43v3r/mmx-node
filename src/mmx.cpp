@@ -265,8 +265,10 @@ int main(int argc, char** argv)
 						const auto& balance = entry.second;
 						const auto contract = get_contract(node, entry.first);
 						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
-							std::cout << "Balance: " << to_value_128(balance.total, token->decimals) << " " << token->symbol
-									<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
+							std::cout << "Balance: " << to_value_128(balance.total, token->decimals)
+									<< " " << token->symbol << (balance.is_validated ? "" : "?")
+									<< " (Spendable: " << to_value_128(balance.spendable, token->decimals)
+									<< " " << token->symbol << (balance.is_validated ? "" : "?") << ")";
 							if(entry.first != mmx::addr_t()) {
 								std::cout << " [" << entry.first << "]";
 							}
