@@ -1,4 +1,9 @@
 
-function test( a = null , b = 123 , c = "sdfsdf") const public {}
+function test( a, b = 123, c = "sdfsdf") const {}
 
-var name = mmx123;
+var name = {
+	"test": 1,
+	"test2": 2
+};
+
+var num = 127;
