@@ -304,7 +304,6 @@ void dump_parse_tree(const Node& node, std::ostream& out, int depth = 0, int off
 class Compiler {
 public:
 	static const std::string version;
-	static constexpr uint32_t max_init_args = 0x100;
 
 	std::shared_ptr<const contract::Binary> compile(const std::string& source);
 
@@ -361,6 +360,7 @@ private:
 	int depth = 0;
 	int curr_pass = 0;
 	bool is_debug = true;
+	size_t code_offset = 0;
 	vnx::optional<node_t> curr_node;
 	vnx::optional<function_t> curr_function;
 
@@ -397,17 +397,12 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 	dump_parse_tree(tree.root(), std::cout);
 	std::cout << std::endl;
 
-	{
-		variable_t var;
-		var.is_const = true;
-		var.value = std::make_unique<var_t>();
-		const_table[var.value] = const_vars.size();
-		const_vars.push_back(var);
-	}
-	{
-		frame_t scope;
-		scope.addr_offset = max_init_args;
-		frame.push_back(scope);
+	// static init frame
+	frame.emplace_back();
+
+	// address zero = null value
+	if(get_const_address(std::make_unique<var_t>())) {
+		throw std::logic_error("zero address not null");
 	}
 
 	try {
@@ -554,8 +549,6 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 	print_debug_info(node);
 	depth++;
 
-	bool is_scope = false;
-
 	const std::string name(node.kind().name());
 	const std::string p_name(node.parent().kind().name());
 	const auto list = get_children(node);
@@ -565,25 +558,31 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 			throw std::logic_error("invalid namespace declaration");
 		}
 		name_space.push_back(get_literal(list[1]));
+
+		for(const auto& node : list) {
+			recurse(node);
+		}
+		name_space.pop_back();
 	}
 	else if(name == lang::scope::name) {
-		if(list.size() < 2) {
-			throw std::logic_error("invalid scope");
+		frame_t scope;
+		if(frame.size() > 1) {
+			scope.addr_offset = frame.back().addr_offset;
 		}
-		if(dst_addr) {
-			recurse(list[1], dst_addr);
-		} else {
-			frame_t scope;
-			if(frame.size() > 1) {
-				scope.addr_offset = frame.back().addr_offset;
-			}
-			frame.push_back(scope);
-			is_scope = true;
+		frame.push_back(scope);
+
+		for(const auto& node : list) {
+			recurse(node);
 		}
+		frame.pop_back();
 	}
 	else if(name == lang::source::name) {
 		for(const auto& node : list) {
-			recurse(node, dst_addr);
+			recurse(node);
+		}
+		if(curr_pass == 0 || frame.size() == 1) {
+			// return from static init
+			code.emplace_back(OP_RET);
 		}
 	}
 	else if(name == lang::function::name) {
@@ -664,21 +663,20 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 			if(curr_function) {
 				throw std::logic_error("cannot define function inside a function");
 			}
-			frame_t scope;
-			{
-				auto& func = function_map[func_name];
-				func.address = code.size();
+			auto& func = function_map[func_name];
+			func.address = code.size();
 
-				scope.addr_offset = 1 + func.args.size();
-				scope.var_list.emplace_back();
-				scope.var_list.insert(scope.var_list.end(), func.args.begin(), func.args.end());
-				curr_function = func;
-			}
+			frame_t scope;
+			scope.addr_offset = 1 + func.args.size();
+			scope.var_list.emplace_back();
+			scope.var_list.insert(scope.var_list.end(), func.args.begin(), func.args.end());
+			curr_function = func;
+
 			frame.push_back(scope);
 			recurse(list.back());
 			frame.pop_back();
 
-			if(code.empty() || code.back().code != OP_RET) {
+			if(code.size() <= func.address || code.back().code != OP_RET) {
 				code.emplace_back(OP_RET);
 			}
 			curr_function = nullptr;
@@ -704,14 +702,13 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 			if(list.size() == 4) {
 				const auto node = list[3];
 				const std::string name(node.kind().name());
-				if(name == lang::constant::name) {
+				if(!var.is_const || name == lang::expression::name) {
+					is_expression = true;
+					debug() << " = <expression>";
+				} else if(name == lang::constant::name) {
 					is_constant = true;
 					var.value = parse_constant(node);
 					debug() << " = " << to_string(var.value);
-				}
-				else if(name == lang::expression::name) {
-					is_expression = true;
-					debug() << " = <expression>";
 				}
 			}
 			auto& scope = frame.size() > 1 ? frame.back() : global;
@@ -752,6 +749,12 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 		}
 		// TODO
 	}
+	else if(name == lang::constant::name) {
+		if(dst_addr) {
+			const auto value = parse_constant(node);
+			code.emplace_back(OP_COPY, 0, dst_addr, get_const_address(value));
+		}
+	}
 	else if(name == lang::object::name) {
 		// TODO
 	}
@@ -759,12 +762,10 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 		// TODO
 	}
 
-	if(name == lang::namespace_ex::name) {
-		name_space.pop_back();
+	for(auto i = code_offset; i < code.size(); ++i) {
+		debug(true) << to_string(code[i]) << std::endl;
 	}
-	if(is_scope) {
-		frame.pop_back();
-	}
+	code_offset = code.size();
 	depth--;
 }
 
