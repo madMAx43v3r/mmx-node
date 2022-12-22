@@ -279,15 +279,6 @@ public:
 	std::shared_ptr<const contract::Binary> compile(const std::string& source);
 
 protected:
-	struct ident_t {
-		enum {
-			CONST, VAR, FUNCTION
-		} type;
-
-		int32_t scope = -1;
-		uint32_t offset = 0;
-	};
-
 	struct variable_t {
 		bool is_const = false;
 		bool is_static = false;
