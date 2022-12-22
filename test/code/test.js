@@ -1,6 +1,4 @@
 
-for(const entry of list) {
-	printf("blubb");
-}
+function test( a = null , b = 123 , c = "sdfsdf") const public {}
 
-var num = 123;
+var name = mmx123;
