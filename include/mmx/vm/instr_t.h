@@ -34,6 +34,7 @@ enum opcode_e : uint8_t {
 	OP_JUMPI,		// dst, cond
 	OP_JUMPN,		// dst, cond
 	OP_CALL,		// addr, stack_ptr
+	// TODO: OP_CLR_STACK,	// offset
 	OP_RET,
 
 	OP_ADD = 0x20,	// dst, lhs, rhs
