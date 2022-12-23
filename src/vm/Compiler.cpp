@@ -917,6 +917,15 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 	{
 		out = recurse_expr(list.data(), list.size());
 	}
+	else if(name == lang::operator_ex::name)
+	{
+		const auto op = get_literal(node);
+		if(op == "return") {
+			code.emplace_back(OP_RET);
+		} else {
+			throw std::logic_error("invalid operator");
+		}
+	}
 
 	print_debug_code();
 	depth--;
@@ -1000,6 +1009,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 			linker_map[code.size()] = func->name;
 			code.emplace_back(OP_CALL, 0, -1, offset - MEM_STACK);
 			return offset;
+		}
+	}
+	else if(name == lang::operator_ex::name)
+	{
+		const auto op = get_literal(node);
+		if(op == "return") {
+			copy(MEM_STACK + 0, recurse_expr(p_node + 1, expr_len - 1));
+			code.emplace_back(OP_RET);
+		} else {
+			throw std::logic_error("invalid operator");
 		}
 	}
 	return vref_t();
