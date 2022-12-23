@@ -1,4 +1,6 @@
 
-var name = {};
+function func(a, b) { return 0; }
 
-var blubb = name.field.sdsd;
+var blubb = func(1);
+
+blubb = 123;
