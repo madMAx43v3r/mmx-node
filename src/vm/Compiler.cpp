@@ -214,11 +214,6 @@ struct variable {
 			dsl::p<identifier> + dsl::opt(dsl::equal_sign >> (dsl::p<constant> | dsl::else_ >> dsl::recurse<expression>));
 };
 
-struct list {
-	static constexpr auto name = "mmx.lang.list";
-	static constexpr auto rule = dsl::parenthesized.opt_list(dsl::recurse<expression>, dsl::sep(dsl::comma));
-};
-
 struct array {
 	static constexpr auto name = "mmx.lang.array";
 	static constexpr auto rule = dsl::square_bracketed.opt_list(dsl::recurse<expression>, dsl::trailing_sep(dsl::comma));
@@ -248,11 +243,16 @@ struct while_loop {
 	static constexpr auto rule = kw_while >> dsl::parenthesized(dsl::recurse<expression>);
 };
 
+struct sub_expression {
+	static constexpr auto name = "mmx.lang.sub_expression";
+	static constexpr auto rule = dsl::parenthesized.opt_list(dsl::recurse<expression>, dsl::sep(dsl::comma));
+};
+
 struct expression {
 	static constexpr auto name = "mmx.lang.expression";
 	static constexpr auto rule = dsl::loop(
 			dsl::peek_not(dsl::comma | dsl::semicolon | dsl::lit_c<')'> | dsl::lit_c<']'> | dsl::lit_c<'}'> | dsl::eof) >> (
-					dsl::p<list> | dsl::p<array> | dsl::p<object> | dsl::p<operator_ex> |
+					dsl::p<sub_expression> | dsl::p<array> | dsl::p<object> | dsl::p<operator_ex> |
 					dsl::p<if_ex> | dsl::p<for_loop> | dsl::p<while_loop> | dsl::p<constant> |
 					dsl::p<call_ex> | dsl::p<identifier>
 			) | dsl::break_);
@@ -333,6 +333,10 @@ protected:
 		uint32_t addr_offset = 0;
 		std::vector<variable_t> var_list;
 		std::map<std::string, uint32_t> var_map;
+
+		uint32_t new_addr() {
+			return MEM_STACK + addr_offset++;
+		}
 	};
 
 	void parse(parse_tree_t& tree, const std::string& source);
@@ -349,7 +353,9 @@ protected:
 
 	std::ostream& debug(bool ident = false) const;
 
-	void print_debug_info(const node_t& node);
+	void print_debug_info(const node_t& node) const;
+
+	void print_debug_code();
 
 	static std::vector<node_t> get_children(const node_t& node);
 
@@ -397,19 +403,22 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 	dump_parse_tree(tree.root(), std::cout);
 	std::cout << std::endl;
 
-	// static init frame
-	frame.emplace_back();
-
 	// address zero = null value
 	if(get_const_address(std::make_unique<var_t>())) {
 		throw std::logic_error("zero address not null");
 	}
 
 	try {
+		// static init frame
+		frame.emplace_back();
+
 		debug() << "First pass ..." << std::endl;
+
 		recurse(tree.root());
 
 		curr_pass++;
+		frame.clear();
+
 		debug() << std::endl << "Second pass ..." << std::endl;
 
 		for(const auto& entry : function_map) {
@@ -461,51 +470,52 @@ std::string Compiler::get_literal(const node_t& node)
 
 varptr_t Compiler::parse_constant(const node_t& node)
 {
+	const auto list = get_children(node);
 	const std::string name(node.kind().name());
-	if(name != lang::constant::name) {
-		throw std::logic_error("not a constant");
-	}
-	for(const auto& node : get_children(node))
-	{
-		const auto list = get_children(node);
-		const std::string name(node.kind().name());
 
-		if(name == lang::primitive::name) {
-			if(list.size() != 1) {
-				throw std::logic_error("invalid primitive");
-			}
-			const auto value = get_literal(list[0]);
-			if(value == "null") {
-				return std::make_unique<var_t>();
-			} else if(value == "true") {
-				return std::make_unique<var_t>(TYPE_TRUE);
-			} else if(value == "false") {
-				return std::make_unique<var_t>(TYPE_FALSE);
+	if(name == lang::constant::name) {
+		for(const auto& node : list) {
+			if(auto value = parse_constant(node)) {
+				return value;
 			}
 		}
-		else if(name == lang::integer::hex::name) {
-			return std::make_unique<uint_t>(uint256_t(get_literal(list[0]), 16));
+		throw std::logic_error("invalid constant");
+	}
+	else if(name == lang::primitive::name) {
+		if(list.size() != 1) {
+			throw std::logic_error("invalid primitive");
 		}
-		else if(name == lang::integer::binary::name) {
-			return std::make_unique<uint_t>(uint256_t(get_literal(list[0]), 2));
-		}
-		else if(name == lang::integer::decimal::name) {
-			return std::make_unique<uint_t>(uint256_t(get_literal(list[0]), 10));
-		}
-		else if(name == lang::string::name) {
-			if(list.size() != 3) {
-				throw std::logic_error("invalid string");
-			}
-			return binary_t::alloc(get_literal(list[1]));
-		}
-		else if(name == lang::address::name) {
-			if(list.size() != 1) {
-				throw std::logic_error("invalid address");
-			}
-			return std::make_unique<uint_t>(addr_t(get_literal(list[0])).to_uint256());
+		const auto value = get_literal(list[0]);
+		if(value == "null") {
+			return std::make_unique<var_t>();
+		} else if(value == "true") {
+			return std::make_unique<var_t>(TYPE_TRUE);
+		} else if(value == "false") {
+			return std::make_unique<var_t>(TYPE_FALSE);
 		}
 	}
-	throw std::logic_error("invalid constant");
+	else if(name == lang::integer::hex::name) {
+		return std::make_unique<uint_t>(uint256_t(get_literal(list[0]), 16));
+	}
+	else if(name == lang::integer::binary::name) {
+		return std::make_unique<uint_t>(uint256_t(get_literal(list[0]), 2));
+	}
+	else if(name == lang::integer::decimal::name) {
+		return std::make_unique<uint_t>(uint256_t(get_literal(list[0]), 10));
+	}
+	else if(name == lang::string::name) {
+		if(list.size() != 3) {
+			throw std::logic_error("invalid string");
+		}
+		return binary_t::alloc(get_literal(list[1]));
+	}
+	else if(name == lang::address::name) {
+		if(list.size() != 1) {
+			throw std::logic_error("invalid address");
+		}
+		return std::make_unique<uint_t>(addr_t(get_literal(list[0])).to_uint256());
+	}
+	return nullptr;
 }
 
 std::string Compiler::get_namespace(const bool concat) const
@@ -532,7 +542,7 @@ std::ostream& Compiler::debug(bool ident) const
 	return out;
 }
 
-void Compiler::print_debug_info(const node_t& node)
+void Compiler::print_debug_info(const node_t& node) const
 {
 	debug(true) << node.kind().name();
 
@@ -543,17 +553,28 @@ void Compiler::print_debug_info(const node_t& node)
 	debug() << std::endl;
 }
 
+void Compiler::print_debug_code()
+{
+	for(auto i = code_offset; i < code.size(); ++i) {
+		debug(true) << to_string(code[i]) << std::endl;
+	}
+	code_offset = code.size();
+}
+
 void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 {
-	curr_node = node;
+	print_debug_code();
 	print_debug_info(node);
+
+	curr_node = node;
 	depth++;
 
 	const std::string name(node.kind().name());
 	const std::string p_name(node.parent().kind().name());
 	const auto list = get_children(node);
 
-	if(name == lang::namespace_ex::name) {
+	if(name == lang::namespace_ex::name)
+	{
 		if(list.size() < 2) {
 			throw std::logic_error("invalid namespace declaration");
 		}
@@ -564,9 +585,10 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 		}
 		name_space.pop_back();
 	}
-	else if(name == lang::scope::name) {
+	else if(name == lang::scope::name)
+	{
 		frame_t scope;
-		if(frame.size() > 1) {
+		if(!frame.empty()) {
 			scope.addr_offset = frame.back().addr_offset;
 		}
 		frame.push_back(scope);
@@ -576,7 +598,8 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 		}
 		frame.pop_back();
 	}
-	else if(name == lang::source::name) {
+	else if(name == lang::source::name)
+	{
 		for(const auto& node : list) {
 			recurse(node);
 		}
@@ -585,7 +608,8 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 			code.emplace_back(OP_RET);
 		}
 	}
-	else if(name == lang::function::name) {
+	else if(name == lang::function::name)
+	{
 		if(list.size() < 3) {
 			throw std::logic_error("invalid function declaration");
 		}
@@ -682,90 +706,144 @@ void Compiler::recurse(const node_t& node, const uint32_t dst_addr)
 			curr_function = nullptr;
 		}
 	}
-	else if(name == lang::variable::name) {
+	else if(name == lang::variable::name)
+	{
 		if(list.size() < 2) {
 			throw std::logic_error("invalid variable declaration");
 		}
-		if(curr_pass == 0 || frame.size() > 1)
-		{
-			const auto qualifier = get_literal(list[0]);
+		const auto qualifier = get_literal(list[0]);
 
-			variable_t var;
-			var.is_const = qualifier == "const";
-			var.is_static = frame.size() == 1;
-			var.name = get_literal(list[1]);
+		variable_t var;
+		var.is_const = qualifier == "const";
+		var.is_static = frame.size() == 1;
+		var.name = get_literal(list[1]);
 
-			bool is_constant = false;
-			bool is_expression = false;
-			debug(true) << qualifier << " " << var.name;
+		bool is_constant = false;
+		bool is_expression = false;
+		debug(true) << qualifier << " " << var.name;
 
-			if(list.size() == 4) {
-				const auto node = list[3];
-				const std::string name(node.kind().name());
-				if(!var.is_const || name == lang::expression::name) {
-					is_expression = true;
-					debug() << " = <expression>";
-				} else if(name == lang::constant::name) {
-					is_constant = true;
-					var.value = parse_constant(node);
-					debug() << " = " << to_string(var.value);
-				}
+		if(list.size() == 4) {
+			const auto node = list[3];
+			const std::string name(node.kind().name());
+			if(!var.is_const || name == lang::expression::name) {
+				is_expression = true;
+				debug() << " = <expression>";
+			} else if(name == lang::constant::name) {
+				is_constant = true;
+				var.value = parse_constant(node);
+				debug() << " = " << to_string(var.value);
 			}
-			auto& scope = frame.size() > 1 ? frame.back() : global;
+		} else if(list.size() != 2) {
+			throw std::logic_error("invalid variable declaration");
+		}
+		auto& scope = frame.size() > 1 ? frame.back() : global;
 
-			if(is_constant) {
-				var.is_static = false;
-				var.address = get_const_address(var.value);
+		if(is_constant) {
+			var.is_static = false;
+			var.address = get_const_address(var.value);
+		} else {
+			if(var.is_static) {
+				var.address = MEM_STATIC + scope.addr_offset;
 			} else {
-				if(var.is_static) {
-					var.address = MEM_STATIC + scope.addr_offset;
-				} else {
-					var.address = MEM_STACK + scope.addr_offset;
-				}
-				scope.addr_offset++;
+				var.address = MEM_STACK + scope.addr_offset;
 			}
-			debug() << " (0x" << std::hex << var.address << std::dec << ")" << std::endl;
+			scope.addr_offset++;
+		}
+		debug() << " (0x" << std::hex << var.address << std::dec << ")" << std::endl;
 
-			if(scope.var_map.count(var.name)) {
-				throw std::logic_error("duplicate variable name: " + var.name);
-			}
-			scope.var_map[var.name] = scope.var_list.size();
-			scope.var_list.push_back(var);
+		if(scope.var_map.count(var.name)) {
+			throw std::logic_error("duplicate variable name: " + var.name);
+		}
+		scope.var_map[var.name] = scope.var_list.size();
+		scope.var_list.push_back(var);
 
-			if(is_expression) {
-				recurse(list.back(), var.address);
-			}
+		if(is_expression) {
+			recurse(list.back(), var.address);
 		}
 	}
-	else if(name == lang::statement::name) {
-		if(list.size() < 1 || list.size() > 2) {
+	else if(name == lang::statement::name)
+	{
+		if(list.size() != 2) {
 			throw std::logic_error("invalid statement");
 		}
 		recurse(list[0], dst_addr);
 	}
-	else if(name == lang::expression::name) {
-		if(dst_addr) {
-			//
+	else if(name == lang::expression::name)
+	{
+		if(list.size() == 1) {
+			recurse(list[0], dst_addr);
+		} else {
+			// TODO
 		}
-		// TODO
 	}
-	else if(name == lang::constant::name) {
+	else if(name == lang::constant::name)
+	{
 		if(dst_addr) {
 			const auto value = parse_constant(node);
 			code.emplace_back(OP_COPY, 0, dst_addr, get_const_address(value));
 		}
 	}
-	else if(name == lang::object::name) {
-		// TODO
+	else if(name == lang::object::name)
+	{
+		auto& stack = frame.back();
+
+		const auto obj_addr = dst_addr ? dst_addr : stack.new_addr();
+		code.emplace_back(OP_CLONE, 0, obj_addr, get_const_address(std::make_unique<map_t>()));
+
+		for(const auto& node : list) {
+			const std::string name(node.kind().name());
+			if(name == lang::object::entry::name) {
+				const auto list = get_children(node);
+				if(list.size() != 3) {
+					throw std::logic_error("invalid object entry");
+				}
+				const auto value_addr = stack.new_addr();
+				recurse(list[2], value_addr);
+
+				varptr_t key;
+				const std::string key_type(list[0].kind().name());
+
+				if(key_type == lang::identifier::name) {
+					key = binary_t::alloc(get_literal(list[0]));
+				} else if(key_type == lang::string::name) {
+					key = parse_constant(list[0]);
+				} else {
+					throw std::logic_error("invalid object key");
+				}
+				const auto key_addr = get_const_address(key);
+				code.emplace_back(OP_SET, 0, obj_addr, key_addr, value_addr);
+			}
+		}
+	}
+	else if(name == lang::array::name)
+	{
+		auto& stack = frame.back();
+
+		const auto array_addr = dst_addr ? dst_addr : stack.new_addr();
+		code.emplace_back(OP_CLONE, 0, array_addr, get_const_address(std::make_unique<array_t>()));
+
+		for(const auto& node : list) {
+			const std::string name(node.kind().name());
+			if(name == lang::expression::name) {
+				const auto value_addr = stack.new_addr();
+				recurse(node, value_addr);
+				code.emplace_back(OP_PUSH_BACK, 0, array_addr, value_addr);
+			}
+		}
+	}
+	else if(name == lang::identifier::name)
+	{
+		const auto name = get_literal(node);
+		const auto var = get_variable(name);
+		if(dst_addr) {
+			code.emplace_back(OP_COPY, 0, dst_addr, var.address);
+		}
 	}
 	else if(name == lang::call_ex::name) {
 		// TODO
 	}
 
-	for(auto i = code_offset; i < code.size(); ++i) {
-		debug(true) << to_string(code[i]) << std::endl;
-	}
-	code_offset = code.size();
+	print_debug_code();
 	depth--;
 }
 
@@ -811,6 +889,7 @@ uint32_t Compiler::get_const_address(const varptr_t& value)
 	var.value = value;
 	var.address = MEM_CONST + addr;
 	const_vars.push_back(var);
+	debug(true) << "CONSTANT [0x" << std::hex << var.address << std::dec << "] " << to_string(value) << std::endl;
 	return var.address;
 }
 
