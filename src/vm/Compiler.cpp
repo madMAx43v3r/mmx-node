@@ -855,7 +855,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			recurse(list[0]);
 		}
 		else if(list.size() == 4) {
-			copy(recurse(list[0]), recurse(list[3]));
+			copy(recurse(list[0]), recurse(list[2]));
 		} else {
 			throw std::logic_error("invalid statement");
 		}
@@ -956,8 +956,22 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 		const auto var = find_variable(name);
 		const auto func = find_function(name);
 
-		if(name_1 == lang::array::name) {
-			// TODO
+		if(name_1 == lang::array::name)
+		{
+			if(!var) {
+				throw std::logic_error("no such variable: " + name);
+			}
+			if(list_1.size() != 3) {
+				throw std::logic_error("invalid bracket operator");
+			}
+			const auto key = recurse(list_1[1]);
+
+			auto key_addr = key.address;
+			if(key.key) {
+				key_addr = stack.new_addr();
+				code.emplace_back(OP_GET, OPFLAG_REF_B, key_addr, key.address, *key.key);
+			}
+			return vref_t(var->address, key_addr);
 		}
 		else if(name_1 == lang::lookup_ex::name)
 		{
