@@ -1,6 +1,5 @@
 {
     "name": "mmx-node",
-    "version-string": "0.9.0",
     "dependencies": [
         "gmp",
         "zlib",
