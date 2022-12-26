@@ -948,7 +948,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 	else if(name == lang::operator_ex::name)
 	{
 		const auto op = get_literal(node);
-		if(op == "." || op == "+" || op == "-" || op == "*" || op == "/")
+		if(op == "+" || op == "-" || op == "*" || op == "/")
 		{
 			if(!lhs) {
 				throw std::logic_error("missing left operand");
@@ -957,19 +957,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 				throw std::logic_error("invalid left operand");
 			}
 			if(expr_len < 2) {
-				throw std::logic_error("missing operand");
+				throw std::logic_error("missing right operand");
 			}
 			out.address = stack.new_addr();
-			if(lhs->key) {
-				copy(out.address, *lhs);
-			}
 		}
 		if(op == "!") {
 			if(lhs) {
 				throw std::logic_error("unexpected left operand");
 			}
 			if(expr_len < 2) {
-				throw std::logic_error("missing operand");
+				throw std::logic_error("missing right operand");
 			}
 			const auto rhs = recurse_expr(p_node + 1, 1);
 			out.address = stack.new_addr();
@@ -977,22 +974,32 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 			count = 2;
 		}
 		else if(op == ".") {
+			if(!lhs) {
+				throw std::logic_error("missing left operand");
+			}
+			if(!lhs->is_value()) {
+				throw std::logic_error("invalid left operand");
+			}
+			if(expr_len < 2) {
+				throw std::logic_error("missing right operand");
+			}
 			const std::string key_name(p_node[1].kind().name());
 			if(key_name != lang::identifier::name) {
 				throw std::logic_error("expected identifier");
 			}
 			const auto key = get_literal(p_node[1]);
+			out.address = get(*lhs);
 			out.key = get_const_address(key);
 			count = 2;
 		}
 		else if(op == "+" || op == "-") {
 			const auto rhs = recurse_expr(p_node + 1, 1);
-			code.emplace_back(op == "+" ? OP_ADD : OP_SUB, math_flags, out.address, lhs->key ? out.address : lhs->address, get(rhs));
+			code.emplace_back(op == "+" ? OP_ADD : OP_SUB, math_flags, out.address, get(*lhs), get(rhs));
 			count = 2;
 		}
 		else if(op == "*" || op == "/") {
 			const auto rhs = recurse_expr(p_node + 1, 1);
-			code.emplace_back(op == "*" ? OP_MUL : OP_DIV, math_flags, out.address, lhs->key ? out.address : lhs->address, get(rhs));
+			code.emplace_back(op == "*" ? OP_MUL : OP_DIV, math_flags, out.address, get(*lhs), get(rhs));
 			count = 2;
 		}
 		else if(op == "return") {
@@ -1104,6 +1111,12 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 
 Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 {
+	if(!src.is_value()) {
+		throw std::logic_error("copy(): src not a value");
+	}
+	if(!dst.is_value()) {
+		throw std::logic_error("copy(): dst not a value");
+	}
 	if(src.key && dst.key) {
 		const auto tmp_addr = frame.back().tmp_addr();
 		code.emplace_back(OP_GET, OPFLAG_REF_B, tmp_addr, src.address, *src.key);
@@ -1120,6 +1133,9 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 
 uint32_t Compiler::get(const vref_t& src)
 {
+	if(!src.is_value()) {
+		throw std::logic_error("get(): src not a value");
+	}
 	if(src.key) {
 		const auto tmp_addr = frame.back().new_addr();
 		code.emplace_back(OP_GET, OPFLAG_REF_B, tmp_addr, src.address, *src.key);
