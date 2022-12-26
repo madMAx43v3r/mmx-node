@@ -972,8 +972,8 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 				throw std::logic_error("missing operand");
 			}
 			const auto rhs = recurse_expr(p_node + 1, 1);
-			out.address = get(rhs);
-			code.emplace_back(OP_NOT, 0, out.address, out.address);
+			out.address = stack.new_addr();
+			code.emplace_back(OP_NOT, 0, out.address, get(rhs));
 			count = 2;
 		}
 		else if(op == ".") {
