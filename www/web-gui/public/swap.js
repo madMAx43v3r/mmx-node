@@ -184,9 +184,9 @@ Vue.component('swap-list', {
 								<td><b>{{ item.display_price ? parseFloat( (item.display_price).toPrecision(6) ) : "N/A" }}</b>&nbsp; {{item.symbols[1]}} / {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[0].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[1].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}}</td>
-								<td><router-link :to="'/swap/trade/' + item.address">
-									<v-btn outlined text>Swap</v-btn>
-								</router-link></td>
+								<td>
+									<v-btn :to="'/swap/trade/' + item.address" outlined text>Swap</v-btn>
+								</td>
 							</tr>
 						</tbody>
 					</v-simple-table>
