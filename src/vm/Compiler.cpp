@@ -201,9 +201,10 @@ struct operator_ex : lexy::token_production {
 	static constexpr auto name = "mmx.lang.operator";
 	static constexpr auto rule = dsl::literal_set(
 			dsl::lit_c<'.'>, dsl::lit_c<'+'>, dsl::lit_c<'-'>, dsl::lit_c<'*'>, dsl::lit_c<'/'>, dsl::lit_c<'!'>,
-			dsl::lit_c<'>'>, dsl::lit_c<'<'>, LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="),
+			dsl::lit_c<'>'>, dsl::lit_c<'<'>, dsl::lit_c<'&'>, dsl::lit_c<'|'>, dsl::lit_c<'^'>, dsl::lit_c<'~'>,
+			LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="), LEXY_LIT("&&"), LEXY_LIT("||"),
 			LEXY_LIT("++"), LEXY_LIT("--"), LEXY_LIT(">>"), LEXY_LIT("<<"),
-			kw_return, kw_break, kw_continue, kw_of, kw_in);
+			kw_return, kw_break, kw_continue, kw_of);
 };
 
 struct qualifier : lexy::token_production {
@@ -335,7 +336,7 @@ class Compiler {
 public:
 	static const std::string version;
 
-	uint8_t math_flags = 0;
+	uint8_t math_flags = OPFLAG_CATCH_OVERFLOW;
 
 	std::shared_ptr<const contract::Binary> compile(const std::string& source);
 
@@ -421,6 +422,7 @@ protected:
 	static std::vector<node_t> get_children(const node_t& node);
 
 	static std::string get_literal(const node_t& node);
+
 	static varptr_t parse_constant(const node_t& node);
 
 private:
@@ -571,10 +573,13 @@ varptr_t Compiler::parse_constant(const node_t& node)
 		return std::make_unique<uint_t>(uint256_t(get_literal(list[0]), 10));
 	}
 	else if(name == lang::string::name) {
-		if(list.size() != 3) {
+		if(list.size() == 3) {
+			return binary_t::alloc(get_literal(list[1]));
+		} else if(list.size() == 2) {
+			return binary_t::alloc("");
+		} else {
 			throw std::logic_error("invalid string");
 		}
-		return binary_t::alloc(get_literal(list[1]));
 	}
 	else if(name == lang::address::name) {
 		if(list.size() != 1) {
@@ -948,20 +953,18 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 	else if(name == lang::operator_ex::name)
 	{
 		const auto op = get_literal(node);
-		if(op == "+" || op == "-" || op == "*" || op == "/")
+		if( op == "+" || op == "-" || op == "*" || op == "/" ||
+			op == "&" || op == "&&" || op == "|" || op == "||" || op == "^")
 		{
 			if(!lhs) {
 				throw std::logic_error("missing left operand");
-			}
-			if(!lhs->is_value()) {
-				throw std::logic_error("invalid left operand");
 			}
 			if(expr_len < 2) {
 				throw std::logic_error("missing right operand");
 			}
 			out.address = stack.new_addr();
 		}
-		if(op == "!") {
+		if(op == "!" || op == "~") {
 			if(lhs) {
 				throw std::logic_error("unexpected left operand");
 			}
@@ -976,9 +979,6 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 		else if(op == ".") {
 			if(!lhs) {
 				throw std::logic_error("missing left operand");
-			}
-			if(!lhs->is_value()) {
-				throw std::logic_error("invalid left operand");
 			}
 			if(expr_len < 2) {
 				throw std::logic_error("missing right operand");
@@ -1000,6 +1000,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 		else if(op == "*" || op == "/") {
 			const auto rhs = recurse_expr(p_node + 1, 1);
 			code.emplace_back(op == "*" ? OP_MUL : OP_DIV, math_flags, out.address, get(*lhs), get(rhs));
+			count = 2;
+		}
+		else if(op == "&" || op == "|" || op == "&&" || op == "||") {
+			const auto rhs = recurse_expr(p_node + 1, 1);
+			code.emplace_back(op == "&" || op == "&&" ? OP_AND : OP_OR, 0, out.address, get(*lhs), get(rhs));
+			count = 2;
+		}
+		else if(op == "^") {
+			const auto rhs = recurse_expr(p_node + 1, 1);
+			code.emplace_back(OP_XOR, 0, out.address, get(*lhs), get(rhs));
 			count = 2;
 		}
 		else if(op == "return") {
@@ -1037,7 +1047,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 						+ std::to_string(args.size()) + " > " + std::to_string(lhs->func->args.size()));
 			}
 			const auto offset = stack.new_addr();
-			code.emplace_back(OP_COPY, 0, offset, 0);
+			code.emplace_back(OP_CLR, 0, offset);
 
 			for(size_t i = 0; i < args.size(); ++i)
 			{
