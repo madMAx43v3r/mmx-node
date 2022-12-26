@@ -118,11 +118,6 @@ struct identifier : lexy::token_production {
 			dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
 };
 
-struct lookup_ex {
-	static constexpr auto name = "mmx.lang.lookup_ex";
-	static constexpr auto rule = dsl::while_one(dsl::lit_c<'.'> >> dsl::recurse<identifier>);
-};
-
 struct primitive : lexy::token_production {
 	static constexpr auto name = "mmx.lang.primitive";
 	static constexpr auto rule = dsl::literal_set(kw_null, kw_true, kw_false);
@@ -205,7 +200,7 @@ struct function {
 struct operator_ex : lexy::token_production {
 	static constexpr auto name = "mmx.lang.operator";
 	static constexpr auto rule = dsl::literal_set(
-			dsl::lit_c<'+'>, dsl::lit_c<'-'>, dsl::lit_c<'*'>, dsl::lit_c<'/'>, dsl::lit_c<'!'>,
+			dsl::lit_c<'.'>, dsl::lit_c<'+'>, dsl::lit_c<'-'>, dsl::lit_c<'*'>, dsl::lit_c<'/'>, dsl::lit_c<'!'>,
 			dsl::lit_c<'>'>, dsl::lit_c<'<'>, LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="),
 			LEXY_LIT("++"), LEXY_LIT("--"), LEXY_LIT(">>"), LEXY_LIT("<<"),
 			kw_return, kw_break, kw_continue, kw_of, kw_in);
@@ -286,8 +281,7 @@ struct expression {
 	static constexpr auto rule = dsl::loop(
 			dsl::peek_not(dsl::comma | dsl::semicolon | dsl::lit_c<')'> | dsl::lit_c<']'> | dsl::lit_c<'}'> | dsl::eof) >> (
 					dsl::p<sub_expr> | dsl::p<array> | dsl::p<object> | dsl::p<operator_ex> | dsl::p<constant> |
-					dsl::peek(dsl::equal_sign) >> dsl::break_ |
-					dsl::p<identifier> >> dsl::if_(dsl::p<lookup_ex>)
+					dsl::peek(dsl::equal_sign) >> dsl::break_ | dsl::else_ >> dsl::p<identifier>
 			) | dsl::break_);
 };
 
@@ -384,19 +378,24 @@ protected:
 	struct vref_t {
 		uint32_t address = 0;
 		vnx::optional<uint32_t> key;
+		vnx::optional<function_t> func;
+		vnx::optional<std::string> name;
 
 		vref_t() = default;
 		vref_t(uint32_t address) : address(address) {}
+		vref_t(uint32_t address, std::string name) : address(address), name(name) {}
 		vref_t(uint32_t address, uint32_t key) : address(address), key(key) {}
+		vref_t(const function_t& func) : func(func), name(func.name) {}
+		bool is_value() const { return !func; }
 	};
 
 	void parse(parse_tree_t& tree, const std::string& source);
 
 	vref_t recurse(const node_t& node);
 
-	vref_t recurse_expr(const node_t* node, const size_t expr_len);
+	vref_t recurse_expr(const node_t* node, const size_t expr_len, const vref_t* lhs = nullptr);
 
-	void copy(const vref_t& dst, const vref_t& src);
+	vref_t copy(const vref_t& dst, const vref_t& src);
 
 	uint32_t get(const vref_t& src);
 
@@ -655,15 +654,15 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 	}
 	else if(name == lang::scope::name)
 	{
+		if(list.size() != 3) {
+			throw std::logic_error("invalid scope");
+		}
 		frame_t scope;
 		if(!frame.empty()) {
 			scope.addr_offset = frame.back().addr_offset;
 		}
 		frame.push_back(scope);
-
-		for(const auto& node : list) {
-			recurse(node);
-		}
+		recurse(list[1]);
 		frame.pop_back();
 	}
 	else if(name == lang::source::name)
@@ -856,14 +855,10 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		}
 		else if(list.size() == 4) {
 			copy(recurse(list[0]), recurse(list[2]));
-		} else {
+		}
+		else {
 			throw std::logic_error("invalid statement");
 		}
-	}
-	else if(name == lang::constant::name)
-	{
-		const auto value = parse_constant(node);
-		out.address = get_const_address(value);
 	}
 	else if(name == lang::object::name)
 	{
@@ -907,24 +902,12 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			}
 		}
 	}
-	else if(name == lang::identifier::name)
-	{
-		const auto name = get_literal(node);
-		const auto var = get_variable(name);
-		out.address = var.address;
-	}
 	else if(name == lang::expression::name)
 	{
 		out = recurse_expr(list.data(), list.size());
 	}
-	else if(name == lang::operator_ex::name)
-	{
-		const auto op = get_literal(node);
-		if(op == "return") {
-			code.emplace_back(OP_RET);
-		} else {
-			throw std::logic_error("invalid operator");
-		}
+	else {
+		throw std::logic_error("invalid statement: " + name);
 	}
 
 	print_debug_code();
@@ -933,81 +916,121 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 	return out;
 }
 
-Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_len)
+Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_len, const vref_t* lhs)
 {
 	if(expr_len == 0) {
-		return vref_t();
+		if(!lhs) {
+			throw std::logic_error("invalid expression");
+		}
+		return *lhs;
 	}
 	const auto node = *p_node;
 
-	if(expr_len == 1) {
-		return recurse(node);
-	}
 	auto& stack = frame.back();
-	const auto node_1 = p_node[1];
 	const std::string name(node.kind().name());
-	const std::string name_1(node_1.kind().name());
+//	const std::string name_1(expr_len > 1 ? p_node[1].kind().name() : "");
 	const auto list = get_children(node);
-	const auto list_1 = get_children(node_1);
+//	const auto list_1 = expr_len > 1 ? get_children(p_node[1]) : std::vector<node_t>();
+
+	vref_t result;
+	size_t node_count = 0;
 
 	if(name == lang::identifier::name)
 	{
+		if(lhs) {
+			throw std::logic_error("invalid expression");
+		}
 		const auto name = get_literal(node);
 		const auto var = find_variable(name);
 		const auto func = find_function(name);
 
-		if(name_1 == lang::array::name)
-		{
-			if(!var) {
-				throw std::logic_error("no such variable: " + name);
+		if(var) {
+			result = var->address;
+		} else if(func) {
+			result.func = *func;
+		}
+		result.name = name;
+		node_count = 1;
+	}
+	else if(name == lang::array::name)
+	{
+		if(lhs) {
+			if(!lhs->is_value()) {
+				throw std::logic_error("invalid expression");
 			}
-			if(list_1.size() != 3) {
+			if(list.size() != 3) {
 				throw std::logic_error("invalid bracket operator");
 			}
-			const auto key = recurse(list_1[1]);
+			const auto key = recurse(list[1]);
 
-			auto key_addr = key.address;
 			if(key.key) {
-				key_addr = stack.new_addr();
-				code.emplace_back(OP_GET, OPFLAG_REF_B, key_addr, key.address, *key.key);
+				result.key = copy(stack.new_addr(), key).address;
+			} else {
+				result.key = key.address;
 			}
-			return vref_t(var->address, key_addr);
+			if(lhs->key) {
+				result.address = copy(stack.new_addr(), *lhs).address;
+			} else {
+				result.address = lhs->address;
+			}
+			node_count = 1;
+		} else {
+			result = recurse(node);
+			node_count = 1;
 		}
-		else if(name_1 == lang::lookup_ex::name)
-		{
-			if(!var) {
-				throw std::logic_error("no such variable: " + name);
+	}
+	else if(name == lang::operator_ex::name)
+	{
+		const auto op = get_literal(node);
+		if(op == ".") {
+			if(!lhs || !lhs->is_value()) {
+				throw std::logic_error("invalid expression");
 			}
-			uint32_t obj_addr = var->address;
-
-			for(size_t i = 1; i < list_1.size(); i += 2)
-			{
-				const auto key = get_literal(list_1[i]);
-				const auto key_addr = get_const_address(key);
-				if(i + 2 > list_1.size()) {
-					return vref_t(obj_addr, key_addr);
-				}
-				const auto tmp_addr = stack.new_addr();
-				code.emplace_back(OP_GET, OPFLAG_REF_B, tmp_addr, obj_addr, key_addr);
-				obj_addr = tmp_addr;
+			if(expr_len < 2) {
+				throw std::logic_error("missing operand");
 			}
-			throw std::logic_error("invalid lookup");
+			if(lhs->key) {
+				result.address = copy(stack.new_addr(), *lhs).address;
+			} else {
+				result.address = lhs->address;
+			}
+			const std::string key_name(p_node[1].kind().name());
+			if(key_name != lang::identifier::name) {
+				throw std::logic_error("expected identifier");
+			}
+			const auto key = get_literal(p_node[1]);
+			result.key = get_const_address(key);
+			node_count = 2;
 		}
-		else if(name_1 == lang::sub_expr::name)
-		{
-			if(!func) {
-				throw std::logic_error("no such function: " + name);
+		else if(op == "return") {
+			if(expr_len > 1) {
+				copy(MEM_STACK + 0, recurse_expr(p_node + 1, expr_len - 1));
+				node_count = expr_len;
+			} else {
+				node_count = 1;
+			}
+			code.emplace_back(OP_RET);
+		}
+		else {
+			throw std::logic_error("invalid operator: " + op);
+		}
+	}
+	else if(name == lang::sub_expr::name)
+	{
+		if(lhs) {
+			if(!lhs->func) {
+				throw std::logic_error("invalid expression");
 			}
 			std::vector<node_t> args;
-			for(const auto& node : list_1) {
+			for(const auto& node : list) {
 				const std::string name(node.kind().name());
 				if(name == lang::expression::name) {
 					args.push_back(node);
 				}
 			}
-			if(args.size() > func->args.size()) {
+			if(args.size() > lhs->func->args.size()) {
 				throw std::logic_error("too many function arguments: "
-						+ std::to_string(args.size()) + " > " + std::to_string(func->args.size()));
+						+ std::to_string(args.size()) + " > " + std::to_string(lhs->func->args.size()));
 			}
 			const auto offset = stack.new_addr();
 			code.emplace_back(OP_COPY, 0, offset, 0);
@@ -1016,29 +1039,38 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 			{
 				copy(offset + 1 + i, recurse(args[i]));
 			}
-			for(size_t i = args.size(); i < func->args.size(); ++i)
+			for(size_t i = args.size(); i < lhs->func->args.size(); ++i)
 			{
 				code.emplace_back(OP_COPY, 0, offset + 1 + i, 0);
 			}
-			linker_map[code.size()] = func->name;
+			linker_map[code.size()] = lhs->func->name;
 			code.emplace_back(OP_CALL, 0, -1, offset - MEM_STACK);
-			return offset;
+
+			result.address = offset;
+			node_count = 1;
+		}
+		else {
+			if(list.empty()) {
+				throw std::logic_error("invalid expression");
+			}
+			result = recurse_expr(&list[0], list.size());
+			node_count = 1;
 		}
 	}
-	else if(name == lang::operator_ex::name)
+	else if(name == lang::constant::name)
 	{
-		const auto op = get_literal(node);
-		if(op == "return") {
-			copy(MEM_STACK + 0, recurse_expr(p_node + 1, expr_len - 1));
-			code.emplace_back(OP_RET);
-		} else {
-			throw std::logic_error("invalid operator");
-		}
+		const auto value = parse_constant(node);
+		result.address = get_const_address(value);
+		node_count = 1;
 	}
-	return vref_t();
+
+	if(node_count == 0) {
+		throw std::logic_error("invalid expression");
+	}
+	return recurse_expr(p_node + node_count, expr_len - node_count, &result);
 }
 
-void Compiler::copy(const vref_t& dst, const vref_t& src)
+Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 {
 	if(src.key && dst.key) {
 		const auto tmp_addr = frame.back().tmp_addr();
@@ -1051,6 +1083,7 @@ void Compiler::copy(const vref_t& dst, const vref_t& src)
 	} else {
 		code.emplace_back(OP_COPY, 0, dst.address, src.address);
 	}
+	return dst;
 }
 
 uint32_t Compiler::get(const vref_t& src)
