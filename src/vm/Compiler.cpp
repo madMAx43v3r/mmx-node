@@ -363,15 +363,16 @@ protected:
 	};
 
 	struct frame_t {
+		uint32_t section = MEM_STACK;
 		uint32_t addr_offset = 0;
 		std::vector<variable_t> var_list;
 		std::map<std::string, uint32_t> var_map;
 
 		uint32_t new_addr() {
-			return MEM_STACK + addr_offset++;
+			return section + addr_offset++;
 		}
 		uint32_t tmp_addr() const {
-			return MEM_STACK + addr_offset;
+			return section + addr_offset;
 		}
 	};
 
@@ -464,13 +465,15 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 	dump_parse_tree(tree.root(), std::cout);
 	std::cout << std::endl;
 
+	global.section = MEM_STATIC;
+
 	// address zero = null value
 	if(get_const_address(std::make_unique<var_t>())) {
 		throw std::logic_error("zero address not null");
 	}
 
 	try {
-		// static init frame
+		// static init stack frame
 		frame.emplace_back();
 
 		debug() << "First pass ..." << std::endl;
@@ -784,6 +787,9 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			curr_function = func;
 
 			frame.push_back(scope);
+			if(func.is_init) {
+				code.emplace_back(OP_CALL, 0, 0, scope.new_addr() - MEM_STACK);
+			}
 			recurse(list.back());
 			frame.pop_back();
 
@@ -802,7 +808,6 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 
 		variable_t var;
 		var.is_const = qualifier == "const";
-		var.is_static = frame.size() == 1;
 		var.name = get_literal(list[1]);
 
 		bool is_constant = false;
@@ -823,18 +828,13 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		} else if(list.size() != 2) {
 			throw std::logic_error("invalid variable declaration");
 		}
-		auto& scope = frame.size() > 1 ? frame.back() : global;
+		var.is_static = !is_constant && frame.size() == 1;
 
+		auto& scope = var.is_static ? global : frame.back();
 		if(is_constant) {
-			var.is_static = false;
 			var.address = get_const_address(var.value);
 		} else {
-			if(var.is_static) {
-				var.address = MEM_STATIC + scope.addr_offset;
-			} else {
-				var.address = MEM_STACK + scope.addr_offset;
-			}
-			scope.addr_offset++;
+			var.address = scope.new_addr();
 		}
 		debug() << " (0x" << std::hex << var.address << std::dec << ")" << std::endl;
 
@@ -858,48 +858,6 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		}
 		else {
 			throw std::logic_error("invalid statement");
-		}
-	}
-	else if(name == lang::object::name)
-	{
-		auto& stack = frame.back();
-		out.address = stack.new_addr();
-		code.emplace_back(OP_CLONE, 0, out.address, get_const_address(std::make_unique<map_t>()));
-
-		for(const auto& node : list) {
-			const std::string name(node.kind().name());
-			if(name == lang::object::entry::name) {
-				const auto list = get_children(node);
-				if(list.size() != 3) {
-					throw std::logic_error("invalid object entry");
-				}
-				varptr_t key;
-				const std::string key_type(list[0].kind().name());
-
-				if(key_type == lang::identifier::name) {
-					key = binary_t::alloc(get_literal(list[0]));
-				} else if(key_type == lang::string::name) {
-					key = parse_constant(list[0]);
-				} else {
-					throw std::logic_error("invalid object key");
-				}
-				const auto key_addr = get_const_address(key);
-				copy(vref_t(out.address, key_addr), recurse(list[2]));
-			}
-		}
-	}
-	else if(name == lang::array::name)
-	{
-		auto& stack = frame.back();
-		out.address = stack.new_addr();
-		code.emplace_back(OP_CLONE, 0, out.address, get_const_address(std::make_unique<array_t>()));
-
-		for(const auto& node : list) {
-			const std::string name(node.kind().name());
-			if(name == lang::expression::name) {
-				const auto value = recurse(node);
-				code.emplace_back(OP_PUSH_BACK, OPFLAG_REF_A, out.address, get(value));
-			}
 		}
 	}
 	else if(name == lang::expression::name)
@@ -928,12 +886,10 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 
 	auto& stack = frame.back();
 	const std::string name(node.kind().name());
-//	const std::string name_1(expr_len > 1 ? p_node[1].kind().name() : "");
 	const auto list = get_children(node);
-//	const auto list_1 = expr_len > 1 ? get_children(p_node[1]) : std::vector<node_t>();
 
-	vref_t result;
-	size_t node_count = 0;
+	vref_t out;
+	size_t count = 0;
 
 	if(name == lang::identifier::name)
 	{
@@ -945,12 +901,14 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 		const auto func = find_function(name);
 
 		if(var) {
-			result = var->address;
+			out = var->address;
 		} else if(func) {
-			result.func = *func;
+			out.func = *func;
+		} else {
+			throw std::logic_error("no such variable or function: " + name);
 		}
-		result.name = name;
-		node_count = 1;
+		out.name = name;
+		count = 1;
 	}
 	else if(name == lang::array::name)
 	{
@@ -964,52 +922,88 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 			const auto key = recurse(list[1]);
 
 			if(key.key) {
-				result.key = copy(stack.new_addr(), key).address;
+				out.key = copy(stack.new_addr(), key).address;
 			} else {
-				result.key = key.address;
+				out.key = key.address;
 			}
 			if(lhs->key) {
-				result.address = copy(stack.new_addr(), *lhs).address;
+				out.address = copy(stack.new_addr(), *lhs).address;
 			} else {
-				result.address = lhs->address;
+				out.address = lhs->address;
 			}
-			node_count = 1;
 		} else {
-			result = recurse(node);
-			node_count = 1;
+			out.address = stack.new_addr();
+			code.emplace_back(OP_CLONE, 0, out.address, get_const_address(std::make_unique<array_t>()));
+
+			for(const auto& node : list) {
+				const std::string name(node.kind().name());
+				if(name == lang::expression::name) {
+					const auto value = recurse(node);
+					code.emplace_back(OP_PUSH_BACK, OPFLAG_REF_A, out.address, get(value));
+				}
+			}
 		}
+		count = 1;
 	}
 	else if(name == lang::operator_ex::name)
 	{
 		const auto op = get_literal(node);
-		if(op == ".") {
-			if(!lhs || !lhs->is_value()) {
-				throw std::logic_error("invalid expression");
+		if(op == "." || op == "+" || op == "-" || op == "*" || op == "/")
+		{
+			if(!lhs) {
+				throw std::logic_error("missing left operand");
+			}
+			if(!lhs->is_value()) {
+				throw std::logic_error("invalid left operand");
 			}
 			if(expr_len < 2) {
 				throw std::logic_error("missing operand");
 			}
+			out.address = stack.new_addr();
 			if(lhs->key) {
-				result.address = copy(stack.new_addr(), *lhs).address;
-			} else {
-				result.address = lhs->address;
+				copy(out.address, *lhs);
 			}
+		}
+		if(op == "!") {
+			if(lhs) {
+				throw std::logic_error("unexpected left operand");
+			}
+			if(expr_len < 2) {
+				throw std::logic_error("missing operand");
+			}
+			const auto rhs = recurse_expr(p_node + 1, 1);
+			out.address = get(rhs);
+			code.emplace_back(OP_NOT, 0, out.address, out.address);
+			count = 2;
+		}
+		else if(op == ".") {
 			const std::string key_name(p_node[1].kind().name());
 			if(key_name != lang::identifier::name) {
 				throw std::logic_error("expected identifier");
 			}
 			const auto key = get_literal(p_node[1]);
-			result.key = get_const_address(key);
-			node_count = 2;
+			out.key = get_const_address(key);
+			count = 2;
+		}
+		else if(op == "+" || op == "-") {
+			const auto rhs = recurse_expr(p_node + 1, 1);
+			code.emplace_back(op == "+" ? OP_ADD : OP_SUB, math_flags, out.address, lhs->key ? out.address : lhs->address, get(rhs));
+			count = 2;
+		}
+		else if(op == "*" || op == "/") {
+			const auto rhs = recurse_expr(p_node + 1, 1);
+			code.emplace_back(op == "*" ? OP_MUL : OP_DIV, math_flags, out.address, lhs->key ? out.address : lhs->address, get(rhs));
+			count = 2;
 		}
 		else if(op == "return") {
+			if(lhs) {
+				throw std::logic_error("unexpected left operand");
+			}
 			if(expr_len > 1) {
 				copy(MEM_STACK + 0, recurse_expr(p_node + 1, expr_len - 1));
-				node_count = expr_len;
-			} else {
-				node_count = 1;
 			}
 			code.emplace_back(OP_RET);
+			return vref_t();
 		}
 		else {
 			throw std::logic_error("invalid operator: " + op);
@@ -1019,7 +1013,10 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 	{
 		if(lhs) {
 			if(!lhs->func) {
-				throw std::logic_error("invalid expression");
+				if(lhs->name) {
+					throw std::logic_error("not a function: " + *lhs->name);
+				}
+				throw std::logic_error("expected function name");
 			}
 			std::vector<node_t> args;
 			for(const auto& node : list) {
@@ -1045,29 +1042,64 @@ Compiler::vref_t Compiler::recurse_expr(const node_t* p_node, const size_t expr_
 			}
 			linker_map[code.size()] = lhs->func->name;
 			code.emplace_back(OP_CALL, 0, -1, offset - MEM_STACK);
-
-			result.address = offset;
-			node_count = 1;
+			out.address = offset;
 		}
 		else {
-			if(list.empty()) {
-				throw std::logic_error("invalid expression");
+			if(list.size() != 3) {
+				throw std::logic_error("invalid sub-expression");
 			}
-			result = recurse_expr(&list[0], list.size());
-			node_count = 1;
+			out = recurse(list[1]);
 		}
+		count = 1;
 	}
 	else if(name == lang::constant::name)
 	{
+		if(lhs) {
+			throw std::logic_error("unexpected left operand");
+		}
 		const auto value = parse_constant(node);
-		result.address = get_const_address(value);
-		node_count = 1;
+		out.address = get_const_address(value);
+		count = 1;
+	}
+	else if(name == lang::object::name)
+	{
+		if(lhs) {
+			throw std::logic_error("unexpected left operand");
+		}
+		out.address = stack.new_addr();
+		code.emplace_back(OP_CLONE, 0, out.address, get_const_address(std::make_unique<map_t>()));
+
+		for(const auto& node : list) {
+			const std::string name(node.kind().name());
+			if(name == lang::object::entry::name) {
+				const auto list = get_children(node);
+				if(list.size() != 3) {
+					throw std::logic_error("invalid object entry");
+				}
+				varptr_t key;
+				const std::string key_type(list[0].kind().name());
+
+				if(key_type == lang::identifier::name) {
+					key = binary_t::alloc(get_literal(list[0]));
+				} else if(key_type == lang::string::name) {
+					key = parse_constant(list[0]);
+				} else {
+					throw std::logic_error("invalid object key");
+				}
+				const auto key_addr = get_const_address(key);
+				copy(vref_t(out.address, key_addr), recurse(list[2]));
+			}
+		}
+		count = 1;
 	}
 
-	if(node_count == 0) {
+	if(count == 0) {
 		throw std::logic_error("invalid expression");
 	}
-	return recurse_expr(p_node + node_count, expr_len - node_count, &result);
+	if(count >= expr_len) {
+		return out;
+	}
+	return recurse_expr(p_node + count, expr_len - count, &out);
 }
 
 Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
