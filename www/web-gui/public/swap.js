@@ -184,9 +184,9 @@ Vue.component('swap-list', {
 								<td><b>{{ item.display_price ? parseFloat( (item.display_price).toPrecision(6) ) : "N/A" }}</b>&nbsp; {{item.symbols[1]}} / {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[0].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[1].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}}</td>
-								<td><router-link :to="'/swap/trade/' + item.address">
-									<v-btn outlined text>Swap</v-btn>
-								</router-link></td>
+								<td>
+									<v-btn :to="'/swap/trade/' + item.address" outlined text>Swap</v-btn>
+								</td>
 							</tr>
 						</tbody>
 					</v-simple-table>
@@ -550,7 +550,7 @@ Vue.component('swap-trade', {
 		<div>
 			<v-row v-if="data">
 				<v-col>
-					<v-card>
+					<v-card style="border: 1px solid green;">
 						<v-toolbar color="green lighten-1" elevation="1" dense></v-toolbar>
 						<v-card-text>
 							<v-row>
@@ -581,7 +581,7 @@ Vue.component('swap-trade', {
 					</v-card>
 				</v-col>
 				<v-col>
-					<v-card>
+					<v-card style="border: 1px solid red;">
 						<v-toolbar color="red lighten-1" elevation="1" dense></v-toolbar>
 						<v-card-text>
 							<v-row>
