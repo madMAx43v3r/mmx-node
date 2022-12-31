@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.11)
 project(mmx-node C CXX ASM)
 
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(MSVC)
+	set(CMAKE_CXX_STANDARD 20)
 	include(GenerateExportHeader)
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	
@@ -22,6 +22,7 @@ if(MSVC)
   		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
 	)
 else()
+	set(CMAKE_CXX_STANDARD 17)
 	include(cmake/commit_hash_json.cmake)
 	
 	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs)
