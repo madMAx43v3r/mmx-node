@@ -1,6 +1,11 @@
 
-function func(a, b) { return null; }
+function func(a, b) { return; }
 
-var blubb = {};
+var test;
 
-var test = 1 * 2 + 3 * 4 - 5;
+if(1 > 0)
+	test = 123;
+else if(false)
+	test = 4344;
+else
+	test = "oops";

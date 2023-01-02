@@ -377,11 +377,17 @@ protected:
 		uint32_t tmp_addr() const {
 			return section + addr_offset;
 		}
+		void add_variable(const variable_t& var) {
+			if(var.name.size()) {
+				var_map[var.name] = var_list.size();
+			}
+			var_list.push_back(var);
+		}
 	};
 
 	struct vref_t {
 		bool is_const = false;
-		uint32_t address = 0;
+		uint32_t address = -1;
 		vnx::optional<uint32_t> key;
 		vnx::optional<function_t> func;
 		vnx::optional<std::string> name;
@@ -391,7 +397,15 @@ protected:
 		vref_t(uint32_t address, std::string name) : address(address), name(name) {}
 		vref_t(uint32_t address, uint32_t key) : address(address), key(key) {}
 		vref_t(const function_t& func) : func(func), name(func.name) {}
-		bool is_value() const { return !func; }
+
+		void check_value() const {
+			if(func) {
+				throw std::logic_error("expected value not function");
+			}
+			if(address == uint32_t(-1) && name) {
+				throw std::logic_error("no such variable: " + (*name));
+			}
+		}
 	};
 
 	void parse(parse_tree_t& tree, const std::string& source);
@@ -450,6 +464,7 @@ private:
 	std::map<std::string, function_t> function_map;
 	std::map<uint32_t, std::string> linker_map;
 	std::map<std::string, int> rank_map;
+	std::map<std::string, int> simple_code_map;
 
 	std::shared_ptr<contract::Binary> binary;
 
@@ -490,8 +505,27 @@ Compiler::Compiler()
 	rank_map["^"] = rank++;
 	rank_map["|"] = rank;
 	rank_map["||"] = rank++;
+	rank_map["break"] = rank;
+	rank_map["continue"] = rank;
 	rank_map["return"] = rank++;
 	rank_map[lang::expression::name] = rank++;
+
+	simple_code_map["+"] = OP_ADD;
+	simple_code_map["-"] = OP_SUB;
+	simple_code_map["*"] = OP_MUL;
+	simple_code_map["/"] = OP_DIV;
+	simple_code_map["%"] = OP_MOD;
+	simple_code_map["&"] = OP_AND;
+	simple_code_map["&&"] = OP_AND;
+	simple_code_map["|"] = OP_OR;
+	simple_code_map["||"] = OP_OR;
+	simple_code_map["^"] = OP_XOR;
+	simple_code_map[">"] = OP_CMP_GT;
+	simple_code_map["<"] = OP_CMP_LT;
+	simple_code_map[">="] = OP_CMP_GTE;
+	simple_code_map["<="] = OP_CMP_LTE;
+	simple_code_map["!="] = OP_CMP_NEQ;
+	simple_code_map["=="] = OP_CMP_EQ;
 
 	global.section = MEM_STATIC;
 
@@ -741,7 +775,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		for(const auto& node : list) {
 			recurse(node);
 		}
-		if(curr_pass == 0 || frame.size() == 1) {
+		if(curr_pass == 0 && frame.size() == 1) {
 			// return from static init
 			code.emplace_back(OP_RET);
 		}
@@ -777,7 +811,6 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 						throw std::logic_error("expected argument identifier");
 					}
 					variable_t var;
-					var.is_const = true;
 					var.name = get_literal(list[0]);
 					var.address = MEM_STACK + 1 + func.args.size();
 
@@ -850,8 +883,9 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 
 			frame_t scope;
 			scope.addr_offset = 1 + func.args.size();
-			scope.var_list.emplace_back();
-			scope.var_list.insert(scope.var_list.end(), func.args.begin(), func.args.end());
+			for(const auto& arg : func.args) {
+				scope.add_variable(arg);
+			}
 			curr_function = func;
 
 			frame.push_back(scope);
@@ -913,12 +947,38 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		if(scope.var_map.count(var.name)) {
 			throw std::logic_error("duplicate variable name: " + var.name);
 		}
-		scope.var_map[var.name] = scope.var_list.size();
-		scope.var_list.push_back(var);
+		scope.add_variable(var);
 
 		if(is_expression) {
 			copy(var.address, recurse(list.back()));
 		}
+	}
+	else if(name == lang::if_ex::name)
+	{
+		if(list.size() < 5) {
+			throw std::logic_error("invalid if");
+		}
+		const auto cond = get(recurse(list[2]));
+		const auto jump = code.size();
+		code.emplace_back(OP_JUMPN, 0, -1, cond);
+		recurse(list[4]);
+
+		if(list.size() == 6) {
+			const auto skip = code.size();
+			code.emplace_back(OP_JUMP, 0, -1);
+			code[jump].a = code.size();
+			recurse(list[5]);
+			code[skip].a = code.size();
+		} else {
+			code[jump].a = code.size();
+		}
+	}
+	else if(name == lang::else_ex::name)
+	{
+		if(list.size() < 2) {
+			throw std::logic_error("invalid else");
+		}
+		recurse(list[1]);
 	}
 	else if(name == lang::statement::name)
 	{
@@ -941,6 +1001,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		if(expr_len != 0) {
 			throw std::logic_error("invalid expression");
 		}
+		out.check_value();
 	}
 	else {
 		throw std::logic_error("invalid statement: " + name);
@@ -986,20 +1047,18 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 		const auto name = get_literal(node);
 
 		if(auto var = find_variable(name)) {
-			out = var->address;
+			out.address = var->address;
 			out.is_const = var->is_const;
 		}
 		else if(auto func = find_function(name)) {
 			out.func = *func;
+			out.address = func->address;
 		}
 		out.name = name;
 	}
 	else if(name == lang::array::name)
 	{
 		if(lhs) {
-			if(!lhs->is_value()) {
-				throw std::logic_error("invalid expression");
-			}
 			if(list.size() != 3) {
 				throw std::logic_error("invalid bracket operator");
 			}
@@ -1015,6 +1074,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			} else {
 				out.address = lhs->address;
 			}
+			lhs->check_value();
 		} else {
 			out.address = stack.new_addr();
 			code.emplace_back(OP_CLONE, 0, out.address, get_const_address(std::make_unique<array_t>()));
@@ -1031,9 +1091,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 	else if(name == lang::operator_ex::name)
 	{
 		const auto op = get_literal(node);
-		if( op == "+" || op == "-" || op == "*" || op == "/" || op == ">>" || op == "<<" ||
-			op == "&" || op == "&&" || op == "|" || op == "||" || op == "^")
-		{
+
+		const auto iter = simple_code_map.find(op);
+		if(iter != simple_code_map.end()) {
 			if(!lhs) {
 				throw std::logic_error("missing left operand");
 			}
@@ -1041,8 +1101,22 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				throw std::logic_error("missing right operand");
 			}
 			out.address = stack.new_addr();
+
+			int flags = 0;
+			const auto op_code = opcode_e(iter->second);
+			switch(op_code) {
+				case OP_ADD:
+				case OP_SUB:
+				case OP_MUL:
+				case OP_DIV:
+				case OP_MOD:
+					flags |= math_flags; break;
+				default: break;
+			}
+			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
+			code.emplace_back(op_code, flags, out.address, get(*lhs), get(rhs));
 		}
-		if(op == "!" || op == "~") {
+		else if(op == "!" || op == "~") {
 			if(lhs) {
 				throw std::logic_error("unexpected left operand");
 			}
@@ -1068,14 +1142,6 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			out.address = get(*lhs);
 			out.key = get_const_address(*rhs.name);
 			out.is_const = lhs->is_const;
-		}
-		else if(op == "+" || op == "-") {
-			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
-			code.emplace_back(op == "+" ? OP_ADD : OP_SUB, math_flags, out.address, get(*lhs), get(rhs));
-		}
-		else if(op == "*" || op == "/") {
-			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
-			code.emplace_back(op == "*" ? OP_MUL : OP_DIV, math_flags, out.address, get(*lhs), get(rhs));
 		}
 		else if(op == "++" || op == "--") {
 			if(lhs) {
@@ -1104,9 +1170,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			int flags = 0;
 			if(rhs < MEM_EXTERN) {
 				if(rhs < const_vars.size()) {
-					const auto& bits = const_vars[rhs].value;
-					if(bits->type == TYPE_UINT) {
-						rhs = to_uint(bits);
+					const auto& value = const_vars[rhs].value;
+					if(value->type == TYPE_UINT) {
+						const auto bits = to_uint(value);
+						if(bits > 256) {
+							throw std::logic_error("invalid shift count: " + bits.str());
+						}
+						rhs = bits;
 					} else {
 						throw std::logic_error("bit-shift right operand not an integer");
 					}
@@ -1116,15 +1186,8 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			} else {
 				flags |= OPFLAG_REF_C;
 			}
+			out.address = stack.new_addr();
 			code.emplace_back(op == ">>" ? OP_SHR : OP_SHL, flags, out.address, get(*lhs), rhs);
-		}
-		else if(op == "&" || op == "|" || op == "&&" || op == "||") {
-			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
-			code.emplace_back(op == "&" || op == "&&" ? OP_AND : OP_OR, 0, out.address, get(*lhs), get(rhs));
-		}
-		else if(op == "^") {
-			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
-			code.emplace_back(OP_XOR, 0, out.address, get(*lhs), get(rhs));
 		}
 		else if(op == "return") {
 			if(lhs) {
@@ -1224,18 +1287,17 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 		throw std::logic_error("invalid expression");
 	}
 
+	print_debug_code();
 	depth--;
+
 	return recurse_expr(p_node, expr_len, &out, lhs_rank);
 }
 
 Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 {
-	if(!src.is_value()) {
-		throw std::logic_error("copy(): src not a value");
-	}
-	if(!dst.is_value()) {
-		throw std::logic_error("copy(): dst not a value");
-	}
+	src.check_value();
+	dst.check_value();
+
 	if(dst.is_const) {
 		throw std::logic_error("copy(): dst is const");
 	}
@@ -1255,9 +1317,7 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 
 uint32_t Compiler::get(const vref_t& src)
 {
-	if(!src.is_value()) {
-		throw std::logic_error("get(): src not a value");
-	}
+	src.check_value();
 	if(src.key) {
 		const auto tmp_addr = frame.back().new_addr();
 		code.emplace_back(OP_GET, OPFLAG_REF_B, tmp_addr, src.address, *src.key);
