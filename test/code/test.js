@@ -1,6 +1,6 @@
 
-function func(a, b) { return 0; }
+function func(a, b) { return null; }
 
-var blubb = func(1);
+var blubb = {};
 
-blubb.field = true ^ false;
+var test = 1 * 2 + 3 * 4 - 5;
