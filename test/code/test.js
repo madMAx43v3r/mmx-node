@@ -1,8 +1,8 @@
 
 function func(a, b) { return; }
 
-var array = [];
+var map = {};
 
-var test = bech32("mmx18787");
+var test = 123;
 
-fail("oops");
+for(var i = 0; i < 6; ++i) {}

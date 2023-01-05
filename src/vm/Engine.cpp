@@ -768,7 +768,7 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 		}
 		case TYPE_ARRAY: {
 			if(dst == lhs || dst == rhs) {
-				throw std::logic_error("dst == src");
+				throw std::logic_error("dst == lhs || dst == rhs");
 			}
 			const auto& L = (const array_t&)lvar;
 			const auto& R = (const array_t&)rvar;

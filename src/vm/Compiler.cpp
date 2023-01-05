@@ -241,42 +241,6 @@ struct object {
 	static constexpr auto rule = dsl::curly_bracketed.opt_list(dsl::p<entry>, dsl::trailing_sep(dsl::comma));
 };
 
-struct else_ex;
-
-struct if_ex {
-	static constexpr auto name = "mmx.lang.if";
-	static constexpr auto rule = kw_if >>
-			dsl::parenthesized(dsl::recurse<expression>) + (dsl::p<scope> | dsl::else_ >> dsl::recurse<statement>)
-			+ dsl::if_(dsl::peek(kw_else) >> dsl::recurse<else_ex>);
-};
-
-struct else_ex {
-	static constexpr auto name = "mmx.lang.else";
-	static constexpr auto rule = kw_else +
-			((dsl::peek(kw_if) >> dsl::recurse<if_ex>) | dsl::p<scope> | dsl::else_ >> dsl::recurse<statement>)
-			+ dsl::if_(dsl::peek(kw_else) >> dsl::recurse<else_ex>);
-};
-
-struct for_loop {
-	static constexpr auto name = "mmx.lang.for";
-	static constexpr auto rule = kw_for >>
-			dsl::parenthesized.opt_list(dsl::recurse<expression>, dsl::sep(dsl::comma | dsl::semicolon))
-			+ (dsl::p<scope> | dsl::else_ >> dsl::recurse<statement>);
-};
-
-struct while_loop {
-	static constexpr auto name = "mmx.lang.while";
-	static constexpr auto rule = kw_while >>
-			dsl::parenthesized(dsl::recurse<expression>) + (dsl::p<scope> | dsl::else_ >> dsl::recurse<statement>);
-};
-
-struct do_while_loop {
-	static constexpr auto name = "mmx.lang.do_while";
-	static constexpr auto rule = kw_do >>
-			(dsl::p<scope> | dsl::else_ >> dsl::recurse<statement>)
-			+ kw_while + dsl::parenthesized(dsl::recurse<expression>) + dsl::semicolon;
-};
-
 struct sub_expr {
 	static constexpr auto name = "mmx.lang.sub_expr";
 	static constexpr auto rule = dsl::parenthesized.opt_list(dsl::recurse<expression>, dsl::sep(dsl::comma));
@@ -294,7 +258,36 @@ struct expression {
 struct statement {
 	static constexpr auto name = "mmx.lang.statement";
 	static constexpr auto rule = (dsl::p<variable> | dsl::else_ >> dsl::p<expression>)
-			+ dsl::opt(dsl::equal_sign >> dsl::recurse<expression>) + dsl::semicolon;
+			+ dsl::opt(dsl::equal_sign >> dsl::p<expression>) + dsl::semicolon;
+};
+
+struct else_ex;
+
+struct if_ex {
+	static constexpr auto name = "mmx.lang.if";
+	static constexpr auto rule = kw_if >>
+			dsl::parenthesized(dsl::p<expression>) + (dsl::p<scope> | dsl::else_ >> dsl::p<statement>)
+			+ dsl::if_(dsl::peek(kw_else) >> dsl::recurse<else_ex>);
+};
+
+struct else_ex {
+	static constexpr auto name = "mmx.lang.else";
+	static constexpr auto rule = kw_else +
+			((dsl::peek(kw_if) >> dsl::recurse<if_ex>) | dsl::p<scope> | dsl::else_ >> dsl::p<statement>)
+			+ dsl::if_(dsl::peek(kw_else) >> dsl::recurse<else_ex>);
+};
+
+struct for_loop {
+	static constexpr auto name = "mmx.lang.for";
+	static constexpr auto rule = kw_for >>
+			dsl::parenthesized.opt_list(dsl::p<variable> | dsl::else_ >> dsl::p<expression>, dsl::trailing_sep(dsl::comma | dsl::semicolon))
+			+ (dsl::p<scope> | dsl::else_ >> dsl::p<statement>);
+};
+
+struct while_loop {
+	static constexpr auto name = "mmx.lang.while";
+	static constexpr auto rule = kw_while >>
+			dsl::parenthesized(dsl::p<expression>) + (dsl::p<scope> | dsl::else_ >> dsl::p<statement>);
 };
 
 struct source {
@@ -303,7 +296,7 @@ struct source {
 	static constexpr auto rule = dsl::loop(
 			dsl::peek_not(dsl::lit_c<'}'> | dsl::eof) >> (
 					dsl::p<namespace_ex> | dsl::p<scope> | dsl::p<function> |
-					dsl::p<if_ex> | dsl::p<for_loop> | dsl::p<while_loop> | dsl::p<do_while_loop> |
+					dsl::p<if_ex> | dsl::p<for_loop> | dsl::p<while_loop> |
 					dsl::else_ >> dsl::p<statement>
 			) | dsl::break_);
 };
@@ -545,6 +538,9 @@ Compiler::Compiler()
 	function_map["pop"].name = "pop";
 	function_map["set"].name = "set";
 	function_map["get"].name = "get";
+	function_map["min"].name = "min";
+	function_map["max"].name = "max";
+	function_map["erase"].name = "erase";
 	function_map["typeof"].name = "typeof";
 	function_map["send"].name = "send";
 	function_map["mint"].name = "mint";
@@ -985,7 +981,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 	else if(name == lang::if_ex::name)
 	{
 		if(list.size() < 5) {
-			throw std::logic_error("invalid if");
+			throw std::logic_error("invalid if()");
 		}
 		const auto cond = get(recurse(list[2]));
 		const auto jump = code.size();
@@ -1008,6 +1004,23 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			throw std::logic_error("invalid else");
 		}
 		recurse(list[1]);
+	}
+	else if(name == lang::while_loop::name)
+	{
+		if(list.size() < 5) {
+			throw std::logic_error("invalid while()");
+		}
+		const auto begin = code.size();
+		const auto cond = get(recurse(list[2]));
+		const auto jump = code.size();
+		code.emplace_back(OP_JUMPN, 0, -1, cond);
+		recurse(list[4]);
+		code.emplace_back(OP_JUMP, 0, begin);
+		code[jump].a = code.size();
+	}
+	else if(name == lang::for_loop::name)
+	{
+		// TODO
 	}
 	else if(name == lang::statement::name)
 	{
@@ -1293,6 +1306,24 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = stack.new_addr();
 				code.emplace_back(OP_GET, OPFLAG_REF_B, out.address, get(recurse(args[0])), get(recurse(args[1])));
 			}
+			else if(name == "min" || name == "max") {
+				if(args.size() < 2) {
+					throw std::logic_error("expected 2 or more arguments for " + name + "()");
+				}
+				out.address = stack.new_addr();
+				auto lhs = get(recurse(args[0]));
+				for(size_t i = 1; i < args.size(); ++i) {
+					code.emplace_back(name == "min" ? OP_MIN : OP_MAX, 0, out.address, lhs, get(recurse(args[i])));
+					lhs = out.address;
+				}
+			}
+			else if(name == "erase") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for erase(object, key)");
+				}
+				out.address = 0;
+				code.emplace_back(OP_ERASE, OPFLAG_REF_A, get(recurse(args[0])), get(recurse(args[1])));
+			}
 			else if(name == "typeof") {
 				if(args.size() != 1) {
 					throw std::logic_error("expected 1 argument for typeof()");
@@ -1309,7 +1340,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			}
 			else if(name == "mint") {
 				if(args.size() != 2) {
-					throw std::logic_error("expected 3 argument for mint(address, amount)");
+					throw std::logic_error("expected 2 argument for mint(address, amount)");
 				}
 				code.emplace_back(OP_MINT, 0, get(recurse(args[0])), get(recurse(args[1])));
 				out.address = 0;
