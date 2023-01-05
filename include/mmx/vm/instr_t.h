@@ -87,7 +87,7 @@ enum opcode_e : uint8_t {
 
 };
 
-enum convtype_e : uint8_t {
+enum convtype_e : uint32_t {
 
 	CONVTYPE_DEFAULT = 0,
 	CONVTYPE_BASE_2,

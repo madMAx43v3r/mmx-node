@@ -904,6 +904,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					if(base == 32) {
 						write(dst, uint_t(addr_t(sstr.to_string()).to_uint256()));
 					} else {
+						// TODO: CONVTYPE_DEFAULT: auto detect hex, binary and address
 						write(dst, uint_t(uint256_t(sstr.c_str(), base)));
 					}
 					break;
@@ -1510,6 +1511,7 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_FAIL:
+		// TODO: read instr.b as uint when OPFLAG_REF_B set
 		error_code = instr.b;
 		throw std::runtime_error("failed with: "
 				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A)))

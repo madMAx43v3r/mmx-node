@@ -6,6 +6,7 @@
  */
 
 #include <mmx/vm/Compiler.h>
+#include <mmx/vm/Engine.h>
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm/varptr_t.hpp>
 #include <mmx/vm_interface.h>
@@ -110,12 +111,16 @@ struct expected_identifier {
 };
 
 struct identifier : lexy::token_production {
+	static constexpr auto name = "mmx.lang.identifier";
+	static constexpr auto rule = dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
+};
+
+struct restricted_identifier : lexy::transparent_production {
 	struct invalid_reserved {
 		static constexpr auto name = "invalid identifier: reserved keyword";
 	};
-	static constexpr auto name = "mmx.lang.identifier";
-	static constexpr auto rule = dsl::peek(dsl::p<reserved>) >> dsl::error<invalid_reserved> |
-			dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
+	static constexpr auto name = "mmx.lang.restricted_identifier";
+	static constexpr auto rule = dsl::peek(dsl::p<reserved>) >> dsl::error<invalid_reserved> | dsl::p<identifier>;
 };
 
 struct primitive : lexy::token_production {
@@ -171,7 +176,7 @@ struct scope {
 
 struct namespace_ex {
 	static constexpr auto name = "mmx.lang.namespace";
-	static constexpr auto rule = kw_namespace >> dsl::p<identifier> + dsl::p<scope>;
+	static constexpr auto rule = kw_namespace >> dsl::p<restricted_identifier> + dsl::p<scope>;
 };
 
 struct expected_constant {
@@ -182,7 +187,7 @@ struct function {
 	struct arguments {
 		struct item {
 			static constexpr auto name = "mmx.lang.function.arguments.item";
-			static constexpr auto rule = dsl::p<identifier> +
+			static constexpr auto rule = dsl::p<restricted_identifier> +
 					dsl::opt(dsl::equal_sign >> (dsl::p<constant> | dsl::error<expected_constant>));
 		};
 		static constexpr auto name = "mmx.lang.function.arguments";
@@ -194,7 +199,7 @@ struct function {
 	};
 	static constexpr auto name = "mmx.lang.function";
 	static constexpr auto rule = kw_function >>
-			dsl::p<identifier> + dsl::p<arguments> + dsl::while_(dsl::p<qualifier>) + dsl::p<scope>;
+			dsl::p<restricted_identifier> + dsl::p<arguments> + dsl::while_(dsl::p<qualifier>) + dsl::p<scope>;
 };
 
 struct operator_ex : lexy::token_production {
@@ -215,7 +220,7 @@ struct qualifier : lexy::token_production {
 struct variable {
 	static constexpr auto name = "mmx.lang.variable";
 	static constexpr auto rule = dsl::p<qualifier> >>
-			dsl::p<identifier> + dsl::opt(dsl::equal_sign >> dsl::recurse<expression>);
+			dsl::p<restricted_identifier> + dsl::opt(dsl::equal_sign >> dsl::recurse<expression>);
 };
 
 struct array {
@@ -465,6 +470,7 @@ private:
 	std::map<uint32_t, std::string> linker_map;
 	std::map<std::string, int> rank_map;
 	std::map<std::string, int> simple_code_map;
+	std::map<std::string, uint32_t> this_obj_map;
 
 	std::shared_ptr<contract::Binary> binary;
 
@@ -527,6 +533,27 @@ Compiler::Compiler()
 	simple_code_map["!="] = OP_CMP_NEQ;
 	simple_code_map["=="] = OP_CMP_EQ;
 
+	this_obj_map["height"] = MEM_EXTERN + EXTERN_HEIGHT;
+	this_obj_map["txid"] = MEM_EXTERN + EXTERN_TXID;
+	this_obj_map["user"] = MEM_EXTERN + EXTERN_USER;
+	this_obj_map["balance"] = MEM_EXTERN + EXTERN_BALANCE;
+	this_obj_map["address"] = MEM_EXTERN + EXTERN_ADDRESS;
+	this_obj_map["deposit"] = MEM_EXTERN + EXTERN_DEPOSIT;
+
+	function_map["size"].name = "size";
+	function_map["push"].name = "push";
+	function_map["pop"].name = "pop";
+	function_map["set"].name = "set";
+	function_map["get"].name = "get";
+	function_map["typeof"].name = "typeof";
+	function_map["send"].name = "send";
+	function_map["mint"].name = "mint";
+	function_map["fail"].name = "fail";
+	function_map["bech32"].name = "bech32";
+	function_map["to_uint"].name = "to_uint";
+	function_map["to_string"].name = "to_string";
+	function_map["to_string_hex"].name = "to_string_hex";
+
 	global.section = MEM_STATIC;
 
 	// address zero = null value
@@ -565,7 +592,9 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		debug() << std::endl << "Second pass ..." << std::endl;
 
 		for(const auto& entry : function_map) {
-			recurse(*entry.second.root);
+			if(auto node = entry.second.root) {
+				recurse(*node);
+			}
 		}
 		for(const auto& entry : linker_map) {
 			code[entry.first].a = find_function(entry.second)->address;
@@ -1139,9 +1168,31 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(!rhs.name) {
 				throw std::logic_error("expected identifier");
 			}
-			out.address = get(*lhs);
-			out.key = get_const_address(*rhs.name);
-			out.is_const = lhs->is_const;
+			const auto key = *rhs.name;
+
+			if(lhs->name && *lhs->name == "this" && !lhs->key) {
+				auto iter = this_obj_map.find(key);
+				if(iter == this_obj_map.end()) {
+					throw std::logic_error("no such variable: this." + key);
+				}
+				out.address = iter->second;
+				out.is_const = true;
+			}
+			else if(lhs->address == MEM_EXTERN + EXTERN_DEPOSIT && !lhs->key) {
+				out = *lhs;
+				if(key == "currency") {
+					out.key = get_const_address(uint256_t(0));
+				} else if(key == "amount") {
+					out.key = get_const_address(1);
+				} else {
+					throw std::logic_error("no such variable: this.deposit." + key);
+				}
+			}
+			else {
+				out.address = get(*lhs);
+				out.key = get_const_address(key);
+				out.is_const = lhs->is_const;
+			}
 		}
 		else if(op == "++" || op == "--") {
 			if(lhs) {
@@ -1166,28 +1217,12 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			}
 		}
 		else if(op == ">>" || op == "<<") {
-			auto rhs = get(recurse_expr(p_node, expr_len, nullptr, rank));
-			int flags = 0;
-			if(rhs < MEM_EXTERN) {
-				if(rhs < const_vars.size()) {
-					const auto& value = const_vars[rhs].value;
-					if(value->type == TYPE_UINT) {
-						const auto bits = to_uint(value);
-						if(bits > 256) {
-							throw std::logic_error("invalid shift count: " + bits.str());
-						}
-						rhs = bits;
-					} else {
-						throw std::logic_error("bit-shift right operand not an integer");
-					}
-				} else {
-					throw std::logic_error("invalid bit-shift");
-				}
-			} else {
-				flags |= OPFLAG_REF_C;
+			if(!lhs) {
+				throw std::logic_error("missing left operand");
 			}
 			out.address = stack.new_addr();
-			code.emplace_back(op == ">>" ? OP_SHR : OP_SHL, flags, out.address, get(*lhs), rhs);
+			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
+			code.emplace_back(op == ">>" ? OP_SHR : OP_SHL, OPFLAG_REF_C, out.address, get(*lhs), get(rhs));
 		}
 		else if(op == "return") {
 			if(lhs) {
@@ -1211,6 +1246,8 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				throw std::logic_error("expected function name");
 			}
+			const auto& name = lhs->func->name;
+
 			std::vector<node_t> args;
 			for(const auto& node : list) {
 				const std::string name(node.kind().name());
@@ -1218,24 +1255,118 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					args.push_back(node);
 				}
 			}
-			if(args.size() > lhs->func->args.size()) {
-				throw std::logic_error("too many function arguments: "
-						+ std::to_string(args.size()) + " > " + std::to_string(lhs->func->args.size()));
+			if(name == "size") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for size()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_SIZE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
 			}
-			const auto offset = stack.new_addr();
-			code.emplace_back(OP_CLR, 0, offset);
+			else if(name == "push") {
+				if(args.size() < 2) {
+					throw std::logic_error("expected 2 or more arguments for push(array, value)");
+				}
+				const auto array = get(recurse(args[0]));
+				for(size_t i = 1; i < args.size(); ++i) {
+					code.emplace_back(OP_PUSH_BACK, OPFLAG_REF_A, array, get(recurse(args[i])));
+				}
+				out.address = 0;
+			}
+			else if(name == "pop") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for pop()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_POP_BACK, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+			}
+			else if(name == "set") {
+				if(args.size() != 3) {
+					throw std::logic_error("expected 3 arguments for set(..., key, value)");
+				}
+				out.address = get(recurse(args[2]));
+				code.emplace_back(OP_SET, OPFLAG_REF_A, get(recurse(args[0])), get(recurse(args[1])), out.address);
+			}
+			else if(name == "get") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for get()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_GET, OPFLAG_REF_B, out.address, get(recurse(args[0])), get(recurse(args[1])));
+			}
+			else if(name == "typeof") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for typeof()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_A, out.address, get(recurse(args[0])));
+			}
+			else if(name == "send") {
+				if(args.size() != 3) {
+					throw std::logic_error("expected 3 argument for send(address, amount, currency)");
+				}
+				code.emplace_back(OP_SEND, 0, get(recurse(args[0])), get(recurse(args[1])), get(recurse(args[2])));
+				out.address = 0;
+			}
+			else if(name == "mint") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 3 argument for mint(address, amount)");
+				}
+				code.emplace_back(OP_MINT, 0, get(recurse(args[0])), get(recurse(args[1])));
+				out.address = 0;
+			}
+			else if(name == "fail") {
+				if(args.size() != 1 && args.size() != 2) {
+					throw std::logic_error("expected 1 or 2 arguments for fail(message, [code])");
+				}
+				code.emplace_back(OP_FAIL, 0, get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
+				out.address = 0;
+			}
+			else if(name == "bech32") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for bech32()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_ADDRESS);
+			}
+			else if(name == "to_uint") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for to_uint()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_DEFAULT);
+			}
+			else if(name == "to_string") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for to_string()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING, CONVTYPE_DEFAULT);
+			}
+			else if(name == "to_string_hex") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for to_string_hex()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING | (CONVTYPE_BASE_16 << 8), CONVTYPE_DEFAULT);
+			}
+			else {
+				if(args.size() > lhs->func->args.size()) {
+					throw std::logic_error("too many function arguments: "
+							+ std::to_string(args.size()) + " > " + std::to_string(lhs->func->args.size()));
+				}
+				const auto offset = stack.new_addr();
+				code.emplace_back(OP_CLR, 0, offset);
 
-			for(size_t i = 0; i < args.size(); ++i)
-			{
-				copy(offset + 1 + i, recurse(args[i]));
+				for(size_t i = 0; i < args.size(); ++i) {
+					copy(offset + 1 + i, recurse(args[i]));
+				}
+				for(size_t i = args.size(); i < lhs->func->args.size(); ++i) {
+					code.emplace_back(OP_COPY, 0, offset + 1 + i, 0);
+				}
+				linker_map[code.size()] = name;
+				code.emplace_back(OP_CALL, 0, -1, offset - MEM_STACK);
+				out.address = offset;
 			}
-			for(size_t i = args.size(); i < lhs->func->args.size(); ++i)
-			{
-				code.emplace_back(OP_COPY, 0, offset + 1 + i, 0);
-			}
-			linker_map[code.size()] = lhs->func->name;
-			code.emplace_back(OP_CALL, 0, -1, offset - MEM_STACK);
-			out.address = offset;
 		}
 		else {
 			if(list.size() != 3) {
