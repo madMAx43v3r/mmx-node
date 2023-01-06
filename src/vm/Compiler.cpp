@@ -205,11 +205,10 @@ struct function {
 struct operator_ex : lexy::token_production {
 	static constexpr auto name = "mmx.lang.operator";
 	static constexpr auto rule = dsl::literal_set(
-			dsl::lit_c<'.'>, dsl::lit_c<'+'>, dsl::lit_c<'-'>, dsl::lit_c<'*'>, dsl::lit_c<'/'>, dsl::lit_c<'!'>,
+			dsl::lit_c<'.'>, dsl::lit_c<'+'>, dsl::lit_c<'-'>, dsl::lit_c<'*'>, dsl::lit_c<'/'>, dsl::lit_c<'!'>, dsl::lit_c<'='>,
 			dsl::lit_c<'>'>, dsl::lit_c<'<'>, dsl::lit_c<'&'>, dsl::lit_c<'|'>, dsl::lit_c<'^'>, dsl::lit_c<'~'>, dsl::lit_c<'%'>,
 			LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="), LEXY_LIT("&&"), LEXY_LIT("||"),
-			LEXY_LIT("++"), LEXY_LIT("--"), LEXY_LIT(">>"), LEXY_LIT("<<"),
-			kw_return, kw_break, kw_continue, kw_of);
+			LEXY_LIT("++"), LEXY_LIT("--"), LEXY_LIT(">>"), LEXY_LIT("<<"), kw_return);
 };
 
 struct qualifier : lexy::token_production {
@@ -257,8 +256,7 @@ struct expression {
 
 struct statement {
 	static constexpr auto name = "mmx.lang.statement";
-	static constexpr auto rule = (dsl::p<variable> | dsl::else_ >> dsl::p<expression>)
-			+ dsl::opt(dsl::equal_sign >> dsl::p<expression>) + dsl::semicolon;
+	static constexpr auto rule = (dsl::p<variable> | kw_break | kw_continue | dsl::else_ >> dsl::p<expression>) + dsl::semicolon;
 };
 
 struct else_ex;
@@ -280,7 +278,9 @@ struct else_ex {
 struct for_loop {
 	static constexpr auto name = "mmx.lang.for";
 	static constexpr auto rule = kw_for >>
-			dsl::parenthesized.opt_list(dsl::p<variable> | dsl::else_ >> dsl::p<expression>, dsl::trailing_sep(dsl::comma | dsl::semicolon))
+			dsl::parenthesized.opt_list(
+					(dsl::p<variable> >> dsl::opt(kw_of >> dsl::p<expression>)) |
+					dsl::else_ >> dsl::p<expression>, dsl::trailing_sep(dsl::comma | dsl::semicolon))
 			+ (dsl::p<scope> | dsl::else_ >> dsl::p<statement>);
 };
 
@@ -329,6 +329,7 @@ void dump_parse_tree(const Node& node, std::ostream& out, int depth = 0, int off
 		}
 	}
 }
+
 
 class Compiler {
 public:
@@ -415,6 +416,10 @@ protected:
 	vref_t copy(const vref_t& dst, const vref_t& src);
 
 	uint32_t get(const vref_t& src);
+
+	void push_scope();
+
+	void pop_scope();
 
 	const variable_t* find_variable(const std::string& name) const;
 
@@ -504,6 +509,7 @@ Compiler::Compiler()
 	rank_map["^"] = rank++;
 	rank_map["|"] = rank;
 	rank_map["||"] = rank++;
+	rank_map["="] = rank++;
 	rank_map["break"] = rank;
 	rank_map["continue"] = rank;
 	rank_map["return"] = rank++;
@@ -540,7 +546,7 @@ Compiler::Compiler()
 	function_map["get"].name = "get";
 	function_map["min"].name = "min";
 	function_map["max"].name = "max";
-	function_map["erase"].name = "erase";
+	function_map["delete"].name = "delete";
 	function_map["typeof"].name = "typeof";
 	function_map["send"].name = "send";
 	function_map["mint"].name = "mint";
@@ -787,13 +793,9 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		if(list.size() != 3) {
 			throw std::logic_error("invalid scope");
 		}
-		frame_t scope;
-		if(!frame.empty()) {
-			scope.addr_offset = frame.back().addr_offset;
-		}
-		frame.push_back(scope);
+		push_scope();
 		recurse(list[1]);
-		frame.pop_back();
+		pop_scope();
 	}
 	else if(name == lang::source::name)
 	{
@@ -977,6 +979,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		if(is_expression) {
 			copy(var.address, recurse(list.back()));
 		}
+		out.address = var.address;
 	}
 	else if(name == lang::if_ex::name)
 	{
@@ -1014,25 +1017,95 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		const auto cond = get(recurse(list[2]));
 		const auto jump = code.size();
 		code.emplace_back(OP_JUMPN, 0, -1, cond);
-		recurse(list[4]);
+		recurse(list.back());
 		code.emplace_back(OP_JUMP, 0, begin);
 		code[jump].a = code.size();
 	}
 	else if(name == lang::for_loop::name)
 	{
-		// TODO
+		if(list.size() < 5) {
+			throw std::logic_error("invalid for()");
+		}
+		bool is_range = false;
+		std::vector<std::list<node_t>> nodes;
+		nodes.emplace_back();
+		for(size_t i = 2; i + 1 < list.size(); ++i) {
+			const auto& node = list[i];
+			const std::string name(node.kind().name());
+			if(name == "literal") {
+				const auto lit = get_literal(node);
+				if(lit == ";") {
+					nodes.emplace_back();
+				} else if(lit == "of") {
+					if(nodes.back().size() != 1) {
+						throw std::logic_error("invalid range for()");
+					}
+					is_range = true;
+				}
+			} else {
+				nodes.back().push_back(node);
+			}
+		}
+		push_scope();
+
+		if(is_range) {
+			if(nodes.size() != 1) {
+				throw std::logic_error("invalid range for()");
+			}
+			const auto& range_ex = nodes.front();
+			if(range_ex.size() != 2) {
+				throw std::logic_error("invalid range for()");
+			}
+			auto iter = range_ex.begin();
+			const auto var_addr = get(recurse(*iter)); iter++;
+			const auto range_addr = get(recurse(*iter));
+
+			auto& stack = frame.back();
+			const auto counter = stack.new_addr();
+			copy(counter, get_const_address(uint256_t(0)));
+			const auto size = stack.new_addr();
+			code.emplace_back(OP_SIZE, OPFLAG_REF_B, size, range_addr);
+			const auto begin = code.size();
+			const auto cond = stack.new_addr();
+			code.emplace_back(OP_CMP_LT, 0, cond, counter, size);
+			const auto jump = code.size();
+			code.emplace_back(OP_JUMPN, 0, -1, cond);
+			code.emplace_back(OP_GET, OPFLAG_REF_B, var_addr, range_addr, counter);
+			recurse(list.back());
+			code.emplace_back(OP_ADD, OPFLAG_CATCH_OVERFLOW, counter, counter, get_const_address(1));
+			code.emplace_back(OP_JUMP, 0, begin);
+			code[jump].a = code.size();
+		}
+		else if(nodes.size() == 3) {
+			if(nodes[1].size() != 1) {
+				throw std::logic_error("invalid for() condition");
+			}
+			for(const auto& node : nodes[0]) {
+				recurse(node);
+			}
+			const auto begin = code.size();
+			const auto cond = get(recurse(nodes[1].front()));
+			const auto jump = code.size();
+			code.emplace_back(OP_JUMPN, 0, -1, cond);
+			recurse(list.back());
+
+			for(const auto& node : nodes[2]) {
+				recurse(node);
+			}
+			code.emplace_back(OP_JUMP, 0, begin);
+			code[jump].a = code.size();
+		}
+		else {
+			throw std::logic_error("invalid for()");
+		}
+		pop_scope();
 	}
 	else if(name == lang::statement::name)
 	{
-		if(list.size() == 2) {
-			recurse(list[0]);
-		}
-		else if(list.size() == 4) {
-			copy(recurse(list[0]), recurse(list[2]));
-		}
-		else {
+		if(list.size() != 2) {
 			throw std::logic_error("invalid statement");
 		}
+		recurse(list[0]);
 	}
 	else if(name == lang::expression::name)
 	{
@@ -1158,16 +1231,22 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
 			code.emplace_back(op_code, flags, out.address, get(*lhs), get(rhs));
 		}
-		else if(op == "!" || op == "~") {
-			if(lhs) {
-				throw std::logic_error("unexpected left operand");
+		else if(op == "=") {
+			if(!lhs) {
+				throw std::logic_error("missing left operand");
+			}
+			if(lhs->is_const) {
+				if(lhs->name) {
+					throw std::logic_error("cannot assign to const variable: " + *lhs->name);
+				} else {
+					throw std::logic_error("assignment to const variable");
+				}
 			}
 			if(expr_len < 1) {
 				throw std::logic_error("missing right operand");
 			}
 			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
-			out.address = stack.new_addr();
-			code.emplace_back(OP_NOT, 0, out.address, get(rhs));
+			out = copy(*lhs, rhs);
 		}
 		else if(op == ".") {
 			if(!lhs) {
@@ -1206,6 +1285,17 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.key = get_const_address(key);
 				out.is_const = lhs->is_const;
 			}
+		}
+		else if(op == "!" || op == "~") {
+			if(lhs) {
+				throw std::logic_error("unexpected left operand");
+			}
+			if(expr_len < 1) {
+				throw std::logic_error("missing right operand");
+			}
+			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
+			out.address = stack.new_addr();
+			code.emplace_back(OP_NOT, 0, out.address, get(rhs));
 		}
 		else if(op == "++" || op == "--") {
 			if(lhs) {
@@ -1317,9 +1407,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					lhs = out.address;
 				}
 			}
-			else if(name == "erase") {
+			else if(name == "delete") {
 				if(args.size() != 2) {
-					throw std::logic_error("expected 2 arguments for erase(object, key)");
+					throw std::logic_error("expected 2 arguments for delete(object, key)");
 				}
 				out.address = 0;
 				code.emplace_back(OP_ERASE, OPFLAG_REF_A, get(recurse(args[0])), get(recurse(args[1])));
@@ -1453,6 +1543,20 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 	depth--;
 
 	return recurse_expr(p_node, expr_len, &out, lhs_rank);
+}
+
+void Compiler::push_scope()
+{
+	frame_t scope;
+	if(!frame.empty()) {
+		scope.addr_offset = frame.back().addr_offset;
+	}
+	frame.push_back(scope);
+}
+
+void Compiler::pop_scope()
+{
+	frame.pop_back();
 }
 
 Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
