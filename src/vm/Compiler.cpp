@@ -548,6 +548,7 @@ Compiler::Compiler()
 	function_map["max"].name = "max";
 	function_map["delete"].name = "delete";
 	function_map["typeof"].name = "typeof";
+	function_map["concat"].name = "concat";
 	function_map["send"].name = "send";
 	function_map["mint"].name = "mint";
 	function_map["fail"].name = "fail";
@@ -594,7 +595,8 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		debug() << std::endl << "Second pass ..." << std::endl;
 
 		for(const auto& entry : function_map) {
-			if(auto node = entry.second.root) {
+			const auto& func = entry.second;
+			if(const auto& node = func.root) {
 				recurse(*node);
 			}
 		}
@@ -606,6 +608,38 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 //		lexy_ext::node_position(tree, curr_node);
 		throw std::logic_error(std::string("error: ") + ex.what());
 	}
+
+	for(const auto& var : const_vars) {
+		if(!var.value) {
+			throw std::logic_error("missing constant value");
+		}
+		const auto data = serialize(*var.value, false, false);
+		binary->constant.insert(binary->constant.end(), data.first.get(), data.first.get() + data.second);
+	}
+	for(const auto& var : global.var_list) {
+		binary->fields[var.name] = var.address;
+	}
+	for(const auto& entry : function_map) {
+		const auto& func = entry.second;
+		if(func.root) {
+			contract::method_t method;
+			method.name = func.name;
+			method.entry_point = func.address;
+			method.is_const = func.is_const;
+			method.is_public = func.is_public;
+			method.is_payable = func.is_payable;
+			for(const auto& arg : func.args) {
+				method.args.push_back(arg.name);
+			}
+			binary->methods[method.name] = method;
+		}
+	}
+	{
+		const auto data = vm::serialize(code);
+		binary->binary = std::vector<uint8_t>(data.first.get(), data.first.get() + data.second);
+	}
+	debug() << std::endl;
+	dump_code(debug(), binary);
 	return binary;
 }
 
@@ -1421,6 +1455,17 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = stack.new_addr();
 				code.emplace_back(OP_TYPE, OPFLAG_REF_A, out.address, get(recurse(args[0])));
 			}
+			else if(name == "concat") {
+				if(args.size() < 2) {
+					throw std::logic_error("expected 2 or more arguments for concat()");
+				}
+				auto lhs = get(recurse(args[0]));
+				for(size_t i = 1; i < args.size(); ++i) {
+					out.address = stack.new_addr();
+					code.emplace_back(OP_CONCAT, 0, out.address, lhs, get(recurse(args[i])));
+					lhs = out.address;
+				}
+			}
 			else if(name == "send") {
 				if(args.size() != 3) {
 					throw std::logic_error("expected 3 argument for send(address, amount, currency)");
@@ -1670,6 +1715,14 @@ std::shared_ptr<const contract::Binary> compile(const std::string& source)
 
 	Compiler compiler;
 	return compiler.compile(source);
+}
+
+std::shared_ptr<const contract::Binary> compile_file(const std::string& file_name)
+{
+	std::ifstream stream(file_name);
+	std::stringstream buffer;
+	buffer << stream.rdbuf();
+	return vm::compile(buffer.str());
 }
 
 

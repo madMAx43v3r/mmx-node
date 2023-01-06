@@ -1286,51 +1286,7 @@ int main(int argc, char** argv)
 					}
 				}
 				if(bin) {
-					{
-						size_t i = 0;
-						std::cout << "constants:" << std::endl;
-						for(const auto& var : mmx::vm::read_constants(bin)) {
-							std::cout << "  [0x" << vnx::to_hex_string(i++) << "] " << mmx::vm::to_string(var.get()) << std::endl;
-						}
-					}
-					std::map<size_t, mmx::contract::method_t> method_table;
-					for(const auto& entry : bin->methods) {
-						method_table[entry.second.entry_point] = entry.second;
-					}
-					std::vector<mmx::vm::instr_t> code;
-					const auto length = mmx::vm::deserialize(code, bin->binary.data(), bin->binary.size());
-					size_t i = 0;
-					if(!method.empty()) {
-						auto iter = bin->methods.find(method);
-						if(iter == bin->methods.end()) {
-							vnx::log_error() << "No such method: " << method;
-							goto failed;
-						}
-						i = iter->second.entry_point;
-					}
-					for(; i < code.size(); ++i) {
-						auto iter = method_table.find(i);
-						if(iter != method_table.end()) {
-							std::cout << iter->second.name << " (";
-							int k = 0;
-							for(const auto& arg : iter->second.args) {
-								if(k++) {
-									std::cout << ", ";
-								}
-								std::cout << arg;
-							}
-							std::cout << ")" << std::endl;
-						}
-						std::cout << "  [0x" << vnx::to_hex_string(i) << "] " << to_string(code[i]) << std::endl;
-
-						if(!method.empty() && code[i].code == mmx::vm::OP_RET) {
-							break;
-						}
-					}
-					if(method.empty()) {
-						std::cout << "Total size: " << length << " bytes" << std::endl;
-						std::cout << "Total instructions: " << code.size() << std::endl;
-					}
+					mmx::vm::dump_code(std::cout, bin, method.empty() ? vnx::optional<std::string>() : method);
 				}
 			}
 			else if(command == "fetch")

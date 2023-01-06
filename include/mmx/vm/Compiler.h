@@ -16,6 +16,7 @@ namespace vm {
 
 std::shared_ptr<const contract::Binary> compile(const std::string& source);
 
+std::shared_ptr<const contract::Binary> compile_file(const std::string& file_name);
 
 
 } // vm

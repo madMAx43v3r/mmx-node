@@ -27,7 +27,8 @@ int main(int argc, char** argv)
 		std::stringstream buffer;
 		buffer << stream.rdbuf();
 
-		vm::compile(buffer.str());
+		auto bin = vm::compile(buffer.str());
+		vnx::write_to_file("binary.dat", bin);
 	}
 
 	vnx::close();
