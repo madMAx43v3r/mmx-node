@@ -68,7 +68,7 @@ enum opcode_e : uint8_t {
 	OP_GET,			// dst, addr, key
 	OP_SET,			// addr, key, src
 	OP_ERASE,		// addr, key
-	OP_PUSH_BACK,	// dst, src
+	OP_PUSH_BACK,	// addr, src
 	OP_POP_BACK,	// dst, src
 
 	OP_CONV = 0xA0,	// dst, src, dflags, sflags

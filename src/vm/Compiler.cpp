@@ -553,7 +553,7 @@ Compiler::Compiler()
 	function_map["mint"].name = "mint";
 	function_map["fail"].name = "fail";
 	function_map["bech32"].name = "bech32";
-	function_map["to_uint"].name = "to_uint";
+	function_map["uint"].name = "uint";
 	function_map["to_string"].name = "to_string";
 	function_map["to_string_hex"].name = "to_string_hex";
 
@@ -617,7 +617,9 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		binary->constant.insert(binary->constant.end(), data.first.get(), data.first.get() + data.second);
 	}
 	for(const auto& var : global.var_list) {
-		binary->fields[var.name] = var.address;
+		if(!var.is_const) {
+			binary->fields[var.name] = var.address;
+		}
 	}
 	for(const auto& entry : function_map) {
 		const auto& func = entry.second;
@@ -854,6 +856,9 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			if(func.name == "init") {
 				func.is_init = true;
 			}
+			if(func.name == "deposit") {
+				func.is_payable = true;
+			}
 			debug(true) << "name = \"" << func.name << "\"" << std::endl;
 
 			if(function_map.count(func.name)) {
@@ -949,10 +954,11 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			}
 			curr_function = func;
 
-			frame.push_back(scope);
 			if(func.is_init) {
 				code.emplace_back(OP_CALL, 0, 0, scope.new_addr() - MEM_STACK);
 			}
+			frame.push_back(scope);
+			code.emplace_back(OP_COPY, 0, MEM_STACK, 0);
 			recurse(list.back());
 			frame.pop_back();
 
@@ -989,7 +995,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		}
 		var.is_static = !is_constant && frame.size() == 1;
 
-		auto& scope = var.is_static ? global : frame.back();
+		auto& scope = frame.size() == 1 ? global : frame.back();
 		if(is_constant) {
 			var.address = get_const_address(var.value);
 		} else {
@@ -1366,7 +1372,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				throw std::logic_error("unexpected left operand");
 			}
 			if(expr_len > 0) {
-				copy(MEM_STACK + 0, recurse_expr(p_node, expr_len, nullptr, rank));
+				copy(MEM_STACK, recurse_expr(p_node, expr_len, nullptr, rank));
 			}
 			code.emplace_back(OP_RET);
 		}
@@ -1467,15 +1473,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 			}
 			else if(name == "send") {
-				if(args.size() != 3) {
-					throw std::logic_error("expected 3 argument for send(address, amount, currency)");
+				if(args.size() != 2 && args.size() != 3) {
+					throw std::logic_error("expected 2 or 3 arguments for send(address, amount, [currency])");
 				}
-				code.emplace_back(OP_SEND, 0, get(recurse(args[0])), get(recurse(args[1])), get(recurse(args[2])));
+				code.emplace_back(OP_SEND, 0, get(recurse(args[0])), get(recurse(args[1])),
+						args.size() > 2 ? get(recurse(args[2])) : get_const_address(uint256_t()));
 				out.address = 0;
 			}
 			else if(name == "mint") {
 				if(args.size() != 2) {
-					throw std::logic_error("expected 2 argument for mint(address, amount)");
+					throw std::logic_error("expected 2 arguments for mint(address, amount)");
 				}
 				code.emplace_back(OP_MINT, 0, get(recurse(args[0])), get(recurse(args[1])));
 				out.address = 0;
@@ -1494,9 +1501,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_ADDRESS);
 			}
-			else if(name == "to_uint") {
+			else if(name == "uint") {
 				if(args.size() != 1) {
-					throw std::logic_error("expected 1 argument for to_uint()");
+					throw std::logic_error("expected 1 argument for uint()");
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_DEFAULT);
@@ -1521,8 +1528,6 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 							+ std::to_string(args.size()) + " > " + std::to_string(lhs->func->args.size()));
 				}
 				const auto offset = stack.new_addr();
-				code.emplace_back(OP_CLR, 0, offset);
-
 				for(size_t i = 0; i < args.size(); ++i) {
 					copy(offset + 1 + i, recurse(args[i]));
 				}
@@ -1621,6 +1626,40 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 	} else if(src.key && !dst.key) {
 		code.emplace_back(OP_GET, OPFLAG_REF_B, dst.address, src.address, *src.key);
 	} else if(dst.address != src.address) {
+		if(!code.empty()) {
+			auto& instr = code.back();
+			if(!(instr.flags & OPFLAG_REF_A)) {
+				switch(instr.code) {
+					case OP_ADD:
+					case OP_SUB:
+					case OP_MUL:
+					case OP_DIV:
+					case OP_AND:
+					case OP_OR:
+					case OP_CLONE:
+					case OP_CONCAT:
+					case OP_CONV:
+					case OP_COPY:
+					case OP_GET:
+					case OP_MAX:
+					case OP_MIN:
+					case OP_MOD:
+					case OP_NOT:
+					case OP_POP_BACK:
+					case OP_MEMCPY:
+					case OP_SAR:
+					case OP_SHL:
+					case OP_SHR:
+					case OP_SIZE:
+					case OP_TYPE:
+					case OP_XOR:
+						instr.a = dst.address;
+						return dst;
+					default:
+						break;
+				}
+			}
+		}
 		code.emplace_back(OP_COPY, 0, dst.address, src.address);
 	}
 	return dst;
