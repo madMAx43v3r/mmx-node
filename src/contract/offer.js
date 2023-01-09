@@ -81,6 +81,9 @@ function accept(dst_addr) public payable
 		fail("currency mismatch", 3);
 	}
 	const bid_amount = this.balance[bid_currency];
+	if(bid_amount == 0) {
+		fail("empty offer");
+	}
 	const ask_amount = ((bid_amount << FRACT_BITS) + inv_price - 1) / inv_price;
 	const ret_amount = this.deposit.amount - ask_amount;
 	send(dst_addr, bid_amount, bid_currency);
