@@ -23,10 +23,12 @@ function _get_earned_fees(user) const
 	for(var i = 0; i < 2; ++i) {
 		if(user.balance[i] > 0) {
 			const total_fees = fees_paid[i] - user.last_fees_paid[i];
-			user_share[i] = min(
-					(2 * total_fees * user.balance[i]) /
-					(user_total[i] + user.last_user_total[i]),
-					this.balance[tokens[i]] - balance[i]);
+			if(total_fees > 0) {
+				user_share[i] = min(
+						(2 * total_fees * user.balance[i]) /
+						(user_total[i] + user.last_user_total[i]),
+						this.balance[tokens[i]] - balance[i]);
+			}
 		}
 	}
 	return user_share;
