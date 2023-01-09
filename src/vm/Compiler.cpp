@@ -1719,10 +1719,17 @@ std::shared_ptr<const contract::Binary> compile(const std::string& source)
 {
 	typedef lang::source test_t;
 
+#ifdef _WIN32
+	lexy_ext::shell<lexy_ext::default_prompt<lexy::ascii_encoding>> shell;
+
+	lexy::trace_to<test_t>(shell.write_message().output_iterator(),
+			lexy::string_input<lexy::ascii_encoding>(source), {lexy::visualize_use_color});
+#else
 	lexy_ext::shell<lexy_ext::default_prompt<lexy::utf8_encoding>> shell;
 
 	lexy::trace_to<test_t>(shell.write_message().output_iterator(),
 			lexy::string_input<lexy::utf8_encoding>(source), {lexy::visualize_fancy});
+#endif // _WIN32
 
 	Compiler compiler;
 	return compiler.compile(source);
