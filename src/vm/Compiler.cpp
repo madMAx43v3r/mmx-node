@@ -97,6 +97,12 @@ static constexpr auto kw_namespace = LEXY_KEYWORD("package", kw_id);
 static constexpr auto kw_continue = LEXY_KEYWORD("continue", kw_id);
 static constexpr auto kw_break = LEXY_KEYWORD("break", kw_id);
 
+struct comment {
+	static constexpr auto name = "mmx.lang.comment";
+	static constexpr auto rule = LEXY_LIT("//") >> dsl::loop(
+			(dsl::ascii::newline >> dsl::break_) | dsl::ascii::character);
+};
+
 struct reserved {
 	static constexpr auto name = "mmx.lang.reserved";
 	static constexpr auto rule = dsl::literal_set(
@@ -292,7 +298,7 @@ struct while_loop {
 
 struct source {
 	static constexpr auto name = "mmx.lang.source";
-	static constexpr auto whitespace = dsl::ascii::space;
+	static constexpr auto whitespace = dsl::inline_<comment> | dsl::ascii::space;
 	static constexpr auto rule = dsl::loop(
 			dsl::peek_not(dsl::lit_c<'}'> | dsl::eof) >> (
 					dsl::p<namespace_ex> | dsl::p<scope> | dsl::p<function> |
