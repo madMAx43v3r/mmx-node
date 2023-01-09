@@ -1626,40 +1626,6 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 	} else if(src.key && !dst.key) {
 		code.emplace_back(OP_GET, OPFLAG_REF_B, dst.address, src.address, *src.key);
 	} else if(dst.address != src.address) {
-		if(!code.empty()) {
-			auto& instr = code.back();
-			if(!(instr.flags & OPFLAG_REF_A)) {
-				switch(instr.code) {
-					case OP_ADD:
-					case OP_SUB:
-					case OP_MUL:
-					case OP_DIV:
-					case OP_AND:
-					case OP_OR:
-					case OP_CLONE:
-					case OP_CONCAT:
-					case OP_CONV:
-					case OP_COPY:
-					case OP_GET:
-					case OP_MAX:
-					case OP_MIN:
-					case OP_MOD:
-					case OP_NOT:
-					case OP_POP_BACK:
-					case OP_MEMCPY:
-					case OP_SAR:
-					case OP_SHL:
-					case OP_SHR:
-					case OP_SIZE:
-					case OP_TYPE:
-					case OP_XOR:
-						instr.a = dst.address;
-						return dst;
-					default:
-						break;
-				}
-			}
-		}
 		code.emplace_back(OP_COPY, 0, dst.address, src.address);
 	}
 	return dst;
