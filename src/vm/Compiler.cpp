@@ -214,7 +214,8 @@ struct operator_ex : lexy::token_production {
 			dsl::lit_c<'.'>, dsl::lit_c<'+'>, dsl::lit_c<'-'>, dsl::lit_c<'*'>, dsl::lit_c<'/'>, dsl::lit_c<'!'>, dsl::lit_c<'='>,
 			dsl::lit_c<'>'>, dsl::lit_c<'<'>, dsl::lit_c<'&'>, dsl::lit_c<'|'>, dsl::lit_c<'^'>, dsl::lit_c<'~'>, dsl::lit_c<'%'>,
 			LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="), LEXY_LIT("&&"), LEXY_LIT("||"),
-			LEXY_LIT("++"), LEXY_LIT("--"), LEXY_LIT(">>"), LEXY_LIT("<<"), kw_return);
+			LEXY_LIT("++"), LEXY_LIT("--"), LEXY_LIT(">>"), LEXY_LIT("<<"), LEXY_LIT("+="), LEXY_LIT("-="),
+			LEXY_LIT("*="), LEXY_LIT("/="), LEXY_LIT(">>="), LEXY_LIT("<<="), kw_return);
 };
 
 struct qualifier : lexy::token_production {
@@ -379,9 +380,6 @@ protected:
 		uint32_t new_addr() {
 			return section + addr_offset++;
 		}
-		uint32_t tmp_addr() const {
-			return section + addr_offset;
-		}
 		void add_variable(const variable_t& var) {
 			if(var.name.size()) {
 				var_map[var.name] = var_list.size();
@@ -515,7 +513,13 @@ Compiler::Compiler()
 	rank_map["^"] = rank++;
 	rank_map["|"] = rank;
 	rank_map["||"] = rank++;
-	rank_map["="] = rank++;
+	rank_map["="] = rank;
+	rank_map["+="] = rank;
+	rank_map["-="] = rank;
+	rank_map["*="] = rank;
+	rank_map["/="] = rank;
+	rank_map[">>="] = rank;
+	rank_map["<<="] = rank++;
 	rank_map["break"] = rank;
 	rank_map["continue"] = rank;
 	rank_map["return"] = rank++;
@@ -552,6 +556,8 @@ Compiler::Compiler()
 	function_map["get"].name = "get";
 	function_map["min"].name = "min";
 	function_map["max"].name = "max";
+	function_map["clone"].name = "clone";
+	function_map["deref"].name = "deref";
 	function_map["delete"].name = "delete";
 	function_map["typeof"].name = "typeof";
 	function_map["concat"].name = "concat";
@@ -583,9 +589,9 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 	parse_tree_t tree;
 	parse(tree, source);
 
-	std::cout << std::endl;
-	dump_parse_tree(tree.root(), std::cout);
-	std::cout << std::endl;
+	debug() << std::endl;
+	dump_parse_tree(tree.root(), debug());
+	debug() << std::endl;
 
 	try {
 		// static init stack frame
@@ -1253,7 +1259,12 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 	{
 		const auto op = get_literal(node);
 
-		const auto iter = simple_code_map.find(op);
+		bool is_assign = false;
+		auto iter = simple_code_map.find(op);
+		if(iter == simple_code_map.end() && !op.empty() && op.back() == '=') {
+			is_assign = true;
+			iter = simple_code_map.find(op.substr(0, op.size() - 1));
+		}
 		if(iter != simple_code_map.end()) {
 			if(!lhs) {
 				throw std::logic_error("missing left operand");
@@ -1261,8 +1272,6 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(expr_len < 1) {
 				throw std::logic_error("missing right operand");
 			}
-			out.address = stack.new_addr();
-
 			int flags = 0;
 			const auto op_code = opcode_e(iter->second);
 			switch(op_code) {
@@ -1275,7 +1284,20 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				default: break;
 			}
 			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
-			code.emplace_back(op_code, flags, out.address, get(*lhs), get(rhs));
+			if(is_assign) {
+				if(lhs->key) {
+					const auto tmp_addr = stack.new_addr();
+					code.emplace_back(op_code, flags, tmp_addr, get(*lhs), get(rhs));
+					copy(*lhs, tmp_addr);
+				} else {
+					lhs->check_value();
+					code.emplace_back(op_code, flags, lhs->address, lhs->address, get(rhs));
+				}
+				out = *lhs;
+			} else {
+				out.address = stack.new_addr();
+				code.emplace_back(op_code, flags, out.address, get(*lhs), get(rhs));
+			}
 		}
 		else if(op == "=") {
 			if(!lhs) {
@@ -1453,6 +1475,20 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					lhs = out.address;
 				}
 			}
+			else if(name == "clone") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for clone()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CLONE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+			}
+			else if(name == "deref") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for deref()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_COPY, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+			}
 			else if(name == "delete") {
 				if(args.size() != 2) {
 					throw std::logic_error("expected 2 arguments for delete(object, key)");
@@ -1465,7 +1501,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					throw std::logic_error("expected 1 argument for typeof()");
 				}
 				out.address = stack.new_addr();
-				code.emplace_back(OP_TYPE, OPFLAG_REF_A, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
 			}
 			else if(name == "concat") {
 				if(args.size() < 2) {
@@ -1529,6 +1565,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING | (CONVTYPE_BASE_16 << 8), CONVTYPE_DEFAULT);
 			}
 			else {
+				if(curr_function && curr_function->is_const && lhs->func->root && !lhs->func->is_const) {
+					throw std::logic_error("cannot call non-const function inside const function: " + name);
+				}
 				if(args.size() > lhs->func->args.size()) {
 					throw std::logic_error("too many function arguments: "
 							+ std::to_string(args.size()) + " > " + std::to_string(lhs->func->args.size()));
@@ -1624,7 +1663,7 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 		throw std::logic_error("copy(): dst is const");
 	}
 	if(src.key && dst.key) {
-		const auto tmp_addr = frame.back().tmp_addr();
+		const auto tmp_addr = frame.back().new_addr();
 		code.emplace_back(OP_GET, OPFLAG_REF_B, tmp_addr, src.address, *src.key);
 		code.emplace_back(OP_SET, OPFLAG_REF_A, dst.address, *dst.key, tmp_addr);
 	} else if(!src.key && dst.key) {
@@ -1717,19 +1756,17 @@ uint32_t Compiler::get_const_address(const std::string& value)
 
 std::shared_ptr<const contract::Binary> compile(const std::string& source)
 {
-	typedef lang::source test_t;
-
-#ifdef _WIN32
-	lexy_ext::shell<lexy_ext::default_prompt<lexy::ascii_encoding>> shell;
-
-	lexy::trace_to<test_t>(shell.write_message().output_iterator(),
-			lexy::string_input<lexy::ascii_encoding>(source), {lexy::visualize_use_color});
-#else
-	lexy_ext::shell<lexy_ext::default_prompt<lexy::utf8_encoding>> shell;
-
-	lexy::trace_to<test_t>(shell.write_message().output_iterator(),
-			lexy::string_input<lexy::utf8_encoding>(source), {lexy::visualize_fancy});
-#endif // _WIN32
+//#ifdef _WIN32
+//	lexy_ext::shell<lexy_ext::default_prompt<lexy::ascii_encoding>> shell;
+//
+//	lexy::trace_to<lang::source>(shell.write_message().output_iterator(),
+//			lexy::string_input<lexy::ascii_encoding>(source), {lexy::visualize_use_color});
+//#else
+//	lexy_ext::shell<lexy_ext::default_prompt<lexy::utf8_encoding>> shell;
+//
+//	lexy::trace_to<lang::source>(shell.write_message().output_iterator(),
+//			lexy::string_input<lexy::utf8_encoding>(source), {lexy::visualize_fancy});
+//#endif // _WIN32
 
 	Compiler compiler;
 	return compiler.compile(source);
