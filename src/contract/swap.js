@@ -141,8 +141,10 @@ function trade(i, address, min_amount) public payable
 	const fee_amount = 1 + (trade_amount * fee_rate) >> FRACT_BITS;
 	const actual_amount = trade_amount - fee_amount;
 	
-	if(actual_amount < min_amount) {
-		fail("minimum amount not reached", 7);
+	if(min_amount != null) {
+		if(actual_amount < min_amount) {
+			fail("minimum amount not reached", 7);
+		}
 	}
 	send(bech32(address), actual_amount, tokens[k]);
 	
