@@ -313,7 +313,7 @@ install(DIRECTORY
 )
 install(FILES
 	activate.sh run_node.sh run_farmer.sh run_wallet.sh run_timelord.sh run_harvester.sh
-	PERMISSIONS OWNER_EXECUTE
+	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
 	DESTINATION .
 )
 
