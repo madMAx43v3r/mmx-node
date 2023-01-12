@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export PATH=$PATH:$PWD/bin:$PWD/build:$PWD/build/tools:$PWD/build/vnx-base/tools
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/lib:$PWD/build:$PWD/build/vnx-base:$PWD/build/vnx-addons:$PWD/build/basic-opencl
+
 if [[ -z "${MMX_HOME}" ]]; then
 	export MMX_HOME="$PWD/"
 fi
@@ -14,8 +17,8 @@ fi
 
 PASSWD_PATH="${MMX_HOME}config/local/passwd"
 if [ ! -f "${PASSWD_PATH}" ] || [[ $(cat "${PASSWD_PATH}" | wc -c) -lt 64 ]]; then
-	./build/generate_passwd > "${PASSWD_PATH}"
-	./build/vnx-base/tools/vnxpasswd -c config/default/ "${MMX_HOME}config/local/" -u mmx-admin -p $(cat "${PASSWD_PATH}")
+	generate_passwd > "${PASSWD_PATH}"
+	vnxpasswd -c config/default/ "${MMX_HOME}config/local/" -u mmx-admin -p $(cat "${PASSWD_PATH}")
 	echo "PASSWD=$(cat "${PASSWD_PATH}")"
 fi
 
@@ -43,5 +46,3 @@ if [ "${MMX_DATA}" != "${MMX_HOME}" ]; then
 fi
 
 export MMX_NETWORK=${MMX_DATA}${NETWORK}/
-export PATH=$PATH:$PWD/bin:$PWD/build:$PWD/build/tools:$PWD/build/vnx-base/tools
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/lib:$PWD/build:$PWD/build/vnx-base:$PWD/build/vnx-addons:$PWD/build/basic-opencl
