@@ -28,7 +28,7 @@ set(BLAKE3_SRC
 )
 ENDIF()
 
-add_library(mmx_chiapos SHARED
+add_library(mmx_chiapos STATIC
 	src/chiapos/chiapos.cpp
 	chiapos/src/chacha8.c
 	${BLAKE3_SRC}
@@ -37,8 +37,6 @@ add_library(mmx_chiapos SHARED
 	${FSE_PATH}/entropy_common.c
 	${FSE_PATH}/hist.c
 )
-
-install(TARGETS mmx_chiapos DESTINATION bin)
 
 if(MSVC)
 	target_link_libraries(mmx_chiapos PRIVATE uint256_t)
