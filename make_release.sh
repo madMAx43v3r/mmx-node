@@ -4,7 +4,7 @@ mkdir -p build
 
 cd build
 
-cmake -DCMAKE_BUILD_TYPE=Release $@ ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=dist $@ ..
 
-make -j8
+make -j8 install
 

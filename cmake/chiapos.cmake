@@ -38,6 +38,8 @@ add_library(mmx_chiapos SHARED
 	${FSE_PATH}/hist.c
 )
 
+install(TARGETS mmx_chiapos DESTINATION bin)
+
 if(MSVC)
 	target_link_libraries(mmx_chiapos PRIVATE uint256_t)
 	

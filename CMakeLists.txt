@@ -294,6 +294,28 @@ target_link_libraries(create_offer_binary mmx_vm)
 target_link_libraries(create_swap_binary mmx_vm)
 target_link_libraries(create_plot_binary mmx_vm)
 
+install(TARGETS mmx_db DESTINATION bin)
+install(TARGETS mmx_vm DESTINATION bin)
+install(TARGETS mmx_iface DESTINATION bin)
+install(TARGETS mmx_modules DESTINATION bin)
+
+install(TARGETS mmx DESTINATION bin)
+install(TARGETS mmx_node DESTINATION bin)
+install(TARGETS mmx_farmer DESTINATION bin)
+install(TARGETS mmx_wallet DESTINATION bin)
+install(TARGETS mmx_timelord DESTINATION bin)
+install(TARGETS mmx_harvester DESTINATION bin)
+install(TARGETS generate_passwd DESTINATION bin)
+
+install(DIRECTORY
+	config data kernel scripts www
+	DESTINATION .
+)
+install(FILES
+	activate.sh run_node.sh run_farmer.sh run_wallet.sh run_timelord.sh run_harvester.sh
+	PERMISSIONS OWNER_EXECUTE
+	DESTINATION .
+)
 
 if(MSVC)
 	include(cmake/win_pack.cmake)

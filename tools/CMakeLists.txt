@@ -7,3 +7,6 @@ target_link_libraries(tx_bench mmx_iface)
 target_link_libraries(dump_binary mmx_iface mmx_vm)
 target_link_libraries(calc_test_rewards mmx_iface)
 
+install(TARGETS tx_bench DESTINATION bin)
+install(TARGETS dump_binary DESTINATION bin)
+install(TARGETS calc_test_rewards DESTINATION bin)
