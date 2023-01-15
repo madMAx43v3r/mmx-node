@@ -100,7 +100,9 @@ static constexpr auto kw_break = LEXY_KEYWORD("break", kw_id);
 struct comment {
 	static constexpr auto name = "mmx.lang.comment";
 	static constexpr auto rule = LEXY_LIT("//") >> dsl::loop(
-			(dsl::ascii::newline >> dsl::break_) | dsl::ascii::character);
+			(dsl::ascii::newline >> dsl::break_) |
+			(dsl::eof >> dsl::break_) |
+			 dsl::ascii::character);
 };
 
 struct reserved {
