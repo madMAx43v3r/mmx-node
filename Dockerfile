@@ -8,12 +8,8 @@ RUN --mount=type=cache,target=/root/.cache/ccache sh make_release.sh "-DCMAKE_CX
 FROM alpine:3
 RUN apk add --update --no-cache bash libsecp256k1 rocksdb libsodium zlib gmp libgomp
 WORKDIR /app
-COPY --from=builder /app/build ./build
-COPY ["activate.sh", "run_*.sh", "docker-entrypoint.sh", "./"]
-COPY config ./config
-COPY kernel ./kernel
-COPY www ./www
-COPY data ./data
+COPY --from=builder /app/build/dist ./
+COPY ["docker-entrypoint.sh", "./"]
 
 ENV MMX_HOME="/data/"
 VOLUME /data
