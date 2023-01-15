@@ -10,4 +10,4 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=dist $@ ..
 
 make -j8 install
 
-rm -r dist/config/local
+rm -r dist/config/local || true
