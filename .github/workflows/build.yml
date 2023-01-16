@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VCPKG_COMMIT_ID: "acc3bcf76b84ae5041c86ab55fe138ae7b8255c7"
+  VCPKG_COMMIT_ID: "688ece714204fb5e9ad790ad9ad6d9f571d2b032"
   CMAKE_BUILD_PRESET: "windows-release"
   MMX_VERSION: ${{ github.ref_name }}
   MMX_WIN_PACK: "TRUE"
