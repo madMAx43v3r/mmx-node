@@ -70,12 +70,13 @@ function trade(dst_addr) public payable
 		fail("currency mismatch", 3);
 	}
 	const bid_amount = (this.deposit.amount * inv_price) >> FRACT_BITS;
-	send(dst_addr, bid_amount, bid_currency);
+	send(bech32(dst_addr), bid_amount, bid_currency);
 }
 
 function accept(dst_addr) public payable
 {
 	check_partner();
+	dst_addr = bech32(dst_addr);
 	
 	if(this.deposit.currency != ask_currency) {
 		fail("currency mismatch", 3);
