@@ -570,6 +570,7 @@ Compiler::Compiler()
 	function_map["uint"].name = "uint";
 	function_map["to_string"].name = "to_string";
 	function_map["to_string_hex"].name = "to_string_hex";
+	function_map["to_string_bech32"].name = "to_string_bech32";
 
 	global.section = MEM_STATIC;
 
@@ -1565,6 +1566,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING | (CONVTYPE_BASE_16 << 8), CONVTYPE_DEFAULT);
+			}
+			else if(name == "to_string_bech32") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for to_string_bech32()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_ADDRESS, CONVTYPE_DEFAULT);
 			}
 			else {
 				if(curr_function && curr_function->is_const && lhs->func->root && !lhs->func->is_const) {
