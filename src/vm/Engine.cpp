@@ -1516,7 +1516,7 @@ void Engine::exec(const instr_t& instr)
 		error_code = instr.b;
 		throw std::runtime_error("failed with: "
 				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A)))
-				+ (instr.b ? " (code " + std::to_string(instr.b) : ""));
+				+ (instr.b ? " (code " + std::to_string(instr.b) + ")" : ""));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
