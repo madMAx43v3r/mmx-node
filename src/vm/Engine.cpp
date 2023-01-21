@@ -1151,6 +1151,7 @@ void Engine::exec(const instr_t& instr)
 			throw std::logic_error("OPFLAG_REF_B not supported");
 		}
 		call(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
+// TODO:		deref_value(instr.b, instr.flags & OPFLAG_REF_B),
 				instr.b);
 		return;
 	case OP_RET:

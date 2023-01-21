@@ -571,6 +571,7 @@ Compiler::Compiler()
 	function_map["to_string"].name = "to_string";
 	function_map["to_string_hex"].name = "to_string_hex";
 	function_map["to_string_bech32"].name = "to_string_bech32";
+	function_map["rcall"].name = "rcall";
 
 	global.section = MEM_STATIC;
 
@@ -1573,6 +1574,18 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_ADDRESS, CONVTYPE_DEFAULT);
+			}
+			else if(name == "rcall") {
+				if(args.size() < 2) {
+					throw std::logic_error("expected at least two arguments for rcall(contract, method, ...)");
+				}
+				const auto offset = stack.new_addr();
+				for(size_t i = 0; i + 2 < args.size(); ++i) {
+					copy(offset + 1 + i, recurse(args[i + 2]));
+				}
+				code.emplace_back(OP_COPY, 0, offset, 0);
+				code.emplace_back(OP_RCALL, 0, get(recurse(args[0])), get(recurse(args[1])), offset - MEM_STACK, args.size() - 2);
+				out.address = offset;
 			}
 			else {
 				if(curr_function && curr_function->is_const && lhs->func->root && !lhs->func->is_const) {
