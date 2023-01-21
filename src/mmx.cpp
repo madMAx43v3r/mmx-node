@@ -500,12 +500,23 @@ int main(int argc, char** argv)
 			else if(command == "deploy")
 			{
 				std::string file_path;
+				std::vector<vnx::Variant> init_args;
 				vnx::read_config("$3", file_path);
+				vnx::read_config("$4", init_args);
 
-				auto payload = vnx::read_from_file<mmx::Contract>(file_path);
-				if(!payload) {
-					vnx::log_error() << "Failed to read contract from file: " << file_path;
-					goto failed;
+				std::shared_ptr<mmx::Contract> payload;
+				if(contract_addr.empty()) {
+					payload = vnx::read_from_file<mmx::Contract>(file_path);
+					if(!payload) {
+						vnx::log_error() << "Failed to read contract from file: " << file_path;
+						goto failed;
+					}
+				} else {
+					auto exec = mmx::contract::Executable::create();
+					exec->binary = mmx::addr_t(contract_addr);
+					exec->init_method = file_path;
+					exec->init_args = init_args;
+					payload = exec;
 				}
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
