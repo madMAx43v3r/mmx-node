@@ -181,6 +181,11 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		}
 	}
 	const auto time_ms = vnx::get_wall_time_millis() - time_begin;
+	const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
+
+	if(delay_sec > params->block_time * params->challenge_delay) {
+		log(WARN) << "Lookup for height " << value->height << " took longer than challenge delay: " << delay_sec << " sec" << std::endl;
+	}
 
 	if(best_proof || best_vplot) {
 		auto out = ProofResponse::create();
@@ -229,7 +234,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	if(!id_map.empty()) {
 		log(INFO) << "[" << host_name << "] " << plots.size() << " plots were eligible for height " << value->height
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
-				<< ", took " << time_ms / 1e3 << " sec";
+				<< ", took " << time_ms / 1e3 << " sec, delay " << delay_sec << " sec";
 	}
 }
 
