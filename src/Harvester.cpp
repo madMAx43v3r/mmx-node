@@ -303,41 +303,48 @@ void Harvester::reload()
 	}
 	const std::vector<std::string> dir_list(dir_set.begin(), dir_set.end());
 
+	std::mutex mutex;
 	std::set<std::string> missing;
 	for(const auto& entry : plot_map) {
 		missing.insert(entry.first);
 	}
 	std::vector<std::pair<std::string, std::shared_ptr<chiapos::DiskProver>>> plots;
 
-	const auto num_threads_ = std::min<uint32_t>(num_threads, dir_list.size());
-#pragma omp parallel for num_threads(num_threads_)
-	for(int i = 0; i < int(dir_list.size()); ++i) {
-		try {
-			vnx::Directory dir(dir_list[i]);
+	for(const auto& dir_path : dir_list)
+	{
+		threads->add_task([this, dir_path, &plots, &missing, &mutex]()
+		{
+			try {
+				vnx::Directory dir(dir_path);
 
-			for(const auto& file : dir.files())
-			{
-				const auto file_name = file->get_path();
-#pragma omp critical
-				missing.erase(file_name);
-
-				if(!plot_map.count(file_name) && file->get_extension() == ".plot") {
-					try {
-						auto prover = std::make_shared<chiapos::DiskProver>(file_name);
-#pragma omp critical
-						plots.emplace_back(file_name, prover);
+				for(const auto& file : dir.files())
+				{
+					const auto file_name = file->get_path();
+					{
+						std::lock_guard<std::mutex> lock(mutex);
+						missing.erase(file_name);
 					}
-					catch(const std::exception& ex) {
-						log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "' due to: " << ex.what();
-					} catch(...) {
-						log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "'";
+					if(!plot_map.count(file_name) && file->get_extension() == ".plot") {
+						try {
+							auto prover = std::make_shared<chiapos::DiskProver>(file_name);
+							{
+								std::lock_guard<std::mutex> lock(mutex);
+								plots.emplace_back(file_name, prover);
+							}
+						}
+						catch(const std::exception& ex) {
+							log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "' due to: " << ex.what();
+						} catch(...) {
+							log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "'";
+						}
 					}
 				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "[" << host_name << "] " << ex.what();
 			}
-		} catch(const std::exception& ex) {
-			log(WARN) << "[" << host_name << "] " << ex.what();
-		}
+		});
 	}
+	threads->sync();
 
 	// purge missing plots
 	for(const auto& file_name : missing) {
@@ -357,40 +364,44 @@ void Harvester::reload()
 	}
 
 	// validate and add new plots
-#pragma omp parallel for
-	for(int i = 0; i < int(plots.size()); ++i)
+	for(const auto& entry : plots)
 	{
-		const auto& entry = plots[i];
-		const auto& plot = entry.second;
-		try {
-			const bls_pubkey_t farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
-			if(!farmer_keys.count(farmer_key)) {
-				throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
-			}
-			const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
-			const auto pool_key = plot->get_pool_key();
-			const auto local_sk = derive_local_key(plot->get_master_skey());
-			const auto local_key = local_sk.GetG1Element();
-
-			const bls_pubkey_t plot_key = local_key + farmer_key.to_bls();
-			if(!pool_key.empty()) {
-				const uint32_t port = 11337;
-				const bls_pubkey_t pool_key_ = bls_pubkey_t::super_t(pool_key);
-				if(hash_t(hash_t(pool_key_ + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
-					throw std::logic_error("invalid keys or port");
+		threads->add_task([this, entry, &farmer_keys, &mutex]()
+		{
+			const auto& plot = entry.second;
+			try {
+				const bls_pubkey_t farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
+				if(!farmer_keys.count(farmer_key)) {
+					throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
 				}
-			} else {
-				throw std::logic_error("invalid plot type");
+				const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
+				const auto pool_key = plot->get_pool_key();
+				const auto local_sk = derive_local_key(plot->get_master_skey());
+				const auto local_key = local_sk.GetG1Element();
+
+				const bls_pubkey_t plot_key = local_key + farmer_key.to_bls();
+				if(!pool_key.empty()) {
+					const uint32_t port = 11337;
+					const bls_pubkey_t pool_key_ = bls_pubkey_t::super_t(pool_key);
+					if(hash_t(hash_t(pool_key_ + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
+						throw std::logic_error("invalid keys or port");
+					}
+				} else {
+					throw std::logic_error("invalid plot type");
+				}
+				{
+					std::lock_guard<std::mutex> lock(mutex);
+					plot_map.insert(entry);
+				}
 			}
-#pragma omp critical
-			plot_map.insert(entry);
-		}
-		catch(const std::exception& ex) {
-			log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first << " (" << ex.what() << ")";
-		} catch(...) {
-			log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first;
-		}
+			catch(const std::exception& ex) {
+				log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first << " (" << ex.what() << ")";
+			} catch(...) {
+				log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first;
+			}
+		});
 	}
+	threads->sync();
 
 	id_map.clear();
 	total_bytes = 0;
