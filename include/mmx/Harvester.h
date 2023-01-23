@@ -14,6 +14,7 @@
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/chiapos.h>
 
+#include <vnx/ThreadPool.h>
 #include <vnx/addons/HttpInterface.h>
 
 
@@ -65,6 +66,7 @@ private:
 	vnx::Hash64 farmer_addr;
 	std::shared_ptr<NodeClient> node;
 	std::shared_ptr<FarmerClient> farmer;
+	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<const ChainParams> params;
 
 	std::unordered_set<hash_t> already_checked;

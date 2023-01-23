@@ -73,6 +73,8 @@ void Harvester::main()
 	http = std::make_shared<vnx::addons::HttpInterface<Harvester>>(this, vnx_name);
 	add_async_client(http);
 
+	threads = std::make_shared<vnx::ThreadPool>(num_threads);
+
 	set_timer_millis(10000, std::bind(&Harvester::update, this));
 
 	if(reload_interval > 0) {
@@ -82,6 +84,8 @@ void Harvester::main()
 	reload();
 
 	Super::main();
+
+	threads->close();
 }
 
 void Harvester::handle(std::shared_ptr<const Challenge> value)
@@ -116,22 +120,24 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	std::vector<std::vector<uint256_t>> scores(plots.size());
 
-	const auto num_threads_ = std::min<uint32_t>(num_threads, plots.size());
-#pragma omp parallel for num_threads(num_threads_)
-	for(int i = 0; i < int(plots.size()); ++i)
+	for(size_t i = 0; i < plots.size(); ++i)
 	{
-		const auto& prover = plots[i];
-		try {
-			const auto qualities = prover->get_qualities(value->challenge.bytes);
-			scores[i].resize(qualities.size());
+		threads->add_task([this, i, value, &plots, &scores]()
+		{
+			const auto prover = plots[i];
+			try {
+				const auto qualities = prover->get_qualities(value->challenge.bytes);
+				scores[i].resize(qualities.size());
 
-			for(size_t k = 0; k < qualities.size(); ++k) {
-				scores[i][k] = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
+				for(size_t k = 0; k < qualities.size(); ++k) {
+					scores[i][k] = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
+				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "[" << host_name << "] Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
 			}
-		} catch(const std::exception& ex) {
-			log(WARN) << "[" << host_name << "] Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
-		}
+		});
 	}
+	threads->sync();
 
 	for(size_t i = 0; i < plots.size(); ++i)
 	{
