@@ -988,7 +988,7 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 		return;
 	}
 	if(value >> 64) {
-		throw std::runtime_error("amount too large");
+		throw std::runtime_error("send(): amount too large: " + value.str());
 	}
 	auto balance = read_key<uint_t>(MEM_EXTERN + EXTERN_BALANCE, currency, TYPE_UINT);
 	if(!balance || balance->value < value) {
@@ -1011,7 +1011,7 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 		return;
 	}
 	if(value >> 64) {
-		throw std::runtime_error("amount too large");
+		throw std::runtime_error("mint(): amount too large: " + value.str());
 	}
 	txout_t out;
 	out.contract = contract;
