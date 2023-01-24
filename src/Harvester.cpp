@@ -432,9 +432,10 @@ void Harvester::reload()
 
 	update();
 
-	// check challenges again
-	already_checked.clear();
-
+	// check challenges again for new plots
+	if(plots.size()) {
+		already_checked.clear();
+	}
 	log(INFO) << "[" << host_name << "] Loaded " << plot_map.size() << " plots, " << virtual_map.size() << " virtual plots, "
 			<< total_bytes / pow(1000, 4) << " TB total, " << total_balance / pow(10, params->decimals) << " MMX total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
