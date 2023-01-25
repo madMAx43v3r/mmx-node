@@ -10,7 +10,7 @@ for(var i = 0, test = 0; i < 6; ++i, i = i + 1) {
 }
 
 for(const value of test) {
-	map = value;
+	value.field = 123;
 }
 
 var owner;
