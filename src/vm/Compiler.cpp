@@ -411,6 +411,9 @@ protected:
 				throw std::logic_error("no such variable: " + (*name));
 			}
 		}
+		bool is_mutable() const {
+			return !is_const || key;
+		}
 	};
 
 	void parse(parse_tree_t& tree, const std::string& source);
@@ -1307,7 +1310,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(!lhs) {
 				throw std::logic_error("missing left operand");
 			}
-			if(lhs->is_const) {
+			if(!lhs->is_mutable()) {
 				if(lhs->name) {
 					throw std::logic_error("cannot assign to const variable: " + *lhs->name);
 				} else {
@@ -1682,7 +1685,7 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 	src.check_value();
 	dst.check_value();
 
-	if(dst.is_const) {
+	if(!dst.is_mutable()) {
 		throw std::logic_error("copy(): dst is const");
 	}
 	if(src.key && dst.key) {
