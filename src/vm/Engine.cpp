@@ -694,7 +694,6 @@ void Engine::get(const uint64_t dst, const uint64_t addr, const uint64_t key, co
 			if(index.value < ((const array_t&)var).size) {
 				write(dst, read_entry_fail(addr, uint64_t(index.value)));
 			} else if(flags & OPFLAG_HARD_FAIL) {
-				// TODO: always fail here
 				throw std::runtime_error("array index out of bounds");
 			} else {
 				write(dst, var_t());
