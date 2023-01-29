@@ -248,7 +248,7 @@ else()
 	
 	if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 		message(STATUS "Enabling -mavx2 -msha")
-		set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-mavx2 -msha")
+		set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-mavx -msha")
 		set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
 	endif()
 endif()
