@@ -184,7 +184,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
 
 	if(delay_sec > params->block_time * params->challenge_delay) {
-		log(WARN) << "Lookup for height " << value->height << " took longer than challenge delay: " << delay_sec << " sec" << std::endl;
+		log(WARN) << "Lookup for height " << value->height << " took longer than challenge delay: " << delay_sec << " sec";
 	}
 
 	if(best_proof || best_vplot) {
