@@ -110,7 +110,7 @@ inline
 bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 						const hash_t& challenge, const hash_t& plot_id)
 {
-	return hash_t(challenge + plot_id).to_uint256() >> (256 - params->plot_filter) == 0;
+	return hash_t("plot_filter" + plot_id + challenge).to_uint256() >> (256 - params->plot_filter) == 0;
 }
 
 
@@ -151,7 +151,7 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 		throw std::logic_error("zero balance");
 	}
 	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
-	return hash_t(plot_id + challenge).to_uint256() / (divider * balance);
+	return hash_t("virtual_score" + plot_id + challenge).to_uint256() / (divider * balance);
 }
 
 inline
