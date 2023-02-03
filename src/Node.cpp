@@ -1663,6 +1663,9 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;
 	}
+	if(vdf_threads->get_num_running() && fork_tree.size() > 10 * max_sync_ahead) {
+		return;	// limit blocks in memory during sync
+	}
 	if(get_height() + max_sync_ahead < sync_pos) {
 		return;
 	}

@@ -4,7 +4,10 @@ mkdir -p build
 
 cd build
 
-cmake -DCMAKE_BUILD_TYPE=Release $@ ..
+rm -r dist
 
-make -j8
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=dist $@ ..
 
+make -j8 install
+
+rm -r dist/config/local || true

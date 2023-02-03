@@ -845,7 +845,7 @@ Vue.component('account-plots', {
 			if(this.dialog_mode == "Deposit") {
 				url = "/wapi/wallet/send";
 				req.currency = null;
-				req.amount = parseFloat(this.dialog_amount);
+				req.amount = this.dialog_amount;
 				req.dst_addr = this.dialog_address;
 			} else {
 				url = "/wapi/wallet/execute";
@@ -949,10 +949,14 @@ Vue.component('account-plots', {
 								colored-border
 								type="error"
 								elevation="2"
-								v-if="dialog_mode == 'Withdraw'"
 								class="my-2"
 							>
-								Only 90% of the amount will be returned, the rest is burned.
+								<template v-if="dialog_mode == 'Deposit'">
+									Only 90% of the amount deposited will be returned on withdraw, the rest is burned as fee.
+								</template>
+								<template v-else>
+									Only 90% of the amount will be returned, the rest is burned as fee.
+								</template>
 							</v-alert>
 						</v-card-text>
 						<v-card-actions class="justify-end">
@@ -1862,7 +1866,7 @@ Vue.component('account-offers', {
 		submit_deposit(item, amount) {
 			const args = {};
 			args.index = this.index;
-			args.amount = parseFloat(amount);
+			args.amount = amount;
 			args.currency = item.bid_currency
 			args.dst_addr = item.address;
 			fetch('/wapi/wallet/send', {body: JSON.stringify(args), method: "post"})

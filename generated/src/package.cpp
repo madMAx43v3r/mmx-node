@@ -491,6 +491,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
+#include <mmx/fixed128.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
@@ -6011,6 +6012,18 @@ void type<::mmx::exec_result_t>::create_dynamic_code(std::vector<uint16_t>& code
 void type<::mmx::exec_result_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exec_result_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
+
+const TypeCode* type<::mmx::fixed128>::get_type_code() {
+	return nullptr;
+}
+
+void type<::mmx::fixed128>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::fixed128());
+}
+
+void type<::mmx::fixed128>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::fixed128& value, bool special) {
+	const std::vector<int> tmp = {11, 16, 1};
+	code.insert(code.end(), tmp.begin(), tmp.end());}
 
 const TypeCode* type<::mmx::hash_t>::get_type_code() {
 	return nullptr;

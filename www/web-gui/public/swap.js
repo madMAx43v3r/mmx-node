@@ -184,9 +184,9 @@ Vue.component('swap-list', {
 								<td><b>{{ item.display_price ? parseFloat( (item.display_price).toPrecision(6) ) : "N/A" }}</b>&nbsp; {{item.symbols[1]}} / {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[0].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[1].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}}</td>
-								<td><router-link :to="'/swap/trade/' + item.address">
-									<v-btn outlined text>Swap</v-btn>
-								</router-link></td>
+								<td>
+									<v-btn :to="'/swap/trade/' + item.address" outlined text>Swap</v-btn>
+								</td>
 							</tr>
 						</tbody>
 					</v-simple-table>
@@ -498,7 +498,7 @@ Vue.component('swap-trade', {
 			req.wallet = this.wallet;
 			req.address = this.address;
 			req.index = index;
-			req.amount = parseFloat(amount);
+			req.amount = amount;
 			fetch('/wapi/wallet/swap/trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -688,7 +688,7 @@ Vue.component('swap-liquid', {
 			const req = {};
 			req.index = this.wallet;
 			req.address = this.address;
-			req.amount = [parseFloat(this.amount_0), parseFloat(this.amount_1)];
+			req.amount = [this.amount_0, this.amount_1];
 			fetch('/wapi/wallet/swap/' + (mode ? "add" : "rem") + "_liquid", {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {

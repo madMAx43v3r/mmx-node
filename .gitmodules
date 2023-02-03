@@ -22,3 +22,6 @@
 [submodule "vnx-base"]
 	path = vnx-base
 	url = https://github.com/madMAx43v3r/vnx-base.git
+[submodule "lib/lexy"]
+	path = lib/lexy
+	url = https://github.com/foonathan/lexy.git

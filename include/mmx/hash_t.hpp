@@ -8,9 +8,10 @@
 #ifndef INCLUDE_MMX_HASH_T_HPP_
 #define INCLUDE_MMX_HASH_T_HPP_
 
-#include <uint256_t.h>
-
+#include <mmx/package.hxx>
 #include <mmx/bytes_t.hpp>
+
+#include <uint256_t.h>
 
 
 namespace mmx {

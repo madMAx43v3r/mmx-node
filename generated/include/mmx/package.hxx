@@ -489,6 +489,7 @@ class bls_pubkey_t;
 class bls_signature_t;
 struct exec_entry_t;
 struct exec_result_t;
+class fixed128;
 class hash_t;
 struct node_info_t;
 struct node_type_e;
@@ -1478,6 +1479,7 @@ void read(TypeInput& in, ::mmx::bls_pubkey_t& value, const TypeCode* type_code, 
 void read(TypeInput& in, ::mmx::bls_signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exec_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exec_result_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::fixed128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::hash_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::node_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::node_type_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1974,6 +1976,7 @@ void write(TypeOutput& out, const ::mmx::bls_pubkey_t& value, const TypeCode* ty
 void write(TypeOutput& out, const ::mmx::bls_signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exec_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exec_result_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::fixed128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::hash_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::node_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::node_type_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2470,6 +2473,7 @@ void read(std::istream& in, ::mmx::bls_pubkey_t& value); ///< \private
 void read(std::istream& in, ::mmx::bls_signature_t& value); ///< \private
 void read(std::istream& in, ::mmx::exec_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::exec_result_t& value); ///< \private
+void read(std::istream& in, ::mmx::fixed128& value); ///< \private
 void read(std::istream& in, ::mmx::hash_t& value); ///< \private
 void read(std::istream& in, ::mmx::node_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::node_type_e& value); ///< \private
@@ -2966,6 +2970,7 @@ void write(std::ostream& out, const ::mmx::bls_pubkey_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::bls_signature_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_result_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::fixed128& value); ///< \private
 void write(std::ostream& out, const ::mmx::hash_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::node_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::node_type_e& value); ///< \private
@@ -3462,6 +3467,7 @@ void accept(Visitor& visitor, const ::mmx::bls_pubkey_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::bls_signature_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_result_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::fixed128& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::hash_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::node_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::node_type_e& value); ///< \private
@@ -14206,6 +14212,29 @@ struct type<::mmx::exec_result_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exec_result_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::fixed128> {
+	void read(TypeInput& in, ::mmx::fixed128& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::fixed128& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::fixed128& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::fixed128& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::fixed128& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::fixed128& value, bool special = false);
 };
 
 /// \private

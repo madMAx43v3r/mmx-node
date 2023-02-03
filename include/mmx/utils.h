@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_UTILS_H_
 
 #include <mmx/hash_t.hpp>
+#include <mmx/fixed128.hpp>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 
@@ -46,13 +47,26 @@ double to_value(const uint64_t amount, const int decimals) {
 }
 
 inline
-double to_value(const uint128_t amount, const int decimals) {
+double to_value(const uint128_t& amount, const int decimals) {
 	return (double(amount.upper()) * pow(2, 64) + double(amount.lower())) * pow(10, -decimals);
 }
 
 inline
 double to_value(const uint64_t amount, std::shared_ptr<const ChainParams> params) {
 	return to_value(amount, params->decimals);
+}
+
+inline
+double to_value_128(uint128_t amount, const int decimals)
+{
+	int i = 0;
+	for(; amount.upper() && i < decimals; ++i) {
+		amount /= 10;
+	}
+	if(amount.upper()) {
+		return std::numeric_limits<double>::quiet_NaN();
+	}
+	return double(amount.lower()) * pow(10, i - decimals);
 }
 
 inline
@@ -72,20 +86,11 @@ uint64_t to_amount(const double value, const int decimals)
 }
 
 inline
-uint64_t to_amount_exact(const double value, const int decimals)
+uint64_t to_amount(const fixed128& value, const int decimals)
 {
-	const auto amount = value * pow(10, decimals);
-	if(amount < 0) {
-		throw std::runtime_error("negative amount: " + std::to_string(value));
-	}
-	if(amount > UINT64_MAX_DOUBLE) {
-		throw std::runtime_error("amount overflow: " + std::to_string(value));
-	}
-	if(amount == std::numeric_limits<double>::quiet_NaN()) {
-		throw std::runtime_error("invalid amount: " + std::to_string(value));
-	}
-	if(fmod(amount, 1)) {
-		throw std::invalid_argument("cannot represent value: " + std::to_string(value));
+	const auto amount = value.to_amount(decimals);
+	if(amount.upper()) {
+		throw std::runtime_error("amount overflow: " + amount.str(10));
 	}
 	return amount;
 }
@@ -244,19 +249,6 @@ T clamped_sub(const T L, const S R)
 template<typename T, typename S>
 void clamped_sub_assign(T& L, const S R) {
 	L = clamped_sub(L, R);
-}
-
-inline
-double to_value_128(uint128_t amount, const int decimals)
-{
-	int i = 0;
-	for(; amount.upper() && i < decimals; ++i) {
-		amount /= 10;
-	}
-	if(amount.upper()) {
-		return std::numeric_limits<double>::quiet_NaN();
-	}
-	return double(amount.lower()) * pow(10, i - decimals);
 }
 
 

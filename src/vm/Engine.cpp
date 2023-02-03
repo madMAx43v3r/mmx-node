@@ -768,7 +768,7 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 		}
 		case TYPE_ARRAY: {
 			if(dst == lhs || dst == rhs) {
-				throw std::logic_error("dst == src");
+				throw std::logic_error("dst == lhs || dst == rhs");
 			}
 			const auto& L = (const array_t&)lvar;
 			const auto& R = (const array_t&)rvar;
@@ -904,6 +904,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					if(base == 32) {
 						write(dst, uint_t(addr_t(sstr.to_string()).to_uint256()));
 					} else {
+						// TODO: CONVTYPE_DEFAULT: auto detect hex, binary and address
 						write(dst, uint_t(uint256_t(sstr.c_str(), base)));
 					}
 					break;
@@ -986,7 +987,7 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 		return;
 	}
 	if(value >> 64) {
-		throw std::runtime_error("amount too large");
+		throw std::runtime_error("send(): amount too large: " + value.str());
 	}
 	auto balance = read_key<uint_t>(MEM_EXTERN + EXTERN_BALANCE, currency, TYPE_UINT);
 	if(!balance || balance->value < value) {
@@ -1009,7 +1010,7 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 		return;
 	}
 	if(value >> 64) {
-		throw std::runtime_error("amount too large");
+		throw std::runtime_error("mint(): amount too large: " + value.str());
 	}
 	txout_t out;
 	out.contract = contract;
@@ -1149,6 +1150,7 @@ void Engine::exec(const instr_t& instr)
 			throw std::logic_error("OPFLAG_REF_B not supported");
 		}
 		call(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
+// TODO:		deref_value(instr.b, instr.flags & OPFLAG_REF_B),
 				instr.b);
 		return;
 	case OP_RET:
@@ -1510,10 +1512,11 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_FAIL:
+		// TODO: read instr.b as uint when OPFLAG_REF_B set
 		error_code = instr.b;
 		throw std::runtime_error("failed with: "
 				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A)))
-				+ (instr.b ? " (code " + std::to_string(instr.b) : ""));
+				+ (instr.b ? " (code " + std::to_string(instr.b) + ")" : ""));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),

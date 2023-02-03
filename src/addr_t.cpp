@@ -72,15 +72,7 @@ void read(vnx::TypeInput& in, mmx::addr_t& value, const vnx::TypeCode* type_code
 		case CODE_ALT_DYNAMIC: {
 			vnx::Variant tmp;
 			vnx::read(in, tmp, type_code, code);
-			if(tmp.is_string()) {
-				try {
-					value.from_string(tmp.to<std::string>());
-				} catch(...) {
-					value = mmx::addr_t();
-				}
-			} else {
-				tmp.to(value.bytes);
-			}
+			value = tmp.to<mmx::addr_t>();
 			break;
 		}
 		default:

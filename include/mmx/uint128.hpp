@@ -8,12 +8,14 @@
 #ifndef INCLUDE_MMX_UINT128_HPP_
 #define INCLUDE_MMX_UINT128_HPP_
 
+#include <mmx/package.hxx>
+
 #include <uint128_t.h>
 #include <uint256_t.h>
 
 #include <vnx/Input.hpp>
 #include <vnx/Output.hpp>
-#include <vnx/Variant.hpp>
+#include <vnx/Visitor.h>
 
 #include <cmath>
 

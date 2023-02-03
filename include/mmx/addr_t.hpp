@@ -45,8 +45,7 @@ addr_t::addr_t(const uint256_t& value)
 }
 
 inline
-addr_t::addr_t(const std::string& addr)
-{
+addr_t::addr_t(const std::string& addr) {
 	from_string(addr);
 }
 
