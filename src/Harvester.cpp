@@ -101,6 +101,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	std::shared_ptr<chiapos::DiskProver> best_plot;
 	vnx::optional<std::pair<addr_t, virtual_plot_t>> best_vplot;
 
+	std::vector<hash_t> plot_challenge;
 	std::vector<std::shared_ptr<chiapos::DiskProver>> plots;
 	std::vector<std::pair<addr_t, virtual_plot_t>> virtual_plots;
 
@@ -109,6 +110,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		if(check_plot_filter(params, value->challenge, entry.first)) {
 			if(auto prover = plot_map[entry.second]) {
 				plots.push_back(prover);
+				plot_challenge.push_back(
+						get_plot_challenge(value->challenge, entry.first));
 			}
 		}
 	}
@@ -122,11 +125,11 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 	for(size_t i = 0; i < plots.size(); ++i)
 	{
-		threads->add_task([this, i, value, &plots, &scores]()
+		threads->add_task([this, i, value, &plots, &plot_challenge, &scores]()
 		{
-			const auto prover = plots[i];
 			try {
-				const auto qualities = prover->get_qualities(value->challenge.bytes);
+				const auto prover = plots.at(i);
+				const auto qualities = prover->get_qualities(plot_challenge.at(i).bytes);
 				scores[i].resize(qualities.size());
 
 				for(size_t k = 0; k < qualities.size(); ++k) {

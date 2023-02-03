@@ -113,6 +113,11 @@ bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 	return hash_t("plot_filter" + plot_id + challenge).to_uint256() >> (256 - params->plot_filter) == 0;
 }
 
+inline
+hash_t get_plot_challenge(const hash_t& challenge, const hash_t& plot_id)
+{
+	return hash_t("plot_challenge" + plot_id + challenge);
+}
 
 inline
 uint64_t to_effective_space(const uint64_t& num_bytes)

@@ -172,8 +172,9 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		if(og_proof->ksize > params->max_ksize) {
 			throw std::logic_error("ksize too big");
 		}
+		const auto plot_challenge = get_plot_challenge(challenge, proof->plot_id);
 		const auto quality = hash_t::from_bytes(chiapos::verify(
-				og_proof->ksize, proof->plot_id.bytes, challenge.bytes, og_proof->proof_bytes.data(), og_proof->proof_bytes.size()));
+				og_proof->ksize, proof->plot_id.bytes, plot_challenge.bytes, og_proof->proof_bytes.data(), og_proof->proof_bytes.size()));
 
 		score = calc_proof_score(params, og_proof->ksize, quality, diff_block->space_diff);
 	}
