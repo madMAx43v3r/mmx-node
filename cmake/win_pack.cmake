@@ -114,50 +114,29 @@ install(DIRECTORY data/ DESTINATION data COMPONENT applications)
 install(DIRECTORY scripts/win/ DESTINATION ./ COMPONENT applications)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT applications)
 
-
-include(FetchContent)
-FetchContent_Declare(plotter_k32
-URL https://github.com/MMX-World/mmx-plotter/releases/download/1.1.8/chia_plot-1.1.8.exe
-URL_HASH SHA256=EF00C99423CB9980CA0DC59CCE076E12BFE4DBA1ACC99E17FA9CFD163604FF77
-DOWNLOAD_NO_EXTRACT true
+FetchContent_Declare(
+	mmx_binaries
+	GIT_REPOSITORY https://github.com/madMAx43v3r/mmx-binaries.git
+	GIT_TAG e1fa7cb8b3daea99a3f35879919d3c983c7671e2
 )
-FetchContent_MakeAvailable(plotter_k32)
-set (MMX_PLOTTER_K32_PATH ${plotter_k32_SOURCE_DIR}/chia_plot-1.1.8.exe)
+FetchContent_MakeAvailable(mmx_binaries)
 
-FetchContent_Declare(plotter_k34
-URL https://github.com/MMX-World/mmx-plotter/releases/download/1.1.8/chia_plot_k34-1.1.8.exe
-URL_HASH SHA256=3329661BCE509A08638E99352A9607C3ADEAB11DD4B462895FCBEFDC4F22231F
-DOWNLOAD_NO_EXTRACT true
-)
-FetchContent_MakeAvailable(plotter_k34)
-set (MMX_PLOTTER_K34_PATH ${plotter_k34_SOURCE_DIR}/chia_plot_k34-1.1.8.exe)
+set(MMX_CLASSIC_PLOTTER_PATH ${mmx_binaries_SOURCE_DIR}/mmx-cpu-plotter/windows/classic)
+install(FILES ${MMX_CLASSIC_PLOTTER_PATH}/chia_plot/chia_plot.exe DESTINATION ./ RENAME mmx_plot.exe COMPONENT plotters)
+install(FILES ${MMX_CLASSIC_PLOTTER_PATH}/chia_plot/chia_plot_k34.exe DESTINATION ./ RENAME mmx_plot_k34.exe COMPONENT plotters)
+install(FILES ${MMX_CLASSIC_PLOTTER_PATH}/bladebit/bladebit.exe DESTINATION ./ RENAME mmx_bladebit.exe COMPONENT plotters)
 
-FetchContent_Declare(plotter_bladebit
-URL https://github.com/MMX-World/bladebit/releases/download/v2.0.1-mmx/bladebit.exe
-URL_HASH SHA256=6025F777709F52754690C262C9463DB17F8BA5C8757ACE7DB352C103252ACCA5
-DOWNLOAD_NO_EXTRACT true
-)
-FetchContent_MakeAvailable(plotter_bladebit)
-set (PLOTTER_BLADEBIT_PATH ${plotter_bladebit_SOURCE_DIR}/bladebit.exe)
+set(MMX_PLOTTER_COMP_PATH ${mmx_binaries_SOURCE_DIR}/mmx-cpu-plotter/windows)
+install(FILES ${MMX_PLOTTER_COMP_PATH}/chia_plot.exe DESTINATION ./ RENAME mmx_plot_comp.exe COMPONENT plotters)
+install(FILES ${MMX_PLOTTER_COMP_PATH}/chia_plot_k34.exe DESTINATION ./ RENAME mmx_plot_k34_comp.exe COMPONENT plotters)
 
-# include(ExternalProject)
-# ExternalProject_Add(mmx_plotter
-#   GIT_REPOSITORY    https://github.com/MMX-World/mmx-plotter.git
-#   GIT_TAG           master
-#   SOURCE_DIR        "${CMAKE_BINARY_DIR}/mmx_plotter-src"
-#   BINARY_DIR        "${CMAKE_BINARY_DIR}/mmx_plotter-build"
-#   CONFIGURE_COMMAND ${CMAKE_COMMAND} -S <SOURCE_DIR> -B <BINARY_DIR>
-#   BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config Release
-#   INSTALL_COMMAND   ""
-#   TEST_COMMAND      ""
-# )
-# ExternalProject_Get_Property(mmx_plotter BINARY_DIR)
-# set (MMX_PLOTTER_K32_PATH ${BINARY_DIR}/Release/chia_plot.exe)
-# set (MMX_PLOTTER_K34_PATH ${BINARY_DIR}/Release/chia_plot_k34.exe)
+set(MMX_CUDA_PLOTTER_PATH ${mmx_binaries_SOURCE_DIR}/mmx-cuda-plotter/format-v2.4/windows)
+foreach(KSIZE 30 31 32 33 34)
+	install(FILES ${MMX_CUDA_PLOTTER_PATH}/cuda_plot_k${KSIZE}.exe DESTINATION ./ RENAME cuda_plot_k${KSIZE}.exe COMPONENT plotters)
+endforeach()
 
-install(FILES ${MMX_PLOTTER_K32_PATH} DESTINATION ./ RENAME mmx_plot.exe COMPONENT plotters)
-install(FILES ${MMX_PLOTTER_K34_PATH} DESTINATION ./ RENAME mmx_plot_k34.exe COMPONENT plotters)
-install(FILES ${PLOTTER_BLADEBIT_PATH} DESTINATION ./ RENAME mmx_bladebit.exe COMPONENT plotters)
+set(MMX_PLOT_SINK_PATH ${mmx_binaries_SOURCE_DIR}/chia-plot-sink/windows)
+install(DIRECTORY ${MMX_PLOT_SINK_PATH}/ DESTINATION ./ COMPONENT plotters)
 
 set(CPACK_PACKAGE_NAME "MMX Node")
 set(CPACK_PACKAGE_VENDOR "madMAx43v3r")
