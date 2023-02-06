@@ -138,6 +138,9 @@ endforeach()
 set(MMX_PLOT_SINK_PATH ${mmx_binaries_SOURCE_DIR}/chia-plot-sink/windows)
 install(DIRECTORY ${MMX_PLOT_SINK_PATH}/ DESTINATION ./ COMPONENT plotters)
 
+set(MMX_CHIAPOS_PATH ${mmx_binaries_SOURCE_DIR}/mmx-chiapos/windows)
+install(FILES ${MMX_CHIAPOS_PATH}/ProofOfSpace.exe DESTINATION ./ COMPONENT plotters)
+
 set(CPACK_PACKAGE_NAME "MMX Node")
 set(CPACK_PACKAGE_VENDOR "madMAx43v3r")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MMX is a blockchain written from scratch using Chia's Proof Of Space and a SHA256 VDF similar to Solana")
