@@ -92,7 +92,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(mmx_node_gui)
 add_custom_command(TARGET mmx_node_gui POST_BUILD
-	COMMAND ${CMAKE_MAKE_PROGRAM} MMX_Node_GUI.sln -restore -m 
+	COMMAND ${CMAKE_MAKE_PROGRAM} Mmx.Gui.Win.Wpf/Mmx.Gui.Win.Wpf.csproj -restore -m 
 			/p:Configuration=Release
 			/p:OutputPath=${mmx_node_gui_SOURCE_DIR}/bin/Release
 			/p:Version=${MMX_VERSION_STRING}
