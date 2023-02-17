@@ -40,7 +40,7 @@ set(CPACK_PACKAGE_VERSION_PATCH ${MMX_VERSION_PATCH})
 include(cmake/product_version/generate_product_version.cmake)
 set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/cmake/mmx.ico")
 
-if (${MMX_GIGAHORSE} STREQUAL "TRUE")
+if ("${MMX_GIGAHORSE}" STREQUAL "TRUE")
 	set(MMX_BUNDLE "MMX Node (Gigahorse)")
 else()
 	set(MMX_BUNDLE "MMX Node (Classic)")
@@ -74,7 +74,7 @@ foreach(APPFILE IN LISTS APP_FILES TOOL_FILES)
 	target_sources(${APPFILE} PRIVATE ${${ProductVersionFiles}})
 endforeach()
 
-if (${MMX_WIN_PACK} STREQUAL "TRUE")
+if ("${MMX_WIN_PACK}" STREQUAL "TRUE")
 
 set(CMAKE_INSTALL_SYSTEM_RUNTIME_COMPONENT libraries)
 set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ./)
@@ -92,7 +92,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(mmx_node_gui)
 add_custom_command(TARGET mmx_node_gui POST_BUILD
-	COMMAND ${CMAKE_MAKE_PROGRAM} MMX_Node_GUI.sln -restore -m 
+	COMMAND ${CMAKE_MAKE_PROGRAM} Mmx.Gui.Win.Wpf/Mmx.Gui.Win.Wpf.csproj -restore -m 
 			/p:Configuration=Release
 			/p:OutputPath=${mmx_node_gui_SOURCE_DIR}/bin/Release
 			/p:Version=${MMX_VERSION_STRING}
