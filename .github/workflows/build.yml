@@ -18,11 +18,12 @@ env:
   CMAKE_BUILD_PRESET: "windows-release"
   MMX_VERSION: ${{ github.ref_name }}
   MMX_WIN_PACK: "TRUE"
+  MMX_GIGAHORSE: "FALSE"
   
   MMX_TELEGRAM_TOKEN: ${{ secrets.MMX_TELEGRAM_TOKEN }} 
   MMX_TELEGRAM_TO_1: ${{ secrets.MMX_TELEGRAM_TO_1 }}
   MMX_TELEGRAM_TO_2: ${{ secrets.MMX_TELEGRAM_TO_2 }}
-  DISCORD_WEBHOOK: ${{ secrets.MMX_DISCORD_WEBHOOK }}    
+  DISCORD_WEBHOOK: ${{ secrets.MMX_DISCORD_WEBHOOK }}
 
 jobs:
   msvc:
