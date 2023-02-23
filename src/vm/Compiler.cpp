@@ -26,39 +26,6 @@
 #include <iostream>
 
 
-namespace lexy {
-
-template<>
-struct integer_traits<uint256_t>
-{
-	typedef uint256_t type;
-
-	static constexpr auto is_bounded = true;
-
-	static constexpr auto _max = uint256_max;
-
-	template<int Radix>
-	static constexpr std::size_t max_digit_count = 78;
-
-	template<int Radix>
-	static constexpr void add_digit_unchecked(type& result, unsigned digit)
-	{
-		result *= Radix;
-		result += digit;
-	}
-
-	template<int Radix>
-	static constexpr bool add_digit_checked(type& result, unsigned digit)
-	{
-		const auto prev = result;
-		add_digit_unchecked<Radix>(result, digit);
-		return result >= prev;
-	}
-};
-
-} // lexy
-
-
 namespace mmx {
 namespace vm {
 
