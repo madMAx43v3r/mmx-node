@@ -67,17 +67,6 @@ int main(int argc, char** argv)
 	vnx::read_config("harvester", with_harvester);
 	vnx::read_config("public_endpoint", public_endpoint);
 
-#ifdef WITH_OPENCL
-	try {
-		std::string platform_name;
-		vnx::read_config("opencl.platform", platform_name);
-		automy::basic_opencl::create_context(CL_DEVICE_TYPE_GPU, platform_name);
-	}
-	catch(const std::exception& ex) {
-		vnx::log_info() << "Failed to create OpenCL GPU context: " << ex.what();
-	}
-#endif
-
 	vnx::log_info() << "AVX2 support:   " << (avx2_available() ? "yes" : "no");
 	vnx::log_info() << "SHA-NI support: " << (sha256_ni_available() ? "yes" : "no");
 
@@ -183,10 +172,6 @@ int main(int argc, char** argv)
 	vnx::close();
 
 	mmx::secp256k1_free();
-
-#ifdef WITH_OPENCL
-	automy::basic_opencl::release_context();
-#endif
 
 	return 0;
 }

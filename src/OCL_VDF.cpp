@@ -18,20 +18,21 @@ std::mutex OCL_VDF::g_mutex;
 std::shared_ptr<OCL_VDF::Program> OCL_VDF::g_program;
 
 
-OCL_VDF::OCL_VDF(uint32_t device)
+OCL_VDF::OCL_VDF(cl_context context, cl_platform_id platform, cl_device_id device)
+	:	context(context)
 {
 	std::lock_guard<std::mutex> lock(g_mutex);
 
 	if(!g_program) {
 		std::string kernel_path = "kernel/";
 		vnx::read_config("opencl.kernel_path", kernel_path);
-		automy::basic_opencl::add_include_path(kernel_path);
 
-		auto program = Program::create();
+		auto program = Program::create(context, platform);
+		program->add_include_path(kernel_path);
 		program->add_source("sha256.cl");
 		program->add_source("rsha256.cl");
 		program->create_from_source();
-		if(!program->build()) {
+		if(!program->build(CL_DEVICE_TYPE_GPU)) {
 			std::string text;
 			for(const auto& line : program->build_log) {
 				text += line + "\n";
@@ -46,7 +47,7 @@ OCL_VDF::OCL_VDF(uint32_t device)
 	if(!kernel) {
 		throw std::runtime_error("rsha256 missing");
 	}
-	queue = automy::basic_opencl::create_command_queue(device);
+	queue = automy::basic_opencl::create_command_queue(context, device);
 }
 
 void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain)
@@ -76,6 +77,9 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 		max_num_iters = std::max(max_num_iters, seg.num_iters);
 	}
 
+	hash_buf.alloc_min(context, width * 32);
+	num_iters_buf.alloc_min(context, width);
+
 	hash_buf.upload(queue, hash, false);
 	num_iters_buf.upload(queue, num_iters, false);
 
@@ -103,7 +107,7 @@ void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t ch
 
 #else
 
-OCL_VDF::OCL_VDF(uint32_t device) {}
+OCL_VDF::OCL_VDF(cl_context context, cl_platform_id platform, cl_device_id device) {}
 
 void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 
