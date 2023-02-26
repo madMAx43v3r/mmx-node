@@ -85,7 +85,7 @@ void Node::main()
 				for(const auto id : devices) {
 					list.push_back(automy::basic_opencl::get_device_name(id));
 				}
-				vnx::write_config(vnx_name + ".opencl_device_list", list);
+				vnx::write_config("opencl.device_list", list);
 			}
 
 			if(opencl_device >= 0) {

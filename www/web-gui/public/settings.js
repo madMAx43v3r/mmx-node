@@ -32,7 +32,7 @@ Vue.component('node-settings', {
 					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] : 0;
 					this.opencl_device_list = [{name: "None", value: -1}];
 					{
-						let list = data["Node.opencl_device_list"];
+						let list = data["opencl.device_list"];
 						if(list) {
 							let i = 0;
 							for(const name of list) {
