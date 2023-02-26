@@ -77,8 +77,6 @@ if(NOT MSVC)
 	find_library(JEMALLOC_LIB NAMES jemalloc)
 endif()
 
-include(cmake/chiapos.cmake)
-
 if(OpenCL_FOUND)
 	message(STATUS "Using OpenCL")
 	add_subdirectory(basic-opencl)
@@ -86,6 +84,8 @@ if(OpenCL_FOUND)
 		PUBLIC CL_TARGET_OPENCL_VERSION=120
 	)
 endif()
+
+include(cmake/chiapos.cmake)
 
 file(GLOB GENERATED_SOURCE_FILES
 	generated/src/*.cpp
