@@ -226,7 +226,7 @@ struct expression {
 	static constexpr auto rule = dsl::loop(
 			dsl::peek_not(dsl::comma | dsl::semicolon | dsl::lit_c<')'> | dsl::lit_c<']'> | dsl::lit_c<'}'> | dsl::eof) >> (
 					dsl::p<sub_expr> | dsl::p<array> | dsl::p<object> | dsl::p<operator_ex> | dsl::p<constant> |
-					dsl::peek(dsl::equal_sign) >> dsl::break_ | dsl::else_ >> dsl::p<identifier>
+					dsl::else_ >> dsl::p<identifier>
 			) | dsl::break_);
 };
 
