@@ -66,7 +66,7 @@ void Node::main()
 			for(const auto id : platforms) {
 				list.push_back(automy::basic_opencl::get_platform_name(id));
 			}
-			vnx::write_config(vnx_name + ".opencl_platform_list", list);
+			vnx::write_config("opencl.platform_list", list);
 		}
 
 		cl_platform_id platform = nullptr;
