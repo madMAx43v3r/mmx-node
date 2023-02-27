@@ -25,7 +25,7 @@ namespace mmx {
 
 class OCL_VDF {
 public:
-	OCL_VDF(cl_context context, cl_platform_id platform, cl_device_id device);
+	OCL_VDF(cl_context context, cl_device_id device);
 
 	void compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain);
 

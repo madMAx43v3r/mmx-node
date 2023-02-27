@@ -18,7 +18,7 @@ std::mutex OCL_VDF::g_mutex;
 std::shared_ptr<OCL_VDF::Program> OCL_VDF::g_program;
 
 
-OCL_VDF::OCL_VDF(cl_context context, cl_platform_id platform, cl_device_id device)
+OCL_VDF::OCL_VDF(cl_context context, cl_device_id device)
 	:	context(context)
 {
 	std::lock_guard<std::mutex> lock(g_mutex);
@@ -27,12 +27,12 @@ OCL_VDF::OCL_VDF(cl_context context, cl_platform_id platform, cl_device_id devic
 		std::string kernel_path = "kernel/";
 		vnx::read_config("opencl.kernel_path", kernel_path);
 
-		auto program = Program::create(context, platform);
+		auto program = Program::create(context);
 		program->add_include_path(kernel_path);
 		program->add_source("sha256.cl");
 		program->add_source("rsha256.cl");
 		program->create_from_source();
-		if(!program->build(CL_DEVICE_TYPE_GPU)) {
+		if(!program->build({device})) {
 			std::string text;
 			for(const auto& line : program->build_log) {
 				text += line + "\n";
@@ -107,7 +107,7 @@ void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t ch
 
 #else
 
-OCL_VDF::OCL_VDF(cl_context context, cl_platform_id platform, cl_device_id device) {}
+OCL_VDF::OCL_VDF(cl_context context, cl_device_id device) {}
 
 void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 
