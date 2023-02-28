@@ -389,22 +389,24 @@ void Harvester::reload()
 		{
 			const auto& plot = entry.second;
 			try {
-				const bls_pubkey_t farmer_key = bls_pubkey_t(plot->get_farmer_key());
+				const bls_pubkey_t farmer_key(plot->get_farmer_key());
 				if(!farmer_keys.count(farmer_key)) {
 					throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
 				}
-				const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
-				const auto local_sk = derive_local_key(plot->get_master_skey());
-				const auto pool_key = plot->get_pool_key();
+				if(validate_plots) {
+					const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
+					const auto local_sk = derive_local_key(plot->get_master_skey());
+					const auto pool_key = plot->get_pool_key();
 
-				const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key.to_bls();
-				if(!pool_key.empty()) {
-					const uint32_t port = 11337;
-					if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
-						throw std::logic_error("invalid keys or port");
+					const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key.to_bls();
+					if(!pool_key.empty()) {
+						const uint32_t port = 11337;
+						if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
+							throw std::logic_error("invalid keys or port");
+						}
+					} else {
+						throw std::logic_error("invalid plot type");
 					}
-				} else {
-					throw std::logic_error("invalid plot type");
 				}
 				{
 					std::lock_guard<std::mutex> lock(mutex);
