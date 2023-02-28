@@ -216,16 +216,15 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 		if(best_proof) {
 			const auto local_sk = derive_local_key(best_proof->master_sk);
+			const auto plot_key = local_sk.GetG1Element() + bls_pubkey_t(best_proof->farmer_key).to_bls();
 
 			auto proof = ProofOfSpaceOG::create();
 			proof->ksize = best_proof->k;
 			proof->score = best_score;
 			proof->plot_id = hash_t::from_bytes(best_proof->id);
 			proof->proof_bytes = best_proof->proof;
-			proof->local_key = local_sk.GetG1Element();
-			proof->farmer_key = bls_pubkey_t::super_t(best_proof->farmer_key);
-			proof->pool_key = bls_pubkey_t::super_t(best_proof->pool_key);
-			proof->local_sig = bls_signature_t::sign(local_sk, proof->calc_hash());
+			proof->plot_key = plot_key;
+			proof->pool_key = bls_pubkey_t(best_proof->pool_key);
 			out->proof = proof;
 		}
 		else if(best_vplot) {
@@ -233,7 +232,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			proof->score = best_score;
 			proof->plot_id = best_vplot->first;
 			proof->contract = best_vplot->first;
-			proof->farmer_key = best_vplot->second.farmer_key;
+			proof->plot_key = best_vplot->second.farmer_key;
 			out->proof = proof;
 		}
 
@@ -390,20 +389,18 @@ void Harvester::reload()
 		{
 			const auto& plot = entry.second;
 			try {
-				const bls_pubkey_t farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
+				const bls_pubkey_t farmer_key = bls_pubkey_t(plot->get_farmer_key());
 				if(!farmer_keys.count(farmer_key)) {
 					throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
 				}
 				const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
-				const auto pool_key = plot->get_pool_key();
 				const auto local_sk = derive_local_key(plot->get_master_skey());
-				const auto local_key = local_sk.GetG1Element();
+				const auto pool_key = plot->get_pool_key();
 
-				const bls_pubkey_t plot_key = local_key + farmer_key.to_bls();
+				const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key.to_bls();
 				if(!pool_key.empty()) {
 					const uint32_t port = 11337;
-					const bls_pubkey_t pool_key_ = bls_pubkey_t::super_t(pool_key);
-					if(hash_t(hash_t(pool_key_ + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
+					if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
 						throw std::logic_error("invalid keys or port");
 					}
 				} else {

@@ -71,7 +71,7 @@ void BlockHeader::validate() const
 		if(!proof) {
 			throw std::logic_error("missing proof");
 		}
-		if(!farmer_sig->verify(proof->farmer_key, hash)) {
+		if(!farmer_sig->verify(proof->plot_key, hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}
 	}

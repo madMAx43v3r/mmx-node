@@ -8,10 +8,6 @@ class ProofOfSpaceNFT extends ProofOfSpace {
 	
 	addr_t contract;
 	
-	bls_pubkey_t local_key;
-	
-	bls_signature_t local_sig;
-	
 	
 	bool is_valid() const;
 	

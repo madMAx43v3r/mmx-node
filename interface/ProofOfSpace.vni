@@ -8,7 +8,7 @@ class ProofOfSpace {
 	
 	hash_t plot_id;
 	
-	bls_pubkey_t farmer_key;
+	bls_pubkey_t plot_key;
 	
 	
 	bool is_valid() const;

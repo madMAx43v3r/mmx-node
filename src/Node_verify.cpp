@@ -186,8 +186,8 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 			throw std::logic_error("no such virtual plot: " + stake->contract.to_string());
 		}
 		// TODO: check reward_address if set
-		if(stake->farmer_key != plot->farmer_key) {
-			throw std::logic_error("invalid farmer key for virtual plot: " + stake->farmer_key.to_string());
+		if(stake->plot_key != plot->plot_key) {
+			throw std::logic_error("invalid plot key for virtual plot: " + stake->plot_key.to_string());
 		}
 		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
 		if(balance == 0) {
