@@ -44,6 +44,8 @@ mmx::hash_t ProofResponse::calc_hash(const vnx::bool_t& full_hash) const
 void ProofResponse::validate() const
 {
 	if(proof) {
+		proof->validate();
+
 		if(!farmer_sig.verify(proof->plot_key, hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}

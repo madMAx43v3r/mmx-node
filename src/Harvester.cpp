@@ -166,7 +166,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			const auto& score = scores[i][k];
 			if(score < params->score_threshold) {
 				if(score < best_score) {
-					best_plot = plots[i];
+					best_plot = plots[i].prover;
 					best_index = k;
 				}
 			}
@@ -214,16 +214,19 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		out->harvester = host_name;
 		out->lookup_time_ms = time_ms;
 
+		vnx::optional<skey_t> local_sk;
+
 		if(best_proof) {
-			const auto local_sk = derive_local_key(best_proof->master_sk);
-			const auto plot_key = local_sk.GetG1Element() + bls_pubkey_t(best_proof->farmer_key).to_bls();
+			const auto local_sk_bls = derive_local_key(best_proof->master_sk);
+			local_sk = skey_t(local_sk_bls);
 
 			auto proof = ProofOfSpaceOG::create();
 			proof->ksize = best_proof->k;
 			proof->score = best_score;
 			proof->plot_id = hash_t::from_bytes(best_proof->id);
 			proof->proof_bytes = best_proof->proof;
-			proof->plot_key = plot_key;
+			proof->farmer_key = bls_pubkey_t(best_proof->farmer_key);
+			proof->plot_key = local_sk_bls.GetG1Element() + proof->farmer_key.to_bls();
 			proof->pool_key = bls_pubkey_t(best_proof->pool_key);
 			out->proof = proof;
 		}
@@ -232,7 +235,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			proof->score = best_score;
 			proof->plot_id = best_vplot->first;
 			proof->contract = best_vplot->first;
-			proof->plot_key = best_vplot->second.farmer_key;
+			proof->farmer_key = best_vplot->second.farmer_key;
+			proof->plot_key = proof->farmer_key;
 			out->proof = proof;
 		}
 
@@ -240,7 +244,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			out->hash = out->calc_hash();
 			out->content_hash = out->calc_hash(true);
 			// TODO: have node sign it after verify
-			out->farmer_sig = farmer->sign_proof(out);
+			out->farmer_sig = farmer->sign_proof(out, local_sk);
 			out->content_hash = out->calc_hash(true);
 			publish(out, output_proofs);
 		}

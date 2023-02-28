@@ -7,6 +7,7 @@
 
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
+#include <mmx/HarvesterClient.hxx>
 #include <mmx/utils.h>
 
 
@@ -145,26 +146,34 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 	}
 }
 
-skey_t Farmer::find_skey(const bls_pubkey_t& pubkey) const
+skey_t Farmer::get_skey(const bls_pubkey_t& pubkey) const
 {
 	auto iter = key_map.find(pubkey);
-	if(iter == key_map.end()) {
-		throw std::logic_error("unknown farmer key: " + pubkey.to_string());
+	if(iter != key_map.end()) {
+		throw std::logic_error("unknown farmer / plot key: " + pubkey.to_string());
 	}
 	return iter->second;
 }
 
-bls_signature_t Farmer::sign_proof(std::shared_ptr<const ProofResponse> value) const
+bls_signature_t Farmer::sign_proof(
+		std::shared_ptr<const ProofResponse> value, const vnx::optional<skey_t>& local_sk) const
 {
 	if(!value || !value->is_valid()) {
 		throw std::logic_error("invalid argument");
 	}
-	// TODO: verify proof
-	return bls_signature_t::sign(find_skey(value->proof->farmer_key), value->hash);
+	skey_t plot_sk = get_skey(value->proof->farmer_key);
+
+	if(local_sk) {
+		plot_sk = bls::PrivateKey::Aggregate({local_sk->to_bls(), plot_sk.to_bls()});
+		key_map[value->proof->plot_key] = plot_sk;
+	}
+
+	// TODO: have node verify proof first
+	return bls_signature_t::sign(plot_sk, value->hash);
 }
 
-std::shared_ptr<const BlockHeader>
-Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const
+std::shared_ptr<const BlockHeader> Farmer::sign_block(
+		std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const
 {
 	if(!block) {
 		throw std::logic_error("!block");
@@ -172,14 +181,14 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	if(!block->proof) {
 		throw std::logic_error("!proof");
 	}
-	const auto farmer_sk = find_skey(block->proof->farmer_key);
+	const auto plot_sk = get_skey(block->proof->plot_key);
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
 	out->reward_amount = reward_amount;
 	out->reward_addr = reward_addr;
 	out->hash = out->calc_hash().first;
-	out->farmer_sig = bls_signature_t::sign(farmer_sk, out->hash);
+	out->farmer_sig = bls_signature_t::sign(plot_sk, out->hash);
 	return out;
 }
 

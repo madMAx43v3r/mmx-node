@@ -7,6 +7,7 @@ class ProofOfSpaceOG extends ProofOfSpace {
 	vector<uchar> proof_bytes;
 	
 	bls_pubkey_t pool_key;
+	bls_pubkey_t local_key;
 	
 	
 	bool is_valid() const;
