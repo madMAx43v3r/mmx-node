@@ -26,39 +26,6 @@
 #include <iostream>
 
 
-namespace lexy {
-
-template<>
-struct integer_traits<uint256_t>
-{
-	typedef uint256_t type;
-
-	static constexpr auto is_bounded = true;
-
-	static constexpr auto _max = uint256_max;
-
-	template<int Radix>
-	static constexpr std::size_t max_digit_count = 78;
-
-	template<int Radix>
-	static constexpr void add_digit_unchecked(type& result, unsigned digit)
-	{
-		result *= Radix;
-		result += digit;
-	}
-
-	template<int Radix>
-	static constexpr bool add_digit_checked(type& result, unsigned digit)
-	{
-		const auto prev = result;
-		add_digit_unchecked<Radix>(result, digit);
-		return result >= prev;
-	}
-};
-
-} // lexy
-
-
 namespace mmx {
 namespace vm {
 
@@ -259,7 +226,7 @@ struct expression {
 	static constexpr auto rule = dsl::loop(
 			dsl::peek_not(dsl::comma | dsl::semicolon | dsl::lit_c<')'> | dsl::lit_c<']'> | dsl::lit_c<'}'> | dsl::eof) >> (
 					dsl::p<sub_expr> | dsl::p<array> | dsl::p<object> | dsl::p<operator_ex> | dsl::p<constant> |
-					dsl::peek(dsl::equal_sign) >> dsl::break_ | dsl::else_ >> dsl::p<identifier>
+					dsl::else_ >> dsl::p<identifier>
 			) | dsl::break_);
 };
 

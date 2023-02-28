@@ -55,25 +55,62 @@ void Node::main()
 	}
 
 #ifdef WITH_OPENCL
-	const auto devices = automy::basic_opencl::get_devices();
-	std::vector<std::string> device_names;
-	for(const auto id : devices) {
-		device_names.push_back(automy::basic_opencl::get_device_name(id));
-	}
-	vnx::write_config(vnx_name + ".opencl_device_list", device_names);
+	cl_context opencl_context = nullptr;
+	try {
+		std::string platform_name;
+		vnx::read_config("opencl.platform", platform_name);
 
-	if(opencl_device >= 0) {
-		if(size_t(opencl_device) < devices.size()) {
-			for(int i = 0; i < 2; ++i) {
-				opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_device);
+		const auto platforms = automy::basic_opencl::get_platforms();
+		{
+			std::vector<std::string> list;
+			for(const auto id : platforms) {
+				list.push_back(automy::basic_opencl::get_platform_name(id));
 			}
-			log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] "
-					<< automy::basic_opencl::get_device_name(devices[opencl_device])
-					<< " (total of " << devices.size() << " found)";
+			vnx::write_config("opencl.platform_list", list);
 		}
-		else if(devices.size()) {
-			log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
+
+		cl_platform_id platform = nullptr;
+		if(platform_name.empty()) {
+			if(!platforms.empty()) {
+				platform = platforms[0];
+			}
+		} else {
+			platform = automy::basic_opencl::find_platform_by_name(platform_name);
 		}
+
+		if(platform) {
+			const auto devices = automy::basic_opencl::get_devices(platform, CL_DEVICE_TYPE_GPU);
+			{
+				std::vector<std::string> list;
+				for(const auto id : devices) {
+					list.push_back(automy::basic_opencl::get_device_name(id));
+				}
+				vnx::write_config("opencl.device_list", list);
+			}
+
+			if(opencl_device >= 0) {
+				log(INFO) << "Using OpenCL platform: " << automy::basic_opencl::get_platform_name(platform);
+
+				if(size_t(opencl_device) < devices.size()) {
+					const auto device = devices[opencl_device];
+					opencl_context = automy::basic_opencl::create_context(platform, {device});
+					for(int i = 0; i < 2; ++i) {
+						opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_context, device);
+					}
+					log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] "
+							<< automy::basic_opencl::get_device_name(device)
+							<< " (total of " << devices.size() << " found)";
+				}
+				else if(devices.size()) {
+					log(WARN) <<  "No such OpenCL GPU device: " << opencl_device;
+				}
+			}
+		} else {
+			log(INFO) << "No OpenCL platform found.";
+		}
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to create OpenCL GPU context: " << ex.what();
 	}
 #endif
 
@@ -296,6 +333,10 @@ void Node::main()
 	if(vdf_threads) {
 		vdf_threads->close();
 	}
+
+#ifdef WITH_OPENCL
+	automy::basic_opencl::release_context(opencl_context);
+#endif
 }
 
 std::shared_ptr<const ChainParams> Node::get_params() const {

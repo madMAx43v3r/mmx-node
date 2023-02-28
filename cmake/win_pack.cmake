@@ -22,6 +22,7 @@ if(NOT MMX_VERSION MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
 endif()
 
 message(STATUS "MMX_VERSION=${MMX_VERSION}")
+message(STATUS "MMX_GIGAHORSE=${MMX_GIGAHORSE}")
 
 #file(STRINGS "include/mmx/version.h" MMX_VERSION_H REGEX "^#define MMX_VERSION \"[^\"]*\"$")
 string(REGEX REPLACE "^v([0-9]+).*$" "\\1" MMX_VERSION_MAJOR "${MMX_VERSION}")
@@ -38,11 +39,16 @@ set(CPACK_PACKAGE_VERSION_PATCH ${MMX_VERSION_PATCH})
 
 include(cmake/product_version/generate_product_version.cmake)
 set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/cmake/mmx.ico")
-set(MMX_FRIENDLY_STRING "MMX Node ${MMX_VERSION}")
+
+if ("${MMX_GIGAHORSE}" STREQUAL "TRUE")
+	set(MMX_BUNDLE "MMX Node (Gigahorse)")
+else()
+	set(MMX_BUNDLE "MMX Node (Classic)")
+endif()
 
 list(APPEND APP_FILES
 	mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester
-	mmx_db mmx_vm mmx_iface mmx_modules mmx_chiapos
+	mmx_db mmx_vm mmx_iface mmx_modules
 	vnx_base vnx_addons url_cpp llhttp
 	vnxpasswd generate_passwd
 	automy_basic_opencl
@@ -57,7 +63,7 @@ foreach(APPFILE IN LISTS APP_FILES TOOL_FILES)
 	generate_product_version(
 		${ProductVersionFiles}
 		NAME ${APPFILE}
-		BUNDLE "MMX Node"
+		BUNDLE ${MMX_BUNDLE}
 		COMPANY_NAME "madMAx43v3r"
 		FILE_DESCRIPTION ${APPFILE}
 		ICON ${MMX_ICON}
@@ -86,8 +92,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(mmx_node_gui)
 add_custom_command(TARGET mmx_node_gui POST_BUILD
-	COMMAND ${CMAKE_MAKE_PROGRAM} MMX_Node_GUI.sln -restore -m 
+	COMMAND ${CMAKE_MAKE_PROGRAM} Mmx.Gui.Win.Wpf/Mmx.Gui.Win.Wpf.csproj -restore -m 
 			/p:Configuration=Release
+			/p:PlatformTarget=x64
 			/p:OutputPath=${mmx_node_gui_SOURCE_DIR}/bin/Release
 			/p:Version=${MMX_VERSION_STRING}
 			/p:FileVersion=${MMX_VERSION_STRING}
@@ -140,24 +147,34 @@ DOWNLOAD_NO_EXTRACT true
 FetchContent_MakeAvailable(plotter_bladebit)
 set (PLOTTER_BLADEBIT_PATH ${plotter_bladebit_SOURCE_DIR}/bladebit.exe)
 
-# include(ExternalProject)
-# ExternalProject_Add(mmx_plotter
-#   GIT_REPOSITORY    https://github.com/MMX-World/mmx-plotter.git
-#   GIT_TAG           master
-#   SOURCE_DIR        "${CMAKE_BINARY_DIR}/mmx_plotter-src"
-#   BINARY_DIR        "${CMAKE_BINARY_DIR}/mmx_plotter-build"
-#   CONFIGURE_COMMAND ${CMAKE_COMMAND} -S <SOURCE_DIR> -B <BINARY_DIR>
-#   BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config Release
-#   INSTALL_COMMAND   ""
-#   TEST_COMMAND      ""
-# )
-# ExternalProject_Get_Property(mmx_plotter BINARY_DIR)
-# set (MMX_PLOTTER_K32_PATH ${BINARY_DIR}/Release/chia_plot.exe)
-# set (MMX_PLOTTER_K34_PATH ${BINARY_DIR}/Release/chia_plot_k34.exe)
-
 install(FILES ${MMX_PLOTTER_K32_PATH} DESTINATION ./ RENAME mmx_plot.exe COMPONENT plotters)
 install(FILES ${MMX_PLOTTER_K34_PATH} DESTINATION ./ RENAME mmx_plot_k34.exe COMPONENT plotters)
 install(FILES ${PLOTTER_BLADEBIT_PATH} DESTINATION ./ RENAME mmx_bladebit.exe COMPONENT plotters)
+
+if ("${MMX_GIGAHORSE}" STREQUAL "TRUE")
+
+	FetchContent_Declare(
+		chia_gigahorse
+		GIT_REPOSITORY https://github.com/madMAx43v3r/chia-gigahorse.git
+		GIT_TAG 4f1ddcaeb2c03d1019b4565ee7fc6c7d6878e308
+	)
+	FetchContent_MakeAvailable(chia_gigahorse)
+
+	set (GH_DESTINATION ./gigahorse/)
+
+	set(GH_CPU_PLOTTER_PATH ${chia_gigahorse_SOURCE_DIR}/cpu-plotter/windows)
+	install(DIRECTORY ${GH_CPU_PLOTTER_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
+
+	set(GH_CUDA_PLOTTER_PATH ${chia_gigahorse_SOURCE_DIR}/cuda-plotter/windows)
+	install(DIRECTORY ${GH_CUDA_PLOTTER_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
+
+	set(GH_PLOT_SINK_PATH ${chia_gigahorse_SOURCE_DIR}/plot-sink/windows)
+	install(DIRECTORY ${GH_PLOT_SINK_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
+
+	set(GH_CHIAPOS_PATH ${chia_gigahorse_SOURCE_DIR}/chiapos/windows)
+	install(DIRECTORY ${GH_CHIAPOS_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
+
+endif()
 
 set(CPACK_PACKAGE_NAME "MMX Node")
 set(CPACK_PACKAGE_VENDOR "madMAx43v3r")
@@ -213,4 +230,4 @@ set(CPACK_NSIS_INSTALLED_ICON_NAME ${MMX_GUI_EXE})
 # Must be after the last CPACK macros
 include(CPack)
 
-endif()
+endif() #if (${MMX_WIN_PACK} STREQUAL "TRUE")

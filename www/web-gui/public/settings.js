@@ -8,7 +8,9 @@ Vue.component('node-settings', {
 			timelord: null,
 			open_port: null,
 			opencl_device: null,
+			opencl_platform: null,
 			opencl_device_list: null,
+			opencl_platform_list: null,
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
 			reload_interval: null,
@@ -26,12 +28,30 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
-					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] :
-							(data["Node.opencl_device_list"] && data["Node.opencl_device_list"].length ? 0 : -1);
+					this.opencl_platform = data["opencl.platform"] != null ? data["opencl.platform"] : "";
+					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] : 0;
 					this.opencl_device_list = [{name: "None", value: -1}];
-					let i = 0;
-					for(const name of data["Node.opencl_device_list"]) {
-						this.opencl_device_list.push({name: name, value: i++});
+					{
+						let list = data["opencl.device_list"];
+						if(list) {
+							let i = 0;
+							for(const name of list) {
+								this.opencl_device_list.push({name: name, value: i++});
+							}
+						} else {
+							this.opencl_device_list.push({name: "First device found", value: 0});
+						}
+					}
+					this.opencl_platform_list = [];
+					{
+						let list = data["opencl.platform_list"];
+						if(list) {
+							for(const name of list) {
+								this.opencl_platform_list.push({name: name, value: name});
+							}
+						} else {
+							this.opencl_platform_list.push({name: "First platform found", value: ""});
+						}
 					}
 					this.farmer_reward_addr = data["Farmer.reward_addr"];
 					this.timelord_reward_addr = data["TimeLord.reward_addr"];
@@ -133,6 +153,11 @@ Vue.component('node-settings', {
 				this.set_config("Router.open_port", value, true);
 			}
 		},
+		opencl_platform(value, prev) {
+			if(prev != null) {
+				this.set_config("opencl.platform", value, true);
+			}
+		},
 		opencl_device(value, prev) {
 			if(prev != null) {
 				this.set_config("Node.opencl_device", value, true);
@@ -216,6 +241,14 @@ Vue.component('node-settings', {
 							></v-checkbox>
 						</v-col>
 					</v-row>
+					
+					<v-select
+						v-model="opencl_platform"
+						label="OpenCL Platform"
+						:items="opencl_platform_list"
+						item-text="name"
+						item-value="value"
+					></v-select>
 
 					<v-select
 						v-model="opencl_device"
