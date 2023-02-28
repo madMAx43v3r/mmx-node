@@ -161,6 +161,13 @@ std::vector<uint8_t> operator+(const std::vector<uint8_t>& lhs, const bytes_t<N>
 }
 
 template<size_t N>
+std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const std::vector<uint8_t>& rhs) {
+	auto res = lhs.to_vector();
+	res.insert(res.end(), rhs.begin(), rhs.end());
+	return res;
+}
+
+template<size_t N>
 std::vector<uint8_t> operator+(const std::string& lhs, const bytes_t<N>& rhs) {
 	std::vector<uint8_t> res(lhs.begin(), lhs.end());
 	res.insert(res.end(), rhs.bytes.begin(), rhs.bytes.end());
@@ -169,13 +176,6 @@ std::vector<uint8_t> operator+(const std::string& lhs, const bytes_t<N>& rhs) {
 
 template<size_t N>
 std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const std::string& rhs) {
-	auto res = lhs.to_vector();
-	res.insert(res.end(), rhs.begin(), rhs.end());
-	return res;
-}
-
-template<size_t N>
-std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const std::vector<uint8_t>& rhs) {
 	auto res = lhs.to_vector();
 	res.insert(res.end(), rhs.begin(), rhs.end());
 	return res;
