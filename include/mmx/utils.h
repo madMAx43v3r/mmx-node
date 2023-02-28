@@ -110,7 +110,11 @@ inline
 bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 						const hash_t& challenge, const hash_t& plot_id)
 {
-	return hash_t("plot_filter" + plot_id + challenge).to_uint256() >> (256 - params->plot_filter) == 0;
+	hash_t hash("plot_filter" + plot_id + challenge);
+	for(uint32_t i = 0; i < params->plot_filter_nhash; ++i) {
+		hash = hash_t("plot_filter" + hash.bytes);
+	}
+	return hash.to_uint256() >> (256 - params->plot_filter) == 0;
 }
 
 inline

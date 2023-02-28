@@ -95,26 +95,41 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	const auto time_begin = vnx::get_wall_time_millis();
 
+	struct eligible_plot_t {
+		hash_t id;
+		std::shared_ptr<chiapos::DiskProver> prover;
+	};
+
 	uint32_t best_index = 0;
 	uint256_t best_score = uint256_max;
 	std::shared_ptr<chiapos::Proof> best_proof;
 	std::shared_ptr<chiapos::DiskProver> best_plot;
 	vnx::optional<std::pair<addr_t, virtual_plot_t>> best_vplot;
 
-	std::vector<hash_t> plot_challenge;
-	std::vector<std::shared_ptr<chiapos::DiskProver>> plots;
+	std::mutex mutex;
+	std::vector<eligible_plot_t> plots;
 	std::vector<std::pair<addr_t, virtual_plot_t>> virtual_plots;
 
 	for(const auto& entry : id_map)
 	{
-		if(check_plot_filter(params, value->challenge, entry.first)) {
-			if(auto prover = plot_map[entry.second]) {
-				plots.push_back(prover);
-				plot_challenge.push_back(
-						get_plot_challenge(value->challenge, entry.first));
+		threads->add_task([this, entry, value, &plots, &mutex]()
+		{
+			if(check_plot_filter(params, value->challenge, entry.first))
+			{
+				const auto iter = plot_map.find(entry.second);
+				if(iter != plot_map.end()) {
+					eligible_plot_t out;
+					out.id = entry.first;
+					out.prover = iter->second;
+
+					std::lock_guard<std::mutex> lock(mutex);
+					plots.push_back(out);
+				}
 			}
-		}
+		});
 	}
+	threads->sync();
+
 	for(const auto& entry : virtual_map)
 	{
 		if(check_plot_filter(params, value->challenge, entry.first)) {
@@ -125,11 +140,13 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 	for(size_t i = 0; i < plots.size(); ++i)
 	{
-		threads->add_task([this, i, value, &plots, &plot_challenge, &scores]()
+		threads->add_task([this, i, value, &plots, &scores]()
 		{
+			const auto& plot = plots[i];
+			const auto& prover = plot.prover;
 			try {
-				const auto prover = plots.at(i);
-				const auto qualities = prover->get_qualities(plot_challenge.at(i).bytes);
+				const auto challenge = get_plot_challenge(value->challenge, plot.id);
+				const auto qualities = prover->get_qualities(challenge.bytes);
 				scores[i].resize(qualities.size());
 
 				for(size_t k = 0; k < qualities.size(); ++k) {
