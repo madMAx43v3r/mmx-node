@@ -53,8 +53,7 @@ bls::G2Element bls_signature_t::to_bls() const
 
 bls_signature_t bls_signature_t::sign(const skey_t& skey, const hash_t& hash)
 {
-	const auto bls_skey = bls::PrivateKey::FromBytes(bls::Bytes(skey.data(), skey.size()));
-	return sign(bls_skey, hash);
+	return sign(skey.to_bls(), hash);
 }
 
 bls_signature_t bls_signature_t::sign(const bls::PrivateKey& skey, const hash_t& hash)

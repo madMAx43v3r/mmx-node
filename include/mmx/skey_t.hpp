@@ -11,9 +11,7 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/bytes_t.hpp>
 
-namespace bls {
-	class PrivateKey;
-}
+#include <bls.hpp>
 
 
 namespace mmx {
@@ -27,6 +25,8 @@ public:
 	skey_t(const hash_t& hash);
 
 	skey_t(const bls::PrivateKey& key);
+
+	bls::PrivateKey to_bls() const;
 
 };
 
