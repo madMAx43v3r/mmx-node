@@ -19,6 +19,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -93,9 +94,10 @@ uint64_t FarmerAsyncClient::get_farm_info(const std::function<void(std::shared_p
 	return _request_id;
 }
 
-uint64_t FarmerAsyncClient::sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value, const std::function<void(const ::mmx::bls_signature_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t FarmerAsyncClient::sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value, const vnx::optional<::mmx::skey_t>& local_sk, const std::function<void(const ::mmx::bls_signature_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Farmer_sign_proof::create();
 	_method->value = value;
+	_method->local_sk = local_sk;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

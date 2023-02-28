@@ -11,6 +11,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -36,7 +37,7 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value = nullptr, 
+	uint64_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value = nullptr, const vnx::optional<::mmx::skey_t>& local_sk = nullptr, 
 			const std::function<void(const ::mmx::bls_signature_t&)>& _callback = std::function<void(const ::mmx::bls_signature_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

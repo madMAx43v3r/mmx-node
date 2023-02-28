@@ -8,7 +8,6 @@
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
-#include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
 
 
@@ -19,9 +18,8 @@ public:
 	
 	uint8_t ksize = 0;
 	std::vector<uint8_t> proof_bytes;
-	::mmx::addr_t contract;
 	::mmx::bls_pubkey_t local_key;
-	::mmx::bls_signature_t local_sig;
+	::mmx::addr_t contract;
 	
 	typedef ::mmx::ProofOfSpace Super;
 	
@@ -76,12 +74,12 @@ void ProofOfSpaceNFT::accept_generic(T& _visitor) const {
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("score", 1); _visitor.accept(score);
 	_visitor.type_field("plot_id", 2); _visitor.accept(plot_id);
-	_visitor.type_field("farmer_key", 3); _visitor.accept(farmer_key);
-	_visitor.type_field("ksize", 4); _visitor.accept(ksize);
-	_visitor.type_field("proof_bytes", 5); _visitor.accept(proof_bytes);
-	_visitor.type_field("contract", 6); _visitor.accept(contract);
+	_visitor.type_field("plot_key", 3); _visitor.accept(plot_key);
+	_visitor.type_field("farmer_key", 4); _visitor.accept(farmer_key);
+	_visitor.type_field("ksize", 5); _visitor.accept(ksize);
+	_visitor.type_field("proof_bytes", 6); _visitor.accept(proof_bytes);
 	_visitor.type_field("local_key", 7); _visitor.accept(local_key);
-	_visitor.type_field("local_sig", 8); _visitor.accept(local_sig);
+	_visitor.type_field("contract", 8); _visitor.accept(contract);
 	_visitor.template type_end<ProofOfSpaceNFT>(9);
 }
 

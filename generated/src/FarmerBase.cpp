@@ -20,6 +20,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -284,7 +285,7 @@ std::shared_ptr<vnx::Value> FarmerBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x7c59d2761514b455ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Farmer_sign_proof>(_method);
 			auto _return_value = ::mmx::Farmer_sign_proof_return::create();
-			_return_value->_ret_0 = sign_proof(_args->value);
+			_return_value->_ret_0 = sign_proof(_args->value, _args->local_sk);
 			return _return_value;
 		}
 		case 0xbbc7f1a01044d294ull: {

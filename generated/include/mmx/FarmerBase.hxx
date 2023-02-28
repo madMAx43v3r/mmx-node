@@ -11,6 +11,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -65,7 +66,7 @@ protected:
 	virtual ::vnx::Hash64 get_mac_addr() const = 0;
 	virtual std::vector<::mmx::bls_pubkey_t> get_farmer_keys() const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
-	virtual ::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value) const = 0;
+	virtual ::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value, const vnx::optional<::mmx::skey_t>& local_sk) const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block, const uint64_t& reward_amount) const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::FarmInfo> _value) {}
 	
