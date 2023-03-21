@@ -1521,8 +1521,7 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_FAIL:
-		// TODO: read instr.b as uint when OPFLAG_REF_B set
-		error_code = instr.b;
+		error_code = deref_value(instr.b, instr.flags & OPFLAG_REF_B);
 		throw std::runtime_error("failed with: "
 				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A)))
 				+ (instr.b ? " (code " + std::to_string(instr.b) + ")" : ""));
