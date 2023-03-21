@@ -249,12 +249,19 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->netspace_ratio != netspace_ratio) {
 			throw std::logic_error("invalid netspace_ratio: " + std::to_string(block->netspace_ratio) + " != " + std::to_string(netspace_ratio));
 		}
+		const auto average_txfee = calc_new_average_txfee(params, prev->average_txfee, block->tx_fees);
+		if(block->average_txfee != average_txfee) {
+			throw std::logic_error("invalid average_txfee: " + std::to_string(block->average_txfee) + " != " + std::to_string(average_txfee));
+		}
 	} else {
 		if(block->time_diff != prev->time_diff) {
 			throw std::logic_error("invalid time_diff adjust");
 		}
 		if(block->netspace_ratio != prev->netspace_ratio) {
 			throw std::logic_error("invalid netspace_ratio adjust");
+		}
+		if(block->average_txfee != prev->average_txfee) {
+			throw std::logic_error("invalid average_txfee adjust");
 		}
 	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
@@ -350,7 +357,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	if(block->reward_addr) {
 		const auto base_reward = calc_block_reward(block);
-		const auto base_allowed = calc_final_block_reward(params, base_reward, block->tx_fees);
+		const auto base_allowed = calc_final_block_reward(block, base_reward, block->tx_fees);
 		if(block->reward_amount > base_allowed) {
 			throw std::logic_error("invalid reward_amount: "
 					+ std::to_string(block->reward_amount) + " > " + std::to_string(base_allowed));

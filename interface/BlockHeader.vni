@@ -21,6 +21,7 @@ class BlockHeader {
 	uint128 total_weight;
 	
 	uint netspace_ratio;
+	uint average_txfee;
 	
 	ulong vdf_iters;
 	addr_t vdf_reward;

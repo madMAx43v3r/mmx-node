@@ -2417,6 +2417,11 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block) const
 	return std::max(reward, params->min_reward);
 }
 
+uint64_t Node::calc_final_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t block_reward, const uint64_t total_fees) const
+{
+	return mmx::calc_final_block_reward(block_reward, get_diff_header(block)->average_txfee, total_fees);
+}
+
 std::shared_ptr<const BlockHeader> Node::read_block(
 		vnx::File& file, bool full_block, int64_t* block_offset, std::vector<std::pair<hash_t, int64_t>>* tx_offsets) const
 {

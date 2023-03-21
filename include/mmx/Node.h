@@ -446,6 +446,9 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
 
+	uint64_t calc_final_block_reward(
+			std::shared_ptr<const BlockHeader> block, const uint64_t block_reward, const uint64_t total_fees) const;
+
 	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
 			int64_t* block_offset = nullptr, std::vector<std::pair<hash_t, int64_t>>* tx_offsets = nullptr) const;
 

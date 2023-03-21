@@ -170,13 +170,12 @@ uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint
 }
 
 inline
-uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t fees)
+uint64_t calc_final_block_reward(const uint64_t reward, const uint64_t avg_txfee, const uint64_t fees)
 {
-	if(reward == 0) {
+	if(avg_txfee > reward) {
 		return fees;
 	}
-	const uint64_t scale = 1 << 16;
-	return uint64_t(std::max<int64_t>(int64_t(scale) - ((scale * fees) / (2 * reward)), 0) * reward) / scale + fees;
+	return (reward - avg_txfee) + fees;
 }
 
 inline
@@ -203,6 +202,11 @@ uint64_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, cons
 	const uint64_t value = is_og_proof ? uint64_t(1) << (2 * params->max_diff_adjust) : 0;
 	return (prev_ratio * ((uint64_t(1) << params->max_diff_adjust) - 1) + value) >> params->max_diff_adjust;
 }
+
+inline
+uint64_t calc_new_average_txfee(std::shared_ptr<const ChainParams> params, const uint64_t prev_value, const uint64_t total_fees)
+{
+	return (prev_value * ((uint64_t(1) << params->max_diff_adjust) - 1) + total_fees) >> params->max_diff_adjust;
 }
 
 inline

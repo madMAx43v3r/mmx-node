@@ -173,6 +173,7 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->weight = calc_block_weight(params, diff_block, block);
 		block->total_weight = prev->total_weight + block->weight;
 		block->netspace_ratio = prev->netspace_ratio;
+		block->average_txfee = prev->average_txfee;
 		block->finalize();
 		add_block(block);
 	}
@@ -791,6 +792,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 			total_fees += entry.fee;
 		}
 	}
+	block->average_txfee = calc_new_average_txfee(params, prev->average_txfee, total_fees);
+
 	const auto prev_fork = find_fork(prev->hash);
 
 	// set new time difficulty
@@ -825,7 +828,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 
 	FarmerClient farmer(proof.farmer_mac);
 	const auto block_reward = calc_block_reward(block);
-	const auto final_reward = calc_final_block_reward(params, block_reward, total_fees);
+	const auto final_reward = calc_final_block_reward(block, block_reward, total_fees);
 	const auto result = farmer.sign_block(block, final_reward);
 
 	if(!result) {
