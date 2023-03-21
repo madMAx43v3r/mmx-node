@@ -893,19 +893,29 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 				case CONVTYPE_UINT: {
 					int base = 10;
 					switch(sflags & 0xFF) {
-						case CONVTYPE_DEFAULT: break;
+						case CONVTYPE_DEFAULT: {
+							const auto value = sstr.to_string();
+							if(value.find("0x") == 0) {
+								base = 16;
+							} else if(value.find("0b") == 0) {
+								base = 2;
+							} else if(value.find("mmx1") == 0) {
+								base = 32;
+							}
+							break;
+						}
 						case CONVTYPE_BASE_2: base = 2; break;
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
 						case CONVTYPE_ADDRESS: base = 32; break;
-						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags));
+						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags & 0xFF));
 					}
-					if(base == 32) {
-						write(dst, uint_t(addr_t(sstr.to_string()).to_uint256()));
-					} else {
-						// TODO: CONVTYPE_DEFAULT: auto detect hex, binary and address
-						write(dst, uint_t(uint256_t(sstr.c_str(), base)));
+					switch(base) {
+						case 32:
+							write(dst, uint_t(addr_t(sstr.to_string()).to_uint256())); break;
+						default:
+							write(dst, uint_t(uint256_t(sstr.c_str(), base)));
 					}
 					break;
 				}
