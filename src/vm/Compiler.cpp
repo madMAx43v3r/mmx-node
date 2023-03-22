@@ -603,7 +603,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		binary->constant.insert(binary->constant.end(), data.first.get(), data.first.get() + data.second);
 	}
 	for(const auto& var : global.var_list) {
-		if(!var.is_const) {
+		if(var.is_static) {
 			binary->fields[var.name] = var.address;
 		}
 	}
