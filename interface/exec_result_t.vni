@@ -8,19 +8,17 @@ struct exec_result_t {
 	
 	uint total_fee;
 	
-	uint error_code;			// in case of failure
-	
 	vector<txin_t> inputs;
 	
 	vector<txout_t> outputs;
 	
-	optional<string> message;
-	
-	static const uint MAX_MESSAGE_LENGTH = 256;
+	optional<exec_error_t> error;
 	
 	
 	bool is_valid() const;
 	
 	hash_t calc_hash() const;
+	
+	string get_error_msg() const;
 	
 }

@@ -1,0 +1,20 @@
+package mmx;
+
+struct exec_error_t {
+	
+	uint code;
+	
+	uint address;				// -1 = unknown
+	
+	optional<uint> line;
+	
+	string message;
+	
+	
+	static const uint MAX_MESSAGE_LENGTH = 256;
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+}

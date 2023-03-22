@@ -120,6 +120,7 @@ add_library(mmx_iface SHARED
 	src/signature_t.cpp
 	src/bls_signature_t.cpp
 	src/exec_result_t.cpp
+	src/exec_error_t.cpp
 	src/vm/var_t.cpp
 	src/vm/varptr_t.cpp
 	src/contract/NFT.cpp

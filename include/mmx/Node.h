@@ -361,7 +361,7 @@ private:
 					std::unordered_map<addr_t, uint128>& amounts,
 					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
-					uint64_t& tx_cost, uint32_t& error_code, const bool is_public) const;
+					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
@@ -372,7 +372,7 @@ private:
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
-					uint64_t& tx_cost, const bool is_public) const;
+					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
 
 	std::shared_ptr<const exec_result_t> validate(
 			std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context) const;

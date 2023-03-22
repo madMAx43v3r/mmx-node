@@ -521,7 +521,7 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 		info.fee = tx->exec_result->total_fee;
 		info.cost = tx->exec_result->total_cost;
 		info.did_fail = tx->exec_result->did_fail;
-		info.message = tx->exec_result->message;
+		info.message = tx->exec_result->get_error_msg();
 	} else {
 		info.cost = tx->static_cost;
 	}
@@ -1554,7 +1554,7 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 	if(pre_validate) {
 		if(auto res = validate(tx)) {
 			if(res->did_fail) {
-				throw std::runtime_error("tx failed with: " + (res->message ? *res->message : "?"));
+				throw std::runtime_error(res->get_error_msg());
 			}
 		}
 	}

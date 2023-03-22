@@ -388,7 +388,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::unordered_map<addr_t, uint128>& amounts,
 					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
-					uint64_t& tx_cost, uint32_t& error_code, const bool is_public) const
+					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const
 {
 	const auto address = exec->address == addr_t() ? tx->id : exec->address;
 
@@ -430,9 +430,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 	std::exception_ptr failed_ex;
 	try {
-		execute(tx, context, state, exec_inputs, exec_outputs, contract_cache, storage_cache, engine, exec->method, tx_cost, is_public);
+		execute(tx, context, state, exec_inputs, exec_outputs, contract_cache, storage_cache, engine, exec->method, tx_cost, error, is_public);
 	} catch(...) {
-		error_code = engine->error_code;
 		failed_ex = std::current_exception();
 	}
 	tx_cost += engine->total_cost;
@@ -451,7 +450,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
-					uint64_t& tx_cost, const bool is_public) const
+					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const
 {
 	if(!state || !state->data) {
 		throw std::logic_error("no such contract");
@@ -477,7 +476,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	vm::load(engine, binary);
 
 	std::weak_ptr<vm::Engine> parent = engine;
-	engine->remote = [this, tx, context, executable, &contract_cache, storage_cache, parent, &exec_inputs, &exec_outputs, &tx_cost]
+	engine->remote = [this, tx, context, executable, &contract_cache, storage_cache, parent, &exec_inputs, &exec_outputs, &tx_cost, &error]
 		(const std::string& name, const std::string& method, const uint32_t nargs)
 	{
 		auto engine = parent.lock();
@@ -501,7 +500,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(engine->contract.to_uint256()));
 		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
 
-		execute(tx, context, state, exec_inputs, exec_outputs, contract_cache, storage_cache, child, method, tx_cost, true);
+		execute(tx, context, state, exec_inputs, exec_outputs, contract_cache, storage_cache, child, method, tx_cost, error, true);
 
 		vm::copy(engine, child, vm::MEM_STACK + stack_ptr, vm::MEM_STACK);
 
@@ -515,7 +514,21 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id.to_uint256()));
 	vm::set_balance(engine, state->balance);
 
-	vm::execute(engine, *method);
+	try {
+		vm::execute(engine, *method);
+	} catch(...) {
+		error.code = engine->error_code;
+		error.address = engine->error_addr;
+
+		if(error.address < engine->code.size() && !binary->line_info.empty()) {
+			auto iter = binary->line_info.upper_bound(error.address);
+			if(iter != binary->line_info.begin()) {
+				iter--;
+				error.line = iter->second;
+			}
+		}
+		throw;
+	}
 
 	std::map<addr_t, uint128_t> spend_amounts;
 
@@ -576,7 +589,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	auto storage_cache = std::make_shared<vm::StorageCache>(context->storage);
 	std::unordered_map<addr_t, uint128> amounts;
 	std::exception_ptr failed_ex;
-	uint32_t error_code = 0;
+	exec_error_t error;
 
 	if(static_fee > tx->max_fee_amount) {
 		throw mmx::static_failure("static tx fee > max_fee_amount: " + std::to_string(static_fee) + " > " + std::to_string(tx->max_fee_amount));
@@ -688,7 +701,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				auto exec = operation::Execute::create();
 				exec->method = executable->init_method;
 				exec->args = executable->init_args;
-				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error_code, false);
+				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error, false);
 			}
 		}
 
@@ -728,7 +741,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 			else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 			{
-				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error_code, true);
+				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error, true);
 			}
 		}
 
@@ -784,27 +797,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	}
 	std::shared_ptr<exec_result_t> out;
 
-	if(!tx->exec_result) {
-		out = std::make_shared<exec_result_t>();
-		out->total_cost = tx_cost;
-		out->total_fee = tx_fee;
-
-		if(failed_ex) {
-			try {
-				std::rethrow_exception(failed_ex);
-			} catch(const std::exception& ex) {
-				std::string msg = ex.what();
-				msg.resize(std::min<size_t>(msg.size(), exec_result_t::MAX_MESSAGE_LENGTH));
-				out->message = msg;
-			}
-			out->did_fail = true;
-			out->error_code = error_code;
-		} else {
-			out->inputs = exec_inputs;
-			out->outputs = exec_outputs;
-		}
-	} else {
-		const auto result = tx->exec_result;
+	if(auto result = tx->exec_result) {
 		if(!result->did_fail && failed_ex) {
 			try {
 				std::rethrow_exception(failed_ex);
@@ -815,7 +808,11 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 		}
 		if(result->did_fail && !failed_ex) {
-			throw std::logic_error("expected execution failure: " + (result->message ? *result->message : std::string("?")));
+			if(result->error) {
+				throw std::logic_error("expected execution failure: " + result->error->message);
+			} else {
+				throw std::logic_error("expected execution failure");
+			}
 		}
 		if(result->total_cost != tx_cost) {
 			throw std::logic_error("tx cost mismatch: "
@@ -824,10 +821,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		if(result->total_fee != tx_fee) {
 			throw std::logic_error("tx fee mismatch: "
 					+ std::to_string(result->total_fee) + " != " + std::to_string(tx_fee));
-		}
-		if(result->error_code != error_code) {
-			throw std::logic_error("error code mismatch: "
-					+ std::to_string(result->error_code) + " != " + std::to_string(error_code));
 		}
 		if(result->did_fail) {
 			if(result->inputs.size() || result->outputs.size()) {
@@ -856,6 +849,35 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 					throw std::logic_error("execution output mismatch at index " + std::to_string(i));
 				}
 			}
+		}
+		if(result->error) {
+			if(result->error->code != error.code) {
+				throw std::logic_error("error code mismatch: "
+						+ std::to_string(result->error->code) + " != " + std::to_string(error.code));
+			}
+			if(result->error->address != error.address) {
+				throw std::logic_error("error address mismatch: "
+						+ std::to_string(result->error->address) + " != " + std::to_string(error.address));
+			}
+		}
+	} else {
+		out = std::make_shared<exec_result_t>();
+		out->total_cost = tx_cost;
+		out->total_fee = tx_fee;
+
+		if(failed_ex) {
+			try {
+				std::rethrow_exception(failed_ex);
+			} catch(const std::exception& ex) {
+				std::string msg = ex.what();
+				msg.resize(std::min<size_t>(msg.size(), exec_error_t::MAX_MESSAGE_LENGTH));
+				error.message = msg;
+			}
+			out->error = error;
+			out->did_fail = true;
+		} else {
+			out->inputs = exec_inputs;
+			out->outputs = exec_outputs;
 		}
 	}
 

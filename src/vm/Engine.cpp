@@ -659,8 +659,9 @@ void Engine::step()
 	try {
 		exec(code[instr_ptr]);
 		check_gas();
-	} catch(const std::exception& ex) {
-		throw std::runtime_error("exception at " + to_hex(instr_ptr) + ": " + ex.what());
+	} catch(...) {
+		error_addr = instr_ptr;
+		throw;
 	}
 }
 
@@ -1524,7 +1525,7 @@ void Engine::exec(const instr_t& instr)
 		error_code = deref_value(instr.b, instr.flags & OPFLAG_REF_B);
 		throw std::runtime_error("failed with: "
 				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A)))
-				+ (instr.b ? " (code " + std::to_string(instr.b) + ")" : ""));
+				+ (error_code ? " (code " + std::to_string(error_code) + ")" : ""));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
@@ -1550,6 +1551,7 @@ void Engine::reset()
 	clear_stack();
 	call_stack.clear();
 	error_code = 0;
+	error_addr = -1;
 }
 
 void Engine::commit()

@@ -76,7 +76,9 @@ public:
 
 	uint64_t total_gas = 0;
 	uint64_t total_cost = 0;
+
 	uint32_t error_code = 0;
+	uint32_t error_addr = -1;
 
 	const addr_t contract;
 	const std::shared_ptr<StorageProxy> storage;

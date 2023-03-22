@@ -428,6 +428,7 @@ protected:
 private:
 	int depth = 0;
 	int curr_pass = 0;
+	int curr_line = -1;
 	bool is_debug = true;
 	size_t code_offset = 0;
 	vnx::optional<node_t> curr_node;
@@ -441,6 +442,7 @@ private:
 
 	std::map<varptr_t, uint32_t> const_table;
 	std::map<std::string, function_t> function_map;
+	std::map<uint32_t, uint32_t> line_info;
 	std::map<uint32_t, std::string> linker_map;
 	std::map<std::string, int> rank_map;
 	std::map<std::string, int> simple_code_map;
@@ -576,6 +578,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		recurse(tree.root());
 
 		curr_pass++;
+		curr_line = -1;
 		frame.clear();
 
 		debug() << std::endl << "Second pass ..." << std::endl;
@@ -587,7 +590,11 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 			}
 		}
 		for(const auto& entry : linker_map) {
-			code[entry.first].a = find_function(entry.second)->address;
+			if(auto func = find_function(entry.second)) {
+				code[entry.first].a = func->address;
+			} else {
+				throw std::runtime_error("undefined reference to function '" + entry.second + "'");
+			}
 		}
 	}
 	catch(const std::exception& ex) {
@@ -626,6 +633,8 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		const auto data = vm::serialize(code);
 		binary->binary = std::vector<uint8_t>(data.first.get(), data.first.get() + data.second);
 	}
+	binary->line_info = line_info;
+
 	debug() << std::endl;
 	dump_code(debug(), binary);
 	return binary;
