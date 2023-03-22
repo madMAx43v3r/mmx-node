@@ -37,7 +37,7 @@ function _get_earned_fees(user) const
 	const user_share = [0, 0];
 	for(var i = 0; i < 2; ++i) {
 		if(user.balance[i] > 0) {
-			const entry = state[user.fee_idx];
+			const entry = state[user.pool_idx];
 			const total_fees = entry.fees_paid[i] - user.last_fees_paid[i];
 			if(total_fees > 0) {
 				user_share[i] = min(
@@ -61,7 +61,7 @@ function get_earned_fees(address) const public
 
 function _payout(user)
 {
-	const entry = state[user.fee_idx];
+	const entry = state[user.pool_idx];
 	const user_share = _get_earned_fees(user);
 	
 	for(var i = 0; i < 2; ++i) {
@@ -83,35 +83,30 @@ function payout() public
 	_payout(user);
 }
 
-function add_liquid(i, fee_idx) public payable
+function _add_liquid(i, pool_idx, amount)
 {
-	if(this.deposit.currency != tokens[i]) {
-		fail("currency mismatch", 1);
+	if(pool_idx >= size(fee_rates)) {
+		fail("invalid pool_idx", 8);
 	}
-	if(fee_idx >= size(fee_rates)) {
-		fail("invalid fee_idx", 8);
-	}
-	const entry = state[fee_idx];
+	const entry = state[pool_idx];
 	
 	var user = users[this.user];
 	if(user == null) {
 		user = {};
-		user.fee_idx = fee_idx;
+		user.pool_idx = pool_idx;
 		user.balance = [0, 0];
 		user.last_fees_paid = [0, 0];
 		user.last_user_total = [0, 0];
 		users[this.user] = user;
 	}
 	else if(user.balance[0] > 0 || user.balance[1] > 0) {
-		if(fee_idx != user.fee_idx) {
-			fail("fee_idx mismatch", 9);
+		if(pool_idx != user.pool_idx) {
+			fail("pool_idx mismatch", 9);
 		}
 	}
 	else {
-		user.fee_idx = fee_idx;
+		user.pool_idx = pool_idx;
 	}
-	const amount = this.deposit.amount;
-
 	entry.balance[i] += amount;
 	entry.user_total[i] += amount;
 	
@@ -123,22 +118,17 @@ function add_liquid(i, fee_idx) public payable
 	user.unlock_height = this.height + LOCK_DURATION;
 }
 
-function rem_liquid(i, amount) public
+function add_liquid(i, pool_idx) public payable
 {
-	if(amount == 0) {
-		fail("amount == 0");
+	if(this.deposit.currency != tokens[i]) {
+		fail("currency mismatch", 1);
 	}
-	const user = users[this.user];
-	if(user == null) {
-		fail("no such user", 2);
-	}
-	if(this.height < user.unlock_height + LOCK_DURATION) {
-		fail("liquidity still locked", 3);
-	}
-	if(amount > user.balance[i]) {
-		fail("amount > user balance", 4);
-	}
-	const entry = state[user.fee_idx];
+	_add_liquid(i, pool_idx, this.deposit.amount);
+}
+
+function _rem_liquid(user, i, amount)
+{
+	const entry = state[user.pool_idx];
 	
 	var ret_amount = amount;
 	
@@ -164,6 +154,24 @@ function rem_liquid(i, amount) public
 	entry.user_total[i] -= amount;
 }
 
+function rem_liquid(i, amount) public
+{
+	if(amount == 0) {
+		fail("amount == 0");
+	}
+	const user = users[this.user];
+	if(user == null) {
+		fail("no such user", 2);
+	}
+	if(this.height < user.unlock_height + LOCK_DURATION) {
+		fail("liquidity still locked", 3);
+	}
+	if(amount > user.balance[i]) {
+		fail("amount > user balance", 4);
+	}
+	_rem_liquid(user, i, amount);
+}
+
 function rem_all_liquid() public
 {
 	const user = users[this.user];
@@ -174,6 +182,29 @@ function rem_all_liquid() public
 		const amount = user.balance[i];
 		if(amount > 0) {
 			rem_liquid(i, amount);
+		}
+	}
+}
+
+function switch_pool(pool_idx) public
+{
+	if(pool_idx >= size(fee_rates)) {
+		fail("invalid pool_idx", 8);
+	}
+	const user = users[this.user];
+	if(user == null) {
+		fail("no such user", 2);
+	}
+	const amount = [user.balance[0], user.balance[1]];
+	
+	for(var i = 0; i < 2; ++i) {
+		if(amount[i] > 0) {
+			_rem_liquid(user, i, amount[i]);
+		}
+	}
+	for(var i = 0; i < 2; ++i) {
+		if(amount[i] > 0) {
+			_add_liquid(i, pool_idx, amount[i]);
 		}
 	}
 }
