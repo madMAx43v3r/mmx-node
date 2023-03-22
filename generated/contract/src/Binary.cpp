@@ -43,7 +43,7 @@ namespace contract {
 
 
 const vnx::Hash64 Binary::VNX_TYPE_HASH(0xbbeba47fc8b740e5ull);
-const vnx::Hash64 Binary::VNX_CODE_HASH(0x81cc5ff5ec33c1f1ull);
+const vnx::Hash64 Binary::VNX_CODE_HASH(0xed3d17d6f88a826full);
 
 vnx::Hash64 Binary::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -82,8 +82,9 @@ void Binary::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, methods);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, constant);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, binary);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, source);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, compiler);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, line_info);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, source);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, compiler);
 	_visitor.type_end(*_type_code);
 }
 
@@ -95,6 +96,7 @@ void Binary::write(std::ostream& _out) const {
 	_out << ", \"methods\": "; vnx::write(_out, methods);
 	_out << ", \"constant\": "; vnx::write(_out, constant);
 	_out << ", \"binary\": "; vnx::write(_out, binary);
+	_out << ", \"line_info\": "; vnx::write(_out, line_info);
 	_out << ", \"source\": "; vnx::write(_out, source);
 	_out << ", \"compiler\": "; vnx::write(_out, compiler);
 	_out << "}";
@@ -115,6 +117,7 @@ vnx::Object Binary::to_object() const {
 	_object["methods"] = methods;
 	_object["constant"] = constant;
 	_object["binary"] = binary;
+	_object["line_info"] = line_info;
 	_object["source"] = source;
 	_object["compiler"] = compiler;
 	return _object;
@@ -130,6 +133,8 @@ void Binary::from_object(const vnx::Object& _object) {
 			_entry.second.to(constant);
 		} else if(_entry.first == "fields") {
 			_entry.second.to(fields);
+		} else if(_entry.first == "line_info") {
+			_entry.second.to(line_info);
 		} else if(_entry.first == "methods") {
 			_entry.second.to(methods);
 		} else if(_entry.first == "name") {
@@ -161,6 +166,9 @@ vnx::Variant Binary::get_field(const std::string& _name) const {
 	if(_name == "binary") {
 		return vnx::Variant(binary);
 	}
+	if(_name == "line_info") {
+		return vnx::Variant(line_info);
+	}
 	if(_name == "source") {
 		return vnx::Variant(source);
 	}
@@ -183,6 +191,8 @@ void Binary::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(constant);
 	} else if(_name == "binary") {
 		_value.to(binary);
+	} else if(_name == "line_info") {
+		_value.to(line_info);
 	} else if(_name == "source") {
 		_value.to(source);
 	} else if(_name == "compiler") {
@@ -214,7 +224,7 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Binary";
 	type_code->type_hash = vnx::Hash64(0xbbeba47fc8b740e5ull);
-	type_code->code_hash = vnx::Hash64(0x81cc5ff5ec33c1f1ull);
+	type_code->code_hash = vnx::Hash64(0xed3d17d6f88a826full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Binary);
@@ -237,7 +247,7 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 	type_code->methods[10] = ::mmx::contract::Binary_find_field::static_get_type_code();
 	type_code->methods[11] = ::mmx::contract::Binary_find_method::static_get_type_code();
 	type_code->methods[12] = ::mmx::contract::Binary_is_valid::static_get_type_code();
-	type_code->fields.resize(8);
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -277,11 +287,17 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 	{
 		auto& field = type_code->fields[6];
 		field.is_extended = true;
+		field.name = "line_info";
+		field.code = {13, 3, 3, 3};
+	}
+	{
+		auto& field = type_code->fields[7];
+		field.is_extended = true;
 		field.name = "source";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "compiler";
 		field.code = {32};
@@ -424,8 +440,9 @@ void read(TypeInput& in, ::mmx::contract::Binary& value, const TypeCode* type_co
 			case 3: vnx::read(in, value.methods, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.constant, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.binary, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.source, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.compiler, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.line_info, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.source, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.compiler, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -451,8 +468,9 @@ void write(TypeOutput& out, const ::mmx::contract::Binary& value, const TypeCode
 	vnx::write(out, value.methods, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.constant, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.binary, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.source, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.compiler, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.line_info, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.source, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.compiler, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Binary& value) {

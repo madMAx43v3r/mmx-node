@@ -23,6 +23,7 @@ public:
 	std::map<std::string, ::mmx::contract::method_t> methods;
 	std::vector<uint8_t> constant;
 	std::vector<uint8_t> binary;
+	std::map<uint32_t, uint32_t> line_info;
 	std::string source;
 	std::string compiler;
 	
@@ -77,16 +78,17 @@ protected:
 
 template<typename T>
 void Binary::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Binary>(8);
+	_visitor.template type_begin<Binary>(9);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("name", 1); _visitor.accept(name);
 	_visitor.type_field("fields", 2); _visitor.accept(fields);
 	_visitor.type_field("methods", 3); _visitor.accept(methods);
 	_visitor.type_field("constant", 4); _visitor.accept(constant);
 	_visitor.type_field("binary", 5); _visitor.accept(binary);
-	_visitor.type_field("source", 6); _visitor.accept(source);
-	_visitor.type_field("compiler", 7); _visitor.accept(compiler);
-	_visitor.template type_end<Binary>(8);
+	_visitor.type_field("line_info", 6); _visitor.accept(line_info);
+	_visitor.type_field("source", 7); _visitor.accept(source);
+	_visitor.type_field("compiler", 8); _visitor.accept(compiler);
+	_visitor.template type_end<Binary>(9);
 }
 
 
