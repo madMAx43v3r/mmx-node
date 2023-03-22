@@ -15,6 +15,7 @@ const fee_rates = [
 
 var state = [];
 var tokens = [];
+var volume = [0, 0];
 var users = {};
 
 function init(token, currency)
@@ -281,6 +282,8 @@ function trade(i, address, min_amount) public payable
 		fail("empty trade", 7);
 	}
 	send(bech32(address), actual_amount, tokens[k]);
+	
+	volume[k] += trade_amount;
 	
 	return out;
 }
