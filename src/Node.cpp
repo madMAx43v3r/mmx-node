@@ -1302,47 +1302,68 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 	if(!swap) {
 		throw std::runtime_error("no such swap: " + address.to_string());
 	}
-	auto data = read_storage(address);
+	const auto height = get_height();
 
 	swap_info_t out;
 	out.name = swap->name;
 	out.address = address;
+
+	auto data = read_storage(address);
 	const auto tokens = read_storage_array(address, to_ref(data["tokens"]));
-	const auto balance = read_storage_array(address, to_ref(data["balance"]));
-	const auto fees_paid = read_storage_array(address, to_ref(data["fees_paid"]));
-	const auto fees_claimed = read_storage_array(address, to_ref(data["fees_claimed"]));
-	const auto user_total = read_storage_array(address, to_ref(data["user_total"]));
+	const auto volume = read_storage_array(address, to_ref(data["volume"]));
 	for(size_t i = 0; i < 2 && i < tokens.size(); ++i) {
 		out.tokens[i] = to_addr(tokens[i]);
+		out.volume[i] = to_uint(volume[i]);
 		out.wallet[i] = get_balance(address, out.tokens[i]);
 	}
-	for(size_t i = 0; i < 2 && i < balance.size(); ++i) {
-		out.balance[i] = to_uint(balance[i]);
+
+	const auto fee_rates = read_storage_array(address, to_ref(data["fee_rates"]));
+	for(const auto& value : fee_rates) {
+		out.fee_rates.push_back(uint128(to_uint(value)).to_double() / pow(2, 64));
 	}
-	for(size_t i = 0; i < 2 && i < fees_paid.size(); ++i) {
-		out.fees_paid[i] = to_uint(fees_paid[i]);
-	}
-	for(size_t i = 0; i < 2 && i < fees_claimed.size(); ++i) {
-		out.fees_claimed[i] = to_uint(fees_claimed[i]);
-	}
-	for(size_t i = 0; i < 2 && i < user_total.size(); ++i) {
-		out.user_total[i] = to_uint(user_total[i]);
-	}
-	const auto height = get_height();
-	const auto ref_fees_paid = to_ref(data["fees_paid"]);
-	{
-		const auto prev_fees_paid = read_storage_array(address, ref_fees_paid, height - std::min(8640u, height));
-		for(size_t i = 0; i < 2; ++i) {
-			const uint256_t prev_i = i < prev_fees_paid.size() ? to_uint(prev_fees_paid[i]) : uint256_0;
-			out.avg_apy_1d[i] = uint128(365 * (out.fees_paid[i] - prev_i)).to_double() / out.user_total[i].to_double();
+	const auto state = read_storage_array(address, to_ref(data["state"]));
+
+	uint256_t prev_fees_paid_1d[2] = {};
+	uint256_t prev_fees_paid_7d[2] = {};
+
+	for(const auto& entry : state) {
+		auto obj = read_storage_object(address, to_ref(entry));
+		const auto balance = read_storage_array(address, to_ref(obj["balance"]));
+		const auto fees_paid = read_storage_array(address, to_ref(obj["fees_paid"]));
+		const auto fees_claimed = read_storage_array(address, to_ref(obj["fees_claimed"]));
+		const auto user_total = read_storage_array(address, to_ref(obj["user_total"]));
+
+		for(size_t i = 0; i < 2 && i < balance.size(); ++i) {
+			out.balance[i] += to_uint(balance[i]);
+		}
+		for(size_t i = 0; i < 2 && i < fees_paid.size(); ++i) {
+			out.fees_paid[i] += to_uint(fees_paid[i]);
+		}
+		for(size_t i = 0; i < 2 && i < fees_claimed.size(); ++i) {
+			out.fees_claimed[i] += to_uint(fees_claimed[i]);
+		}
+		for(size_t i = 0; i < 2 && i < user_total.size(); ++i) {
+			out.user_total[i] += to_uint(user_total[i]);
+		}
+		const auto ref_fees_paid = to_ref(obj["fees_paid"]);
+		{
+			const auto prev_fees_paid = read_storage_array(address, ref_fees_paid, height - std::min(8640u, height));
+			for(size_t i = 0; i < 2 && i < prev_fees_paid.size(); ++i) {
+				prev_fees_paid_1d[i] += to_uint(prev_fees_paid[i]);
+			}
+		}
+		{
+			const auto prev_fees_paid = read_storage_array(address, ref_fees_paid, height - std::min(60480u, height));
+			for(size_t i = 0; i < 2 && i < prev_fees_paid.size(); ++i) {
+				prev_fees_paid_7d[i] += to_uint(prev_fees_paid[i]);
+			}
 		}
 	}
-	{
-		const auto prev_fees_paid = read_storage_array(address, ref_fees_paid, height - std::min(60480u, height));
-		for(size_t i = 0; i < 2; ++i) {
-			const uint256_t prev_i = i < prev_fees_paid.size() ? to_uint(prev_fees_paid[i]) : uint256_0;
-			out.avg_apy_7d[i] = uint128(52 * (out.fees_paid[i] - prev_i)).to_double() / out.user_total[i].to_double();
-		}
+	for(size_t i = 0; i < 2; ++i) {
+		out.avg_apy_1d[i] = uint128(365 * (out.fees_paid[i] - prev_fees_paid_1d[i])).to_double() / out.user_total[i].to_double();
+	}
+	for(size_t i = 0; i < 2; ++i) {
+		out.avg_apy_7d[i] = uint128(52 * (out.fees_paid[i] - prev_fees_paid_7d[i])).to_double() / out.user_total[i].to_double();
 	}
 	return out;
 }
@@ -1357,6 +1378,7 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	}
 	auto data = read_storage_object(address, to_ref(user_ref.get()));
 
+	out.pool_idx = to_uint(data["pool_idx"]);
 	out.unlock_height = to_uint(data["unlock_height"]);
 	const auto balance = read_storage_array(address, to_ref(data["balance"]));
 	const auto last_user_total = read_storage_array(address, to_ref(data["last_user_total"]));
