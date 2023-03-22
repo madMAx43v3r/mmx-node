@@ -14,6 +14,7 @@ namespace mmx {
 struct MMX_EXPORT swap_user_info_t {
 	
 	
+	uint32_t pool_idx = 0;
 	std::array<::mmx::uint128, 2> balance = {};
 	std::array<::mmx::uint128, 2> last_user_total = {};
 	std::array<::mmx::uint128, 2> last_fees_paid = {};
@@ -59,12 +60,13 @@ struct MMX_EXPORT swap_user_info_t {
 
 template<typename T>
 void swap_user_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_user_info_t>(4);
-	_visitor.type_field("balance", 0); _visitor.accept(balance);
-	_visitor.type_field("last_user_total", 1); _visitor.accept(last_user_total);
-	_visitor.type_field("last_fees_paid", 2); _visitor.accept(last_fees_paid);
-	_visitor.type_field("unlock_height", 3); _visitor.accept(unlock_height);
-	_visitor.template type_end<swap_user_info_t>(4);
+	_visitor.template type_begin<swap_user_info_t>(5);
+	_visitor.type_field("pool_idx", 0); _visitor.accept(pool_idx);
+	_visitor.type_field("balance", 1); _visitor.accept(balance);
+	_visitor.type_field("last_user_total", 2); _visitor.accept(last_user_total);
+	_visitor.type_field("last_fees_paid", 3); _visitor.accept(last_fees_paid);
+	_visitor.type_field("unlock_height", 4); _visitor.accept(unlock_height);
+	_visitor.template type_end<swap_user_info_t>(5);
 }
 
 

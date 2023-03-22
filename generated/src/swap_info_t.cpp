@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 swap_info_t::VNX_TYPE_HASH(0x7586be908f15ae8ull);
-const vnx::Hash64 swap_info_t::VNX_CODE_HASH(0xf8c530f1a4b22d99ull);
+const vnx::Hash64 swap_info_t::VNX_CODE_HASH(0xa5e86b6405f616c7ull);
 
 vnx::Hash64 swap_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -58,6 +58,7 @@ void swap_info_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, user_total);
 	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, avg_apy_1d);
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, avg_apy_7d);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, fee_rates);
 	_visitor.type_end(*_type_code);
 }
 
@@ -74,6 +75,7 @@ void swap_info_t::write(std::ostream& _out) const {
 	_out << ", \"user_total\": "; vnx::write(_out, user_total);
 	_out << ", \"avg_apy_1d\": "; vnx::write(_out, avg_apy_1d);
 	_out << ", \"avg_apy_7d\": "; vnx::write(_out, avg_apy_7d);
+	_out << ", \"fee_rates\": "; vnx::write(_out, fee_rates);
 	_out << "}";
 }
 
@@ -97,6 +99,7 @@ vnx::Object swap_info_t::to_object() const {
 	_object["user_total"] = user_total;
 	_object["avg_apy_1d"] = avg_apy_1d;
 	_object["avg_apy_7d"] = avg_apy_7d;
+	_object["fee_rates"] = fee_rates;
 	return _object;
 }
 
@@ -110,6 +113,8 @@ void swap_info_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(avg_apy_7d);
 		} else if(_entry.first == "balance") {
 			_entry.second.to(balance);
+		} else if(_entry.first == "fee_rates") {
+			_entry.second.to(fee_rates);
 		} else if(_entry.first == "fees_claimed") {
 			_entry.second.to(fees_claimed);
 		} else if(_entry.first == "fees_paid") {
@@ -162,6 +167,9 @@ vnx::Variant swap_info_t::get_field(const std::string& _name) const {
 	if(_name == "avg_apy_7d") {
 		return vnx::Variant(avg_apy_7d);
 	}
+	if(_name == "fee_rates") {
+		return vnx::Variant(fee_rates);
+	}
 	return vnx::Variant();
 }
 
@@ -188,6 +196,8 @@ void swap_info_t::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(avg_apy_1d);
 	} else if(_name == "avg_apy_7d") {
 		_value.to(avg_apy_7d);
+	} else if(_name == "fee_rates") {
+		_value.to(fee_rates);
 	}
 }
 
@@ -215,11 +225,11 @@ std::shared_ptr<vnx::TypeCode> swap_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.swap_info_t";
 	type_code->type_hash = vnx::Hash64(0x7586be908f15ae8ull);
-	type_code->code_hash = vnx::Hash64(0xf8c530f1a4b22d99ull);
+	type_code->code_hash = vnx::Hash64(0xa5e86b6405f616c7ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::swap_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<swap_info_t>>(); };
-	type_code->fields.resize(11);
+	type_code->fields.resize(12);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -286,6 +296,12 @@ std::shared_ptr<vnx::TypeCode> swap_info_t::static_create_type_code() {
 		field.name = "avg_apy_7d";
 		field.code = {11, 2, 10};
 	}
+	{
+		auto& field = type_code->fields[11];
+		field.is_extended = true;
+		field.name = "fee_rates";
+		field.code = {12, 10};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -346,6 +362,7 @@ void read(TypeInput& in, ::mmx::swap_info_t& value, const TypeCode* type_code, c
 			case 6: vnx::read(in, value.fees_paid, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.fees_claimed, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.user_total, type_code, _field->code.data()); break;
+			case 11: vnx::read(in, value.fee_rates, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -376,6 +393,7 @@ void write(TypeOutput& out, const ::mmx::swap_info_t& value, const TypeCode* typ
 	vnx::write(out, value.fees_paid, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.fees_claimed, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.user_total, type_code, type_code->fields[8].code.data());
+	vnx::write(out, value.fee_rates, type_code, type_code->fields[11].code.data());
 }
 
 void read(std::istream& in, ::mmx::swap_info_t& value) {

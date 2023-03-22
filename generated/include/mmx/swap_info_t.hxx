@@ -27,6 +27,7 @@ struct MMX_EXPORT swap_info_t {
 	std::array<::mmx::uint128, 2> user_total = {};
 	std::array<vnx::float64_t, 2> avg_apy_1d = {};
 	std::array<vnx::float64_t, 2> avg_apy_7d = {};
+	std::vector<vnx::float64_t> fee_rates;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -73,7 +74,7 @@ struct MMX_EXPORT swap_info_t {
 
 template<typename T>
 void swap_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_info_t>(11);
+	_visitor.template type_begin<swap_info_t>(12);
 	_visitor.type_field("name", 0); _visitor.accept(name);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("tokens", 2); _visitor.accept(tokens);
@@ -85,7 +86,8 @@ void swap_info_t::accept_generic(T& _visitor) const {
 	_visitor.type_field("user_total", 8); _visitor.accept(user_total);
 	_visitor.type_field("avg_apy_1d", 9); _visitor.accept(avg_apy_1d);
 	_visitor.type_field("avg_apy_7d", 10); _visitor.accept(avg_apy_7d);
-	_visitor.template type_end<swap_info_t>(11);
+	_visitor.type_field("fee_rates", 11); _visitor.accept(fee_rates);
+	_visitor.template type_end<swap_info_t>(12);
 }
 
 
