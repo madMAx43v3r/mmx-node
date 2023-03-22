@@ -680,6 +680,9 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 
 	if(std::dynamic_pointer_cast<const contract::Binary>(contract)) {
 		std::lock_guard<std::mutex> lock(mutex);
+		if(contract_cache.size() >> 16) {
+			contract_cache.clear();
+		}
 		contract_cache[address] = contract;
 	}
 	return contract;
