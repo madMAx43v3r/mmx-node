@@ -13,8 +13,6 @@ class Executable extends TokenBase {
 	
 	map<string, addr_t> depends;
 	
-	// TODO: bool allow_transfers;
-	
 	
 	bool is_valid() const;
 	
