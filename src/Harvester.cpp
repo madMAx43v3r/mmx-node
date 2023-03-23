@@ -195,7 +195,9 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 	if(best_plot) {
 		try {
-			best_proof = best_plot->get_full_proof(value->challenge.bytes, best_index);
+			const auto plot_id = hash_t::from_bytes(best_plot->get_plot_id());
+			const auto challenge = get_plot_challenge(value->challenge, plot_id);
+			best_proof = best_plot->get_full_proof(challenge.bytes, best_index);
 		} catch(const std::exception& ex) {
 			log(WARN) << "[" << host_name << "] Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
 		}
@@ -218,6 +220,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 		if(best_proof) {
 			const auto local_sk_bls = derive_local_key(best_proof->master_sk);
+			const auto local_key = local_sk_bls.GetG1Element();
 			local_sk = skey_t(local_sk_bls);
 
 			auto proof = ProofOfSpaceOG::create();
@@ -226,8 +229,9 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			proof->plot_id = hash_t::from_bytes(best_proof->id);
 			proof->proof_bytes = best_proof->proof;
 			proof->farmer_key = bls_pubkey_t(best_proof->farmer_key);
-			proof->plot_key = local_sk_bls.GetG1Element() + proof->farmer_key.to_bls();
+			proof->plot_key = local_key + proof->farmer_key.to_bls();
 			proof->pool_key = bls_pubkey_t(best_proof->pool_key);
+			proof->local_key = local_key;
 			out->proof = proof;
 		}
 		else if(best_vplot) {

@@ -149,7 +149,7 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 skey_t Farmer::get_skey(const bls_pubkey_t& pubkey) const
 {
 	auto iter = key_map.find(pubkey);
-	if(iter != key_map.end()) {
+	if(iter == key_map.end()) {
 		throw std::logic_error("unknown farmer / plot key: " + pubkey.to_string());
 	}
 	return iter->second;

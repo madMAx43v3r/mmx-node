@@ -1561,10 +1561,10 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(auto block = fork->block) {
 		// compute balance deltas
 		fork->balance = balance_log_t();
-		for(const auto& out : block->get_outputs()) {
+		for(const auto& out : block->get_outputs(params)) {
 			fork->balance.added[std::make_pair(out.address, out.contract)] += out.amount;
 		}
-		for(const auto& in : block->get_inputs()) {
+		for(const auto& in : block->get_inputs(params)) {
 			fork->balance.removed[std::make_pair(in.address, in.contract)] += in.amount;
 		}
 		if(fork_tree.emplace(block->hash, fork).second) {
