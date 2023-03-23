@@ -327,27 +327,26 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 	}
 	hash_t failed_tx;
+	std::mutex mutex;
 	std::exception_ptr failed_ex;
 
-	const auto tx_count = block->tx_list.size();
-#pragma omp parallel for if(is_synced || tx_count >= 16)
-	for(int i = 0; i < int(tx_count); ++i)
-	{
-		const auto& tx = block->tx_list[i];
-		context->wait(tx->id);
-		try {
-			if(validate(tx, context)) {
-				throw std::logic_error("missing exec_result");
-			}
-		} catch(...) {
-#pragma omp critical
-			{
+	for(const auto& tx : block->tx_list) {
+		threads->add_task([this, tx, context, &mutex, &failed_tx, &failed_ex]() {
+			context->wait(tx->id);
+			try {
+				if(validate(tx, context)) {
+					throw std::logic_error("missing exec_result");
+				}
+			} catch(...) {
+				std::lock_guard<std::mutex> lock(mutex);
 				failed_tx = tx->id;
 				failed_ex = std::current_exception();
 			}
-		}
-		context->signal(tx->id);
+			context->signal(tx->id);
+		});
 	}
+	threads->sync();
+
 	if(failed_ex) {
 		try {
 			std::rethrow_exception(failed_ex);

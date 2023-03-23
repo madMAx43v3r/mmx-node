@@ -55,26 +55,27 @@ void Node::verify_proofs()
 
 void Node::pre_validate_blocks()
 {
-#pragma omp parallel for if(!is_synced)
-	for(int i = 0; i < int(pending_forks.size()); ++i)
-	{
-		const auto& fork = pending_forks[i];
-		const auto& block = fork->block;
-		try {
-			if(!block->is_valid()) {
-				throw std::logic_error("invalid block");
+	for(const auto& fork : pending_forks) {
+		threads->add_task([this, fork]() {
+			const auto& block = fork->block;
+			try {
+				if(!block->is_valid()) {
+					throw std::logic_error("invalid block");
+				}
+				// need to verify farmer_sig before adding to fork tree
+				block->validate();
 			}
-			// need to verify farmer_sig before adding to fork tree
-			block->validate();
-		}
-		catch(const std::exception& ex) {
-			fork->is_invalid = true;
-			log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
-		}
-		catch(...) {
-			fork->is_invalid = true;
-		}
+			catch(const std::exception& ex) {
+				fork->is_invalid = true;
+				log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
+			}
+			catch(...) {
+				fork->is_invalid = true;
+			}
+		});
 	}
+	threads->sync();
+
 	const auto list = std::move(pending_forks);
 	pending_forks.clear();
 
@@ -87,69 +88,63 @@ void Node::pre_validate_blocks()
 
 void Node::verify_block_proofs()
 {
-	std::vector<std::shared_ptr<fork_t>> to_verify;
-	{
-		const auto root = get_root();
-		for(const auto& entry : fork_index) {
-			const auto& fork = entry.second;
-			if(fork->is_proof_verified) {
-				continue;
+	std::mutex mutex;
+	const auto root = get_root();
+	for(const auto& entry : fork_index) {
+		const auto& fork = entry.second;
+		if(fork->is_proof_verified) {
+			continue;
+		}
+		const auto& block = fork->block;
+		if(!fork->prev.lock()) {
+			if(auto prev = find_fork(block->prev)) {
+				fork->prev = prev;
 			}
-			const auto& block = fork->block;
-			if(!fork->prev.lock()) {
-				if(auto prev = find_fork(block->prev)) {
-					fork->prev = prev;
-				}
+		}
+		if(!fork->diff_block) {
+			fork->diff_block = find_diff_header(block);
+		}
+		if(auto prev = fork->prev.lock()) {
+			if(prev->is_invalid) {
+				fork->is_invalid = true;
 			}
-			if(!fork->diff_block) {
-				fork->diff_block = find_diff_header(block);
-			}
-			if(auto prev = fork->prev.lock()) {
-				if(prev->is_invalid) {
+			fork->is_connected = prev->is_connected;
+		} else if(block->prev == root->hash) {
+			fork->is_connected = true;
+		}
+		const auto prev = find_prev_header(block);
+		if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
+			continue;
+		}
+		if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
+			fork->vdf_point = point;
+			fork->is_vdf_verified = true;
+		}
+		if(fork->is_vdf_verified || !is_synced) {
+			threads->add_task([this, fork, &mutex]() {
+				const auto& block = fork->block;
+				try {
+					hash_t vdf_challenge;
+					if(find_vdf_challenge(block, vdf_challenge))
+					{
+						const auto challenge = get_challenge(block, vdf_challenge);
+						verify_proof(fork, challenge);
+
+						if(auto proof = block->proof) {
+							std::lock_guard<std::mutex> lock(mutex);
+							add_proof(block->height, challenge, proof, vnx::Hash64());
+						}
+					}
+				} catch(const std::exception& ex) {
+					fork->is_invalid = true;
+					log(WARN) << "Proof verification failed for a block at height " << block->height << ": " << ex.what();
+				} catch(...) {
 					fork->is_invalid = true;
 				}
-				fork->is_connected = prev->is_connected;
-			} else if(block->prev == root->hash) {
-				fork->is_connected = true;
-			}
-			const auto prev = find_prev_header(block);
-			if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
-				continue;
-			}
-			if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
-				fork->vdf_point = point;
-				fork->is_vdf_verified = true;
-			}
-			if(fork->is_vdf_verified || !is_synced) {
-				to_verify.push_back(fork);
-			}
+			});
 		}
 	}
-
-#pragma omp parallel for if(!is_synced)
-	for(int i = 0; i < int(to_verify.size()); ++i)
-	{
-		const auto& fork = to_verify[i];
-		const auto& block = fork->block;
-		try {
-			hash_t vdf_challenge;
-			if(find_vdf_challenge(block, vdf_challenge))
-			{
-				const auto challenge = get_challenge(block, vdf_challenge);
-				verify_proof(fork, challenge);
-
-				if(auto proof = block->proof) {
-#pragma omp critical
-					add_proof(block->height, challenge, proof, vnx::Hash64());
-				}
-			}
-		} catch(const std::exception& ex) {
-			fork->is_invalid = true;
-			log(WARN) << "Proof verification failed for a block at height " << block->height << ": " << ex.what();
-		} catch(...) {
-			fork->is_invalid = true;
-		}
-	}
+	threads->sync();
 }
 
 void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
@@ -595,30 +590,29 @@ void Node::validate_new()
 	}
 
 	// verify transactions in parallel
-	const auto tx_count = tx_list.size();
-#pragma omp parallel for if(tx_count >= 16)
-	for(int i = 0; i < int(tx_count); ++i)
-	{
-		auto& entry = tx_list[i];
-		entry.is_valid = false;
+	for(auto& entry : tx_list) {
+		threads->add_task([this, &entry, context]() {
+			entry.is_valid = false;
 
-		const auto& tx = entry.tx;
-		context->wait(tx->id);
-		try {
-			if(auto res = validate(tx, context)) {
-				entry.cost = res->total_cost;
-				entry.fee = res->total_fee;
-				entry.is_valid = true;
+			const auto& tx = entry.tx;
+			context->wait(tx->id);
+			try {
+				if(auto res = validate(tx, context)) {
+					entry.cost = res->total_cost;
+					entry.fee = res->total_fee;
+					entry.is_valid = true;
+				}
+			} catch(const std::exception& ex) {
+				if(show_warnings) {
+					log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
+				}
+			} catch(...) {
+				// ignore
 			}
-		} catch(const std::exception& ex) {
-			if(show_warnings) {
-				log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
-			}
-		} catch(...) {
-			// ignore
-		}
-		context->signal(tx->id);
+			context->signal(tx->id);
+		});
 	}
+	threads->sync();
 
 	// update tx pool
 	for(const auto& entry : tx_list) {
@@ -661,12 +655,11 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(!check_tx_inclusion(entry.tx->id, context->block->height)) {
-			continue;
-		}
-		if(total_verify_cost + entry.cost <= params->max_block_cost) {
-			tx_list.push_back(entry);
-			total_verify_cost += entry.cost;
+		if(check_tx_inclusion(entry.tx->id, context->block->height)) {
+			if(total_verify_cost + entry.cost <= params->max_block_cost) {
+				tx_list.push_back(entry);
+				total_verify_cost += entry.cost;
+			}
 		}
 	}
 
@@ -676,35 +669,35 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	}
 
 	// verify transactions in parallel
-#pragma omp parallel for
-	for(int i = 0; i < int(tx_list.size()); ++i)
-	{
-		auto& entry = tx_list[i];
-		entry.is_valid = false;
+	for(auto& entry : tx_list) {
+		threads->add_task([this, &entry, context]() {
+			entry.is_valid = false;
 
-		auto& tx = entry.tx;
-		context->wait(tx->id);
-		try {
-			if(auto res = validate(tx, context)) {
-				{
-					auto copy = vnx::clone(tx);
-					copy->exec_result = *res;
-					copy->content_hash = copy->calc_hash(true);
-					tx = copy;
+			auto& tx = entry.tx;
+			context->wait(tx->id);
+			try {
+				if(auto res = validate(tx, context)) {
+					{
+						auto copy = vnx::clone(tx);
+						copy->exec_result = *res;
+						copy->content_hash = copy->calc_hash(true);
+						tx = copy;
+					}
+					entry.cost = res->total_cost;
+					entry.fee = res->total_fee;
+					entry.is_valid = true;
 				}
-				entry.cost = res->total_cost;
-				entry.fee = res->total_fee;
-				entry.is_valid = true;
+			} catch(const std::exception& ex) {
+				if(show_warnings) {
+					log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
+				}
+			} catch(...) {
+				// ignore
 			}
-		} catch(const std::exception& ex) {
-			if(show_warnings) {
-				log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
-			}
-		} catch(...) {
-			// ignore
-		}
-		context->signal(tx->id);
+			context->signal(tx->id);
+		});
 	}
+	threads->sync();
 
 	uint64_t total_cost = 0;
 	uint64_t static_cost = 0;
