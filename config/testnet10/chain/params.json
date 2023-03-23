@@ -2,6 +2,7 @@
 	"port": 12340,
 	"block_time": 10,
 	"plot_filter": 8,
+	"plot_filter_nhash": 64,
 	"min_ksize": 26,
 	"infuse_delay": 3,
 	"challenge_delay": 6,
