@@ -20,7 +20,7 @@ module Farmer {
 	
 	bls_signature_t sign_proof(ProofResponse* value, optional<skey_t> local_sk) const;
 	
-	BlockHeader* sign_block(BlockHeader* block, ulong reward_amount) const;
+	BlockHeader* sign_block(BlockHeader* block) const;
 	
 	
 	void handle(FarmInfo sample);

@@ -817,12 +817,14 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	const auto diff_block = get_diff_header(prev, 1);
 	block->weight = calc_block_weight(params, diff_block, block);
 	block->total_weight = prev->total_weight + block->weight;
+
+	const auto block_reward = calc_block_reward(block);
+	const auto final_reward = calc_final_block_reward(block, block_reward, total_fees);
+	block->reward_amount = final_reward;
 	block->finalize();
 
 	FarmerClient farmer(proof.farmer_mac);
-	const auto block_reward = calc_block_reward(block);
-	const auto final_reward = calc_final_block_reward(block, block_reward, total_fees);
-	const auto result = farmer.sign_block(block, final_reward);
+	const auto result = farmer.sign_block(block);
 
 	if(!result) {
 		throw std::logic_error("farmer refused to sign block");

@@ -33,8 +33,7 @@ protected:
 	bls_signature_t sign_proof(
 			std::shared_ptr<const ProofResponse> proof, const vnx::optional<skey_t>& local_sk) const override;
 
-	std::shared_ptr<const BlockHeader> sign_block(
-			std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const override;
+	std::shared_ptr<const BlockHeader> sign_block(std::shared_ptr<const BlockHeader> block) const override;
 
 	void handle(std::shared_ptr<const FarmInfo> value) override;
 

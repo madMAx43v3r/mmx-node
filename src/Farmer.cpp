@@ -173,7 +173,7 @@ bls_signature_t Farmer::sign_proof(
 }
 
 std::shared_ptr<const BlockHeader> Farmer::sign_block(
-		std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const
+		std::shared_ptr<const BlockHeader> block) const
 {
 	if(!block) {
 		throw std::logic_error("!block");
@@ -185,7 +185,6 @@ std::shared_ptr<const BlockHeader> Farmer::sign_block(
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
-	out->reward_amount = reward_amount;
 	out->reward_addr = reward_addr;
 	out->hash = out->calc_hash().first;
 	out->farmer_sig = bls_signature_t::sign(plot_sk, out->hash);

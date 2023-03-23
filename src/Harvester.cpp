@@ -220,7 +220,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 		if(best_proof) {
 			const auto local_sk_bls = derive_local_key(best_proof->master_sk);
-			const auto local_key = local_sk_bls.GetG1Element();
+			const auto local_key_bls = local_sk_bls.GetG1Element();
 			local_sk = skey_t(local_sk_bls);
 
 			auto proof = ProofOfSpaceOG::create();
@@ -229,9 +229,9 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			proof->plot_id = hash_t::from_bytes(best_proof->id);
 			proof->proof_bytes = best_proof->proof;
 			proof->farmer_key = bls_pubkey_t(best_proof->farmer_key);
-			proof->plot_key = local_key + proof->farmer_key.to_bls();
+			proof->plot_key = local_key_bls + proof->farmer_key.to_bls();
 			proof->pool_key = bls_pubkey_t(best_proof->pool_key);
-			proof->local_key = local_key;
+			proof->local_key = local_key_bls;
 			out->proof = proof;
 		}
 		else if(best_vplot) {
