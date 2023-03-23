@@ -99,7 +99,7 @@ Vue.component('blocks-table', {
 			</template>
 
 			<template v-slot:item.reward="{ item }">
-				{{item.tx_base && item.tx_base.exec_result ? (item.tx_base.exec_result.total_fee_value).toFixed(3) + "&nbsp;&nbsp;MMX" : null}}
+				{{item.reward_addr ? (item.reward_amount.value).toFixed(3) + "&nbsp;&nbsp;MMX" : null}}
 			</template>
 			
 			<template v-slot:item.static_cost_ratio="{ item }">
@@ -418,10 +418,18 @@ Vue.component('block-view', {
 										<td class="key-cell">{{ $t('block_view.vdf_iterations') }}</td>
 										<td>{{data.vdf_iters}}</td>
 									</tr>
-									<template v-if="data.tx_base">
+									<tr>
+										<td class="key-cell">Timelord</td>
+										<td><router-link :to="'/explore/address/' + data.vdf_reward">{{data.vdf_reward}}</router-link></td>
+									</tr>
+									<template v-if="data.reward_addr">
 										<tr>
-											<td class="key-cell">{{ $t('block_view.tx_base') }}</td>
-											<td><router-link :to="'/explore/transaction/' + data.tx_base.id">{{data.tx_base.id}}</router-link></td>
+											<td class="key-cell">Farmer Address</td>
+											<td><router-link :to="'/explore/address/' + data.reward_addr">{{data.reward_addr}}</router-link></td>
+										</tr>
+										<tr>
+											<td class="key-cell">Block Reward</td>
+											<td>{{data.reward_amount.value}}&nbsp;&nbsp;<b>MMX</b></td>
 										</tr>
 									</template>
 									<template v-if="data.proof">

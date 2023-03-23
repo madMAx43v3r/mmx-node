@@ -108,18 +108,18 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 		txio_t out;
 		out.address = vdf_reward;
 		out.amount = time_diff / params->vdf_reward_divider;
-		res.push_back(txio_entry_t::create_ex(hash_t(), height, tx_type_e::VDF_REWARD, out));
+		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::VDF_REWARD, out));
 	}
 	if(reward_addr) {
 		txio_t out;
 		out.address = *reward_addr;
 		out.amount = reward_amount;
-		res.push_back(txio_entry_t::create_ex(hash_t(), height, tx_type_e::REWARD, out));
+		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::REWARD, out));
 
 		// project reward
 		out.address = params->project_addr;
 		out.amount = params->fixed_project_reward + (params->project_ratio.value * out.amount) / params->project_ratio.inverse;
-		res.push_back(txio_entry_t::create_ex(hash_t(), height, tx_type_e::PROJECT_REWARD, out));
+		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::PROJECT_REWARD, out));
 	}
 	for(const auto& tx : tx_list) {
 		if(!tx->exec_result || !tx->exec_result->did_fail) {

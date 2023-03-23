@@ -616,9 +616,15 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 			std::vector<txio_entry_t> entries;
 			recv_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 			for(const auto& entry : entries) {
-				auto& delta = delta_map[std::make_tuple(
-						entry.address, entry.txid, entry.contract,
-						entry.type == tx_type_e::REWARD ? entry.type : tx_type_e())];
+				tx_type_e type;
+				switch(entry.type) {
+					case tx_type_e::REWARD:
+					case tx_type_e::VDF_REWARD:
+					case tx_type_e::PROJECT_REWARD:
+						type = entry.type; break;
+					default: break;
+				}
+				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type)];
 				delta.height = entry.height;
 				delta.recv += entry.amount;
 			}
@@ -627,9 +633,13 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 			std::vector<txio_entry_t> entries;
 			spend_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 			for(const auto& entry : entries) {
-				auto& delta = delta_map[std::make_tuple(
-						entry.address, entry.txid, entry.contract,
-						entry.type == tx_type_e::TXFEE ? entry.type : tx_type_e())];
+				tx_type_e type;
+				switch(entry.type) {
+					case tx_type_e::TXFEE:
+						type = entry.type; break;
+					default: break;
+				}
+				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type)];
 				delta.height = entry.height;
 				delta.spent += entry.amount;
 			}

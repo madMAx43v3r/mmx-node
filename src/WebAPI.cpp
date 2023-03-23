@@ -619,6 +619,7 @@ public:
 		} else if(value && context) {
 			auto tmp = render(*value, context);
 			tmp["time"] = context->get_time(value->height);
+			tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
 			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
 			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
 			set(tmp);
@@ -631,6 +632,7 @@ public:
 		if(value && context) {
 			auto tmp = render(*value, context);
 			tmp["time"] = context->get_time(value->height);
+			tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
 			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
 			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
 			set(tmp);
