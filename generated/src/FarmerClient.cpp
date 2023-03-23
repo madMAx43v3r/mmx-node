@@ -108,10 +108,9 @@ std::shared_ptr<const ::mmx::FarmInfo> FarmerClient::get_farm_info() {
 	}
 }
 
-std::shared_ptr<const ::mmx::BlockHeader> FarmerClient::sign_block(std::shared_ptr<const ::mmx::BlockHeader> block, const uint64_t& reward_amount) {
+std::shared_ptr<const ::mmx::BlockHeader> FarmerClient::sign_block(std::shared_ptr<const ::mmx::BlockHeader> block) {
 	auto _method = ::mmx::Farmer_sign_block::create();
 	_method->block = block;
-	_method->reward_amount = reward_amount;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_sign_block_return>(_return_value)) {
 		return _result->_ret_0;

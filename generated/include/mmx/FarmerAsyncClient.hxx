@@ -41,7 +41,7 @@ public:
 			const std::function<void(const ::mmx::bls_signature_t&)>& _callback = std::function<void(const ::mmx::bls_signature_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, const uint64_t& reward_amount = 0, 
+	uint64_t sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, 
 			const std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

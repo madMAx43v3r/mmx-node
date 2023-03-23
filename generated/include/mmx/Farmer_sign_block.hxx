@@ -15,7 +15,6 @@ class MMX_EXPORT Farmer_sign_block : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::BlockHeader> block;
-	uint64_t reward_amount = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,10 +58,9 @@ public:
 
 template<typename T>
 void Farmer_sign_block::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Farmer_sign_block>(2);
+	_visitor.template type_begin<Farmer_sign_block>(1);
 	_visitor.type_field("block", 0); _visitor.accept(block);
-	_visitor.type_field("reward_amount", 1); _visitor.accept(reward_amount);
-	_visitor.template type_end<Farmer_sign_block>(2);
+	_visitor.template type_end<Farmer_sign_block>(1);
 }
 
 

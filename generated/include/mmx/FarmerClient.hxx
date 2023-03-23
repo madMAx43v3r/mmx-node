@@ -33,7 +33,7 @@ public:
 	
 	::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value = nullptr, const vnx::optional<::mmx::skey_t>& local_sk = nullptr);
 	
-	std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, const uint64_t& reward_amount = 0);
+	std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr);
 	
 	::vnx::Object vnx_get_config_object();
 	

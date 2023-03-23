@@ -279,7 +279,7 @@ std::shared_ptr<vnx::Value> FarmerBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x6924b10f345eb316ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Farmer_sign_block>(_method);
 			auto _return_value = ::mmx::Farmer_sign_block_return::create();
-			_return_value->_ret_0 = sign_block(_args->block, _args->reward_amount);
+			_return_value->_ret_0 = sign_block(_args->block);
 			return _return_value;
 		}
 		case 0x7c59d2761514b455ull: {
