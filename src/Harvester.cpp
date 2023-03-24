@@ -95,6 +95,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	const auto time_begin = vnx::get_wall_time_millis();
 
+	// TODO: async processing such that one slow HDD cannot kill harvester
+
 	struct eligible_plot_t {
 		hash_t id;
 		std::shared_ptr<chiapos::DiskProver> prover;
