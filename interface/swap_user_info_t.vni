@@ -9,6 +9,9 @@ struct swap_user_info_t {
 	uint128 last_user_total[2];
 	uint128 last_fees_paid[2];
 	
+	uint128 fees_earned[2];
+	uint128 equivalent_liquidity[2];
+	
 	uint unlock_height;
 	
 }

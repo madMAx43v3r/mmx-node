@@ -461,7 +461,7 @@ std::shared_ptr<const Transaction> Wallet::swap_trade(
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
-		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const
+		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -475,7 +475,7 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 			auto op = operation::Deposit::create();
 			op->address = address;
 			op->method = "add_liquid";
-			op->args = {vnx::Variant(i)};
+			op->args = {vnx::Variant(i), vnx::Variant(pool_idx)};
 			op->amount = amount[i];
 			op->currency = info.tokens[i];
 			op->user = wallet->get_address(0);

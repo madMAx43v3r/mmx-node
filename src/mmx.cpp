@@ -127,6 +127,7 @@ int main(int argc, char** argv)
 	options["ask-currency"] = "address";
 	options["fee-ratio"] = "1";
 	options["gas-limit"] = "MMX";
+	options["min-amount"] = "0..1";
 	options["user"] = "mmx-admin";
 	options["passwd"] = "PASSWD";
 	options["mnemonic"] = "words";
@@ -151,6 +152,7 @@ int main(int argc, char** argv)
 	mmx::fixed128 ask_amount;
 	double fee_ratio = 1;
 	double gas_limit = 1;
+	double min_amount = 0.95;
 	bool pre_accept = false;
 	vnx::read_config("$1", module);
 	vnx::read_config("$2", command);
@@ -167,6 +169,7 @@ int main(int argc, char** argv)
 	vnx::read_config("ask-currency", ask_currency_addr);
 	vnx::read_config("fee-ratio", fee_ratio);
 	vnx::read_config("gas-limit", gas_limit);
+	vnx::read_config("min-amount", min_amount);
 	vnx::read_config("user", user);
 	vnx::read_config("passwd", passwd);
 
@@ -694,28 +697,28 @@ int main(int argc, char** argv)
 			}
 			else if(command == "buy" || command == "sell")
 			{
-				if(ask_amount > 1) {
-					std::cerr << "Invalid ask amount: " << ask_amount << " (needs to be between 0 and 1, ie. between 0% and 100%)" << std::endl;
+				if(min_amount < 0 || min_amount > 1) {
+					std::cerr << "Invalid min amount: " << min_amount << " (needs to be between 0 and 1, ie. between 0% and 100%)" << std::endl;
 					goto failed;
-				}
-				if(ask_amount < 0) {
-					ask_amount = 0.95;
 				}
 				const auto i = (command == "sell" ? 0 : 1);
 				const auto k = (i + 1) % 2;
 				const auto info = node.get_swap_info(contract);
 				const auto token_i = get_token(node, info.tokens[i]);
 				const auto token_k = get_token(node, info.tokens[k]);
-				const uint64_t deposit_amount = mmx::to_amount(amount, token_i->decimals);
-				const uint128_t expected_amount = info.get_trade_amount(i, deposit_amount);
+				const auto deposit_amount = mmx::to_amount(amount, token_i->decimals);
+				const auto trade_estimate = node.get_swap_trade_estimate(contract, i, deposit_amount);
+				const auto expected_amount = trade_estimate[0];
+
 				if(expected_amount.upper()) {
 					throw std::logic_error("amount overflow");
 				}
-				const uint64_t min_trade_amount = expected_amount.lower() * ask_amount;
+				const uint64_t min_trade_amount = expected_amount.lower() * min_amount;
 
 				std::cout << "You send: " << mmx::to_value(deposit_amount, token_i->decimals) << " " << token_i->symbol << std::endl;
 				std::cout << "You receive at least:  " << mmx::to_value(min_trade_amount, token_k->decimals) << " " << token_k->symbol << std::endl;
-				std::cout << "You expect to receive: " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (approximately)" << std::endl;
+				std::cout << "You expect to receive: " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (estimated)" << std::endl;
+				std::cout << "Fee:   " << mmx::to_value(trade_estimate[1], token_k->decimals) << " " << token_k->symbol << std::endl;
 				std::cout << "Price: " << (command == "sell" ? double(expected_amount.lower()) / deposit_amount : double(deposit_amount) / expected_amount.lower())
 						<< " " << (command == "sell" ? token_k : token_i)->symbol << " / " << (command == "sell" ? token_i : token_k)->symbol << std::endl;
 
@@ -740,6 +743,11 @@ int main(int argc, char** argv)
 					const auto info = node.get_swap_info(contract);
 					const auto token_0 = get_token(node, info.tokens[0]);
 					const auto token_1 = get_token(node, info.tokens[1]);
+
+					if(offset < 0 || size_t(offset) >= info.fee_rates.size()) {
+						std::cerr << "invalid pool offset: " << offset << std::endl;
+						goto failed;
+					}
 					if(have_amount) {
 						add_amount[0] = mmx::to_amount(amount, token_0->decimals);
 					} else {
@@ -776,6 +784,8 @@ int main(int argc, char** argv)
 						}
 						std::cout << std::endl;
 					}
+					std::cout << "Pool Fee: " << info.fee_rates[offset] * 100 << " %" << std::endl;
+
 					if(!add_amount[0] && !add_amount[1]) {
 						std::cerr << usage << std::endl;
 						goto failed;
@@ -784,7 +794,7 @@ int main(int argc, char** argv)
 						if(wallet.is_locked(index)) {
 							spend_options.passphrase = vnx::input_password("Passphrase: ");
 						}
-						if(auto tx = wallet.swap_add_liquid(index, contract, add_amount, spend_options)) {
+						if(auto tx = wallet.swap_add_liquid(index, contract, add_amount, offset, spend_options)) {
 							std::cout << "Transaction ID: " << tx->id << std::endl;
 						}
 					}
@@ -822,11 +832,10 @@ int main(int argc, char** argv)
 							std::cout << "You remove:  " << mmx::to_value(rem_amount[i], token->decimals) << " " << token->symbol << std::endl;
 						}
 					}
-					const auto expected_amount = info.get_remove_amount(user_info, rem_amount);
 					for(int i = 0; i < 2; ++i) {
 						const auto token = i ? token_1 : token_0;
-						if(expected_amount[i]) {
-							std::cout << "You receive: " << mmx::to_value(expected_amount[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+						if(user_info.equivalent_liquidity[i]) {
+							std::cout << "You receive: " << mmx::to_value(user_info.equivalent_liquidity[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
 						}
 					}
 					if(pre_accept || accept_prompt()) {
@@ -859,11 +868,10 @@ int main(int argc, char** argv)
 						const auto token = i ? token_1 : token_0;
 						std::cout << "Balance: " << mmx::to_value(user_info.balance[i], token->decimals) << " " << token->symbol << std::endl;
 					}
-					const auto earned_fees = info.get_earned_fees(user_info);
 					for(int i = 0; i < 2; ++i) {
 						const auto token = i ? token_1 : token_0;
 						if(user_info.balance[i]) {
-							std::cout << "Earned fees: " << mmx::to_value(earned_fees[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+							std::cout << "Earned fees: " << mmx::to_value(user_info.fees_earned[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
 						}
 					}
 					std::cout << "Unlock height: " << user_info.unlock_height << std::endl;

@@ -1351,17 +1351,24 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 		const auto fees_claimed = read_storage_array(address, to_ref(obj["fees_claimed"]));
 		const auto user_total = read_storage_array(address, to_ref(obj["user_total"]));
 
+		swap_pool_info_t pool;
 		for(size_t i = 0; i < 2 && i < balance.size(); ++i) {
-			out.balance[i] += to_uint(balance[i]);
+			pool.balance[i] = to_uint(balance[i]);
 		}
 		for(size_t i = 0; i < 2 && i < fees_paid.size(); ++i) {
-			out.fees_paid[i] += to_uint(fees_paid[i]);
+			pool.fees_paid[i] = to_uint(fees_paid[i]);
 		}
 		for(size_t i = 0; i < 2 && i < fees_claimed.size(); ++i) {
-			out.fees_claimed[i] += to_uint(fees_claimed[i]);
+			pool.fees_claimed[i] = to_uint(fees_claimed[i]);
 		}
 		for(size_t i = 0; i < 2 && i < user_total.size(); ++i) {
-			out.user_total[i] += to_uint(user_total[i]);
+			pool.user_total[i] = to_uint(user_total[i]);
+		}
+		for(size_t i = 0; i < 2; ++i) {
+			out.balance[i] += pool.balance[i];
+			out.fees_paid[i] += pool.fees_paid[i];
+			out.fees_claimed[i] += pool.fees_claimed[i];
+			out.user_total[i] += pool.user_total[i];
 		}
 		const auto ref_fees_paid = to_ref(obj["fees_paid"]);
 		{
@@ -1376,6 +1383,7 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 				prev_fees_paid_7d[i] += to_uint(prev_fees_paid[i]);
 			}
 		}
+		out.pools.push_back(pool);
 	}
 	for(size_t i = 0; i < 2; ++i) {
 		out.avg_apy_1d[i] = uint128(365 * (out.fees_paid[i] - prev_fees_paid_1d[i])).to_double() / out.user_total[i].to_double();
@@ -1396,7 +1404,7 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	}
 	auto data = read_storage_object(address, to_ref(user_ref.get()));
 
-	out.pool_idx = to_uint(data["pool_idx"]).lower();
+	out.pool_idx = to_uint(data["pool_idx"]).lower().lower();
 	out.unlock_height = to_uint(data["unlock_height"]);
 	const auto balance = read_storage_array(address, to_ref(data["balance"]));
 	const auto last_user_total = read_storage_array(address, to_ref(data["last_user_total"]));
@@ -1410,6 +1418,8 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	for(size_t i = 0; i < 2 && i < last_fees_paid.size(); ++i) {
 		out.last_fees_paid[i] = to_uint(last_fees_paid[i]);
 	}
+	out.fees_earned = get_swap_fees_earned(address, user);
+	out.equivalent_liquidity = get_swap_equivalent_liquidity(address, user);
 	return out;
 }
 
@@ -1461,6 +1471,42 @@ std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const in
 		result.push_back(out);
 	}
 	return result;
+}
+
+std::array<uint128, 2> Node::get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount) const
+{
+	const auto info = get_swap_info(address);
+
+	std::vector<vnx::Variant> args;
+	args.emplace_back(i);
+	args.emplace_back(address.to_string());
+	args.emplace_back(nullptr);
+	const auto ret = call_contract(address, "trade", args, nullptr, std::make_pair(info.tokens[i], amount));
+
+	uint128 fee_amount = 0;
+	uint128 trade_amount = 0;
+	for(const auto& entry : ret.to<std::map<uint32_t, vnx::Object>>()) {
+		fee_amount += entry.second["fee_amount"].to<uint128>();
+		trade_amount += entry.second["trade_amount"].to<uint128>();
+	}
+	trade_amount -= fee_amount;
+
+	if(trade_amount.upper()) {
+		throw std::logic_error("amount overflow");
+	}
+	return {trade_amount, fee_amount};
+}
+
+std::array<uint128, 2> Node::get_swap_fees_earned(const addr_t& address, const addr_t& user) const
+{
+	std::vector<vnx::Variant> args;
+	args.emplace_back(user.to_string());
+	return call_contract(address, "get_earned_fees", args).to<std::array<uint128, 2>>();
+}
+
+std::array<uint128, 2> Node::get_swap_equivalent_liquidity(const addr_t& address, const addr_t& user) const
+{
+	return call_contract(address, "rem_all_liquid", {}, user).to<std::array<uint128, 2>>();
 }
 
 std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Node::get_swap_liquidity_by(const std::vector<addr_t>& addresses) const

@@ -130,8 +130,8 @@ protected:
 
 	std::map<std::string, vm::varptr_t> read_storage_object(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 
-	vnx::Variant call_contract(	const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
-								const vnx::optional<addr_t>& user, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit) const override;
+	vnx::Variant call_contract(	const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args = {},
+								const vnx::optional<addr_t>& user = nullptr, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit = nullptr) const override;
 
 	address_info_t get_address_info(const addr_t& address) const override;
 
@@ -170,6 +170,12 @@ protected:
 	swap_user_info_t get_swap_user_info(const addr_t& address, const addr_t& user) const override;
 
 	std::vector<swap_entry_t> get_swap_history(const addr_t& address, const int32_t& limit) const override;
+
+	std::array<uint128, 2> get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount) const override;
+
+	std::array<uint128, 2> get_swap_fees_earned(const addr_t& address, const addr_t& user) const override;
+
+	std::array<uint128, 2> get_swap_equivalent_liquidity(const addr_t& address, const addr_t& user) const override;
 
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity_by(const std::vector<addr_t>& addresses) const override;
 

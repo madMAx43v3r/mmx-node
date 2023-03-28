@@ -236,6 +236,15 @@ module Node implements vnx.addons.HttpComponent {
 	vector<swap_entry_t> get_swap_history(addr_t address, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
+	uint128[2] get_swap_trade_estimate(addr_t address, uint i, ulong amount) const;
+	
+	@Permission(permission_e.PUBLIC)
+	uint128[2] get_swap_fees_earned(addr_t address, addr_t user) const;
+	
+	@Permission(permission_e.PUBLIC)
+	uint128[2] get_swap_equivalent_liquidity(addr_t address, addr_t user) const;
+	
+	@Permission(permission_e.PUBLIC)
 	map<addr_t, pair<addr_t, uint128>[2]> get_swap_liquidity_by(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)

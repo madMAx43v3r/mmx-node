@@ -1,0 +1,10 @@
+package mmx;
+
+struct swap_pool_info_t {
+	
+	uint128 balance[2];
+	uint128 fees_paid[2];
+	uint128 fees_claimed[2];
+	uint128 user_total[2];
+	
+}

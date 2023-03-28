@@ -1392,14 +1392,12 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									std::vector<vnx::Object> balance(empty);
 									std::vector<vnx::Object> fees_earned(empty);
 									std::vector<vnx::Object> remove_amount(empty);
-									const auto fees_earned_ = info.get_earned_fees(user_info);
-									const auto remove_amount_ = info.get_remove_amount(user_info, {user_info.balance[0], user_info.balance[1]});
 									for(int i = 0; i < 2; ++i) {
 										if(auto token = context->find_currency(info.tokens[i])) {
 											symbols[i] = token->symbol;
 											balance[i] = to_amount_object(user_info.balance[i], token->decimals);
-											fees_earned[i] = to_amount_object(fees_earned_[i], token->decimals);
-											remove_amount[i] = to_amount_object(remove_amount_[i], token->decimals);
+											fees_earned[i] = to_amount_object(user_info.fees_earned[i], token->decimals);
+											remove_amount[i] = to_amount_object(user_info.equivalent_liquidity[i], token->decimals);
 										}
 									}
 									out["tokens"] = render_value(info.tokens);
@@ -1448,15 +1446,22 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id, index, value](const swap_info_t& info) {
 					get_context({info.tokens[0], info.tokens[1]}, request_id,
 						[this, request_id, index, info, value](std::shared_ptr<RenderContext> context) {
-							vnx::Object out;
 							const auto token_i = context->find_currency(info.tokens[index]);
 							const auto token_k = context->find_currency(info.tokens[(index + 1) % 2]);
 							if(token_i && token_k) {
+								const auto token_k_decimals = token_k->decimals;
 								const auto amount = to_amount(value, token_i->decimals);
-								const auto trade_amount = info.get_trade_amount(index, amount);
-								out["trade"] = to_amount_object_str(trade_amount, token_k->decimals);
+								node->get_swap_trade_estimate(info.address, index, amount,
+									[this, request_id, token_k_decimals](const std::array<uint128, 2>& ret) {
+										vnx::Object out;
+										out["trade"] = to_amount_object_str(ret[0], token_k_decimals);
+										out["fee"] = to_amount_object_str(ret[1], token_k_decimals);
+										respond(request_id, render_value(out));
+									},
+									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+							} else {
+								throw std::logic_error("unknown token");
 							}
-							respond(request_id, render_value(out));
 					});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -2174,6 +2179,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						[this, request_id, mode, address, args, info](std::shared_ptr<RenderContext> context) {
 							const auto index = args["index"].to<uint32_t>();
 							const auto value = args["amount"].to<std::array<fixed128, 2>>();
+							const auto pool_idx = args["pool_idx"].to<uint32_t>();
 							const auto options = args["options"].to<spend_options_t>();
 
 							std::array<uint64_t, 2> amount = {};
@@ -2187,7 +2193,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									respond(request_id, render(tx));
 								};
 							if(mode) {
-								wallet->swap_add_liquid(index, address, amount, options, callback,
+								wallet->swap_add_liquid(index, address, amount, pool_idx, options, callback,
 									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 							} else {
 								wallet->swap_rem_liquid(index, address, amount, options, callback,
