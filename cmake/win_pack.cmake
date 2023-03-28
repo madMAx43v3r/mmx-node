@@ -55,7 +55,6 @@ list(APPEND APP_FILES
 )
 
 list(APPEND TOOL_FILES
-	mmx_timelord_rewards
 	tx_bench
 )
 foreach(APPFILE IN LISTS APP_FILES TOOL_FILES)
