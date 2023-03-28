@@ -38,7 +38,7 @@ struct statement;
 struct expression;
 
 static constexpr auto ws = dsl::whitespace(dsl::ascii::space);
-static constexpr auto kw_id = dsl::identifier(dsl::ascii::alpha);
+static constexpr auto kw_id = dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
 
 static constexpr auto kw_if = LEXY_KEYWORD("if", kw_id);
 static constexpr auto kw_do = LEXY_KEYWORD("do", kw_id);
@@ -87,7 +87,7 @@ struct expected_identifier {
 
 struct identifier : lexy::token_production {
 	static constexpr auto name = "mmx.lang.identifier";
-	static constexpr auto rule = dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
+	static constexpr auto rule = kw_id;
 };
 
 struct restricted_identifier : lexy::transparent_production {
