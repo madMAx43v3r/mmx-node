@@ -1389,7 +1389,7 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	}
 	auto data = read_storage_object(address, to_ref(user_ref.get()));
 
-	out.pool_idx = to_uint(data["pool_idx"]);
+	out.pool_idx = to_uint(data["pool_idx"]).lower();
 	out.unlock_height = to_uint(data["unlock_height"]);
 	const auto balance = read_storage_array(address, to_ref(data["balance"]));
 	const auto last_user_total = read_storage_array(address, to_ref(data["last_user_total"]));

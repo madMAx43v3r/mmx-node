@@ -2,7 +2,7 @@ package mmx;
 
 struct swap_user_info_t {
 	
-	uint pool_idx;
+	int pool_idx = -1;
 	
 	uint128 balance[2];
 	

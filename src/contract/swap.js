@@ -1,6 +1,6 @@
 
 const FRACT_BITS = 64;
-const LOCK_DURATION = 8640;
+const LOCK_DURATION = 8640;	// 24 hours
 
 const fee_rates = [
 	9223372036854776,		// 0.0005
@@ -127,32 +127,42 @@ function add_liquid(i, pool_idx) public payable
 	_add_liquid(i, pool_idx, this.deposit.amount);
 }
 
-function _rem_liquid(user, i, amount)
+function _rem_liquid(user, i, amount, do_send = true)
 {
+	const k = (i + 1) % 2;
 	const entry = state[user.pool_idx];
 	
 	var ret_amount = amount;
+	var trade_amount = 0;
 	
 	if(entry.balance[i] < entry.user_total[i]) {
 		// token i was sold
 		ret_amount = (amount * entry.balance[i]) / entry.user_total[i];
 
-		const k = (i + 1) % 2;
 		if(entry.balance[k] > entry.user_total[k]) {
 			// token k was bought
-			const trade_amount = ((entry.balance[k] - entry.user_total[k]) * amount) / entry.user_total[i];
+			trade_amount = ((entry.balance[k] - entry.user_total[k]) * amount) / entry.user_total[i];
 			if(trade_amount > 0) {
-				send(this.user, trade_amount, tokens[k]);
+				if(do_send) {
+					send(this.user, trade_amount, tokens[k]);
+				}
 				entry.balance[k] -= trade_amount;
 			}
 		}
 	}
 	if(ret_amount > 0) {
-		send(this.user, ret_amount, tokens[i]);
+		if(do_send) {
+			send(this.user, ret_amount, tokens[i]);
+		}
 		entry.balance[i] -= ret_amount;
 	}
 	user.balance[i] -= amount;
 	entry.user_total[i] -= amount;
+	
+	var out = [0, 0];
+	out[i] = ret_amount;
+	out[k] = trade_amount;
+	return out;
 }
 
 function rem_liquid(i, amount) public
@@ -170,7 +180,7 @@ function rem_liquid(i, amount) public
 	if(amount > user.balance[i]) {
 		fail("amount > user balance", 4);
 	}
-	_rem_liquid(user, i, amount);
+	return _rem_liquid(user, i, amount);
 }
 
 function rem_all_liquid() public
@@ -179,12 +189,18 @@ function rem_all_liquid() public
 	if(user == null) {
 		fail("no such user", 2);
 	}
+	var out = [0, 0];
+	
 	for(var i = 0; i < 2; ++i) {
 		const amount = user.balance[i];
 		if(amount > 0) {
-			rem_liquid(i, amount);
+			const ret = rem_liquid(i, amount);
+			for(var k = 0; k < 2; ++k) {
+				out[k] += ret[k];
+			}
 		}
 	}
+	return out;
 }
 
 function switch_pool(pool_idx) public
@@ -200,7 +216,7 @@ function switch_pool(pool_idx) public
 	
 	for(var i = 0; i < 2; ++i) {
 		if(amount[i] > 0) {
-			_rem_liquid(user, i, amount[i]);
+			_rem_liquid(user, i, amount[i], false);
 		}
 	}
 	for(var i = 0; i < 2; ++i) {
