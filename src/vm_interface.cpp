@@ -32,12 +32,12 @@ void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint
 	}
 }
 
-void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit)
+void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint64_t amount)
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
 	engine->assign(addr, std::make_unique<vm::array_t>());
-	engine->push_back(addr, vm::uint_t(deposit.contract.to_uint256()));
-	engine->push_back(addr, vm::uint_t(deposit.amount));
+	engine->push_back(addr, vm::uint_t(currency.to_uint256()));
+	engine->push_back(addr, vm::uint_t(amount));
 }
 
 std::vector<std::unique_ptr<vm::var_t>> read_constants(const void* constant, const size_t constant_size)

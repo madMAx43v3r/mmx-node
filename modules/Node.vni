@@ -101,6 +101,9 @@ module Node implements vnx.addons.HttpComponent {
 	@Permission(permission_e.PUBLIC)
 	vector<hash_t> get_tx_ids_since(uint height) const;
 	
+	@Permission(permission_e.PUBLIC)
+	exec_result_t validate(Transaction* tx) const;
+	
 	@Permission(PUBLISH)
 	void add_block(Block* block);
 	
@@ -179,7 +182,7 @@ module Node implements vnx.addons.HttpComponent {
 	map<string, varptr_t> read_storage_object(addr_t contract, ulong address, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args) const;
+	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, ulong>> deposit) const;
 	
 	@Permission(permission_e.PUBLIC)
 	address_info_t get_address_info(addr_t address) const;

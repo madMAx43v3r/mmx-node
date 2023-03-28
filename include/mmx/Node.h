@@ -96,6 +96,8 @@ protected:
 
 	std::shared_ptr<const Contract> get_contract_at(const addr_t& address, const hash_t& block_hash) const override;
 
+	exec_result_t validate(std::shared_ptr<const Transaction> tx) const override;
+
 	void add_block(std::shared_ptr<const Block> block) override;
 
 	void add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate = false) override;
@@ -128,7 +130,8 @@ protected:
 
 	std::map<std::string, vm::varptr_t> read_storage_object(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 
-	vnx::Variant call_contract(const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args) const override;
+	vnx::Variant call_contract(	const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
+								const vnx::optional<addr_t>& user, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit) const override;
 
 	address_info_t get_address_info(const addr_t& address) const override;
 
@@ -341,8 +344,6 @@ private:
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
 	std::shared_ptr<execution_context_t> validate(std::shared_ptr<const Block> block) const;
-
-	std::shared_ptr<const exec_result_t> validate(std::shared_ptr<const Transaction> tx) const;
 
 	std::shared_ptr<execution_context_t> new_exec_context() const;
 

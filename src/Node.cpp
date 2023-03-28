@@ -938,7 +938,9 @@ std::map<std::string, vm::varptr_t> Node::read_storage_object(const addr_t& cont
 	return out;
 }
 
-vnx::Variant Node::call_contract(const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args) const
+vnx::Variant Node::call_contract(
+		const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
+		const vnx::optional<addr_t>& user, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit) const
 {
 	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(address))) {
 		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
@@ -946,16 +948,21 @@ vnx::Variant Node::call_contract(const addr_t& address, const std::string& metho
 			if(!func) {
 				throw std::runtime_error("no such method: " + method);
 			}
-			if(!func->is_const) {
-				throw std::runtime_error("method is not const: " + method);
-			}
-			auto engine = std::make_shared<vm::Engine>(address, storage, true);
+			auto cache = std::make_shared<vm::StorageCache>(storage);
+			auto engine = std::make_shared<vm::Engine>(address, cache, func->is_const);
 			engine->total_gas = params->max_block_cost;
 			vm::load(engine, bin);
-			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(get_height()));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
-			engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(get_height()));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
+			if(user) {
+				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
+			} else {
+				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(user->to_uint256()));
+			}
+			if(deposit) {
+				vm::set_deposit(engine, deposit->first, deposit->second);
+			}
 			vm::set_balance(engine, get_balances(address));
 			vm::set_args(engine, args);
 			vm::execute(engine, *func);
@@ -1588,10 +1595,9 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate)
 {
 	if(pre_validate) {
-		if(auto res = validate(tx)) {
-			if(res->did_fail) {
-				throw std::runtime_error(res->get_error_msg());
-			}
+		const auto res = validate(tx);
+		if(res.did_fail) {
+			throw std::runtime_error(res.get_error_msg());
 		}
 	}
 	// Note: tx->is_valid() already checked by Router

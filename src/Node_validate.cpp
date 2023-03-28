@@ -365,7 +365,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	return context;
 }
 
-std::shared_ptr<const exec_result_t> Node::validate(std::shared_ptr<const Transaction> tx) const
+exec_result_t Node::validate(std::shared_ptr<const Transaction> tx) const
 {
 	auto context = new_exec_context();
 	{
@@ -375,7 +375,8 @@ std::shared_ptr<const exec_result_t> Node::validate(std::shared_ptr<const Transa
 	}
 	prepare_context(context, tx);
 
-	return validate(tx, context);
+	const auto out = validate(tx, context);
+	return out ? *out : *tx->exec_result;
 }
 
 void Node::execute(	std::shared_ptr<const Transaction> tx,
@@ -422,7 +423,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		value -= out.amount;
 		state->balance[out.contract] += out.amount;
 
-		vm::set_deposit(engine, out);
+		vm::set_deposit(engine, out.contract, out.amount);
 		exec_outputs.push_back(out);
 	}
 	vm::set_args(engine, exec->args);

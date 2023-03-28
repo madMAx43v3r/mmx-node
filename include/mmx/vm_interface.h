@@ -25,7 +25,7 @@ const contract::method_t* find_method(std::shared_ptr<const contract::Binary> bi
 
 void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint128>& balance);
 
-void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit);
+void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint64_t amount);
 
 std::vector<std::unique_ptr<vm::var_t>> read_constants(std::shared_ptr<const contract::Binary> binary);
 
