@@ -416,11 +416,12 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_trade(const uint32_
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<uint64_t, 2>& amount, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_swap_add_liquid::create();
 	_method->index = index;
 	_method->address = address;
 	_method->amount = amount;
+	_method->pool_idx = pool_idx;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_swap_add_liquid_return>(_return_value)) {

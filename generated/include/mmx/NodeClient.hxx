@@ -18,6 +18,7 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
+#include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
 #include <mmx/swap_entry_t.hxx>
@@ -77,6 +78,8 @@ public:
 	
 	std::vector<::mmx::hash_t> get_tx_ids_since(const uint32_t& height = 0);
 	
+	::mmx::exec_result_t validate(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	
 	void add_block(std::shared_ptr<const ::mmx::Block> block = nullptr);
 	
 	void add_block_async(std::shared_ptr<const ::mmx::Block> block = nullptr);
@@ -131,7 +134,7 @@ public:
 	
 	std::map<std::string, ::mmx::vm::varptr_t> read_storage_object(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint32_t& height = -1);
 	
-	::vnx::Variant call_contract(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {});
+	::vnx::Variant call_contract(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const vnx::optional<::mmx::addr_t>& user = nullptr, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit = nullptr);
 	
 	::mmx::address_info_t get_address_info(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
@@ -166,6 +169,12 @@ public:
 	::mmx::swap_user_info_t get_swap_user_info(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& user = ::mmx::addr_t());
 	
 	std::vector<::mmx::swap_entry_t> get_swap_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = 100);
+	
+	std::array<::mmx::uint128, 2> get_swap_trade_estimate(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& i = 0, const uint64_t& amount = 0);
+	
+	std::array<::mmx::uint128, 2> get_swap_fees_earned(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& user = ::mmx::addr_t());
+	
+	std::array<::mmx::uint128, 2> get_swap_equivalent_liquidity(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& user = ::mmx::addr_t());
 	
 	std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses = {});
 	

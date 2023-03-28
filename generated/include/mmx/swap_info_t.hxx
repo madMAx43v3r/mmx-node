@@ -7,7 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/swap_user_info_t.hxx>
+#include <mmx/swap_pool_info_t.hxx>
 #include <mmx/uint128.hpp>
 
 
@@ -28,6 +28,7 @@ struct MMX_EXPORT swap_info_t {
 	std::array<vnx::float64_t, 2> avg_apy_1d = {};
 	std::array<vnx::float64_t, 2> avg_apy_7d = {};
 	std::vector<vnx::float64_t> fee_rates;
+	std::vector<::mmx::swap_pool_info_t> pools;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -41,9 +42,6 @@ struct MMX_EXPORT swap_info_t {
 	const vnx::TypeCode* get_type_code() const;
 	
 	vnx::float64_t get_price() const;
-	uint64_t get_trade_amount(const uint32_t& i = 0, const uint64_t& amount = 0) const;
-	std::array<uint64_t, 2> get_earned_fees(const ::mmx::swap_user_info_t& user = ::mmx::swap_user_info_t()) const;
-	std::array<uint64_t, 2> get_remove_amount(const ::mmx::swap_user_info_t& user = ::mmx::swap_user_info_t(), const std::array<uint64_t, 2>& amount = {}) const;
 	
 	static std::shared_ptr<swap_info_t> create();
 	std::shared_ptr<swap_info_t> clone() const;
@@ -74,7 +72,7 @@ struct MMX_EXPORT swap_info_t {
 
 template<typename T>
 void swap_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_info_t>(12);
+	_visitor.template type_begin<swap_info_t>(13);
 	_visitor.type_field("name", 0); _visitor.accept(name);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("tokens", 2); _visitor.accept(tokens);
@@ -87,7 +85,8 @@ void swap_info_t::accept_generic(T& _visitor) const {
 	_visitor.type_field("avg_apy_1d", 9); _visitor.accept(avg_apy_1d);
 	_visitor.type_field("avg_apy_7d", 10); _visitor.accept(avg_apy_7d);
 	_visitor.type_field("fee_rates", 11); _visitor.accept(fee_rates);
-	_visitor.template type_end<swap_info_t>(12);
+	_visitor.type_field("pools", 12); _visitor.accept(pools);
+	_visitor.template type_end<swap_info_t>(13);
 }
 
 

@@ -416,11 +416,12 @@ uint64_t WalletAsyncClient::swap_trade(const uint32_t& index, const ::mmx::addr_
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<uint64_t, 2>& amount, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_swap_add_liquid::create();
 	_method->index = index;
 	_method->address = address;
 	_method->amount = amount;
+	_method->pool_idx = pool_idx;
 	_method->options = options;
 	const auto _request_id = ++vnx_next_id;
 	{

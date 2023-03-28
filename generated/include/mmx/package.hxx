@@ -172,12 +172,18 @@ class Node_get_recent_offers;
 class Node_get_recent_offers_return;
 class Node_get_recent_offers_for;
 class Node_get_recent_offers_for_return;
+class Node_get_swap_equivalent_liquidity;
+class Node_get_swap_equivalent_liquidity_return;
+class Node_get_swap_fees_earned;
+class Node_get_swap_fees_earned_return;
 class Node_get_swap_history;
 class Node_get_swap_history_return;
 class Node_get_swap_info;
 class Node_get_swap_info_return;
 class Node_get_swap_liquidity_by;
 class Node_get_swap_liquidity_by_return;
+class Node_get_swap_trade_estimate;
+class Node_get_swap_trade_estimate_return;
 class Node_get_swap_user_info;
 class Node_get_swap_user_info_return;
 class Node_get_swaps;
@@ -230,6 +236,8 @@ class Node_revert_sync;
 class Node_revert_sync_return;
 class Node_start_sync;
 class Node_start_sync_return;
+class Node_validate;
+class Node_validate_return;
 class Operation;
 class Operation_calc_cost;
 class Operation_calc_cost_return;
@@ -503,6 +511,7 @@ class skey_t;
 struct spend_options_t;
 struct swap_entry_t;
 struct swap_info_t;
+struct swap_pool_info_t;
 struct swap_user_info_t;
 struct time_segment_t;
 struct trade_entry_t;
@@ -670,12 +679,18 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recen
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_for; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_for_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_equivalent_liquidity; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_equivalent_liquidity_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_fees_earned; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_fees_earned_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_history; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_history_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_info_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_liquidity_by; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_liquidity_by_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_trade_estimate; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_trade_estimate_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_user_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swap_user_info_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swaps; ///< \private
@@ -728,6 +743,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_revert_sy
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_revert_sync_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_validate; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_validate_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation_calc_cost; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation_calc_cost_return; ///< \private
@@ -993,6 +1010,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_permission_e; 
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_spend_options_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_pool_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_user_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_time_segment_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_entry_t; ///< \private
@@ -1164,12 +1182,18 @@ void read(TypeInput& in, ::mmx::Node_get_recent_offers& value, const TypeCode* t
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_swap_equivalent_liquidity& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_swap_equivalent_liquidity_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_swap_fees_earned& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_swap_fees_earned_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_history& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_history_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_liquidity_by& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_swap_trade_estimate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_swap_trade_estimate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_user_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swap_user_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_swaps& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1222,6 +1246,8 @@ void read(TypeInput& in, ::mmx::Node_revert_sync& value, const TypeCode* type_co
 void read(TypeInput& in, ::mmx::Node_revert_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_start_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_start_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Operation_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Operation_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1495,6 +1521,7 @@ void read(TypeInput& in, ::mmx::skey_t& value, const TypeCode* type_code, const 
 void read(TypeInput& in, ::mmx::spend_options_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::swap_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::swap_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::swap_pool_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::swap_user_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1662,12 +1689,18 @@ void write(TypeOutput& out, const ::mmx::Node_get_recent_offers& value, const Ty
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_swap_equivalent_liquidity& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_swap_equivalent_liquidity_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_swap_fees_earned& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_swap_fees_earned_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_history& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_history_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_liquidity_by& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_liquidity_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_swap_trade_estimate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_swap_trade_estimate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_user_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swap_user_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_swaps& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1720,6 +1753,8 @@ void write(TypeOutput& out, const ::mmx::Node_revert_sync& value, const TypeCode
 void write(TypeOutput& out, const ::mmx::Node_revert_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_start_sync& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_start_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Operation_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Operation_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1993,6 +2028,7 @@ void write(TypeOutput& out, const ::mmx::skey_t& value, const TypeCode* type_cod
 void write(TypeOutput& out, const ::mmx::spend_options_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::swap_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::swap_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::swap_pool_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::swap_user_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2160,12 +2196,18 @@ void read(std::istream& in, ::mmx::Node_get_recent_offers& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers_for& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers_for_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_swap_equivalent_liquidity& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_swap_equivalent_liquidity_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_swap_fees_earned& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_swap_fees_earned_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_history& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_history_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_liquidity_by& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_liquidity_by_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_swap_trade_estimate& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_swap_trade_estimate_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_user_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swap_user_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swaps& value); ///< \private
@@ -2218,6 +2260,8 @@ void read(std::istream& in, ::mmx::Node_revert_sync& value); ///< \private
 void read(std::istream& in, ::mmx::Node_revert_sync_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_start_sync& value); ///< \private
 void read(std::istream& in, ::mmx::Node_start_sync_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_validate& value); ///< \private
+void read(std::istream& in, ::mmx::Node_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::Operation& value); ///< \private
 void read(std::istream& in, ::mmx::Operation_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::Operation_calc_cost_return& value); ///< \private
@@ -2491,6 +2535,7 @@ void read(std::istream& in, ::mmx::skey_t& value); ///< \private
 void read(std::istream& in, ::mmx::spend_options_t& value); ///< \private
 void read(std::istream& in, ::mmx::swap_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::swap_info_t& value); ///< \private
+void read(std::istream& in, ::mmx::swap_pool_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::swap_user_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::time_segment_t& value); ///< \private
 void read(std::istream& in, ::mmx::trade_entry_t& value); ///< \private
@@ -2658,12 +2703,18 @@ void write(std::ostream& out, const ::mmx::Node_get_recent_offers& value); ///< 
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers_for& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers_for_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_swap_equivalent_liquidity& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_swap_equivalent_liquidity_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_swap_fees_earned& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_swap_fees_earned_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_history& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_history_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_liquidity_by& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_liquidity_by_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_swap_trade_estimate& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_swap_trade_estimate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_user_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swap_user_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swaps& value); ///< \private
@@ -2716,6 +2767,8 @@ void write(std::ostream& out, const ::mmx::Node_revert_sync& value); ///< \priva
 void write(std::ostream& out, const ::mmx::Node_revert_sync_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_start_sync& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_start_sync_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_validate& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Operation& value); ///< \private
 void write(std::ostream& out, const ::mmx::Operation_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::Operation_calc_cost_return& value); ///< \private
@@ -2989,6 +3042,7 @@ void write(std::ostream& out, const ::mmx::skey_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::spend_options_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::swap_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::swap_info_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::swap_pool_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::swap_user_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::time_segment_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::trade_entry_t& value); ///< \private
@@ -3156,12 +3210,18 @@ void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers& value); ///< 
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_for& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_for_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_swap_equivalent_liquidity& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_swap_equivalent_liquidity_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_swap_fees_earned& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_swap_fees_earned_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_history& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_history_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_liquidity_by& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_liquidity_by_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_swap_trade_estimate& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_swap_trade_estimate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_user_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swap_user_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swaps& value); ///< \private
@@ -3214,6 +3274,8 @@ void accept(Visitor& visitor, const ::mmx::Node_revert_sync& value); ///< \priva
 void accept(Visitor& visitor, const ::mmx::Node_revert_sync_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_start_sync& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_start_sync_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_validate& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Operation& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Operation_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Operation_calc_cost_return& value); ///< \private
@@ -3487,6 +3549,7 @@ void accept(Visitor& visitor, const ::mmx::skey_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::spend_options_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::swap_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::swap_info_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::swap_pool_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::swap_user_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::time_segment_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::trade_entry_t& value); ///< \private
@@ -6947,6 +7010,98 @@ struct type<::mmx::Node_get_recent_offers_for_return> {
 
 /// \private
 template<>
+struct type<::mmx::Node_get_swap_equivalent_liquidity> {
+	void read(TypeInput& in, ::mmx::Node_get_swap_equivalent_liquidity& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_swap_equivalent_liquidity& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_swap_equivalent_liquidity& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_swap_equivalent_liquidity& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_swap_equivalent_liquidity& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_equivalent_liquidity& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_swap_equivalent_liquidity_return> {
+	void read(TypeInput& in, ::mmx::Node_get_swap_equivalent_liquidity_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_swap_equivalent_liquidity_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_swap_equivalent_liquidity_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_swap_equivalent_liquidity_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_swap_equivalent_liquidity_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_equivalent_liquidity_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_swap_fees_earned> {
+	void read(TypeInput& in, ::mmx::Node_get_swap_fees_earned& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_swap_fees_earned& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_swap_fees_earned& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_swap_fees_earned& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_swap_fees_earned& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_fees_earned& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_swap_fees_earned_return> {
+	void read(TypeInput& in, ::mmx::Node_get_swap_fees_earned_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_swap_fees_earned_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_swap_fees_earned_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_swap_fees_earned_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_swap_fees_earned_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_fees_earned_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::Node_get_swap_history> {
 	void read(TypeInput& in, ::mmx::Node_get_swap_history& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -7081,6 +7236,52 @@ struct type<::mmx::Node_get_swap_liquidity_by_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_liquidity_by_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_swap_trade_estimate> {
+	void read(TypeInput& in, ::mmx::Node_get_swap_trade_estimate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_swap_trade_estimate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_swap_trade_estimate& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_swap_trade_estimate& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_swap_trade_estimate& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_trade_estimate& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_swap_trade_estimate_return> {
+	void read(TypeInput& in, ::mmx::Node_get_swap_trade_estimate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_swap_trade_estimate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_swap_trade_estimate_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_swap_trade_estimate_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_swap_trade_estimate_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_swap_trade_estimate_return& value, bool special = false);
 };
 
 /// \private
@@ -8277,6 +8478,52 @@ struct type<::mmx::Node_start_sync_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_start_sync_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_validate> {
+	void read(TypeInput& in, ::mmx::Node_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_validate& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_validate& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_validate& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_validate& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_validate& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_validate_return> {
+	void read(TypeInput& in, ::mmx::Node_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_validate_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_validate_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_validate_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_validate_return& value, bool special = false);
 };
 
 /// \private
@@ -14541,6 +14788,29 @@ struct type<::mmx::swap_info_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::swap_info_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::swap_pool_info_t> {
+	void read(TypeInput& in, ::mmx::swap_pool_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::swap_pool_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::swap_pool_info_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::swap_pool_info_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::swap_pool_info_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::swap_pool_info_t& value, bool special = false);
 };
 
 /// \private

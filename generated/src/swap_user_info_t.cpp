@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 swap_user_info_t::VNX_TYPE_HASH(0x1b6c720bff2d638cull);
-const vnx::Hash64 swap_user_info_t::VNX_CODE_HASH(0x6f0092131d224a2ull);
+const vnx::Hash64 swap_user_info_t::VNX_CODE_HASH(0x996df91e34c838d2ull);
 
 vnx::Hash64 swap_user_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +49,9 @@ void swap_user_info_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, balance);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, last_user_total);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, last_fees_paid);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, unlock_height);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, fees_earned);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, equivalent_liquidity);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, unlock_height);
 	_visitor.type_end(*_type_code);
 }
 
@@ -59,6 +61,8 @@ void swap_user_info_t::write(std::ostream& _out) const {
 	_out << ", \"balance\": "; vnx::write(_out, balance);
 	_out << ", \"last_user_total\": "; vnx::write(_out, last_user_total);
 	_out << ", \"last_fees_paid\": "; vnx::write(_out, last_fees_paid);
+	_out << ", \"fees_earned\": "; vnx::write(_out, fees_earned);
+	_out << ", \"equivalent_liquidity\": "; vnx::write(_out, equivalent_liquidity);
 	_out << ", \"unlock_height\": "; vnx::write(_out, unlock_height);
 	_out << "}";
 }
@@ -76,6 +80,8 @@ vnx::Object swap_user_info_t::to_object() const {
 	_object["balance"] = balance;
 	_object["last_user_total"] = last_user_total;
 	_object["last_fees_paid"] = last_fees_paid;
+	_object["fees_earned"] = fees_earned;
+	_object["equivalent_liquidity"] = equivalent_liquidity;
 	_object["unlock_height"] = unlock_height;
 	return _object;
 }
@@ -84,6 +90,10 @@ void swap_user_info_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "balance") {
 			_entry.second.to(balance);
+		} else if(_entry.first == "equivalent_liquidity") {
+			_entry.second.to(equivalent_liquidity);
+		} else if(_entry.first == "fees_earned") {
+			_entry.second.to(fees_earned);
 		} else if(_entry.first == "last_fees_paid") {
 			_entry.second.to(last_fees_paid);
 		} else if(_entry.first == "last_user_total") {
@@ -109,6 +119,12 @@ vnx::Variant swap_user_info_t::get_field(const std::string& _name) const {
 	if(_name == "last_fees_paid") {
 		return vnx::Variant(last_fees_paid);
 	}
+	if(_name == "fees_earned") {
+		return vnx::Variant(fees_earned);
+	}
+	if(_name == "equivalent_liquidity") {
+		return vnx::Variant(equivalent_liquidity);
+	}
 	if(_name == "unlock_height") {
 		return vnx::Variant(unlock_height);
 	}
@@ -124,6 +140,10 @@ void swap_user_info_t::set_field(const std::string& _name, const vnx::Variant& _
 		_value.to(last_user_total);
 	} else if(_name == "last_fees_paid") {
 		_value.to(last_fees_paid);
+	} else if(_name == "fees_earned") {
+		_value.to(fees_earned);
+	} else if(_name == "equivalent_liquidity") {
+		_value.to(equivalent_liquidity);
 	} else if(_name == "unlock_height") {
 		_value.to(unlock_height);
 	}
@@ -153,16 +173,17 @@ std::shared_ptr<vnx::TypeCode> swap_user_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.swap_user_info_t";
 	type_code->type_hash = vnx::Hash64(0x1b6c720bff2d638cull);
-	type_code->code_hash = vnx::Hash64(0x6f0092131d224a2ull);
+	type_code->code_hash = vnx::Hash64(0x996df91e34c838d2ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::swap_user_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<swap_user_info_t>>(); };
-	type_code->fields.resize(5);
+	type_code->fields.resize(7);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
 		field.name = "pool_idx";
-		field.code = {3};
+		field.value = vnx::to_string(-1);
+		field.code = {7};
 	}
 	{
 		auto& field = type_code->fields[1];
@@ -184,6 +205,18 @@ std::shared_ptr<vnx::TypeCode> swap_user_info_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "fees_earned";
+		field.code = {11, 2, 11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[5];
+		field.is_extended = true;
+		field.name = "equivalent_liquidity";
+		field.code = {11, 2, 11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[6];
 		field.data_size = 4;
 		field.name = "unlock_height";
 		field.code = {3};
@@ -233,7 +266,7 @@ void read(TypeInput& in, ::mmx::swap_user_info_t& value, const TypeCode* type_co
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.pool_idx, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[4]) {
+		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.unlock_height, _field->code.data());
 		}
 	}
@@ -242,6 +275,8 @@ void read(TypeInput& in, ::mmx::swap_user_info_t& value, const TypeCode* type_co
 			case 1: vnx::read(in, value.balance, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.last_user_total, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.last_fees_paid, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.fees_earned, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.equivalent_liquidity, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -266,6 +301,8 @@ void write(TypeOutput& out, const ::mmx::swap_user_info_t& value, const TypeCode
 	vnx::write(out, value.balance, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.last_user_total, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.last_fees_paid, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.fees_earned, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.equivalent_liquidity, type_code, type_code->fields[5].code.data());
 }
 
 void read(std::istream& in, ::mmx::swap_user_info_t& value) {

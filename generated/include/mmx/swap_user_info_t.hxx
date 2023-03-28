@@ -14,10 +14,12 @@ namespace mmx {
 struct MMX_EXPORT swap_user_info_t {
 	
 	
-	uint32_t pool_idx = 0;
+	int32_t pool_idx = -1;
 	std::array<::mmx::uint128, 2> balance = {};
 	std::array<::mmx::uint128, 2> last_user_total = {};
 	std::array<::mmx::uint128, 2> last_fees_paid = {};
+	std::array<::mmx::uint128, 2> fees_earned = {};
+	std::array<::mmx::uint128, 2> equivalent_liquidity = {};
 	uint32_t unlock_height = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -60,13 +62,15 @@ struct MMX_EXPORT swap_user_info_t {
 
 template<typename T>
 void swap_user_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_user_info_t>(5);
+	_visitor.template type_begin<swap_user_info_t>(7);
 	_visitor.type_field("pool_idx", 0); _visitor.accept(pool_idx);
 	_visitor.type_field("balance", 1); _visitor.accept(balance);
 	_visitor.type_field("last_user_total", 2); _visitor.accept(last_user_total);
 	_visitor.type_field("last_fees_paid", 3); _visitor.accept(last_fees_paid);
-	_visitor.type_field("unlock_height", 4); _visitor.accept(unlock_height);
-	_visitor.template type_end<swap_user_info_t>(5);
+	_visitor.type_field("fees_earned", 4); _visitor.accept(fees_earned);
+	_visitor.type_field("equivalent_liquidity", 5); _visitor.accept(equivalent_liquidity);
+	_visitor.type_field("unlock_height", 6); _visitor.accept(unlock_height);
+	_visitor.template type_end<swap_user_info_t>(7);
 }
 
 
