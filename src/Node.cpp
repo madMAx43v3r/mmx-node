@@ -965,7 +965,7 @@ vnx::Variant Node::call_contract(
 			}
 			vm::set_balance(engine, get_balances(address));
 			vm::set_args(engine, args);
-			vm::execute(engine, *func);
+			vm::execute(engine, *func, true);
 			return vm::read(engine, vm::MEM_STACK);
 		}
 		throw std::runtime_error("no such binary");
