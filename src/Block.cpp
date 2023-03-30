@@ -124,7 +124,7 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 	for(const auto& tx : tx_list) {
 		if(!tx->exec_result || !tx->exec_result->did_fail) {
 			for(const auto& out : tx->get_outputs()) {
-				txio_entry_t::create_ex(tx->id, height, tx_type_e::RECEIVE, out);
+				res.push_back(txio_entry_t::create_ex(tx->id, height, tx_type_e::RECEIVE, out));
 			}
 		}
 	}

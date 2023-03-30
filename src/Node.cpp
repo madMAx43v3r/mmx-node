@@ -956,9 +956,9 @@ vnx::Variant Node::call_contract(
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(get_height()));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
 			if(user) {
-				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
-			} else {
 				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(user->to_uint256()));
+			} else {
+				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 			}
 			if(deposit) {
 				vm::set_deposit(engine, deposit->first, deposit->second);
@@ -1398,7 +1398,8 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 {
 	swap_user_info_t out;
 	const auto key = storage->lookup(address, vm::uint_t(user.to_uint256()));
-	const auto user_ref = storage->read(address, vm::MEM_STATIC + 6, key);
+	const auto users = read_storage_field(address, "users");
+	const auto user_ref = storage->read(address, to_ref(users.first), key);
 	if(!user_ref) {
 		return out;
 	}
@@ -1499,14 +1500,12 @@ std::array<uint128, 2> Node::get_swap_trade_estimate(const addr_t& address, cons
 
 std::array<uint128, 2> Node::get_swap_fees_earned(const addr_t& address, const addr_t& user) const
 {
-	std::vector<vnx::Variant> args;
-	args.emplace_back(user.to_string());
-	return call_contract(address, "get_earned_fees", args).to<std::array<uint128, 2>>();
+	return call_contract(address, "get_earned_fees", {vnx::Variant(user.to_string())}).to<std::array<uint128, 2>>();
 }
 
 std::array<uint128, 2> Node::get_swap_equivalent_liquidity(const addr_t& address, const addr_t& user) const
 {
-	return call_contract(address, "rem_all_liquid", {}, user).to<std::array<uint128, 2>>();
+	return call_contract(address, "rem_all_liquid", {vnx::Variant(true)}, user).to<std::array<uint128, 2>>();
 }
 
 std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Node::get_swap_liquidity_by(const std::vector<addr_t>& addresses) const

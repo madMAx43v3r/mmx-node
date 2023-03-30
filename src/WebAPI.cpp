@@ -1391,20 +1391,21 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									std::vector<std::string> symbols(2);
 									std::vector<vnx::Object> balance(empty);
 									std::vector<vnx::Object> fees_earned(empty);
-									std::vector<vnx::Object> remove_amount(empty);
+									std::vector<vnx::Object> equivalent_liquidity(empty);
 									for(int i = 0; i < 2; ++i) {
 										if(auto token = context->find_currency(info.tokens[i])) {
 											symbols[i] = token->symbol;
 											balance[i] = to_amount_object(user_info.balance[i], token->decimals);
 											fees_earned[i] = to_amount_object(user_info.fees_earned[i], token->decimals);
-											remove_amount[i] = to_amount_object(user_info.equivalent_liquidity[i], token->decimals);
+											equivalent_liquidity[i] = to_amount_object(user_info.equivalent_liquidity[i], token->decimals);
 										}
 									}
+									out["pool_idx"] = user_info.pool_idx;
 									out["tokens"] = render_value(info.tokens);
 									out["symbols"] = symbols;
 									out["balance"] = balance;
 									out["fees_earned"] = fees_earned;
-									out["remove_amount"] = remove_amount;
+									out["equivalent_liquidity"] = equivalent_liquidity;
 									out["unlock_height"] = user_info.unlock_height;
 									out["swap"] = render_value(info, context);
 									respond(request_id, out);

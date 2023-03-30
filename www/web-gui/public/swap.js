@@ -347,26 +347,22 @@ Vue.component('swap-user-info', {
 						<th>Your Liquidity</th>
 						<th>Fees Earned</th>
 						<th>Symbol</th>
+						<th>Fee Level</th>
 						<th>Unlock Height</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td class="key-cell">Token</td>
-						<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
-						<td>{{ parseFloat( (data.remove_amount[0].value).toPrecision(6) ) }}</td>
-						<td>{{ parseFloat( (data.fees_earned[0].value).toPrecision(6) ) }}</td>
-						<td>{{data.symbols[0]}}</td>
-						<td>{{data.unlock_height}}</td>
-					</tr>
-					<tr>
-						<td class="key-cell">Currency</td>
-						<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
-						<td>{{ parseFloat( (data.remove_amount[1].value).toPrecision(6) ) }}</td>
-						<td>{{ parseFloat( (data.fees_earned[1].value).toPrecision(6) ) }}</td>
-						<td>{{data.symbols[1]}}</td>
-						<td>{{data.unlock_height}}</td>
-					</tr>
+					<template v-for="i in [0, 1]">
+						<tr>
+							<td class="key-cell">Token</td>
+							<td><b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b></td>
+							<td>{{ parseFloat( (data.equivalent_liquidity[i].value).toPrecision(6) ) }}</td>
+							<td>{{ parseFloat( (data.fees_earned[i].value).toPrecision(6) ) }}</td>
+							<td>{{data.symbols[i]}}</td>
+							<td><template v-if="data.pool_idx >= 0">{{(data.swap.fee_rates[data.pool_idx] * 100).toFixed(2)}} %</template></td>
+							<td>{{data.unlock_height}}</td>
+						</tr>
+					</template>
 				</tbody>
 			</v-simple-table>
 		</v-card>
@@ -649,6 +645,7 @@ Vue.component('swap-liquid', {
 			paid: false,
 			user: null,
 			user_address: null,
+			pool_idx: -1,
 			amount_0: null,
 			amount_1: null,
 			price: null,
@@ -688,6 +685,7 @@ Vue.component('swap-liquid', {
 			const req = {};
 			req.index = this.wallet;
 			req.address = this.address;
+			req.pool_idx = this.pool_idx;
 			req.amount = [this.amount_0, this.amount_1];
 			fetch('/wapi/wallet/swap/' + (mode ? "add" : "rem") + "_liquid", {body: JSON.stringify(req), method: "post"})
 				.then(response => {
@@ -728,6 +726,19 @@ Vue.component('swap-liquid', {
 		}
 	},
 	watch: {
+		data(value) {
+			var fee_rates = [];
+			for(let i = 0; i < value.fee_rates.length; ++i) {
+				fee_rates.push({text: (value.fee_rates[i] * 100).toFixed(2) + " %", value: i});
+			}
+			this.fee_rates = fee_rates;
+		},
+		user(value) {
+			if(value && this.pool_idx < 0 && value.pool_idx >= 0) {
+				this.pool_idx = value.pool_idx;
+				console.log("pool_idx = " + this.pool_idx)
+			}
+		},
 		wallet() {
 			this.update_user();
 		},
@@ -753,6 +764,16 @@ Vue.component('swap-liquid', {
 				<v-card-text>
 					<v-row>
 						<v-col>
+							<v-select
+								v-model="pool_idx"
+								:items="fee_rates"
+								label="Fee Level"
+								item-text="text"
+								item-value="value"
+								:disabled="this.user && this.user.pool_idx >= 0"
+							></v-select>
+						</v-col>
+						<v-col>
 							<v-text-field class="text-align-right"
 								v-model="price"
 								label="Price"
@@ -777,10 +798,10 @@ Vue.component('swap-liquid', {
 					</v-row>
 				</v-card-text>
 				<v-card-actions class="justify-end">
-					<v-btn @click="match()">Match</v-btn>
+					<v-btn @click="match()">Price Match</v-btn>
 					<v-btn @click="payout()" :disabled="!user || paid || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
-					<v-btn color="green lighten-1" @click="submit(true)" :disabled="!(amount_0 || amount_1)">Add Liquidity</v-btn>
-					<v-btn color="red lighten-1" @click="submit(false)" :disabled="!(amount_0 || amount_1)">Remove Liquidity</v-btn>
+					<v-btn color="green lighten-1" @click="submit(true)" :disabled="!(amount_0 || amount_1) || pool_idx < 0">Add Liquidity</v-btn>
+					<v-btn color="red lighten-1" @click="submit(false)" :disabled="!(amount_0 || amount_1) || pool_idx < 0">Remove Liquidity</v-btn>
 				</v-card-actions>
 			</v-card>
 			

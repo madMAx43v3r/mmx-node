@@ -505,7 +505,7 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 			auto op = operation::Execute::create();
 			op->address = address;
 			op->method = "rem_liquid";
-			op->args = {vnx::Variant(i), vnx::Variant(amount[i])};
+			op->args = {vnx::Variant(i), vnx::Variant(amount[i]), vnx::Variant(false)};
 			op->user = wallet->get_address(0);
 			tx->execute.push_back(op);
 		}

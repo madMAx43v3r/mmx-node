@@ -20,8 +20,8 @@ var users = {};
 
 function init(token, currency)
 {
-	push(tokens, token);
-	push(tokens, currency);
+	push(tokens, bech32(token));
+	push(tokens, bech32(currency));
 	
 	for(var j = 0; j < size(fee_rates); ++j) {
 		var out = {};
@@ -53,7 +53,7 @@ function _get_earned_fees(user) const
 
 function get_earned_fees(address) const public
 {
-	const user = users[address];
+	const user = users[bech32(address)];
 	if(user == null) {
 		fail("no such user", 2);
 	}
@@ -165,7 +165,7 @@ function _rem_liquid(user, i, amount, do_send = true)
 	return out;
 }
 
-function rem_liquid(i, amount) public
+function rem_liquid(i, amount, dry_run = false) public
 {
 	if(amount == 0) {
 		fail("amount == 0");
@@ -174,16 +174,18 @@ function rem_liquid(i, amount) public
 	if(user == null) {
 		fail("no such user", 2);
 	}
-	if(this.height < user.unlock_height + LOCK_DURATION) {
-		fail("liquidity still locked", 3);
+	if(!dry_run) {
+		if(this.height < user.unlock_height + LOCK_DURATION) {
+			fail("liquidity still locked", 3);
+		}
 	}
 	if(amount > user.balance[i]) {
 		fail("amount > user balance", 4);
 	}
-	return _rem_liquid(user, i, amount);
+	return _rem_liquid(user, i, amount, !dry_run);
 }
 
-function rem_all_liquid() public
+function rem_all_liquid(dry_run = false) public
 {
 	const user = users[this.user];
 	if(user == null) {
@@ -194,7 +196,7 @@ function rem_all_liquid() public
 	for(var i = 0; i < 2; ++i) {
 		const amount = user.balance[i];
 		if(amount > 0) {
-			const ret = rem_liquid(i, amount);
+			const ret = rem_liquid(i, amount, dry_run);
 			for(var k = 0; k < 2; ++k) {
 				out[k] += ret[k];
 			}
