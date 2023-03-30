@@ -280,12 +280,13 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::mutate(const uint32_t& i
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::execute(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::execute(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<uint32_t>& user, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_execute::create();
 	_method->index = index;
 	_method->address = address;
 	_method->method = method;
 	_method->args = args;
+	_method->user = user;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_execute_return>(_return_value)) {

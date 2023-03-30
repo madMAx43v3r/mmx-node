@@ -50,7 +50,7 @@ public:
 	
 	std::shared_ptr<const ::mmx::Transaction> mutate(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::vnx::Object& method = ::vnx::Object(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> execute(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> execute(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const vnx::optional<uint32_t>& user = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> deposit(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	

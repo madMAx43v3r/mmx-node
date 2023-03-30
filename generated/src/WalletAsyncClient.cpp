@@ -280,12 +280,13 @@ uint64_t WalletAsyncClient::mutate(const uint32_t& index, const ::mmx::addr_t& a
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::execute(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::execute(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<uint32_t>& user, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_execute::create();
 	_method->index = index;
 	_method->address = address;
 	_method->method = method;
 	_method->args = args;
+	_method->user = user;
 	_method->options = options;
 	const auto _request_id = ++vnx_next_id;
 	{

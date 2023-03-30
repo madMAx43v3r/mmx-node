@@ -62,7 +62,7 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t execute(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t execute(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const vnx::optional<uint32_t>& user = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
