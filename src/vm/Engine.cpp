@@ -1556,6 +1556,8 @@ void Engine::reset()
 
 void Engine::commit()
 {
+	clear_stack();
+
 	for(auto iter = memory.lower_bound(MEM_STATIC); iter != memory.end(); ++iter)
 	{
 		if(auto var = iter->second.get()) {
