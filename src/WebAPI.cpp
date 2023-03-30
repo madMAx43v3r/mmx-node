@@ -483,6 +483,7 @@ public:
 		std::vector<vnx::Object> user_total(empty);
 		std::vector<vnx::Object> volume_1d(empty);
 		std::vector<vnx::Object> volume_7d(empty);
+		std::vector<vnx::Object> pools;
 		if(context) {
 			for(int i = 0; i < 2; ++i) {
 				if(auto token = context->find_currency(value.tokens[i])) {
@@ -497,6 +498,26 @@ public:
 					volume_7d[i] = to_amount_object(value.volume_7d[i], token->decimals);
 				}
 			}
+			for(const auto& info : value.pools) {
+				vnx::Object tmp;
+				std::vector<vnx::Object> balance(empty);
+				std::vector<vnx::Object> fees_paid(empty);
+				std::vector<vnx::Object> fees_claimed(empty);
+				std::vector<vnx::Object> user_total(empty);
+				for(int i = 0; i < 2; ++i) {
+					if(auto token = context->find_currency(value.tokens[i])) {
+						balance[i] = to_amount_object(info.balance[i], token->decimals);
+						fees_paid[i] = to_amount_object(info.fees_paid[i], token->decimals);
+						fees_claimed[i] = to_amount_object(info.fees_claimed[i], token->decimals);
+						user_total[i] = to_amount_object(info.user_total[i], token->decimals);
+					}
+				}
+				tmp["balance"] = balance;
+				tmp["fees_paid"] = fees_paid;
+				tmp["fees_claimed"] = fees_claimed;
+				tmp["user_total"] = user_total;
+				pools.push_back(tmp);
+			}
 		}
 		tmp["symbols"] = symbols;
 		tmp["decimals"] = decimals;
@@ -507,6 +528,7 @@ public:
 		tmp["user_total"] = user_total;
 		tmp["volume_1d"] = volume_1d;
 		tmp["volume_7d"] = volume_7d;
+		tmp["pools"] = pools;
 		tmp["price"] = value.get_price();
 		tmp["display_price"] = value.get_price() * pow(10, decimals[0] - decimals[1]);
 		set(tmp);
