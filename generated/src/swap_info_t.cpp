@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 swap_info_t::VNX_TYPE_HASH(0x7586be908f15ae8ull);
-const vnx::Hash64 swap_info_t::VNX_CODE_HASH(0xaf053d7c354e26bdull);
+const vnx::Hash64 swap_info_t::VNX_CODE_HASH(0x5ce6cfe182fce2ull);
 
 vnx::Hash64 swap_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -56,10 +56,12 @@ void swap_info_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, fees_paid);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, fees_claimed);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, user_total);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, avg_apy_1d);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, avg_apy_7d);
-	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, fee_rates);
-	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, pools);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, volume_1d);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, volume_7d);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, avg_apy_1d);
+	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, avg_apy_7d);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, fee_rates);
+	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, pools);
 	_visitor.type_end(*_type_code);
 }
 
@@ -74,6 +76,8 @@ void swap_info_t::write(std::ostream& _out) const {
 	_out << ", \"fees_paid\": "; vnx::write(_out, fees_paid);
 	_out << ", \"fees_claimed\": "; vnx::write(_out, fees_claimed);
 	_out << ", \"user_total\": "; vnx::write(_out, user_total);
+	_out << ", \"volume_1d\": "; vnx::write(_out, volume_1d);
+	_out << ", \"volume_7d\": "; vnx::write(_out, volume_7d);
 	_out << ", \"avg_apy_1d\": "; vnx::write(_out, avg_apy_1d);
 	_out << ", \"avg_apy_7d\": "; vnx::write(_out, avg_apy_7d);
 	_out << ", \"fee_rates\": "; vnx::write(_out, fee_rates);
@@ -99,6 +103,8 @@ vnx::Object swap_info_t::to_object() const {
 	_object["fees_paid"] = fees_paid;
 	_object["fees_claimed"] = fees_claimed;
 	_object["user_total"] = user_total;
+	_object["volume_1d"] = volume_1d;
+	_object["volume_7d"] = volume_7d;
 	_object["avg_apy_1d"] = avg_apy_1d;
 	_object["avg_apy_7d"] = avg_apy_7d;
 	_object["fee_rates"] = fee_rates;
@@ -132,6 +138,10 @@ void swap_info_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(user_total);
 		} else if(_entry.first == "volume") {
 			_entry.second.to(volume);
+		} else if(_entry.first == "volume_1d") {
+			_entry.second.to(volume_1d);
+		} else if(_entry.first == "volume_7d") {
+			_entry.second.to(volume_7d);
 		} else if(_entry.first == "wallet") {
 			_entry.second.to(wallet);
 		}
@@ -165,6 +175,12 @@ vnx::Variant swap_info_t::get_field(const std::string& _name) const {
 	}
 	if(_name == "user_total") {
 		return vnx::Variant(user_total);
+	}
+	if(_name == "volume_1d") {
+		return vnx::Variant(volume_1d);
+	}
+	if(_name == "volume_7d") {
+		return vnx::Variant(volume_7d);
 	}
 	if(_name == "avg_apy_1d") {
 		return vnx::Variant(avg_apy_1d);
@@ -200,6 +216,10 @@ void swap_info_t::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(fees_claimed);
 	} else if(_name == "user_total") {
 		_value.to(user_total);
+	} else if(_name == "volume_1d") {
+		_value.to(volume_1d);
+	} else if(_name == "volume_7d") {
+		_value.to(volume_7d);
 	} else if(_name == "avg_apy_1d") {
 		_value.to(avg_apy_1d);
 	} else if(_name == "avg_apy_7d") {
@@ -235,13 +255,13 @@ std::shared_ptr<vnx::TypeCode> swap_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.swap_info_t";
 	type_code->type_hash = vnx::Hash64(0x7586be908f15ae8ull);
-	type_code->code_hash = vnx::Hash64(0xaf053d7c354e26bdull);
+	type_code->code_hash = vnx::Hash64(0x5ce6cfe182fce2ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::swap_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<swap_info_t>>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::swap_pool_info_t::static_get_type_code();
-	type_code->fields.resize(13);
+	type_code->fields.resize(15);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -298,24 +318,36 @@ std::shared_ptr<vnx::TypeCode> swap_info_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[9];
+		field.is_extended = true;
+		field.name = "volume_1d";
+		field.code = {11, 2, 11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[10];
+		field.is_extended = true;
+		field.name = "volume_7d";
+		field.code = {11, 2, 11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[11];
 		field.data_size = 16;
 		field.name = "avg_apy_1d";
 		field.code = {11, 2, 10};
 	}
 	{
-		auto& field = type_code->fields[10];
+		auto& field = type_code->fields[12];
 		field.data_size = 16;
 		field.name = "avg_apy_7d";
 		field.code = {11, 2, 10};
 	}
 	{
-		auto& field = type_code->fields[11];
+		auto& field = type_code->fields[13];
 		field.is_extended = true;
 		field.name = "fee_rates";
 		field.code = {12, 10};
 	}
 	{
-		auto& field = type_code->fields[12];
+		auto& field = type_code->fields[14];
 		field.is_extended = true;
 		field.name = "pools";
 		field.code = {12, 19, 0};
@@ -362,10 +394,10 @@ void read(TypeInput& in, ::mmx::swap_info_t& value, const TypeCode* type_code, c
 	}
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[9]) {
+		if(const auto* const _field = type_code->field_map[11]) {
 			vnx::read_value(_buf + _field->offset, value.avg_apy_1d, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[10]) {
+		if(const auto* const _field = type_code->field_map[12]) {
 			vnx::read_value(_buf + _field->offset, value.avg_apy_7d, _field->code.data());
 		}
 	}
@@ -380,8 +412,10 @@ void read(TypeInput& in, ::mmx::swap_info_t& value, const TypeCode* type_code, c
 			case 6: vnx::read(in, value.fees_paid, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.fees_claimed, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.user_total, type_code, _field->code.data()); break;
-			case 11: vnx::read(in, value.fee_rates, type_code, _field->code.data()); break;
-			case 12: vnx::read(in, value.pools, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.volume_1d, type_code, _field->code.data()); break;
+			case 10: vnx::read(in, value.volume_7d, type_code, _field->code.data()); break;
+			case 13: vnx::read(in, value.fee_rates, type_code, _field->code.data()); break;
+			case 14: vnx::read(in, value.pools, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -412,8 +446,10 @@ void write(TypeOutput& out, const ::mmx::swap_info_t& value, const TypeCode* typ
 	vnx::write(out, value.fees_paid, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.fees_claimed, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.user_total, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.fee_rates, type_code, type_code->fields[11].code.data());
-	vnx::write(out, value.pools, type_code, type_code->fields[12].code.data());
+	vnx::write(out, value.volume_1d, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.volume_7d, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.fee_rates, type_code, type_code->fields[13].code.data());
+	vnx::write(out, value.pools, type_code, type_code->fields[14].code.data());
 }
 
 void read(std::istream& in, ::mmx::swap_info_t& value) {

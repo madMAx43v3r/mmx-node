@@ -25,6 +25,8 @@ struct MMX_EXPORT swap_info_t {
 	std::array<::mmx::uint128, 2> fees_paid = {};
 	std::array<::mmx::uint128, 2> fees_claimed = {};
 	std::array<::mmx::uint128, 2> user_total = {};
+	std::array<::mmx::uint128, 2> volume_1d = {};
+	std::array<::mmx::uint128, 2> volume_7d = {};
 	std::array<vnx::float64_t, 2> avg_apy_1d = {};
 	std::array<vnx::float64_t, 2> avg_apy_7d = {};
 	std::vector<vnx::float64_t> fee_rates;
@@ -72,7 +74,7 @@ struct MMX_EXPORT swap_info_t {
 
 template<typename T>
 void swap_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_info_t>(13);
+	_visitor.template type_begin<swap_info_t>(15);
 	_visitor.type_field("name", 0); _visitor.accept(name);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("tokens", 2); _visitor.accept(tokens);
@@ -82,11 +84,13 @@ void swap_info_t::accept_generic(T& _visitor) const {
 	_visitor.type_field("fees_paid", 6); _visitor.accept(fees_paid);
 	_visitor.type_field("fees_claimed", 7); _visitor.accept(fees_claimed);
 	_visitor.type_field("user_total", 8); _visitor.accept(user_total);
-	_visitor.type_field("avg_apy_1d", 9); _visitor.accept(avg_apy_1d);
-	_visitor.type_field("avg_apy_7d", 10); _visitor.accept(avg_apy_7d);
-	_visitor.type_field("fee_rates", 11); _visitor.accept(fee_rates);
-	_visitor.type_field("pools", 12); _visitor.accept(pools);
-	_visitor.template type_end<swap_info_t>(13);
+	_visitor.type_field("volume_1d", 9); _visitor.accept(volume_1d);
+	_visitor.type_field("volume_7d", 10); _visitor.accept(volume_7d);
+	_visitor.type_field("avg_apy_1d", 11); _visitor.accept(avg_apy_1d);
+	_visitor.type_field("avg_apy_7d", 12); _visitor.accept(avg_apy_7d);
+	_visitor.type_field("fee_rates", 13); _visitor.accept(fee_rates);
+	_visitor.type_field("pools", 14); _visitor.accept(pools);
+	_visitor.template type_end<swap_info_t>(15);
 }
 
 
