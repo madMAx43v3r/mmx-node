@@ -8,6 +8,7 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageProxy.h>
 #include <mmx/vm_interface.h>
+#include <mmx/signature_t.hpp>
 
 #include <iostream>
 
@@ -826,6 +827,14 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 	}
 }
 
+void Engine::verify(const uint64_t dst, const uint64_t msg, const uint64_t pubkey, const uint64_t signature)
+{
+	write(dst, var_t(
+			signature_t(read_fail<binary_t>(signature, TYPE_BINARY).to_vector()).verify(
+					pubkey_t(read_fail<binary_t>(pubkey, TYPE_BINARY).to_vector()),
+					hash_t::from_bytes(read_fail<uint_t>(msg, TYPE_BINARY).value))));
+}
+
 void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags, const uint64_t sflags)
 {
 	const auto& svar = read_fail(src);
@@ -1503,6 +1512,12 @@ void Engine::exec(const instr_t& instr)
 	case OP_SHA256:
 		sha256(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
+		break;
+	case OP_VERIFY:
+		verify(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C),
+				deref_addr(instr.d, instr.flags & OPFLAG_REF_D));
 		break;
 	case OP_LOG:
 		log(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),

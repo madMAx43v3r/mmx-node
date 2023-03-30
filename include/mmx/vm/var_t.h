@@ -147,6 +147,11 @@ struct binary_t : var_t {
 	std::string to_hex_string() const {
 		return vnx::to_hex_string(c_str(), size, false);
 	}
+	std::vector<uint8_t> to_vector() const {
+		std::vector<uint8_t> out(size);
+		::memcpy(out.data(), p_data, size);
+		return out;
+	}
 
 	static std::unique_ptr<binary_t> clone(const binary_t& src) {
 		auto bin = alloc(src);

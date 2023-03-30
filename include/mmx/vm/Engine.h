@@ -144,6 +144,7 @@ public:
 	void memcpy(const uint64_t dst, const uint64_t src, const uint64_t count, const uint64_t offset);
 	void conv(const uint64_t dst, const uint64_t src, const uint64_t dflags, const uint64_t sflags);
 	void sha256(const uint64_t dst, const uint64_t src);
+	void verify(const uint64_t dst, const uint64_t msg, const uint64_t pubkey, const uint64_t signature);
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
 	void send(const uint64_t address, const uint64_t amount, const uint64_t currency);
