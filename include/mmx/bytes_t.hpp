@@ -32,6 +32,8 @@ public:
 
 	bytes_t(const void* data, const size_t num_bytes);
 
+	explicit bytes_t(const std::string& str);
+
 	uint8_t* data();
 
 	const uint8_t* data() const;
@@ -66,8 +68,9 @@ public:
 template<size_t N>
 bytes_t<N>::bytes_t(const void* data, const size_t num_bytes)
 {
-	if(num_bytes > bytes.size()) {
-		throw std::logic_error("input size overflow");
+	if(num_bytes != N) {
+		throw std::logic_error("bytes_t(): length mismatch ("
+				+ std::to_string(num_bytes) + " != " + std::to_string(N) + ")");
 	}
 	::memcpy(bytes.data(), data, num_bytes);
 }
@@ -82,6 +85,22 @@ template<size_t N>
 bytes_t<N>::bytes_t(const std::array<uint8_t, N>& data)
 	:	bytes_t(data.data(), data.size())
 {
+}
+
+template<size_t N>
+bytes_t<N>::bytes_t(const std::string& str)
+{
+	size_t off = 0;
+	if(str.substr(0, 2) == "0x") {
+		off = 2;
+	}
+	if(str.size() - off != N * 2) {
+		throw std::logic_error("bytes_t(std::string&): length mismatch ("
+				+ std::to_string(str.size() - off) + " != " + std::to_string(N * 2) + ")");
+	}
+	for(size_t i = 0; i < N; ++i) {
+		bytes[i] = std::stoul(str.substr(off + i * 2, 2), nullptr, 16);
+	}
 }
 
 template<size_t N>
@@ -121,18 +140,8 @@ std::vector<uint8_t> bytes_t<N>::to_vector() const {
 }
 
 template<size_t N>
-void bytes_t<N>::from_string(const std::string& str)
-{
-	size_t off = 0;
-	if(str.substr(0, 2) == "0x") {
-		off = 2;
-	}
-	if(str.size() - off != N * 2) {
-		throw std::logic_error("input size mismatch");
-	}
-	for(size_t i = 0; i < N; ++i) {
-		bytes[i] = std::stoul(str.substr(off + i * 2, 2), nullptr, 16);
-	}
+void bytes_t<N>::from_string(const std::string& str) {
+	*this = bytes_t<N>(str);
 }
 
 template<size_t N>

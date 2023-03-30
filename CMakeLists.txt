@@ -117,6 +117,7 @@ add_library(mmx_iface SHARED
 	src/skey_t.cpp
 	src/hash_t.cpp
 	src/addr_t.cpp
+	src/pubkey_t.cpp
 	src/signature_t.cpp
 	src/bls_signature_t.cpp
 	src/exec_result_t.cpp
