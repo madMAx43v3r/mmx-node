@@ -455,9 +455,11 @@ Vue.component('swap-trade', {
 	data() {
 		return {
 			data: null,
+			buy_fee: null,
 			buy_amount: null,
 			buy_balance: null,
 			buy_estimate: null,
+			sell_fee: null,
 			sell_amount: null,
 			sell_balance: null,
 			sell_estimate: null,
@@ -513,6 +515,7 @@ Vue.component('swap-trade', {
 				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1&amount=' + value)
 					.then(response => response.json())
 					.then(data => {
+						this.buy_fee = (100 * data.fee.value / data.trade.value).toFixed(2);
 						this.buy_estimate = data.trade.value;
 					});
 			}
@@ -523,6 +526,7 @@ Vue.component('swap-trade', {
 				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0&amount=' + value)
 					.then(response => response.json())
 					.then(data => {
+						this.sell_fee = (100 * data.fee.value / data.trade.value).toFixed(2);
 						this.sell_estimate = data.trade.value;
 					});
 			}
@@ -558,11 +562,22 @@ Vue.component('swap-trade', {
 									</v-text-field>
 								</v-col>
 							</v-row>
-							<v-text-field class="text-align-right"
-								v-model="buy_estimate"
-								label="You receive (estimated)"
-								:suffix="data.symbols[0]" disabled>
-							</v-text-field>
+							<v-row>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="buy_fee"
+										label="Trade Fee (estimated)"
+										suffix="%" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="buy_estimate"
+										label="You receive (estimated)"
+										:suffix="data.symbols[0]" disabled>
+									</v-text-field>
+								</v-col>
+							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
 							<v-btn color="green lighten-1" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">Buy</v-btn>
@@ -589,11 +604,22 @@ Vue.component('swap-trade', {
 									</v-text-field>
 								</v-col>
 							</v-row>
-							<v-text-field class="text-align-right"
-								v-model="sell_estimate"
-								label="You receive (estimated)"
-								:suffix="data.symbols[1]" disabled>
-							</v-text-field>
+							<v-row>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="sell_fee"
+										label="Trade Fee (estimated)"
+										suffix="%" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="sell_estimate"
+										label="You receive (estimated)"
+										:suffix="data.symbols[1]" disabled>
+									</v-text-field>
+								</v-col>
+							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
 							<v-btn color="red lighten-1" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">Sell</v-btn>

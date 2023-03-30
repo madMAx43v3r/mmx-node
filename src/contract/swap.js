@@ -264,7 +264,7 @@ function trade(i, address, min_amount) public payable
 	
 	const trade_amount = (amount * price) >> FRACT_BITS;
 	
-	var out = {};
+	var out = [0, 0];
 	var actual_amount = 0;
 	var amount_left = amount;
 	var trade_amount_left = trade_amount;
@@ -285,11 +285,8 @@ function trade(i, address, min_amount) public payable
 			const fee_amount = min(1 + (pool_trade_amount * fee_rates[j]) >> FRACT_BITS, pool_trade_amount);
 			actual_amount += pool_trade_amount - fee_amount;
 			
-			var info = {};
-			info.amount = pool_amount;
-			info.fee_amount = fee_amount;
-			info.trade_amount = pool_trade_amount;
-			out[j] = info;
+			out[0] += pool_trade_amount;
+			out[1] += fee_amount;
 			
 			entry.balance[i] += pool_amount;
 			entry.balance[k] -= pool_trade_amount;

@@ -1500,20 +1500,8 @@ std::array<uint128, 2> Node::get_swap_trade_estimate(const addr_t& address, cons
 	args.emplace_back(i);
 	args.emplace_back(address.to_string());
 	args.emplace_back(nullptr);
-	const auto ret = call_contract(address, "trade", args, nullptr, std::make_pair(info.tokens[i], amount));
-
-	uint128 fee_amount = 0;
-	uint128 trade_amount = 0;
-	for(const auto& entry : ret.to<std::map<uint32_t, vnx::Object>>()) {
-		fee_amount += entry.second["fee_amount"].to<uint128>();
-		trade_amount += entry.second["trade_amount"].to<uint128>();
-	}
-	trade_amount -= fee_amount;
-
-	if(trade_amount.upper()) {
-		throw std::logic_error("amount overflow");
-	}
-	return {trade_amount, fee_amount};
+	const auto ret = call_contract(address, "trade", args, nullptr, std::make_pair(info.tokens[i], amount)).to<std::array<uint128, 2>>();
+	return {ret[0] - ret[1], ret[1]};
 }
 
 std::array<uint128, 2> Node::get_swap_fees_earned(const addr_t& address, const addr_t& user) const
