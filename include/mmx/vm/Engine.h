@@ -207,7 +207,8 @@ T* Engine::read(const uint64_t src, const vartype_e& type)
 {
 	if(auto var = read(src)) {
 		if(var->type != type) {
-			throw std::logic_error("read type mismatch");
+			throw std::logic_error("read type mismatch: expected "
+				+ to_string(type) + ", got " + to_string(var->type));
 		}
 		return (T*)var;
 	}
@@ -219,7 +220,8 @@ T& Engine::read_fail(const uint64_t src, const vartype_e& type)
 {
 	auto& var = read_fail(src);
 	if(var.type != type) {
-		throw std::logic_error("read type mismatch");
+		throw std::logic_error("read type mismatch: expected "
+				+ to_string(type) + ", got " + to_string(var.type));
 	}
 	return (T&)var;
 }
@@ -229,7 +231,8 @@ T* Engine::read_key(const uint64_t src, const uint64_t key, const vartype_e& typ
 {
 	if(auto var = read_key(src, key)) {
 		if(var->type != type) {
-			throw std::logic_error("read type mismatch");
+			throw std::logic_error("read type mismatch: expected "
+				+ to_string(type) + ", got " + to_string(var->type));
 		}
 		return (T*)var;
 	}
@@ -241,7 +244,8 @@ T& Engine::read_key_fail(const uint64_t src, const uint64_t key, const vartype_e
 {
 	auto& var = read_key_fail(src, key);
 	if(var.type != type) {
-		throw std::logic_error("read type mismatch");
+		throw std::logic_error("read type mismatch: expected "
+				+ to_string(type) + ", got " + to_string(var.type));
 	}
 	return (T&)var;
 }

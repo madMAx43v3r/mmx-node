@@ -284,7 +284,7 @@ inline size_t num_bytes(const var_t* var) {
 	return var ? num_bytes(*var) : 0;
 }
 
-
+std::string to_string(const vartype_e& type);
 
 
 } // vm
