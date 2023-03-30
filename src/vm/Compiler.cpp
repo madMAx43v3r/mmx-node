@@ -1516,7 +1516,8 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(args.size() != 1 && args.size() != 2) {
 					throw std::logic_error("expected 1 or 2 arguments for fail(message, [code])");
 				}
-				code.emplace_back(OP_FAIL, 0, get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
+				code.emplace_back(OP_FAIL, args.size() > 1 ? OPFLAG_REF_B : 0,
+						get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
 				out.address = 0;
 			}
 			else if(name == "bech32") {
@@ -1558,9 +1559,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(args.size() < 2) {
 					throw std::logic_error("expected at least two arguments for rcall(contract, method, ...)");
 				}
+				std::vector<vref_t> fargs;
+				for(size_t i = 2; i < args.size(); ++i) {
+					fargs.push_back(recurse(args[i]));
+				}
 				const auto offset = stack.new_addr();
-				for(size_t i = 0; i + 2 < args.size(); ++i) {
-					copy(offset + 1 + i, recurse(args[i + 2]));
+				for(size_t i = 0; i < fargs.size(); ++i) {
+					copy(offset + 1 + i, fargs[i]);
 				}
 				code.emplace_back(OP_COPY, 0, offset, 0);
 				code.emplace_back(OP_RCALL, 0, get(recurse(args[0])), get(recurse(args[1])), offset - MEM_STACK, args.size() - 2);
@@ -1574,9 +1579,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					throw std::logic_error("too many function arguments: "
 							+ std::to_string(args.size()) + " > " + std::to_string(lhs->func->args.size()));
 				}
-				const auto offset = stack.new_addr();
+				std::vector<vref_t> fargs;
 				for(size_t i = 0; i < args.size(); ++i) {
-					copy(offset + 1 + i, recurse(args[i]));
+					fargs.push_back(recurse(args[i]));
+				}
+				const auto offset = stack.new_addr();
+				for(size_t i = 0; i < fargs.size(); ++i) {
+					copy(offset + 1 + i, fargs[i]);
 				}
 				for(size_t i = args.size(); i < lhs->func->args.size(); ++i) {
 					code.emplace_back(OP_COPY, 0, offset + 1 + i, 0);
