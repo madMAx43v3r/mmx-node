@@ -723,6 +723,26 @@ Vue.component('swap-liquid', {
 						});
 					}
 				});
+		},
+		switch_pool() {
+			const req = {};
+			req.index = this.wallet;
+			req.address = this.address;
+			req.pool_idx = this.pool_idx;
+			fetch('/wapi/wallet/swap/switch_pool', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(data => {
+							this.result = data;
+							this.error = null;
+						});
+					} else {
+						response.text().then(data => {
+							this.result = null;
+							this.error = data;
+						});
+					}
+				});
 		}
 	},
 	watch: {
@@ -736,7 +756,6 @@ Vue.component('swap-liquid', {
 		user(value) {
 			if(value && this.pool_idx < 0 && value.pool_idx >= 0) {
 				this.pool_idx = value.pool_idx;
-				console.log("pool_idx = " + this.pool_idx)
 			}
 		},
 		wallet() {
@@ -747,6 +766,12 @@ Vue.component('swap-liquid', {
 		},
 		amount_1() {
 			this.update_price();
+		}
+	},
+	computed: {
+		disable_add_rem() {
+			return !(this.amount_0 || this.amount_1) || this.pool_idx < 0
+				|| (this.user && this.user.pool_idx >= 0 && this.pool_idx != this.user.pool_idx);
 		}
 	},
 	created() {
@@ -770,7 +795,6 @@ Vue.component('swap-liquid', {
 								label="Fee Level"
 								item-text="text"
 								item-value="value"
-								:disabled="this.user && this.user.pool_idx >= 0"
 							></v-select>
 						</v-col>
 						<v-col>
@@ -800,8 +824,9 @@ Vue.component('swap-liquid', {
 				<v-card-actions class="justify-end">
 					<v-btn @click="match()">Price Match</v-btn>
 					<v-btn @click="payout()" :disabled="!user || paid || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
-					<v-btn color="green lighten-1" @click="submit(true)" :disabled="!(amount_0 || amount_1) || pool_idx < 0">Add Liquidity</v-btn>
-					<v-btn color="red lighten-1" @click="submit(false)" :disabled="!(amount_0 || amount_1) || pool_idx < 0">Remove Liquidity</v-btn>
+					<v-btn @click="switch_pool()" :disabled="pool_idx < 0 || user.pool_idx < 0 || pool_idx == user.pool_idx">Switch Fee</v-btn>
+					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem">Add Liquidity</v-btn>
+					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">Remove Liquidity</v-btn>
 				</v-card-actions>
 			</v-card>
 			
