@@ -1980,7 +1980,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto method = args["method"].to<std::string>();
 			const auto params = args["args"].to<std::vector<vnx::Variant>>();
 			const auto options = args["options"].to<spend_options_t>();
-			wallet->execute(index, address, method, params, options,
+			wallet->execute(index, address, method, params, nullptr, options,
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
 					respond(request_id, render(tx));
 				},
@@ -2241,18 +2241,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
 			const auto index = args["index"].to<uint32_t>();
-			const auto offset = args["offset"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto options = args["options"].to<spend_options_t>();
-			wallet->get_address(index, offset,
-				[this, request_id, index, address, options](const addr_t& user) {
-					auto options_ = options;
-					options_.user = user;
-					wallet->execute(index, address, "payout", {}, options_,
-						[this, request_id](std::shared_ptr<const Transaction> tx) {
-							respond(request_id, render(tx));
-						},
-						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			wallet->execute(index, address, "payout", {}, uint32_t(0), options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -2265,19 +2258,29 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
 			const auto index = args["index"].to<uint32_t>();
-			const auto offset = args["offset"].to<uint32_t>();
 			const auto pool_idx = args["pool_idx"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto options = args["options"].to<spend_options_t>();
-			wallet->get_address(index, offset,
-				[this, request_id, index, address, pool_idx, options](const addr_t& user) {
-					auto options_ = options;
-					options_.user = user;
-					wallet->execute(index, address, "switch_pool", {vnx::Variant(pool_idx)}, options_,
-						[this, request_id](std::shared_ptr<const Transaction> tx) {
-							respond(request_id, render(tx));
-						},
-						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			wallet->execute(index, address, "switch_pool", {vnx::Variant(pool_idx)}, uint32_t(0), options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/swap/switch_pool {...}");
+		}
+	}
+	else if(sub_path == "/wallet/swap/rem_all_liquid") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto address = args["address"].to<addr_t>();
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->execute(index, address, "rem_all_liquid", {vnx::Variant(false)}, uint32_t(0), options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -2441,6 +2444,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/address_info", "wallet/coins",
 			"wallet/history", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
+			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
 			"farmer/info", "farmer/blocks", "farmer/proofs",
 			"node/offers", "node/offer", "node/trade_history"

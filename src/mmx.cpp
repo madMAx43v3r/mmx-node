@@ -562,7 +562,7 @@ int main(int argc, char** argv)
 				}
 				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
-					tx = wallet.execute(index, contract, method, args, spend_options);
+					tx = wallet.execute(index, contract, method, args, nullptr, spend_options);
 					std::cout << "Executed " << method << "() with ";
 				} else {
 					if(method.empty()) {
@@ -854,7 +854,7 @@ int main(int argc, char** argv)
 					}
 					spend_options.user = wallet.get_address(index, offset);
 
-					if(auto tx = wallet.execute(index, contract, "payout", {}, spend_options)) {
+					if(auto tx = wallet.execute(index, contract, "payout", {}, nullptr, spend_options)) {
 						std::cout << "Transaction ID: " << tx->id << std::endl;
 					}
 				}

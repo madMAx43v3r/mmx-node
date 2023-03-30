@@ -700,6 +700,22 @@ Vue.component('swap-liquid', {
 				this.amount_0 = parseFloat((this.amount_1 / this.data.display_price).toFixed(this.data.decimals[0]));
 			}
 		},
+		on_response(response, type) {
+			if(response.ok) {
+				response.json().then(data => {
+					this.result = data;
+					this.error = null;
+					if(type == "payout") {
+						this.paid = true;
+					}
+				});
+			} else {
+				response.text().then(data => {
+					this.result = null;
+					this.error = data;
+				});
+			}
+		},
 		submit(mode) {
 			const req = {};
 			req.index = this.wallet;
@@ -707,19 +723,7 @@ Vue.component('swap-liquid', {
 			req.pool_idx = this.pool_idx;
 			req.amount = [this.amount_0, this.amount_1];
 			fetch('/wapi/wallet/swap/' + (mode ? "add" : "rem") + "_liquid", {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.result = data;
-							this.error = null;
-						});
-					} else {
-						response.text().then(data => {
-							this.result = null;
-							this.error = data;
-						});
-					}
-				});
+				.then(response => this.on_response(response));
 			this.amount_0 = null;
 			this.amount_1 = null;
 		},
@@ -728,20 +732,7 @@ Vue.component('swap-liquid', {
 			req.index = this.wallet;
 			req.address = this.address;
 			fetch('/wapi/wallet/swap/payout', {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.result = data;
-							this.error = null;
-							this.paid = true;
-						});
-					} else {
-						response.text().then(data => {
-							this.result = null;
-							this.error = data;
-						});
-					}
-				});
+				.then(response => this.on_response(response, "payout"));
 		},
 		switch_pool() {
 			const req = {};
@@ -749,19 +740,14 @@ Vue.component('swap-liquid', {
 			req.address = this.address;
 			req.pool_idx = this.pool_idx;
 			fetch('/wapi/wallet/swap/switch_pool', {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.result = data;
-							this.error = null;
-						});
-					} else {
-						response.text().then(data => {
-							this.result = null;
-							this.error = data;
-						});
-					}
-				});
+				.then(response => this.on_response(response, "switch_pool"));
+		},
+		rem_all_liquid() {
+			const req = {};
+			req.index = this.wallet;
+			req.address = this.address;
+			fetch('/wapi/wallet/swap/rem_all_liquid', {body: JSON.stringify(req), method: "post"})
+				.then(response => this.on_response(response, "rem_all_liquid"));
 		}
 	},
 	watch: {
@@ -790,7 +776,18 @@ Vue.component('swap-liquid', {
 	computed: {
 		disable_add_rem() {
 			return !(this.amount_0 || this.amount_1) || this.pool_idx < 0
-				|| (this.user && this.user.pool_idx >= 0 && this.pool_idx != this.user.pool_idx);
+				|| (this.user.pool_idx >= 0 && this.pool_idx != this.user.pool_idx
+					&& (this.user.balance[0].amount || this.user.balance[1].amount));
+		},
+		disable_payout() {
+			return !this.user || this.paid || !(this.user.fees_earned[0].amount || this.user.fees_earned[1].amount);
+		},
+		disable_switch() {
+			return this.pool_idx < 0 || this.user.pool_idx < 0 || this.pool_idx == this.user.pool_idx
+				|| (this.user && this.user.balance[0].amount == 0 && this.user.balance[1].amount == 0);
+		},
+		disable_rem_all() {
+			return this.amount_0 || this.amount_1 || !this.user || !(this.user.balance[0].amount != 0 || this.user.balance[1].amount != 0);
 		}
 	},
 	created() {
@@ -842,10 +839,11 @@ Vue.component('swap-liquid', {
 				</v-card-text>
 				<v-card-actions class="justify-end">
 					<v-btn @click="match()">Price Match</v-btn>
-					<v-btn @click="payout()" :disabled="!user || paid || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
-					<v-btn @click="switch_pool()" :disabled="pool_idx < 0 || user.pool_idx < 0 || pool_idx == user.pool_idx">Switch Fee</v-btn>
+					<v-btn @click="payout()" :disabled="disable_payout">Payout</v-btn>
+					<v-btn @click="switch_pool()" :disabled="disable_switch">Switch Fee</v-btn>
 					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem">Add Liquidity</v-btn>
 					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">Remove Liquidity</v-btn>
+					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">Remove All</v-btn>
 				</v-card-actions>
 			</v-card>
 			

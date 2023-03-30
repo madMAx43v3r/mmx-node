@@ -292,7 +292,7 @@ Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& 
 
 std::shared_ptr<const Transaction> Wallet::execute(
 			const uint32_t& index, const addr_t& address, const std::string& method,
-			const std::vector<vnx::Variant>& args, const spend_options_t& options) const
+			const std::vector<vnx::Variant>& args, const vnx::optional<uint32_t>& user, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -301,7 +301,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	op->address = address;
 	op->method = method;
 	op->args = args;
-	op->user = options.user;
+	op->user = user ? wallet->get_address(*user) : options.user;
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::EXECUTE;
@@ -422,7 +422,7 @@ std::shared_ptr<const Transaction> Wallet::cancel_offer(
 
 	auto options_ = options;
 	options_.user = offer.owner;
-	return execute(index, address, "cancel", {}, options_);
+	return execute(index, address, "cancel", {}, nullptr, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::offer_withdraw(
@@ -432,7 +432,7 @@ std::shared_ptr<const Transaction> Wallet::offer_withdraw(
 
 	auto options_ = options;
 	options_.user = offer.owner;
-	return execute(index, address, "withdraw", {}, options_);
+	return execute(index, address, "withdraw", {}, nullptr, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_trade(
