@@ -499,7 +499,13 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::WITHDRAW;
-
+	{
+		auto op = operation::Execute::create();
+		op->address = address;
+		op->method = "payout";
+		op->user = wallet->get_address(0);
+		tx->execute.push_back(op);
+	}
 	for(size_t i = 0; i < 2; ++i) {
 		if(amount[i]) {
 			auto op = operation::Execute::create();

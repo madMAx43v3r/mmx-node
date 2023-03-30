@@ -35,10 +35,11 @@ function init(token, currency)
 
 function _get_earned_fees(user) const
 {
+	const entry = state[user.pool_idx];
+	
 	const user_share = [0, 0];
 	for(var i = 0; i < 2; ++i) {
 		if(user.balance[i] > 0) {
-			const entry = state[user.pool_idx];
 			const total_fees = entry.fees_paid[i] - user.last_fees_paid[i];
 			if(total_fees > 0) {
 				user_share[i] = min(
@@ -57,7 +58,7 @@ function get_earned_fees(address) const public
 	if(user == null) {
 		fail("no such user", 2);
 	}
-	_get_earned_fees(user);
+	return _get_earned_fees(user);
 }
 
 function _payout(user)
@@ -71,7 +72,6 @@ function _payout(user)
 			send(this.user, user_share[i], tokens[i]);
 		}
 		user.last_fees_paid[i] = entry.fees_paid[i];
-		user.last_user_total[i] = entry.user_total[i];
 	}
 }
 
@@ -99,13 +99,14 @@ function _add_liquid(i, pool_idx, amount)
 		user.last_fees_paid = [0, 0];
 		user.last_user_total = [0, 0];
 		users[this.user] = user;
-	}
-	else if(user.balance[0] > 0 || user.balance[1] > 0) {
-		if(pool_idx != user.pool_idx) {
-			fail("pool_idx mismatch", 9);
+	} else {
+		if(user.balance[0] > 0 || user.balance[1] > 0) {
+			if(pool_idx != user.pool_idx) {
+				fail("pool_idx mismatch", 9);
+			}
+			// need to payout now, to avoid fee stealing
+			_payout(user);
 		}
-	}
-	else {
 		user.pool_idx = pool_idx;
 	}
 	entry.balance[i] += amount;
@@ -191,8 +192,9 @@ function rem_all_liquid(dry_run = false) public
 	if(user == null) {
 		fail("no such user", 2);
 	}
-	var out = [0, 0];
+	_payout(user);
 	
+	var out = [0, 0];
 	for(var i = 0; i < 2; ++i) {
 		const amount = user.balance[i];
 		if(amount > 0) {
@@ -214,18 +216,25 @@ function switch_pool(pool_idx) public
 	if(user == null) {
 		fail("no such user", 2);
 	}
+	_payout(user);
+	
 	const amount = [user.balance[0], user.balance[1]];
+	const new_amount = [0, 0];
 	
 	for(var i = 0; i < 2; ++i) {
 		if(amount[i] > 0) {
-			_rem_liquid(user, i, amount[i], false);
+			const ret = _rem_liquid(user, i, amount[i], false);
+			for(var k = 0; k < 2; ++k) {
+				new_amount[k] += ret[k];
+			}
 		}
 	}
 	for(var i = 0; i < 2; ++i) {
-		if(amount[i] > 0) {
-			_add_liquid(i, pool_idx, amount[i]);
+		if(new_amount[i] > 0) {
+			_add_liquid(i, pool_idx, new_amount[i]);
 		}
 	}
+	return new_amount;
 }
 
 function get_total_balance() public const
