@@ -15,6 +15,9 @@ struct swap_info_t {
 	uint128 fees_claimed[2];
 	uint128 user_total[2];
 	
+	uint128 volume_1d[2];
+	uint128 volume_7d[2];
+	
 	double avg_apy_1d[2];
 	double avg_apy_7d[2];
 	

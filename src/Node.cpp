@@ -1327,8 +1327,9 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 	out.address = address;
 
 	auto data = read_storage(address);
+	const auto ref_volume = to_ref(data["volume"]);
 	const auto tokens = read_storage_array(address, to_ref(data["tokens"]));
-	const auto volume = read_storage_array(address, to_ref(data["volume"]));
+	const auto volume = read_storage_array(address, ref_volume);
 	for(size_t i = 0; i < 2 && i < tokens.size(); ++i) {
 		out.tokens[i] = to_addr(tokens[i]);
 		out.volume[i] = to_uint(volume[i]);
@@ -1384,6 +1385,21 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 			}
 		}
 		out.pools.push_back(pool);
+	}
+
+	out.volume_1d = out.volume;
+	out.volume_7d = out.volume;
+	{
+		const auto prev_volume = read_storage_array(address, ref_volume, height - std::min(8640u, height));
+		for(size_t i = 0; i < 2 && i < prev_volume.size(); ++i) {
+			out.volume_1d[i] = out.volume[i] - to_uint(prev_volume[i]);
+		}
+	}
+	{
+		const auto prev_volume = read_storage_array(address, ref_volume, height - std::min(60480u, height));
+		for(size_t i = 0; i < 2 && i < prev_volume.size(); ++i) {
+			out.volume_7d[i] = out.volume[i] - to_uint(prev_volume[i]);
+		}
 	}
 	for(size_t i = 0; i < 2; ++i) {
 		out.avg_apy_1d[i] = uint128(365 * (out.fees_paid[i] - prev_fees_paid_1d[i])).to_double() / out.user_total[i].to_double();
@@ -1459,6 +1475,8 @@ std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const in
 			}
 		} else if(entry.method == "payout") {
 			out.type = "PAYOUT";
+		} else if(entry.method == "switch_pool") {
+			out.type = "SWITCH";
 		}
 		if(out.index < 2) {
 			if(auto token = tokens[out.index]) {

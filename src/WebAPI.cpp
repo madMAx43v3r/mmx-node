@@ -481,6 +481,8 @@ public:
 		std::vector<vnx::Object> fees_paid(empty);
 		std::vector<vnx::Object> fees_claimed(empty);
 		std::vector<vnx::Object> user_total(empty);
+		std::vector<vnx::Object> volume_1d(empty);
+		std::vector<vnx::Object> volume_7d(empty);
 		if(context) {
 			for(int i = 0; i < 2; ++i) {
 				if(auto token = context->find_currency(value.tokens[i])) {
@@ -491,6 +493,8 @@ public:
 					fees_paid[i] = to_amount_object(value.fees_paid[i], token->decimals);
 					fees_claimed[i] = to_amount_object(value.fees_claimed[i], token->decimals);
 					user_total[i] = to_amount_object(value.user_total[i], token->decimals);
+					volume_1d[i] = to_amount_object(value.volume_1d[i], token->decimals);
+					volume_7d[i] = to_amount_object(value.volume_7d[i], token->decimals);
 				}
 			}
 		}
@@ -501,6 +505,8 @@ public:
 		tmp["fees_paid"] = fees_paid;
 		tmp["fees_claimed"] = fees_claimed;
 		tmp["user_total"] = user_total;
+		tmp["volume_1d"] = volume_1d;
+		tmp["volume_7d"] = volume_7d;
 		tmp["price"] = value.get_price();
 		tmp["display_price"] = value.get_price() * pow(10, decimals[0] - decimals[1]);
 		set(tmp);

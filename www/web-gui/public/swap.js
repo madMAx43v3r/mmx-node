@@ -257,36 +257,29 @@ Vue.component('swap-info', {
 							<th></th>
 							<th>Pool Balance</th>
 							<th>Symbol</th>
-							<th>APY (last day)</th>
-							<th>APY (last 7 days)</th>
-							<th>Contract</th>
+							<th>Volume (24h)</th>
+							<th>Volume (7 day)</th>
+							<th>APY (24h)</th>
+							<th>APY (7 day)</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<td class="key-cell">Token</td>
-							<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
-							<td>{{data.symbols[0]}}</td>
-							<td>{{(data.avg_apy_1d[0] * 100).toFixed(2)}} %</td>
-							<td>{{(data.avg_apy_7d[0] * 100).toFixed(2)}} %</td>
-							<td>
-								<template v-if="data.symbols[0] != 'MMX'">
-									<router-link :to="'/explore/address/' + data.tokens[0]">{{data.tokens[0]}}</router-link>
-								</template>
-							</td>
-						</tr>
-						<tr>
-							<td class="key-cell">Currency</td>
-							<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
-							<td>{{data.symbols[1]}}</td>
-							<td>{{(data.avg_apy_1d[1] * 100).toFixed(2)}} %</td>
-							<td>{{(data.avg_apy_7d[1] * 100).toFixed(2)}} %</td>
-							<td>
-								<template v-if="data.symbols[1] != 'MMX'">
-									<router-link :to="'/explore/address/' + data.tokens[1]">{{data.tokens[1]}}</router-link>
-								</template>
-							</td>
-						</tr>
+						<template v-for="i in [0, 1]">
+							<tr>
+								<td class="key-cell">{{i == 0 ? "Token" : "Currency"}}</td>
+								<td><b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b></td>
+								<td>
+									<template v-if="data.symbols[i] == 'MMX'">MMX</template>
+									<template v-else>
+										<router-link :to="'/explore/address/' + data.tokens[i]">{{data.symbols[i]}}</router-link>
+									</template>
+								</td>
+								<td>{{parseFloat(data.volume_1d[i].value.toPrecision(6))}}</td>
+								<td>{{parseFloat(data.volume_7d[i].value.toPrecision(6))}}</td>
+								<td>{{(data.avg_apy_1d[i] * 100).toFixed(2)}} %</td>
+								<td>{{(data.avg_apy_7d[i] * 100).toFixed(2)}} %</td>
+							</tr>
+						</template>
 					</tbody>
 				</v-simple-table>
 			</v-card>
