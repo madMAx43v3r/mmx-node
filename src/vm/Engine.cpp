@@ -817,7 +817,7 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 		case TYPE_STRING:
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
-			total_cost += std::max<uint32_t>(sbin.size + (64 - sbin.size % 64) % 64, 64) * SHA256_BYTE_COST;
+			total_cost += ((sbin.size + 63) / 64) * (64 * SHA256_BYTE_COST);
 			check_gas();
 			write(dst, uint_t(hash_t(sbin.data(), sbin.size).to_uint256()));
 			break;
