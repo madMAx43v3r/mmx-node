@@ -17,6 +17,8 @@ class Binary extends mmx.Contract {
 	
 	map<uint, uint> line_info;
 	
+	map<uint, pair<string, uint>> source_info;			// [line => [file name, line offset]]
+	
 	string source;
 	
 	string compiler;
