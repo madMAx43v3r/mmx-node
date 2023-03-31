@@ -42,17 +42,19 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "time_diff", 	time_diff);
 	write_field(out, "space_diff", 	space_diff);
 	write_field(out, "weight", 		weight);
-	write_field(out, "total_weight", total_weight);
+	write_field(out, "total_weight",	total_weight);
+	write_field(out, "netspace_ratio", 	netspace_ratio);
+	write_field(out, "average_txfee", 	average_txfee);
 	write_field(out, "vdf_iters", 	vdf_iters);
 	write_field(out, "vdf_reward", 	vdf_reward);
 	write_field(out, "vdf_output", 	vdf_output);
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
 	write_field(out, "reward_amount", reward_amount);
 	write_field(out, "reward_addr", reward_addr);
+	write_field(out, "static_cost", static_cost);
+	write_field(out, "total_cost", 	total_cost);
 	write_field(out, "tx_count", 	tx_count);
 	write_field(out, "tx_fees", 	tx_fees);
-	write_field(out, "static_cost",	static_cost);
-	write_field(out, "total_cost",	total_cost);
 	write_field(out, "tx_hash", 	tx_hash);
 	out.flush();
 
