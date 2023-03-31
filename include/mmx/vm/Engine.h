@@ -39,6 +39,7 @@ static constexpr uint64_t STOR_WRITE_COST = 1000;
 static constexpr uint64_t STOR_READ_BYTE_COST = 2;
 static constexpr uint64_t STOR_WRITE_BYTE_COST = 10;
 static constexpr uint64_t SHA256_BYTE_COST = 20;
+static constexpr uint64_t ECDSA_VERIFY_COST = 10000;
 
 enum externvar_e : uint32_t {
 

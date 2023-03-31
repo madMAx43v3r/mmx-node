@@ -829,6 +829,8 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 
 void Engine::verify(const uint64_t dst, const uint64_t msg, const uint64_t pubkey, const uint64_t signature)
 {
+	total_cost += ECDSA_VERIFY_COST;
+	check_gas();
 	write(dst, var_t(
 			signature_t(read_fail<binary_t>(signature, TYPE_BINARY).to_vector()).verify(
 					pubkey_t(read_fail<binary_t>(pubkey, TYPE_BINARY).to_vector()),
