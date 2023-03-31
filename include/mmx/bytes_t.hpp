@@ -90,17 +90,12 @@ bytes_t<N>::bytes_t(const std::array<uint8_t, N>& data)
 template<size_t N>
 bytes_t<N>::bytes_t(const std::string& str)
 {
-	size_t off = 0;
-	if(str.substr(0, 2) == "0x") {
-		off = 2;
-	}
-	if(str.size() - off != N * 2) {
+	const auto tmp = vnx::from_hex_string(str);
+	if(tmp.size() != N) {
 		throw std::logic_error("bytes_t(std::string&): length mismatch ("
-				+ std::to_string(str.size() - off) + " != " + std::to_string(N * 2) + ")");
+				+ std::to_string(tmp.size()) + " != " + std::to_string(N) + ")");
 	}
-	for(size_t i = 0; i < N; ++i) {
-		bytes[i] = std::stoul(str.substr(off + i * 2, 2), nullptr, 16);
-	}
+	::memcpy(bytes.data(), tmp.data(), N);
 }
 
 template<size_t N>
