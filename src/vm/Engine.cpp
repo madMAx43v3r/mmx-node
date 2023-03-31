@@ -934,9 +934,24 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 				case CONVTYPE_STRING:
 					write(dst, svar);
 					break;
-				case CONVTYPE_BINARY:
-					assign(dst, binary_t::alloc(sstr, TYPE_BINARY));
+				case CONVTYPE_BINARY: {
+					int base = 0;
+					switch(sflags & 0xFF) {
+						case CONVTYPE_DEFAULT: break;
+						case CONVTYPE_BASE_16: base = 16; break;
+						default: throw std::logic_error("invalid conversion: STRING to BINARY with base " + to_hex(sflags & 0xFF));
+					}
+					switch(base) {
+						case 0:
+							assign(dst, binary_t::alloc(sstr, TYPE_BINARY)); break;
+						case 16: {
+							const auto tmp = vnx::from_hex_string(sstr.to_string());
+							assign(dst, binary_t::alloc(tmp.data(), tmp.size(), TYPE_BINARY));
+							break;
+						}
+					}
 					break;
+				}
 				default:
 					throw std::logic_error("invalid conversion: STRING to " + to_hex(dflags));
 			}
