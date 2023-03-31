@@ -515,7 +515,7 @@ Vue.component('swap-trade', {
 				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1&amount=' + value)
 					.then(response => response.json())
 					.then(data => {
-						this.buy_fee = (100 * data.fee.value / data.trade.value).toFixed(2);
+						this.buy_fee = (100 * data.fee.amount / (data.trade.amount + data.fee.amount)).toFixed(2);
 						this.buy_estimate = data.trade.value;
 					});
 			}
@@ -526,7 +526,7 @@ Vue.component('swap-trade', {
 				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0&amount=' + value)
 					.then(response => response.json())
 					.then(data => {
-						this.sell_fee = (100 * data.fee.value / data.trade.value).toFixed(2);
+						this.sell_fee = (100 * data.fee.amount / (data.trade.amount + data.fee.amount)).toFixed(2);
 						this.sell_estimate = data.trade.value;
 					});
 			}
