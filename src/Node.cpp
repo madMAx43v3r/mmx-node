@@ -353,11 +353,13 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->height = peak->height;
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
+			info->vdf_speed = (peak->time_diff / params->block_time) * (params->time_diff_constant / 1e6);
 			info->block_reward = mmx::calc_block_reward(params, peak->space_diff);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = balance_map.size();
 			info->genesis_hash = get_genesis_hash();
+			info->average_txfee = peak->average_txfee;
 			info->netspace_ratio = double(peak->netspace_ratio) / (uint64_t(1) << (2 * params->max_diff_adjust));
 			{
 				size_t num_blocks = 0;

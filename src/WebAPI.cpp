@@ -1169,6 +1169,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					res = render(*info);
 					res["time"] = context->get_time(info->height);
 					res["block_reward"] = to_amount_object(info->block_reward, params->decimals);
+					res["average_txfee"] = to_amount_object(info->average_txfee, params->decimals);
 				}
 				respond(request_id, res);
 			},
