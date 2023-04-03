@@ -530,8 +530,6 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		throw;
 	}
 
-	std::map<addr_t, uint128_t> spend_amounts;
-
 	for(const auto& out : engine->outputs)
 	{
 		auto& amount = state->balance[out.contract];
@@ -539,27 +537,12 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 			throw std::logic_error("contract over-spend");
 		}
 		amount -= out.amount;
-
-		if(out.amount >> 48) {
-			txin_t in;
-			in.address = engine->contract;
-			in.contract = out.contract;
-			in.amount = out.amount;
-			exec_inputs.push_back(in);
-		} else {
-			spend_amounts[out.contract] += out.amount;
-		}
 		exec_outputs.push_back(out);
-	}
-	for(const auto& entry : spend_amounts)
-	{
-		if(entry.second >> 64) {
-			throw std::logic_error("contract spend amount overflow");
-		}
+
 		txin_t in;
 		in.address = engine->contract;
-		in.contract = entry.first;
-		in.amount = entry.second;
+		in.contract = out.contract;
+		in.amount = out.amount;
 		exec_inputs.push_back(in);
 	}
 	exec_outputs.insert(exec_outputs.end(), engine->mint_outputs.begin(), engine->mint_outputs.end());
@@ -744,6 +727,25 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error, true);
 			}
 		}
+
+		// consolidate exec inputs
+		std::vector<txin_t> new_exec_inputs;
+		std::map<std::pair<addr_t, addr_t>, uint128_t> exec_spend_amounts;
+		for(const auto& in : exec_inputs) {
+			exec_spend_amounts[std::make_pair(in.address, in.contract)] += in.amount;
+		}
+		for(auto& entry : exec_spend_amounts) {
+			auto& amount_left = entry.second;
+			while(amount_left > 0) {
+				txin_t in;
+				in.address = entry.first.first;
+				in.contract = entry.first.second;
+				in.amount = amount_left >> 64 ? uint64_t(-1) : amount_left.lower();
+				new_exec_inputs.push_back(in);
+				amount_left -= in.amount;
+			}
+		}
+		exec_inputs = new_exec_inputs;
 
 		// check for activation fee
 		auto all_outputs = tx->outputs;
