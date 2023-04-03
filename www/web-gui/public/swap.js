@@ -258,9 +258,9 @@ Vue.component('swap-info', {
 							<th>Pool Balance</th>
 							<th>Symbol</th>
 							<th>Volume (24h)</th>
-							<th>Volume (7 day)</th>
+							<th>Volume (7 days)</th>
 							<th>APY (24h)</th>
-							<th>APY (7 day)</th>
+							<th>APY (7 days)</th>
 						</tr>
 					</thead>
 					<tbody>
