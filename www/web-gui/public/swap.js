@@ -775,8 +775,10 @@ Vue.component('swap-liquid', {
 	},
 	computed: {
 		disable_add_rem() {
-			return !(this.amount_0 || this.amount_1) || this.pool_idx < 0
-				|| (this.user.pool_idx >= 0 && this.pool_idx != this.user.pool_idx
+			return !(this.amount_0 || this.amount_1) || this.pool_idx < 0;
+		},
+		disable_add() {
+			return (this.user.pool_idx >= 0 && this.pool_idx != this.user.pool_idx
 					&& (this.user.balance[0].amount || this.user.balance[1].amount));
 		},
 		disable_payout() {
@@ -841,7 +843,7 @@ Vue.component('swap-liquid', {
 					<v-btn @click="match()">Price Match</v-btn>
 					<v-btn @click="payout()" :disabled="disable_payout">Payout</v-btn>
 					<v-btn @click="switch_pool()" :disabled="disable_switch">Switch Fee</v-btn>
-					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem">Add Liquidity</v-btn>
+					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem || disable_add">Add Liquidity</v-btn>
 					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">Remove Liquidity</v-btn>
 					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">Remove All</v-btn>
 				</v-card-actions>

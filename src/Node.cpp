@@ -1473,6 +1473,8 @@ std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const in
 					out.amount = entry.args[1].to<uint64_t>();
 				}
 			}
+		} else if(entry.method == "rem_all_liquid") {
+			out.type = "REMOVE_ALL";
 		} else if(entry.method == "payout") {
 			out.type = "PAYOUT";
 		} else if(entry.method == "switch_pool") {
