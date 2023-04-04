@@ -176,7 +176,7 @@ function rem_liquid(i, amount, dry_run = false) public
 		fail("no such user", 2);
 	}
 	if(!dry_run) {
-		if(this.height < user.unlock_height + LOCK_DURATION) {
+		if(this.height < user.unlock_height) {
 			fail("liquidity still locked", 3);
 		}
 	}

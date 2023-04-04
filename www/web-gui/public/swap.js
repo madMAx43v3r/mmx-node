@@ -782,7 +782,7 @@ Vue.component('swap-liquid', {
 					&& (this.user.balance[0].amount || this.user.balance[1].amount));
 		},
 		disable_payout() {
-			return !this.user || this.paid || !(this.user.fees_earned[0].amount || this.user.fees_earned[1].amount);
+			return !this.user || this.paid || !(this.user.fees_earned[0].value || this.user.fees_earned[1].value);
 		},
 		disable_switch() {
 			return this.pool_idx < 0 || this.user.pool_idx < 0 || this.pool_idx == this.user.pool_idx
