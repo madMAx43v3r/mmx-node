@@ -198,6 +198,14 @@ vnx::Object to_amount_object_str(const uint64_t& amount, const int decimals)
 	return res;
 }
 
+vnx::Object to_amount_object_str(const uint128& amount, const int decimals)
+{
+	vnx::Object res;
+	res["value"] = fixed128(amount, decimals).to_string();
+	res["amount"] = amount.str();
+	return res;
+}
+
 
 template<typename T>
 vnx::Object render(const T& value, std::shared_ptr<const RenderContext> context = nullptr);
