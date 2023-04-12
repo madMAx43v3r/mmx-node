@@ -76,6 +76,7 @@ function trade(dst_addr) public payable
 function accept(dst_addr) public payable
 {
 	check_partner();
+	
 	dst_addr = bech32(dst_addr);
 	
 	if(this.deposit.currency != ask_currency) {
