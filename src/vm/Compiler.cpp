@@ -454,7 +454,7 @@ private:
 
 };
 
-const std::string Compiler::version = "0.0.0";
+const std::string Compiler::version = "1.0.0";
 
 Compiler::Compiler()
 {
