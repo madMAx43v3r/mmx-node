@@ -32,6 +32,7 @@
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
 	"virtual_space_constant": 1524,
+	"fixed_project_reward": 25000,
 	"project_ratio": {
 		"value": 1,
 		"inverse": 100
