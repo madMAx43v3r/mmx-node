@@ -88,7 +88,7 @@ function payout() public
 
 function _add_liquid(i, pool_idx, amount)
 {
-	if(pool_idx >= size(fee_rates)) {
+	if(pool_idx >= size(state)) {
 		fail("invalid pool_idx", 8);
 	}
 	const entry = state[pool_idx];
@@ -211,7 +211,7 @@ function rem_all_liquid(dry_run = false) public
 
 function switch_pool(pool_idx) public
 {
-	if(pool_idx >= size(fee_rates)) {
+	if(pool_idx >= size(state)) {
 		fail("invalid pool_idx", 8);
 	}
 	const user = users[this.user];
@@ -271,7 +271,7 @@ function trade(i, address, min_amount) public payable
 	var amount_left = amount;
 	var trade_amount_left = trade_amount;
 	
-	for(var j = 0; j < size(fee_rates) && trade_amount_left > 0; ++j) {
+	for(var j = 0; j < size(state) && trade_amount_left > 0; ++j) {
 		const entry = state[j];
 		
 		if(entry.balance[k] > 0) {
