@@ -852,6 +852,7 @@ Vue.component('account-plots', {
 				req.address = this.dialog_address;
 				req.method = "withdraw";
 				req.args = [this.dialog_amount * 1e6];
+				req.user = 0;
 			}
 			fetch(url, {body: JSON.stringify(req), method: "post"})
 				.then(response => {

@@ -1988,8 +1988,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto address = args["address"].to<addr_t>();
 			const auto method = args["method"].to<std::string>();
 			const auto params = args["args"].to<std::vector<vnx::Variant>>();
+			const auto user = args["user"].to<vnx::optional<uint32_t>>();
 			const auto options = args["options"].to<spend_options_t>();
-			wallet->execute(index, address, method, params, nullptr, options,
+			wallet->execute(index, address, method, params, user, options,
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
 					respond(request_id, render(tx));
 				},
