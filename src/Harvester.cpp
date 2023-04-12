@@ -180,18 +180,22 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 
 	for(const auto& entry : virtual_plots)
 	{
-		const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
-		if(balance) {
-			const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
-			if(score < params->score_threshold) {
+		try {
+			const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
+			if(balance) {
+				const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
+				if(score < params->score_threshold) {
+					if(score < best_score) {
+						best_plot = nullptr;
+						best_vplot = entry;
+					}
+				}
 				if(score < best_score) {
-					best_plot = nullptr;
-					best_vplot = entry;
+					best_score = score;
 				}
 			}
-			if(score < best_score) {
-				best_score = score;
-			}
+		} catch(const std::exception& ex) {
+			log(WARN) << "[" << host_name << "] Failed to check virtual plot: " << ex.what() << " (" << entry.first << ")";
 		}
 	}
 
