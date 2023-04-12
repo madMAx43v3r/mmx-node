@@ -135,29 +135,30 @@ function _rem_liquid(user, i, amount, do_send = true)
 	const k = (i + 1) % 2;
 	const entry = state[user.pool_idx];
 	
-	var ret_amount = amount;
+	var ret_amount = (amount * entry.balance[i]) / entry.user_total[i];
 	var trade_amount = 0;
 	
 	if(entry.balance[i] < entry.user_total[i]) {
-		// token i was sold
-		ret_amount = (amount * entry.balance[i]) / entry.user_total[i];
-
 		if(entry.balance[k] > entry.user_total[k]) {
 			// token k was bought
 			trade_amount = ((entry.balance[k] - entry.user_total[k]) * amount) / entry.user_total[i];
-			if(trade_amount > 0) {
-				if(do_send) {
-					send(this.user, trade_amount, tokens[k]);
-				}
-				entry.balance[k] -= trade_amount;
-			}
 		}
+	} else if(entry.balance[k] < entry.user_total[k]) {
+		// no trade happened
+		ret_amount = amount;
 	}
+	
 	if(ret_amount > 0) {
 		if(do_send) {
 			send(this.user, ret_amount, tokens[i]);
 		}
 		entry.balance[i] -= ret_amount;
+	}
+	if(trade_amount > 0) {
+		if(do_send) {
+			send(this.user, trade_amount, tokens[k]);
+		}
+		entry.balance[k] -= trade_amount;
 	}
 	user.balance[i] -= amount;
 	entry.user_total[i] -= amount;
