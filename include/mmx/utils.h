@@ -166,16 +166,14 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 inline
 uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	return (uint128_t(calc_total_netspace_ideal(params, space_diff)) * params->reward_factor.value) / params->reward_factor.inverse;
+	const uint64_t nominal = (uint128_t(calc_total_netspace_ideal(params, space_diff)) * params->reward_factor.value) / params->reward_factor.inverse;
+	return std::max(nominal, params->min_reward);
 }
 
 inline
-uint64_t calc_final_block_reward(const uint64_t reward, const uint64_t avg_txfee, const uint64_t fees)
+uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t avg_txfee, const uint64_t fees)
 {
-	if(avg_txfee > reward) {
-		return fees;
-	}
-	return (reward - avg_txfee) + fees;
+	return avg_txfee < reward ? (reward - avg_txfee) + fees : fees;
 }
 
 inline

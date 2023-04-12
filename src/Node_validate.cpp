@@ -355,8 +355,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 	}
 	if(block->reward_addr) {
-		const auto base_reward = calc_block_reward(block);
-		const auto base_allowed = calc_final_block_reward(block, base_reward, block->tx_fees);
+		const auto base_allowed = calc_block_reward(block, block->tx_fees);
 		if(block->reward_amount > base_allowed) {
 			throw std::logic_error("invalid reward_amount: "
 					+ std::to_string(block->reward_amount) + " > " + std::to_string(base_allowed));

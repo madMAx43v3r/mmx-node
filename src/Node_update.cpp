@@ -817,10 +817,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	const auto diff_block = get_diff_header(prev, 1);
 	block->weight = calc_block_weight(params, diff_block, block);
 	block->total_weight = prev->total_weight + block->weight;
-
-	const auto block_reward = calc_block_reward(block);
-	const auto final_reward = calc_final_block_reward(block, block_reward, total_fees);
-	block->reward_amount = final_reward;
+	block->reward_amount = calc_block_reward(block, total_fees);
 	block->finalize();
 
 	FarmerClient farmer(proof.farmer_mac);
@@ -835,10 +832,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = "
 			<< (full_block ? std::to_string(block->tx_list.size()) : "dummy")
-			<< ", score = " << block->proof->score << ", reward = " << to_value(final_reward, params) << " MMX"
-			<< ", nominal = " << to_value(block_reward, params) << " MMX"
-			<< ", fees = " << to_value(total_fees, params) << " MMX"
-			<< ", took " << elapsed << " sec";
+			<< ", score = " << block->proof->score << ", reward = " << to_value(block->reward_amount, params) << " MMX"
+			<< ", fees = " << to_value(total_fees, params) << " MMX" << ", took " << elapsed << " sec";
 	return block;
 }
 

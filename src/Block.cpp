@@ -110,7 +110,7 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 		out.amount = time_diff / params->vdf_reward_divider;
 		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::VDF_REWARD, out));
 	}
-	if(reward_addr) {
+	if(reward_addr && reward_amount) {
 		txio_t out;
 		out.address = *reward_addr;
 		out.amount = reward_amount;
