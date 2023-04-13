@@ -7,6 +7,7 @@
 
 #include <mmx/Node.h>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/chiapos.h>
@@ -151,6 +152,23 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 	return balance;
 }
 
+template<typename T>
+uint256_t Node::verify_proof_impl(	std::shared_ptr<const T> proof, const hash_t& challenge,
+									std::shared_ptr<const BlockHeader> diff_block) const
+{
+	if(proof->ksize < params->min_ksize) {
+		throw std::logic_error("ksize too small");
+	}
+	if(proof->ksize > params->max_ksize) {
+		throw std::logic_error("ksize too big");
+	}
+	const auto plot_challenge = get_plot_challenge(challenge, proof->plot_id);
+	const auto quality = hash_t::from_bytes(chiapos::verify(
+			proof->ksize, proof->plot_id.bytes, plot_challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
+
+	return calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
+}
+
 void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge,
 							std::shared_ptr<const BlockHeader> diff_block) const
 {
@@ -166,17 +184,11 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 
 	if(auto og_proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof))
 	{
-		if(og_proof->ksize < params->min_ksize) {
-			throw std::logic_error("ksize too small");
-		}
-		if(og_proof->ksize > params->max_ksize) {
-			throw std::logic_error("ksize too big");
-		}
-		const auto plot_challenge = get_plot_challenge(challenge, proof->plot_id);
-		const auto quality = hash_t::from_bytes(chiapos::verify(
-				og_proof->ksize, proof->plot_id.bytes, plot_challenge.bytes, og_proof->proof_bytes.data(), og_proof->proof_bytes.size()));
-
-		score = calc_proof_score(params, og_proof->ksize, quality, diff_block->space_diff);
+		score = verify_proof_impl(og_proof, challenge, diff_block);
+	}
+	else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(proof))
+	{
+		score = verify_proof_impl(nft_proof, challenge, diff_block);
 	}
 	else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof))
 	{
@@ -194,13 +206,13 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
 	}
 	else {
-		throw std::logic_error("invalid proof type");
+		throw std::logic_error("invalid proof type: " + proof->get_type_name());
 	}
 	if(score != proof->score) {
 		throw std::logic_error("proof score mismatch: expected " + std::to_string(proof->score) + " but got " + score.str(10));
 	}
 	if(score >= params->score_threshold) {
-		throw std::logic_error("score >= score_threshold");
+		throw std::logic_error("proof score >= score_threshold");
 	}
 }
 
