@@ -7,10 +7,13 @@
 
 #include <mmx/Node.h>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
+#include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Executable.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Mutate.hxx>
@@ -262,6 +265,20 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 		if(block->average_txfee != prev->average_txfee) {
 			throw std::logic_error("invalid average_txfee adjust");
+		}
+	}
+	if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+		if(block->reward_addr != proof->contract) {
+			throw std::logic_error("invalid reward_addr for NFT proof");
+		}
+	}
+	if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+		if(auto plot = get_contract_as<contract::VirtualPlot>(proof->contract)) {
+			if(plot->reward_address) {
+				if(block->reward_addr != *plot->reward_address) {
+					throw std::logic_error("invalid reward_addr for stake proof");
+				}
+			}
 		}
 	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
