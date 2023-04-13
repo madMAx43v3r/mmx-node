@@ -92,8 +92,6 @@ public:
 	
 	std::shared_ptr<const ::mmx::Contract> get_contract_for(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	std::shared_ptr<const ::mmx::Contract> get_contract_at(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::hash_t& block_hash = ::mmx::hash_t());
-	
 	std::vector<std::shared_ptr<const ::mmx::Contract>> get_contracts(const std::vector<::mmx::addr_t>& addresses = {});
 	
 	std::vector<::mmx::addr_t> get_contracts_by(const std::vector<::mmx::addr_t>& addresses = {});

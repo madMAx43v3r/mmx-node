@@ -38,8 +38,6 @@
 #include <mmx/Node_get_block_hash_ex_return.hxx>
 #include <mmx/Node_get_contract.hxx>
 #include <mmx/Node_get_contract_return.hxx>
-#include <mmx/Node_get_contract_at.hxx>
-#include <mmx/Node_get_contract_at_return.hxx>
 #include <mmx/Node_get_contract_balances.hxx>
 #include <mmx/Node_get_contract_balances_return.hxx>
 #include <mmx/Node_get_contract_for.hxx>
@@ -473,20 +471,6 @@ std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract_for(const ::mmx:
 	_method->address = address;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_for_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Contract>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
-std::shared_ptr<const ::mmx::Contract> NodeClient::get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash) {
-	auto _method = ::mmx::Node_get_contract_at::create();
-	_method->address = address;
-	_method->block_hash = block_hash;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_at_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::Contract>>();

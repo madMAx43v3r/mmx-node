@@ -139,7 +139,6 @@ protected:
 	virtual void add_transaction(std::shared_ptr<const ::mmx::Transaction> tx, const vnx::bool_t& pre_validate) = 0;
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract(const ::mmx::addr_t& address) const = 0;
 	virtual std::shared_ptr<const ::mmx::Contract> get_contract_for(const ::mmx::addr_t& address) const = 0;
-	virtual std::shared_ptr<const ::mmx::Contract> get_contract_at(const ::mmx::addr_t& address, const ::mmx::hash_t& block_hash) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Contract>> get_contracts(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::vector<::mmx::addr_t> get_contracts_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::vector<::mmx::addr_t> get_contracts_owned_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
