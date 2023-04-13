@@ -20,8 +20,8 @@ hash_t MultiSig::calc_hash() const
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", 	version);
-	write_bytes(out, "solutions");
-	write_bytes(out, uint64_t(solutions.size()));
+	write_field(out, "solutions");
+	write_bytes(out, uint32_t(solutions.size()));
 	for(const auto& sol : solutions) {
 		write_bytes(out, sol ? sol->calc_hash() : hash_t());
 	}

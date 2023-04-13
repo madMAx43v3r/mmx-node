@@ -209,10 +209,14 @@ void write_bytes(vnx::OutputBuffer& out, const std::map<K, V>& value) {
 	}
 }
 
-template<typename T>
-void write_field(vnx::OutputBuffer& out, const std::string& name, const T& value) {
+inline void write_field(vnx::OutputBuffer& out, const std::string& name) {
 	write_bytes_cstr(out, "field<>");
 	write_bytes(out, name);
+}
+
+template<typename T>
+void write_field(vnx::OutputBuffer& out, const std::string& name, const T& value) {
+	write_field(out, name);
 	write_bytes(out, value);
 }
 

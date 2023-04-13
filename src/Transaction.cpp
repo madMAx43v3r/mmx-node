@@ -86,8 +86,8 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "sender",	sender);
 	write_field(out, "inputs",	inputs);
 	write_field(out, "outputs", outputs);
-	write_bytes(out, "execute");
-	write_bytes(out, uint64_t(execute.size()));
+	write_field(out, "execute");
+	write_bytes(out, uint32_t(execute.size()));
 	for(const auto& op : execute) {
 		write_bytes(out, op ? op->calc_hash(full_hash) : hash_t());
 	}
@@ -95,8 +95,8 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 
 	if(full_hash) {
 		write_field(out, "static_cost", static_cost);
-		write_bytes(out, "solutions");
-		write_bytes(out, uint64_t(solutions.size()));
+		write_field(out, "solutions");
+		write_bytes(out, uint32_t(solutions.size()));
 		for(const auto& sol : solutions) {
 			write_bytes(out, sol ? sol->calc_hash() : hash_t());
 		}
