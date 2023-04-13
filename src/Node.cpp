@@ -711,42 +711,6 @@ std::shared_ptr<const Contract> Node::get_contract_for(const addr_t& address) co
 	return pubkey;
 }
 
-std::shared_ptr<const Contract> Node::get_contract_at(const addr_t& address, const hash_t& block_hash) const
-{
-	const auto root = get_root();
-	const auto fork = find_fork(block_hash);
-	const auto block = fork ? fork->block : get_header(block_hash);
-	if(!block) {
-		throw std::logic_error("no such block");
-	}
-	std::shared_ptr<const Contract> contract;
-	contract_map.find(address, contract, std::min(root->height, block->height));
-
-	if(fork) {
-		for(const auto& fork_i : get_fork_line(fork)) {
-			const auto& block_i = fork_i->block;
-			for(const auto& tx : block_i->get_transactions()) {
-				if(!tx->did_fail()) {
-					if(tx->id == address) {
-						contract = tx->deploy;
-					}
-					for(const auto& op : tx->get_operations()) {
-						if(op->address == address) {
-							if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-								if(auto copy = vnx::clone(contract)) {
-									copy->vnx_call(vnx::clone(mutate->method));
-									contract = copy;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return contract;
-}
-
 std::vector<std::shared_ptr<const Contract>> Node::get_contracts(const std::vector<addr_t>& addresses) const
 {
 	std::vector<std::shared_ptr<const Contract>> res;
