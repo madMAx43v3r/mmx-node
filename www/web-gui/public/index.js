@@ -267,6 +267,15 @@ const SwapLiquid = {
 		`
 }
 
+const SwapPool = {
+	props: {
+		address: null
+	},
+	template: `
+		<swap-pool-info :address="address"></swap-pool-info>
+		`
+}
+
 const Explore = {
 	template: `
 		<div>

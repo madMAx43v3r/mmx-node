@@ -204,7 +204,8 @@ Vue.component('swap-sub-menu', {
 		<v-tabs>
 			<v-tab :to="'/swap/trade/' + address">Trade</v-tab>
 			<v-tab :to="'/swap/history/' + address">History</v-tab>
-			<v-tab :to="'/swap/liquid/' + address">Liquidity</v-tab>
+			<v-tab :to="'/swap/liquid/' + address">My Liquidity</v-tab>
+			<v-tab :to="'/swap/pool/' + address">Pool State</v-tab>
 		</v-tabs>
 	`
 })
@@ -256,7 +257,6 @@ Vue.component('swap-info', {
 						<tr>
 							<th></th>
 							<th>Pool Balance</th>
-							<th>Symbol</th>
 							<th>Volume (24h)</th>
 							<th>Volume (7 days)</th>
 							<th>APY (24h)</th>
@@ -267,15 +267,15 @@ Vue.component('swap-info', {
 						<template v-for="i in [0, 1]">
 							<tr>
 								<td class="key-cell">{{i == 0 ? "Token" : "Currency"}}</td>
-								<td><b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b></td>
 								<td>
+									<b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b>
 									<template v-if="data.symbols[i] == 'MMX'">MMX</template>
 									<template v-else>
 										<router-link :to="'/explore/address/' + data.tokens[i]">{{data.symbols[i]}}</router-link>
 									</template>
 								</td>
-								<td>{{parseFloat(data.volume_1d[i].value.toPrecision(6))}}</td>
-								<td>{{parseFloat(data.volume_7d[i].value.toPrecision(6))}}</td>
+								<td><b>{{parseFloat(data.volume_1d[i].value.toPrecision(6))}}</b> {{data.symbols[i]}}</td>
+								<td><b>{{parseFloat(data.volume_7d[i].value.toPrecision(6))}}</b> {{data.symbols[i]}}</td>
 								<td>{{(data.avg_apy_1d[i] * 100).toFixed(2)}} %</td>
 								<td>{{(data.avg_apy_7d[i] * 100).toFixed(2)}} %</td>
 							</tr>
@@ -284,6 +284,69 @@ Vue.component('swap-info', {
 				</v-simple-table>
 			</v-card>
 		</div>
+	`
+})
+
+Vue.component('swap-pool-info', {
+	props: {
+		address: String
+	},
+	data() {
+		return {
+			data: null,
+			timer: null,
+			loading: true,
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/swap/info?id=' + this.address)
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+					this.loading = false;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-card>
+			<div v-if="!data && loading">
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@2"/>
+			</div>
+
+			<v-simple-table v-if="data">
+				<thead>
+					<tr>
+						<th>Pool Fee</th>
+						<th>Balance</th>
+						<th>Balance</th>
+						<th>User Total</th>
+						<th>User Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					<template v-for="(fee_rate, k) in data.fee_rates">
+						<tr>
+							<td class="key-cell">{{fee_rate * 100}} %</td>
+							<template v-for="i in [0, 1]">
+								<td><b>{{ parseFloat( (data.pools[k].balance[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+							</template>
+							<template v-for="i in [0, 1]">
+								<td><b>{{ parseFloat( (data.pools[k].user_total[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+							</template>
+						</tr>
+					</template>
+				</tbody>
+			</v-simple-table>
+		</v-card>
 	`
 })
 
@@ -335,11 +398,9 @@ Vue.component('swap-user-info', {
 			<v-simple-table v-if="data">
 				<thead>
 					<tr>
-						<th></th>
-						<th>Your Balance</th>
-						<th>Your Liquidity</th>
+						<th>My Balance</th>
+						<th>My Liquidity</th>
 						<th>Fees Earned</th>
-						<th>Symbol</th>
 						<th>Fee Level</th>
 						<th>Unlock Height</th>
 					</tr>
@@ -347,11 +408,9 @@ Vue.component('swap-user-info', {
 				<tbody>
 					<template v-for="i in [0, 1]">
 						<tr>
-							<td class="key-cell">Token</td>
-							<td><b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b></td>
-							<td>{{ parseFloat( (data.equivalent_liquidity[i].value).toPrecision(6) ) }}</td>
-							<td>{{ parseFloat( (data.fees_earned[i].value).toPrecision(6) ) }}</td>
-							<td>{{data.symbols[i]}}</td>
+							<td><b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+							<td><b>{{ parseFloat( (data.equivalent_liquidity[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+							<td><b>{{ parseFloat( (data.fees_earned[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
 							<td><template v-if="data.pool_idx >= 0">{{(data.swap.fee_rates[data.pool_idx] * 100).toFixed(2)}} %</template></td>
 							<td>{{data.unlock_height}}</td>
 						</tr>

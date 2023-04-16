@@ -53,6 +53,7 @@ const routes = [
 			{ path: 'trade/:address', component: SwapTrade, meta: { page: 'trade' } },
 			{ path: 'history/:address', component: SwapHistory, meta: { page: 'history' } },
 			{ path: 'liquid/:address', component: SwapLiquid, meta: { page: 'liquid' } },
+			{ path: 'pool/:address', component: SwapPool, meta: { page: 'pool' } },
 		]
 	},
 	{ path: '/explore',
