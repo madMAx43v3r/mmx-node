@@ -1026,7 +1026,7 @@ std::vector<virtual_plot_info_t> Node::get_virtual_plots(const std::vector<addr_
 			info.reward_address = plot->reward_address;
 			info.balance = get_balance(address, addr_t());
 			info.size_bytes = calc_virtual_plot_size(params, info.balance);
-			info.owner = to_addr(storage->read(address, vm::MEM_STATIC + 1));
+			info.owner = to_addr(read_storage_field(address, "owner").first);
 			result.push_back(info);
 		}
 	}
@@ -1064,10 +1064,10 @@ offer_data_t Node::get_offer(const addr_t& address) const
 
 int Node::get_offer_state(const addr_t& address) const
 {
-	if(get_balance(address, to_addr(read_storage_var(address, vm::MEM_STATIC + 3)))) {
+	if(get_balance(address, to_addr(read_storage_field(address, "bid_currency").first))) {
 		return 1;
 	}
-	if(get_balance(address, to_addr(read_storage_var(address, vm::MEM_STATIC + 4)))) {
+	if(get_balance(address, to_addr(read_storage_field(address, "ask_currency").first))) {
 		return 2;
 	}
 	return 0;
