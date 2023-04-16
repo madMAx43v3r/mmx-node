@@ -248,7 +248,7 @@ Vue.component('swap-info', {
 			
 			<v-card class="my-2">
 				<div v-if="!data && loading">
-					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-progress-linear indeterminate></v-progress-linear>
 					<v-skeleton-loader type="table-row-divider@2"/>
 				</div>
 
@@ -318,8 +318,8 @@ Vue.component('swap-pool-info', {
 	template: `
 		<v-card>
 			<div v-if="!data && loading">
-				<v-progress-linear indeterminate absolute top></v-progress-linear>
-				<v-skeleton-loader type="table-row-divider@2"/>
+				<v-progress-linear indeterminate></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@10"/>
 			</div>
 
 			<v-simple-table v-if="data">
@@ -392,7 +392,7 @@ Vue.component('swap-user-info', {
 	template: `
 		<v-card>
 			<div v-if="!data && loading">
-				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-progress-linear indeterminate></v-progress-linear>
 				<v-skeleton-loader type="table-row-divider@2"/>
 			</div>
 
@@ -479,7 +479,7 @@ Vue.component('swap-history', {
 				class="elevation-2"
 			>
 				<template v-slot:progress>
-					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-progress-linear indeterminate></v-progress-linear>
 					<v-skeleton-loader type="table-row-divider@6" />
 				</template>
 				
@@ -730,6 +730,7 @@ Vue.component('swap-liquid', {
 			price: null,
 			result: null,
 			error: null,
+			loading: true,
 		}
 	},
 	methods: {
@@ -739,7 +740,10 @@ Vue.component('swap-liquid', {
 			}
 			fetch('/wapi/swap/info?id=' + this.address)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.data = data;
+					this.loading = false;
+				});
 		},
 		update_user() {
 			fetch('/wapi/wallet/address?index=' + this.wallet)
@@ -861,6 +865,11 @@ Vue.component('swap-liquid', {
 	},
 	template: `
 		<div>
+			<div v-if="!data && loading">
+				<v-progress-linear indeterminate></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@2"/>
+			</div>
+			
 			<swap-user-info v-if="user_address" :address="address" :user="user_address" @user-update="arg => this.user = arg"></swap-user-info>
 			
 			<v-card v-if="data" class="my-2">
