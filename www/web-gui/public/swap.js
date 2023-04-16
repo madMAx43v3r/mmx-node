@@ -325,9 +325,9 @@ Vue.component('swap-pool-info', {
 			<v-simple-table v-if="data">
 				<thead>
 					<tr>
-						<th>Pool Fee</th>
-						<th>Balance</th>
-						<th>Balance</th>
+						<th>Fee Level</th>
+						<th>Balance</th><th></th>
+						<th>Balance</th><th></th>
 						<th>User Total</th>
 						<th>User Total</th>
 					</tr>
@@ -338,6 +338,7 @@ Vue.component('swap-pool-info', {
 							<td class="key-cell">{{fee_rate * 100}} %</td>
 							<template v-for="i in [0, 1]">
 								<td><b>{{ parseFloat( (data.pools[k].balance[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+								<td>{{(data.pools[k].balance[i].value / data.balance[i].value * 100).toFixed(1)}} %</td>
 							</template>
 							<template v-for="i in [0, 1]">
 								<td><b>{{ parseFloat( (data.pools[k].user_total[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
