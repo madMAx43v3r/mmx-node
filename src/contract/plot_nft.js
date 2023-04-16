@@ -1,11 +1,11 @@
 
 var owner;
-var target = null;
+var target;
 var unlock_height = 0;
 var unlock_delay;
 
 var name;
-var server_url = null;
+var server_url;
 var reward_addr;
 
 
