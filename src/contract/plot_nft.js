@@ -28,12 +28,12 @@ function check_owner() const
 	}
 }
 
-function is_locked() const
+function is_locked() const public
 {
 	return unlock_height == null || this.height < unlock_height;
 }
 
-function lock(target_, unlock_delay_, server_url_)
+function lock(target_, unlock_delay_, server_url_) public
 {
 	check_owner();
 	
@@ -46,7 +46,7 @@ function lock(target_, unlock_delay_, server_url_)
 	unlock_height = null;
 }
 
-function unlock()
+function unlock() public
 {
 	check_owner();
 	
@@ -55,7 +55,7 @@ function unlock()
 	}
 }
 
-function claim_all(address, currency)
+function claim_all(address, currency) public
 {
 	if(is_locked()) {
 		if(this.user != target) {
@@ -72,21 +72,21 @@ function claim_all(address, currency)
 	send(bech32(address), this.balance[currency], currency);
 }
 
-function transfer(owner_)
+function transfer(owner_) public
 {
 	check_owner();
 	
 	owner = owner_;
 }
 
-function set_reward_addr(reward_addr_)
+function set_reward_addr(reward_addr_) public
 {
 	check_owner();
 	
 	reward_addr = reward_addr_;
 }
 
-function set_server_url(server_url_)
+function set_server_url(server_url_) public
 {
 	check_owner();
 	
