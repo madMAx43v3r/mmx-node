@@ -2266,12 +2266,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					}
 				}
 			}
-			else if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-				const auto method = mutate->method["__type"].to_string_value();
-				if(method == "mmx.contract.VirtualPlot.bls_transfer") {
-					vplot_map.insert(mutate->method["new_farmer_key"].to<bls_pubkey_t>(), address);
-				}
-			}
 		}
 	}
 	tx_pool_erase(tx->id);
