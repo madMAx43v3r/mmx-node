@@ -25,7 +25,6 @@ hash_t WebData::calc_hash(const vnx::bool_t& full_hash) const
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", 	version);
-	write_field(out, "owner", 		owner);
 	write_field(out, "mime_type", 	mime_type);
 	write_field(out, "payload", 	payload);
 	out.flush();
