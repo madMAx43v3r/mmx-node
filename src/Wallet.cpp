@@ -8,9 +8,7 @@
 #include <mmx/Wallet.h>
 #include <mmx/KeyFile.hxx>
 #include <mmx/WalletFile.hxx>
-#include <mmx/contract/Token.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -183,52 +181,6 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 }
 
 std::shared_ptr<const Transaction>
-Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-				const addr_t& currency, const spend_options_t& options) const
-{
-	const auto token = std::dynamic_pointer_cast<const contract::Token>(node->get_contract(currency));
-	if(!token) {
-		throw std::logic_error("no such currency");
-	}
-	if(!token->owner) {
-		throw std::logic_error("token has no owner");
-	}
-	const auto owner = *token->owner;
-
-	const auto wallet = get_wallet(index);
-	update_cache(index);
-
-	if(amount == 0) {
-		throw std::logic_error("amount cannot be zero");
-	}
-	if(dst_addr == addr_t()) {
-		throw std::logic_error("dst_addr cannot be zero");
-	}
-	auto tx = Transaction::create();
-	tx->note = tx_note_e::MINT;
-
-	auto op = operation::Mint::create();
-	op->amount = amount;
-	op->target = dst_addr;
-	op->address = currency;
-	if(!op->is_valid()) {
-		throw std::logic_error("invalid operation");
-	}
-	tx->execute.push_back(op);
-
-	auto options_ = options;
-	options_.owner_map.emplace(currency, owner);
-
-	wallet->complete(tx, options_);
-
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Minted " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
-	}
-	return tx;
-}
-
-std::shared_ptr<const Transaction>
 Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const
 {
 	if(!contract) {
@@ -249,43 +201,6 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
 		log(INFO) << "Deployed " << contract->get_type_name() << " with cost " << tx->static_cost << " as " << addr_t(tx->id) << " (" << tx->id << ")";
-	}
-	return tx;
-}
-
-std::shared_ptr<const Transaction>
-Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const
-{
-	auto contract = node->get_contract(address);
-	if(!contract) {
-		throw std::logic_error("no such contract");
-	}
-	auto owner = contract->get_owner();
-	if(!owner) {
-		throw std::logic_error("contract has no owner");
-	}
-	const auto wallet = get_wallet(index);
-	update_cache(index);
-
-	auto op = operation::Mutate::create();
-	op->address = address;
-	op->method = method;
-
-	auto tx = Transaction::create();
-	tx->note = tx_note_e::MUTATE;
-	tx->execute.push_back(op);
-
-	if(wallet->find_address(*owner) < 0) {
-		throw std::logic_error("contract not owned by wallet");
-	}
-	auto options_ = options;
-	options_.owner_map.emplace(address, *owner);
-
-	wallet->complete(tx, options_);
-
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Mutated [" << address << "] via " << method["__type"] << " with cost " << tx->static_cost << " (" << tx->id << ")";
 	}
 	return tx;
 }

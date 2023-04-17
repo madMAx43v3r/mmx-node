@@ -179,7 +179,6 @@ add_library(mmx_modules SHARED
 	src/Router.cpp
 	src/WebAPI.cpp
 	src/OCL_VDF.cpp
-	src/TimeLordRewards.cpp
 	src/upnp_mapper.cpp
 )
 

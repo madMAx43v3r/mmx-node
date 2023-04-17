@@ -1990,7 +1990,6 @@ Vue.component('create-contract-menu', {
 		return {
 			type: null,
 			types: [
-				{ value: "locked", text: "mmx.contract.TimeLock" },
 				{ value: "virtualplot", text: "mmx.contract.VirtualPlot" },
 			]
 		}
@@ -2035,7 +2034,8 @@ Vue.component('create-locked-contract', {
 		submit() {
 			this.confirmed = false;
 			const contract = {};
-			contract.__type = "mmx.contract.TimeLock";
+			contract.__type = "mmx.contract.Executable";
+			// TODO
 			contract.owner = this.owner;
 			contract.unlock_height = this.unlock_height;
 			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})

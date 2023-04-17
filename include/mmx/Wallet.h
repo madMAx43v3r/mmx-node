@@ -41,15 +41,8 @@ protected:
 			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction> mint(
-			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-			const addr_t& currency, const spend_options_t& options) const override;
-
 	std::shared_ptr<const Transaction> deploy(
 			const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
-
-	std::shared_ptr<const Transaction> mutate(
-			const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> execute(
 			const uint32_t& index, const addr_t& address, const std::string& method,

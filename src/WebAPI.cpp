@@ -14,16 +14,10 @@
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/NFT.hxx>
-#include <mmx/contract/MutableRelay.hxx>
-#include <mmx/contract/Token.hxx>
-#include <mmx/contract/TimeLock.hxx>
-#include <mmx/contract/PuzzleTimeLock.hxx>
+#include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/PlotNFT.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Spend.hxx>
-#include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -584,11 +578,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Operation> base) {
-		if(auto value = std::dynamic_pointer_cast<const operation::Mint>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const operation::Spend>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const operation::Mutate>(base)) {
+		if(auto value = std::dynamic_pointer_cast<const operation::Spend>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
 			set(render(value, context));
@@ -612,23 +602,15 @@ public:
 	void accept(std::shared_ptr<const Contract> base) {
 		if(auto value = std::dynamic_pointer_cast<const contract::NFT>(base)) {
 			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Token>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::PuzzleTimeLock>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::TimeLock>(base)) {
-			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::PlotNFT>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::MutableRelay>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::TokenBase>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
@@ -817,11 +799,6 @@ void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<c
 				}
 				if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
 					addr_set.insert(deposit->currency);
-				}
-			}
-			if(auto contract = tx->deploy) {
-				for(const auto& addr : contract->get_dependency()) {
-					addr_set.insert(addr);
 				}
 			}
 		}

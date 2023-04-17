@@ -11,7 +11,6 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/contract/NFT.hxx>
-#include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>

@@ -12,7 +12,6 @@
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
-#include <mmx/contract/PlotNFT.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
@@ -333,15 +332,6 @@ int main(int argc, char** argv)
 							std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
 							std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
 						}
-						else if(auto nft = std::dynamic_pointer_cast<const mmx::contract::PlotNFT>(contract)) {
-							std::cout << ", name = " << nft->name << ", ";
-							if(nft->unlock_height) {
-								std::cout << "unlocked at " << *nft->unlock_height;
-							} else {
-								std::cout << "locked";
-							}
-							std::cout << ", server = " << vnx::to_string(nft->server_url);
-						}
 						std::cout << ")" << std::endl;
 
 						for(const auto& entry : wallet.get_total_balances({address}))
@@ -529,23 +519,6 @@ int main(int argc, char** argv)
 				const auto tx = wallet.deploy(index, payload, spend_options);
 				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(tx->id) << "]" << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
-			}
-			else if(command == "mutate")
-			{
-				std::string method;
-				vnx::Object args;
-				vnx::read_config("$3", method);
-				vnx::read_config("$4", args);
-
-				if(wallet.is_locked(index)) {
-					spend_options.passphrase = vnx::input_password("Passphrase: ");
-				}
-				args["__type"] = method;
-				const auto tx = wallet.mutate(index, contract, args, spend_options);
-				std::cout << "Executed " << method << " with:" << std::endl;
-				vnx::PrettyPrinter printer(std::cout);
-				args.accept(printer);
-				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "exec" || command == "deposit")
 			{
@@ -935,7 +908,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | mutate | exec | transfer | create | accounts | keys | lock | unlock]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | accounts | keys | lock | unlock]" << std::endl;
 			}
 		}
 		else if(module == "node")
