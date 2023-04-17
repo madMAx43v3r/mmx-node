@@ -659,6 +659,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 			else if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy))
 			{
+				state->balance = get_balances(tx->id);
+
 				auto exec = operation::Execute::create();
 				exec->method = executable->init_method;
 				exec->args = executable->init_args;
