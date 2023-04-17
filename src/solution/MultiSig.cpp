@@ -32,10 +32,10 @@ hash_t MultiSig::calc_hash() const
 	write_field(out, "version", 	version);
 	write_field(out, "solutions");
 	write_bytes(out, uint32_t(solutions.size()));
-	for(const auto& sol : solutions) {
+	for(const auto& entry : solutions) {
 		write_bytes_cstr(out, "pair<>");
-		write_bytes(out, sol.first);
-		write_bytes(out, sol ? sol.second->calc_hash() : hash_t());
+		write_bytes(out, entry.first);
+		write_bytes(out, entry.second ? entry.second->calc_hash() : hash_t());
 	}
 	write_field(out, "num_required", num_required);
 	out.flush();

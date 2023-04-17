@@ -6,7 +6,6 @@
  */
 
 #include <mmx/Node.h>
-#include <mmx/Context.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
@@ -769,13 +768,12 @@ std::map<addr_t, uint128> Node::get_balances(const addr_t& address) const
 std::map<addr_t, balance_t> Node::get_contract_balances(const addr_t& address) const
 {
 	std::map<addr_t, balance_t> out;
-	auto context = Context::create();
-	context->height = get_height() + 1;
-	auto contract = get_contract(address);
+	const auto height = get_height() + 1;
+	const auto contract = get_contract(address);
 	for(const auto& entry : get_total_balances({address})) {
 		auto& tmp = out[entry.first];
 		if(contract) {
-			if(contract->is_locked(context)) {
+			if(contract->is_locked(height)) {
 				tmp.locked = entry.second;
 			} else {
 				tmp.spendable = entry.second;

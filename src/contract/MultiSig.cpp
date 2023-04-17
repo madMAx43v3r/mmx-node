@@ -39,7 +39,7 @@ uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return 32 * owners.size() * params->min_txfee_byte;
 }
 
-std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
 {
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{
@@ -48,10 +48,10 @@ std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operati
 		}
 		if(owners.count(solution->pubkey.get_addr()))
 		{
-			if(!solution->signature.verify(solution->pubkey, context->txid)) {
+			if(!solution->signature.verify(solution->pubkey, txid)) {
 				throw mmx::invalid_solution("invalid signature");
 			}
-			return {};
+			return;
 		}
 		throw mmx::invalid_solution("no such owner");
 	}
@@ -67,7 +67,7 @@ std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operati
 					if(solution->pubkey.get_addr() != entry.first) {
 						throw mmx::invalid_solution("wrong pubkey for " + entry.first.to_string());
 					}
-					if(!solution->signature.verify(solution->pubkey, context->txid)) {
+					if(!solution->signature.verify(solution->pubkey, txid)) {
 						throw mmx::invalid_solution("invalid signature for " + entry.first.to_string());
 					}
 					count++;
@@ -77,7 +77,7 @@ std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operati
 		if(count < num_required) {
 			throw mmx::invalid_solution("insufficient signatures: " + std::to_string(count) + " < " + std::to_string(num_required));
 		}
-		return {};
+		return;
 	}
 	throw mmx::invalid_solution("invalid type");
 }

@@ -576,12 +576,7 @@ void Node::validate_new()
 		}
 	}
 
-	auto context = new_exec_context();
-	{
-		auto base = Context::create();
-		base->height = peak->height + 1;
-		context->block = base;
-	}
+	auto context = new_exec_context(peak->height + 1);
 
 	// prepare synchronization
 	for(const auto& entry : tx_list) {
@@ -643,18 +638,14 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
-	auto context = new_exec_context();
-	{
-		auto base = Context::create();
-		base->height = peak->height + 1;
-		context->block = base;
-	}
+	auto context = new_exec_context(peak->height + 1);
+
 	std::vector<tx_pool_t> tx_list;
 	uint128_t total_verify_cost = 0;
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(check_tx_inclusion(entry.tx->id, context->block->height)) {
+		if(check_tx_inclusion(entry.tx->id, context->height)) {
 			if(total_verify_cost + entry.cost <= params->max_block_cost) {
 				tx_list.push_back(entry);
 				total_verify_cost += entry.cost;

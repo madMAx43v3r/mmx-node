@@ -229,7 +229,7 @@ private:
 	};
 
 	struct execution_context_t {
-		std::shared_ptr<const Context> block;
+		uint32_t height = 0;
 		std::shared_ptr<vm::StorageCache> storage;
 		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
 		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
@@ -238,8 +238,6 @@ private:
 		void wait(const hash_t& txid) const;
 		void signal(const hash_t& txid) const;
 		void setup_wait(const hash_t& txid, const addr_t& address);
-		std::shared_ptr<const Context> get_context_for(
-				std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract, const contract_cache_t& cache) const;
 	};
 
 	struct vdf_point_t {
@@ -348,11 +346,9 @@ private:
 
 	std::shared_ptr<execution_context_t> validate(std::shared_ptr<const Block> block) const;
 
-	std::shared_ptr<execution_context_t> new_exec_context() const;
+	std::shared_ptr<execution_context_t> new_exec_context(const uint32_t height) const;
 
 	std::shared_ptr<contract_state_t> get_contract_state(contract_cache_t& contract_cache, const addr_t& address) const;
-
-	void setup_context_wait(std::shared_ptr<execution_context_t> context, const hash_t& txid, const addr_t& address) const;
 
 	void prepare_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const;
 

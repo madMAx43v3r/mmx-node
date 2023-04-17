@@ -41,7 +41,7 @@ vnx::optional<addr_t> PubKey::get_owner() const {
 	return address;
 }
 
-std::vector<txout_t> PubKey::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+void PubKey::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
 {
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{
@@ -49,10 +49,10 @@ std::vector<txout_t> PubKey::validate(std::shared_ptr<const Operation> operation
 		if(sol_address != address) {
 			throw mmx::invalid_solution("wrong pubkey: " + sol_address.to_string() + " != " + address.to_string());
 		}
-		if(!solution->signature.verify(solution->pubkey, context->txid)) {
+		if(!solution->signature.verify(solution->pubkey, txid)) {
 			throw mmx::invalid_solution("invalid signature for " + address.to_string());
 		}
-		return {};
+		return;
 	}
 	throw mmx::invalid_solution("invalid type");
 }

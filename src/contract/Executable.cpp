@@ -51,10 +51,10 @@ uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return Super::calc_cost(params) + payload * params->min_txfee_byte;
 }
 
-std::vector<txout_t> Executable::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+void Executable::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
 {
 	if(std::dynamic_pointer_cast<const operation::Execute>(operation)) {
-		return {};
+		return;
 	}
 	throw std::logic_error("invalid operation");
 }

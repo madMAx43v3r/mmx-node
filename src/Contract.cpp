@@ -30,12 +30,12 @@ vnx::optional<addr_t> Contract::get_owner() const {
 	return nullptr;
 }
 
-vnx::bool_t Contract::is_locked(std::shared_ptr<const Context> context) const
+vnx::bool_t Contract::is_locked(const uint32_t& height) const
 {
 	return !get_owner();
 }
 
-std::vector<txout_t> Contract::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+void Contract::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
 {
 	throw std::logic_error("invalid operation");
 }

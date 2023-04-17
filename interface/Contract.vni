@@ -13,8 +13,8 @@ class Contract {
 	
 	optional<addr_t> get_owner() const;
 	
-	bool is_locked(Context* context) const;
+	bool is_locked(uint height) const;
 	
-	vector<txout_t> validate(Operation* operation, Context* context) const;
+	void validate(Operation* operation, hash_t txid) const;
 	
 }

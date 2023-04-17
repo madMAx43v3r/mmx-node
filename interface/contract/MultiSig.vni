@@ -16,7 +16,7 @@ class MultiSig extends mmx.Contract {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
-	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	void validate(mmx.Operation* operation, hash_t txid) const;
 	
 }
 
