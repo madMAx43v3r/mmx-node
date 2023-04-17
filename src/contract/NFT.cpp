@@ -39,9 +39,9 @@ hash_t NFT::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t NFT::num_bytes() const
 {
-	uint64_t num_bytes = data.field.size() * 4;
+	uint64_t num_bytes = 0;
 	for(const auto& entry : data.field) {
-		num_bytes += entry.first.size();
+		num_bytes += 4 + entry.first.size();
 		num_bytes += entry.second.size();
 	}
 	return num_bytes;
@@ -49,7 +49,7 @@ uint64_t NFT::num_bytes() const
 
 uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return num_bytes() * params->min_txfee_byte + (solution ? solution->calc_cost(params) : 0);
+	return params->min_txfee_io + num_bytes() * params->min_txfee_byte + (solution ? solution->calc_cost(params) : 0);
 }
 
 
