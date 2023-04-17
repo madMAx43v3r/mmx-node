@@ -152,14 +152,14 @@ inline void write_bytes(vnx::OutputBuffer& out, const time_segment_t& value)
 
 inline void write_bytes(vnx::OutputBuffer& out, const contract::method_t& value)
 {
-	write_bytes_cstr(out, "contract::method_t<>");
-	write_bytes(out, value.name);
-	write_bytes(out, value.info);
-	write_bytes(out, value.is_const);
-	write_bytes(out, value.is_public);
-	write_bytes(out, value.is_payable);
-	write_bytes(out, value.entry_point);
-	write_bytes(out, value.args);
+	write_bytes(out, value.get_type_hash());
+	write_field(out, "name", value.name);
+	write_field(out, "info", value.info);
+	write_field(out, "is_const", value.is_const);
+	write_field(out, "is_public", value.is_public);
+	write_field(out, "is_payable", value.is_payable);
+	write_field(out, "entry_point", value.entry_point);
+	write_field(out, "args", value.args);
 }
 
 template<typename T>
