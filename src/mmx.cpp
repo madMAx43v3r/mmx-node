@@ -485,10 +485,13 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
+				if(!spend_options.user) {
+					spend_options.user = to_addr(node.read_storage_field(contract, "owner").first);
+				}
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.mint(index, mojo, target, contract, spend_options);
+				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo)}, nullptr, spend_options);
 				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
@@ -527,11 +530,11 @@ int main(int argc, char** argv)
 				vnx::read_config("$3", method);
 				vnx::read_config("$4", args);
 
+				if(!spend_options.user && offset >= 0) {
+					spend_options.user = wallet.get_address(index, offset);
+				}
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
-				}
-				if(!spend_options.user) {
-					spend_options.user = wallet.get_address(index, offset);
 				}
 				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
