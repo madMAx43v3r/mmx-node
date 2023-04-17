@@ -1588,7 +1588,7 @@ void Engine::reset()
 
 void Engine::commit()
 {
-	clear_stack();
+	clear_stack();	// clear references from stack
 
 	for(auto iter = memory.lower_bound(MEM_STATIC); iter != memory.end(); ++iter)
 	{
