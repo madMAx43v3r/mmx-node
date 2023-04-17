@@ -608,7 +608,7 @@ uint64_t Engine::alloc()
 		offset = (uint_t*)assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START));
 		offset->pin();
 	}
-	if(offset->value == 0) {
+	if(offset->value >= uint64_t(-1)) {
 		throw std::runtime_error("out of memory");
 	}
 	offset->flags |= FLAG_DIRTY;
