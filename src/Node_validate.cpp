@@ -374,6 +374,10 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	if(exec->user) {
 		if(auto contract = contract_cache.find_contract(*exec->user)) {
+			if(std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+				// do not allow to impersonate another contract
+				throw std::logic_error("invalid execution user");
+			}
 			contract->validate(exec, tx->id);
 		} else {
 			throw std::logic_error("no such user");
