@@ -3,7 +3,7 @@ var owner;
 
 function init(owner_)
 {
-	owner = owner_;
+	owner = bech32(owner_);
 }
 
 function check_owner()
