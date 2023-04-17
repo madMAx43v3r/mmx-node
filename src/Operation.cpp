@@ -13,7 +13,7 @@ namespace mmx {
 
 vnx::bool_t Operation::is_valid() const
 {
-	return version == 0;
+	return version == 0 && (!solution || solution->is_valid());
 }
 
 hash_t Operation::calc_hash(const vnx::bool_t& full_hash) const

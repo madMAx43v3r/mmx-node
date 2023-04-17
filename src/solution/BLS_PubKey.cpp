@@ -29,7 +29,7 @@ hash_t BLS_PubKey::calc_hash() const
 
 uint64_t BLS_PubKey::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return 9 * params->min_txfee_sign;
+	return 10 * params->min_txfee_sign;
 }
 
 

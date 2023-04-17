@@ -12,6 +12,16 @@
 namespace mmx {
 namespace solution {
 
+vnx::bool_t MultiSig::is_valid() const
+{
+	for(const auto& entry : solutions) {
+		if(!entry.second || !entry.second->is_valid()) {
+			return false;
+		}
+	}
+	return Super::is_valid();
+}
+
 hash_t MultiSig::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
@@ -35,9 +45,9 @@ hash_t MultiSig::calc_hash() const
 
 uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint64_t cost = solutions.size() * params->min_txfee_sign;
-	for(const auto& sol : solutions) {
-		if(sol) {
+	uint64_t cost = params->min_txfee_sign;
+	for(const auto& entry : solutions) {
+		if(auto sol = entry.second) {
 			cost += sol->calc_cost(params);
 		}
 	}

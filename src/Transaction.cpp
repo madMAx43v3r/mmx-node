@@ -47,7 +47,7 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 		}
 	}
 	for(const auto& sol : solutions) {
-		if(!sol) {
+		if(!sol || !sol->is_valid()) {
 			return false;
 		}
 	}
@@ -179,7 +179,6 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	cost += inputs.size() * params->min_txfee_io;
 	cost += outputs.size() * params->min_txfee_io;
 	cost += execute.size() * params->min_txfee_exec;
-	cost += solutions.size() * params->min_txfee_sign;
 
 	for(const auto& in : inputs) {
 		if(in.flags & txin_t::IS_EXEC) {

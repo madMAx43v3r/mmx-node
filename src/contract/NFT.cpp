@@ -14,7 +14,7 @@ namespace contract {
 
 vnx::bool_t NFT::is_valid() const
 {
-	return Super::is_valid() && creator != addr_t();
+	return Super::is_valid() && creator != addr_t() && solution && solution->is_valid();
 }
 
 hash_t NFT::calc_hash(const vnx::bool_t& full_hash) const
@@ -49,7 +49,7 @@ uint64_t NFT::num_bytes() const
 
 uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return num_bytes() * params->min_txfee_byte + (solution ? params->min_txfee_sign + solution->calc_cost(params) : 0);
+	return num_bytes() * params->min_txfee_byte + (solution ? solution->calc_cost(params) : 0);
 }
 
 
