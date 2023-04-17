@@ -15,8 +15,6 @@
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Spend.hxx>
-#include <mmx/operation/Mint.hxx>
-#include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
@@ -175,9 +173,7 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 	}
 	std::unordered_set<addr_t> mutate_set;
 	for(const auto& op : tx->get_operations()) {
-		if(std::dynamic_pointer_cast<const operation::Mutate>(op)) {
-			mutate_set.insert(op->address);
-		} else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+		if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
 			mutate_set.insert(op->address);
 			if(exec->user) {
 				setup_context_wait(context, tx->id, *exec->user);
@@ -682,10 +678,10 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 					throw std::logic_error("no such creator: " + nft->creator.to_string());
 				}
 				{
-					auto op = operation::Mint::create();
-					op->address = tx->id;
+					auto op = operation::Spend::create();
+					op->address = nft->creator;
 					op->solution = nft->solution;
-					op->target = nft->creator;
+					op->currency = tx->id;
 					op->amount = 1;
 					creator->validate(op, context->get_context_for(tx, creator, contract_cache));
 				}
@@ -722,23 +718,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				const auto outputs = contract->validate(op, context->get_context_for(tx, contract, contract_cache));
 				exec_outputs.insert(exec_outputs.end(), outputs.begin(), outputs.end());
 			}
-			if(auto mutate = std::dynamic_pointer_cast<const operation::Mutate>(op))
-			{
-				auto copy = vnx::clone(contract);
-				try {
-					if(!copy->vnx_call(vnx::clone(mutate->method))) {
-						throw std::logic_error("no such method: " + mutate->method["__type"].to_string());
-					}
-					if(!copy->is_valid()) {
-						throw std::logic_error("invalid mutation");
-					}
-				} catch(const std::exception& ex) {
-					throw std::logic_error("mutate failed with: " + std::string(ex.what()));
-				}
-				state->data = copy;
-				state->is_mutated = true;
-			}
-			else if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
+			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 			{
 				execute(tx, context, exec, state, exec_inputs, exec_outputs, amounts, contract_cache, storage_cache, tx_cost, error, true);
 			}

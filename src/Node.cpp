@@ -11,12 +11,10 @@
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
-#include <mmx/contract/Token.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
@@ -2160,12 +2158,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		balance_table.insert(key, new_balance);
 	}
 	if(context) {
-		for(const auto& entry : context->contract_cache.state_map) {
-			const auto& state = entry.second;
-			if(state->is_mutated) {
-				contract_map.insert(entry.first, state->data);
-			}
-		}
 		context->storage->commit();
 	}
 	if(auto proof = block->proof) {

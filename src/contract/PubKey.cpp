@@ -37,10 +37,6 @@ uint64_t PubKey::calc_cost(std::shared_ptr<const ChainParams> params) const {
 	return 0;
 }
 
-std::vector<addr_t> PubKey::get_dependency() const {
-	return {};
-}
-
 vnx::optional<addr_t> PubKey::get_owner() const {
 	return address;
 }

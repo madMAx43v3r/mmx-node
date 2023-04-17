@@ -11,14 +11,10 @@ class Contract {
 	
 	ulong calc_cost(ChainParams* params) const;
 	
-	vector<addr_t> get_dependency() const;
-	
 	optional<addr_t> get_owner() const;
 	
 	bool is_locked(Context* context) const;
 	
 	vector<txout_t> validate(Operation* operation, Context* context) const;
-	
-	void transfer(optional<addr_t> new_owner);
 	
 }

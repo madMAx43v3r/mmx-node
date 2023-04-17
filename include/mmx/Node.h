@@ -212,7 +212,6 @@ private:
 	};
 
 	struct contract_state_t {
-		bool is_mutated = false;
 		std::map<addr_t, uint128> balance;
 		std::shared_ptr<const Contract> data;
 	};

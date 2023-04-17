@@ -88,28 +88,6 @@ std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operati
 	throw mmx::invalid_solution("invalid type");
 }
 
-void MultiSig::add_owner(const addr_t& address)
-{
-	owners.push_back(address);
-}
-
-void MultiSig::rem_owner(const addr_t& address)
-{
-	while(true) {
-		auto iter = std::find(owners.begin(), owners.end(), address);
-		if(iter != owners.end()) {
-			owners.erase(iter);
-		} else {
-			break;
-		}
-	}
-}
-
-void MultiSig::set_num_required(const uint32_t& count)
-{
-	num_required = count;
-}
-
 
 } // contract
 } // mmx
