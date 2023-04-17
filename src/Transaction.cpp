@@ -42,7 +42,7 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 		throw std::logic_error("!params");
 	}
 	for(const auto& op : execute) {
-		if(!op) {
+		if(!op || !op->is_valid()) {
 			return false;
 		}
 	}
