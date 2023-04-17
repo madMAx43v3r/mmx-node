@@ -101,7 +101,6 @@ add_library(mmx_iface SHARED
 	src/BlockHeader.cpp
 	src/Transaction.cpp
 	src/Operation.cpp
-	src/Context.cpp
 	src/Contract.cpp
 	src/Challenge.cpp
 	src/Solution.cpp
@@ -129,24 +128,15 @@ add_library(mmx_iface SHARED
 	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
 	src/contract/MultiSig.cpp
-	src/contract/Token.cpp
 	src/contract/TokenBase.cpp
-	src/contract/TimeLock.cpp
-	src/contract/PlotNFT.cpp
-	src/contract/PuzzleTimeLock.cpp
-	src/contract/MutableRelay.cpp
 	src/contract/VirtualPlot.cpp
 	src/contract/Binary.cpp
 	src/contract/Executable.cpp
 	src/contract/method_t.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
-	src/solution/PuzzleTimeLock.cpp
-	src/solution/MutableRelay.cpp
 	src/solution/BLS_PubKey.cpp
-	src/operation/Mint.cpp
 	src/operation/Spend.cpp
-	src/operation/Mutate.cpp
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp
 	src/operation/Vote.cpp
