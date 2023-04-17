@@ -211,30 +211,12 @@ private:
 		bool do_wait = true;
 	};
 
-	struct contract_state_t {
-		std::map<addr_t, uint128> balance;
-		std::shared_ptr<const Contract> data;
-	};
-
-	struct contract_cache_t {
-		contract_cache_t() = default;
-		contract_cache_t(const contract_cache_t* parent) : parent(parent) {}
-		mutable std::mutex mutex;
-		const contract_cache_t* parent = nullptr;
-		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> state_map;
-		std::shared_ptr<contract_state_t> get_state(const addr_t& address);
-		std::shared_ptr<contract_state_t> find_state(const addr_t& address) const;
-		std::shared_ptr<const Contract> find_contract(const addr_t& address) const;
-		void commit(const contract_cache_t& cache);
-	};
-
 	struct execution_context_t {
 		uint32_t height = 0;
 		std::shared_ptr<vm::StorageCache> storage;
 		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
 		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
 		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;
-		mutable contract_cache_t contract_cache;
 		void wait(const hash_t& txid) const;
 		void signal(const hash_t& txid) const;
 		void setup_wait(const hash_t& txid, const addr_t& address);
@@ -348,27 +330,24 @@ private:
 
 	std::shared_ptr<execution_context_t> new_exec_context(const uint32_t height) const;
 
-	std::shared_ptr<contract_state_t> get_contract_state(contract_cache_t& contract_cache, const addr_t& address) const;
-
 	void prepare_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
-					std::shared_ptr<const operation::Execute> exec,
-					std::shared_ptr<contract_state_t> state,
+					std::shared_ptr<const operation::Execute> op,
+					std::shared_ptr<const Contract> contract,
+					const addr_t& address,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
 					std::unordered_map<addr_t, uint128>& amounts,
-					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
-					std::shared_ptr<contract_state_t> state,
+					std::shared_ptr<const contract::Executable> executable,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
-					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
