@@ -1,4 +1,6 @@
 
+const MAX_UNLOCK_DELAY = 10000;
+
 var owner;
 var target;
 var unlock_height = 0;
@@ -40,9 +42,13 @@ function lock(target_, unlock_delay_, server_url_) public
 	if(is_locked()) {
 		fail("contract still locked", 2);
 	}
+	unlock_delay_ = uint(unlock_delay_);
+	if(unlock_delay_ > MAX_UNLOCK_DELAY) {
+		fail("unlock delay too high", 4);
+	}
 	target = bech32(target_);
 	server_url = server_url_;
-	unlock_delay = uint(unlock_delay_);
+	unlock_delay = unlock_delay_;
 	unlock_height = null;
 }
 
@@ -77,6 +83,13 @@ function transfer(owner_) public
 	check_owner();
 	
 	owner = owner_;
+}
+
+function set_name(name_) public
+{
+	check_owner();
+	
+	name = name_;
 }
 
 function set_reward_addr(reward_addr_) public
