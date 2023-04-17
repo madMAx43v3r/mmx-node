@@ -13,6 +13,4 @@ class PubKey extends mmx.Solution {
 	
 	hash_t calc_hash() const;
 	
-	ulong calc_cost(mmx.ChainParams* params) const;
-	
 }

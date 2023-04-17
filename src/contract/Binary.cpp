@@ -49,12 +49,15 @@ hash_t Binary::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t Binary::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint64_t payload = 0;
+	uint64_t payload = fields.size() * 4 + line_info.size() * 8 + source_info.size() * 8;
 	for(const auto& entry : fields) {
-		payload += 4 + entry.first.size() + 4;
+		payload += entry.first.size();
 	}
 	for(const auto& entry : methods) {
-		payload += 4 + entry.first.size() + entry.second.num_bytes();
+		payload += entry.first.size() + entry.second.num_bytes();
+	}
+	for(const auto& entry : source_info) {
+		payload += entry.second.first.size();
 	}
 	payload += name.size() + constant.size() + binary.size() + source.size() + compiler.size();
 

@@ -178,6 +178,8 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	uint128_t cost = params->min_txfee;
 	cost += inputs.size() * params->min_txfee_io;
 	cost += outputs.size() * params->min_txfee_io;
+	cost += execute.size() * params->min_txfee_exec;
+	cost += solutions.size() * params->min_txfee_sign;
 
 	for(const auto& in : inputs) {
 		if(in.flags & txin_t::IS_EXEC) {
@@ -186,7 +188,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	}
 	for(const auto& op : execute) {
 		if(op) {
-			cost += params->min_txfee_exec + op->calc_cost(params);
+			cost += op->calc_cost(params);
 		}
 	}
 	for(const auto& sol : solutions) {

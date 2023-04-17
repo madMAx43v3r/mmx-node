@@ -41,9 +41,12 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint64_t payload = depends.size() * 32 + init_method.size();
+	uint64_t payload = init_method.size() + depends.size() * 32;
 	for(const auto& arg : init_args) {
 		payload += arg.size();
+	}
+	for(const auto& entry : depends) {
+		payload += entry.first.size();
 	}
 	return Super::calc_cost(params) + payload * params->min_txfee_byte;
 }

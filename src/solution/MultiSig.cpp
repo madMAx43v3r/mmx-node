@@ -33,7 +33,7 @@ hash_t MultiSig::calc_hash() const
 
 uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint64_t cost = 0;
+	uint64_t cost = solutions.size() * params->min_txfee_sign;
 	for(const auto& sol : solutions) {
 		if(sol) {
 			cost += sol->calc_cost(params);
