@@ -13,16 +13,6 @@
 #include <mmx/operation/Execute_calc_hash_return.hxx>
 #include <mmx/operation/Execute_is_valid.hxx>
 #include <mmx/operation/Execute_is_valid_return.hxx>
-#include <mmx/operation/Mint.hxx>
-#include <mmx/operation/Mint_calc_hash.hxx>
-#include <mmx/operation/Mint_calc_hash_return.hxx>
-#include <mmx/operation/Mint_is_valid.hxx>
-#include <mmx/operation/Mint_is_valid_return.hxx>
-#include <mmx/operation/Mutate.hxx>
-#include <mmx/operation/Mutate_calc_cost.hxx>
-#include <mmx/operation/Mutate_calc_cost_return.hxx>
-#include <mmx/operation/Mutate_calc_hash.hxx>
-#include <mmx/operation/Mutate_calc_hash_return.hxx>
 #include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Spend_calc_hash.hxx>
 #include <mmx/operation/Spend_calc_hash_return.hxx>
@@ -183,126 +173,6 @@ void type<::mmx::operation::Execute_is_valid_return>::create_dynamic_code(std::v
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::operation::Mint>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mint;
-}
-
-void type<::mmx::operation::Mint>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mint());
-}
-
-void type<::mmx::operation::Mint>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mint& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mint_calc_hash>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mint_calc_hash;
-}
-
-void type<::mmx::operation::Mint_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mint_calc_hash());
-}
-
-void type<::mmx::operation::Mint_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mint_calc_hash& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mint_calc_hash_return>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mint_calc_hash_return;
-}
-
-void type<::mmx::operation::Mint_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mint_calc_hash_return());
-}
-
-void type<::mmx::operation::Mint_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mint_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mint_is_valid>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mint_is_valid;
-}
-
-void type<::mmx::operation::Mint_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mint_is_valid());
-}
-
-void type<::mmx::operation::Mint_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mint_is_valid& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mint_is_valid_return>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mint_is_valid_return;
-}
-
-void type<::mmx::operation::Mint_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mint_is_valid_return());
-}
-
-void type<::mmx::operation::Mint_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mint_is_valid_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mutate>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mutate;
-}
-
-void type<::mmx::operation::Mutate>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mutate());
-}
-
-void type<::mmx::operation::Mutate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mutate& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mutate_calc_cost>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mutate_calc_cost;
-}
-
-void type<::mmx::operation::Mutate_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mutate_calc_cost());
-}
-
-void type<::mmx::operation::Mutate_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mutate_calc_cost& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mutate_calc_cost_return>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mutate_calc_cost_return;
-}
-
-void type<::mmx::operation::Mutate_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mutate_calc_cost_return());
-}
-
-void type<::mmx::operation::Mutate_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mutate_calc_cost_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mutate_calc_hash>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mutate_calc_hash;
-}
-
-void type<::mmx::operation::Mutate_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mutate_calc_hash());
-}
-
-void type<::mmx::operation::Mutate_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mutate_calc_hash& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::operation::Mutate_calc_hash_return>::get_type_code() {
-	return mmx::operation::vnx_native_type_code_Mutate_calc_hash_return;
-}
-
-void type<::mmx::operation::Mutate_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::operation::Mutate_calc_hash_return());
-}
-
-void type<::mmx::operation::Mutate_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Mutate_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::operation::Spend>::get_type_code() {
 	return mmx::operation::vnx_native_type_code_Spend;
 }
@@ -420,16 +290,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::operation::Execute_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Execute_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Execute_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mint::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mint_calc_hash::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mint_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mint_is_valid::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mint_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mutate::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mutate_calc_cost::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mutate_calc_cost_return::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mutate_calc_hash::static_create_type_code());
-	vnx::register_type_code(::mmx::operation::Mutate_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Spend_calc_hash_return::static_create_type_code());
@@ -458,16 +318,6 @@ const vnx::TypeCode* const vnx_native_type_code_Execute_calc_hash = vnx::get_typ
 const vnx::TypeCode* const vnx_native_type_code_Execute_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xb5f13a625a72027bull));
 const vnx::TypeCode* const vnx_native_type_code_Execute_is_valid = vnx::get_type_code(vnx::Hash64(0x172377d5b2daeda3ull));
 const vnx::TypeCode* const vnx_native_type_code_Execute_is_valid_return = vnx::get_type_code(vnx::Hash64(0xa739a4ce26de045ull));
-const vnx::TypeCode* const vnx_native_type_code_Mint = vnx::get_type_code(vnx::Hash64(0x936aeac3aa6373c0ull));
-const vnx::TypeCode* const vnx_native_type_code_Mint_calc_hash = vnx::get_type_code(vnx::Hash64(0xf916632c29371b49ull));
-const vnx::TypeCode* const vnx_native_type_code_Mint_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xa5d0ca626c2642f3ull));
-const vnx::TypeCode* const vnx_native_type_code_Mint_is_valid = vnx::get_type_code(vnx::Hash64(0xa7633eba5c5afcecull));
-const vnx::TypeCode* const vnx_native_type_code_Mint_is_valid_return = vnx::get_type_code(vnx::Hash64(0xfe1ff364dc983323ull));
-const vnx::TypeCode* const vnx_native_type_code_Mutate = vnx::get_type_code(vnx::Hash64(0x174cf0ec53db63efull));
-const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_cost = vnx::get_type_code(vnx::Hash64(0xa7f607314b586b09ull));
-const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xe9787d7e0426c7feull));
-const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_hash = vnx::get_type_code(vnx::Hash64(0x77e4cc572eca1ff6ull));
-const vnx::TypeCode* const vnx_native_type_code_Mutate_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x922e207282f9aa82ull));
 const vnx::TypeCode* const vnx_native_type_code_Spend = vnx::get_type_code(vnx::Hash64(0xfa01bec4331109c3ull));
 const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash = vnx::get_type_code(vnx::Hash64(0xb003cc8eafc55c09ull));
 const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xbdcae3a6c3ba9dd8ull));

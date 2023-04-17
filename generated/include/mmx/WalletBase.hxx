@@ -23,7 +23,6 @@
 #include <mmx/uint128.hpp>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <vnx/Module.h>
-#include <vnx/Object.hpp>
 #include <vnx/Variant.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
@@ -86,9 +85,7 @@ protected:
 	virtual std::shared_ptr<const ::mmx::Transaction> send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> send_many(const uint32_t& index, const std::map<::mmx::addr_t, uint64_t>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> send_from(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& src_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> mint(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> mutate(const uint32_t& index, const ::mmx::addr_t& address, const ::vnx::Object& method, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> execute(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<uint32_t>& user, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> deposit(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) const = 0;

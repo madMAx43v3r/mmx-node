@@ -4,27 +4,21 @@
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/Context.hxx>
 #include <mmx/Contract_calc_cost.hxx>
 #include <mmx/Contract_calc_cost_return.hxx>
 #include <mmx/Contract_calc_hash.hxx>
 #include <mmx/Contract_calc_hash_return.hxx>
-#include <mmx/Contract_get_dependency.hxx>
-#include <mmx/Contract_get_dependency_return.hxx>
 #include <mmx/Contract_get_owner.hxx>
 #include <mmx/Contract_get_owner_return.hxx>
 #include <mmx/Contract_is_locked.hxx>
 #include <mmx/Contract_is_locked_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
-#include <mmx/Contract_transfer.hxx>
-#include <mmx/Contract_transfer_return.hxx>
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -140,15 +134,13 @@ std::shared_ptr<vnx::TypeCode> Contract::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Contract);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Contract>(); };
-	type_code->methods.resize(8);
+	type_code->methods.resize(6);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
-	type_code->methods[2] = ::mmx::Contract_get_dependency::static_get_type_code();
-	type_code->methods[3] = ::mmx::Contract_get_owner::static_get_type_code();
-	type_code->methods[4] = ::mmx::Contract_is_locked::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_transfer::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[2] = ::mmx::Contract_get_owner::static_get_type_code();
+	type_code->methods[3] = ::mmx::Contract_is_locked::static_get_type_code();
+	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
+	type_code->methods[5] = ::mmx::Contract_validate::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
@@ -174,12 +166,6 @@ std::shared_ptr<vnx::Value> Contract::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
-		case 0x989dd3da956ebbd0ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_dependency>(_method);
-			auto _return_value = ::mmx::Contract_get_dependency_return::create();
-			_return_value->_ret_0 = get_dependency();
-			return _return_value;
-		}
 		case 0x8fe2c64fdc8f0680ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_owner>(_method);
 			auto _return_value = ::mmx::Contract_get_owner_return::create();
@@ -189,7 +175,7 @@ std::shared_ptr<vnx::Value> Contract::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x9b7981d03b3aeab6ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_locked>(_method);
 			auto _return_value = ::mmx::Contract_is_locked_return::create();
-			_return_value->_ret_0 = is_locked(_args->context);
+			_return_value->_ret_0 = is_locked(_args->height);
 			return _return_value;
 		}
 		case 0xe3adf9b29a723217ull: {
@@ -198,16 +184,10 @@ std::shared_ptr<vnx::Value> Contract::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = is_valid();
 			return _return_value;
 		}
-		case 0xd41bec275faff1ffull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_transfer>(_method);
-			auto _return_value = ::mmx::Contract_transfer_return::create();
-			transfer(_args->new_owner);
-			return _return_value;
-		}
 		case 0xc2126a44901c8d52ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
 			auto _return_value = ::mmx::Contract_validate_return::create();
-			_return_value->_ret_0 = validate(_args->operation, _args->context);
+			validate(_args->operation, _args->txid);
 			return _return_value;
 		}
 	}

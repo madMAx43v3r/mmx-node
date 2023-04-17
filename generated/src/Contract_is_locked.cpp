@@ -3,7 +3,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Contract_is_locked.hxx>
-#include <mmx/Context.hxx>
 #include <mmx/Contract_is_locked_return.hxx>
 #include <vnx/Value.h>
 
@@ -14,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Contract_is_locked::VNX_TYPE_HASH(0x9b7981d03b3aeab6ull);
-const vnx::Hash64 Contract_is_locked::VNX_CODE_HASH(0x140895f55f94cbf5ull);
+const vnx::Hash64 Contract_is_locked::VNX_CODE_HASH(0x54fbcb8b2dfd785ull);
 
 vnx::Hash64 Contract_is_locked::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,13 +46,13 @@ void Contract_is_locked::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type
 void Contract_is_locked::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Contract_is_locked;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, context);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, height);
 	_visitor.type_end(*_type_code);
 }
 
 void Contract_is_locked::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Contract.is_locked\"";
-	_out << ", \"context\": "; vnx::write(_out, context);
+	_out << ", \"height\": "; vnx::write(_out, height);
 	_out << "}";
 }
 
@@ -66,28 +65,28 @@ void Contract_is_locked::read(std::istream& _in) {
 vnx::Object Contract_is_locked::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Contract.is_locked";
-	_object["context"] = context;
+	_object["height"] = height;
 	return _object;
 }
 
 void Contract_is_locked::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "context") {
-			_entry.second.to(context);
+		if(_entry.first == "height") {
+			_entry.second.to(height);
 		}
 	}
 }
 
 vnx::Variant Contract_is_locked::get_field(const std::string& _name) const {
-	if(_name == "context") {
-		return vnx::Variant(context);
+	if(_name == "height") {
+		return vnx::Variant(height);
 	}
 	return vnx::Variant();
 }
 
 void Contract_is_locked::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "context") {
-		_value.to(context);
+	if(_name == "height") {
+		_value.to(height);
 	}
 }
 
@@ -115,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Contract_is_locked::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Contract.is_locked";
 	type_code->type_hash = vnx::Hash64(0x9b7981d03b3aeab6ull);
-	type_code->code_hash = vnx::Hash64(0x140895f55f94cbf5ull);
+	type_code->code_hash = vnx::Hash64(0x54fbcb8b2dfd785ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -126,9 +125,9 @@ std::shared_ptr<vnx::TypeCode> Contract_is_locked::static_create_type_code() {
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
-		field.is_extended = true;
-		field.name = "context";
-		field.code = {16};
+		field.data_size = 4;
+		field.name = "height";
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -170,12 +169,14 @@ void read(TypeInput& in, ::mmx::Contract_is_locked& value, const TypeCode* type_
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.context, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -194,7 +195,8 @@ void write(TypeOutput& out, const ::mmx::Contract_is_locked& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	vnx::write(out, value.context, type_code, type_code->fields[0].code.data());
+	char* const _buf = out.write(4);
+	vnx::write_value(_buf + 0, value.height);
 }
 
 void read(std::istream& in, ::mmx::Contract_is_locked& value) {

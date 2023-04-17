@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_Contract_is_locked_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/Context.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +13,7 @@ namespace mmx {
 class MMX_EXPORT Contract_is_locked : public ::vnx::Value {
 public:
 	
-	std::shared_ptr<const ::mmx::Context> context;
+	uint32_t height = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,7 +58,7 @@ public:
 template<typename T>
 void Contract_is_locked::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Contract_is_locked>(1);
-	_visitor.type_field("context", 0); _visitor.accept(context);
+	_visitor.type_field("height", 0); _visitor.accept(height);
 	_visitor.template type_end<Contract_is_locked>(1);
 }
 

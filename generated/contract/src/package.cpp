@@ -17,18 +17,8 @@
 #include <mmx/contract/Data_calc_cost_return.hxx>
 #include <mmx/contract/Data_calc_hash.hxx>
 #include <mmx/contract/Data_calc_hash_return.hxx>
-#include <mmx/contract/Data_get_dependency.hxx>
-#include <mmx/contract/Data_get_dependency_return.hxx>
-#include <mmx/contract/Data_get_owner.hxx>
-#include <mmx/contract/Data_get_owner_return.hxx>
 #include <mmx/contract/Data_num_bytes.hxx>
 #include <mmx/contract/Data_num_bytes_return.hxx>
-#include <mmx/contract/Data_set.hxx>
-#include <mmx/contract/Data_set_return.hxx>
-#include <mmx/contract/Data_transfer.hxx>
-#include <mmx/contract/Data_transfer_return.hxx>
-#include <mmx/contract/Data_validate.hxx>
-#include <mmx/contract/Data_validate_return.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/Executable_calc_cost.hxx>
 #include <mmx/contract/Executable_calc_cost_return.hxx>
@@ -40,41 +30,14 @@
 #include <mmx/contract/Executable_validate_return.hxx>
 #include <mmx/contract/Identity.hxx>
 #include <mmx/contract/MultiSig.hxx>
-#include <mmx/contract/MultiSig_add_owner.hxx>
-#include <mmx/contract/MultiSig_add_owner_return.hxx>
 #include <mmx/contract/MultiSig_calc_cost.hxx>
 #include <mmx/contract/MultiSig_calc_cost_return.hxx>
 #include <mmx/contract/MultiSig_calc_hash.hxx>
 #include <mmx/contract/MultiSig_calc_hash_return.hxx>
 #include <mmx/contract/MultiSig_is_valid.hxx>
 #include <mmx/contract/MultiSig_is_valid_return.hxx>
-#include <mmx/contract/MultiSig_rem_owner.hxx>
-#include <mmx/contract/MultiSig_rem_owner_return.hxx>
-#include <mmx/contract/MultiSig_set_num_required.hxx>
-#include <mmx/contract/MultiSig_set_num_required_return.hxx>
 #include <mmx/contract/MultiSig_validate.hxx>
 #include <mmx/contract/MultiSig_validate_return.hxx>
-#include <mmx/contract/MutableRelay.hxx>
-#include <mmx/contract/MutableRelay_calc_cost.hxx>
-#include <mmx/contract/MutableRelay_calc_cost_return.hxx>
-#include <mmx/contract/MutableRelay_calc_hash.hxx>
-#include <mmx/contract/MutableRelay_calc_hash_return.hxx>
-#include <mmx/contract/MutableRelay_get_dependency.hxx>
-#include <mmx/contract/MutableRelay_get_dependency_return.hxx>
-#include <mmx/contract/MutableRelay_get_owner.hxx>
-#include <mmx/contract/MutableRelay_get_owner_return.hxx>
-#include <mmx/contract/MutableRelay_is_locked.hxx>
-#include <mmx/contract/MutableRelay_is_locked_return.hxx>
-#include <mmx/contract/MutableRelay_is_valid.hxx>
-#include <mmx/contract/MutableRelay_is_valid_return.hxx>
-#include <mmx/contract/MutableRelay_lock.hxx>
-#include <mmx/contract/MutableRelay_lock_return.hxx>
-#include <mmx/contract/MutableRelay_transfer.hxx>
-#include <mmx/contract/MutableRelay_transfer_return.hxx>
-#include <mmx/contract/MutableRelay_unlock.hxx>
-#include <mmx/contract/MutableRelay_unlock_return.hxx>
-#include <mmx/contract/MutableRelay_validate.hxx>
-#include <mmx/contract/MutableRelay_validate_return.hxx>
 #include <mmx/contract/NFT.hxx>
 #include <mmx/contract/NFT_calc_cost.hxx>
 #include <mmx/contract/NFT_calc_cost_return.hxx>
@@ -84,73 +47,17 @@
 #include <mmx/contract/NFT_is_valid_return.hxx>
 #include <mmx/contract/NFT_num_bytes.hxx>
 #include <mmx/contract/NFT_num_bytes_return.hxx>
-#include <mmx/contract/PlotNFT.hxx>
-#include <mmx/contract/PlotNFT_calc_cost.hxx>
-#include <mmx/contract/PlotNFT_calc_cost_return.hxx>
-#include <mmx/contract/PlotNFT_calc_hash.hxx>
-#include <mmx/contract/PlotNFT_calc_hash_return.hxx>
-#include <mmx/contract/PlotNFT_is_valid.hxx>
-#include <mmx/contract/PlotNFT_is_valid_return.hxx>
-#include <mmx/contract/PlotNFT_lock.hxx>
-#include <mmx/contract/PlotNFT_lock_return.hxx>
-#include <mmx/contract/PlotNFT_lock_pool.hxx>
-#include <mmx/contract/PlotNFT_lock_pool_return.hxx>
-#include <mmx/contract/PlotNFT_set_partial_diff.hxx>
-#include <mmx/contract/PlotNFT_set_partial_diff_return.hxx>
-#include <mmx/contract/PlotNFT_set_reward_addr.hxx>
-#include <mmx/contract/PlotNFT_set_reward_addr_return.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/PubKey_calc_cost.hxx>
 #include <mmx/contract/PubKey_calc_cost_return.hxx>
 #include <mmx/contract/PubKey_calc_hash.hxx>
 #include <mmx/contract/PubKey_calc_hash_return.hxx>
-#include <mmx/contract/PubKey_get_dependency.hxx>
-#include <mmx/contract/PubKey_get_dependency_return.hxx>
 #include <mmx/contract/PubKey_get_owner.hxx>
 #include <mmx/contract/PubKey_get_owner_return.hxx>
 #include <mmx/contract/PubKey_is_valid.hxx>
 #include <mmx/contract/PubKey_is_valid_return.hxx>
 #include <mmx/contract/PubKey_validate.hxx>
 #include <mmx/contract/PubKey_validate_return.hxx>
-#include <mmx/contract/PuzzleTimeLock.hxx>
-#include <mmx/contract/PuzzleTimeLock_calc_cost.hxx>
-#include <mmx/contract/PuzzleTimeLock_calc_cost_return.hxx>
-#include <mmx/contract/PuzzleTimeLock_calc_hash.hxx>
-#include <mmx/contract/PuzzleTimeLock_calc_hash_return.hxx>
-#include <mmx/contract/PuzzleTimeLock_get_dependency.hxx>
-#include <mmx/contract/PuzzleTimeLock_get_dependency_return.hxx>
-#include <mmx/contract/PuzzleTimeLock_is_valid.hxx>
-#include <mmx/contract/PuzzleTimeLock_is_valid_return.hxx>
-#include <mmx/contract/PuzzleTimeLock_validate.hxx>
-#include <mmx/contract/PuzzleTimeLock_validate_return.hxx>
-#include <mmx/contract/TimeLock.hxx>
-#include <mmx/contract/TimeLock_calc_cost.hxx>
-#include <mmx/contract/TimeLock_calc_cost_return.hxx>
-#include <mmx/contract/TimeLock_calc_hash.hxx>
-#include <mmx/contract/TimeLock_calc_hash_return.hxx>
-#include <mmx/contract/TimeLock_get_dependency.hxx>
-#include <mmx/contract/TimeLock_get_dependency_return.hxx>
-#include <mmx/contract/TimeLock_get_owner.hxx>
-#include <mmx/contract/TimeLock_get_owner_return.hxx>
-#include <mmx/contract/TimeLock_is_locked.hxx>
-#include <mmx/contract/TimeLock_is_locked_return.hxx>
-#include <mmx/contract/TimeLock_is_valid.hxx>
-#include <mmx/contract/TimeLock_is_valid_return.hxx>
-#include <mmx/contract/TimeLock_validate.hxx>
-#include <mmx/contract/TimeLock_validate_return.hxx>
-#include <mmx/contract/Token.hxx>
-#include <mmx/contract/Token_calc_hash.hxx>
-#include <mmx/contract/Token_calc_hash_return.hxx>
-#include <mmx/contract/Token_get_dependency.hxx>
-#include <mmx/contract/Token_get_dependency_return.hxx>
-#include <mmx/contract/Token_get_owner.hxx>
-#include <mmx/contract/Token_get_owner_return.hxx>
-#include <mmx/contract/Token_is_valid.hxx>
-#include <mmx/contract/Token_is_valid_return.hxx>
-#include <mmx/contract/Token_transfer.hxx>
-#include <mmx/contract/Token_transfer_return.hxx>
-#include <mmx/contract/Token_validate.hxx>
-#include <mmx/contract/Token_validate_return.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/TokenBase_calc_cost.hxx>
 #include <mmx/contract/TokenBase_calc_cost_return.hxx>
@@ -168,20 +75,10 @@
 #include <mmx/contract/WebData_calc_cost_return.hxx>
 #include <mmx/contract/WebData_calc_hash.hxx>
 #include <mmx/contract/WebData_calc_hash_return.hxx>
-#include <mmx/contract/WebData_get_dependency.hxx>
-#include <mmx/contract/WebData_get_dependency_return.hxx>
-#include <mmx/contract/WebData_get_owner.hxx>
-#include <mmx/contract/WebData_get_owner_return.hxx>
 #include <mmx/contract/WebData_is_valid.hxx>
 #include <mmx/contract/WebData_is_valid_return.hxx>
 #include <mmx/contract/WebData_num_bytes.hxx>
 #include <mmx/contract/WebData_num_bytes_return.hxx>
-#include <mmx/contract/WebData_transfer.hxx>
-#include <mmx/contract/WebData_transfer_return.hxx>
-#include <mmx/contract/WebData_update.hxx>
-#include <mmx/contract/WebData_update_return.hxx>
-#include <mmx/contract/WebData_validate.hxx>
-#include <mmx/contract/WebData_validate_return.hxx>
 #include <mmx/contract/method_t.hxx>
 
 #include <mmx/contract/package.hxx>
@@ -383,54 +280,6 @@ void type<::mmx::contract::Data_calc_hash_return>::create_dynamic_code(std::vect
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::contract::Data_get_dependency>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_get_dependency;
-}
-
-void type<::mmx::contract::Data_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_get_dependency());
-}
-
-void type<::mmx::contract::Data_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_get_dependency& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_get_dependency_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_get_dependency_return;
-}
-
-void type<::mmx::contract::Data_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_get_dependency_return());
-}
-
-void type<::mmx::contract::Data_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_get_dependency_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_get_owner>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_get_owner;
-}
-
-void type<::mmx::contract::Data_get_owner>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_get_owner());
-}
-
-void type<::mmx::contract::Data_get_owner>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_get_owner& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_get_owner_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_get_owner_return;
-}
-
-void type<::mmx::contract::Data_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_get_owner_return());
-}
-
-void type<::mmx::contract::Data_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_get_owner_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::contract::Data_num_bytes>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_Data_num_bytes;
 }
@@ -452,78 +301,6 @@ void type<::mmx::contract::Data_num_bytes_return>::create_dynamic_code(std::vect
 }
 
 void type<::mmx::contract::Data_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_num_bytes_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_set>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_set;
-}
-
-void type<::mmx::contract::Data_set>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_set());
-}
-
-void type<::mmx::contract::Data_set>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_set& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_set_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_set_return;
-}
-
-void type<::mmx::contract::Data_set_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_set_return());
-}
-
-void type<::mmx::contract::Data_set_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_set_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_transfer>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_transfer;
-}
-
-void type<::mmx::contract::Data_transfer>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_transfer());
-}
-
-void type<::mmx::contract::Data_transfer>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_transfer& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_transfer_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_transfer_return;
-}
-
-void type<::mmx::contract::Data_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_transfer_return());
-}
-
-void type<::mmx::contract::Data_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_transfer_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_validate>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_validate;
-}
-
-void type<::mmx::contract::Data_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_validate());
-}
-
-void type<::mmx::contract::Data_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_validate& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Data_validate_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Data_validate_return;
-}
-
-void type<::mmx::contract::Data_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Data_validate_return());
-}
-
-void type<::mmx::contract::Data_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Data_validate_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -659,30 +436,6 @@ void type<::mmx::contract::MultiSig>::create_dynamic_code(std::vector<uint16_t>&
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::contract::MultiSig_add_owner>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MultiSig_add_owner;
-}
-
-void type<::mmx::contract::MultiSig_add_owner>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MultiSig_add_owner());
-}
-
-void type<::mmx::contract::MultiSig_add_owner>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_add_owner& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MultiSig_add_owner_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MultiSig_add_owner_return;
-}
-
-void type<::mmx::contract::MultiSig_add_owner_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MultiSig_add_owner_return());
-}
-
-void type<::mmx::contract::MultiSig_add_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_add_owner_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::contract::MultiSig_calc_cost>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_MultiSig_calc_cost;
 }
@@ -755,54 +508,6 @@ void type<::mmx::contract::MultiSig_is_valid_return>::create_dynamic_code(std::v
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::contract::MultiSig_rem_owner>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MultiSig_rem_owner;
-}
-
-void type<::mmx::contract::MultiSig_rem_owner>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MultiSig_rem_owner());
-}
-
-void type<::mmx::contract::MultiSig_rem_owner>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_rem_owner& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MultiSig_rem_owner_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MultiSig_rem_owner_return;
-}
-
-void type<::mmx::contract::MultiSig_rem_owner_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MultiSig_rem_owner_return());
-}
-
-void type<::mmx::contract::MultiSig_rem_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_rem_owner_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MultiSig_set_num_required>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MultiSig_set_num_required;
-}
-
-void type<::mmx::contract::MultiSig_set_num_required>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MultiSig_set_num_required());
-}
-
-void type<::mmx::contract::MultiSig_set_num_required>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_set_num_required& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MultiSig_set_num_required_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MultiSig_set_num_required_return;
-}
-
-void type<::mmx::contract::MultiSig_set_num_required_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MultiSig_set_num_required_return());
-}
-
-void type<::mmx::contract::MultiSig_set_num_required_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_set_num_required_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::contract::MultiSig_validate>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_MultiSig_validate;
 }
@@ -824,258 +529,6 @@ void type<::mmx::contract::MultiSig_validate_return>::create_dynamic_code(std::v
 }
 
 void type<::mmx::contract::MultiSig_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_validate_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay;
-}
-
-void type<::mmx::contract::MutableRelay>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay());
-}
-
-void type<::mmx::contract::MutableRelay>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_calc_cost>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_calc_cost;
-}
-
-void type<::mmx::contract::MutableRelay_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_calc_cost());
-}
-
-void type<::mmx::contract::MutableRelay_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_calc_cost& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_calc_cost_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_calc_cost_return;
-}
-
-void type<::mmx::contract::MutableRelay_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_calc_cost_return());
-}
-
-void type<::mmx::contract::MutableRelay_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_calc_cost_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_calc_hash>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_calc_hash;
-}
-
-void type<::mmx::contract::MutableRelay_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_calc_hash());
-}
-
-void type<::mmx::contract::MutableRelay_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_calc_hash& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_calc_hash_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_calc_hash_return;
-}
-
-void type<::mmx::contract::MutableRelay_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_calc_hash_return());
-}
-
-void type<::mmx::contract::MutableRelay_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_get_dependency>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_get_dependency;
-}
-
-void type<::mmx::contract::MutableRelay_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_get_dependency());
-}
-
-void type<::mmx::contract::MutableRelay_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_get_dependency& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_get_dependency_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_get_dependency_return;
-}
-
-void type<::mmx::contract::MutableRelay_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_get_dependency_return());
-}
-
-void type<::mmx::contract::MutableRelay_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_get_dependency_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_get_owner>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_get_owner;
-}
-
-void type<::mmx::contract::MutableRelay_get_owner>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_get_owner());
-}
-
-void type<::mmx::contract::MutableRelay_get_owner>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_get_owner& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_get_owner_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_get_owner_return;
-}
-
-void type<::mmx::contract::MutableRelay_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_get_owner_return());
-}
-
-void type<::mmx::contract::MutableRelay_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_get_owner_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_is_locked>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_is_locked;
-}
-
-void type<::mmx::contract::MutableRelay_is_locked>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_is_locked());
-}
-
-void type<::mmx::contract::MutableRelay_is_locked>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_is_locked& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_is_locked_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_is_locked_return;
-}
-
-void type<::mmx::contract::MutableRelay_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_is_locked_return());
-}
-
-void type<::mmx::contract::MutableRelay_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_is_locked_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_is_valid>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_is_valid;
-}
-
-void type<::mmx::contract::MutableRelay_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_is_valid());
-}
-
-void type<::mmx::contract::MutableRelay_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_is_valid& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_is_valid_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_is_valid_return;
-}
-
-void type<::mmx::contract::MutableRelay_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_is_valid_return());
-}
-
-void type<::mmx::contract::MutableRelay_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_is_valid_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_lock>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_lock;
-}
-
-void type<::mmx::contract::MutableRelay_lock>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_lock());
-}
-
-void type<::mmx::contract::MutableRelay_lock>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_lock& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_lock_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_lock_return;
-}
-
-void type<::mmx::contract::MutableRelay_lock_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_lock_return());
-}
-
-void type<::mmx::contract::MutableRelay_lock_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_lock_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_transfer>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_transfer;
-}
-
-void type<::mmx::contract::MutableRelay_transfer>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_transfer());
-}
-
-void type<::mmx::contract::MutableRelay_transfer>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_transfer& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_transfer_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_transfer_return;
-}
-
-void type<::mmx::contract::MutableRelay_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_transfer_return());
-}
-
-void type<::mmx::contract::MutableRelay_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_transfer_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_unlock>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_unlock;
-}
-
-void type<::mmx::contract::MutableRelay_unlock>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_unlock());
-}
-
-void type<::mmx::contract::MutableRelay_unlock>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_unlock& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_unlock_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_unlock_return;
-}
-
-void type<::mmx::contract::MutableRelay_unlock_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_unlock_return());
-}
-
-void type<::mmx::contract::MutableRelay_unlock_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_unlock_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_validate>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_validate;
-}
-
-void type<::mmx::contract::MutableRelay_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_validate());
-}
-
-void type<::mmx::contract::MutableRelay_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_validate& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::MutableRelay_validate_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_MutableRelay_validate_return;
-}
-
-void type<::mmx::contract::MutableRelay_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::MutableRelay_validate_return());
-}
-
-void type<::mmx::contract::MutableRelay_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MutableRelay_validate_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1187,186 +640,6 @@ void type<::mmx::contract::NFT_num_bytes_return>::create_dynamic_code(std::vecto
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::contract::PlotNFT>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT;
-}
-
-void type<::mmx::contract::PlotNFT>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT());
-}
-
-void type<::mmx::contract::PlotNFT>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_calc_cost>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_calc_cost;
-}
-
-void type<::mmx::contract::PlotNFT_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_calc_cost());
-}
-
-void type<::mmx::contract::PlotNFT_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_cost& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_calc_cost_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_calc_cost_return;
-}
-
-void type<::mmx::contract::PlotNFT_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_calc_cost_return());
-}
-
-void type<::mmx::contract::PlotNFT_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_cost_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_calc_hash>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_calc_hash;
-}
-
-void type<::mmx::contract::PlotNFT_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_calc_hash());
-}
-
-void type<::mmx::contract::PlotNFT_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_hash& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_calc_hash_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_calc_hash_return;
-}
-
-void type<::mmx::contract::PlotNFT_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_calc_hash_return());
-}
-
-void type<::mmx::contract::PlotNFT_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_is_valid>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_is_valid;
-}
-
-void type<::mmx::contract::PlotNFT_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_is_valid());
-}
-
-void type<::mmx::contract::PlotNFT_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_is_valid& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_is_valid_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_is_valid_return;
-}
-
-void type<::mmx::contract::PlotNFT_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_is_valid_return());
-}
-
-void type<::mmx::contract::PlotNFT_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_is_valid_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_lock>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_lock;
-}
-
-void type<::mmx::contract::PlotNFT_lock>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_lock());
-}
-
-void type<::mmx::contract::PlotNFT_lock>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_lock& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_lock_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_lock_return;
-}
-
-void type<::mmx::contract::PlotNFT_lock_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_lock_return());
-}
-
-void type<::mmx::contract::PlotNFT_lock_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_lock_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_lock_pool>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_lock_pool;
-}
-
-void type<::mmx::contract::PlotNFT_lock_pool>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_lock_pool());
-}
-
-void type<::mmx::contract::PlotNFT_lock_pool>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_lock_pool& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_lock_pool_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_lock_pool_return;
-}
-
-void type<::mmx::contract::PlotNFT_lock_pool_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_lock_pool_return());
-}
-
-void type<::mmx::contract::PlotNFT_lock_pool_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_lock_pool_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_set_partial_diff>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_set_partial_diff;
-}
-
-void type<::mmx::contract::PlotNFT_set_partial_diff>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_set_partial_diff());
-}
-
-void type<::mmx::contract::PlotNFT_set_partial_diff>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_set_partial_diff& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_set_partial_diff_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_set_partial_diff_return;
-}
-
-void type<::mmx::contract::PlotNFT_set_partial_diff_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_set_partial_diff_return());
-}
-
-void type<::mmx::contract::PlotNFT_set_partial_diff_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_set_partial_diff_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_set_reward_addr>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_set_reward_addr;
-}
-
-void type<::mmx::contract::PlotNFT_set_reward_addr>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_set_reward_addr());
-}
-
-void type<::mmx::contract::PlotNFT_set_reward_addr>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_set_reward_addr& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PlotNFT_set_reward_addr_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PlotNFT_set_reward_addr_return;
-}
-
-void type<::mmx::contract::PlotNFT_set_reward_addr_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PlotNFT_set_reward_addr_return());
-}
-
-void type<::mmx::contract::PlotNFT_set_reward_addr_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PlotNFT_set_reward_addr_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::contract::PubKey>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_PubKey;
 }
@@ -1424,30 +697,6 @@ void type<::mmx::contract::PubKey_calc_hash_return>::create_dynamic_code(std::ve
 }
 
 void type<::mmx::contract::PubKey_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PubKey_get_dependency>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PubKey_get_dependency;
-}
-
-void type<::mmx::contract::PubKey_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PubKey_get_dependency());
-}
-
-void type<::mmx::contract::PubKey_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_get_dependency& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PubKey_get_dependency_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PubKey_get_dependency_return;
-}
-
-void type<::mmx::contract::PubKey_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PubKey_get_dependency_return());
-}
-
-void type<::mmx::contract::PubKey_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_get_dependency_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1520,474 +769,6 @@ void type<::mmx::contract::PubKey_validate_return>::create_dynamic_code(std::vec
 }
 
 void type<::mmx::contract::PubKey_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_validate_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock;
-}
-
-void type<::mmx::contract::PuzzleTimeLock>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock());
-}
-
-void type<::mmx::contract::PuzzleTimeLock>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_calc_cost>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_calc_cost;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_calc_cost());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_calc_cost& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_calc_cost_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_calc_cost_return;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_calc_cost_return());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_calc_cost_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_calc_hash>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_calc_hash;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_calc_hash());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_calc_hash& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_calc_hash_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_calc_hash_return;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_calc_hash_return());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_get_dependency>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_get_dependency;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_get_dependency());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_get_dependency& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_get_dependency_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_get_dependency_return;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_get_dependency_return());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_get_dependency_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_is_valid>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_is_valid;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_is_valid());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_is_valid& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_is_valid_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_is_valid_return;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_is_valid_return());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_is_valid_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_validate>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_validate;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_validate());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_validate& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::PuzzleTimeLock_validate_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_PuzzleTimeLock_validate_return;
-}
-
-void type<::mmx::contract::PuzzleTimeLock_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::PuzzleTimeLock_validate_return());
-}
-
-void type<::mmx::contract::PuzzleTimeLock_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PuzzleTimeLock_validate_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock;
-}
-
-void type<::mmx::contract::TimeLock>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock());
-}
-
-void type<::mmx::contract::TimeLock>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_calc_cost>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_calc_cost;
-}
-
-void type<::mmx::contract::TimeLock_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_calc_cost());
-}
-
-void type<::mmx::contract::TimeLock_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_calc_cost& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_calc_cost_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_calc_cost_return;
-}
-
-void type<::mmx::contract::TimeLock_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_calc_cost_return());
-}
-
-void type<::mmx::contract::TimeLock_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_calc_cost_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_calc_hash>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_calc_hash;
-}
-
-void type<::mmx::contract::TimeLock_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_calc_hash());
-}
-
-void type<::mmx::contract::TimeLock_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_calc_hash& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_calc_hash_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_calc_hash_return;
-}
-
-void type<::mmx::contract::TimeLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_calc_hash_return());
-}
-
-void type<::mmx::contract::TimeLock_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_get_dependency>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_get_dependency;
-}
-
-void type<::mmx::contract::TimeLock_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_get_dependency());
-}
-
-void type<::mmx::contract::TimeLock_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_get_dependency& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_get_dependency_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_get_dependency_return;
-}
-
-void type<::mmx::contract::TimeLock_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_get_dependency_return());
-}
-
-void type<::mmx::contract::TimeLock_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_get_dependency_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_get_owner>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_get_owner;
-}
-
-void type<::mmx::contract::TimeLock_get_owner>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_get_owner());
-}
-
-void type<::mmx::contract::TimeLock_get_owner>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_get_owner& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_get_owner_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_get_owner_return;
-}
-
-void type<::mmx::contract::TimeLock_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_get_owner_return());
-}
-
-void type<::mmx::contract::TimeLock_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_get_owner_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_is_locked>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_is_locked;
-}
-
-void type<::mmx::contract::TimeLock_is_locked>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_is_locked());
-}
-
-void type<::mmx::contract::TimeLock_is_locked>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_is_locked& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_is_locked_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_is_locked_return;
-}
-
-void type<::mmx::contract::TimeLock_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_is_locked_return());
-}
-
-void type<::mmx::contract::TimeLock_is_locked_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_is_locked_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_is_valid>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_is_valid;
-}
-
-void type<::mmx::contract::TimeLock_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_is_valid());
-}
-
-void type<::mmx::contract::TimeLock_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_is_valid& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_is_valid_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_is_valid_return;
-}
-
-void type<::mmx::contract::TimeLock_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_is_valid_return());
-}
-
-void type<::mmx::contract::TimeLock_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_is_valid_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_validate>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_validate;
-}
-
-void type<::mmx::contract::TimeLock_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_validate());
-}
-
-void type<::mmx::contract::TimeLock_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_validate& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::TimeLock_validate_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_TimeLock_validate_return;
-}
-
-void type<::mmx::contract::TimeLock_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::TimeLock_validate_return());
-}
-
-void type<::mmx::contract::TimeLock_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TimeLock_validate_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token;
-}
-
-void type<::mmx::contract::Token>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token());
-}
-
-void type<::mmx::contract::Token>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_calc_hash>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_calc_hash;
-}
-
-void type<::mmx::contract::Token_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_calc_hash());
-}
-
-void type<::mmx::contract::Token_calc_hash>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_calc_hash& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_calc_hash_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_calc_hash_return;
-}
-
-void type<::mmx::contract::Token_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_calc_hash_return());
-}
-
-void type<::mmx::contract::Token_calc_hash_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_calc_hash_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_get_dependency>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_get_dependency;
-}
-
-void type<::mmx::contract::Token_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_get_dependency());
-}
-
-void type<::mmx::contract::Token_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_get_dependency& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_get_dependency_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_get_dependency_return;
-}
-
-void type<::mmx::contract::Token_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_get_dependency_return());
-}
-
-void type<::mmx::contract::Token_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_get_dependency_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_get_owner>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_get_owner;
-}
-
-void type<::mmx::contract::Token_get_owner>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_get_owner());
-}
-
-void type<::mmx::contract::Token_get_owner>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_get_owner& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_get_owner_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_get_owner_return;
-}
-
-void type<::mmx::contract::Token_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_get_owner_return());
-}
-
-void type<::mmx::contract::Token_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_get_owner_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_is_valid>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_is_valid;
-}
-
-void type<::mmx::contract::Token_is_valid>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_is_valid());
-}
-
-void type<::mmx::contract::Token_is_valid>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_is_valid& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_is_valid_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_is_valid_return;
-}
-
-void type<::mmx::contract::Token_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_is_valid_return());
-}
-
-void type<::mmx::contract::Token_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_is_valid_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_transfer>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_transfer;
-}
-
-void type<::mmx::contract::Token_transfer>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_transfer());
-}
-
-void type<::mmx::contract::Token_transfer>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_transfer& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_transfer_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_transfer_return;
-}
-
-void type<::mmx::contract::Token_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_transfer_return());
-}
-
-void type<::mmx::contract::Token_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_transfer_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_validate>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_validate;
-}
-
-void type<::mmx::contract::Token_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_validate());
-}
-
-void type<::mmx::contract::Token_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_validate& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Token_validate_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Token_validate_return;
-}
-
-void type<::mmx::contract::Token_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Token_validate_return());
-}
-
-void type<::mmx::contract::Token_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Token_validate_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2195,54 +976,6 @@ void type<::mmx::contract::WebData_calc_hash_return>::create_dynamic_code(std::v
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::contract::WebData_get_dependency>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_get_dependency;
-}
-
-void type<::mmx::contract::WebData_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_get_dependency());
-}
-
-void type<::mmx::contract::WebData_get_dependency>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_get_dependency& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::WebData_get_dependency_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_get_dependency_return;
-}
-
-void type<::mmx::contract::WebData_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_get_dependency_return());
-}
-
-void type<::mmx::contract::WebData_get_dependency_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_get_dependency_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::WebData_get_owner>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_get_owner;
-}
-
-void type<::mmx::contract::WebData_get_owner>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_get_owner());
-}
-
-void type<::mmx::contract::WebData_get_owner>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_get_owner& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::WebData_get_owner_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_get_owner_return;
-}
-
-void type<::mmx::contract::WebData_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_get_owner_return());
-}
-
-void type<::mmx::contract::WebData_get_owner_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_get_owner_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::contract::WebData_is_valid>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_WebData_is_valid;
 }
@@ -2291,78 +1024,6 @@ void type<::mmx::contract::WebData_num_bytes_return>::create_dynamic_code(std::v
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::contract::WebData_transfer>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_transfer;
-}
-
-void type<::mmx::contract::WebData_transfer>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_transfer());
-}
-
-void type<::mmx::contract::WebData_transfer>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_transfer& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::WebData_transfer_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_transfer_return;
-}
-
-void type<::mmx::contract::WebData_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_transfer_return());
-}
-
-void type<::mmx::contract::WebData_transfer_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_transfer_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::WebData_update>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_update;
-}
-
-void type<::mmx::contract::WebData_update>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_update());
-}
-
-void type<::mmx::contract::WebData_update>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_update& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::WebData_update_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_update_return;
-}
-
-void type<::mmx::contract::WebData_update_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_update_return());
-}
-
-void type<::mmx::contract::WebData_update_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_update_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::WebData_validate>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_validate;
-}
-
-void type<::mmx::contract::WebData_validate>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_validate());
-}
-
-void type<::mmx::contract::WebData_validate>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_validate& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::WebData_validate_return>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_WebData_validate_return;
-}
-
-void type<::mmx::contract::WebData_validate_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::WebData_validate_return());
-}
-
-void type<::mmx::contract::WebData_validate_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_validate_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::contract::method_t>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_method_t;
 }
@@ -2400,18 +1061,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Data_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_get_dependency::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_get_dependency_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_get_owner::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_get_owner_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_num_bytes::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_num_bytes_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_set::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_set_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_transfer::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_transfer_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_validate::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Data_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable_calc_cost_return::static_create_type_code());
@@ -2423,41 +1074,14 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Executable_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Identity::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MultiSig_add_owner::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MultiSig_add_owner_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MultiSig_rem_owner::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MultiSig_rem_owner_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MultiSig_set_num_required::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MultiSig_set_num_required_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_validate_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_calc_cost::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_calc_cost_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_calc_hash::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_get_dependency::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_get_dependency_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_get_owner::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_get_owner_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_is_locked::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_is_locked_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_is_valid::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_lock::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_lock_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_transfer::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_transfer_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_unlock::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_unlock_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_validate::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::MutableRelay_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT_calc_cost_return::static_create_type_code());
@@ -2467,73 +1091,17 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::NFT_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT_num_bytes::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::NFT_num_bytes_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_calc_cost::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_calc_cost_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_calc_hash::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_is_valid::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_lock::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_lock_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_lock_pool::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_lock_pool_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_set_partial_diff::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_set_partial_diff_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_set_reward_addr::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PlotNFT_set_reward_addr_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PubKey_get_dependency::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PubKey_get_dependency_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_get_owner::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_get_owner_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_validate::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_validate_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_calc_cost::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_calc_cost_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_calc_hash::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_get_dependency::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_get_dependency_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_is_valid::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_validate::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::PuzzleTimeLock_validate_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_calc_cost::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_calc_cost_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_calc_hash::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_get_dependency::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_get_dependency_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_get_owner::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_get_owner_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_is_locked::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_is_locked_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_is_valid::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_validate::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::TimeLock_validate_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_calc_hash::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_get_dependency::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_get_dependency_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_get_owner::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_get_owner_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_is_valid::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_is_valid_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_transfer::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_transfer_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_validate::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Token_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TokenBase::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TokenBase_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TokenBase_calc_cost_return::static_create_type_code());
@@ -2551,20 +1119,10 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::WebData_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_calc_hash_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_get_dependency::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_get_dependency_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_get_owner::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_get_owner_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_num_bytes::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData_num_bytes_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_transfer::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_transfer_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_update::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_update_return::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_validate::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::WebData_validate_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::method_t::static_create_type_code());
 }
 
@@ -2590,18 +1148,8 @@ const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost = vnx::get_type_c
 const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xffa8c93868ea4352ull));
 const vnx::TypeCode* const vnx_native_type_code_Data_calc_hash = vnx::get_type_code(vnx::Hash64(0x322fb5c8d3dfe74ull));
 const vnx::TypeCode* const vnx_native_type_code_Data_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x84fe9434ee352e2eull));
-const vnx::TypeCode* const vnx_native_type_code_Data_get_dependency = vnx::get_type_code(vnx::Hash64(0x1ad32dbfc3b5cfe0ull));
-const vnx::TypeCode* const vnx_native_type_code_Data_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x4104eebc308d6c2cull));
-const vnx::TypeCode* const vnx_native_type_code_Data_get_owner = vnx::get_type_code(vnx::Hash64(0xeeeff20febabaa19ull));
-const vnx::TypeCode* const vnx_native_type_code_Data_get_owner_return = vnx::get_type_code(vnx::Hash64(0xfc6339e48d99addaull));
 const vnx::TypeCode* const vnx_native_type_code_Data_num_bytes = vnx::get_type_code(vnx::Hash64(0x2494b20a50d3ff9cull));
 const vnx::TypeCode* const vnx_native_type_code_Data_num_bytes_return = vnx::get_type_code(vnx::Hash64(0x718397aef0c26541ull));
-const vnx::TypeCode* const vnx_native_type_code_Data_set = vnx::get_type_code(vnx::Hash64(0x191ecbe87a4ee70aull));
-const vnx::TypeCode* const vnx_native_type_code_Data_set_return = vnx::get_type_code(vnx::Hash64(0xd16081633c1f8756ull));
-const vnx::TypeCode* const vnx_native_type_code_Data_transfer = vnx::get_type_code(vnx::Hash64(0x1d784025aa08ea1ull));
-const vnx::TypeCode* const vnx_native_type_code_Data_transfer_return = vnx::get_type_code(vnx::Hash64(0x3f18e1b249687c7dull));
-const vnx::TypeCode* const vnx_native_type_code_Data_validate = vnx::get_type_code(vnx::Hash64(0x17de02619513f20cull));
-const vnx::TypeCode* const vnx_native_type_code_Data_validate_return = vnx::get_type_code(vnx::Hash64(0x665ccb0bd661c914ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable = vnx::get_type_code(vnx::Hash64(0xfa6a3ac9103ebb12ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable_calc_cost = vnx::get_type_code(vnx::Hash64(0x5637ec4f54b3d1baull));
 const vnx::TypeCode* const vnx_native_type_code_Executable_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xe290488c6b3548a6ull));
@@ -2613,41 +1161,14 @@ const vnx::TypeCode* const vnx_native_type_code_Executable_validate = vnx::get_t
 const vnx::TypeCode* const vnx_native_type_code_Executable_validate_return = vnx::get_type_code(vnx::Hash64(0x8f5cc060b4a18cdfull));
 const vnx::TypeCode* const vnx_native_type_code_Identity = vnx::get_type_code(vnx::Hash64(0x69710dd250a33c5eull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig = vnx::get_type_code(vnx::Hash64(0x7d674c5f7297dedull));
-const vnx::TypeCode* const vnx_native_type_code_MultiSig_add_owner = vnx::get_type_code(vnx::Hash64(0xaa2e4c882b71dd83ull));
-const vnx::TypeCode* const vnx_native_type_code_MultiSig_add_owner_return = vnx::get_type_code(vnx::Hash64(0xff53ef68cb213c51ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost = vnx::get_type_code(vnx::Hash64(0x1f65ef156660d39full));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x27d3b356beac0b61ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash = vnx::get_type_code(vnx::Hash64(0xcf77247303f2a760ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x5c85ee5a3873661dull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid = vnx::get_type_code(vnx::Hash64(0x613ac937350f5cd7ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid_return = vnx::get_type_code(vnx::Hash64(0x2b104aee1e626c8cull));
-const vnx::TypeCode* const vnx_native_type_code_MultiSig_rem_owner = vnx::get_type_code(vnx::Hash64(0x76c14727e0beab3cull));
-const vnx::TypeCode* const vnx_native_type_code_MultiSig_rem_owner_return = vnx::get_type_code(vnx::Hash64(0xfa7d0d0c0718b8b1ull));
-const vnx::TypeCode* const vnx_native_type_code_MultiSig_set_num_required = vnx::get_type_code(vnx::Hash64(0x2103ca68f1bc4ffcull));
-const vnx::TypeCode* const vnx_native_type_code_MultiSig_set_num_required_return = vnx::get_type_code(vnx::Hash64(0x5af8b2d69978a7c4ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate = vnx::get_type_code(vnx::Hash64(0x40855ac13f61e392ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate_return = vnx::get_type_code(vnx::Hash64(0x3635f63fd29dfd77ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay = vnx::get_type_code(vnx::Hash64(0xc2df996d788fb2faull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_cost = vnx::get_type_code(vnx::Hash64(0x50f6cfe41aaf350bull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xc04929a955c00e83ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_hash = vnx::get_type_code(vnx::Hash64(0x80e404827f3d41f4ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xbb1f74a5d31f63ffull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_dependency = vnx::get_type_code(vnx::Hash64(0xd8207bd6437f474cull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x516cf9103cfc94ffull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_owner = vnx::get_type_code(vnx::Hash64(0x6d290dd119ab1599ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_get_owner_return = vnx::get_type_code(vnx::Hash64(0xc382d975b0b3e00bull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_locked = vnx::get_type_code(vnx::Hash64(0x79b24a4efe1ef9afull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_locked_return = vnx::get_type_code(vnx::Hash64(0x6d930f397e8eae61ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_valid = vnx::get_type_code(vnx::Hash64(0x32aee56f284c5167ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_is_valid_return = vnx::get_type_code(vnx::Hash64(0xc591d5e4066eb3e2ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_lock = vnx::get_type_code(vnx::Hash64(0xff880885af6179ecull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_lock_return = vnx::get_type_code(vnx::Hash64(0x238c82efab201ab5ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_transfer = vnx::get_type_code(vnx::Hash64(0x518f0faed91928full));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_transfer_return = vnx::get_type_code(vnx::Hash64(0x81f0438c55989770ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_unlock = vnx::get_type_code(vnx::Hash64(0x7253750bf00d6f4eull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_unlock_return = vnx::get_type_code(vnx::Hash64(0x55019d961025fbbbull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_validate = vnx::get_type_code(vnx::Hash64(0x131176992222ee22ull));
-const vnx::TypeCode* const vnx_native_type_code_MutableRelay_validate_return = vnx::get_type_code(vnx::Hash64(0xd8b46935ca912219ull));
 const vnx::TypeCode* const vnx_native_type_code_NFT = vnx::get_type_code(vnx::Hash64(0x7cb24b9888a47906ull));
 const vnx::TypeCode* const vnx_native_type_code_NFT_calc_cost = vnx::get_type_code(vnx::Hash64(0x462462234574232ull));
 const vnx::TypeCode* const vnx_native_type_code_NFT_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xcbb78b8c7318ffecull));
@@ -2657,73 +1178,17 @@ const vnx::TypeCode* const vnx_native_type_code_NFT_is_valid = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_NFT_is_valid_return = vnx::get_type_code(vnx::Hash64(0x744c9a1ab5d94c5bull));
 const vnx::TypeCode* const vnx_native_type_code_NFT_num_bytes = vnx::get_type_code(vnx::Hash64(0xf3c6c4128c2b3725ull));
 const vnx::TypeCode* const vnx_native_type_code_NFT_num_bytes_return = vnx::get_type_code(vnx::Hash64(0x459cd51aeb30d9ffull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT = vnx::get_type_code(vnx::Hash64(0x7705f4da286543dull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_cost = vnx::get_type_code(vnx::Hash64(0xb8ed405cc3b49949ull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x20fc6d7eb7db96b1ull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_hash = vnx::get_type_code(vnx::Hash64(0x68ff8b3aa626edb6ull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x5baa30723104fbcdull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_is_valid = vnx::get_type_code(vnx::Hash64(0xee4e1a5d6185e72bull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_is_valid_return = vnx::get_type_code(vnx::Hash64(0xdd7471627ac9d81dull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock = vnx::get_type_code(vnx::Hash64(0x760d22b52e9389a2ull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_return = vnx::get_type_code(vnx::Hash64(0xb56527c854e45f09ull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_pool = vnx::get_type_code(vnx::Hash64(0xb607c281c752c61aull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_lock_pool_return = vnx::get_type_code(vnx::Hash64(0x71c9624eb80fcd6full));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_set_partial_diff = vnx::get_type_code(vnx::Hash64(0xe1401fa23c077c00ull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_set_partial_diff_return = vnx::get_type_code(vnx::Hash64(0xf001e7bcf024f54aull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_set_reward_addr = vnx::get_type_code(vnx::Hash64(0x5f62381f96e76ea9ull));
-const vnx::TypeCode* const vnx_native_type_code_PlotNFT_set_reward_addr_return = vnx::get_type_code(vnx::Hash64(0xdb326f129708ec2eull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0x9b3cd508d7f41423ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost = vnx::get_type_code(vnx::Hash64(0x502d1edce44719b3ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xc2f589dac0e8bcb0ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_hash = vnx::get_type_code(vnx::Hash64(0x803fd5ba81d56d4cull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xb9a3d4d64637d1ccull));
-const vnx::TypeCode* const vnx_native_type_code_PubKey_get_dependency = vnx::get_type_code(vnx::Hash64(0x5eddf8d7882958f5ull));
-const vnx::TypeCode* const vnx_native_type_code_PubKey_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x3870c96738844d0full));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_get_owner = vnx::get_type_code(vnx::Hash64(0x6df2dce9e7433921ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_get_owner_return = vnx::get_type_code(vnx::Hash64(0xc13e7906259b5238ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid = vnx::get_type_code(vnx::Hash64(0xe97fdd91c060e967ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid_return = vnx::get_type_code(vnx::Hash64(0xce58570ddfcea36dull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_validate = vnx::get_type_code(vnx::Hash64(0xc8c04e67ca0e5622ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_validate_return = vnx::get_type_code(vnx::Hash64(0xd37debdc13313296ull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock = vnx::get_type_code(vnx::Hash64(0x3a874a42905e85f6ull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_calc_cost = vnx::get_type_code(vnx::Hash64(0xd932493507522b00ull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x9767b698a2a8cb96ull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_calc_hash = vnx::get_type_code(vnx::Hash64(0x920825362c05fffull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xec31eb942477a6eaull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_get_dependency = vnx::get_type_code(vnx::Hash64(0x95150528fd77373dull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x6a27cc0a83e66e4ull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_is_valid = vnx::get_type_code(vnx::Hash64(0xe9bf5b8ba6944875ull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_is_valid_return = vnx::get_type_code(vnx::Hash64(0x94e864a6e3e1c987ull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_validate = vnx::get_type_code(vnx::Hash64(0xc800c87dacfaf730ull));
-const vnx::TypeCode* const vnx_native_type_code_PuzzleTimeLock_validate_return = vnx::get_type_code(vnx::Hash64(0x89cdd8772f1e587cull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock = vnx::get_type_code(vnx::Hash64(0x56f6f212ed350e5cull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_calc_cost = vnx::get_type_code(vnx::Hash64(0x6650bddacd4a3634ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xd7b96b12f74b400aull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_calc_hash = vnx::get_type_code(vnx::Hash64(0xb64276bca8d842cbull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xacef361e71942d76ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_dependency = vnx::get_type_code(vnx::Hash64(0x52192103fb3346fdull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x1a563b8d1b1e5637ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_owner = vnx::get_type_code(vnx::Hash64(0x5b8f7fefce4e16a6ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_get_owner_return = vnx::get_type_code(vnx::Hash64(0xd4729bce1238ae82ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_locked = vnx::get_type_code(vnx::Hash64(0x4f14387029fbfa90ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_locked_return = vnx::get_type_code(vnx::Hash64(0x7a634d82dc05e0e8ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_valid = vnx::get_type_code(vnx::Hash64(0x33c2731f61a6e75cull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_is_valid_return = vnx::get_type_code(vnx::Hash64(0x39f514ddf4a30515ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_validate = vnx::get_type_code(vnx::Hash64(0x127de0e96bc85819ull));
-const vnx::TypeCode* const vnx_native_type_code_TimeLock_validate_return = vnx::get_type_code(vnx::Hash64(0x24d0a80c385c94eeull));
-const vnx::TypeCode* const vnx_native_type_code_Token = vnx::get_type_code(vnx::Hash64(0x2d8835d6429431b2ull));
-const vnx::TypeCode* const vnx_native_type_code_Token_calc_hash = vnx::get_type_code(vnx::Hash64(0x6f2a87c0dfca0becull));
-const vnx::TypeCode* const vnx_native_type_code_Token_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x3612f0189c1840eull));
-const vnx::TypeCode* const vnx_native_type_code_Token_get_dependency = vnx::get_type_code(vnx::Hash64(0xd6b8b4d0f1a86d08ull));
-const vnx::TypeCode* const vnx_native_type_code_Token_get_dependency_return = vnx::get_type_code(vnx::Hash64(0x210a40139084cf5full));
-const vnx::TypeCode* const vnx_native_type_code_Token_get_owner = vnx::get_type_code(vnx::Hash64(0x82e78e93b95c5f81ull));
-const vnx::TypeCode* const vnx_native_type_code_Token_get_owner_return = vnx::get_type_code(vnx::Hash64(0x7bfc82d1ea6d07faull));
-const vnx::TypeCode* const vnx_native_type_code_Token_is_valid = vnx::get_type_code(vnx::Hash64(0xe2f8f3a19e55d9baull));
-const vnx::TypeCode* const vnx_native_type_code_Token_is_valid_return = vnx::get_type_code(vnx::Hash64(0xdaf9a5651490bd5aull));
-const vnx::TypeCode* const vnx_native_type_code_Token_transfer = vnx::get_type_code(vnx::Hash64(0xd54ee6345b881a52ull));
-const vnx::TypeCode* const vnx_native_type_code_Token_transfer_return = vnx::get_type_code(vnx::Hash64(0x9e98330d476699c8ull));
-const vnx::TypeCode* const vnx_native_type_code_Token_validate = vnx::get_type_code(vnx::Hash64(0xc3476057943b66ffull));
-const vnx::TypeCode* const vnx_native_type_code_Token_validate_return = vnx::get_type_code(vnx::Hash64(0xc7dc19b4d86f2ca1ull));
 const vnx::TypeCode* const vnx_native_type_code_TokenBase = vnx::get_type_code(vnx::Hash64(0x5aeed4c96d232b5eull));
 const vnx::TypeCode* const vnx_native_type_code_TokenBase_calc_cost = vnx::get_type_code(vnx::Hash64(0xc758d95e2799f160ull));
 const vnx::TypeCode* const vnx_native_type_code_TokenBase_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xc3130ec5850d7bb0ull));
@@ -2741,20 +1206,10 @@ const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost = vnx::get_typ
 const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost_return = vnx::get_type_code(vnx::Hash64(0x83c6569262ee4aa5ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_calc_hash = vnx::get_type_code(vnx::Hash64(0xeba91c1bc61864ecull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xf8900b9ee43127d9ull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_get_dependency = vnx::get_type_code(vnx::Hash64(0x6f74c99b3f8ec6aaull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_get_dependency_return = vnx::get_type_code(vnx::Hash64(0xae7cc7dfaaf1d2b2ull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_get_owner = vnx::get_type_code(vnx::Hash64(0x6641548a08e3081ull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_get_owner_return = vnx::get_type_code(vnx::Hash64(0x800da64e879da42dull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_is_valid = vnx::get_type_code(vnx::Hash64(0x7ae99137e8822105ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_is_valid_return = vnx::get_type_code(vnx::Hash64(0x1c9f4aaa82fff87aull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_num_bytes = vnx::get_type_code(vnx::Hash64(0xcc1f554d1bf66504ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData_num_bytes_return = vnx::get_type_code(vnx::Hash64(0xded0804fac66cb6ull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_transfer = vnx::get_type_code(vnx::Hash64(0x4d5f84a22d5fe2edull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_transfer_return = vnx::get_type_code(vnx::Hash64(0x58fedcc2d109dce8ull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_update = vnx::get_type_code(vnx::Hash64(0x4c38371a5ecce03cull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_update_return = vnx::get_type_code(vnx::Hash64(0x1d1083a20aa7a388ull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_validate = vnx::get_type_code(vnx::Hash64(0x5b5602c1e2ec9e40ull));
-const vnx::TypeCode* const vnx_native_type_code_WebData_validate_return = vnx::get_type_code(vnx::Hash64(0x1baf67b4e006981ull));
 const vnx::TypeCode* const vnx_native_type_code_method_t = vnx::get_type_code(vnx::Hash64(0x1f62512698176a39ull));
 
 } // namespace mmx
