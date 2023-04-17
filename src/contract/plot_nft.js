@@ -6,14 +6,12 @@ var target;
 var unlock_height = 0;
 var unlock_delay;
 
-var name;
 var server_url;
 var reward_addr;
 
 
-function init(name_, owner_, reward_addr_)
+function init(owner_, reward_addr_)
 {
-	name = name_;
 	owner = bech32(owner_);
 	
 	if(reward_addr_ != null) {
@@ -83,13 +81,6 @@ function transfer(owner_) public
 	check_owner();
 	
 	owner = owner_;
-}
-
-function set_name(name_) public
-{
-	check_owner();
-	
-	name = name_;
 }
 
 function set_reward_addr(reward_addr_) public
