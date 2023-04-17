@@ -34,6 +34,9 @@ void write_bytes(vnx::OutputBuffer& out, const std::array<T, N>& value);
 template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value);
 
+template<typename T>
+void write_bytes(vnx::OutputBuffer& out, const std::set<T>& value);
+
 template<typename K, typename V>
 void write_bytes(vnx::OutputBuffer& out, const std::map<K, V>& value);
 
@@ -191,6 +194,15 @@ void write_bytes(vnx::OutputBuffer& out, const std::array<T, N>& value) {
 
 template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value) {
+	write_bytes_cstr(out, "vector<>");
+	write_bytes(out, uint32_t(value.size()));
+	for(const auto& elem : value) {
+		write_bytes(out, elem);
+	}
+}
+
+template<typename T>
+void write_bytes(vnx::OutputBuffer& out, const std::set<T>& value) {
 	write_bytes_cstr(out, "vector<>");
 	write_bytes(out, uint32_t(value.size()));
 	for(const auto& elem : value) {
