@@ -90,9 +90,9 @@ protected:
 
 	std::vector<std::shared_ptr<const Contract>> get_contracts(const std::vector<addr_t>& addresses) const override;
 
-	std::vector<addr_t> get_contracts_by(const std::vector<addr_t>& addresses) const override;
+	std::vector<addr_t> get_contracts_by(const std::vector<addr_t>& addresses, const vnx::optional<hash_t>& type_hash = nullptr) const override;
 
-	std::vector<addr_t> get_contracts_owned_by(const std::vector<addr_t>& addresses) const override;
+	std::vector<addr_t> get_contracts_owned_by(const std::vector<addr_t>& addresses, const vnx::optional<hash_t>& type_hash = nullptr) const override;
 
 	exec_result_t validate(std::shared_ptr<const Transaction> tx) const override;
 
@@ -140,6 +140,8 @@ protected:
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots_for(const bls_pubkey_t& farmer_key) const override;
+
+	std::vector<virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<addr_t>& addresses) const override;
 
 	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
 
@@ -305,7 +307,7 @@ private:
 
 	std::vector<offer_data_t> fetch_offers_for(
 			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-			const vnx::bool_t& state = false, const bool filter = false) const;
+			const bool state = false, const bool filter = false) const;
 
 	std::pair<vm::varptr_t, uint64_t> read_storage_field(
 			const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
@@ -445,18 +447,16 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 
-	hash_table<addr_t, hash_t> contract_type_map;								// [addr, type hash]
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> deploy_map;		// [[sender, height, counter] => contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> owner_map;			// [[owner, height, counter] => contract]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
 	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 
-	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;							// [[height, counter] => contract]
-	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
+	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
 
-	uint_uint_table<uint32_t, uint32_t, addr_t> swap_log;						// [[height, counter] => contract]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
 
 	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]

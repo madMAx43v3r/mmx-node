@@ -131,15 +131,13 @@ void Node::main()
 		db.add(exec_log.open(database_path + "exec_log"));
 
 		db.add(contract_map.open(database_path + "contract_map"));
-		db.add(contract_type_map.open(database_path + "contract_type_map"));
+		db.add(contract_log.open(database_path + "contract_log"));
 		db.add(deploy_map.open(database_path + "deploy_map"));
 		db.add(vplot_map.open(database_path + "vplot_map"));
 		db.add(owner_map.open(database_path + "owner_map"));
-		db.add(offer_log.open(database_path + "offer_log"));
 		db.add(offer_bid_map.open(database_path + "offer_bid_map"));
 		db.add(offer_ask_map.open(database_path + "offer_ask_map"));
 		db.add(trade_log.open(database_path + "trade_log"));
-		db.add(swap_log.open(database_path + "swap_log"));
 		db.add(swap_liquid_map.open(database_path + "swap_liquid_map"));
 
 		db.add(tx_log.open(database_path + "tx_log"));
@@ -717,24 +715,32 @@ std::vector<std::shared_ptr<const Contract>> Node::get_contracts(const std::vect
 	return res;
 }
 
-std::vector<addr_t> Node::get_contracts_by(const std::vector<addr_t>& addresses) const
+std::vector<addr_t> Node::get_contracts_by(const std::vector<addr_t>& addresses, const vnx::optional<hash_t>& type_hash) const
 {
 	std::vector<addr_t> result;
 	for(const auto& address : addresses) {
-		std::vector<addr_t> list;
+		std::vector<std::pair<addr_t, hash_t>> list;
 		deploy_map.find_range(std::make_tuple(address, 0, 0), std::make_tuple(address, -1, -1), list);
-		result.insert(result.end(), list.begin(), list.end());
+		for(const auto& entry : list) {
+			if(!type_hash || entry.second == *type_hash) {
+				result.push_back(entry.first);
+			}
+		}
 	}
 	return result;
 }
 
-std::vector<addr_t> Node::get_contracts_owned_by(const std::vector<addr_t>& addresses) const
+std::vector<addr_t> Node::get_contracts_owned_by(const std::vector<addr_t>& addresses, const vnx::optional<hash_t>& type_hash) const
 {
 	std::vector<addr_t> result;
 	for(const auto& address : addresses) {
-		std::vector<addr_t> list;
+		std::vector<std::pair<addr_t, hash_t>> list;
 		owner_map.find_range(std::make_tuple(address, 0, 0), std::make_tuple(address, -1, -1), list);
-		result.insert(result.end(), list.begin(), list.end());
+		for(const auto& entry : list) {
+			if(!type_hash || entry.second == *type_hash) {
+				result.push_back(entry.first);
+			}
+		}
 	}
 	return result;
 }
@@ -1036,6 +1042,11 @@ std::vector<virtual_plot_info_t> Node::get_virtual_plots_for(const bls_pubkey_t&
 	return get_virtual_plots(addresses);
 }
 
+std::vector<virtual_plot_info_t> Node::get_virtual_plots_owned_by(const std::vector<addr_t>& addresses) const
+{
+	return get_virtual_plots(get_contracts_owned_by(addresses, params->plot_binary));
+}
+
 offer_data_t Node::get_offer(const addr_t& address) const
 {
 	auto data = read_storage(address);
@@ -1086,7 +1097,7 @@ std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& addresse
 
 std::vector<offer_data_t> Node::fetch_offers_for(	const std::vector<addr_t>& addresses,
 													const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-													const vnx::bool_t& state, const bool filter) const
+													const bool state, const bool filter) const
 {
 	std::vector<offer_data_t> out;
 	for(const auto& address : addresses) {
@@ -1105,30 +1116,24 @@ std::vector<offer_data_t> Node::fetch_offers_for(	const std::vector<addr_t>& add
 std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& state) const
 {
 	std::vector<addr_t> entries;
-	offer_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
+	contract_log.find_range(std::make_tuple(params->offer_binary, since, 0), std::make_tuple(params->offer_binary, -1, -1), entries);
 	return fetch_offers(entries, state);
 }
 
 std::vector<offer_data_t> Node::get_offers_by(const std::vector<addr_t>& owners, const vnx::bool_t& state) const
 {
-	std::vector<addr_t> list;
-	for(const auto& address : get_contracts_owned_by(owners)) {
-		hash_t type;
-		if(contract_type_map.find(address, type) && type == params->offer_binary) {
-			list.push_back(address);
-		}
-	}
-	return fetch_offers(list, state, true);
+	return fetch_offers(get_contracts_owned_by(owners, params->offer_binary), state, true);
 }
 
 std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const
 {
 	std::vector<offer_data_t> result;
-	std::pair<uint32_t, uint32_t> offer_log_end(-1, -1);
+	std::tuple<hash_t, uint32_t, uint32_t> offer_log_end(params->offer_binary, -1, -1);
+	std::tuple<hash_t, uint32_t, uint32_t> offer_log_begin(params->offer_binary, 0, 0);
 
 	while(result.size() < size_t(limit)) {
-		std::vector<std::pair<std::pair<uint32_t, uint32_t>, addr_t>> entries;
-		if(!offer_log.find_last_range(std::make_pair(0, 0), offer_log_end, entries, std::max<size_t>(limit, 100))) {
+		std::vector<std::pair<std::tuple<hash_t, uint32_t, uint32_t>, addr_t>> entries;
+		if(!contract_log.find_last_range(offer_log_begin, offer_log_end, entries, std::max<size_t>(limit, 100))) {
 			break;
 		}
 		offer_log_end = entries.back().first;
@@ -1260,17 +1265,13 @@ std::vector<trade_entry_t> Node::get_trade_history_for(
 std::vector<swap_info_t> Node::get_swaps(const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency) const
 {
 	std::vector<addr_t> entries;
-	swap_log.find_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries);
+	contract_log.find_range(std::make_tuple(params->swap_binary, since, 0), std::make_tuple(params->swap_binary, -1, -1), entries);
 
 	std::vector<swap_info_t> result;
 	for(const auto& address : entries) {
 		const auto info = get_swap_info(address);
 		if((!token || info.tokens[0] == *token) && (!currency || info.tokens[1] == *currency)) {
-			if((info.tokens[0] == addr_t() || contract_type_map.count(info.tokens[0]))
-				&& (info.tokens[1] == addr_t() || contract_type_map.count(info.tokens[1])))
-			{
-				result.push_back(info);
-			}
+			result.push_back(info);
 		}
 	}
 	return result;
@@ -2180,36 +2181,35 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		{
 			const auto ticket = counter++;
 			auto type_hash = hash_t(contract->get_type_name());
-			if(tx->sender) {
-				deploy_map.insert(std::make_tuple(*tx->sender, block->height, ticket), tx->id);
-			}
-			if(auto owner = contract->get_owner()) {
-				owner_map.insert(std::make_tuple(*owner, block->height, ticket), tx->id);
-			}
+
+			contract_map.insert(tx->id, contract);
+			contract_log.insert(std::make_tuple(type_hash, block->height, ticket), tx->id);
+
 			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
-				if(exec->binary == params->swap_binary) {
-					swap_log.insert(std::make_pair(block->height, ticket), tx->id);
-				}
+				type_hash = exec->binary;
 				if(exec->binary == params->offer_binary) {
 					if(exec->init_args.size() >= 3) {
-						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), tx->id);
+						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
 						offer_bid_map.insert(std::make_tuple(exec->init_args[1].to<addr_t>(), block->height, ticket), tx->id);
 						offer_ask_map.insert(std::make_tuple(exec->init_args[2].to<addr_t>(), block->height, ticket), tx->id);
 					}
-					offer_log.insert(std::make_pair(block->height, ticket), tx->id);
 				}
 				if(exec->binary == params->plot_binary) {
 					if(exec->init_args.size() >= 1) {
-						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), tx->id);
+						owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
 					}
 				}
-				type_hash = exec->binary;
+				contract_log.insert(std::make_tuple(exec->binary, block->height, ticket), tx->id);
+			}
+			if(tx->sender) {
+				deploy_map.insert(std::make_tuple(*tx->sender, block->height, ticket), std::make_pair(tx->id, type_hash));
+			}
+			if(auto owner = contract->get_owner()) {
+				owner_map.insert(std::make_tuple(*owner, block->height, ticket), std::make_pair(tx->id, type_hash));
 			}
 			if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
 				vplot_map.insert(plot->farmer_key, tx->id);
 			}
-			contract_map.insert(tx->id, contract);
-			contract_type_map.insert(tx->id, type_hash);
 		}
 		for(const auto& op : tx->execute)
 		{

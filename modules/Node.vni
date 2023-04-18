@@ -122,10 +122,10 @@ module Node implements vnx.addons.HttpComponent {
 	vector<Contract*> get_contracts(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<addr_t> get_contracts_by(vector<addr_t> addresses) const;
+	vector<addr_t> get_contracts_by(vector<addr_t> addresses, optional<hash_t> type_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<addr_t> get_contracts_owned_by(vector<addr_t> addresses) const;
+	vector<addr_t> get_contracts_owned_by(vector<addr_t> addresses, optional<hash_t> type_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
 	Transaction* get_transaction(hash_t id, bool include_pending) const;
@@ -192,6 +192,9 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots_for(bls_pubkey_t farmer_key) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<virtual_plot_info_t> get_virtual_plots_owned_by(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	ulong get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
