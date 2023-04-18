@@ -129,6 +129,8 @@
 #include <mmx/Node_get_virtual_plots_return.hxx>
 #include <mmx/Node_get_virtual_plots_for.hxx>
 #include <mmx/Node_get_virtual_plots_for_return.hxx>
+#include <mmx/Node_get_virtual_plots_owned_by.hxx>
+#include <mmx/Node_get_virtual_plots_owned_by_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -715,7 +717,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0xf38b8f850dbcc0d2ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(80);
+	type_code->methods.resize(81);
 	type_code->methods[0] = ::mmx::Node_add_block::static_get_type_code();
 	type_code->methods[1] = ::mmx::Node_add_transaction::static_get_type_code();
 	type_code->methods[2] = ::mmx::Node_call_contract::static_get_type_code();
@@ -776,26 +778,27 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[57] = ::mmx::Node_get_virtual_plot_balance::static_get_type_code();
 	type_code->methods[58] = ::mmx::Node_get_virtual_plots::static_get_type_code();
 	type_code->methods[59] = ::mmx::Node_get_virtual_plots_for::static_get_type_code();
-	type_code->methods[60] = ::mmx::Node_read_storage::static_get_type_code();
-	type_code->methods[61] = ::mmx::Node_read_storage_array::static_get_type_code();
-	type_code->methods[62] = ::mmx::Node_read_storage_field::static_get_type_code();
-	type_code->methods[63] = ::mmx::Node_read_storage_map::static_get_type_code();
-	type_code->methods[64] = ::mmx::Node_read_storage_object::static_get_type_code();
-	type_code->methods[65] = ::mmx::Node_read_storage_var::static_get_type_code();
-	type_code->methods[66] = ::mmx::Node_revert_sync::static_get_type_code();
-	type_code->methods[67] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[68] = ::mmx::Node_validate::static_get_type_code();
-	type_code->methods[69] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[70] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[71] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[72] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[73] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[74] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[75] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[76] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[77] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[78] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[79] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[60] = ::mmx::Node_get_virtual_plots_owned_by::static_get_type_code();
+	type_code->methods[61] = ::mmx::Node_read_storage::static_get_type_code();
+	type_code->methods[62] = ::mmx::Node_read_storage_array::static_get_type_code();
+	type_code->methods[63] = ::mmx::Node_read_storage_field::static_get_type_code();
+	type_code->methods[64] = ::mmx::Node_read_storage_map::static_get_type_code();
+	type_code->methods[65] = ::mmx::Node_read_storage_object::static_get_type_code();
+	type_code->methods[66] = ::mmx::Node_read_storage_var::static_get_type_code();
+	type_code->methods[67] = ::mmx::Node_revert_sync::static_get_type_code();
+	type_code->methods[68] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[69] = ::mmx::Node_validate::static_get_type_code();
+	type_code->methods[70] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[71] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[72] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[73] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[74] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[75] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[76] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[77] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[78] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[79] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[80] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(39);
 	{
 		auto& field = type_code->fields[0];
@@ -1209,13 +1212,13 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0xe7c397362a63f57cull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_contracts_by>(_method);
 			auto _return_value = ::mmx::Node_get_contracts_by_return::create();
-			_return_value->_ret_0 = get_contracts_by(_args->addresses);
+			_return_value->_ret_0 = get_contracts_by(_args->addresses, _args->type_hash);
 			return _return_value;
 		}
 		case 0x63989a04fee2fba4ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_contracts_owned_by>(_method);
 			auto _return_value = ::mmx::Node_get_contracts_owned_by_return::create();
-			_return_value->_ret_0 = get_contracts_owned_by(_args->addresses);
+			_return_value->_ret_0 = get_contracts_owned_by(_args->addresses, _args->type_hash);
 			return _return_value;
 		}
 		case 0xf17c2f67bedb9df6ull: {
@@ -1456,6 +1459,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_virtual_plots_for>(_method);
 			auto _return_value = ::mmx::Node_get_virtual_plots_for_return::create();
 			_return_value->_ret_0 = get_virtual_plots_for(_args->farmer_key);
+			return _return_value;
+		}
+		case 0xc831b8efcb3039dfull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_virtual_plots_owned_by>(_method);
+			auto _return_value = ::mmx::Node_get_virtual_plots_owned_by_return::create();
+			_return_value->_ret_0 = get_virtual_plots_owned_by(_args->addresses);
 			return _return_value;
 		}
 		case 0xd74cd2b291cb9cd6ull: {

@@ -128,6 +128,8 @@
 #include <mmx/Node_get_virtual_plots_return.hxx>
 #include <mmx/Node_get_virtual_plots_for.hxx>
 #include <mmx/Node_get_virtual_plots_for_return.hxx>
+#include <mmx/Node_get_virtual_plots_owned_by.hxx>
+#include <mmx/Node_get_virtual_plots_owned_by_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -492,9 +494,10 @@ std::vector<std::shared_ptr<const ::mmx::Contract>> NodeClient::get_contracts(co
 	}
 }
 
-std::vector<::mmx::addr_t> NodeClient::get_contracts_by(const std::vector<::mmx::addr_t>& addresses) {
+std::vector<::mmx::addr_t> NodeClient::get_contracts_by(const std::vector<::mmx::addr_t>& addresses, const vnx::optional<::mmx::hash_t>& type_hash) {
 	auto _method = ::mmx::Node_get_contracts_by::create();
 	_method->addresses = addresses;
+	_method->type_hash = type_hash;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_by_return>(_return_value)) {
 		return _result->_ret_0;
@@ -505,9 +508,10 @@ std::vector<::mmx::addr_t> NodeClient::get_contracts_by(const std::vector<::mmx:
 	}
 }
 
-std::vector<::mmx::addr_t> NodeClient::get_contracts_owned_by(const std::vector<::mmx::addr_t>& addresses) {
+std::vector<::mmx::addr_t> NodeClient::get_contracts_owned_by(const std::vector<::mmx::addr_t>& addresses, const vnx::optional<::mmx::hash_t>& type_hash) {
 	auto _method = ::mmx::Node_get_contracts_owned_by::create();
 	_method->addresses = addresses;
+	_method->type_hash = type_hash;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contracts_owned_by_return>(_return_value)) {
 		return _result->_ret_0;
@@ -819,6 +823,19 @@ std::vector<::mmx::virtual_plot_info_t> NodeClient::get_virtual_plots_for(const 
 	_method->farmer_key = farmer_key;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plots_for_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::virtual_plot_info_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::virtual_plot_info_t> NodeClient::get_virtual_plots_owned_by(const std::vector<::mmx::addr_t>& addresses) {
+	auto _method = ::mmx::Node_get_virtual_plots_owned_by::create();
+	_method->addresses = addresses;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_virtual_plots_owned_by_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::virtual_plot_info_t>>();

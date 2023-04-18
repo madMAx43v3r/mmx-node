@@ -211,6 +211,8 @@ class Node_get_virtual_plots;
 class Node_get_virtual_plots_return;
 class Node_get_virtual_plots_for;
 class Node_get_virtual_plots_for_return;
+class Node_get_virtual_plots_owned_by;
+class Node_get_virtual_plots_owned_by_return;
 class Node_read_storage;
 class Node_read_storage_return;
 class Node_read_storage_array;
@@ -706,6 +708,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtu
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_owned_by; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_owned_by_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_array; ///< \private
@@ -1197,6 +1201,8 @@ void read(TypeInput& in, ::mmx::Node_get_virtual_plots& value, const TypeCode* t
 void read(TypeInput& in, ::mmx::Node_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_virtual_plots_owned_by& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_virtual_plots_owned_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage_array& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1692,6 +1698,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots& value, const Ty
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_owned_by& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_owned_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage_array& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2187,6 +2195,8 @@ void read(std::istream& in, ::mmx::Node_get_virtual_plots& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plots_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_virtual_plots_owned_by& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_virtual_plots_owned_by_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_array& value); ///< \private
@@ -2682,6 +2692,8 @@ void write(std::ostream& out, const ::mmx::Node_get_virtual_plots& value); ///< 
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_owned_by& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_owned_by_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage_array& value); ///< \private
@@ -3177,6 +3189,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots& value); ///< 
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_for_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_owned_by& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_owned_by_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_array& value); ///< \private
@@ -7819,6 +7833,52 @@ struct type<::mmx::Node_get_virtual_plots_for_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_for_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_virtual_plots_owned_by> {
+	void read(TypeInput& in, ::mmx::Node_get_virtual_plots_owned_by& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_owned_by& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_virtual_plots_owned_by& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_owned_by& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_owned_by& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_owned_by& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_virtual_plots_owned_by_return> {
+	void read(TypeInput& in, ::mmx::Node_get_virtual_plots_owned_by_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_virtual_plots_owned_by_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_virtual_plots_owned_by_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_virtual_plots_owned_by_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_virtual_plots_owned_by_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_owned_by_return& value, bool special = false);
 };
 
 /// \private

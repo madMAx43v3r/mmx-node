@@ -190,6 +190,8 @@
 #include <mmx/Node_get_virtual_plots_return.hxx>
 #include <mmx/Node_get_virtual_plots_for.hxx>
 #include <mmx/Node_get_virtual_plots_for_return.hxx>
+#include <mmx/Node_get_virtual_plots_owned_by.hxx>
+#include <mmx/Node_get_virtual_plots_owned_by_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -2732,6 +2734,30 @@ void type<::mmx::Node_get_virtual_plots_for_return>::create_dynamic_code(std::ve
 }
 
 void type<::mmx::Node_get_virtual_plots_for_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_for_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_virtual_plots_owned_by>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_virtual_plots_owned_by;
+}
+
+void type<::mmx::Node_get_virtual_plots_owned_by>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_virtual_plots_owned_by());
+}
+
+void type<::mmx::Node_get_virtual_plots_owned_by>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_owned_by& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_virtual_plots_owned_by_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_virtual_plots_owned_by_return;
+}
+
+void type<::mmx::Node_get_virtual_plots_owned_by_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_virtual_plots_owned_by_return());
+}
+
+void type<::mmx::Node_get_virtual_plots_owned_by_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_virtual_plots_owned_by_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -6560,6 +6586,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_virtual_plots_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plots_for::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_virtual_plots_for_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_virtual_plots_owned_by::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_virtual_plots_owned_by_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_array::static_create_type_code());
@@ -7053,6 +7081,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots = vnx::ge
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_return = vnx::get_type_code(vnx::Hash64(0xa96dbac13ea12597ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for = vnx::get_type_code(vnx::Hash64(0x2dadcbd2c7c72b6eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_for_return = vnx::get_type_code(vnx::Hash64(0x9564674e5dba5be1ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_owned_by = vnx::get_type_code(vnx::Hash64(0xc831b8efcb3039dfull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_virtual_plots_owned_by_return = vnx::get_type_code(vnx::Hash64(0xbe9b0eee14951264ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage = vnx::get_type_code(vnx::Hash64(0xd74cd2b291cb9cd6ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_return = vnx::get_type_code(vnx::Hash64(0xab73866ba23ed19aull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_array = vnx::get_type_code(vnx::Hash64(0xe5826950ca0a442bull));
