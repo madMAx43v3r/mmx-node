@@ -79,7 +79,11 @@ void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t
 		}
 		return;
 	}
-	throw mmx::invalid_solution("invalid type");
+	if(operation->solution) {
+		throw mmx::invalid_solution("invalid type");
+	} else {
+		throw mmx::invalid_solution("missing");
+	}
 }
 
 
