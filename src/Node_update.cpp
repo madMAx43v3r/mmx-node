@@ -532,13 +532,13 @@ void Node::purge_tx_pool()
 			total_fee += entry.fee;
 			fee_overspend = total_fee > balance;
 		}
-		total_pool_size += tx->static_cost;
-
-		if(fee_overspend || total_pool_size > max_pool_size) {
+		if(!fee_overspend) {
+			total_pool_size += tx->static_cost;
+		}
+		if(total_pool_size > max_pool_size || fee_overspend) {
 			tx_pool_erase(tx->id);
 			num_purged++;
-		}
-		if(total_pool_size < max_pool_size) {
+		} else {
 			min_pool_fee_ratio = tx->fee_ratio;
 		}
 	}
