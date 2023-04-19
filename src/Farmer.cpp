@@ -7,6 +7,8 @@
 
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
+#include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/utils.h>
 
@@ -185,7 +187,16 @@ std::shared_ptr<const BlockHeader> Farmer::sign_block(
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
-	out->reward_addr = reward_addr;
+
+	if(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+		out->reward_addr = reward_addr;
+	}
+	else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+		out->reward_addr = nft_proof->contract;
+	}
+	else if(!out->reward_addr) {
+		out->reward_addr = reward_addr;
+	}
 	out->hash = out->calc_hash().first;
 	out->farmer_sig = bls_signature_t::sign(plot_sk, out->hash);
 	return out;

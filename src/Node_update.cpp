@@ -10,6 +10,8 @@
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfStake.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
@@ -765,6 +767,12 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->proof = proof.proof;
 	block->netspace_ratio = calc_new_netspace_ratio(
 			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
+
+	if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->contract)) {
+			block->reward_addr = plot->reward_address;
+		}
+	}
 
 	uint64_t total_fees = 0;
 	if(full_block) {
