@@ -53,6 +53,8 @@ class ChainParams {
 	addr_t plot_binary;
 	addr_t swap_binary;
 	addr_t offer_binary;
+	addr_t token_binary;
+	addr_t plot_nft_binary;
 	
 	addr_t project_addr;
 	ulong fixed_project_reward = 50000;
