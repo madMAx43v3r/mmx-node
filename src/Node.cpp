@@ -2454,8 +2454,11 @@ std::vector<Node::proof_data_t> Node::find_proof(const hash_t& challenge) const
 
 uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const
 {
-	if(!block->proof || std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+	if(!block->proof) {
 		return 0;
+	}
+	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+		return total_fees;
 	}
 	const auto diff_block = get_diff_header(block);
 	const auto block_reward = mmx::calc_block_reward(params, diff_block->space_diff);
