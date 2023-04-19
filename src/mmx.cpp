@@ -310,6 +310,15 @@ int main(int argc, char** argv)
 							continue;
 						}
 						std::cout << "Contract: " << address << " (" << contract->get_type_name();
+
+						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
+							if(!token->symbol.empty()) {
+								std::cout << ", " << token->symbol;
+							}
+							if(!token->name.empty()) {
+								std::cout << ", " << token->name;
+							}
+						}
 						if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
 							if(offer) {
 								if(offer->is_open()) {
@@ -319,15 +328,7 @@ int main(int argc, char** argv)
 								}
 							}
 						}
-						else if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
-							if(!token->symbol.empty()) {
-								std::cout << ", " << token->symbol;
-								if(!token->name.empty()) {
-									std::cout << ", " << token->name;
-								}
-							}
-						}
-						else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
+						if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
 							const auto balance = node.get_virtual_plot_balance(entry.first);
 							std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
 							std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
