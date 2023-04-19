@@ -14,7 +14,7 @@ namespace contract {
 
 vnx::bool_t NFT::is_valid() const
 {
-	return Super::is_valid() && creator != addr_t() && solution && solution->is_valid();
+	return Super::is_valid() && creator != addr_t();
 }
 
 hash_t NFT::calc_hash(const vnx::bool_t& full_hash) const
