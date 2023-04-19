@@ -495,6 +495,7 @@ struct node_type_e;
 struct offer_data_t;
 struct peer_info_t;
 struct permission_e;
+struct plot_nft_info_t;
 class pubkey_t;
 class signature_t;
 class skey_t;
@@ -987,6 +988,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_node_type_e; /
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_offer_data_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_peer_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_permission_e; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_plot_nft_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_spend_options_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_info_t; ///< \private
@@ -1485,6 +1487,7 @@ void read(TypeInput& in, ::mmx::node_type_e& value, const TypeCode* type_code, c
 void read(TypeInput& in, ::mmx::offer_data_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::peer_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::permission_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::plot_nft_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::pubkey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::skey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1982,6 +1985,7 @@ void write(TypeOutput& out, const ::mmx::node_type_e& value, const TypeCode* typ
 void write(TypeOutput& out, const ::mmx::offer_data_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::peer_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::permission_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::plot_nft_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::pubkey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::skey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2479,6 +2483,7 @@ void read(std::istream& in, ::mmx::node_type_e& value); ///< \private
 void read(std::istream& in, ::mmx::offer_data_t& value); ///< \private
 void read(std::istream& in, ::mmx::peer_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::permission_e& value); ///< \private
+void read(std::istream& in, ::mmx::plot_nft_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::pubkey_t& value); ///< \private
 void read(std::istream& in, ::mmx::signature_t& value); ///< \private
 void read(std::istream& in, ::mmx::skey_t& value); ///< \private
@@ -2976,6 +2981,7 @@ void write(std::ostream& out, const ::mmx::node_type_e& value); ///< \private
 void write(std::ostream& out, const ::mmx::offer_data_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::peer_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::permission_e& value); ///< \private
+void write(std::ostream& out, const ::mmx::plot_nft_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::pubkey_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::signature_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::skey_t& value); ///< \private
@@ -3473,6 +3479,7 @@ void accept(Visitor& visitor, const ::mmx::node_type_e& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::offer_data_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::peer_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::permission_e& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::plot_nft_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::pubkey_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::signature_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::skey_t& value); ///< \private
@@ -14353,6 +14360,29 @@ struct type<::mmx::permission_e> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::permission_e& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::plot_nft_info_t> {
+	void read(TypeInput& in, ::mmx::plot_nft_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::plot_nft_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::plot_nft_info_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::plot_nft_info_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::plot_nft_info_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::plot_nft_info_t& value, bool special = false);
 };
 
 /// \private
