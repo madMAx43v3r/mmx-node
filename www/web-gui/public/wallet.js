@@ -1903,7 +1903,7 @@ Vue.component('account-offers', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 30000);
+		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
 	beforeDestroy() {
 		clearInterval(this.timer);
