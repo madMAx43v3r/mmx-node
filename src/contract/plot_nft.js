@@ -9,7 +9,6 @@ var unlock_delay;
 var server_url;
 var reward_addr;
 
-
 function init(owner_, reward_addr_)
 {
 	owner = bech32(owner_);
