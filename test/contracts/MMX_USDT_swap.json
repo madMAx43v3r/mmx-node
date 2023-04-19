@@ -1,7 +1,0 @@
-{
-	"__type": "mmx.contract.Executable",
-	"name": "MMX / USDT Swap V2",
-	"binary": "mmx1wnj287q353mn6wnjaay7shvw0447gmc9gtgdgams02jdvr40yghqe4vnlg",
-	"init_method": "init",
-	"init_args": ["mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev", "mmx1f80p7h9rkvde0cmd0rtps677pda973qugtvs008mg66yedrlrkvsh2ca4r"]
-}

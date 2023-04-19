@@ -1,0 +1,6 @@
+{
+	"__type": "mmx.contract.Executable",
+	"name": "MMX / USDS Swap",
+	"binary": "mmx1k9thjnfjpfw6mw737tsk5qt8xu46mcxshn2cr5m9fm45rzyd27rqs2jjdp",
+	"init_args": ["mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev", "mmx1s8qjzpuqrsj4akn9tx82266uj76f3ssy57uyg3qu32v2053spyzqr0k8h6"]
+}
