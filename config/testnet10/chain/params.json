@@ -13,10 +13,10 @@
 	"max_vdf_segments": 2048,
 	"vdf_seed": "test10",
 	"reward_factor": {
-		"value": 4,
-		"inverse": 1000000000000
+		"value": 3048,
+		"inverse": 1000000000000000
 	},
-	"min_reward": 250000,
+	"min_reward": 500000,
 	"min_txfee": 2000,
 	"min_txfee_io": 1000,
 	"min_txfee_sign": 1000,
@@ -32,7 +32,7 @@
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
 	"virtual_space_constant": 1524,
-	"fixed_project_reward": 25000,
+	"fixed_project_reward": 50000,
 	"project_ratio": {
 		"value": 1,
 		"inverse": 100
