@@ -162,16 +162,18 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			throw std::logic_error("invalid average_txfee adjust");
 		}
 	}
-	if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
-		if(block->reward_addr != proof->contract) {
-			throw std::logic_error("invalid reward_addr for NFT proof");
+	if(block->reward_addr) {
+		if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+			if(*block->reward_addr != proof->contract) {
+				throw std::logic_error("invalid reward_addr for NFT proof");
+			}
 		}
-	}
-	if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-		if(auto plot = get_contract_as<contract::VirtualPlot>(proof->contract)) {
-			if(plot->reward_address) {
-				if(block->reward_addr != *plot->reward_address) {
-					throw std::logic_error("invalid reward_addr for stake proof");
+		if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+			if(auto plot = get_contract_as<contract::VirtualPlot>(proof->contract)) {
+				if(plot->reward_address) {
+					if(*block->reward_addr != *plot->reward_address) {
+						throw std::logic_error("invalid reward_addr for stake proof");
+					}
 				}
 			}
 		}
