@@ -69,9 +69,10 @@ function _payout(user)
 	const user_share = _get_earned_fees(user);
 	
 	for(var i = 0; i < 2; ++i) {
-		if(user_share[i] > 0) {
-			entry.fees_claimed[i] += user_share[i];
-			send(this.user, user_share[i], tokens[i]);
+		const amount = user_share[i];
+		if(amount > 0) {
+			entry.fees_claimed[i] += amount;
+			send(this.user, amount, tokens[i]);
 		}
 		user.last_fees_paid[i] = entry.fees_paid[i];
 	}
