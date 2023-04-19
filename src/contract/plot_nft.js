@@ -72,7 +72,11 @@ function claim_all(address, currency) public
 	} else {
 		currency = 0;
 	}
-	send(bech32(address), this.balance[currency], currency);
+	const amount = this.balance[currency];
+	if(amount == null) {
+		fail("nothing to claim", 5);
+	}
+	send(bech32(address), amount, currency);
 }
 
 function transfer(owner_) public
