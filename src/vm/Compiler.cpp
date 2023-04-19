@@ -313,6 +313,8 @@ public:
 
 	uint8_t math_flags = OPFLAG_CATCH_OVERFLOW;
 
+	bool is_debug = false;
+
 	Compiler();
 
 	std::shared_ptr<const contract::Binary> compile(const std::string& source);
@@ -429,7 +431,7 @@ private:
 	int depth = 0;
 	int curr_pass = 0;
 	int curr_line = -1;
-	bool is_debug = true;
+
 	size_t code_offset = 0;
 	vnx::optional<node_t> curr_node;
 	vnx::optional<function_t> curr_function;
@@ -766,7 +768,7 @@ std::string Compiler::get_namespace(const bool concat) const
 
 std::ostream& Compiler::debug(bool ident) const
 {
-	auto& out = is_debug ? std::cout : debug_out;
+	auto& out = is_debug ? std::cerr : debug_out;
 	for(int i = 0; ident && i < depth; ++i) {
 		out << "  ";
 	}
@@ -1765,7 +1767,7 @@ uint32_t Compiler::get_const_address(const std::string& value)
 }
 
 
-std::shared_ptr<const contract::Binary> compile(const std::string& source)
+std::shared_ptr<const contract::Binary> compile(const std::string& source, const compile_flags_t& flags)
 {
 //#ifdef _WIN32
 //	lexy_ext::shell<lexy_ext::default_prompt<lexy::ascii_encoding>> shell;
@@ -1780,15 +1782,18 @@ std::shared_ptr<const contract::Binary> compile(const std::string& source)
 //#endif // _WIN32
 
 	Compiler compiler;
+	compiler.is_debug = flags.debug;
 	return compiler.compile(source);
 }
 
-std::shared_ptr<const contract::Binary> compile_file(const std::string& file_name)
+std::shared_ptr<const contract::Binary> compile_files(const std::vector<std::string>& file_names, const compile_flags_t& flags)
 {
-	std::ifstream stream(file_name);
 	std::stringstream buffer;
-	buffer << stream.rdbuf();
-	return vm::compile(buffer.str());
+	for(const auto& src : file_names) {
+		std::ifstream stream(src);
+		buffer << stream.rdbuf();
+	}
+	return vm::compile(buffer.str(), flags);
 }
 
 

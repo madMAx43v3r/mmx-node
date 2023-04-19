@@ -14,9 +14,13 @@
 namespace mmx {
 namespace vm {
 
-std::shared_ptr<const contract::Binary> compile(const std::string& source);
+struct compile_flags_t {
+	bool debug = false;
+};
 
-std::shared_ptr<const contract::Binary> compile_file(const std::string& file_name);
+std::shared_ptr<const contract::Binary> compile(const std::string& source, const compile_flags_t& flags = compile_flags_t());
+
+std::shared_ptr<const contract::Binary> compile_files(const std::vector<std::string>& file_names, const compile_flags_t& flags = compile_flags_t());
 
 
 } // vm
