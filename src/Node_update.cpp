@@ -513,29 +513,36 @@ void Node::purge_tx_pool()
 
 	size_t num_purged = 0;
 	uint128_t total_pool_size = 0;
-	std::unordered_map<addr_t, uint64_t> total_fee_map;		// [sender => total fee]
+	std::unordered_map<addr_t, std::pair<uint64_t, uint64_t>> sender_map;	// [sender => [balance, total fee]]
 
 	const auto max_pool_size = uint128_t(tx_pool_limit) * params->max_block_size;
 
 	// purge transactions from pool if overflowing
 	for(const auto& entry : all_tx) {
 		const auto& tx = entry.tx;
-		uint64_t total_fee_spent = 0;
+		bool fee_overspend = false;
 		if(tx->sender) {
-			total_fee_spent = (total_fee_map[*tx->sender] += entry.fee);
+			const auto sender = *tx->sender;
+			const auto iter = sender_map.emplace(sender, std::make_pair(0, 0));
+			auto& balance = iter.first->second.first;
+			auto& total_fee = iter.first->second.second;
+			if(iter.second) {
+				balance = get_balance(sender, addr_t());
+			}
+			total_fee += entry.fee;
+			fee_overspend = total_fee > balance;
 		}
 		total_pool_size += tx->static_cost;
 
-		if(total_pool_size > max_pool_size
-			|| (tx->sender && total_fee_spent > get_balance(*tx->sender, addr_t())))
-		{
+		if(fee_overspend || total_pool_size > max_pool_size) {
 			tx_pool_erase(tx->id);
 			num_purged++;
-		} else {
+		}
+		if(total_pool_size < max_pool_size) {
 			min_pool_fee_ratio = tx->fee_ratio;
 		}
 	}
-	if(total_pool_size < (9 * max_pool_size) / 10) {
+	if(total_pool_size < max_pool_size / 2) {
 		min_pool_fee_ratio = 0;
 	}
 	if(total_pool_size || num_purged) {
