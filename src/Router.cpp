@@ -792,6 +792,8 @@ void Router::connect_to(const std::string& address)
 	if(connect_tasks.count(address)) {
 		return;
 	}
+	log(DEBUG) << "Trying to connect to " << address;
+
 	vnx::TcpEndpoint peer;
 	peer.host_name = address;
 	peer.port = params->port;
@@ -873,7 +875,6 @@ void Router::connect()
 				break;
 			}
 			if(is_valid_address(address)) {
-				log(DEBUG) << "Trying to connect to " << address;
 				connect_to(address);
 				peer_retry_map.erase(address);
 			}
