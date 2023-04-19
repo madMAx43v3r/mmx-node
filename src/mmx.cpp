@@ -529,8 +529,12 @@ int main(int argc, char** argv)
 				std::string method;
 				std::vector<vnx::Variant> args;
 				vnx::read_config("$3", method);
-				vnx::read_config("$4", args);
-
+				{
+					vnx::Variant tmp;
+					for(int i = 4; vnx::read_config("$" + std::to_string(i), tmp); ++i) {
+						args.push_back(tmp);
+					}
+				}
 				if(!spend_options.user && offset >= 0) {
 					spend_options.user = wallet.get_address(index, offset);
 				}
