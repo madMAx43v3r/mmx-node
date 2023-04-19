@@ -285,6 +285,8 @@ void Node::main()
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_token_binary.dat"));
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_nft_binary.dat"));
 
 		for(auto tx : block->tx_list) {
 			if(!tx) {
@@ -294,7 +296,7 @@ void Node::main()
 		block->finalize();
 
 		if(!block->is_valid()) {
-			throw std::logic_error("genesis not valid");
+			throw std::logic_error("invalid genesis block");
 		}
 		apply(block, nullptr);
 		commit(block);
