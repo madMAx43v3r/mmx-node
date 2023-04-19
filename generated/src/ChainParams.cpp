@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x29a01e24aee1f626ull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xd1b823c8409c4f3dull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -87,9 +87,11 @@ void ChainParams::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, plot_binary);
 	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, swap_binary);
 	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, offer_binary);
-	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, project_addr);
-	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, fixed_project_reward);
-	_visitor.type_field(_type_code->fields[42], 42); vnx::accept(_visitor, project_ratio);
+	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, token_binary);
+	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, plot_nft_binary);
+	_visitor.type_field(_type_code->fields[42], 42); vnx::accept(_visitor, project_addr);
+	_visitor.type_field(_type_code->fields[43], 43); vnx::accept(_visitor, fixed_project_reward);
+	_visitor.type_field(_type_code->fields[44], 44); vnx::accept(_visitor, project_ratio);
 	_visitor.type_end(*_type_code);
 }
 
@@ -135,6 +137,8 @@ void ChainParams::write(std::ostream& _out) const {
 	_out << ", \"plot_binary\": "; vnx::write(_out, plot_binary);
 	_out << ", \"swap_binary\": "; vnx::write(_out, swap_binary);
 	_out << ", \"offer_binary\": "; vnx::write(_out, offer_binary);
+	_out << ", \"token_binary\": "; vnx::write(_out, token_binary);
+	_out << ", \"plot_nft_binary\": "; vnx::write(_out, plot_nft_binary);
 	_out << ", \"project_addr\": "; vnx::write(_out, project_addr);
 	_out << ", \"fixed_project_reward\": "; vnx::write(_out, fixed_project_reward);
 	_out << ", \"project_ratio\": "; vnx::write(_out, project_ratio);
@@ -190,6 +194,8 @@ vnx::Object ChainParams::to_object() const {
 	_object["plot_binary"] = plot_binary;
 	_object["swap_binary"] = swap_binary;
 	_object["offer_binary"] = offer_binary;
+	_object["token_binary"] = token_binary;
+	_object["plot_nft_binary"] = plot_nft_binary;
 	_object["project_addr"] = project_addr;
 	_object["fixed_project_reward"] = fixed_project_reward;
 	_object["project_ratio"] = project_ratio;
@@ -258,6 +264,8 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(plot_filter);
 		} else if(_entry.first == "plot_filter_nhash") {
 			_entry.second.to(plot_filter_nhash);
+		} else if(_entry.first == "plot_nft_binary") {
+			_entry.second.to(plot_nft_binary);
 		} else if(_entry.first == "port") {
 			_entry.second.to(port);
 		} else if(_entry.first == "project_addr") {
@@ -278,6 +286,8 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(swap_binary);
 		} else if(_entry.first == "time_diff_constant") {
 			_entry.second.to(time_diff_constant);
+		} else if(_entry.first == "token_binary") {
+			_entry.second.to(token_binary);
 		} else if(_entry.first == "vdf_reward_divider") {
 			_entry.second.to(vdf_reward_divider);
 		} else if(_entry.first == "vdf_seed") {
@@ -409,6 +419,12 @@ vnx::Variant ChainParams::get_field(const std::string& _name) const {
 	if(_name == "offer_binary") {
 		return vnx::Variant(offer_binary);
 	}
+	if(_name == "token_binary") {
+		return vnx::Variant(token_binary);
+	}
+	if(_name == "plot_nft_binary") {
+		return vnx::Variant(plot_nft_binary);
+	}
 	if(_name == "project_addr") {
 		return vnx::Variant(project_addr);
 	}
@@ -502,6 +518,10 @@ void ChainParams::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(swap_binary);
 	} else if(_name == "offer_binary") {
 		_value.to(offer_binary);
+	} else if(_name == "token_binary") {
+		_value.to(token_binary);
+	} else if(_name == "plot_nft_binary") {
+		_value.to(plot_nft_binary);
 	} else if(_name == "project_addr") {
 		_value.to(project_addr);
 	} else if(_name == "fixed_project_reward") {
@@ -535,14 +555,14 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0x29a01e24aee1f626ull);
+	type_code->code_hash = vnx::Hash64(0xd1b823c8409c4f3dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ChainParams>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::ulong_fraction_t::static_get_type_code();
-	type_code->fields.resize(43);
+	type_code->fields.resize(45);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -820,18 +840,30 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	{
 		auto& field = type_code->fields[40];
 		field.is_extended = true;
-		field.name = "project_addr";
+		field.name = "token_binary";
 		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[41];
+		field.is_extended = true;
+		field.name = "plot_nft_binary";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[42];
+		field.is_extended = true;
+		field.name = "project_addr";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[43];
 		field.data_size = 8;
 		field.name = "fixed_project_reward";
 		field.value = vnx::to_string(50000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[42];
+		auto& field = type_code->fields[44];
 		field.is_extended = true;
 		field.name = "project_ratio";
 		field.code = {19, 0};
@@ -989,7 +1021,7 @@ void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, c
 		if(const auto* const _field = type_code->field_map[35]) {
 			vnx::read_value(_buf + _field->offset, value.block_time, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[41]) {
+		if(const auto* const _field = type_code->field_map[43]) {
 			vnx::read_value(_buf + _field->offset, value.fixed_project_reward, _field->code.data());
 		}
 	}
@@ -1000,8 +1032,10 @@ void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, c
 			case 37: vnx::read(in, value.plot_binary, type_code, _field->code.data()); break;
 			case 38: vnx::read(in, value.swap_binary, type_code, _field->code.data()); break;
 			case 39: vnx::read(in, value.offer_binary, type_code, _field->code.data()); break;
-			case 40: vnx::read(in, value.project_addr, type_code, _field->code.data()); break;
-			case 42: vnx::read(in, value.project_ratio, type_code, _field->code.data()); break;
+			case 40: vnx::read(in, value.token_binary, type_code, _field->code.data()); break;
+			case 41: vnx::read(in, value.plot_nft_binary, type_code, _field->code.data()); break;
+			case 42: vnx::read(in, value.project_addr, type_code, _field->code.data()); break;
+			case 44: vnx::read(in, value.project_ratio, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -1062,8 +1096,10 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	vnx::write(out, value.plot_binary, type_code, type_code->fields[37].code.data());
 	vnx::write(out, value.swap_binary, type_code, type_code->fields[38].code.data());
 	vnx::write(out, value.offer_binary, type_code, type_code->fields[39].code.data());
-	vnx::write(out, value.project_addr, type_code, type_code->fields[40].code.data());
-	vnx::write(out, value.project_ratio, type_code, type_code->fields[42].code.data());
+	vnx::write(out, value.token_binary, type_code, type_code->fields[40].code.data());
+	vnx::write(out, value.plot_nft_binary, type_code, type_code->fields[41].code.data());
+	vnx::write(out, value.project_addr, type_code, type_code->fields[42].code.data());
+	vnx::write(out, value.project_ratio, type_code, type_code->fields[44].code.data());
 }
 
 void read(std::istream& in, ::mmx::ChainParams& value) {
