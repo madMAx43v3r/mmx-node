@@ -286,7 +286,7 @@ function trade(i, address, min_amount) public payable
 				pool_amount = amount_left;
 			}
 			
-			const fee_amount = min(1 + (pool_trade_amount * fee_rates[j]) >> FRACT_BITS, pool_trade_amount);
+			const fee_amount = min(1 + ((pool_trade_amount * fee_rates[j]) >> FRACT_BITS), pool_trade_amount);
 			actual_amount += pool_trade_amount - fee_amount;
 			
 			out[0] += pool_trade_amount;
