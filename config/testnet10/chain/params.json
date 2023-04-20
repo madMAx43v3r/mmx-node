@@ -28,7 +28,7 @@
 	"max_block_size": 10000000,
 	"max_block_cost": 200000000,
 	"min_time_diff": 50000,
-	"initial_time_diff": 50000,
+	"initial_time_diff": 200000,
 	"initial_space_diff": 1,
 	"time_diff_constant": 1000,
 	"space_diff_constant": 100000000,
