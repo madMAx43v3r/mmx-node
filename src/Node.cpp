@@ -2122,7 +2122,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		if(tx) {
 			tx_set.insert(tx->id);
 			tx_ids.push_back(tx->id);
-			apply(block, context, tx, counter);
+			apply(block, tx, counter);
 		}
 	}
 	tx_log.insert(block->height, tx_ids);
@@ -2173,7 +2173,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 }
 
 void Node::apply(	std::shared_ptr<const Block> block,
-					std::shared_ptr<const execution_context_t> context,
 					std::shared_ptr<const Transaction> tx,
 					uint32_t& counter)
 {
