@@ -32,9 +32,9 @@ public:
 	uint32_t score_bits = 16;
 	uint32_t score_target = 8192;
 	uint32_t score_threshold = 65536;
+	uint64_t vdf_reward = 2000;
 	uint64_t min_reward = 200000;
 	::mmx::ulong_fraction_t reward_factor;
-	uint64_t vdf_reward_divider = 100;
 	uint64_t time_diff_constant = 1000;
 	uint64_t space_diff_constant = 100000000;
 	uint64_t virtual_space_constant = 500;
@@ -124,9 +124,9 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("score_bits", 14); _visitor.accept(score_bits);
 	_visitor.type_field("score_target", 15); _visitor.accept(score_target);
 	_visitor.type_field("score_threshold", 16); _visitor.accept(score_threshold);
-	_visitor.type_field("min_reward", 17); _visitor.accept(min_reward);
-	_visitor.type_field("reward_factor", 18); _visitor.accept(reward_factor);
-	_visitor.type_field("vdf_reward_divider", 19); _visitor.accept(vdf_reward_divider);
+	_visitor.type_field("vdf_reward", 17); _visitor.accept(vdf_reward);
+	_visitor.type_field("min_reward", 18); _visitor.accept(min_reward);
+	_visitor.type_field("reward_factor", 19); _visitor.accept(reward_factor);
 	_visitor.type_field("time_diff_constant", 20); _visitor.accept(time_diff_constant);
 	_visitor.type_field("space_diff_constant", 21); _visitor.accept(space_diff_constant);
 	_visitor.type_field("virtual_space_constant", 22); _visitor.accept(virtual_space_constant);
