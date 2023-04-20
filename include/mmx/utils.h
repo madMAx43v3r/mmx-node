@@ -171,9 +171,20 @@ uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint
 }
 
 inline
-uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t avg_txfee, const uint64_t fees)
+uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const uint64_t tx_fees)
 {
-	return avg_txfee < reward ? (reward - avg_txfee) + fees : fees;
+	return std::min(params->fixed_project_reward, tx_fees / 4)
+			+ (params->project_ratio.value * uint128_t(tx_fees)) / params->project_ratio.inverse;
+}
+
+inline
+uint64_t calc_final_block_reward(
+		std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
+		const uint64_t base_reward, const uint64_t tx_fees)
+{
+	const uint64_t fee_deduction = params->vdf_reward + calc_project_reward(params, tx_fees);
+	const uint64_t block_reward = (base_reward > diff_block->average_txfee ? base_reward - diff_block->average_txfee : 0);
+	return block_reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
 }
 
 inline

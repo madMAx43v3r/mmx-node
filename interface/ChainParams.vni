@@ -23,9 +23,9 @@ class ChainParams {
 	uint score_target = 8192;				// defines how many competing blocks are created (must be less than score_threshold)
 	uint score_threshold = 65536;			// should be <= 2^score_bits
 	
+	ulong vdf_reward = 2000;				// per block
 	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
-	ulong vdf_reward_divider = 100;			// reward = time_diff / vdf_reward_divider
 	
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 100000000;

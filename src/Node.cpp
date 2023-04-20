@@ -2458,12 +2458,13 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	if(!block->proof) {
 		return 0;
 	}
-	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-		return total_fees;
-	}
 	const auto diff_block = get_diff_header(block);
-	const auto block_reward = mmx::calc_block_reward(params, diff_block->space_diff);
-	return mmx::calc_final_block_reward(params, block_reward, diff_block->average_txfee, total_fees);
+
+	auto base_reward = mmx::calc_block_reward(params, diff_block->space_diff);
+	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+		base_reward = 0;
+	}
+	return mmx::calc_final_block_reward(params, diff_block, base_reward, total_fees);
 }
 
 std::shared_ptr<const BlockHeader> Node::read_block(

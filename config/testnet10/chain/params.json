@@ -16,6 +16,7 @@
 		"value": 3048,
 		"inverse": 1000000000000000
 	},
+	"vdf_reward": 2000,
 	"min_reward": 500000,
 	"min_txfee": 2000,
 	"min_txfee_io": 1000,

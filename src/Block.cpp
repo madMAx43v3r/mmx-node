@@ -9,6 +9,7 @@
 #include <mmx/write_bytes.h>
 #include <mmx/Transaction.hxx>
 #include <mmx/txio_entry_t.hpp>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -107,7 +108,7 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 	if(vdf_reward) {
 		txio_t out;
 		out.address = vdf_reward;
-		out.amount = time_diff / params->vdf_reward_divider;
+		out.amount = params->vdf_reward;
 		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::VDF_REWARD, out));
 	}
 	if(reward_addr && reward_amount) {
@@ -115,11 +116,14 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 		out.address = *reward_addr;
 		out.amount = reward_amount;
 		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::REWARD, out));
-
-		// project reward
+	}
+	{
+		txio_t out;
 		out.address = params->project_addr;
-		out.amount = params->fixed_project_reward + (params->project_ratio.value * out.amount) / params->project_ratio.inverse;
-		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::PROJECT_REWARD, out));
+		out.amount = calc_project_reward(params, tx_fees);
+		if(out.amount) {
+			res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::PROJECT_REWARD, out));
+		}
 	}
 	for(const auto& tx : tx_list) {
 		if(!tx->exec_result || !tx->exec_result->did_fail) {
