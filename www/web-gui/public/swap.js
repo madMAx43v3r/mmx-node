@@ -569,6 +569,9 @@ Vue.component('swap-trade', {
 		}
 	},
 	watch: {
+		wallet() {
+			this.update_wallet();
+		},
 		buy_amount(value) {
 			this.buy_estimate = null;
 			if(value > 0) {
