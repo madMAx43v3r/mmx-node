@@ -51,8 +51,8 @@ Vue.component('node-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
-									<v-row align="center" justify="space-around" width=100>									
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
+									<v-row align="center" justify="space-around" width=100>
 										<div v-if="data">{{ data.height }}</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
