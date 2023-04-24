@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	std::string file_path;
 	uint32_t start_height = 25000;
 	uint32_t end_height = -1;
-	double reward = 0.25;
+	double reward = 0.5;
 	bool json = false;
 	vnx::read_config("file", file_path);
 	vnx::read_config("start", start_height);
@@ -66,11 +66,7 @@ int main(int argc, char** argv)
 	}
 
 	if(json) {
-		std::map<addr_t, uint64_t> amounts;
-		for(const auto& entry : reward_count) {
-			amounts[entry.first] = entry.second * reward * 1e6;
-		}
-		std::cout << vnx::to_string(amounts) << std::endl;
+		std::cout << vnx::to_string(reward_count) << std::endl;
 	}
 	else {
 		std::vector<std::pair<addr_t, size_t>> sorted(reward_count.begin(), reward_count.end());
