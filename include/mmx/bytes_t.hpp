@@ -109,8 +109,7 @@ const uint8_t* bytes_t<N>::data() const {
 }
 
 template<size_t N>
-size_t bytes_t<N>::size() const
-{
+size_t bytes_t<N>::size() const {
 	return N;
 }
 
