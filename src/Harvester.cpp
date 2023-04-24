@@ -180,6 +180,11 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 			{
 				const auto iter = plot_map.find(entry.second);
 				if(iter != plot_map.end()) {
+					const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
+					if(delay_sec > params->block_time * (params->challenge_delay - 1)) {
+						log(WARN) << "[" << host_name << "] Skipping lookup due to delay of " << delay_sec << " sec";
+						return;
+					}
 					const auto& prover = iter->second;
 					try {
 						const auto challenge = get_plot_challenge(value->challenge, entry.first);
