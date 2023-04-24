@@ -16,7 +16,7 @@
 		"value": 3048,
 		"inverse": 1000000000000000
 	},
-	"vdf_reward": 2000,
+	"vdf_reward": 2500,
 	"min_reward": 500000,
 	"min_txfee": 2000,
 	"min_txfee_io": 1000,
@@ -27,7 +27,7 @@
 	"min_txfee_activate": 10000,
 	"max_block_size": 10000000,
 	"max_block_cost": 200000000,
-	"min_time_diff": 50000,
+	"min_time_diff": 100000,
 	"initial_time_diff": 200000,
 	"initial_space_diff": 1,
 	"time_diff_constant": 1000,
