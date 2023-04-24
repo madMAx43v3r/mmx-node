@@ -199,6 +199,7 @@ std::shared_ptr<const BlockHeader> Farmer::sign_block(
 	}
 	out->hash = out->calc_hash().first;
 	out->farmer_sig = bls_signature_t::sign(plot_sk, out->hash);
+	out->content_hash = out->calc_hash().second;
 	return out;
 }
 

@@ -832,7 +832,6 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		throw std::logic_error("farmer refused to sign block");
 	}
 	block->BlockHeader::operator=(*result);
-	block->content_hash = block->calc_hash().second;
 
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	log(INFO) << "Created block at height " << block->height << " with: ntx = "
