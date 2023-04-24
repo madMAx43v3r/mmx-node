@@ -115,7 +115,7 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ data.average_txfee.value.toPrecision(3) }} MMX</div>
+										<div v-if="data">{{ data.average_txfee.value > 1 ? data.average_txfee.value.toPrecision(6) : data.average_txfee.value }} MMX</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
