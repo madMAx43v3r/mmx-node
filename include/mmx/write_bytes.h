@@ -131,8 +131,13 @@ inline void write_bytes(vnx::OutputBuffer& out, const txio_t& value)
 	write_bytes(out, value.amount);
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const txin_t& value) {
+inline void write_bytes(vnx::OutputBuffer& out, const txin_t& value, bool full_hash)
+{
 	write_bytes(out, (const txio_t&)value);
+	if(full_hash) {
+		write_bytes(out, value.solution);
+		write_bytes(out, value.flags);
+	}
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const txout_t& value) {
@@ -202,6 +207,15 @@ void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value) {
 }
 
 template<typename T>
+void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value, bool full_hash) {
+	write_bytes_cstr(out, "vector<>");
+	write_bytes(out, uint32_t(value.size()));
+	for(const auto& elem : value) {
+		write_bytes(out, elem, full_hash);
+	}
+}
+
+template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const std::set<T>& value) {
 	write_bytes_cstr(out, "vector<>");
 	write_bytes(out, uint32_t(value.size()));
@@ -230,6 +244,12 @@ template<typename T>
 void write_field(vnx::OutputBuffer& out, const std::string& name, const T& value) {
 	write_field(out, name);
 	write_bytes(out, value);
+}
+
+template<typename T>
+void write_field(vnx::OutputBuffer& out, const std::string& name, const T& value, bool full_hash) {
+	write_field(out, name);
+	write_bytes(out, value, full_hash);
 }
 
 

@@ -84,7 +84,7 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "nonce", 	nonce);
 	write_field(out, "salt", 	salt);
 	write_field(out, "sender",	sender);
-	write_field(out, "inputs",	inputs);
+	write_field(out, "inputs",	inputs, full_hash);
 	write_field(out, "outputs", outputs);
 	write_field(out, "execute");
 	write_bytes(out, uint32_t(execute.size()));
