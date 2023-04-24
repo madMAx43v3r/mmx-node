@@ -85,31 +85,36 @@ inline void write_bytes_cstr(vnx::OutputBuffer& out, const char* str) {
 }
 
 template<size_t N>
-void write_bytes(vnx::OutputBuffer& out, const bytes_t<N>& value) {
+void write_bytes(vnx::OutputBuffer& out, const bytes_t<N>& value)
+{
 	write_bytes_cstr(out, "bytes<>");
 	write_bytes(out, uint16_t(value.size()));
 	out.write(value.data(), value.size());
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const std::string& value) {
+inline void write_bytes(vnx::OutputBuffer& out, const std::string& value)
+{
 	write_bytes_cstr(out, "string<>");
 	write_bytes(out, uint32_t(value.size()));
 	out.write(value.data(), value.size());
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const std::vector<uint8_t>& value) {
+inline void write_bytes(vnx::OutputBuffer& out, const std::vector<uint8_t>& value)
+{
 	write_bytes_cstr(out, "vector<>");
 	write_bytes(out, uint32_t(value.size()));
 	out.write(value.data(), value.size());
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const vnx::Buffer& value) {
+inline void write_bytes(vnx::OutputBuffer& out, const vnx::Buffer& value)
+{
 	write_bytes_cstr(out, "vector<>");
 	write_bytes(out, uint32_t(value.size()));
 	out.write(value.data(), value.size());
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const vnx::Variant& value) {
+inline void write_bytes(vnx::OutputBuffer& out, const vnx::Variant& value)
+{
 	write_bytes_cstr(out, "variant<>");
 	if(value.empty()) {
 		write_bytes(out, vnx::Variant(nullptr));
@@ -118,7 +123,8 @@ inline void write_bytes(vnx::OutputBuffer& out, const vnx::Variant& value) {
 	}
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const vnx::Object& value) {
+inline void write_bytes(vnx::OutputBuffer& out, const vnx::Object& value)
+{
 	write_bytes_cstr(out, "object<>");
 	write_bytes(out, value.field);
 }
