@@ -223,7 +223,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 				*balance -= total_fee;
 			}
 			if(!tx->exec_result->did_fail) {
-				// Note: exec_inputs are checked during validation
+				// Note: exec_inputs are checked during tx validation
 				for(const auto& in : tx->inputs) {
 					const auto balance = balance_cache.find(in.address, in.contract);
 					if(!balance || in.amount > *balance) {
