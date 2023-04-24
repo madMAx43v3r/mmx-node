@@ -117,7 +117,7 @@ inline void write_bytes(vnx::OutputBuffer& out, const vnx::Variant& value)
 {
 	write_bytes_cstr(out, "variant<>");
 	if(value.empty()) {
-		write_bytes(out, vnx::Variant(nullptr));
+		write_bytes(out, vnx::Variant(nullptr).data);
 	} else {
 		write_bytes(out, value.data);
 	}
