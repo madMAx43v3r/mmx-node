@@ -91,7 +91,7 @@ void Node::main()
 				if(size_t(opencl_device) < devices.size()) {
 					const auto device = devices[opencl_device];
 					opencl_context = automy::basic_opencl::create_context(platform, {device});
-					for(int i = 0; i < 2; ++i) {
+					for(int i = 0; i < 3; ++i) {
 						opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_context, device);
 					}
 					log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] "

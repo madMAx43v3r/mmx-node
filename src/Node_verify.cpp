@@ -300,11 +300,15 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 		{
 			const uint32_t i = chunk * batch_size + j;
 			if(i > 0) {
-				point[j] = segments[i-1].output[chain];
+				point[j] = chain < 2 ? segments[i-1].output[chain] : proof->reward_segments[i-1];
 			} else {
-				point[j] = proof->input[chain];
-				if(auto infuse = proof->infuse[chain]) {
-					point[j] = hash_t(point[j] + *infuse);
+				point[j] = proof->input[chain % 2];
+				if(chain < 2) {
+					if(auto infuse = proof->infuse[chain]) {
+						point[j] = hash_t(point[j] + (*infuse));
+					}
+				} else if(proof->reward_addr) {
+					point[j] = hash_t(point[j] + (*proof->reward_addr));
 				}
 			}
 			max_iters = std::max(max_iters, segments[i].num_iters);
@@ -327,14 +331,15 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 		for(uint32_t j = 0; j < num_lanes; ++j)
 		{
 			const uint32_t i = chunk * batch_size + j;
-			if(point[j] != segments[i].output[chain]) {
+			const auto& output = chain < 2 ? segments[i].output[chain] : proof->reward_segments[i];
+			if(point[j] != output) {
 				is_valid = false;
 				invalid_segment = i;
 			}
 		}
 	}
 	if(!is_valid) {
-		throw std::logic_error("invalid output at segment " + std::to_string(invalid_segment));
+		throw std::logic_error("invalid output on chain " + std::to_string(chain) + ", segment " + std::to_string(invalid_segment));
 	}
 }
 
@@ -390,16 +395,20 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 
 	const auto time_begin = vnx::get_wall_time_micros();
 	try {
-		for(int i = 0; i < 2; ++i) {
-			if(auto engine = opencl_vdf[i]) {
-				engine->compute(proof, i);
+		for(int i = 0; i < 3; ++i) {
+			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
+				if(auto engine = opencl_vdf[i]) {
+					engine->compute(proof, i);
+				}
 			}
 		}
-		for(int i = 0; i < 2; ++i) {
-			if(auto engine = opencl_vdf[i]) {
-				engine->verify(proof, i);
-			} else {
-				verify_vdf(proof, i);
+		for(int i = 0; i < 3; ++i) {
+			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
+				if(auto engine = opencl_vdf[i]) {
+					engine->verify(proof, i);
+				} else {
+					verify_vdf(proof, i);
+				}
 			}
 		}
 		auto point = std::make_shared<vdf_point_t>();

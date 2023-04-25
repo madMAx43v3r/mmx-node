@@ -59,22 +59,29 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	}
 	hash.resize(width * 32);
 	{
-		auto input = proof->input[chain];
-		if(auto infuse = proof->infuse[chain]) {
-			input = hash_t(input + *infuse);
+		auto input = proof->input[chain % 2];
+		if(chain < 2) {
+			if(auto infuse = proof->infuse[chain]) {
+				input = hash_t(input + (*infuse));
+			}
+		} else if(proof->reward_addr) {
+			input = hash_t(input + (*proof->reward_addr));
 		}
 		for(size_t i = 0; i < proof->segments.size(); ++i) {
 			::memcpy(hash.data() + i * 32, input.data(), input.size());
-			input = proof->segments[i].output[chain];
+			if(chain < 2) {
+				input = proof->segments[i].output[chain];
+			} else {
+				input = proof->reward_segments[i];
+			}
 		}
 	}
 
 	num_iters.resize(width);
 	uint32_t max_num_iters = 0;
 	for(size_t i = 0; i < proof->segments.size(); ++i) {
-		const auto& seg = proof->segments[i];
-		num_iters[i] = seg.num_iters;
-		max_num_iters = std::max(max_num_iters, seg.num_iters);
+		num_iters[i] = proof->segments[i].num_iters;
+		max_num_iters = std::max(max_num_iters, num_iters[i]);
 	}
 
 	hash_buf.alloc_min(context, width * 32);
@@ -98,9 +105,14 @@ void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t ch
 
 	for(size_t i = 0; i < proof->segments.size(); ++i)
 	{
-		if(::memcmp(hash.data() + i * 32, proof->segments[i].output[chain].data(), 32))
-		{
-			throw std::logic_error("invalid output at segment " + std::to_string(i));
+		const uint8_t* output = nullptr;
+		if(chain < 2) {
+			output = proof->segments[i].output[chain].data();
+		} else {
+			output = proof->reward_segments[i].data();
+		}
+		if(::memcmp(hash.data() + i * 32, output, 32)) {
+			throw std::logic_error("invalid output on chain " + std::to_string(chain) + ", segment " + std::to_string(i));
 		}
 	}
 }

@@ -2,5 +2,6 @@
 	"num_sync_retries": 5,
 	"sync_loss_delay": 180,
 	"max_fork_length": 1000,
-	"validate_interval_ms": 500
+	"validate_interval_ms": 500,
+	"verify_vdf_rewards": true
 }
