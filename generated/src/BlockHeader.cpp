@@ -25,7 +25,7 @@ namespace mmx {
 
 
 const vnx::Hash64 BlockHeader::VNX_TYPE_HASH(0xcaae941a2fc712a6ull);
-const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0x733b15403a9c565ull);
+const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xdc9bb792209be0a5ull);
 
 vnx::Hash64 BlockHeader::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -70,8 +70,8 @@ void BlockHeader::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, netspace_ratio);
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, average_txfee);
 	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, vdf_iters);
-	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, vdf_reward);
-	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, vdf_output);
+	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, vdf_output);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, vdf_reward_addr);
 	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, proof);
 	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, reward_amount);
 	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, reward_addr);
@@ -99,8 +99,8 @@ void BlockHeader::write(std::ostream& _out) const {
 	_out << ", \"netspace_ratio\": "; vnx::write(_out, netspace_ratio);
 	_out << ", \"average_txfee\": "; vnx::write(_out, average_txfee);
 	_out << ", \"vdf_iters\": "; vnx::write(_out, vdf_iters);
-	_out << ", \"vdf_reward\": "; vnx::write(_out, vdf_reward);
 	_out << ", \"vdf_output\": "; vnx::write(_out, vdf_output);
+	_out << ", \"vdf_reward_addr\": "; vnx::write(_out, vdf_reward_addr);
 	_out << ", \"proof\": "; vnx::write(_out, proof);
 	_out << ", \"reward_amount\": "; vnx::write(_out, reward_amount);
 	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
@@ -135,8 +135,8 @@ vnx::Object BlockHeader::to_object() const {
 	_object["netspace_ratio"] = netspace_ratio;
 	_object["average_txfee"] = average_txfee;
 	_object["vdf_iters"] = vdf_iters;
-	_object["vdf_reward"] = vdf_reward;
 	_object["vdf_output"] = vdf_output;
+	_object["vdf_reward_addr"] = vdf_reward_addr;
 	_object["proof"] = proof;
 	_object["reward_amount"] = reward_amount;
 	_object["reward_addr"] = reward_addr;
@@ -194,8 +194,8 @@ void BlockHeader::from_object(const vnx::Object& _object) {
 			_entry.second.to(vdf_iters);
 		} else if(_entry.first == "vdf_output") {
 			_entry.second.to(vdf_output);
-		} else if(_entry.first == "vdf_reward") {
-			_entry.second.to(vdf_reward);
+		} else if(_entry.first == "vdf_reward_addr") {
+			_entry.second.to(vdf_reward_addr);
 		} else if(_entry.first == "version") {
 			_entry.second.to(version);
 		} else if(_entry.first == "weight") {
@@ -241,11 +241,11 @@ vnx::Variant BlockHeader::get_field(const std::string& _name) const {
 	if(_name == "vdf_iters") {
 		return vnx::Variant(vdf_iters);
 	}
-	if(_name == "vdf_reward") {
-		return vnx::Variant(vdf_reward);
-	}
 	if(_name == "vdf_output") {
 		return vnx::Variant(vdf_output);
+	}
+	if(_name == "vdf_reward_addr") {
+		return vnx::Variant(vdf_reward_addr);
 	}
 	if(_name == "proof") {
 		return vnx::Variant(proof);
@@ -305,10 +305,10 @@ void BlockHeader::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(average_txfee);
 	} else if(_name == "vdf_iters") {
 		_value.to(vdf_iters);
-	} else if(_name == "vdf_reward") {
-		_value.to(vdf_reward);
 	} else if(_name == "vdf_output") {
 		_value.to(vdf_output);
+	} else if(_name == "vdf_reward_addr") {
+		_value.to(vdf_reward_addr);
 	} else if(_name == "proof") {
 		_value.to(proof);
 	} else if(_name == "reward_amount") {
@@ -356,7 +356,7 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.BlockHeader";
 	type_code->type_hash = vnx::Hash64(0xcaae941a2fc712a6ull);
-	type_code->code_hash = vnx::Hash64(0x733b15403a9c565ull);
+	type_code->code_hash = vnx::Hash64(0xdc9bb792209be0a5ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
@@ -442,14 +442,14 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	{
 		auto& field = type_code->fields[12];
 		field.is_extended = true;
-		field.name = "vdf_reward";
-		field.code = {11, 32, 1};
+		field.name = "vdf_output";
+		field.code = {11, 2, 11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[13];
 		field.is_extended = true;
-		field.name = "vdf_output";
-		field.code = {11, 2, 11, 32, 1};
+		field.name = "vdf_reward_addr";
+		field.code = {33, 11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[14];
@@ -629,8 +629,8 @@ void read(TypeInput& in, ::mmx::BlockHeader& value, const TypeCode* type_code, c
 			case 2: vnx::read(in, value.prev, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.weight, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.total_weight, type_code, _field->code.data()); break;
-			case 12: vnx::read(in, value.vdf_reward, type_code, _field->code.data()); break;
-			case 13: vnx::read(in, value.vdf_output, type_code, _field->code.data()); break;
+			case 12: vnx::read(in, value.vdf_output, type_code, _field->code.data()); break;
+			case 13: vnx::read(in, value.vdf_reward_addr, type_code, _field->code.data()); break;
 			case 14: vnx::read(in, value.proof, type_code, _field->code.data()); break;
 			case 16: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
 			case 21: vnx::read(in, value.tx_hash, type_code, _field->code.data()); break;
@@ -672,8 +672,8 @@ void write(TypeOutput& out, const ::mmx::BlockHeader& value, const TypeCode* typ
 	vnx::write(out, value.prev, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.weight, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.total_weight, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.vdf_reward, type_code, type_code->fields[12].code.data());
-	vnx::write(out, value.vdf_output, type_code, type_code->fields[13].code.data());
+	vnx::write(out, value.vdf_output, type_code, type_code->fields[12].code.data());
+	vnx::write(out, value.vdf_reward_addr, type_code, type_code->fields[13].code.data());
 	vnx::write(out, value.proof, type_code, type_code->fields[14].code.data());
 	vnx::write(out, value.reward_addr, type_code, type_code->fields[16].code.data());
 	vnx::write(out, value.tx_hash, type_code, type_code->fields[21].code.data());

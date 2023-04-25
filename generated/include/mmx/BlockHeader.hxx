@@ -30,8 +30,8 @@ public:
 	uint32_t netspace_ratio = 0;
 	uint32_t average_txfee = 0;
 	uint64_t vdf_iters = 0;
-	::mmx::addr_t vdf_reward;
 	std::array<::mmx::hash_t, 2> vdf_output = {};
+	vnx::optional<::mmx::addr_t> vdf_reward_addr;
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	uint64_t reward_amount = 0;
 	vnx::optional<::mmx::addr_t> reward_addr;
@@ -106,8 +106,8 @@ void BlockHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("netspace_ratio", 9); _visitor.accept(netspace_ratio);
 	_visitor.type_field("average_txfee", 10); _visitor.accept(average_txfee);
 	_visitor.type_field("vdf_iters", 11); _visitor.accept(vdf_iters);
-	_visitor.type_field("vdf_reward", 12); _visitor.accept(vdf_reward);
-	_visitor.type_field("vdf_output", 13); _visitor.accept(vdf_output);
+	_visitor.type_field("vdf_output", 12); _visitor.accept(vdf_output);
+	_visitor.type_field("vdf_reward_addr", 13); _visitor.accept(vdf_reward_addr);
 	_visitor.type_field("proof", 14); _visitor.accept(proof);
 	_visitor.type_field("reward_amount", 15); _visitor.accept(reward_amount);
 	_visitor.type_field("reward_addr", 16); _visitor.accept(reward_addr);
