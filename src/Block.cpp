@@ -105,9 +105,9 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 {
 	std::vector<txio_entry_t> res;
 
-	if(vdf_reward) {
+	if(vdf_reward_addr) {
 		txio_t out;
-		out.address = vdf_reward;
+		out.address = *vdf_reward_addr;
 		out.amount = params->vdf_reward;
 		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::VDF_REWARD, out));
 	}

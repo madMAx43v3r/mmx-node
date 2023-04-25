@@ -14,7 +14,7 @@ namespace mmx {
 vnx::bool_t BlockHeader::is_valid() const
 {
 	if(!farmer_sig && height) {
-		if(nonce || proof || reward_addr || reward_amount || tx_count) {
+		if(nonce || proof || vdf_reward_addr || reward_addr || reward_amount || tx_count) {
 			return false;
 		}
 	}
@@ -46,8 +46,8 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "netspace_ratio", 	netspace_ratio);
 	write_field(out, "average_txfee", 	average_txfee);
 	write_field(out, "vdf_iters", 	vdf_iters);
-	write_field(out, "vdf_reward", 	vdf_reward);
 	write_field(out, "vdf_output", 	vdf_output);
+	write_field(out, "vdf_reward_addr", vdf_reward_addr);
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
 	write_field(out, "reward_amount", reward_amount);
 	write_field(out, "reward_addr", reward_addr);

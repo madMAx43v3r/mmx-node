@@ -24,8 +24,8 @@ class BlockHeader {
 	uint average_txfee;
 	
 	ulong vdf_iters;
-	addr_t vdf_reward;
 	hash_t vdf_output[2];
+	optional<addr_t> vdf_reward_addr;
 	
 	ProofOfSpace* proof;
 	

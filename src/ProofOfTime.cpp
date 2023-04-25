@@ -20,6 +20,8 @@ bool ProofOfTime::is_valid(std::shared_ptr<const ChainParams> params) const
 	return version == 0
 		&& segments.size() >= params->min_vdf_segments
 		&& segments.size() <= params->max_vdf_segments
+		&& (reward_addr || reward_segments.empty())
+		&& (!reward_addr || reward_segments.size() == segments.size())
 		&& all_hash.first == hash && all_hash.second == content_hash;
 }
 
@@ -38,6 +40,7 @@ std::pair<hash_t, hash_t> ProofOfTime::calc_hash() const
 	write_field(out, "input", 	input);
 	write_field(out, "infuse", 	infuse);
 	write_field(out, "segments",		segments);
+	write_field(out, "reward_segments",	reward_segments);
 	write_field(out, "reward_addr", 	reward_addr);
 	write_field(out, "timelord_key", 	timelord_key);
 	out.flush();

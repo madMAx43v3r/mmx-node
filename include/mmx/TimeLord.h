@@ -11,6 +11,8 @@
 #include <mmx/TimeLordBase.hxx>
 #include <mmx/pubkey_t.hpp>
 
+#include <vnx/ThreadPool.h>
+
 
 namespace mmx {
 
@@ -33,6 +35,7 @@ private:
 	struct vdf_point_t {
 		uint64_t num_iters = 0;
 		std::array<hash_t, 2> output;
+		hash_t reward_output;
 	};
 
 	void update();
@@ -43,7 +46,7 @@ private:
 
 	void vdf_loop(vdf_point_t point);
 
-	hash_t compute(const hash_t& input, const uint64_t num_iters);
+	static hash_t compute(const hash_t& input, const uint64_t num_iters);
 
 	void print_info();
 
@@ -58,7 +61,7 @@ private:
 
 	std::map<uint64_t, hash_t> infuse[2];
 	std::map<uint64_t, hash_t> infuse_history[2];
-	std::map<uint64_t, std::array<hash_t, 2>> history;
+	std::map<uint64_t, vdf_point_t> history;
 
 	std::map<std::pair<uint64_t, uint64_t>, uint32_t> pending;		// [[end, start] => height]
 

@@ -305,10 +305,6 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 				point[j] = proof->input[chain];
 				if(auto infuse = proof->infuse[chain]) {
 					point[j] = hash_t(point[j] + *infuse);
-					if(chain == 0) {
-						// infuse reward address
-						point[j] = hash_t(point[j] + proof->reward_addr);
-					}
 				}
 			}
 			max_iters = std::max(max_iters, segments[i].num_iters);
@@ -438,7 +434,6 @@ void Node::check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const Bl
 	auto point = prev->vdf_output;
 	if(block->height > params->infuse_delay) {
 		point[0] = hash_t(point[0] + infuse->hash);
-		point[0] = hash_t(point[0] + block->vdf_reward);
 	}
 	if(infuse->height >= params->challenge_interval && infuse->height % params->challenge_interval == 0) {
 		point[1] = hash_t(point[1] + infuse->hash);

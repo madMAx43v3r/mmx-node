@@ -16,7 +16,9 @@ class ProofOfTime {
 	
 	vector<time_segment_t> segments;
 	
-	addr_t reward_addr;
+	vector<hash_t> reward_segments;
+	
+	optional<addr_t> reward_addr;
 	
 	pubkey_t timelord_key;
 	

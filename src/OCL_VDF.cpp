@@ -62,10 +62,6 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 		auto input = proof->input[chain];
 		if(auto infuse = proof->infuse[chain]) {
 			input = hash_t(input + *infuse);
-			if(chain == 0) {
-				// infuse reward address
-				input = hash_t(input + proof->reward_addr);
-			}
 		}
 		for(size_t i = 0; i < proof->segments.size(); ++i) {
 			::memcpy(hash.data() + i * 32, input.data(), input.size());
