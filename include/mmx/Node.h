@@ -229,6 +229,7 @@ private:
 		uint64_t vdf_start = 0;
 		uint64_t vdf_iters = 0;
 		int64_t recv_time = 0;
+		bool vdf_reward_valid = false;
 		std::array<hash_t, 2> input;
 		std::array<hash_t, 2> output;
 		vnx::optional<hash_t> infused;					// chain 0

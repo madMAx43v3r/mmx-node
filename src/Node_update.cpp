@@ -767,8 +767,10 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->netspace_ratio = calc_new_netspace_ratio(
 			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
 
-	if(auto vdf_proof = vdf_point->proof) {
-		block->vdf_reward_addr = vdf_proof->reward_addr;
+	if(vdf_point->vdf_reward_valid) {
+		if(auto vdf_proof = vdf_point->proof) {
+			block->vdf_reward_addr = vdf_proof->reward_addr;
+		}
 	}
 	if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
 		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->contract)) {

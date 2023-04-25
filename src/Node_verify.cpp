@@ -406,16 +406,26 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 				}
 			}
 		}
+		auto point = std::make_shared<vdf_point_t>();
+
 		for(int i = 0; i < 3; ++i) {
 			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
-				if(auto engine = opencl_vdf[i]) {
-					engine->verify(proof, i);
-				} else {
-					verify_vdf(proof, i);
+				try {
+					if(auto engine = opencl_vdf[i]) {
+						engine->verify(proof, i);
+					} else {
+						verify_vdf(proof, i);
+					}
+					if(i == 2) {
+						point->vdf_reward_valid = true;
+					}
+				} catch(...) {
+					if(i < 2) {
+						throw;
+					}
 				}
 			}
 		}
-		auto point = std::make_shared<vdf_point_t>();
 		point->height = proof->height;
 		point->vdf_start = proof->start;
 		point->vdf_iters = proof->get_vdf_iters();
