@@ -366,10 +366,14 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 		}
 	}
 	std::stringstream ss_delta;
+	std::stringstream ss_reward;
 	if(prev) {
 		ss_delta << ", delta = " << (point->recv_time - prev->recv_time) / 1000 / 1e3 << " sec" ;
 	}
-	log(INFO) << "Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec";
+	if(verify_vdf_rewards && proof->reward_addr) {
+		ss_reward << " (with reward)";
+	}
+	log(INFO) << "Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec" << ss_reward.str();
 
 	// add dummy blocks
 	const auto root = get_root();
