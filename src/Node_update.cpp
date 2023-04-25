@@ -267,7 +267,7 @@ void Node::update()
 				}
 			}
 			msg << ", took " << elapsed << " sec";
-			log(proof || !is_synced ? INFO : DEBUG) << msg.str();
+			log(proof || forked_at || !is_synced ? INFO : DEBUG) << msg.str();
 		}
 		stuck_timer->reset();
 	}
