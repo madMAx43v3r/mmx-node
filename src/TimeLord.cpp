@@ -51,7 +51,7 @@ void TimeLord::main()
 			enable_reward = false;
 		}
 	} else {
-		log(INFO) << "Reward not enabled";
+		log(INFO) << "Rewards not enabled";
 	}
 	{
 		vnx::File file(storage_path + "timelord_sk.dat");
