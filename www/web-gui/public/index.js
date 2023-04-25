@@ -10,6 +10,13 @@ function get_short_addr(address, length) {
 	return address.substring(0, length) + '...' + address.substring(62 - length);
 }
 
+function get_short_hash(hash, length) {
+	if(!length) {
+		length = 10;
+	}
+	return hash.substring(0, length) + '...' + hash.substring(64 - length);
+}
+
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
 const Wallet = {

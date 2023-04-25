@@ -618,7 +618,7 @@ Vue.component('account-tx-history', {
 			</template>
 
 			<template v-slot:item.transaction_id="{ item }">
-				<router-link :to="'/explore/transaction/' + item.id">{{item.id.substring(0,16)}}...{{item.id.substring(48)}}</router-link>
+				<router-link :to="'/explore/transaction/' + item.id">{{get_short_hash(item.id, 16)}}</router-link>
 			</template>
 
 			<template v-slot:item.confirmed="{ item }">

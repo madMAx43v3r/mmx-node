@@ -631,15 +631,22 @@ public:
 		}
 	}
 
+	void augment_block_header(vnx::Object& tmp, std::shared_ptr<const BlockHeader> value) {
+		tmp["time"] = context->get_time(value->height);
+		tmp["tx_fees"] = to_amount_object(value->tx_fees, context->params->decimals);
+		tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
+		tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
+		tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
+		tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
+		tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+	}
+
 	void accept(std::shared_ptr<const BlockHeader> value) {
 		if(auto block = std::dynamic_pointer_cast<const Block>(value)) {
 			accept(block);
 		} else if(value && context) {
 			auto tmp = render(*value, context);
-			tmp["time"] = context->get_time(value->height);
-			tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
-			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
-			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+			augment_block_header(tmp, value);
 			set(tmp);
 		} else {
 			set(render(value));
@@ -649,10 +656,7 @@ public:
 	void accept(std::shared_ptr<const Block> value) {
 		if(value && context) {
 			auto tmp = render(*value, context);
-			tmp["time"] = context->get_time(value->height);
-			tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
-			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
-			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+			augment_block_header(tmp, value);
 			set(tmp);
 		} else {
 			set(render(value));
