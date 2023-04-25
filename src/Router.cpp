@@ -480,7 +480,7 @@ void Router::update()
 		if(num_peers < min_sync_peers) {
 			node->get_synced_height([this](const vnx::optional<uint32_t>& height) {
 				if(is_connected && height) {
-					log(WARN) << "Lost sync with network due to lost peers!";
+					log(WARN) << "Lost sync with network due to loss of synced peers or timeout!";
 					is_connected = false;
 					node->start_sync();
 				}
