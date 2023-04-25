@@ -424,11 +424,11 @@ Vue.component('block-view', {
 									<template v-if="data.proof">
 										<tr>
 											<td class="key-cell">Block Reward</td>
-											<td>{{data.reward_amount.value}}&nbsp;&nbsp;<b>MMX</b></td>
+											<td>{{data.reward_amount.value}} MMX</td>
 										</tr>
 										<tr>
 											<td class="key-cell">TX Fees</td>
-											<td>{{data.tx_fees.value}}&nbsp;&nbsp;<b>MMX</b></td>
+											<td>{{data.tx_fees.value}} MMX</td>
 										</tr>
 										<tr>
 											<td class="key-cell">{{ $t('block_view.tx_count') }}</td>
