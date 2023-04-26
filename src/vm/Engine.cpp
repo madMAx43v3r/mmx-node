@@ -904,9 +904,9 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					break;
 				case CONVTYPE_UINT: {
 					int base = 10;
+					auto value = sstr.to_string();
 					switch(sflags & 0xFF) {
 						case CONVTYPE_DEFAULT: {
-							const auto value = sstr.to_string();
 							if(value.find("0x") == 0) {
 								base = 16;
 							} else if(value.find("0b") == 0) {
@@ -925,9 +925,25 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					}
 					switch(base) {
 						case 32:
-							write(dst, uint_t(addr_t(sstr.to_string()).to_uint256())); break;
+							write(dst, uint_t(addr_t(value).to_uint256())); break;
 						default:
-							write(dst, uint_t(uint256_t(sstr.c_str(), base)));
+							if(value.find("0x") == 0 || value.find("0b") == 0) {
+								value = value.substr(2);
+							}
+							for(const auto c : value) {
+								int digit = 0;
+								if('0' <= c && c <= '9') {
+									digit = c - '0';
+								} else if('a' <= c && c <= 'z') {
+									digit = c - 'a' + 10;
+								} else if('A' <= c && c <= 'Z') {
+									digit = c - 'A' + 10;
+								}
+								if(digit < 0 || digit >= base) {
+									throw std::logic_error("invalid string of base " + std::to_string(base));
+								}
+							}
+							write(dst, uint_t(uint256_t(value.c_str(), base)));
 					}
 					break;
 				}
