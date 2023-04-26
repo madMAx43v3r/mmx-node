@@ -285,7 +285,7 @@ Vue.component('farmer-blocks', {
 			</template>
 			
 			<template v-slot:item.tx_fees="{ item }">
-				<b>{{item.tx_fees / 1e6}}</b> MMX
+				<b>{{item.tx_fees.value}}</b> MMX
 			</template>
 
 			<template v-slot:item.time="{ item }">
