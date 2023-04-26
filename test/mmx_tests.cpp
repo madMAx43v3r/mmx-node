@@ -5,12 +5,14 @@
  *      Author: mad
  */
 
+#include <mmx/addr_t.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
 
 #include <vnx/vnx.h>
 #include <vnx/test/Test.h>
 
+#include <map>
 #include <iostream>
 
 using namespace mmx;
@@ -27,6 +29,16 @@ int main(int argc, char** argv)
 		vnx::test::expect(uint128().to_double(), 0);
 		vnx::test::expect(uint128(11).to_double(), 11);
 		vnx::test::expect(uint128(1123456).to_double(), 1123456);
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("addr_t")
+	{
+		std::map<std::pair<addr_t, addr_t>, uint128> balance;
+		balance[std::make_pair(addr_t(), addr_t())] = 1337;
+
+		vnx::test::expect(balance[std::make_pair(addr_t(), addr_t())], 1337);
+		vnx::test::expect(balance[std::make_pair(addr_t(std::string("mmx1hfyq6t2jartw9f8fkkertepxef0f8egegd3m438ndfttrlhzzmks7c99tv")), addr_t())], 0);
 	}
 	VNX_TEST_END()
 
