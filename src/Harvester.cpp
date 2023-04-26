@@ -138,15 +138,49 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 	}
 }
 
+void Harvester::check_queue()
+{
+	const auto time_now = vnx::get_wall_time_micros();
+
+	bool do_run = true;
+	while(do_run && !lookup_queue.empty())
+	{
+		const auto iter = --lookup_queue.end();
+		const auto& entry = iter->second;
+		const auto delay_sec = (time_now - entry.recv_time) / 1000 / 1e3;
+
+		if(delay_sec > params->block_time * params->challenge_delay) {
+			log(WARN) << "[" << host_name << "] Skipping lookup for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
+		} else {
+			do_run = false;
+			lookup_task(entry.request, entry.recv_time);
+		}
+		lookup_queue.erase(iter);
+	}
+
+	while(lookup_queue.size() > params->challenge_delay) {
+		lookup_queue.erase(lookup_queue.begin());
+	}
+}
+
 void Harvester::handle(std::shared_ptr<const Challenge> value)
 {
 	if(!already_checked.insert(value->challenge).second) {
 		return;
 	}
+	auto& entry = lookup_queue[value->height];
+	entry.recv_time = vnx_sample->recv_time;
+	entry.request = value;
+
+	add_task(std::bind(&Harvester::check_queue, this));
+}
+
+void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time)
+{
 	const auto time_begin = vnx::get_wall_time_millis();
 
-	const auto check_deadline = [this](std::string task) -> bool {
-		const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
+	const auto check_deadline = [this, recv_time](std::string task) -> bool {
+		const auto delay_sec = (vnx::get_wall_time_micros() - recv_time) / 1000 / 1e3;
 		if(delay_sec > params->block_time * params->challenge_delay) {
 			log(WARN) << "[" << host_name << "] Skipping " << task << " due to delay of " << delay_sec << " sec";
 			return false;
@@ -241,7 +275,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 
 	const auto time_ms = vnx::get_wall_time_millis() - time_begin;
-	const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
+	const auto delay_sec = (vnx::get_wall_time_micros() - recv_time) / 1000 / 1e3;
 
 	if(delay_sec > params->block_time * params->challenge_delay) {
 		log(WARN) << "Lookup for height " << value->height << " took longer than challenge delay: " << delay_sec << " sec";
@@ -251,6 +285,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
 				<< ", took " << time_ms / 1e3 << " sec, delay " << delay_sec << " sec";
 	}
+	add_task(std::bind(&Harvester::check_queue, this));
 }
 
 uint64_t Harvester::get_total_bytes() const
