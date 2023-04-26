@@ -53,7 +53,7 @@ private:
 
 	void check_queue();
 
-	void lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time);
+	void lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms);
 
 	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const;
 
@@ -78,7 +78,7 @@ private:
 	std::unordered_map<addr_t, virtual_plot_info_t> virtual_map;
 
 	struct lookup_t {
-		int64_t recv_time = 0;
+		int64_t recv_time_ms = 0;
 		std::shared_ptr<const Challenge> request;
 	};
 	std::map<uint32_t, lookup_t> lookup_queue;

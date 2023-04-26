@@ -437,6 +437,7 @@ void Node::update()
 			const auto diff_block = get_diff_header(peak, i);
 			value->space_diff = diff_block->space_diff;
 			value->diff_block_hash = diff_block->hash;
+			value->max_delay = 1 + i;
 			publish(value, output_challenges);
 		}
 	}

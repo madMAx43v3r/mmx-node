@@ -140,20 +140,20 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 
 void Harvester::check_queue()
 {
-	const auto time_now = vnx::get_wall_time_micros();
+	const auto now_ms = vnx::get_wall_time_millis();
 
 	bool do_run = true;
 	while(do_run && !lookup_queue.empty())
 	{
 		const auto iter = --lookup_queue.end();
 		const auto& entry = iter->second;
-		const auto delay_sec = (time_now - entry.recv_time) / 1000 / 1e3;
+		const auto delay_sec = (now_ms - entry.recv_time_ms) / 1e3;
 
-		if(delay_sec > params->block_time * params->challenge_delay) {
-			log(WARN) << "[" << host_name << "] Skipping lookup for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
+		if(delay_sec > params->block_time * entry.request->max_delay) {
+			log(WARN) << "[" << host_name << "] Missed deadline for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
 		} else {
 			do_run = false;
-			lookup_task(entry.request, entry.recv_time);
+			lookup_task(entry.request, entry.recv_time_ms);
 		}
 		lookup_queue.erase(iter);
 	}
@@ -169,24 +169,15 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		return;
 	}
 	auto& entry = lookup_queue[value->height];
-	entry.recv_time = vnx_sample->recv_time;
+	entry.recv_time_ms = vnx_sample->recv_time / 1000;
 	entry.request = value;
 
 	add_task(std::bind(&Harvester::check_queue, this));
 }
 
-void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time)
+void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
-
-	const auto check_deadline = [this, recv_time](std::string task) -> bool {
-		const auto delay_sec = (vnx::get_wall_time_micros() - recv_time) / 1000 / 1e3;
-		if(delay_sec > params->block_time * params->challenge_delay) {
-			log(WARN) << "[" << host_name << "] Skipping " << task << " due to delay of " << delay_sec << " sec";
-			return false;
-		}
-		return true;
-	};
 
 	std::mutex mutex;
 	uint256_t best_score = uint256_max;
@@ -225,11 +216,13 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 
 	for(const auto& entry : id_map)
 	{
-		threads->add_task([this, entry, value, &best_entry, &num_passed, &mutex, &check_deadline]()
+		threads->add_task([this, entry, value, recv_time_ms, &best_entry, &num_passed, &mutex]()
 		{
 			if(check_plot_filter(params, value->challenge, entry.first))
 			{
-				if(!check_deadline("quality lookup")) {
+				const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
+				if(delay_sec > params->block_time * value->max_delay) {
+					log(WARN) << "[" << host_name << "] Skipping quality lookup due to delay of " << delay_sec << " sec";
 					return;
 				}
 				const auto iter = plot_map.find(entry.second);
@@ -263,27 +256,26 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	threads->sync();
 
 	if(auto prover = best_entry.prover) {
-		if(check_deadline("full proof lookup")) {
-			try {
-				const auto proof = prover->get_full_proof(best_entry.challenge.bytes, best_entry.index);
-				send_response(value, proof, nullptr, best_entry.plot_id, best_entry.score, time_begin);
-				best_score = std::min(best_score, best_entry.score);
-			} catch(const std::exception& ex) {
-				log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
-			}
+		try {
+			const auto proof = prover->get_full_proof(best_entry.challenge.bytes, best_entry.index);
+			send_response(value, proof, nullptr, best_entry.plot_id, best_entry.score, time_begin);
+			best_score = std::min(best_score, best_entry.score);
+		} catch(const std::exception& ex) {
+			log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
 		}
 	}
 
-	const auto time_ms = vnx::get_wall_time_millis() - time_begin;
-	const auto delay_sec = (vnx::get_wall_time_micros() - recv_time) / 1000 / 1e3;
+	const auto now_ms = vnx::get_wall_time_millis();
+	const auto time_sec = (now_ms - time_begin) / 1e3;
+	const auto delay_sec = (now_ms - recv_time_ms) / 1e3;
 
-	if(delay_sec > params->block_time * params->challenge_delay) {
-		log(WARN) << "Lookup for height " << value->height << " took longer than challenge delay: " << delay_sec << " sec";
+	if(delay_sec > params->block_time * value->max_delay) {
+		log(WARN) << "[" << host_name << "] Lookup for height " << value->height << " took longer than allowable delay: " << delay_sec << " sec";
 	}
 	if(!id_map.empty()) {
 		log(INFO) << "[" << host_name << "] " << num_passed << " plots were eligible for height " << value->height
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
-				<< ", took " << time_ms / 1e3 << " sec, delay " << delay_sec << " sec";
+				<< ", took " << time_sec << " sec, delay " << delay_sec << " sec";
 	}
 	add_task(std::bind(&Harvester::check_queue, this));
 }

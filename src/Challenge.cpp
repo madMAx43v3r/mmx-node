@@ -24,6 +24,7 @@ mmx::hash_t Challenge::calc_hash() const
 	write_field(out, "challenge", 	challenge);
 	write_field(out, "diff_block_hash", diff_block_hash);
 	write_field(out, "space_diff",	space_diff);
+	// TODO: write_field(out, "max_delay",	max_delay);
 	out.flush();
 
 	return hash_t(buffer);
