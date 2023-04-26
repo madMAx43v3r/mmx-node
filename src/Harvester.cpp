@@ -74,6 +74,7 @@ void Harvester::main()
 	add_async_client(http);
 
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
+	lookup_timer = add_timer(std::bind(&Harvester::check_queue, this));
 
 	set_timer_millis(10000, std::bind(&Harvester::update, this));
 
@@ -172,7 +173,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	entry.recv_time_ms = vnx_sample->recv_time / 1000;
 	entry.request = value;
 
-	add_task(std::bind(&Harvester::check_queue, this));
+	lookup_timer->set_millis(10);
 }
 
 void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms)
@@ -277,7 +278,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
 				<< ", took " << time_sec << " sec, delay " << delay_sec << " sec";
 	}
-	add_task(std::bind(&Harvester::check_queue, this));
+	lookup_timer->set_millis(10);
 }
 
 uint64_t Harvester::get_total_bytes() const

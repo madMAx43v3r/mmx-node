@@ -83,6 +83,7 @@ private:
 	};
 	std::map<uint32_t, lookup_t> lookup_queue;
 
+	std::shared_ptr<vnx::Timer> lookup_timer;
 	std::shared_ptr<vnx::addons::HttpInterface<Harvester>> http;
 
 	friend class vnx::addons::HttpInterface<Harvester>;
