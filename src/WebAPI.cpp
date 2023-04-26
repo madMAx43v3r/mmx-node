@@ -637,6 +637,7 @@ public:
 		tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
 		tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
 		tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
+		tmp["average_txfee"] = to_amount_object(value->average_txfee, context->params->decimals);
 		tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
 		tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
 	}
