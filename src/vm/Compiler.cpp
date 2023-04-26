@@ -542,6 +542,8 @@ Compiler::Compiler()
 	function_map["fail"].name = "fail";
 	function_map["bech32"].name = "bech32";
 	function_map["uint"].name = "uint";
+	function_map["sha256"].name = "sha256";
+	function_map["ecdsa_verify"].name = "ecdsa_verify";
 	function_map["to_string"].name = "to_string";
 	function_map["to_string_hex"].name = "to_string_hex";
 	function_map["to_string_bech32"].name = "to_string_bech32";
@@ -1535,6 +1537,20 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_DEFAULT);
+			}
+			else if(name == "sha256") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for sha256()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_SHA256, 0, out.address, get(recurse(args[0])));
+			}
+			else if(name == "ecdsa_verify") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 3 arguments for ecdsa_verify(msg, pubkey, signature)");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_VERIFY, 0, out.address, get(recurse(args[0])), get(recurse(args[1])), get(recurse(args[2])));
 			}
 			else if(name == "to_string") {
 				if(args.size() != 1) {
