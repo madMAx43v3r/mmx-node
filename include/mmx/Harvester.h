@@ -53,7 +53,7 @@ private:
 
 	void check_queue();
 
-	void lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms);
+	void lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const;
 
 	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const;
 

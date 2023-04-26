@@ -176,7 +176,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	lookup_timer->set_millis(10);
 }
 
-void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms)
+void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 
