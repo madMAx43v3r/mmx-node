@@ -145,6 +145,15 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	}
 	const auto time_begin = vnx::get_wall_time_millis();
 
+	const auto check_deadline = [this](std::string task) -> bool {
+		const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
+		if(delay_sec > params->block_time * params->challenge_delay) {
+			log(WARN) << "[" << host_name << "] Skipping " << task << " due to delay of " << delay_sec << " sec";
+			return false;
+		}
+		return true;
+	};
+
 	std::mutex mutex;
 	uint256_t best_score = uint256_max;
 	std::atomic<uint64_t> num_passed {0};
@@ -172,19 +181,25 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		});
 	}
 
+	struct {
+		hash_t plot_id;
+		hash_t challenge;
+		uint32_t index = 0;
+		uint256_t score = uint256_max;
+		std::shared_ptr<chiapos::DiskProver> prover;
+	} best_entry;
+
 	for(const auto& entry : id_map)
 	{
-		threads->add_task([this, entry, value, time_begin, &best_score, &num_passed, &mutex]()
+		threads->add_task([this, entry, value, &best_entry, &num_passed, &mutex, &check_deadline]()
 		{
 			if(check_plot_filter(params, value->challenge, entry.first))
 			{
+				if(!check_deadline("quality lookup")) {
+					return;
+				}
 				const auto iter = plot_map.find(entry.second);
 				if(iter != plot_map.end()) {
-					const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
-					if(delay_sec > params->block_time * (params->challenge_delay - 1)) {
-						log(WARN) << "[" << host_name << "] Skipping lookup due to delay of " << delay_sec << " sec";
-						return;
-					}
 					const auto& prover = iter->second;
 					try {
 						const auto challenge = get_plot_challenge(value->challenge, entry.first);
@@ -193,15 +208,13 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 						for(size_t k = 0; k < qualities.size(); ++k) {
 							const auto score = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
 							if(score < params->score_threshold) {
-								try {
-									const auto proof = prover->get_full_proof(challenge.bytes, k);
-									{
-										std::lock_guard<std::mutex> lock(mutex);
-										send_response(value, proof, nullptr, entry.first, score, time_begin);
-										best_score = std::min(best_score, score);
-									}
-								} catch(const std::exception& ex) {
-									log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
+								std::lock_guard<std::mutex> lock(mutex);
+								if(score < best_entry.score) {
+									best_entry.index = k;
+									best_entry.score = score;
+									best_entry.plot_id = entry.first;
+									best_entry.challenge = challenge;
+									best_entry.prover = prover;
 								}
 							}
 						}
@@ -214,6 +227,18 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		});
 	}
 	threads->sync();
+
+	if(auto prover = best_entry.prover) {
+		if(check_deadline("full proof lookup")) {
+			try {
+				const auto proof = prover->get_full_proof(best_entry.challenge.bytes, best_entry.index);
+				send_response(value, proof, nullptr, best_entry.plot_id, best_entry.score, time_begin);
+				best_score = std::min(best_score, best_entry.score);
+			} catch(const std::exception& ex) {
+				log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
+			}
+		}
+	}
 
 	const auto time_ms = vnx::get_wall_time_millis() - time_begin;
 	const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
