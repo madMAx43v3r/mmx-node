@@ -691,10 +691,10 @@ varptr_t Compiler::parse_constant(const node_t& node)
 		}
 	}
 	else if(name == lang::constant::name) {
-		if(list.size() != 1) {
+		if(list.size() > 2) {
 			throw std::logic_error("invalid constant");
 		}
-		return parse_constant(list[0]);
+		return parse_constant(list.back());
 	}
 	else if(name == lang::primitive::name) {
 		if(list.size() != 1) {
