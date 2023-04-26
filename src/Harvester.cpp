@@ -143,24 +143,24 @@ void Harvester::check_queue()
 {
 	const auto now_ms = vnx::get_wall_time_millis();
 
-	bool do_run = true;
-	while(do_run && !lookup_queue.empty())
+	for(auto iter = lookup_queue.begin(); iter != lookup_queue.end();)
 	{
-		const auto iter = --lookup_queue.end();
 		const auto& entry = iter->second;
 		const auto delay_sec = (now_ms - entry.recv_time_ms) / 1e3;
 
 		if(delay_sec > params->block_time * entry.request->max_delay) {
 			log(WARN) << "[" << host_name << "] Missed deadline for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
+			iter = lookup_queue.erase(iter);
 		} else {
-			do_run = false;
-			lookup_task(entry.request, entry.recv_time_ms);
+			iter++;
 		}
-		lookup_queue.erase(iter);
 	}
-
-	while(lookup_queue.size() > params->challenge_delay) {
-		lookup_queue.erase(lookup_queue.begin());
+	if(!lookup_queue.empty())
+	{
+		const auto iter = --lookup_queue.end();
+		const auto& entry = iter->second;
+		lookup_task(entry.request, entry.recv_time_ms);
+		lookup_queue.erase(iter);
 	}
 }
 
