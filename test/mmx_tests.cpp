@@ -35,9 +35,9 @@ int main(int argc, char** argv)
 	VNX_TEST_BEGIN("addr_t")
 	{
 		std::map<std::pair<addr_t, addr_t>, uint128> balance;
-		balance[std::make_pair(addr_t(), addr_t())] = 1337;
+		balance[std::make_pair(addr_t(std::string("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")), addr_t())] = 1337;
 
-		vnx::test::expect(balance[std::make_pair(addr_t(), addr_t())], 1337);
+		vnx::test::expect(balance[std::make_pair(addr_t(std::string("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")), addr_t())], 1337);
 		vnx::test::expect(balance[std::make_pair(addr_t(std::string("mmx1hfyq6t2jartw9f8fkkertepxef0f8egegd3m438ndfttrlhzzmks7c99tv")), addr_t())], 0);
 	}
 	VNX_TEST_END()
