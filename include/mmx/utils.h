@@ -157,10 +157,11 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 								const uint64_t balance, const uint64_t space_diff)
 {
 	if(balance == 0) {
-		throw std::logic_error("zero balance");
+		throw std::logic_error("zero balance (virtual plot)");
 	}
-	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
-	return hash_t(std::string("virtual_score") + plot_id + challenge).to_uint256() / (divider * balance);
+	const hash_t quality(std::string("virtual_score") + plot_id + challenge);
+	const uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
+	return (quality.to_uint256() / divider) / balance;
 }
 
 inline
