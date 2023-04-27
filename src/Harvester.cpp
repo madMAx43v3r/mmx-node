@@ -196,8 +196,8 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
 						if(score < params->score_threshold) {
 							send_response(value, nullptr, &entry.second, entry.first, score, time_begin);
-							best_score = std::min(best_score, score);
 						}
+						best_score = std::min(best_score, score);
 					}
 				} catch(const std::exception& ex) {
 					log(WARN) << "[" << host_name << "] Failed to check virtual plot: " << ex.what() << " (" << entry.first << ")";
@@ -217,7 +217,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 
 	for(const auto& entry : id_map)
 	{
-		threads->add_task([this, entry, value, recv_time_ms, &best_entry, &num_passed, &mutex]()
+		threads->add_task([this, entry, value, &best_entry, &best_score, &num_passed, &mutex]()
 		{
 			if(check_plot_filter(params, value->challenge, entry.first))
 			{
@@ -228,10 +228,11 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						const auto challenge = get_plot_challenge(value->challenge, entry.first);
 						const auto qualities = prover->get_qualities(challenge.bytes);
 
+						std::lock_guard<std::mutex> lock(mutex);
+
 						for(size_t k = 0; k < qualities.size(); ++k) {
 							const auto score = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
 							if(score < params->score_threshold) {
-								std::lock_guard<std::mutex> lock(mutex);
 								if(score < best_entry.score) {
 									best_entry.index = k;
 									best_entry.score = score;
@@ -240,6 +241,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 									best_entry.prover = prover;
 								}
 							}
+							best_score = std::min(best_score, score);
 						}
 					} catch(const std::exception& ex) {
 						log(WARN) << "[" << host_name << "] Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
@@ -255,7 +257,6 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		try {
 			const auto proof = prover->get_full_proof(best_entry.challenge.bytes, best_entry.index);
 			send_response(value, proof, nullptr, best_entry.plot_id, best_entry.score, time_begin);
-			best_score = std::min(best_score, best_entry.score);
 		} catch(const std::exception& ex) {
 			log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
 		}
