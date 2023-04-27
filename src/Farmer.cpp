@@ -166,7 +166,8 @@ bls_signature_t Farmer::sign_proof(
 	skey_t plot_sk = get_skey(value->proof->farmer_key);
 
 	if(local_sk) {
-		plot_sk = bls::PrivateKey::Aggregate({ 
+		plot_sk = bls::PrivateKey::Aggregate({
+			// inlined to calls to skey_t::to_bls() to avoid MSVC bug
 			bls::PrivateKey::FromBytes(bls::Bytes(local_sk->data(), local_sk->size())),
 			bls::PrivateKey::FromBytes(bls::Bytes(plot_sk.data(), plot_sk.size()))
 		});
