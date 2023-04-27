@@ -402,7 +402,7 @@ hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
 void TimeLord::print_info()
 {
 	if(is_running) {
-		log(INFO) << double(avg_iters_per_sec) / 1e6 << " M/s iterations";
+		log(INFO) << double(avg_iters_per_sec) / 1e6 << " MH/s";
 	}
 	vnx::open_flow(vnx::get_pipe(node_server), vnx::get_pipe(vnx_name));
 }
