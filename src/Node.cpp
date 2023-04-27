@@ -282,6 +282,7 @@ void Node::main()
 		block->space_diff = params->initial_space_diff;
 		block->vdf_output[0] = hash_t(params->vdf_seed);
 		block->vdf_output[1] = hash_t(params->vdf_seed);
+//		TODO: block->netspace_ratio = uint32_t(1) << (2 * params->max_diff_adjust);
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
