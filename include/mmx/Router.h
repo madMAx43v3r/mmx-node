@@ -216,6 +216,8 @@ private:
 
 	std::shared_ptr<peer_t> find_peer(uint64_t client) const;
 
+	std::vector<std::shared_ptr<peer_t>> find_peers(const std::string& address) const;
+
 	bool relay_msg_hash(const hash_t& hash, uint32_t credits = 0);
 
 	bool receive_msg_hash(const hash_t& hash, uint64_t client);
@@ -234,6 +236,7 @@ private:
 
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
+	std::multimap<std::string, std::shared_ptr<peer_t>> peer_addr_map;
 
 	std::queue<hash_t> hash_queue;
 	std::unordered_map<hash_t, hash_info_t> hash_info;

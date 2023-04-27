@@ -295,13 +295,10 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 	return info;
 }
 
-
 void Router::kick_peer(const std::string& address)
 {
-	for(const auto& entry : peer_map) {
-		if(entry.second->address == address) {
-			ban_peer(entry.first, "kicked manually");
-		}
+	for(auto peer : find_peers(address)) {
+		ban_peer(peer->client, "kicked manually");
 	}
 }
 
@@ -726,10 +723,10 @@ bool Router::process(std::shared_ptr<const Return> ret)
 		if(auto address = job->from_peer) {
 			if(job->request_map.empty()) {
 				std::shared_ptr<peer_t> peer;
-				for(const auto& entry : peer_map) {
-					if(entry.second->address == *address) {
-						peer = entry.second;
-						break;
+				{
+					const auto peers = find_peers(*address);
+					if(!peers.empty()) {
+						peer = peers[0];
 					}
 				}
 				if(!peer) {
@@ -809,13 +806,7 @@ void Router::connect()
 
 	// connect to fixed peers
 	for(const auto& address : fixed_peers) {
-		bool connected = false;
-		for(const auto& entry : peer_map) {
-			if(address == entry.second->address) {
-				connected = true;
-			}
-		}
-		if(!connected) {
+		if(!peer_addr_map.count(address)) {
 			connect_to(address);
 		}
 	}
@@ -858,13 +849,7 @@ void Router::connect()
 					continue;
 				}
 			}
-			bool connected = false;
-			for(const auto& entry : peer_map) {
-				if(address == entry.second->address) {
-					connected = true; break;
-				}
-			}
-			if(!connected && !block_peers.count(address) && !connect_tasks.count(address)) {
+			if(!peer_addr_map.count(address) && !block_peers.count(address) && !connect_tasks.count(address)) {
 				try_peers.insert(address);
 			}
 		}
@@ -1697,6 +1682,7 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	peer->challenge = hash_t(&seed, sizeof(seed));
 	peer->connected_since_ms = vnx::get_wall_time_millis();
 	peer_map[client] = peer;
+	peer_addr_map.emplace(address, peer);
 
 	send_request(peer, Router_get_id::create());
 	send_request(peer, Router_get_info::create());
@@ -1711,13 +1697,21 @@ void Router::on_connect(uint64_t client, const std::string& address)
 
 void Router::on_disconnect(uint64_t client)
 {
-	if(auto peer = find_peer(client)) {
-		log(DEBUG) << "Peer " << peer->address << " disconnected";
-		peer_retry_map[peer->address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
-	}
 	synced_peers.erase(client);
 
 	add_task([this, client]() {
+		if(auto peer = find_peer(client)) {
+			log(DEBUG) << "Peer " << peer->address << " disconnected";
+
+			const auto range = peer_addr_map.equal_range(peer->address);
+			for(auto iter = range.first; iter != range.second; ++iter) {
+				if(iter->second == peer) {
+					peer_addr_map.erase(iter);
+					break;
+				}
+			}
+			peer_retry_map[peer->address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
+		}
 		peer_map.erase(client);
 	});
 }
@@ -1742,6 +1736,16 @@ std::shared_ptr<Router::peer_t> Router::find_peer(uint64_t client) const
 		return iter->second;
 	}
 	return nullptr;
+}
+
+std::vector<std::shared_ptr<Router::peer_t>> Router::find_peers(const std::string& address) const
+{
+	std::vector<std::shared_ptr<Router::peer_t>> out;
+	const auto range = peer_addr_map.equal_range(address);
+	for(auto iter = range.first; iter != range.second; ++iter) {
+		out.push_back(iter->second);
+	}
+	return out;
 }
 
 bool Router::relay_msg_hash(const hash_t& hash, uint32_t credits)
