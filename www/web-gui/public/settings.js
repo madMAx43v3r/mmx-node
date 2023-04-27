@@ -245,6 +245,7 @@ Vue.component('node-settings', {
 						class="my-0"
 					></v-checkbox>
 					<v-checkbox
+						:disabled="!timelord"
 						v-model="enable_timelord_reward"
 						label="Enable TimeLord Rewards (requires one more CPU core)"
 						class="my-0"
