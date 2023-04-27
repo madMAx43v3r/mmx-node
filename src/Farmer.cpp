@@ -166,7 +166,10 @@ bls_signature_t Farmer::sign_proof(
 	skey_t plot_sk = get_skey(value->proof->farmer_key);
 
 	if(local_sk) {
-		plot_sk = bls::PrivateKey::Aggregate({local_sk->to_bls(), plot_sk.to_bls()});
+		plot_sk = bls::PrivateKey::Aggregate({ 
+			bls::PrivateKey::FromBytes(bls::Bytes(local_sk->data(), local_sk->size())),
+			bls::PrivateKey::FromBytes(bls::Bytes(plot_sk.data(), plot_sk.size()))
+		});
 		key_map[value->proof->plot_key] = plot_sk;
 	}
 
