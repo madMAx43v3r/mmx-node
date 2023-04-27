@@ -221,11 +221,6 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		{
 			if(check_plot_filter(params, value->challenge, entry.first))
 			{
-				const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
-				if(delay_sec > params->block_time * value->max_delay) {
-					log(WARN) << "[" << host_name << "] Skipping quality lookup due to delay of " << delay_sec << " sec";
-					return;
-				}
 				const auto iter = plot_map.find(entry.second);
 				if(iter != plot_map.end()) {
 					const auto& prover = iter->second;
