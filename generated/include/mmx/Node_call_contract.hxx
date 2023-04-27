@@ -18,6 +18,8 @@ public:
 	::mmx::addr_t address;
 	std::string method;
 	std::vector<::vnx::Variant> args;
+	vnx::optional<::mmx::addr_t> user;
+	vnx::optional<std::pair<::mmx::addr_t, uint64_t>> deposit;
 	
 	typedef ::vnx::Value Super;
 	
@@ -61,11 +63,13 @@ public:
 
 template<typename T>
 void Node_call_contract::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_call_contract>(3);
+	_visitor.template type_begin<Node_call_contract>(5);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("method", 1); _visitor.accept(method);
 	_visitor.type_field("args", 2); _visitor.accept(args);
-	_visitor.template type_end<Node_call_contract>(3);
+	_visitor.type_field("user", 3); _visitor.accept(user);
+	_visitor.type_field("deposit", 4); _visitor.accept(deposit);
+	_visitor.template type_end<Node_call_contract>(5);
 }
 
 

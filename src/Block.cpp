@@ -8,20 +8,14 @@
 #include <mmx/Block.hxx>
 #include <mmx/write_bytes.h>
 #include <mmx/Transaction.hxx>
+#include <mmx/txio_entry_t.hpp>
+#include <mmx/utils.h>
 
 
 namespace mmx {
 
 vnx::bool_t Block::is_valid() const
 {
-	if(!farmer_sig && height) {
-		if(nonce) {
-			return false;
-		}
-		if(proof || tx_base || tx_list.size()) {
-			return false;
-		}
-	}
 	uint64_t static_cost_sum = 0;
 	uint64_t total_cost_sum = 0;
 	uint64_t tx_fees_sum = 0;
@@ -84,14 +78,61 @@ std::shared_ptr<const BlockHeader> Block::get_header() const
 	return header;
 }
 
-std::vector<std::shared_ptr<const Transaction>> Block::get_all_transactions() const
+std::vector<std::shared_ptr<const Transaction>> Block::get_transactions() const {
+	return tx_list;
+}
+
+std::vector<txio_entry_t> Block::get_inputs(std::shared_ptr<const ChainParams> params) const
 {
-	std::vector<std::shared_ptr<const Transaction>> list;
-	if(auto tx = tx_base) {
-		list.push_back(tx);
+	std::vector<txio_entry_t> res;
+	for(const auto& tx : tx_list) {
+		if(tx->exec_result && tx->sender) {
+			txio_t in;
+			in.address = *tx->sender;
+			in.amount = tx->exec_result->total_fee;
+			res.push_back(txio_entry_t::create_ex(tx->id, height, tx_type_e::TXFEE, in));
+		}
+		if(!tx->exec_result || !tx->exec_result->did_fail) {
+			for(const auto& in : tx->get_inputs()) {
+				res.push_back(txio_entry_t::create_ex(tx->id, height, tx_type_e::SPEND, in));
+			}
+		}
 	}
-	list.insert(list.end(), tx_list.begin(), tx_list.end());
-	return list;
+	return res;
+}
+
+std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> params) const
+{
+	std::vector<txio_entry_t> res;
+
+	if(vdf_reward_addr) {
+		txio_t out;
+		out.address = *vdf_reward_addr;
+		out.amount = params->vdf_reward;
+		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::VDF_REWARD, out));
+	}
+	if(reward_addr && reward_amount) {
+		txio_t out;
+		out.address = *reward_addr;
+		out.amount = reward_amount;
+		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::REWARD, out));
+	}
+	{
+		txio_t out;
+		out.address = params->project_addr;
+		out.amount = calc_project_reward(params, tx_fees);
+		if(out.amount) {
+			res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::PROJECT_REWARD, out));
+		}
+	}
+	for(const auto& tx : tx_list) {
+		if(!tx->exec_result || !tx->exec_result->did_fail) {
+			for(const auto& out : tx->get_outputs()) {
+				res.push_back(txio_entry_t::create_ex(tx->id, height, tx_type_e::RECEIVE, out));
+			}
+		}
+	}
+	return res;
 }
 
 

@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_Contract_validate_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +13,6 @@ namespace mmx {
 class MMX_EXPORT Contract_validate_return : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::txout_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,9 +56,8 @@ public:
 
 template<typename T>
 void Contract_validate_return::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Contract_validate_return>(1);
-	_visitor.type_field("_ret_0", 0); _visitor.accept(_ret_0);
-	_visitor.template type_end<Contract_validate_return>(1);
+	_visitor.template type_begin<Contract_validate_return>(0);
+	_visitor.template type_end<Contract_validate_return>(0);
 }
 
 

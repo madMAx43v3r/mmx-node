@@ -41,19 +41,12 @@ protected:
 			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction> mint(
-			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-			const addr_t& currency, const spend_options_t& options) const override;
-
 	std::shared_ptr<const Transaction> deploy(
 			const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const override;
 
-	std::shared_ptr<const Transaction> mutate(
-			const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const override;
-
 	std::shared_ptr<const Transaction> execute(
 			const uint32_t& index, const addr_t& address, const std::string& method,
-			const std::vector<vnx::Variant>& args, const spend_options_t& options) const override;
+			const std::vector<vnx::Variant>& args, const vnx::optional<uint32_t>& user, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> deposit(
 			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
@@ -80,7 +73,7 @@ protected:
 			const vnx::optional<uint64_t>& min_trade, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_add_liquid(
-			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_rem_liquid(
 			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const override;

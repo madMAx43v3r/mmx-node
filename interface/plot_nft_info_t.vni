@@ -1,0 +1,14 @@
+package mmx;
+
+struct plot_nft_info_t {
+	
+	addr_t owner;
+	addr_t target;
+	addr_t address;
+	
+	bool is_locked;
+	uint unlock_height;
+	uint unlock_delay;
+	string server_url;
+	
+}

@@ -618,7 +618,7 @@ Vue.component('account-tx-history', {
 			</template>
 
 			<template v-slot:item.transaction_id="{ item }">
-				<router-link :to="'/explore/transaction/' + item.id">{{item.id.substring(0,16)}}...{{item.id.substring(48)}}</router-link>
+				<router-link :to="'/explore/transaction/' + item.id">{{get_short_hash(item.id, 16)}}</router-link>
 			</template>
 
 			<template v-slot:item.confirmed="{ item }">
@@ -852,6 +852,7 @@ Vue.component('account-plots', {
 				req.address = this.dialog_address;
 				req.method = "withdraw";
 				req.args = [this.dialog_amount * 1e6];
+				req.user = 0;
 			}
 			fetch(url, {body: JSON.stringify(req), method: "post"})
 				.then(response => {
@@ -1902,7 +1903,7 @@ Vue.component('account-offers', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 30000);
+		this.timer = setInterval(() => { this.update(); }, 10000);
 	},
 	beforeDestroy() {
 		clearInterval(this.timer);
@@ -1989,7 +1990,6 @@ Vue.component('create-contract-menu', {
 		return {
 			type: null,
 			types: [
-				{ value: "locked", text: "mmx.contract.TimeLock" },
 				{ value: "virtualplot", text: "mmx.contract.VirtualPlot" },
 			]
 		}
@@ -2034,7 +2034,8 @@ Vue.component('create-locked-contract', {
 		submit() {
 			this.confirmed = false;
 			const contract = {};
-			contract.__type = "mmx.contract.TimeLock";
+			contract.__type = "mmx.contract.Executable";
+			// TODO
 			contract.owner = this.owner;
 			contract.unlock_height = this.unlock_height;
 			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})

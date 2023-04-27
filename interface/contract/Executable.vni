@@ -13,8 +13,6 @@ class Executable extends TokenBase {
 	
 	map<string, addr_t> depends;
 	
-	// TODO: bool allow_transfers;
-	
 	
 	bool is_valid() const;
 	
@@ -22,6 +20,6 @@ class Executable extends TokenBase {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
-	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
+	void validate(mmx.Operation* operation, hash_t txid) const;
 	
 }

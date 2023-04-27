@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_type_e::VNX_TYPE_HASH(0x3b7f577c2cfd4c91ull);
-const vnx::Hash64 tx_type_e::VNX_CODE_HASH(0xa6b388d8faeef530ull);
+const vnx::Hash64 tx_type_e::VNX_CODE_HASH(0x3fb4b4c341be138dull);
 
 vnx::Hash64 tx_type_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -43,40 +43,48 @@ void tx_type_e::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, co
 
 vnx::bool_t tx_type_e::is_valid() const {
 	switch(value) {
+		case PROJECT_REWARD: return true;
 		case RECEIVE: return true;
 		case REWARD: return true;
 		case SPEND: return true;
 		case TXFEE: return true;
+		case VDF_REWARD: return true;
 	}
 	return false;
 }
 
 std::string tx_type_e::to_string() const {
 	switch(value) {
+		case PROJECT_REWARD: return "\"PROJECT_REWARD\"";
 		case RECEIVE: return "\"RECEIVE\"";
 		case REWARD: return "\"REWARD\"";
 		case SPEND: return "\"SPEND\"";
 		case TXFEE: return "\"TXFEE\"";
+		case VDF_REWARD: return "\"VDF_REWARD\"";
 	}
 	return std::to_string(value);
 }
 
 std::string tx_type_e::to_string_value() const {
 	switch(value) {
+		case PROJECT_REWARD: return "PROJECT_REWARD";
 		case RECEIVE: return "RECEIVE";
 		case REWARD: return "REWARD";
 		case SPEND: return "SPEND";
 		case TXFEE: return "TXFEE";
+		case VDF_REWARD: return "VDF_REWARD";
 	}
 	return std::to_string(value);
 }
 
 std::string tx_type_e::to_string_value_full() const {
 	switch(value) {
+		case PROJECT_REWARD: return "mmx.tx_type_e.PROJECT_REWARD";
 		case RECEIVE: return "mmx.tx_type_e.RECEIVE";
 		case REWARD: return "mmx.tx_type_e.REWARD";
 		case SPEND: return "mmx.tx_type_e.SPEND";
 		case TXFEE: return "mmx.tx_type_e.TXFEE";
+		case VDF_REWARD: return "mmx.tx_type_e.VDF_REWARD";
 	}
 	return std::to_string(value);
 }
@@ -91,10 +99,12 @@ void tx_type_e::from_string_value(const std::string& _name) {
 	vnx::Variant var;
 	vnx::from_string_value(_name, var);
 	if(var.is_string()) {
-		if(_name == "RECEIVE") value = RECEIVE;
+		if(_name == "PROJECT_REWARD") value = PROJECT_REWARD;
+		else if(_name == "RECEIVE") value = RECEIVE;
 		else if(_name == "REWARD") value = REWARD;
 		else if(_name == "SPEND") value = SPEND;
 		else if(_name == "TXFEE") value = TXFEE;
+		else if(_name == "VDF_REWARD") value = VDF_REWARD;
 		else value = enum_t(vnx::hash64(_name));
 	} else {
 		value = enum_t(std::stoul(_name.c_str(), nullptr, 0));
@@ -104,20 +114,24 @@ void tx_type_e::from_string_value(const std::string& _name) {
 void tx_type_e::accept(vnx::Visitor& _visitor) const {
 	std::string _name;
 	switch(value) {
+		case PROJECT_REWARD: _name = "PROJECT_REWARD"; break;
 		case RECEIVE: _name = "RECEIVE"; break;
 		case REWARD: _name = "REWARD"; break;
 		case SPEND: _name = "SPEND"; break;
 		case TXFEE: _name = "TXFEE"; break;
+		case VDF_REWARD: _name = "VDF_REWARD"; break;
 	}
 	_visitor.enum_value(value, _name);
 }
 
 void tx_type_e::write(std::ostream& _out) const {
 	switch(value) {
+		case PROJECT_REWARD: _out << "\"PROJECT_REWARD\""; break;
 		case RECEIVE: _out << "\"RECEIVE\""; break;
 		case REWARD: _out << "\"REWARD\""; break;
 		case SPEND: _out << "\"SPEND\""; break;
 		case TXFEE: _out << "\"TXFEE\""; break;
+		case VDF_REWARD: _out << "\"VDF_REWARD\""; break;
 		default: _out << value;
 	}
 }
@@ -178,7 +192,7 @@ std::shared_ptr<vnx::TypeCode> tx_type_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_type_e";
 	type_code->type_hash = vnx::Hash64(0x3b7f577c2cfd4c91ull);
-	type_code->code_hash = vnx::Hash64(0xa6b388d8faeef530ull);
+	type_code->code_hash = vnx::Hash64(0x3fb4b4c341be138dull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::tx_type_e);
@@ -190,10 +204,12 @@ std::shared_ptr<vnx::TypeCode> tx_type_e::static_create_type_code() {
 		field.name = "value";
 		field.code = {3};
 	}
+	type_code->enum_map[795347438] = "PROJECT_REWARD";
 	type_code->enum_map[940023181] = "RECEIVE";
 	type_code->enum_map[3842121424] = "REWARD";
 	type_code->enum_map[2341768809] = "SPEND";
 	type_code->enum_map[3965595220] = "TXFEE";
+	type_code->enum_map[1923446990] = "VDF_REWARD";
 	type_code->build();
 	return type_code;
 }

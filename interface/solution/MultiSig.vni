@@ -1,14 +1,16 @@
 package mmx.solution;
 
 import mmx.hash_t;
+import mmx.addr_t;
 
 class MultiSig extends mmx.Solution {
 	
-	// TODO: map<addr_t, mmx.Solution*>
-	vector<mmx.Solution*> solutions;
+	map<addr_t, mmx.Solution*> solutions;
 	
 	uint num_required;
 	
+	
+	bool is_valid() const;
 	
 	hash_t calc_hash() const;
 	

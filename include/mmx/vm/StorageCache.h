@@ -30,6 +30,10 @@ public:
 
 	void commit() const;
 
+	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const override;
+
+	std::map<addr_t, uint128> get_balances(const addr_t& contract) const override;
+
 private:
 	std::shared_ptr<Storage> backend;
 

@@ -10,20 +10,22 @@ struct swap_info_t {
 	
 	uint128 wallet[2];
 	uint128 balance[2];
+	uint128 volume[2];
 	uint128 fees_paid[2];
 	uint128 fees_claimed[2];
 	uint128 user_total[2];
 	
+	uint128 volume_1d[2];
+	uint128 volume_7d[2];
+	
 	double avg_apy_1d[2];
 	double avg_apy_7d[2];
 	
+	vector<double> fee_rates;
+	
+	vector<swap_pool_info_t> pools;
+	
 	
 	double get_price() const;
-	
-	ulong get_trade_amount(uint i, ulong amount) const;
-	
-	ulong[2] get_earned_fees(swap_user_info_t user) const;
-	
-	ulong[2] get_remove_amount(swap_user_info_t user, ulong amount[2]) const;
 	
 }

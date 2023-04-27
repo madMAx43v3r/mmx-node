@@ -204,7 +204,8 @@ Vue.component('swap-sub-menu', {
 		<v-tabs>
 			<v-tab :to="'/swap/trade/' + address">Trade</v-tab>
 			<v-tab :to="'/swap/history/' + address">History</v-tab>
-			<v-tab :to="'/swap/liquid/' + address">Liquidity</v-tab>
+			<v-tab :to="'/swap/liquid/' + address">My Liquidity</v-tab>
+			<v-tab :to="'/swap/pool/' + address">Pool State</v-tab>
 		</v-tabs>
 	`
 })
@@ -247,7 +248,7 @@ Vue.component('swap-info', {
 			
 			<v-card class="my-2">
 				<div v-if="!data && loading">
-					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-progress-linear indeterminate></v-progress-linear>
 					<v-skeleton-loader type="table-row-divider@2"/>
 				</div>
 
@@ -256,41 +257,97 @@ Vue.component('swap-info', {
 						<tr>
 							<th></th>
 							<th>Pool Balance</th>
-							<th>Symbol</th>
-							<th>APY (last day)</th>
-							<th>APY (last 7 days)</th>
-							<th>Contract</th>
+							<th>Volume (24h)</th>
+							<th>Volume (7 days)</th>
+							<th>APY (24h)</th>
+							<th>APY (7 days)</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<td class="key-cell">Token</td>
-							<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
-							<td>{{data.symbols[0]}}</td>
-							<td>{{(data.avg_apy_1d[0] * 100).toFixed(2)}} %</td>
-							<td>{{(data.avg_apy_7d[0] * 100).toFixed(2)}} %</td>
-							<td>
-								<template v-if="data.symbols[0] != 'MMX'">
-									<router-link :to="'/explore/address/' + data.tokens[0]">{{data.tokens[0]}}</router-link>
-								</template>
-							</td>
-						</tr>
-						<tr>
-							<td class="key-cell">Currency</td>
-							<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
-							<td>{{data.symbols[1]}}</td>
-							<td>{{(data.avg_apy_1d[1] * 100).toFixed(2)}} %</td>
-							<td>{{(data.avg_apy_7d[1] * 100).toFixed(2)}} %</td>
-							<td>
-								<template v-if="data.symbols[1] != 'MMX'">
-									<router-link :to="'/explore/address/' + data.tokens[1]">{{data.tokens[1]}}</router-link>
-								</template>
-							</td>
-						</tr>
+						<template v-for="i in [0, 1]">
+							<tr>
+								<td class="key-cell">{{i == 0 ? "Token" : "Currency"}}</td>
+								<td>
+									<b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b>
+									<template v-if="data.symbols[i] == 'MMX'">MMX</template>
+									<template v-else>
+										<router-link :to="'/explore/address/' + data.tokens[i]">{{data.symbols[i]}}</router-link>
+									</template>
+								</td>
+								<td><b>{{parseFloat(data.volume_1d[i].value.toPrecision(6))}}</b> {{data.symbols[i]}}</td>
+								<td><b>{{parseFloat(data.volume_7d[i].value.toPrecision(6))}}</b> {{data.symbols[i]}}</td>
+								<td>{{(data.avg_apy_1d[i] * 100).toFixed(2)}} %</td>
+								<td>{{(data.avg_apy_7d[i] * 100).toFixed(2)}} %</td>
+							</tr>
+						</template>
 					</tbody>
 				</v-simple-table>
 			</v-card>
 		</div>
+	`
+})
+
+Vue.component('swap-pool-info', {
+	props: {
+		address: String
+	},
+	data() {
+		return {
+			data: null,
+			timer: null,
+			loading: true,
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/swap/info?id=' + this.address)
+				.then(response => response.json())
+				.then(data => {
+					this.data = data;
+					this.loading = false;
+				});
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-card>
+			<div v-if="!data && loading">
+				<v-progress-linear indeterminate></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@10"/>
+			</div>
+
+			<v-simple-table v-if="data">
+				<thead>
+					<tr>
+						<th>Fee Level</th>
+						<th>Balance</th><th></th>
+						<th>Balance</th><th></th>
+						<th>User Total</th>
+						<th>User Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					<template v-for="(fee_rate, k) in data.fee_rates">
+						<tr>
+							<td class="key-cell">{{fee_rate * 100}} %</td>
+							<template v-for="i in [0, 1]">
+								<td><b>{{ parseFloat( (data.pools[k].balance[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+								<td>{{(data.pools[k].balance[i].value / data.balance[i].value * 100).toFixed(1)}} %</td>
+							</template>
+							<template v-for="i in [0, 1]">
+								<td><b>{{ parseFloat( (data.pools[k].user_total[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+							</template>
+						</tr>
+					</template>
+				</tbody>
+			</v-simple-table>
+		</v-card>
 	`
 })
 
@@ -335,38 +392,30 @@ Vue.component('swap-user-info', {
 	template: `
 		<v-card>
 			<div v-if="!data && loading">
-				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-progress-linear indeterminate></v-progress-linear>
 				<v-skeleton-loader type="table-row-divider@2"/>
 			</div>
 
 			<v-simple-table v-if="data">
 				<thead>
 					<tr>
-						<th></th>
-						<th>Your Balance</th>
-						<th>Your Liquidity</th>
+						<th>My Balance</th>
+						<th>My Liquidity</th>
 						<th>Fees Earned</th>
-						<th>Symbol</th>
+						<th>Fee Level</th>
 						<th>Unlock Height</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td class="key-cell">Token</td>
-						<td><b>{{ parseFloat( (data.balance[0].value).toPrecision(6) ) }}</b></td>
-						<td>{{ parseFloat( (data.remove_amount[0].value).toPrecision(6) ) }}</td>
-						<td>{{ parseFloat( (data.fees_earned[0].value).toPrecision(6) ) }}</td>
-						<td>{{data.symbols[0]}}</td>
-						<td>{{data.unlock_height}}</td>
-					</tr>
-					<tr>
-						<td class="key-cell">Currency</td>
-						<td><b>{{ parseFloat( (data.balance[1].value).toPrecision(6) ) }}</b></td>
-						<td>{{ parseFloat( (data.remove_amount[1].value).toPrecision(6) ) }}</td>
-						<td>{{ parseFloat( (data.fees_earned[1].value).toPrecision(6) ) }}</td>
-						<td>{{data.symbols[1]}}</td>
-						<td>{{data.unlock_height}}</td>
-					</tr>
+					<template v-for="i in [0, 1]">
+						<tr>
+							<td><b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+							<td><b>{{ parseFloat( (data.equivalent_liquidity[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+							<td><b>{{ parseFloat( (data.fees_earned[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
+							<td><template v-if="data.pool_idx >= 0">{{(data.swap.fee_rates[data.pool_idx] * 100).toFixed(2)}} %</template></td>
+							<td>{{data.unlock_height}}</td>
+						</tr>
+					</template>
 				</tbody>
 			</v-simple-table>
 		</v-card>
@@ -430,7 +479,7 @@ Vue.component('swap-history', {
 				class="elevation-2"
 			>
 				<template v-slot:progress>
-					<v-progress-linear indeterminate absolute top></v-progress-linear>
+					<v-progress-linear indeterminate></v-progress-linear>
 					<v-skeleton-loader type="table-row-divider@6" />
 				</template>
 				
@@ -466,9 +515,11 @@ Vue.component('swap-trade', {
 	data() {
 		return {
 			data: null,
+			buy_fee: null,
 			buy_amount: null,
 			buy_balance: null,
 			buy_estimate: null,
+			sell_fee: null,
 			sell_amount: null,
 			sell_balance: null,
 			sell_estimate: null,
@@ -518,12 +569,16 @@ Vue.component('swap-trade', {
 		}
 	},
 	watch: {
+		wallet() {
+			this.update_wallet();
+		},
 		buy_amount(value) {
 			this.buy_estimate = null;
 			if(value > 0) {
 				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1&amount=' + value)
 					.then(response => response.json())
 					.then(data => {
+						this.buy_fee = (100 * data.fee.value / (parseFloat(data.trade.value) + parseFloat(data.fee.value))).toFixed(2);
 						this.buy_estimate = data.trade.value;
 					});
 			}
@@ -534,6 +589,7 @@ Vue.component('swap-trade', {
 				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0&amount=' + value)
 					.then(response => response.json())
 					.then(data => {
+						this.sell_fee = (100 * data.fee.value / (parseFloat(data.trade.value) + parseFloat(data.fee.value))).toFixed(2);
 						this.sell_estimate = data.trade.value;
 					});
 			}
@@ -569,11 +625,22 @@ Vue.component('swap-trade', {
 									</v-text-field>
 								</v-col>
 							</v-row>
-							<v-text-field class="text-align-right"
-								v-model="buy_estimate"
-								label="You receive (estimated)"
-								:suffix="data.symbols[0]" disabled>
-							</v-text-field>
+							<v-row>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="buy_fee"
+										label="Trade Fee (estimated)"
+										suffix="%" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="buy_estimate"
+										label="You receive (estimated)"
+										:suffix="data.symbols[0]" disabled>
+									</v-text-field>
+								</v-col>
+							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
 							<v-btn color="green lighten-1" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">Buy</v-btn>
@@ -600,11 +667,22 @@ Vue.component('swap-trade', {
 									</v-text-field>
 								</v-col>
 							</v-row>
-							<v-text-field class="text-align-right"
-								v-model="sell_estimate"
-								label="You receive (estimated)"
-								:suffix="data.symbols[1]" disabled>
-							</v-text-field>
+							<v-row>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="sell_fee"
+										label="Trade Fee (estimated)"
+										suffix="%" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col>
+									<v-text-field class="text-align-right"
+										v-model="sell_estimate"
+										label="You receive (estimated)"
+										:suffix="data.symbols[1]" disabled>
+									</v-text-field>
+								</v-col>
+							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
 							<v-btn color="red lighten-1" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">Sell</v-btn>
@@ -649,11 +727,13 @@ Vue.component('swap-liquid', {
 			paid: false,
 			user: null,
 			user_address: null,
+			pool_idx: -1,
 			amount_0: null,
 			amount_1: null,
 			price: null,
 			result: null,
 			error: null,
+			loading: true,
 		}
 	},
 	methods: {
@@ -663,7 +743,10 @@ Vue.component('swap-liquid', {
 			}
 			fetch('/wapi/swap/info?id=' + this.address)
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => {
+					this.data = data;
+					this.loading = false;
+				});
 		},
 		update_user() {
 			fetch('/wapi/wallet/address?index=' + this.wallet)
@@ -684,25 +767,30 @@ Vue.component('swap-liquid', {
 				this.amount_0 = parseFloat((this.amount_1 / this.data.display_price).toFixed(this.data.decimals[0]));
 			}
 		},
+		on_response(response, type) {
+			if(response.ok) {
+				response.json().then(data => {
+					this.result = data;
+					this.error = null;
+					if(type == "payout") {
+						this.paid = true;
+					}
+				});
+			} else {
+				response.text().then(data => {
+					this.result = null;
+					this.error = data;
+				});
+			}
+		},
 		submit(mode) {
 			const req = {};
 			req.index = this.wallet;
 			req.address = this.address;
+			req.pool_idx = this.pool_idx;
 			req.amount = [this.amount_0, this.amount_1];
 			fetch('/wapi/wallet/swap/' + (mode ? "add" : "rem") + "_liquid", {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.result = data;
-							this.error = null;
-						});
-					} else {
-						response.text().then(data => {
-							this.result = null;
-							this.error = data;
-						});
-					}
-				});
+				.then(response => this.on_response(response));
 			this.amount_0 = null;
 			this.amount_1 = null;
 		},
@@ -711,23 +799,37 @@ Vue.component('swap-liquid', {
 			req.index = this.wallet;
 			req.address = this.address;
 			fetch('/wapi/wallet/swap/payout', {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.result = data;
-							this.error = null;
-							this.paid = true;
-						});
-					} else {
-						response.text().then(data => {
-							this.result = null;
-							this.error = data;
-						});
-					}
-				});
+				.then(response => this.on_response(response, "payout"));
+		},
+		switch_pool() {
+			const req = {};
+			req.index = this.wallet;
+			req.address = this.address;
+			req.pool_idx = this.pool_idx;
+			fetch('/wapi/wallet/swap/switch_pool', {body: JSON.stringify(req), method: "post"})
+				.then(response => this.on_response(response, "switch_pool"));
+		},
+		rem_all_liquid() {
+			const req = {};
+			req.index = this.wallet;
+			req.address = this.address;
+			fetch('/wapi/wallet/swap/rem_all_liquid', {body: JSON.stringify(req), method: "post"})
+				.then(response => this.on_response(response, "rem_all_liquid"));
 		}
 	},
 	watch: {
+		data(value) {
+			var fee_rates = [];
+			for(let i = 0; i < value.fee_rates.length; ++i) {
+				fee_rates.push({text: (value.fee_rates[i] * 100).toFixed(2) + " %", value: i});
+			}
+			this.fee_rates = fee_rates;
+		},
+		user(value) {
+			if(value && this.pool_idx < 0 && value.pool_idx >= 0) {
+				this.pool_idx = value.pool_idx;
+			}
+		},
 		wallet() {
 			this.update_user();
 		},
@@ -736,6 +838,25 @@ Vue.component('swap-liquid', {
 		},
 		amount_1() {
 			this.update_price();
+		}
+	},
+	computed: {
+		disable_add_rem() {
+			return !(this.amount_0 || this.amount_1) || this.pool_idx < 0;
+		},
+		disable_add() {
+			return (this.user.pool_idx >= 0 && this.pool_idx != this.user.pool_idx
+					&& (this.user.balance[0].amount != 0 || this.user.balance[1].amount != 0));
+		},
+		disable_payout() {
+			return !this.user || this.paid || !(this.user.fees_earned[0].amount != 0 || this.user.fees_earned[1].amount != 0);
+		},
+		disable_switch() {
+			return this.pool_idx < 0 || this.user.pool_idx < 0 || this.pool_idx == this.user.pool_idx
+				|| (this.user && this.user.balance[0].amount == 0 && this.user.balance[1].amount == 0);
+		},
+		disable_rem_all() {
+			return this.amount_0 || this.amount_1 || !this.user || !(this.user.balance[0].amount != 0 || this.user.balance[1].amount != 0);
 		}
 	},
 	created() {
@@ -747,11 +868,25 @@ Vue.component('swap-liquid', {
 	},
 	template: `
 		<div>
+			<div v-if="!data && loading">
+				<v-progress-linear indeterminate></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@2"/>
+			</div>
+			
 			<swap-user-info v-if="user_address" :address="address" :user="user_address" @user-update="arg => this.user = arg"></swap-user-info>
 			
 			<v-card v-if="data" class="my-2">
 				<v-card-text>
 					<v-row>
+						<v-col>
+							<v-select
+								v-model="pool_idx"
+								:items="fee_rates"
+								label="Fee Level"
+								item-text="text"
+								item-value="value"
+							></v-select>
+						</v-col>
 						<v-col>
 							<v-text-field class="text-align-right"
 								v-model="price"
@@ -777,10 +912,12 @@ Vue.component('swap-liquid', {
 					</v-row>
 				</v-card-text>
 				<v-card-actions class="justify-end">
-					<v-btn @click="match()">Match</v-btn>
-					<v-btn @click="payout()" :disabled="!user || paid || !(user.fees_earned[0].amount || user.fees_earned[1].amount)">Payout</v-btn>
-					<v-btn color="green lighten-1" @click="submit(true)" :disabled="!(amount_0 || amount_1)">Add Liquidity</v-btn>
-					<v-btn color="red lighten-1" @click="submit(false)" :disabled="!(amount_0 || amount_1)">Remove Liquidity</v-btn>
+					<v-btn @click="match()">Price Match</v-btn>
+					<v-btn @click="payout()" :disabled="disable_payout">Payout</v-btn>
+					<v-btn @click="switch_pool()" :disabled="disable_switch">Switch Fee</v-btn>
+					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem || disable_add">Add Liquidity</v-btn>
+					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">Remove Liquidity</v-btn>
+					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">Remove All</v-btn>
 				</v-card-actions>
 			</v-card>
 			

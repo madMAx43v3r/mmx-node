@@ -51,7 +51,7 @@ namespace mmx {
 
 
 const vnx::Hash64 HarvesterBase::VNX_TYPE_HASH(0xc17118896cde1555ull);
-const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0xe80ec8c6df5b26b2ull);
+const vnx::Hash64 HarvesterBase::VNX_CODE_HASH(0x476ae51fe1263e12ull);
 
 HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -69,6 +69,7 @@ HarvesterBase::HarvesterBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".num_threads", num_threads);
 	vnx::read_config(vnx_name + ".recursive_search", recursive_search);
 	vnx::read_config(vnx_name + ".farm_virtual_plots", farm_virtual_plots);
+	vnx::read_config(vnx_name + ".validate_plots", validate_plots);
 }
 
 vnx::Hash64 HarvesterBase::get_type_hash() const {
@@ -99,6 +100,7 @@ void HarvesterBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, num_threads);
 	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, recursive_search);
 	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, farm_virtual_plots);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, validate_plots);
 	_visitor.type_end(*_type_code);
 }
 
@@ -117,6 +119,7 @@ void HarvesterBase::write(std::ostream& _out) const {
 	_out << ", \"num_threads\": "; vnx::write(_out, num_threads);
 	_out << ", \"recursive_search\": "; vnx::write(_out, recursive_search);
 	_out << ", \"farm_virtual_plots\": "; vnx::write(_out, farm_virtual_plots);
+	_out << ", \"validate_plots\": "; vnx::write(_out, validate_plots);
 	_out << "}";
 }
 
@@ -142,6 +145,7 @@ vnx::Object HarvesterBase::to_object() const {
 	_object["num_threads"] = num_threads;
 	_object["recursive_search"] = recursive_search;
 	_object["farm_virtual_plots"] = farm_virtual_plots;
+	_object["validate_plots"] = validate_plots;
 	return _object;
 }
 
@@ -173,6 +177,8 @@ void HarvesterBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(reload_interval);
 		} else if(_entry.first == "storage_path") {
 			_entry.second.to(storage_path);
+		} else if(_entry.first == "validate_plots") {
+			_entry.second.to(validate_plots);
 		}
 	}
 }
@@ -217,6 +223,9 @@ vnx::Variant HarvesterBase::get_field(const std::string& _name) const {
 	if(_name == "farm_virtual_plots") {
 		return vnx::Variant(farm_virtual_plots);
 	}
+	if(_name == "validate_plots") {
+		return vnx::Variant(validate_plots);
+	}
 	return vnx::Variant();
 }
 
@@ -247,6 +256,8 @@ void HarvesterBase::set_field(const std::string& _name, const vnx::Variant& _val
 		_value.to(recursive_search);
 	} else if(_name == "farm_virtual_plots") {
 		_value.to(farm_virtual_plots);
+	} else if(_name == "validate_plots") {
+		_value.to(validate_plots);
 	}
 }
 
@@ -274,7 +285,7 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Harvester";
 	type_code->type_hash = vnx::Hash64(0xc17118896cde1555ull);
-	type_code->code_hash = vnx::Hash64(0xe80ec8c6df5b26b2ull);
+	type_code->code_hash = vnx::Hash64(0x476ae51fe1263e12ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::HarvesterBase);
 	type_code->methods.resize(16);
@@ -294,7 +305,7 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 	type_code->methods[13] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[14] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[15] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(13);
+	type_code->fields.resize(14);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -380,6 +391,13 @@ std::shared_ptr<vnx::TypeCode> HarvesterBase::static_create_type_code() {
 		auto& field = type_code->fields[12];
 		field.data_size = 1;
 		field.name = "farm_virtual_plots";
+		field.value = vnx::to_string(true);
+		field.code = {31};
+	}
+	{
+		auto& field = type_code->fields[13];
+		field.data_size = 1;
+		field.name = "validate_plots";
 		field.value = vnx::to_string(true);
 		field.code = {31};
 	}
@@ -569,6 +587,9 @@ void read(TypeInput& in, ::mmx::HarvesterBase& value, const TypeCode* type_code,
 		if(const auto* const _field = type_code->field_map[12]) {
 			vnx::read_value(_buf + _field->offset, value.farm_virtual_plots, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[13]) {
+			vnx::read_value(_buf + _field->offset, value.validate_plots, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -598,12 +619,13 @@ void write(TypeOutput& out, const ::mmx::HarvesterBase& value, const TypeCode* t
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(14);
+	char* const _buf = out.write(15);
 	vnx::write_value(_buf + 0, value.max_queue_ms);
 	vnx::write_value(_buf + 4, value.reload_interval);
 	vnx::write_value(_buf + 8, value.num_threads);
 	vnx::write_value(_buf + 12, value.recursive_search);
 	vnx::write_value(_buf + 13, value.farm_virtual_plots);
+	vnx::write_value(_buf + 14, value.validate_plots);
 	vnx::write(out, value.input_challenges, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.output_info, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.output_proofs, type_code, type_code->fields[2].code.data());

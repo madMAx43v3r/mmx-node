@@ -22,6 +22,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	
 	bool recursive_search = true;
 	bool farm_virtual_plots = true;
+	bool validate_plots = true;
 	
 	
 	void reload();

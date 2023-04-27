@@ -51,8 +51,8 @@ Vue.component('node-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
-									<v-row align="center" justify="space-around" width=100>									
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
+									<v-row align="center" justify="space-around" width=100>
 										<div v-if="data">{{ data.height }}</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
@@ -73,11 +73,11 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_supply / Math.pow(10, 6)).toFixed(0) }} MMX</div>
+										<div v-if="data">{{ data.vdf_speed.toFixed(3) }} MH/s</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										{{ $t('node_info.supply') }}
+										{{ $t('node_info.vdf_speed') }}
 									</v-row>
 								</v-col>
 
@@ -115,11 +115,11 @@ Vue.component('node-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.time_diff / 10 / Math.pow(10, 3)).toFixed(3) }} MH/s</div>
+										<div v-if="data">{{ data.average_txfee.value > 1 ? data.average_txfee.value.toPrecision(6) : data.average_txfee.value }} MMX</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										{{ $t('node_info.vdf_speed') }}
+										Avg. TX Fee
 									</v-row>
 								</v-col>
 

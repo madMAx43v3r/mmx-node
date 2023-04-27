@@ -15,6 +15,7 @@ namespace mmx {
 
 std::string addr_t::to_string() const
 {
+	// Note: this function is consensus critical
 	auto bits = to_uint256();
 	std::vector<uint8_t> dp(52);
 	dp[51] = (bits & 1) << 4;
@@ -28,6 +29,7 @@ std::string addr_t::to_string() const
 
 void addr_t::from_string(const std::string& addr)
 {
+	// Note: this function is consensus critical
 	if(addr == "MMX") {
 		*this = addr_t();
 		return;

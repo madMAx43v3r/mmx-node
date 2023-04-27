@@ -25,7 +25,7 @@ const contract::method_t* find_method(std::shared_ptr<const contract::Binary> bi
 
 void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint128>& balance);
 
-void set_deposit(std::shared_ptr<vm::Engine> engine, const txout_t& deposit);
+void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint64_t amount);
 
 std::vector<std::unique_ptr<vm::var_t>> read_constants(std::shared_ptr<const contract::Binary> binary);
 
@@ -40,7 +40,7 @@ vnx::Variant read(std::shared_ptr<vm::Engine> engine, const uint64_t address);
 
 void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant>& args);
 
-void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method);
+void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method, const bool read_only = false);
 
 void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, const vnx::optional<std::string>& method = nullptr);
 

@@ -13,7 +13,7 @@ namespace mmx {
 
 vnx::bool_t exec_result_t::is_valid() const
 {
-	return !message || message->size() <= MAX_MESSAGE_LENGTH;
+	return !error || error->is_valid();
 }
 
 hash_t exec_result_t::calc_hash() const
@@ -26,13 +26,27 @@ hash_t exec_result_t::calc_hash() const
 	write_field(out, "did_fail", 	did_fail);
 	write_field(out, "total_cost", 	total_cost);
 	write_field(out, "total_fee", 	total_fee);
-	write_field(out, "error_code", 	error_code);
 	write_field(out, "inputs",		inputs);
 	write_field(out, "outputs", 	outputs);
-	write_field(out, "message", 	message);
+	write_field(out, "error", 		error ? error->calc_hash() : hash_t());
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+std::string exec_result_t::get_error_msg() const
+{
+	if(did_fail) {
+		if(error) {
+			std::string location = "0x" + vnx::to_hex_string(error->address);
+			if(error->line) {
+				location += ", line " + std::to_string(*error->line);
+			}
+			return "exception at " + location + ": " + error->message;
+		}
+		return "tx failed";
+	}
+	return std::string();
 }
 
 

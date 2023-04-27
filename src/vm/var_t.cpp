@@ -334,6 +334,26 @@ size_t deserialize(std::unique_ptr<var_t>& out, const void* data_, const size_t 
 	return offset;
 }
 
+std::string to_string(const vartype_e& type) {
+	switch(type) {
+		case TYPE_ARRAY: return "TYPE_ARRAY";
+		case TYPE_BINARY: return "TYPE_BINARY";
+		case TYPE_FALSE: return "TYPE_FALSE";
+		case TYPE_MAP: return "TYPE_MAP";
+		case TYPE_NIL: return "TYPE_NIL";
+		case TYPE_REF: return "TYPE_REF";
+		case TYPE_STRING: return "TYPE_STRING";
+		case TYPE_TRUE: return "TYPE_TRUE";
+		case TYPE_UINT: return "TYPE_UINT";
+		case TYPE_UINT16: return "TYPE_UINT16";
+		case TYPE_UINT32: return "TYPE_UINT32";
+		case TYPE_UINT64: return "TYPE_UINT64";
+		case TYPE_UINT128: return "TYPE_UINT128";
+		case TYPE_UINT256: return "TYPE_UINT256";
+	}
+	return std::to_string(uint8_t(type));
+}
+
 
 } // vm
 } // mmx

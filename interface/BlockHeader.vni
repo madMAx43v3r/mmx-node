@@ -9,6 +9,9 @@ class BlockHeader {
 	
 	uint height;
 	
+	// TODO: uint time_hour;				// hours since chain start
+	// TODO: uint time_counter;			// blocks since last hour increment
+	
 	ulong nonce;
 	
 	ulong time_diff;
@@ -18,13 +21,16 @@ class BlockHeader {
 	uint128 total_weight;
 	
 	uint netspace_ratio;
+	uint average_txfee;
 	
 	ulong vdf_iters;
 	hash_t vdf_output[2];
+	optional<addr_t> vdf_reward_addr;
 	
 	ProofOfSpace* proof;
 	
-	Transaction* tx_base;
+	ulong reward_amount;
+	optional<addr_t> reward_addr;
 	
 	uint static_cost;
 	uint total_cost;

@@ -5,8 +5,6 @@ import mmx.addr_t;
 
 class Data extends mmx.Contract {
 	
-	optional<addr_t> owner;
-	
 	vnx.Variant value;
 	
 	
@@ -15,15 +13,5 @@ class Data extends mmx.Contract {
 	ulong num_bytes() const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
-	
-	vector<addr_t> get_dependency() const;
-	
-	optional<addr_t> get_owner() const;
-	
-	vector<mmx.txout_t> validate(mmx.Operation* operation, mmx.Context* context) const;
-	
-	void transfer(optional<addr_t> new_owner);
-	
-	void set(vnx.Variant value);
 	
 }

@@ -3,9 +3,9 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/PubKey_validate.hxx>
-#include <mmx/Context.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/contract/PubKey_validate_return.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -16,7 +16,7 @@ namespace contract {
 
 
 const vnx::Hash64 PubKey_validate::VNX_TYPE_HASH(0xc8c04e67ca0e5622ull);
-const vnx::Hash64 PubKey_validate::VNX_CODE_HASH(0x321893d2dc64c8cbull);
+const vnx::Hash64 PubKey_validate::VNX_CODE_HASH(0x7aaf901638239852ull);
 
 vnx::Hash64 PubKey_validate::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,14 +50,14 @@ void PubKey_validate::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_PubKey_validate;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, operation);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, context);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, txid);
 	_visitor.type_end(*_type_code);
 }
 
 void PubKey_validate::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.PubKey.validate\"";
 	_out << ", \"operation\": "; vnx::write(_out, operation);
-	_out << ", \"context\": "; vnx::write(_out, context);
+	_out << ", \"txid\": "; vnx::write(_out, txid);
 	_out << "}";
 }
 
@@ -71,16 +71,16 @@ vnx::Object PubKey_validate::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.PubKey.validate";
 	_object["operation"] = operation;
-	_object["context"] = context;
+	_object["txid"] = txid;
 	return _object;
 }
 
 void PubKey_validate::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "context") {
-			_entry.second.to(context);
-		} else if(_entry.first == "operation") {
+		if(_entry.first == "operation") {
 			_entry.second.to(operation);
+		} else if(_entry.first == "txid") {
+			_entry.second.to(txid);
 		}
 	}
 }
@@ -89,8 +89,8 @@ vnx::Variant PubKey_validate::get_field(const std::string& _name) const {
 	if(_name == "operation") {
 		return vnx::Variant(operation);
 	}
-	if(_name == "context") {
-		return vnx::Variant(context);
+	if(_name == "txid") {
+		return vnx::Variant(txid);
 	}
 	return vnx::Variant();
 }
@@ -98,8 +98,8 @@ vnx::Variant PubKey_validate::get_field(const std::string& _name) const {
 void PubKey_validate::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "operation") {
 		_value.to(operation);
-	} else if(_name == "context") {
-		_value.to(context);
+	} else if(_name == "txid") {
+		_value.to(txid);
 	}
 }
 
@@ -127,7 +127,7 @@ std::shared_ptr<vnx::TypeCode> PubKey_validate::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PubKey.validate";
 	type_code->type_hash = vnx::Hash64(0xc8c04e67ca0e5622ull);
-	type_code->code_hash = vnx::Hash64(0x321893d2dc64c8cbull);
+	type_code->code_hash = vnx::Hash64(0x7aaf901638239852ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -145,8 +145,8 @@ std::shared_ptr<vnx::TypeCode> PubKey_validate::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "context";
-		field.code = {16};
+		field.name = "txid";
+		field.code = {11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -195,7 +195,7 @@ void read(TypeInput& in, ::mmx::contract::PubKey_validate& value, const TypeCode
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.operation, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.context, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.txid, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -215,7 +215,7 @@ void write(TypeOutput& out, const ::mmx::contract::PubKey_validate& value, const
 		type_code = type_code->depends[code[1]];
 	}
 	vnx::write(out, value.operation, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.context, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.txid, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::PubKey_validate& value) {

@@ -24,6 +24,8 @@ public:
 
 	signature_t() = default;
 
+	signature_t(const std::vector<uint8_t>& bytes) : super_t(bytes) {}
+
 	signature_t(const secp256k1_ecdsa_signature& sig);
 
 	bool verify(const pubkey_t& pubkey, const hash_t& hash) const;

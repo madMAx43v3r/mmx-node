@@ -8,9 +8,7 @@
 #include <mmx/Wallet.h>
 #include <mmx/KeyFile.hxx>
 #include <mmx/WalletFile.hxx>
-#include <mmx/contract/Token.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -183,52 +181,6 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 }
 
 std::shared_ptr<const Transaction>
-Wallet::mint(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
-				const addr_t& currency, const spend_options_t& options) const
-{
-	const auto token = std::dynamic_pointer_cast<const contract::Token>(node->get_contract(currency));
-	if(!token) {
-		throw std::logic_error("no such currency");
-	}
-	if(!token->owner) {
-		throw std::logic_error("token has no owner");
-	}
-	const auto owner = *token->owner;
-
-	const auto wallet = get_wallet(index);
-	update_cache(index);
-
-	if(amount == 0) {
-		throw std::logic_error("amount cannot be zero");
-	}
-	if(dst_addr == addr_t()) {
-		throw std::logic_error("dst_addr cannot be zero");
-	}
-	auto tx = Transaction::create();
-	tx->note = tx_note_e::MINT;
-
-	auto op = operation::Mint::create();
-	op->amount = amount;
-	op->target = dst_addr;
-	op->address = currency;
-	if(!op->is_valid()) {
-		throw std::logic_error("invalid operation");
-	}
-	tx->execute.push_back(op);
-
-	auto options_ = options;
-	options_.owner_map.emplace(currency, owner);
-
-	wallet->complete(tx, options_);
-
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Minted " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
-	}
-	return tx;
-}
-
-std::shared_ptr<const Transaction>
 Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, const spend_options_t& options) const
 {
 	if(!contract) {
@@ -253,46 +205,9 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 	return tx;
 }
 
-std::shared_ptr<const Transaction>
-Wallet::mutate(const uint32_t& index, const addr_t& address, const vnx::Object& method, const spend_options_t& options) const
-{
-	auto contract = node->get_contract(address);
-	if(!contract) {
-		throw std::logic_error("no such contract");
-	}
-	auto owner = contract->get_owner();
-	if(!owner) {
-		throw std::logic_error("contract has no owner");
-	}
-	const auto wallet = get_wallet(index);
-	update_cache(index);
-
-	auto op = operation::Mutate::create();
-	op->address = address;
-	op->method = method;
-
-	auto tx = Transaction::create();
-	tx->note = tx_note_e::MUTATE;
-	tx->execute.push_back(op);
-
-	if(wallet->find_address(*owner) < 0) {
-		throw std::logic_error("contract not owned by wallet");
-	}
-	auto options_ = options;
-	options_.owner_map.emplace(address, *owner);
-
-	wallet->complete(tx, options_);
-
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Mutated [" << address << "] via " << method["__type"] << " with cost " << tx->static_cost << " (" << tx->id << ")";
-	}
-	return tx;
-}
-
 std::shared_ptr<const Transaction> Wallet::execute(
 			const uint32_t& index, const addr_t& address, const std::string& method,
-			const std::vector<vnx::Variant>& args, const spend_options_t& options) const
+			const std::vector<vnx::Variant>& args, const vnx::optional<uint32_t>& user, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -301,7 +216,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 	op->address = address;
 	op->method = method;
 	op->args = args;
-	op->user = options.user;
+	op->user = user ? wallet->get_address(*user) : options.user;
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::EXECUTE;
@@ -422,7 +337,7 @@ std::shared_ptr<const Transaction> Wallet::cancel_offer(
 
 	auto options_ = options;
 	options_.user = offer.owner;
-	return execute(index, address, "cancel", {}, options_);
+	return execute(index, address, "cancel", {}, nullptr, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::offer_withdraw(
@@ -432,7 +347,7 @@ std::shared_ptr<const Transaction> Wallet::offer_withdraw(
 
 	auto options_ = options;
 	options_.user = offer.owner;
-	return execute(index, address, "withdraw", {}, options_);
+	return execute(index, address, "withdraw", {}, nullptr, options_);
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_trade(
@@ -461,7 +376,7 @@ std::shared_ptr<const Transaction> Wallet::swap_trade(
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
-		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const
+		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -475,7 +390,7 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 			auto op = operation::Deposit::create();
 			op->address = address;
 			op->method = "add_liquid";
-			op->args = {vnx::Variant(i)};
+			op->args = {vnx::Variant(i), vnx::Variant(pool_idx)};
 			op->amount = amount[i];
 			op->currency = info.tokens[i];
 			op->user = wallet->get_address(0);
@@ -499,13 +414,19 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::WITHDRAW;
-
+	{
+		auto op = operation::Execute::create();
+		op->address = address;
+		op->method = "payout";
+		op->user = wallet->get_address(0);
+		tx->execute.push_back(op);
+	}
 	for(size_t i = 0; i < 2; ++i) {
 		if(amount[i]) {
 			auto op = operation::Execute::create();
 			op->address = address;
 			op->method = "rem_liquid";
-			op->args = {vnx::Variant(i), vnx::Variant(amount[i])};
+			op->args = {vnx::Variant(i), vnx::Variant(amount[i]), vnx::Variant(false)};
 			op->user = wallet->get_address(0);
 			tx->execute.push_back(op);
 		}
@@ -788,7 +709,7 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(
 std::vector<virtual_plot_info_t> Wallet::get_virtual_plots(const uint32_t& index) const
 {
 	const auto wallet = get_wallet(index);
-	return node->get_virtual_plots(node->get_contracts_owned_by(wallet->get_all_addresses()));
+	return node->get_virtual_plots_owned_by(wallet->get_all_addresses());
 }
 
 vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const

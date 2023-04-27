@@ -110,9 +110,18 @@ inline
 bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 						const hash_t& challenge, const hash_t& plot_id)
 {
-	return hash_t(challenge + plot_id).to_uint256() >> (256 - params->plot_filter) == 0;
+	hash_t hash(std::string("plot_filter") + plot_id + challenge);
+	for(uint32_t i = 0; i < params->plot_filter_nhash; ++i) {
+		hash = hash_t(std::string("plot_filter") + hash);
+	}
+	return hash.to_uint256() >> (256 - params->plot_filter) == 0;
 }
 
+inline
+hash_t get_plot_challenge(const hash_t& challenge, const hash_t& plot_id)
+{
+	return hash_t(std::string("plot_challenge") + plot_id + challenge);
+}
 
 inline
 uint64_t to_effective_space(const uint64_t& num_bytes)
@@ -148,26 +157,35 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 								const uint64_t balance, const uint64_t space_diff)
 {
 	if(balance == 0) {
-		throw std::logic_error("zero balance");
+		throw std::logic_error("zero balance (virtual plot)");
 	}
-	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
-	return hash_t(plot_id + challenge).to_uint256() / (divider * balance);
+	const hash_t quality(std::string("virtual_score") + plot_id + challenge);
+	const uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
+	return (quality.to_uint256() / divider) / balance;
 }
 
 inline
 uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	return (uint128_t(calc_total_netspace_ideal(params, space_diff)) * params->reward_factor.value) / params->reward_factor.inverse;
+	const uint64_t nominal = (uint128_t(calc_total_netspace_ideal(params, space_diff)) * params->reward_factor.value) / params->reward_factor.inverse;
+	return std::max(nominal, params->min_reward);
 }
 
 inline
-uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t fees)
+uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const uint64_t tx_fees)
 {
-	if(reward == 0) {
-		return fees;
-	}
-	const uint64_t scale = 1 << 16;
-	return uint64_t(std::max<int64_t>(int64_t(scale) - ((scale * fees) / (2 * reward)), 0) * reward) / scale + fees;
+	return std::min(params->fixed_project_reward, tx_fees / 4)
+			+ (params->project_ratio.value * uint128_t(tx_fees)) / params->project_ratio.inverse;
+}
+
+inline
+uint64_t calc_final_block_reward(
+		std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
+		const uint64_t base_reward, const uint64_t tx_fees)
+{
+	const uint64_t fee_deduction = std::min(params->vdf_reward, tx_fees / 8) + calc_project_reward(params, tx_fees);
+	const uint64_t block_reward = (base_reward > diff_block->average_txfee ? base_reward - diff_block->average_txfee : 0);
+	return block_reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
 }
 
 inline
@@ -189,10 +207,16 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
-uint32_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, const uint64_t prev_ratio, const bool is_og_proof)
+uint64_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, const uint64_t prev_ratio, const bool is_og_proof)
 {
-	const uint64_t value = is_og_proof ? 1024 : 0;
-	return ((prev_ratio * ((1 << params->max_diff_adjust) - 1)) + (value << params->max_diff_adjust)) >> params->max_diff_adjust;
+	const uint64_t value = is_og_proof ? uint64_t(1) << (2 * params->max_diff_adjust) : 0;
+	return (prev_ratio * ((uint64_t(1) << params->max_diff_adjust) - 1) + value) >> params->max_diff_adjust;
+}
+
+inline
+uint64_t calc_new_average_txfee(std::shared_ptr<const ChainParams> params, const uint64_t prev_value, const uint64_t total_fees)
+{
+	return (prev_value * ((uint64_t(1) << params->max_diff_adjust) - 1) + total_fees) >> params->max_diff_adjust;
 }
 
 inline
@@ -207,8 +231,10 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 		weight += 1;
 	}
 	weight *= diff_block->time_diff;
+	// TODO: weight *= std::max(diff_block->netspace_ratio, 1u);
+	// TODO: weight >>= 2 * params->max_diff_adjust;
 	if(weight.upper()) {
-		throw std::logic_error("weight overflow");
+		throw std::logic_error("block weight overflow");
 	}
 	return weight;
 }

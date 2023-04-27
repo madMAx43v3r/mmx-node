@@ -101,7 +101,6 @@ add_library(mmx_iface SHARED
 	src/BlockHeader.cpp
 	src/Transaction.cpp
 	src/Operation.cpp
-	src/Context.cpp
 	src/Contract.cpp
 	src/Challenge.cpp
 	src/Solution.cpp
@@ -117,9 +116,11 @@ add_library(mmx_iface SHARED
 	src/skey_t.cpp
 	src/hash_t.cpp
 	src/addr_t.cpp
+	src/pubkey_t.cpp
 	src/signature_t.cpp
 	src/bls_signature_t.cpp
 	src/exec_result_t.cpp
+	src/exec_error_t.cpp
 	src/vm/var_t.cpp
 	src/vm/varptr_t.cpp
 	src/contract/NFT.cpp
@@ -127,24 +128,15 @@ add_library(mmx_iface SHARED
 	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
 	src/contract/MultiSig.cpp
-	src/contract/Token.cpp
 	src/contract/TokenBase.cpp
-	src/contract/TimeLock.cpp
-	src/contract/PlotNFT.cpp
-	src/contract/PuzzleTimeLock.cpp
-	src/contract/MutableRelay.cpp
 	src/contract/VirtualPlot.cpp
 	src/contract/Binary.cpp
 	src/contract/Executable.cpp
 	src/contract/method_t.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
-	src/solution/PuzzleTimeLock.cpp
-	src/solution/MutableRelay.cpp
 	src/solution/BLS_PubKey.cpp
-	src/operation/Mint.cpp
 	src/operation/Spend.cpp
-	src/operation/Mutate.cpp
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp
 	src/operation/Vote.cpp
@@ -187,7 +179,6 @@ add_library(mmx_modules SHARED
 	src/Router.cpp
 	src/WebAPI.cpp
 	src/OCL_VDF.cpp
-	src/TimeLordRewards.cpp
 	src/upnp_mapper.cpp
 )
 
@@ -276,11 +267,6 @@ add_executable(mmx_farmer src/mmx_farmer.cpp)
 add_executable(mmx_wallet src/mmx_wallet.cpp)
 add_executable(mmx_timelord src/mmx_timelord.cpp)
 add_executable(mmx_harvester src/mmx_harvester.cpp)
-add_executable(mmx_timelord_rewards src/mmx_timelord_rewards.cpp)
-add_executable(generate_passwd src/generate_passwd.cpp)
-add_executable(create_offer_binary src/contract/create_offer_binary.cpp)
-add_executable(create_swap_binary src/contract/create_swap_binary.cpp)
-add_executable(create_plot_binary src/contract/create_plot_binary.cpp)
 
 target_link_libraries(mmx mmx_iface mmx_vm)
 target_link_libraries(mmx_node mmx_modules)
@@ -288,11 +274,6 @@ target_link_libraries(mmx_farmer mmx_modules)
 target_link_libraries(mmx_wallet mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
 target_link_libraries(mmx_harvester mmx_modules)
-target_link_libraries(mmx_timelord_rewards mmx_modules)
-target_link_libraries(generate_passwd mmx_iface)
-target_link_libraries(create_offer_binary mmx_vm)
-target_link_libraries(create_swap_binary mmx_vm)
-target_link_libraries(create_plot_binary mmx_vm)
 
 install(TARGETS mmx_db DESTINATION lib)
 install(TARGETS mmx_vm DESTINATION lib)
@@ -305,7 +286,6 @@ install(TARGETS mmx_farmer DESTINATION bin)
 install(TARGETS mmx_wallet DESTINATION bin)
 install(TARGETS mmx_timelord DESTINATION bin)
 install(TARGETS mmx_harvester DESTINATION bin)
-install(TARGETS generate_passwd DESTINATION bin)
 
 install(DIRECTORY
 	config data kernel scripts www

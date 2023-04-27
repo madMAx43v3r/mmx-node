@@ -5,6 +5,7 @@
 #include <mmx/Node_get_contracts_by.hxx>
 #include <mmx/Node_get_contracts_by_return.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_contracts_by::VNX_TYPE_HASH(0xe7c397362a63f57cull);
-const vnx::Hash64 Node_get_contracts_by::VNX_CODE_HASH(0x99fe97920b50dfccull);
+const vnx::Hash64 Node_get_contracts_by::VNX_CODE_HASH(0xedce701da3cb498ull);
 
 vnx::Hash64 Node_get_contracts_by::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,12 +49,14 @@ void Node_get_contracts_by::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_contracts_by;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, addresses);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, type_hash);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_contracts_by::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_contracts_by\"";
 	_out << ", \"addresses\": "; vnx::write(_out, addresses);
+	_out << ", \"type_hash\": "; vnx::write(_out, type_hash);
 	_out << "}";
 }
 
@@ -67,6 +70,7 @@ vnx::Object Node_get_contracts_by::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_contracts_by";
 	_object["addresses"] = addresses;
+	_object["type_hash"] = type_hash;
 	return _object;
 }
 
@@ -74,6 +78,8 @@ void Node_get_contracts_by::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "addresses") {
 			_entry.second.to(addresses);
+		} else if(_entry.first == "type_hash") {
+			_entry.second.to(type_hash);
 		}
 	}
 }
@@ -82,12 +88,17 @@ vnx::Variant Node_get_contracts_by::get_field(const std::string& _name) const {
 	if(_name == "addresses") {
 		return vnx::Variant(addresses);
 	}
+	if(_name == "type_hash") {
+		return vnx::Variant(type_hash);
+	}
 	return vnx::Variant();
 }
 
 void Node_get_contracts_by::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "addresses") {
 		_value.to(addresses);
+	} else if(_name == "type_hash") {
+		_value.to(type_hash);
 	}
 }
 
@@ -115,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_contracts_by::static_create_type_code() 
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_contracts_by";
 	type_code->type_hash = vnx::Hash64(0xe7c397362a63f57cull);
-	type_code->code_hash = vnx::Hash64(0x99fe97920b50dfccull);
+	type_code->code_hash = vnx::Hash64(0xedce701da3cb498ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -123,12 +134,18 @@ std::shared_ptr<vnx::TypeCode> Node_get_contracts_by::static_create_type_code() 
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_contracts_by>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_contracts_by_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "addresses";
 		field.code = {12, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.is_extended = true;
+		field.name = "type_hash";
+		field.code = {33, 11, 32, 1};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -177,6 +194,7 @@ void read(TypeInput& in, ::mmx::Node_get_contracts_by& value, const TypeCode* ty
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.type_hash, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -196,6 +214,7 @@ void write(TypeOutput& out, const ::mmx::Node_get_contracts_by& value, const Typ
 		type_code = type_code->depends[code[1]];
 	}
 	vnx::write(out, value.addresses, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.type_hash, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_contracts_by& value) {

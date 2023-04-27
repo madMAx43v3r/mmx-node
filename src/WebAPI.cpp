@@ -14,16 +14,10 @@
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/NFT.hxx>
-#include <mmx/contract/MutableRelay.hxx>
-#include <mmx/contract/Token.hxx>
-#include <mmx/contract/TimeLock.hxx>
-#include <mmx/contract/PuzzleTimeLock.hxx>
+#include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/PlotNFT.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/operation/Mint.hxx>
 #include <mmx/operation/Spend.hxx>
-#include <mmx/operation/Mutate.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -195,6 +189,14 @@ vnx::Object to_amount_object_str(const uint64_t& amount, const int decimals)
 	vnx::Object res;
 	res["value"] = fixed128(amount, decimals).to_string();
 	res["amount"] = amount;
+	return res;
+}
+
+vnx::Object to_amount_object_str(const uint128& amount, const int decimals)
+{
+	vnx::Object res;
+	res["value"] = fixed128(amount, decimals).to_string();
+	res["amount"] = amount.str();
 	return res;
 }
 
@@ -481,6 +483,9 @@ public:
 		std::vector<vnx::Object> fees_paid(empty);
 		std::vector<vnx::Object> fees_claimed(empty);
 		std::vector<vnx::Object> user_total(empty);
+		std::vector<vnx::Object> volume_1d(empty);
+		std::vector<vnx::Object> volume_7d(empty);
+		std::vector<vnx::Object> pools;
 		if(context) {
 			for(int i = 0; i < 2; ++i) {
 				if(auto token = context->find_currency(value.tokens[i])) {
@@ -491,7 +496,29 @@ public:
 					fees_paid[i] = to_amount_object(value.fees_paid[i], token->decimals);
 					fees_claimed[i] = to_amount_object(value.fees_claimed[i], token->decimals);
 					user_total[i] = to_amount_object(value.user_total[i], token->decimals);
+					volume_1d[i] = to_amount_object(value.volume_1d[i], token->decimals);
+					volume_7d[i] = to_amount_object(value.volume_7d[i], token->decimals);
 				}
+			}
+			for(const auto& info : value.pools) {
+				vnx::Object tmp;
+				std::vector<vnx::Object> balance(empty);
+				std::vector<vnx::Object> fees_paid(empty);
+				std::vector<vnx::Object> fees_claimed(empty);
+				std::vector<vnx::Object> user_total(empty);
+				for(int i = 0; i < 2; ++i) {
+					if(auto token = context->find_currency(value.tokens[i])) {
+						balance[i] = to_amount_object(info.balance[i], token->decimals);
+						fees_paid[i] = to_amount_object(info.fees_paid[i], token->decimals);
+						fees_claimed[i] = to_amount_object(info.fees_claimed[i], token->decimals);
+						user_total[i] = to_amount_object(info.user_total[i], token->decimals);
+					}
+				}
+				tmp["balance"] = balance;
+				tmp["fees_paid"] = fees_paid;
+				tmp["fees_claimed"] = fees_claimed;
+				tmp["user_total"] = user_total;
+				pools.push_back(tmp);
 			}
 		}
 		tmp["symbols"] = symbols;
@@ -501,6 +528,9 @@ public:
 		tmp["fees_paid"] = fees_paid;
 		tmp["fees_claimed"] = fees_claimed;
 		tmp["user_total"] = user_total;
+		tmp["volume_1d"] = volume_1d;
+		tmp["volume_7d"] = volume_7d;
+		tmp["pools"] = pools;
 		tmp["price"] = value.get_price();
 		tmp["display_price"] = value.get_price() * pow(10, decimals[0] - decimals[1]);
 		set(tmp);
@@ -548,11 +578,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Operation> base) {
-		if(auto value = std::dynamic_pointer_cast<const operation::Mint>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const operation::Spend>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const operation::Mutate>(base)) {
+		if(auto value = std::dynamic_pointer_cast<const operation::Spend>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
 			set(render(value, context));
@@ -576,23 +602,15 @@ public:
 	void accept(std::shared_ptr<const Contract> base) {
 		if(auto value = std::dynamic_pointer_cast<const contract::NFT>(base)) {
 			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Token>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::PuzzleTimeLock>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::TimeLock>(base)) {
-			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::PlotNFT>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::MutableRelay>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::TokenBase>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
@@ -613,14 +631,23 @@ public:
 		}
 	}
 
+	void augment_block_header(vnx::Object& tmp, std::shared_ptr<const BlockHeader> value) {
+		tmp["time"] = context->get_time(value->height);
+		tmp["tx_fees"] = to_amount_object(value->tx_fees, context->params->decimals);
+		tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
+		tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
+		tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
+		tmp["average_txfee"] = to_amount_object(value->average_txfee, context->params->decimals);
+		tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
+		tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+	}
+
 	void accept(std::shared_ptr<const BlockHeader> value) {
 		if(auto block = std::dynamic_pointer_cast<const Block>(value)) {
 			accept(block);
 		} else if(value && context) {
 			auto tmp = render(*value, context);
-			tmp["time"] = context->get_time(value->height);
-			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
-			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+			augment_block_header(tmp, value);
 			set(tmp);
 		} else {
 			set(render(value));
@@ -630,9 +657,7 @@ public:
 	void accept(std::shared_ptr<const Block> value) {
 		if(value && context) {
 			auto tmp = render(*value, context);
-			tmp["time"] = context->get_time(value->height);
-			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
-			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+			augment_block_header(tmp, value);
 			set(tmp);
 		} else {
 			set(render(value));
@@ -747,13 +772,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					} else {
 						out["score"] = nullptr;
 					}
-					uint64_t total = 0;
-					if(auto tx = block->tx_base) {
-						for(const auto& out : tx->outputs) {
-							total += out.amount;
-						}
-					}
-					out["reward"] = total / pow(10, params->decimals);
+					out["reward"] = to_value(block->reward_amount, params->decimals);
 					out["tx_fees"] = block->tx_fees / pow(10, params->decimals);
 					out["base_reward"] = calc_block_reward(params, block->space_diff) / pow(10, params->decimals);
 				}
@@ -785,11 +804,6 @@ void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<c
 				}
 				if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
 					addr_set.insert(deposit->currency);
-				}
-			}
-			if(auto contract = tx->deploy) {
-				for(const auto& addr : contract->get_dependency()) {
-					addr_set.insert(addr);
 				}
 			}
 		}
@@ -1145,6 +1159,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					res = render(*info);
 					res["time"] = context->get_time(info->height);
 					res["block_reward"] = to_amount_object(info->block_reward, params->decimals);
+					res["average_txfee"] = to_amount_object(info->average_txfee, params->decimals);
 				}
 				respond(request_id, res);
 			},
@@ -1395,22 +1410,21 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									std::vector<std::string> symbols(2);
 									std::vector<vnx::Object> balance(empty);
 									std::vector<vnx::Object> fees_earned(empty);
-									std::vector<vnx::Object> remove_amount(empty);
-									const auto fees_earned_ = info.get_earned_fees(user_info);
-									const auto remove_amount_ = info.get_remove_amount(user_info, {user_info.balance[0], user_info.balance[1]});
+									std::vector<vnx::Object> equivalent_liquidity(empty);
 									for(int i = 0; i < 2; ++i) {
 										if(auto token = context->find_currency(info.tokens[i])) {
 											symbols[i] = token->symbol;
 											balance[i] = to_amount_object(user_info.balance[i], token->decimals);
-											fees_earned[i] = to_amount_object(fees_earned_[i], token->decimals);
-											remove_amount[i] = to_amount_object(remove_amount_[i], token->decimals);
+											fees_earned[i] = to_amount_object(user_info.fees_earned[i], token->decimals);
+											equivalent_liquidity[i] = to_amount_object(user_info.equivalent_liquidity[i], token->decimals);
 										}
 									}
+									out["pool_idx"] = user_info.pool_idx;
 									out["tokens"] = render_value(info.tokens);
 									out["symbols"] = symbols;
 									out["balance"] = balance;
 									out["fees_earned"] = fees_earned;
-									out["remove_amount"] = remove_amount;
+									out["equivalent_liquidity"] = equivalent_liquidity;
 									out["unlock_height"] = user_info.unlock_height;
 									out["swap"] = render_value(info, context);
 									respond(request_id, out);
@@ -1452,15 +1466,22 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id, index, value](const swap_info_t& info) {
 					get_context({info.tokens[0], info.tokens[1]}, request_id,
 						[this, request_id, index, info, value](std::shared_ptr<RenderContext> context) {
-							vnx::Object out;
 							const auto token_i = context->find_currency(info.tokens[index]);
 							const auto token_k = context->find_currency(info.tokens[(index + 1) % 2]);
 							if(token_i && token_k) {
+								const auto token_k_decimals = token_k->decimals;
 								const auto amount = to_amount(value, token_i->decimals);
-								const auto trade_amount = info.get_trade_amount(index, amount);
-								out["trade"] = to_amount_object_str(trade_amount, token_k->decimals);
+								node->get_swap_trade_estimate(info.address, index, amount,
+									[this, request_id, token_k_decimals](const std::array<uint128, 2>& ret) {
+										vnx::Object out;
+										out["trade"] = to_amount_object_str(ret[0], token_k_decimals);
+										out["fee"] = to_amount_object_str(ret[1], token_k_decimals);
+										respond(request_id, render_value(out));
+									},
+									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+							} else {
+								throw std::logic_error("unknown token");
 							}
-							respond(request_id, render_value(out));
 					});
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -1542,11 +1563,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					std::map<addr_t, uint64_t> reward_map;
 					for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
 						const auto& block = *iter;
-						if(auto tx = block->tx_base) {
-							for(const auto& out : tx->outputs) {
-								total_reward += out.amount;
-								reward_map[out.address] += out.amount;
-							}
+						if(block->reward_addr) {
+							total_reward += block->reward_amount;
+							reward_map[*block->reward_addr] += block->reward_amount;
 						}
 						if(recent.size() < limit) {
 							recent.push_back(block);
@@ -1951,8 +1970,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto address = args["address"].to<addr_t>();
 			const auto method = args["method"].to<std::string>();
 			const auto params = args["args"].to<std::vector<vnx::Variant>>();
+			const auto user = args["user"].to<vnx::optional<uint32_t>>();
 			const auto options = args["options"].to<spend_options_t>();
-			wallet->execute(index, address, method, params, options,
+			wallet->execute(index, address, method, params, user, options,
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
 					respond(request_id, render(tx));
 				},
@@ -2180,6 +2200,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						[this, request_id, mode, address, args, info](std::shared_ptr<RenderContext> context) {
 							const auto index = args["index"].to<uint32_t>();
 							const auto value = args["amount"].to<std::array<fixed128, 2>>();
+							const auto pool_idx = args["pool_idx"].to<uint32_t>();
 							const auto options = args["options"].to<spend_options_t>();
 
 							std::array<uint64_t, 2> amount = {};
@@ -2193,7 +2214,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									respond(request_id, render(tx));
 								};
 							if(mode) {
-								wallet->swap_add_liquid(index, address, amount, options, callback,
+								wallet->swap_add_liquid(index, address, amount, pool_idx, options, callback,
 									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 							} else {
 								wallet->swap_rem_liquid(index, address, amount, options, callback,
@@ -2212,22 +2233,50 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
 			const auto index = args["index"].to<uint32_t>();
-			const auto offset = args["offset"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto options = args["options"].to<spend_options_t>();
-			wallet->get_address(index, offset,
-				[this, request_id, index, address, options](const addr_t& user) {
-					auto options_ = options;
-					options_.user = user;
-					wallet->execute(index, address, "payout", {}, options_,
-						[this, request_id](std::shared_ptr<const Transaction> tx) {
-							respond(request_id, render(tx));
-						},
-						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			wallet->execute(index, address, "payout", {}, uint32_t(0), options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "POST wallet/swap/payout {...}");
+		}
+	}
+	else if(sub_path == "/wallet/swap/switch_pool") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto pool_idx = args["pool_idx"].to<uint32_t>();
+			const auto address = args["address"].to<addr_t>();
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->execute(index, address, "switch_pool", {vnx::Variant(pool_idx)}, uint32_t(0), options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/swap/switch_pool {...}");
+		}
+	}
+	else if(sub_path == "/wallet/swap/rem_all_liquid") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto address = args["address"].to<addr_t>();
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->execute(index, address, "rem_all_liquid", {vnx::Variant(false)}, uint32_t(0), options,
+				[this, request_id](std::shared_ptr<const Transaction> tx) {
+					respond(request_id, render(tx));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "POST wallet/swap/switch_pool {...}");
 		}
 	}
 	else if(sub_path == "/farmer/info") {
@@ -2387,6 +2436,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/address_info", "wallet/coins",
 			"wallet/history", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
+			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
 			"farmer/info", "farmer/blocks", "farmer/proofs",
 			"node/offers", "node/offer", "node/trade_history"

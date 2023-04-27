@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 	std::string file_path;
 	uint32_t start_height = 25000;
 	uint32_t end_height = -1;
-	double reward = 0.25;
+	double reward = 0.5;
 	bool json = false;
 	vnx::read_config("file", file_path);
 	vnx::read_config("start", start_height);
@@ -55,11 +55,9 @@ int main(int argc, char** argv)
 				block_count++;
 
 				if(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
-					if(auto tx = block->tx_base) {
-						if(tx->outputs.size() > 1) {
-							reward_count[tx->outputs[1].address] += block_count;
-							block_count = 0;
-						}
+					if(block->reward_addr) {
+						reward_count[*block->reward_addr] += block_count;
+						block_count = 0;
 					}
 				}
 			}

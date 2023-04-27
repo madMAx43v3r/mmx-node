@@ -42,12 +42,12 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 		throw std::logic_error("!params");
 	}
 	for(const auto& op : execute) {
-		if(!op) {
+		if(!op || !op->is_valid()) {
 			return false;
 		}
 	}
 	for(const auto& sol : solutions) {
-		if(!sol) {
+		if(!sol || !sol->is_valid()) {
 			return false;
 		}
 	}
@@ -84,10 +84,10 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "nonce", 	nonce);
 	write_field(out, "salt", 	salt);
 	write_field(out, "sender",	sender);
-	write_field(out, "inputs",	inputs);
+	write_field(out, "inputs",	inputs, full_hash);
 	write_field(out, "outputs", outputs);
-	write_bytes(out, "execute");
-	write_bytes(out, uint64_t(execute.size()));
+	write_field(out, "execute");
+	write_bytes(out, uint32_t(execute.size()));
 	for(const auto& op : execute) {
 		write_bytes(out, op ? op->calc_hash(full_hash) : hash_t());
 	}
@@ -95,8 +95,8 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 
 	if(full_hash) {
 		write_field(out, "static_cost", static_cost);
-		write_bytes(out, "solutions");
-		write_bytes(out, uint64_t(solutions.size()));
+		write_field(out, "solutions");
+		write_bytes(out, uint32_t(solutions.size()));
 		for(const auto& sol : solutions) {
 			write_bytes(out, sol ? sol->calc_hash() : hash_t());
 		}
@@ -178,6 +178,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	uint128_t cost = params->min_txfee;
 	cost += inputs.size() * params->min_txfee_io;
 	cost += outputs.size() * params->min_txfee_io;
+	cost += execute.size() * params->min_txfee_exec;
 
 	for(const auto& in : inputs) {
 		if(in.flags & txin_t::IS_EXEC) {
@@ -186,7 +187,7 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	}
 	for(const auto& op : execute) {
 		if(op) {
-			cost += params->min_txfee_exec + op->calc_cost(params);
+			cost += op->calc_cost(params);
 		}
 	}
 	for(const auto& sol : solutions) {

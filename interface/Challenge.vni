@@ -10,6 +10,8 @@ class Challenge {
 	
 	ulong space_diff;
 	
+	uint max_delay;				// in blocks
+	
 	
 	hash_t calc_hash() const;
 	

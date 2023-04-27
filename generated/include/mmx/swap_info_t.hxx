@@ -7,7 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/swap_user_info_t.hxx>
+#include <mmx/swap_pool_info_t.hxx>
 #include <mmx/uint128.hpp>
 
 
@@ -21,11 +21,16 @@ struct MMX_EXPORT swap_info_t {
 	std::array<::mmx::addr_t, 2> tokens = {};
 	std::array<::mmx::uint128, 2> wallet = {};
 	std::array<::mmx::uint128, 2> balance = {};
+	std::array<::mmx::uint128, 2> volume = {};
 	std::array<::mmx::uint128, 2> fees_paid = {};
 	std::array<::mmx::uint128, 2> fees_claimed = {};
 	std::array<::mmx::uint128, 2> user_total = {};
+	std::array<::mmx::uint128, 2> volume_1d = {};
+	std::array<::mmx::uint128, 2> volume_7d = {};
 	std::array<vnx::float64_t, 2> avg_apy_1d = {};
 	std::array<vnx::float64_t, 2> avg_apy_7d = {};
+	std::vector<vnx::float64_t> fee_rates;
+	std::vector<::mmx::swap_pool_info_t> pools;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -39,9 +44,6 @@ struct MMX_EXPORT swap_info_t {
 	const vnx::TypeCode* get_type_code() const;
 	
 	vnx::float64_t get_price() const;
-	uint64_t get_trade_amount(const uint32_t& i = 0, const uint64_t& amount = 0) const;
-	std::array<uint64_t, 2> get_earned_fees(const ::mmx::swap_user_info_t& user = ::mmx::swap_user_info_t()) const;
-	std::array<uint64_t, 2> get_remove_amount(const ::mmx::swap_user_info_t& user = ::mmx::swap_user_info_t(), const std::array<uint64_t, 2>& amount = {}) const;
 	
 	static std::shared_ptr<swap_info_t> create();
 	std::shared_ptr<swap_info_t> clone() const;
@@ -72,18 +74,23 @@ struct MMX_EXPORT swap_info_t {
 
 template<typename T>
 void swap_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_info_t>(10);
+	_visitor.template type_begin<swap_info_t>(15);
 	_visitor.type_field("name", 0); _visitor.accept(name);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("tokens", 2); _visitor.accept(tokens);
 	_visitor.type_field("wallet", 3); _visitor.accept(wallet);
 	_visitor.type_field("balance", 4); _visitor.accept(balance);
-	_visitor.type_field("fees_paid", 5); _visitor.accept(fees_paid);
-	_visitor.type_field("fees_claimed", 6); _visitor.accept(fees_claimed);
-	_visitor.type_field("user_total", 7); _visitor.accept(user_total);
-	_visitor.type_field("avg_apy_1d", 8); _visitor.accept(avg_apy_1d);
-	_visitor.type_field("avg_apy_7d", 9); _visitor.accept(avg_apy_7d);
-	_visitor.template type_end<swap_info_t>(10);
+	_visitor.type_field("volume", 5); _visitor.accept(volume);
+	_visitor.type_field("fees_paid", 6); _visitor.accept(fees_paid);
+	_visitor.type_field("fees_claimed", 7); _visitor.accept(fees_claimed);
+	_visitor.type_field("user_total", 8); _visitor.accept(user_total);
+	_visitor.type_field("volume_1d", 9); _visitor.accept(volume_1d);
+	_visitor.type_field("volume_7d", 10); _visitor.accept(volume_7d);
+	_visitor.type_field("avg_apy_1d", 11); _visitor.accept(avg_apy_1d);
+	_visitor.type_field("avg_apy_7d", 12); _visitor.accept(avg_apy_7d);
+	_visitor.type_field("fee_rates", 13); _visitor.accept(fee_rates);
+	_visitor.type_field("pools", 14); _visitor.accept(pools);
+	_visitor.template type_end<swap_info_t>(15);
 }
 
 

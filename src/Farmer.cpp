@@ -7,6 +7,9 @@
 
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
+#include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
+#include <mmx/HarvesterClient.hxx>
 #include <mmx/utils.h>
 
 
@@ -145,26 +148,38 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 	}
 }
 
-skey_t Farmer::find_skey(const bls_pubkey_t& pubkey) const
+skey_t Farmer::get_skey(const bls_pubkey_t& pubkey) const
 {
 	auto iter = key_map.find(pubkey);
 	if(iter == key_map.end()) {
-		throw std::logic_error("unknown farmer key: " + pubkey.to_string());
+		throw std::logic_error("unknown farmer / plot key: " + pubkey.to_string());
 	}
 	return iter->second;
 }
 
-bls_signature_t Farmer::sign_proof(std::shared_ptr<const ProofResponse> value) const
+bls_signature_t Farmer::sign_proof(
+		std::shared_ptr<const ProofResponse> value, const vnx::optional<skey_t>& local_sk) const
 {
 	if(!value || !value->is_valid()) {
 		throw std::logic_error("invalid argument");
 	}
-	// TODO: verify proof
-	return bls_signature_t::sign(find_skey(value->proof->farmer_key), value->hash);
+	skey_t plot_sk = get_skey(value->proof->farmer_key);
+
+	if(local_sk) {
+		plot_sk = bls::PrivateKey::Aggregate({
+			// inlined to calls to skey_t::to_bls() to avoid MSVC bug
+			bls::PrivateKey::FromBytes(bls::Bytes(local_sk->data(), local_sk->size())),
+			bls::PrivateKey::FromBytes(bls::Bytes(plot_sk.data(), plot_sk.size()))
+		});
+		key_map[value->proof->plot_key] = plot_sk;
+	}
+
+	// TODO: have node verify proof first
+	return bls_signature_t::sign(plot_sk, value->hash);
 }
 
-std::shared_ptr<const BlockHeader>
-Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& reward_amount) const
+std::shared_ptr<const BlockHeader> Farmer::sign_block(
+		std::shared_ptr<const BlockHeader> block) const
 {
 	if(!block) {
 		throw std::logic_error("!block");
@@ -172,50 +187,23 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block, const uint64_t& rew
 	if(!block->proof) {
 		throw std::logic_error("!proof");
 	}
-	const auto farmer_sk = find_skey(block->proof->farmer_key);
-
-	auto base = Transaction::create();
-	base->expires = block->height;
-	base->note = tx_note_e::REWARD;
-	base->salt = block->prev;
-
-	auto amount_left = reward_amount;
-	if(project_addr && amount_left > 0)
-	{
-		txout_t out;
-		out.address = *project_addr;
-		out.amount = double(amount_left) * devfee_ratio;
-		if(out.amount > 0) {
-			amount_left -= out.amount;
-			base->outputs.push_back(out);
-		}
-	}
-	if(reward_addr && amount_left > 0)
-	{
-		txout_t out;
-		out.address = *reward_addr;
-		out.amount = amount_left;
-		amount_left -= out.amount;
-		base->outputs.push_back(out);
-	}
-	base->finalize();
-
-	base->static_cost = base->calc_cost(params);
-	{
-		exec_result_t res;
-		res.total_cost = base->static_cost;
-		for(const auto& out : base->outputs) {
-			res.total_fee += out.amount;
-		}
-		base->exec_result = res;
-	}
-	base->content_hash = base->calc_hash(true);
+	const auto plot_sk = get_skey(block->proof->plot_key);
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
-	out->tx_base = base;
+
+	if(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+		out->reward_addr = reward_addr;
+	}
+	else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+		out->reward_addr = nft_proof->contract;
+	}
+	else if(!out->reward_addr) {
+		out->reward_addr = reward_addr;
+	}
 	out->hash = out->calc_hash().first;
-	out->farmer_sig = bls_signature_t::sign(farmer_sk, out->hash);
+	out->farmer_sig = bls_signature_t::sign(plot_sk, out->hash);
+	out->content_hash = out->calc_hash().second;
 	return out;
 }
 

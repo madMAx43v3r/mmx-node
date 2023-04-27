@@ -18,6 +18,7 @@ public:
 	uint32_t version = 0;
 	uint32_t score = 0;
 	::mmx::hash_t plot_id;
+	::mmx::bls_pubkey_t plot_key;
 	::mmx::bls_pubkey_t farmer_key;
 	
 	typedef ::vnx::Value Super;
@@ -69,12 +70,13 @@ protected:
 
 template<typename T>
 void ProofOfSpace::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfSpace>(4);
+	_visitor.template type_begin<ProofOfSpace>(5);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("score", 1); _visitor.accept(score);
 	_visitor.type_field("plot_id", 2); _visitor.accept(plot_id);
-	_visitor.type_field("farmer_key", 3); _visitor.accept(farmer_key);
-	_visitor.template type_end<ProofOfSpace>(4);
+	_visitor.type_field("plot_key", 3); _visitor.accept(plot_key);
+	_visitor.type_field("farmer_key", 4); _visitor.accept(farmer_key);
+	_visitor.template type_end<ProofOfSpace>(5);
 }
 
 

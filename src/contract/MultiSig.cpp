@@ -17,7 +17,7 @@ namespace contract {
 
 vnx::bool_t MultiSig::is_valid() const
 {
-	return Super::is_valid() && num_required > 0 && owners.size() >= num_required && owners.size() <= MAX_OWNERS;
+	return Super::is_valid() && num_required > 0 && owners.size() >= num_required;
 }
 
 hash_t MultiSig::calc_hash(const vnx::bool_t& full_hash) const
@@ -39,42 +39,36 @@ uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return 32 * owners.size() * params->min_txfee_byte;
 }
 
-std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operation, std::shared_ptr<const Context> context) const
+void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
 {
 	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
 	{
 		if(num_required != 1) {
 			throw mmx::invalid_solution("num_required != 1");
 		}
-		const auto addr = solution->pubkey.get_addr();
-
-		for(const auto& owner : owners) {
-			if(addr == owner) {
-				if(!solution->signature.verify(solution->pubkey, context->txid)) {
-					throw mmx::invalid_solution("invalid signature");
-				}
-				return {};
+		if(owners.count(solution->pubkey.get_addr()))
+		{
+			if(!solution->signature.verify(solution->pubkey, txid)) {
+				throw mmx::invalid_solution("invalid signature");
 			}
+			return;
 		}
 		throw mmx::invalid_solution("no such owner");
 	}
 	if(auto solution = std::dynamic_pointer_cast<const solution::MultiSig>(operation->solution))
 	{
-		if(solution->solutions.size() != owners.size()) {
-			throw mmx::invalid_solution("solutions count mismatch");
-		}
 		size_t count = 0;
-		for(size_t i = 0; i < owners.size(); ++i)
+		for(const auto& entry : solution->solutions)
 		{
-			if(const auto& sol = solution->solutions[i])
+			if(owners.count(entry.first))
 			{
-				if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(sol))
+				if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(entry.second))
 				{
-					if(solution->pubkey.get_addr() != owners[i]) {
-						throw mmx::invalid_solution("wrong pubkey at index " + std::to_string(i));
+					if(solution->pubkey.get_addr() != entry.first) {
+						throw mmx::invalid_solution("wrong pubkey for " + entry.first.to_string());
 					}
-					if(!solution->signature.verify(solution->pubkey, context->txid)) {
-						throw mmx::invalid_solution("invalid signature at index " + std::to_string(i));
+					if(!solution->signature.verify(solution->pubkey, txid)) {
+						throw mmx::invalid_solution("invalid signature for " + entry.first.to_string());
 					}
 					count++;
 				}
@@ -83,31 +77,13 @@ std::vector<txout_t> MultiSig::validate(std::shared_ptr<const Operation> operati
 		if(count < num_required) {
 			throw mmx::invalid_solution("insufficient signatures: " + std::to_string(count) + " < " + std::to_string(num_required));
 		}
-		return {};
+		return;
 	}
-	throw mmx::invalid_solution("invalid type");
-}
-
-void MultiSig::add_owner(const addr_t& address)
-{
-	owners.push_back(address);
-}
-
-void MultiSig::rem_owner(const addr_t& address)
-{
-	while(true) {
-		auto iter = std::find(owners.begin(), owners.end(), address);
-		if(iter != owners.end()) {
-			owners.erase(iter);
-		} else {
-			break;
-		}
+	if(operation->solution) {
+		throw mmx::invalid_solution("invalid type");
+	} else {
+		throw mmx::invalid_solution("missing");
 	}
-}
-
-void MultiSig::set_num_required(const uint32_t& count)
-{
-	num_required = count;
 }
 
 

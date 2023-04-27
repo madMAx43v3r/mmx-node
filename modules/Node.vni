@@ -36,6 +36,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
 	uint replay_height = -1;				// to limit reloading from disk and force resync
 	
+	uint num_threads = 24;
 	uint num_vdf_threads = 8;
 	uint vdf_check_divider = 5000;			// how many VDFs to verify during sync
 	uint vdf_verify_divider = 1;			// TODO: how many VDFs to verify when synced
@@ -45,6 +46,7 @@ module Node implements vnx.addons.HttpComponent {
 	bool do_sync = true;
 	bool db_replay = false;
 	bool show_warnings = false;
+	bool verify_vdf_rewards = true;
 	
 	string storage_path;
 	string database_path = "db/";
@@ -100,6 +102,9 @@ module Node implements vnx.addons.HttpComponent {
 	@Permission(permission_e.PUBLIC)
 	vector<hash_t> get_tx_ids_since(uint height) const;
 	
+	@Permission(permission_e.PUBLIC)
+	exec_result_t validate(Transaction* tx) const;
+	
 	@Permission(PUBLISH)
 	void add_block(Block* block);
 	
@@ -115,16 +120,13 @@ module Node implements vnx.addons.HttpComponent {
 	Contract* get_contract_for(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	Contract* get_contract_at(addr_t address, hash_t block_hash) const;
-	
-	@Permission(permission_e.PUBLIC)
 	vector<Contract*> get_contracts(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<addr_t> get_contracts_by(vector<addr_t> addresses) const;
+	vector<addr_t> get_contracts_by(vector<addr_t> addresses, optional<hash_t> type_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<addr_t> get_contracts_owned_by(vector<addr_t> addresses) const;
+	vector<addr_t> get_contracts_owned_by(vector<addr_t> addresses, optional<hash_t> type_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
 	Transaction* get_transaction(hash_t id, bool include_pending) const;
@@ -178,7 +180,7 @@ module Node implements vnx.addons.HttpComponent {
 	map<string, varptr_t> read_storage_object(addr_t contract, ulong address, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args) const;
+	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, ulong>> deposit) const;
 	
 	@Permission(permission_e.PUBLIC)
 	address_info_t get_address_info(addr_t address) const;
@@ -191,6 +193,9 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots_for(bls_pubkey_t farmer_key) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<virtual_plot_info_t> get_virtual_plots_owned_by(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	ulong get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
@@ -230,6 +235,15 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	vector<swap_entry_t> get_swap_history(addr_t address, int limit = 100) const;
+	
+	@Permission(permission_e.PUBLIC)
+	uint128[2] get_swap_trade_estimate(addr_t address, uint i, ulong amount) const;
+	
+	@Permission(permission_e.PUBLIC)
+	uint128[2] get_swap_fees_earned(addr_t address, addr_t user) const;
+	
+	@Permission(permission_e.PUBLIC)
+	uint128[2] get_swap_equivalent_liquidity(addr_t address, addr_t user) const;
 	
 	@Permission(permission_e.PUBLIC)
 	map<addr_t, pair<addr_t, uint128>[2]> get_swap_liquidity_by(vector<addr_t> addresses) const;

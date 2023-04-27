@@ -11,6 +11,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/bls_signature_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -26,8 +27,6 @@ public:
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	vnx::optional<::mmx::addr_t> reward_addr;
-	vnx::optional<::mmx::addr_t> project_addr;
-	vnx::float64_t devfee_ratio = 0.05;
 	
 	typedef ::vnx::Module Super;
 	
@@ -67,8 +66,8 @@ protected:
 	virtual ::vnx::Hash64 get_mac_addr() const = 0;
 	virtual std::vector<::mmx::bls_pubkey_t> get_farmer_keys() const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
-	virtual ::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value) const = 0;
-	virtual std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block, const uint64_t& reward_amount) const = 0;
+	virtual ::mmx::bls_signature_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value, const vnx::optional<::mmx::skey_t>& local_sk) const = 0;
+	virtual std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block) const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::FarmInfo> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
@@ -78,15 +77,13 @@ protected:
 
 template<typename T>
 void FarmerBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmerBase>(7);
+	_visitor.template type_begin<FarmerBase>(5);
 	_visitor.type_field("input_info", 0); _visitor.accept(input_info);
 	_visitor.type_field("harvester_timeout", 1); _visitor.accept(harvester_timeout);
 	_visitor.type_field("node_server", 2); _visitor.accept(node_server);
 	_visitor.type_field("wallet_server", 3); _visitor.accept(wallet_server);
 	_visitor.type_field("reward_addr", 4); _visitor.accept(reward_addr);
-	_visitor.type_field("project_addr", 5); _visitor.accept(project_addr);
-	_visitor.type_field("devfee_ratio", 6); _visitor.accept(devfee_ratio);
-	_visitor.template type_end<FarmerBase>(7);
+	_visitor.template type_end<FarmerBase>(5);
 }
 
 

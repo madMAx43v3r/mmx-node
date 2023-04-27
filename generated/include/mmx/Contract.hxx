@@ -6,11 +6,9 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/Context.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -37,11 +35,9 @@ public:
 	virtual vnx::bool_t is_valid() const;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = false) const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
-	virtual std::vector<::mmx::addr_t> get_dependency() const;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const;
-	virtual vnx::bool_t is_locked(std::shared_ptr<const ::mmx::Context> context = nullptr) const;
-	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
-	virtual void transfer(const vnx::optional<::mmx::addr_t>& new_owner = nullptr);
+	virtual vnx::bool_t is_locked(const uint32_t& height = 0) const;
+	virtual void validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const;
 	
 	static std::shared_ptr<Contract> create();
 	std::shared_ptr<vnx::Value> clone() const override;

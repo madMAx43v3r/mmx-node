@@ -20,5 +20,10 @@ skey_t::skey_t(const bls::PrivateKey& key)
 	key.Serialize(data());
 }
 
+bls::PrivateKey skey_t::to_bls() const
+{
+	return bls::PrivateKey::FromBytes(bls::Bytes(data(), size()));
+}
+
 
 } // mmx

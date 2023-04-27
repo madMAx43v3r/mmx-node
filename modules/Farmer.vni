@@ -10,9 +10,6 @@ module Farmer {
 	string wallet_server = "Wallet";
 	
 	optional<addr_t> reward_addr;					// default = first address of first wallet
-	optional<addr_t> project_addr;					// where developer fee goes
-	
-	double devfee_ratio = 0.05;
 	
 	
 	vnx.Hash64 get_mac_addr() const;
@@ -21,9 +18,9 @@ module Farmer {
 	
 	FarmInfo* get_farm_info() const;
 	
-	bls_signature_t sign_proof(ProofResponse* value) const;
+	bls_signature_t sign_proof(ProofResponse* value, optional<skey_t> local_sk) const;
 	
-	BlockHeader* sign_block(BlockHeader* block, ulong reward_amount) const;
+	BlockHeader* sign_block(BlockHeader* block) const;
 	
 	
 	void handle(FarmInfo sample);

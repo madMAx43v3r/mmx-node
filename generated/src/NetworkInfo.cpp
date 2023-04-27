@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NetworkInfo::VNX_TYPE_HASH(0xd984018819746101ull);
-const vnx::Hash64 NetworkInfo::VNX_CODE_HASH(0x9948a3cfc158b88cull);
+const vnx::Hash64 NetworkInfo::VNX_CODE_HASH(0x7811fc103f9d81a0ull);
 
 vnx::Hash64 NetworkInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -54,9 +54,11 @@ void NetworkInfo::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, total_space);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, total_supply);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, address_count);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, block_size);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, netspace_ratio);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, genesis_hash);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, vdf_speed);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, block_size);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, netspace_ratio);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, average_txfee);
+	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, genesis_hash);
 	_visitor.type_end(*_type_code);
 }
 
@@ -70,8 +72,10 @@ void NetworkInfo::write(std::ostream& _out) const {
 	_out << ", \"total_space\": "; vnx::write(_out, total_space);
 	_out << ", \"total_supply\": "; vnx::write(_out, total_supply);
 	_out << ", \"address_count\": "; vnx::write(_out, address_count);
+	_out << ", \"vdf_speed\": "; vnx::write(_out, vdf_speed);
 	_out << ", \"block_size\": "; vnx::write(_out, block_size);
 	_out << ", \"netspace_ratio\": "; vnx::write(_out, netspace_ratio);
+	_out << ", \"average_txfee\": "; vnx::write(_out, average_txfee);
 	_out << ", \"genesis_hash\": "; vnx::write(_out, genesis_hash);
 	_out << "}";
 }
@@ -93,8 +97,10 @@ vnx::Object NetworkInfo::to_object() const {
 	_object["total_space"] = total_space;
 	_object["total_supply"] = total_supply;
 	_object["address_count"] = address_count;
+	_object["vdf_speed"] = vdf_speed;
 	_object["block_size"] = block_size;
 	_object["netspace_ratio"] = netspace_ratio;
+	_object["average_txfee"] = average_txfee;
 	_object["genesis_hash"] = genesis_hash;
 	return _object;
 }
@@ -103,6 +109,8 @@ void NetworkInfo::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "address_count") {
 			_entry.second.to(address_count);
+		} else if(_entry.first == "average_txfee") {
+			_entry.second.to(average_txfee);
 		} else if(_entry.first == "block_reward") {
 			_entry.second.to(block_reward);
 		} else if(_entry.first == "block_size") {
@@ -123,6 +131,8 @@ void NetworkInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(total_space);
 		} else if(_entry.first == "total_supply") {
 			_entry.second.to(total_supply);
+		} else if(_entry.first == "vdf_speed") {
+			_entry.second.to(vdf_speed);
 		}
 	}
 }
@@ -152,11 +162,17 @@ vnx::Variant NetworkInfo::get_field(const std::string& _name) const {
 	if(_name == "address_count") {
 		return vnx::Variant(address_count);
 	}
+	if(_name == "vdf_speed") {
+		return vnx::Variant(vdf_speed);
+	}
 	if(_name == "block_size") {
 		return vnx::Variant(block_size);
 	}
 	if(_name == "netspace_ratio") {
 		return vnx::Variant(netspace_ratio);
+	}
+	if(_name == "average_txfee") {
+		return vnx::Variant(average_txfee);
 	}
 	if(_name == "genesis_hash") {
 		return vnx::Variant(genesis_hash);
@@ -181,10 +197,14 @@ void NetworkInfo::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(total_supply);
 	} else if(_name == "address_count") {
 		_value.to(address_count);
+	} else if(_name == "vdf_speed") {
+		_value.to(vdf_speed);
 	} else if(_name == "block_size") {
 		_value.to(block_size);
 	} else if(_name == "netspace_ratio") {
 		_value.to(netspace_ratio);
+	} else if(_name == "average_txfee") {
+		_value.to(average_txfee);
 	} else if(_name == "genesis_hash") {
 		_value.to(genesis_hash);
 	}
@@ -214,12 +234,12 @@ std::shared_ptr<vnx::TypeCode> NetworkInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.NetworkInfo";
 	type_code->type_hash = vnx::Hash64(0xd984018819746101ull);
-	type_code->code_hash = vnx::Hash64(0x9948a3cfc158b88cull);
+	type_code->code_hash = vnx::Hash64(0x7811fc103f9d81a0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::NetworkInfo);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<NetworkInfo>(); };
-	type_code->fields.resize(11);
+	type_code->fields.resize(13);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 1;
@@ -271,17 +291,29 @@ std::shared_ptr<vnx::TypeCode> NetworkInfo::static_create_type_code() {
 	{
 		auto& field = type_code->fields[8];
 		field.data_size = 8;
-		field.name = "block_size";
+		field.name = "vdf_speed";
 		field.code = {10};
 	}
 	{
 		auto& field = type_code->fields[9];
 		field.data_size = 8;
-		field.name = "netspace_ratio";
+		field.name = "block_size";
 		field.code = {10};
 	}
 	{
 		auto& field = type_code->fields[10];
+		field.data_size = 8;
+		field.name = "netspace_ratio";
+		field.code = {10};
+	}
+	{
+		auto& field = type_code->fields[11];
+		field.data_size = 8;
+		field.name = "average_txfee";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[12];
 		field.is_extended = true;
 		field.name = "genesis_hash";
 		field.code = {11, 32, 1};
@@ -359,15 +391,21 @@ void read(TypeInput& in, ::mmx::NetworkInfo& value, const TypeCode* type_code, c
 			vnx::read_value(_buf + _field->offset, value.address_count, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[8]) {
-			vnx::read_value(_buf + _field->offset, value.block_size, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.vdf_speed, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[9]) {
+			vnx::read_value(_buf + _field->offset, value.block_size, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[10]) {
 			vnx::read_value(_buf + _field->offset, value.netspace_ratio, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[11]) {
+			vnx::read_value(_buf + _field->offset, value.average_txfee, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 10: vnx::read(in, value.genesis_hash, type_code, _field->code.data()); break;
+			case 12: vnx::read(in, value.genesis_hash, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -386,7 +424,7 @@ void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(69);
+	char* const _buf = out.write(85);
 	vnx::write_value(_buf + 0, value.is_synced);
 	vnx::write_value(_buf + 1, value.height);
 	vnx::write_value(_buf + 5, value.time_diff);
@@ -395,9 +433,11 @@ void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* typ
 	vnx::write_value(_buf + 29, value.total_space);
 	vnx::write_value(_buf + 37, value.total_supply);
 	vnx::write_value(_buf + 45, value.address_count);
-	vnx::write_value(_buf + 53, value.block_size);
-	vnx::write_value(_buf + 61, value.netspace_ratio);
-	vnx::write(out, value.genesis_hash, type_code, type_code->fields[10].code.data());
+	vnx::write_value(_buf + 53, value.vdf_speed);
+	vnx::write_value(_buf + 61, value.block_size);
+	vnx::write_value(_buf + 69, value.netspace_ratio);
+	vnx::write_value(_buf + 77, value.average_txfee);
+	vnx::write(out, value.genesis_hash, type_code, type_code->fields[12].code.data());
 }
 
 void read(std::istream& in, ::mmx::NetworkInfo& value) {

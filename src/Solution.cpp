@@ -10,6 +10,11 @@
 
 namespace mmx {
 
+vnx::bool_t Solution::is_valid() const
+{
+	return version == 0;
+}
+
 hash_t Solution::calc_hash() const
 {
 	throw std::logic_error("not implemented");

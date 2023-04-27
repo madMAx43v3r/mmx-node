@@ -88,6 +88,54 @@ void StorageRAM::clear()
 	key_map.clear();
 	memory.clear();
 	entries.clear();
+	balance_map.clear();
+}
+
+bool StorageRAM::has_balances(const addr_t& contract) const
+{
+	std::lock_guard lock(mutex);
+
+	return balance_map.count(contract);
+}
+
+void StorageRAM::set_balances(const addr_t& contract, const std::map<addr_t, uint128>& values)
+{
+	std::lock_guard lock(mutex);
+
+	balance_map[contract] = values;
+}
+
+void StorageRAM::set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount)
+{
+	std::lock_guard lock(mutex);
+
+	balance_map[contract][currency] = amount;
+}
+
+std::unique_ptr<uint128> StorageRAM::get_balance(const addr_t& contract, const addr_t& currency) const
+{
+	std::lock_guard lock(mutex);
+
+	auto iter = balance_map.find(contract);
+	if(iter != balance_map.end()) {
+		const auto& map = iter->second;
+		auto iter2 = map.find(currency);
+		if(iter2 != map.end()) {
+			return std::make_unique<uint128>(iter2->second);
+		}
+	}
+	return nullptr;
+}
+
+std::map<addr_t, uint128> StorageRAM::get_balances(const addr_t& contract) const
+{
+	std::lock_guard lock(mutex);
+
+	auto iter = balance_map.find(contract);
+	if(iter != balance_map.end()) {
+		return iter->second;
+	}
+	return std::map<addr_t, uint128>();
 }
 
 

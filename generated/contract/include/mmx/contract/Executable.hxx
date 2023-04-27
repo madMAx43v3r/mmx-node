@@ -6,12 +6,10 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/Context.hxx>
 #include <mmx/Operation.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/txout_t.hxx>
 #include <vnx/Variant.hpp>
 
 
@@ -42,7 +40,7 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
-	virtual std::vector<::mmx::txout_t> validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, std::shared_ptr<const ::mmx::Context> context = nullptr) const;
+	virtual void validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const;
 	
 	static std::shared_ptr<Executable> create();
 	std::shared_ptr<vnx::Value> clone() const override;

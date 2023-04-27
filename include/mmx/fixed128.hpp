@@ -54,6 +54,14 @@ public:
 		return bool(fixed);
 	}
 
+	operator uint64_t() const {
+		return uint();
+	}
+
+	operator double() const {
+		return to_value();
+	}
+
 	static const uint64_t divider;
 
 	static constexpr int decimals = 15;

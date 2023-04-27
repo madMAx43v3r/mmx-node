@@ -8,6 +8,7 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageProxy.h>
 #include <mmx/vm_interface.h>
+#include <mmx/signature_t.hpp>
 
 #include <iostream>
 
@@ -607,7 +608,7 @@ uint64_t Engine::alloc()
 		offset = (uint_t*)assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START));
 		offset->pin();
 	}
-	if(offset->value == 0) {
+	if(offset->value >= uint64_t(-1)) {
 		throw std::runtime_error("out of memory");
 	}
 	offset->flags |= FLAG_DIRTY;
@@ -659,8 +660,9 @@ void Engine::step()
 	try {
 		exec(code[instr_ptr]);
 		check_gas();
-	} catch(const std::exception& ex) {
-		throw std::runtime_error("exception at " + to_hex(instr_ptr) + ": " + ex.what());
+	} catch(...) {
+		error_addr = instr_ptr;
+		throw;
 	}
 }
 
@@ -815,7 +817,7 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 		case TYPE_STRING:
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
-			total_cost += std::max<uint32_t>(sbin.size + (64 - sbin.size % 64) % 64, 64) * SHA256_BYTE_COST;
+			total_cost += ((sbin.size + 63) / 64) * (64 * SHA256_BYTE_COST);
 			check_gas();
 			write(dst, uint_t(hash_t(sbin.data(), sbin.size).to_uint256()));
 			break;
@@ -823,6 +825,16 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 		default:
 			throw invalid_type(svar);
 	}
+}
+
+void Engine::verify(const uint64_t dst, const uint64_t msg, const uint64_t pubkey, const uint64_t signature)
+{
+	total_cost += ECDSA_VERIFY_COST;
+	check_gas();
+	write(dst, var_t(
+			signature_t(read_fail<binary_t>(signature, TYPE_BINARY).to_vector()).verify(
+					pubkey_t(read_fail<binary_t>(pubkey, TYPE_BINARY).to_vector()),
+					hash_t::from_bytes(read_fail<uint_t>(msg, TYPE_BINARY).value))));
 }
 
 void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags, const uint64_t sflags)
@@ -892,29 +904,70 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					break;
 				case CONVTYPE_UINT: {
 					int base = 10;
+					auto value = sstr.to_string();
 					switch(sflags & 0xFF) {
-						case CONVTYPE_DEFAULT: break;
+						case CONVTYPE_DEFAULT: {
+							if(value.find("0x") == 0) {
+								base = 16;
+							} else if(value.find("0b") == 0) {
+								base = 2;
+							} else if(value.find("mmx1") == 0) {
+								base = 32;
+							}
+							break;
+						}
 						case CONVTYPE_BASE_2: base = 2; break;
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
 						case CONVTYPE_ADDRESS: base = 32; break;
-						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags));
+						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags & 0xFF));
 					}
-					if(base == 32) {
-						write(dst, uint_t(addr_t(sstr.to_string()).to_uint256()));
-					} else {
-						// TODO: CONVTYPE_DEFAULT: auto detect hex, binary and address
-						write(dst, uint_t(uint256_t(sstr.c_str(), base)));
+					switch(base) {
+						case 32:
+							write(dst, uint_t(addr_t(value).to_uint256())); break;
+						default:
+							if(value.find("0x") == 0 || value.find("0b") == 0) {
+								value = value.substr(2);
+							}
+							for(const auto c : value) {
+								int digit = 0;
+								if('0' <= c && c <= '9') {
+									digit = c - '0';
+								} else if('a' <= c && c <= 'z') {
+									digit = c - 'a' + 10;
+								} else if('A' <= c && c <= 'Z') {
+									digit = c - 'A' + 10;
+								}
+								if(digit < 0 || digit >= base) {
+									throw std::logic_error("invalid string of base " + std::to_string(base));
+								}
+							}
+							write(dst, uint_t(uint256_t(value.c_str(), base)));
 					}
 					break;
 				}
 				case CONVTYPE_STRING:
 					write(dst, svar);
 					break;
-				case CONVTYPE_BINARY:
-					assign(dst, binary_t::alloc(sstr, TYPE_BINARY));
+				case CONVTYPE_BINARY: {
+					int base = 0;
+					switch(sflags & 0xFF) {
+						case CONVTYPE_DEFAULT: break;
+						case CONVTYPE_BASE_16: base = 16; break;
+						default: throw std::logic_error("invalid conversion: STRING to BINARY with base " + to_hex(sflags & 0xFF));
+					}
+					switch(base) {
+						case 0:
+							assign(dst, binary_t::alloc(sstr, TYPE_BINARY)); break;
+						case 16: {
+							const auto tmp = vnx::from_hex_string(sstr.to_string());
+							assign(dst, binary_t::alloc(tmp.data(), tmp.size(), TYPE_BINARY));
+							break;
+						}
+					}
 					break;
+				}
 				default:
 					throw std::logic_error("invalid conversion: STRING to " + to_hex(dflags));
 			}
@@ -1150,8 +1203,7 @@ void Engine::exec(const instr_t& instr)
 			throw std::logic_error("OPFLAG_REF_B not supported");
 		}
 		call(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
-// TODO:		deref_value(instr.b, instr.flags & OPFLAG_REF_B),
-				instr.b);
+				deref_value(instr.b, instr.flags & OPFLAG_REF_B));
 		return;
 	case OP_RET:
 		if(ret()) {
@@ -1494,6 +1546,12 @@ void Engine::exec(const instr_t& instr)
 		sha256(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
+	case OP_VERIFY:
+		verify(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C),
+				deref_addr(instr.d, instr.flags & OPFLAG_REF_D));
+		break;
 	case OP_LOG:
 		log(	deref_value(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
@@ -1512,11 +1570,10 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
 		break;
 	case OP_FAIL:
-		// TODO: read instr.b as uint when OPFLAG_REF_B set
-		error_code = instr.b;
+		error_code = deref_value(instr.b, instr.flags & OPFLAG_REF_B);
 		throw std::runtime_error("failed with: "
 				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A)))
-				+ (instr.b ? " (code " + std::to_string(instr.b) + ")" : ""));
+				+ (error_code ? " (code " + std::to_string(error_code) + ")" : ""));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
@@ -1542,10 +1599,13 @@ void Engine::reset()
 	clear_stack();
 	call_stack.clear();
 	error_code = 0;
+	error_addr = -1;
 }
 
 void Engine::commit()
 {
+	clear_stack();	// clear references from stack
+
 	for(auto iter = memory.lower_bound(MEM_STATIC); iter != memory.end(); ++iter)
 	{
 		if(auto var = iter->second.get()) {

@@ -49,7 +49,7 @@ uint64_t NFT::num_bytes() const
 
 uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return num_bytes() * params->min_txfee_byte + (solution ? solution->calc_cost(params) : 0);
+	return params->min_txfee_io + num_bytes() * params->min_txfee_byte + (solution ? solution->calc_cost(params) : 0);
 }
 
 

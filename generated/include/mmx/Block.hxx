@@ -6,8 +6,10 @@
 
 #include <mmx/package.hxx>
 #include <mmx/BlockHeader.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/txio_entry_t.hxx>
 
 
 namespace mmx {
@@ -34,7 +36,9 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_tx_hash() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const override;
-	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_all_transactions() const;
+	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions() const;
+	virtual std::vector<::mmx::txio_entry_t> get_inputs(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
+	virtual std::vector<::mmx::txio_entry_t> get_outputs(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	
 	static std::shared_ptr<Block> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -68,7 +72,7 @@ protected:
 
 template<typename T>
 void Block::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Block>(22);
+	_visitor.template type_begin<Block>(25);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
@@ -79,19 +83,22 @@ void Block::accept_generic(T& _visitor) const {
 	_visitor.type_field("weight", 7); _visitor.accept(weight);
 	_visitor.type_field("total_weight", 8); _visitor.accept(total_weight);
 	_visitor.type_field("netspace_ratio", 9); _visitor.accept(netspace_ratio);
-	_visitor.type_field("vdf_iters", 10); _visitor.accept(vdf_iters);
-	_visitor.type_field("vdf_output", 11); _visitor.accept(vdf_output);
-	_visitor.type_field("proof", 12); _visitor.accept(proof);
-	_visitor.type_field("tx_base", 13); _visitor.accept(tx_base);
-	_visitor.type_field("static_cost", 14); _visitor.accept(static_cost);
-	_visitor.type_field("total_cost", 15); _visitor.accept(total_cost);
-	_visitor.type_field("tx_count", 16); _visitor.accept(tx_count);
-	_visitor.type_field("tx_fees", 17); _visitor.accept(tx_fees);
-	_visitor.type_field("tx_hash", 18); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 19); _visitor.accept(farmer_sig);
-	_visitor.type_field("content_hash", 20); _visitor.accept(content_hash);
-	_visitor.type_field("tx_list", 21); _visitor.accept(tx_list);
-	_visitor.template type_end<Block>(22);
+	_visitor.type_field("average_txfee", 10); _visitor.accept(average_txfee);
+	_visitor.type_field("vdf_iters", 11); _visitor.accept(vdf_iters);
+	_visitor.type_field("vdf_output", 12); _visitor.accept(vdf_output);
+	_visitor.type_field("vdf_reward_addr", 13); _visitor.accept(vdf_reward_addr);
+	_visitor.type_field("proof", 14); _visitor.accept(proof);
+	_visitor.type_field("reward_amount", 15); _visitor.accept(reward_amount);
+	_visitor.type_field("reward_addr", 16); _visitor.accept(reward_addr);
+	_visitor.type_field("static_cost", 17); _visitor.accept(static_cost);
+	_visitor.type_field("total_cost", 18); _visitor.accept(total_cost);
+	_visitor.type_field("tx_count", 19); _visitor.accept(tx_count);
+	_visitor.type_field("tx_fees", 20); _visitor.accept(tx_fees);
+	_visitor.type_field("tx_hash", 21); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 22); _visitor.accept(farmer_sig);
+	_visitor.type_field("content_hash", 23); _visitor.accept(content_hash);
+	_visitor.type_field("tx_list", 24); _visitor.accept(tx_list);
+	_visitor.template type_end<Block>(25);
 }
 
 

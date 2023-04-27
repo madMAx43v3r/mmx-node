@@ -11,6 +11,7 @@
 #include <mmx/HarvesterBase.hxx>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/NodeClient.hxx>
+#include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/chiapos.h>
 
@@ -50,14 +51,16 @@ protected:
 private:
 	void update();
 
+	void check_queue();
+
+	void lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const;
+
 	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const;
 
-private:
-	struct virtual_plot_t {
-		uint64_t balance = 0;
-		bls_pubkey_t farmer_key;
-	};
+	void send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const mmx::chiapos::Proof> chia_proof,
+						const virtual_plot_info_t* virtual_plot, const hash_t& plot_id, const uint32_t score, const int64_t time_begin_ms) const;
 
+private:
 	hash_t harvester_id;
 	std::string host_name;
 	uint64_t total_bytes = 0;
@@ -72,8 +75,15 @@ private:
 	std::unordered_set<hash_t> already_checked;
 	std::unordered_map<hash_t, std::string> id_map;
 	std::unordered_map<std::string, std::shared_ptr<chiapos::DiskProver>> plot_map;
-	std::unordered_map<addr_t, virtual_plot_t> virtual_map;
+	std::unordered_map<addr_t, virtual_plot_info_t> virtual_map;
 
+	struct lookup_t {
+		int64_t recv_time_ms = 0;
+		std::shared_ptr<const Challenge> request;
+	};
+	std::map<uint32_t, lookup_t> lookup_queue;
+
+	std::shared_ptr<vnx::Timer> lookup_timer;
 	std::shared_ptr<vnx::addons::HttpInterface<Harvester>> http;
 
 	friend class vnx::addons::HttpInterface<Harvester>;

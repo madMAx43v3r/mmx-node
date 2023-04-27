@@ -18,6 +18,7 @@ public:
 	uint32_t index = 0;
 	::mmx::addr_t address;
 	std::array<uint64_t, 2> amount = {};
+	uint32_t pool_idx = 0;
 	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
@@ -62,12 +63,13 @@ public:
 
 template<typename T>
 void Wallet_swap_add_liquid::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_swap_add_liquid>(4);
+	_visitor.template type_begin<Wallet_swap_add_liquid>(5);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.type_field("options", 3); _visitor.accept(options);
-	_visitor.template type_end<Wallet_swap_add_liquid>(4);
+	_visitor.type_field("pool_idx", 3); _visitor.accept(pool_idx);
+	_visitor.type_field("options", 4); _visitor.accept(options);
+	_visitor.template type_end<Wallet_swap_add_liquid>(5);
 }
 
 

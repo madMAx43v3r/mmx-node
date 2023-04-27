@@ -26,7 +26,8 @@ public:
 	std::array<::mmx::hash_t, 2> input = {};
 	std::array<vnx::optional<::mmx::hash_t>, 2> infuse = {};
 	std::vector<::mmx::time_segment_t> segments;
-	vnx::optional<::mmx::addr_t> timelord_reward;
+	std::vector<::mmx::hash_t> reward_segments;
+	vnx::optional<::mmx::addr_t> reward_addr;
 	::mmx::pubkey_t timelord_key;
 	::mmx::signature_t timelord_sig;
 	::mmx::hash_t content_hash;
@@ -83,7 +84,7 @@ protected:
 
 template<typename T>
 void ProofOfTime::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfTime>(11);
+	_visitor.template type_begin<ProofOfTime>(12);
 	_visitor.type_field("hash", 0); _visitor.accept(hash);
 	_visitor.type_field("version", 1); _visitor.accept(version);
 	_visitor.type_field("height", 2); _visitor.accept(height);
@@ -91,11 +92,12 @@ void ProofOfTime::accept_generic(T& _visitor) const {
 	_visitor.type_field("input", 4); _visitor.accept(input);
 	_visitor.type_field("infuse", 5); _visitor.accept(infuse);
 	_visitor.type_field("segments", 6); _visitor.accept(segments);
-	_visitor.type_field("timelord_reward", 7); _visitor.accept(timelord_reward);
-	_visitor.type_field("timelord_key", 8); _visitor.accept(timelord_key);
-	_visitor.type_field("timelord_sig", 9); _visitor.accept(timelord_sig);
-	_visitor.type_field("content_hash", 10); _visitor.accept(content_hash);
-	_visitor.template type_end<ProofOfTime>(11);
+	_visitor.type_field("reward_segments", 7); _visitor.accept(reward_segments);
+	_visitor.type_field("reward_addr", 8); _visitor.accept(reward_addr);
+	_visitor.type_field("timelord_key", 9); _visitor.accept(timelord_key);
+	_visitor.type_field("timelord_sig", 10); _visitor.accept(timelord_sig);
+	_visitor.type_field("content_hash", 11); _visitor.accept(content_hash);
+	_visitor.template type_end<ProofOfTime>(12);
 }
 
 

@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_contract_MultiSig_validate_return_HXX_
 
 #include <mmx/contract/package.hxx>
-#include <mmx/txout_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -15,7 +14,6 @@ namespace contract {
 class MMX_CONTRACT_EXPORT MultiSig_validate_return : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::txout_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,9 +57,8 @@ public:
 
 template<typename T>
 void MultiSig_validate_return::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<MultiSig_validate_return>(1);
-	_visitor.type_field("_ret_0", 0); _visitor.accept(_ret_0);
-	_visitor.template type_end<MultiSig_validate_return>(1);
+	_visitor.template type_begin<MultiSig_validate_return>(0);
+	_visitor.template type_end<MultiSig_validate_return>(0);
 }
 
 

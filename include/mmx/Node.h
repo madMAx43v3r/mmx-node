@@ -90,11 +90,11 @@ protected:
 
 	std::vector<std::shared_ptr<const Contract>> get_contracts(const std::vector<addr_t>& addresses) const override;
 
-	std::vector<addr_t> get_contracts_by(const std::vector<addr_t>& addresses) const override;
+	std::vector<addr_t> get_contracts_by(const std::vector<addr_t>& addresses, const vnx::optional<hash_t>& type_hash = nullptr) const override;
 
-	std::vector<addr_t> get_contracts_owned_by(const std::vector<addr_t>& addresses) const override;
+	std::vector<addr_t> get_contracts_owned_by(const std::vector<addr_t>& addresses, const vnx::optional<hash_t>& type_hash = nullptr) const override;
 
-	std::shared_ptr<const Contract> get_contract_at(const addr_t& address, const hash_t& block_hash) const override;
+	exec_result_t validate(std::shared_ptr<const Transaction> tx) const override;
 
 	void add_block(std::shared_ptr<const Block> block) override;
 
@@ -128,7 +128,8 @@ protected:
 
 	std::map<std::string, vm::varptr_t> read_storage_object(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 
-	vnx::Variant call_contract(const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args) const override;
+	vnx::Variant call_contract(	const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args = {},
+								const vnx::optional<addr_t>& user = nullptr, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit = nullptr) const override;
 
 	address_info_t get_address_info(const addr_t& address) const override;
 
@@ -139,6 +140,8 @@ protected:
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots_for(const bls_pubkey_t& farmer_key) const override;
+
+	std::vector<virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<addr_t>& addresses) const override;
 
 	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
 
@@ -167,6 +170,12 @@ protected:
 	swap_user_info_t get_swap_user_info(const addr_t& address, const addr_t& user) const override;
 
 	std::vector<swap_entry_t> get_swap_history(const addr_t& address, const int32_t& limit) const override;
+
+	std::array<uint128, 2> get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount) const override;
+
+	std::array<uint128, 2> get_swap_fees_earned(const addr_t& address, const addr_t& user) const override;
+
+	std::array<uint128, 2> get_swap_equivalent_liquidity(const addr_t& address, const addr_t& user) const override;
 
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity_by(const std::vector<addr_t>& addresses) const override;
 
@@ -204,36 +213,15 @@ private:
 		bool do_wait = true;
 	};
 
-	struct contract_state_t {
-		bool is_mutated = false;
-		std::map<addr_t, uint128> balance;
-		std::shared_ptr<const Contract> data;
-	};
-
-	struct contract_cache_t {
-		contract_cache_t() = default;
-		contract_cache_t(const contract_cache_t* parent) : parent(parent) {}
-		mutable std::mutex mutex;
-		const contract_cache_t* parent = nullptr;
-		std::unordered_map<addr_t, std::shared_ptr<contract_state_t>> state_map;
-		std::shared_ptr<contract_state_t> get_state(const addr_t& address);
-		std::shared_ptr<contract_state_t> find_state(const addr_t& address) const;
-		std::shared_ptr<const Contract> find_contract(const addr_t& address) const;
-		void commit(const contract_cache_t& cache);
-	};
-
 	struct execution_context_t {
-		std::shared_ptr<const Context> block;
+		uint32_t height = 0;
 		std::shared_ptr<vm::StorageCache> storage;
 		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
 		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
 		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;
-		mutable contract_cache_t contract_cache;
 		void wait(const hash_t& txid) const;
 		void signal(const hash_t& txid) const;
 		void setup_wait(const hash_t& txid, const addr_t& address);
-		std::shared_ptr<const Context> get_context_for(
-				std::shared_ptr<const Transaction> tx, std::shared_ptr<const Contract> contract, const contract_cache_t& cache) const;
 	};
 
 	struct vdf_point_t {
@@ -241,9 +229,10 @@ private:
 		uint64_t vdf_start = 0;
 		uint64_t vdf_iters = 0;
 		int64_t recv_time = 0;
+		bool vdf_reward_valid = false;
 		std::array<hash_t, 2> input;
 		std::array<hash_t, 2> output;
-		vnx::optional<hash_t> infused;
+		vnx::optional<hash_t> infused;					// chain 0
 		std::shared_ptr<const ProofOfTime> proof;
 	};
 
@@ -319,7 +308,7 @@ private:
 
 	std::vector<offer_data_t> fetch_offers_for(
 			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-			const vnx::bool_t& state = false, const bool filter = false) const;
+			const bool state = false, const bool filter = false) const;
 
 	std::pair<vm::varptr_t, uint64_t> read_storage_field(
 			const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
@@ -342,41 +331,33 @@ private:
 
 	std::shared_ptr<execution_context_t> validate(std::shared_ptr<const Block> block) const;
 
-	std::shared_ptr<const exec_result_t> validate(std::shared_ptr<const Transaction> tx) const;
-
-	std::shared_ptr<execution_context_t> new_exec_context() const;
-
-	std::shared_ptr<contract_state_t> get_contract_state(contract_cache_t& contract_cache, const addr_t& address) const;
-
-	void setup_context_wait(std::shared_ptr<execution_context_t> context, const hash_t& txid, const addr_t& address) const;
+	std::shared_ptr<execution_context_t> new_exec_context(const uint32_t height) const;
 
 	void prepare_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
-					std::shared_ptr<const operation::Execute> exec,
-					std::shared_ptr<contract_state_t> state,
+					std::shared_ptr<const operation::Execute> op,
+					std::shared_ptr<const Contract> contract,
+					const addr_t& address,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
 					std::unordered_map<addr_t, uint128>& amounts,
-					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
-					uint64_t& tx_cost, uint32_t& error_code, const bool is_public) const;
+					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
-					std::shared_ptr<contract_state_t> state,
+					std::shared_ptr<const contract::Executable> executable,
 					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
-					contract_cache_t& contract_cache,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
-					uint64_t& tx_cost, const bool is_public) const;
+					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
 
-	std::shared_ptr<const exec_result_t>
-	validate(	std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context,
-				std::shared_ptr<const Block> base = nullptr) const;
+	std::shared_ptr<const exec_result_t> validate(
+			std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context) const;
 
 	void validate_diff_adjust(const uint64_t& block, const uint64_t& prev) const;
 
@@ -390,6 +371,10 @@ private:
 	bool verify(std::shared_ptr<const ProofResponse> value);
 
 	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) const;
+
+	template<typename T>
+	uint256_t verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge,
+								std::shared_ptr<const BlockHeader> diff_block) const;
 
 	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
 
@@ -409,9 +394,8 @@ private:
 				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
 
 	void apply(	std::shared_ptr<const Block> block,
-				std::shared_ptr<const execution_context_t> context,
 				std::shared_ptr<const Transaction> tx,
-				balance_cache_t& balance_cache, uint32_t& counter);
+				uint32_t& counter);
 
 	void revert(const uint32_t height);
 
@@ -445,7 +429,7 @@ private:
 
 	std::vector<proof_data_t> find_proof(const hash_t& challenge) const;
 
-	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block) const;
+	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const;
 
 	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
 			int64_t* block_offset = nullptr, std::vector<std::pair<hash_t, int64_t>>* tx_offsets = nullptr) const;
@@ -453,7 +437,7 @@ private:
 	void write_block(std::shared_ptr<const Block> block);
 
 	template<typename T>
-	std::shared_ptr<T> get_contract_as(const addr_t& address) const;
+	std::shared_ptr<const T> get_contract_as(const addr_t& address) const;
 
 private:
 	DataBase db;
@@ -463,18 +447,16 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 
-	hash_table<addr_t, hash_t> contract_type_map;								// [addr, type hash]
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> deploy_map;		// [[sender, height, counter] => contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> owner_map;			// [[owner, height, counter] => contract]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
 	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 
-	uint_uint_table<uint32_t, uint32_t, addr_t> offer_log;							// [[height, counter] => contract]
-	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
+	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
 
-	uint_uint_table<uint32_t, uint32_t, addr_t> swap_log;						// [[height, counter] => contract]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
 
 	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
@@ -518,6 +500,7 @@ private:
 	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> pending_transactions;
 
+	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
 
@@ -532,7 +515,7 @@ private:
 
 	mutable std::mutex vdf_mutex;
 	std::unordered_set<uint32_t> vdf_verify_pending;		// height
-	std::shared_ptr<OCL_VDF> opencl_vdf[2];
+	std::shared_ptr<OCL_VDF> opencl_vdf[3];
 	std::shared_ptr<vnx::ThreadPool> vdf_threads;
 
 	friend class vnx::addons::HttpInterface<Node>;
@@ -541,8 +524,8 @@ private:
 
 
 template<typename T>
-std::shared_ptr<T> Node::get_contract_as(const addr_t& address) const {
-	return std::dynamic_pointer_cast<T>(get_contract(address));
+std::shared_ptr<const T> Node::get_contract_as(const addr_t& address) const {
+	return std::dynamic_pointer_cast<const T>(get_contract(address));
 }
 
 

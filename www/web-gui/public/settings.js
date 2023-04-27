@@ -13,6 +13,8 @@ Vue.component('node-settings', {
 			opencl_platform_list: null,
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
+			enable_timelord_reward: null,
+			verify_timelord_reward: null,
 			reload_interval: null,
 			plot_dirs: [],
 			new_plot_dir: null,
@@ -55,6 +57,8 @@ Vue.component('node-settings', {
 					}
 					this.farmer_reward_addr = data["Farmer.reward_addr"];
 					this.timelord_reward_addr = data["TimeLord.reward_addr"];
+					this.enable_timelord_reward = data["TimeLord.enable_reward"];
+					this.verify_timelord_reward = data["Node.verify_vdf_rewards"];
 					this.reload_interval = data["Harvester.reload_interval"];
 					this.plot_dirs = data["Harvester.plot_dirs"];
 				});
@@ -173,6 +177,16 @@ Vue.component('node-settings', {
 				this.set_config("TimeLord.reward_addr", value.length ? value : null, true);
 			}
 		},
+		enable_timelord_reward(value, prev) {
+			if(prev != null) {
+				this.set_config("TimeLord.enable_reward", value, true);
+			}
+		},
+		verify_timelord_reward(value, prev) {
+			if(prev != null) {
+				this.set_config("Node.verify_vdf_rewards", value, true);
+			}
+		},
 		reload_interval(value, prev) {
 			if(prev != null) {
 				this.set_config("Harvester.reload_interval", value, true);
@@ -224,23 +238,27 @@ Vue.component('node-settings', {
 				<v-card-title>General</v-card-title>
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
-
-					<v-row>
-						<v-col>
-							<v-checkbox
-								v-model="timelord"
-								:label="$t('node_settings.enable_timelord')"
-								class="d-inline-block"
-							></v-checkbox>
-						</v-col>
-						<v-col>
-							<v-checkbox
-								v-model="open_port"
-								label="Open network port to allow incoming connections (UPnP)"
-								class="d-inline-block"
-							></v-checkbox>
-						</v-col>
-					</v-row>
+					
+					<v-checkbox
+						v-model="timelord"
+						:label="$t('node_settings.enable_timelord')"
+						class="my-0"
+					></v-checkbox>
+					<v-checkbox
+						v-model="enable_timelord_reward"
+						label="Enable TimeLord Rewards (requires one more CPU core)"
+						class="my-0"
+					></v-checkbox>
+					<v-checkbox
+						v-model="verify_timelord_reward"
+						label="Verify TimeLord Rewards (disable to speed up VDF verify)"
+						class="my-0"
+					></v-checkbox>
+					<v-checkbox
+						v-model="open_port"
+						label="Open network port to allow incoming connections (UPnP)"
+						class="my-0"
+					></v-checkbox>
 					
 					<v-select
 						v-model="opencl_platform"

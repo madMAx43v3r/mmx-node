@@ -13,6 +13,10 @@ class Block extends BlockHeader {
 	
 	BlockHeader* get_header() const;
 	
-	vector<Transaction*> get_all_transactions() const;
+	vector<Transaction*> get_transactions() const;
+	
+	vector<txio_entry_t> get_inputs(ChainParams* params) const;
+	
+	vector<txio_entry_t> get_outputs(ChainParams* params) const;
 	
 }

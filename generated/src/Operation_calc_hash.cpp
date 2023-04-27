@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Operation_calc_hash::VNX_TYPE_HASH(0x8915923a542631d9ull);
-const vnx::Hash64 Operation_calc_hash::VNX_CODE_HASH(0xf940a16c9456c4ddull);
+const vnx::Hash64 Operation_calc_hash::VNX_CODE_HASH(0xf19e4451b1a5fb9ull);
 
 vnx::Hash64 Operation_calc_hash::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Operation_calc_hash::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Operation.calc_hash";
 	type_code->type_hash = vnx::Hash64(0x8915923a542631d9ull);
-	type_code->code_hash = vnx::Hash64(0xf940a16c9456c4ddull);
+	type_code->code_hash = vnx::Hash64(0xf19e4451b1a5fb9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -127,7 +127,6 @@ std::shared_ptr<vnx::TypeCode> Operation_calc_hash::static_create_type_code() {
 		auto& field = type_code->fields[0];
 		field.data_size = 1;
 		field.name = "full_hash";
-		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	type_code->build();

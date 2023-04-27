@@ -1,3 +1,4 @@
 {
-	"reward_addr": null
+	"reward_addr": null,
+	"enable_reward": true
 }

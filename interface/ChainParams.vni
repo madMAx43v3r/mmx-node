@@ -7,6 +7,7 @@ class ChainParams {
 	uint min_ksize = 30;
 	uint max_ksize = 60;
 	uint plot_filter = 9;
+	uint plot_filter_nhash = 64;			// how many hash interations for plot filter
 	
 	uint commit_delay = 18;					// for writing to disk (should be less than challenge_interval - challenge_delay)
 	uint infuse_delay = 6;					// for primary VDF infusion
@@ -22,12 +23,14 @@ class ChainParams {
 	uint score_target = 8192;				// defines how many competing blocks are created (must be less than score_threshold)
 	uint score_threshold = 65536;			// should be <= 2^score_bits
 	
+	ulong vdf_reward = 2000;				// per block
 	ulong min_reward = 200000;
 	ulong_fraction_t reward_factor;			// reward = (diff * value) / inverse;
 	
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 100000000;
 	ulong virtual_space_constant = 500;
+	// TODO: uint virtual_space_enable = 200000;	// block height at which to allow virtual proofs
 	
 	ulong min_time_diff = 10000;
 	ulong initial_time_diff = 50000;		// [iters/sec]
@@ -39,8 +42,8 @@ class ChainParams {
 	ulong min_txfee_exec = 10000;			// per contract operation
 	ulong min_txfee_deploy = 100000;		// per contract
 	ulong min_txfee_byte = 10;				// per byte of data
+	ulong min_txfee_activate = 100000;		// sending to a new address
 	
-	ulong max_txbase_cost = 10000;
 	ulong max_block_size = 10000000;		// max static size
 	ulong max_block_cost = 100000000;		// includes dynamic cost
 	
@@ -51,5 +54,11 @@ class ChainParams {
 	addr_t plot_binary;
 	addr_t swap_binary;
 	addr_t offer_binary;
+	addr_t token_binary;
+	addr_t plot_nft_binary;
+	
+	addr_t project_addr;
+	ulong fixed_project_reward = 50000;
+	ulong_fraction_t project_ratio;
 	
 }

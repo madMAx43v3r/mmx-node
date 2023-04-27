@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Farmer_sign_block::VNX_TYPE_HASH(0x6924b10f345eb316ull);
-const vnx::Hash64 Farmer_sign_block::VNX_CODE_HASH(0xb3800567e79a3d35ull);
+const vnx::Hash64 Farmer_sign_block::VNX_CODE_HASH(0xd84096d5d18122aaull);
 
 vnx::Hash64 Farmer_sign_block::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,14 +48,12 @@ void Farmer_sign_block::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Farmer_sign_block;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, block);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, reward_amount);
 	_visitor.type_end(*_type_code);
 }
 
 void Farmer_sign_block::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Farmer.sign_block\"";
 	_out << ", \"block\": "; vnx::write(_out, block);
-	_out << ", \"reward_amount\": "; vnx::write(_out, reward_amount);
 	_out << "}";
 }
 
@@ -69,7 +67,6 @@ vnx::Object Farmer_sign_block::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Farmer.sign_block";
 	_object["block"] = block;
-	_object["reward_amount"] = reward_amount;
 	return _object;
 }
 
@@ -77,8 +74,6 @@ void Farmer_sign_block::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "block") {
 			_entry.second.to(block);
-		} else if(_entry.first == "reward_amount") {
-			_entry.second.to(reward_amount);
 		}
 	}
 }
@@ -87,17 +82,12 @@ vnx::Variant Farmer_sign_block::get_field(const std::string& _name) const {
 	if(_name == "block") {
 		return vnx::Variant(block);
 	}
-	if(_name == "reward_amount") {
-		return vnx::Variant(reward_amount);
-	}
 	return vnx::Variant();
 }
 
 void Farmer_sign_block::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "block") {
 		_value.to(block);
-	} else if(_name == "reward_amount") {
-		_value.to(reward_amount);
 	}
 }
 
@@ -125,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_sign_block::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Farmer.sign_block";
 	type_code->type_hash = vnx::Hash64(0x6924b10f345eb316ull);
-	type_code->code_hash = vnx::Hash64(0xb3800567e79a3d35ull);
+	type_code->code_hash = vnx::Hash64(0xd84096d5d18122aaull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -133,18 +123,12 @@ std::shared_ptr<vnx::TypeCode> Farmer_sign_block::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Farmer_sign_block>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Farmer_sign_block_return::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "block";
 		field.code = {16};
-	}
-	{
-		auto& field = type_code->fields[1];
-		field.data_size = 8;
-		field.name = "reward_amount";
-		field.code = {4};
 	}
 	type_code->build();
 	return type_code;
@@ -186,11 +170,8 @@ void read(TypeInput& in, ::mmx::Farmer_sign_block& value, const TypeCode* type_c
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.reward_amount, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -213,8 +194,6 @@ void write(TypeOutput& out, const ::mmx::Farmer_sign_block& value, const TypeCod
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(8);
-	vnx::write_value(_buf + 0, value.reward_amount);
 	vnx::write(out, value.block, type_code, type_code->fields[0].code.data());
 }
 

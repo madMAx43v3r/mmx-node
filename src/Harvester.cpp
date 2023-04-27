@@ -74,6 +74,7 @@ void Harvester::main()
 	add_async_client(http);
 
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
+	lookup_timer = add_timer(std::bind(&Harvester::check_queue, this));
 
 	set_timer_millis(10000, std::bind(&Harvester::update, this));
 
@@ -88,154 +89,196 @@ void Harvester::main()
 	threads->close();
 }
 
+void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const mmx::chiapos::Proof> chia_proof,
+								const virtual_plot_info_t* virtual_plot, const hash_t& plot_id, const uint32_t score, const int64_t time_begin_ms) const
+{
+	auto out = ProofResponse::create();
+	out->request = request;
+	out->farmer_addr = farmer_addr;
+	out->harvester = host_name;
+	out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin_ms;
+
+	vnx::optional<skey_t> local_sk;
+
+	if(chia_proof) {
+		const auto local_sk_bls = derive_local_key(chia_proof->master_sk);
+		const auto local_key_bls = local_sk_bls.GetG1Element();
+		local_sk = skey_t(local_sk_bls);
+
+		auto proof = ProofOfSpaceOG::create();
+		proof->ksize = chia_proof->k;
+		proof->score = score;
+		proof->plot_id = plot_id;
+		proof->proof_bytes = chia_proof->proof;
+		proof->farmer_key = bls_pubkey_t(chia_proof->farmer_key);
+		proof->plot_key = local_key_bls + proof->farmer_key.to_bls();
+		proof->pool_key = bls_pubkey_t(chia_proof->pool_key);
+		proof->local_key = local_key_bls;
+		out->proof = proof;
+	}
+	else if(virtual_plot) {
+		auto proof = ProofOfStake::create();
+		proof->score = score;
+		proof->plot_id = plot_id;
+		proof->contract = plot_id;
+		proof->farmer_key = virtual_plot->farmer_key;
+		proof->plot_key = virtual_plot->farmer_key;
+		out->proof = proof;
+	}
+
+	try {
+		out->hash = out->calc_hash();
+		out->content_hash = out->calc_hash(true);
+		// TODO: have node sign it after verify
+		out->farmer_sig = farmer->sign_proof(out, local_sk);
+		out->content_hash = out->calc_hash(true);
+		publish(out, output_proofs);
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Failed to sign proof: " << ex.what();
+	}
+}
+
+void Harvester::check_queue()
+{
+	const auto now_ms = vnx::get_wall_time_millis();
+
+	for(auto iter = lookup_queue.begin(); iter != lookup_queue.end();)
+	{
+		const auto& entry = iter->second;
+		const auto delay_sec = (now_ms - entry.recv_time_ms) / 1e3;
+
+		if(delay_sec > params->block_time * entry.request->max_delay) {
+			log(WARN) << "[" << host_name << "] Missed deadline for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
+			iter = lookup_queue.erase(iter);
+		} else {
+			iter++;
+		}
+	}
+	if(!lookup_queue.empty())
+	{
+		const auto iter = --lookup_queue.end();
+		const auto& entry = iter->second;
+		lookup_task(entry.request, entry.recv_time_ms);
+		lookup_queue.erase(iter);
+	}
+}
+
 void Harvester::handle(std::shared_ptr<const Challenge> value)
 {
-	if(already_checked.count(value->challenge)) {
+	if(!already_checked.insert(value->challenge).second) {
 		return;
 	}
+	auto& entry = lookup_queue[value->height];
+	entry.recv_time_ms = vnx_sample->recv_time / 1000;
+	entry.request = value;
+
+	lookup_timer->set_millis(10);
+}
+
+void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const
+{
 	const auto time_begin = vnx::get_wall_time_millis();
 
-	uint32_t best_index = 0;
+	std::mutex mutex;
 	uint256_t best_score = uint256_max;
-	std::shared_ptr<chiapos::Proof> best_proof;
-	std::shared_ptr<chiapos::DiskProver> best_plot;
-	vnx::optional<std::pair<addr_t, virtual_plot_t>> best_vplot;
+	std::atomic<uint64_t> num_passed {0};
 
-	std::vector<std::shared_ptr<chiapos::DiskProver>> plots;
-	std::vector<std::pair<addr_t, virtual_plot_t>> virtual_plots;
+	for(const auto& entry : virtual_map)
+	{
+		threads->add_task([this, entry, value, time_begin, &best_score, &num_passed, &mutex]()
+		{
+			if(check_plot_filter(params, value->challenge, entry.first)) {
+				try {
+					std::lock_guard<std::mutex> lock(mutex);
+					const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
+					if(balance) {
+						const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
+						if(score < params->score_threshold) {
+							send_response(value, nullptr, &entry.second, entry.first, score, time_begin);
+							best_score = std::min(best_score, score);
+						}
+					}
+				} catch(const std::exception& ex) {
+					log(WARN) << "[" << host_name << "] Failed to check virtual plot: " << ex.what() << " (" << entry.first << ")";
+				}
+				num_passed++;
+			}
+		});
+	}
+
+	struct {
+		hash_t plot_id;
+		hash_t challenge;
+		uint32_t index = 0;
+		uint256_t score = uint256_max;
+		std::shared_ptr<chiapos::DiskProver> prover;
+	} best_entry;
 
 	for(const auto& entry : id_map)
 	{
-		if(check_plot_filter(params, value->challenge, entry.first)) {
-			if(auto prover = plot_map[entry.second]) {
-				plots.push_back(prover);
-			}
-		}
-	}
-	for(const auto& entry : virtual_map)
-	{
-		if(check_plot_filter(params, value->challenge, entry.first)) {
-			virtual_plots.push_back(entry);
-		}
-	}
-	std::vector<std::vector<uint256_t>> scores(plots.size());
-
-	for(size_t i = 0; i < plots.size(); ++i)
-	{
-		threads->add_task([this, i, value, &plots, &scores]()
+		threads->add_task([this, entry, value, recv_time_ms, &best_entry, &num_passed, &mutex]()
 		{
-			const auto prover = plots[i];
-			try {
-				const auto qualities = prover->get_qualities(value->challenge.bytes);
-				scores[i].resize(qualities.size());
-
-				for(size_t k = 0; k < qualities.size(); ++k) {
-					scores[i][k] = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
+			if(check_plot_filter(params, value->challenge, entry.first))
+			{
+				const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
+				if(delay_sec > params->block_time * value->max_delay) {
+					log(WARN) << "[" << host_name << "] Skipping quality lookup due to delay of " << delay_sec << " sec";
+					return;
 				}
-			} catch(const std::exception& ex) {
-				log(WARN) << "[" << host_name << "] Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
+				const auto iter = plot_map.find(entry.second);
+				if(iter != plot_map.end()) {
+					const auto& prover = iter->second;
+					try {
+						const auto challenge = get_plot_challenge(value->challenge, entry.first);
+						const auto qualities = prover->get_qualities(challenge.bytes);
+
+						for(size_t k = 0; k < qualities.size(); ++k) {
+							const auto score = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
+							if(score < params->score_threshold) {
+								std::lock_guard<std::mutex> lock(mutex);
+								if(score < best_entry.score) {
+									best_entry.index = k;
+									best_entry.score = score;
+									best_entry.plot_id = entry.first;
+									best_entry.challenge = challenge;
+									best_entry.prover = prover;
+								}
+							}
+						}
+					} catch(const std::exception& ex) {
+						log(WARN) << "[" << host_name << "] Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
+					}
+				}
+				num_passed++;
 			}
 		});
 	}
 	threads->sync();
 
-	for(size_t i = 0; i < plots.size(); ++i)
-	{
-		for(size_t k = 0; k < scores[i].size(); ++k)
-		{
-			const auto& score = scores[i][k];
-			if(score < params->score_threshold) {
-				if(score < best_score) {
-					best_plot = plots[i];
-					best_index = k;
-				}
-			}
-			if(score < best_score) {
-				best_score = score;
-			}
-		}
-	}
-
-	for(const auto& entry : virtual_plots)
-	{
-		const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
-		if(balance) {
-			const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
-			if(score < params->score_threshold) {
-				if(score < best_score) {
-					best_plot = nullptr;
-					best_vplot = entry;
-				}
-			}
-			if(score < best_score) {
-				best_score = score;
-			}
-		}
-	}
-
-	if(best_plot) {
+	if(auto prover = best_entry.prover) {
 		try {
-			best_proof = best_plot->get_full_proof(value->challenge.bytes, best_index);
+			const auto proof = prover->get_full_proof(best_entry.challenge.bytes, best_entry.index);
+			send_response(value, proof, nullptr, best_entry.plot_id, best_entry.score, time_begin);
+			best_score = std::min(best_score, best_entry.score);
 		} catch(const std::exception& ex) {
-			log(WARN) << "[" << host_name << "] Failed to fetch proof: " << ex.what() << " (" << best_plot->get_file_path() << ")";
+			log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
 		}
 	}
-	const auto time_ms = vnx::get_wall_time_millis() - time_begin;
-	const auto delay_sec = (vnx::get_wall_time_micros() - vnx_sample->recv_time) / 1000 / 1e3;
 
-	if(delay_sec > params->block_time * params->challenge_delay) {
-		log(WARN) << "Lookup for height " << value->height << " took longer than challenge delay: " << delay_sec << " sec";
+	const auto now_ms = vnx::get_wall_time_millis();
+	const auto time_sec = (now_ms - time_begin) / 1e3;
+	const auto delay_sec = (now_ms - recv_time_ms) / 1e3;
+
+	if(delay_sec > params->block_time * value->max_delay) {
+		log(WARN) << "[" << host_name << "] Lookup for height " << value->height << " took longer than allowable delay: " << delay_sec << " sec";
 	}
-
-	if(best_proof || best_vplot) {
-		auto out = ProofResponse::create();
-		out->request = value;
-		out->farmer_addr = farmer_addr;
-		out->harvester = host_name;
-		out->lookup_time_ms = time_ms;
-
-		if(best_proof) {
-			const auto local_sk = derive_local_key(best_proof->master_sk);
-
-			auto proof = ProofOfSpaceOG::create();
-			proof->ksize = best_proof->k;
-			proof->score = best_score;
-			proof->plot_id = hash_t::from_bytes(best_proof->id);
-			proof->proof_bytes = best_proof->proof;
-			proof->local_key = local_sk.GetG1Element();
-			proof->farmer_key = bls_pubkey_t::super_t(best_proof->farmer_key);
-			proof->pool_key = bls_pubkey_t::super_t(best_proof->pool_key);
-			proof->local_sig = bls_signature_t::sign(local_sk, proof->calc_hash());
-			out->proof = proof;
-		}
-		else if(best_vplot) {
-			auto proof = ProofOfStake::create();
-			proof->score = best_score;
-			proof->plot_id = best_vplot->first;
-			proof->contract = best_vplot->first;
-			proof->farmer_key = best_vplot->second.farmer_key;
-			out->proof = proof;
-		}
-
-		try {
-			out->hash = out->calc_hash();
-			out->content_hash = out->calc_hash(true);
-			// TODO: have node sign it after verify
-			out->farmer_sig = farmer->sign_proof(out);
-			out->content_hash = out->calc_hash(true);
-			publish(out, output_proofs);
-		}
-		catch(const std::exception& ex) {
-			log(WARN) << "Failed to sign proof: " << ex.what();
-		}
-	}
-	already_checked.insert(value->challenge);
-
 	if(!id_map.empty()) {
-		log(INFO) << "[" << host_name << "] " << plots.size() << " plots were eligible for height " << value->height
+		log(INFO) << "[" << host_name << "] " << num_passed << " plots were eligible for height " << value->height
 				<< ", best score was " << (best_score != uint256_max ? best_score.str() : "N/A")
-				<< ", took " << time_ms / 1e3 << " sec, delay " << delay_sec << " sec";
+				<< ", took " << time_sec << " sec, delay " << delay_sec << " sec";
 	}
+	lookup_timer->set_millis(10);
 }
 
 uint64_t Harvester::get_total_bytes() const
@@ -370,24 +413,24 @@ void Harvester::reload()
 		{
 			const auto& plot = entry.second;
 			try {
-				const bls_pubkey_t farmer_key = bls_pubkey_t::super_t(plot->get_farmer_key());
+				const bls_pubkey_t farmer_key(plot->get_farmer_key());
 				if(!farmer_keys.count(farmer_key)) {
 					throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
 				}
-				const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
-				const auto pool_key = plot->get_pool_key();
-				const auto local_sk = derive_local_key(plot->get_master_skey());
-				const auto local_key = local_sk.GetG1Element();
+				if(validate_plots) {
+					const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
+					const auto local_sk = derive_local_key(plot->get_master_skey());
+					const auto pool_key = plot->get_pool_key();
 
-				const bls_pubkey_t plot_key = local_key + farmer_key.to_bls();
-				if(!pool_key.empty()) {
-					const uint32_t port = 11337;
-					const bls_pubkey_t pool_key_ = bls_pubkey_t::super_t(pool_key);
-					if(hash_t(hash_t(pool_key_ + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
-						throw std::logic_error("invalid keys or port");
+					const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key.to_bls();
+					if(!pool_key.empty()) {
+						const uint32_t port = 11337;
+						if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
+							throw std::logic_error("invalid keys or port");
+						}
+					} else {
+						throw std::logic_error("invalid plot type");
 					}
-				} else {
-					throw std::logic_error("invalid plot type");
 				}
 				{
 					std::lock_guard<std::mutex> lock(mutex);
@@ -422,9 +465,7 @@ void Harvester::reload()
 	if(farm_virtual_plots) {
 		for(const auto& farmer_key : farmer_keys) {
 			for(const auto& plot : node->get_virtual_plots_for(farmer_key)) {
-				auto& info = virtual_map[plot.address];
-				info.farmer_key = plot.farmer_key;
-				info.balance = plot.balance;
+				virtual_map[plot.address] = plot;
 				total_balance += plot.balance;
 			}
 		}

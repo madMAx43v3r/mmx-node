@@ -11,6 +11,8 @@
 
 #include <vnx/vnx.h>
 
+#include <sha256_ni.h>
+
 
 namespace mmx {
 
@@ -29,26 +31,27 @@ void TimeLord::init()
 
 void TimeLord::main()
 {
-	WalletClient wallet(wallet_server);
-	try {
+	if(enable_reward) {
 		if(!reward_addr) {
-			const auto accounts = wallet.get_all_accounts();
-			if(accounts.empty()) {
-				throw std::logic_error("no wallet available");
+			try {
+				WalletClient wallet(wallet_server);
+				const auto accounts = wallet.get_all_accounts();
+				if(accounts.empty()) {
+					throw std::logic_error("no wallet available");
+				}
+				reward_addr = wallet.get_address(accounts.begin()->first, 0);
 			}
-			reward_addr = wallet.get_address(accounts.begin()->first, 0);
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to get reward address from wallet: " << ex.what();
+			}
 		}
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Failed to get reward address from wallet: " << ex.what();
-	}
-	if(reward_addr) {
-		if(*reward_addr == addr_t()) {
-			throw std::logic_error("reward_addr == zero");
+		if(reward_addr) {
+			log(INFO) << "Reward address: " << reward_addr->to_string();
+		} else {
+			enable_reward = false;
 		}
-		log(INFO) << "Reward address: " << reward_addr->to_string();
 	} else {
-		log(WARN) << "No reward address set!";
+		log(INFO) << "Rewards not enabled";
 	}
 	{
 		vnx::File file(storage_path + "timelord_sk.dat");
@@ -165,7 +168,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 		begin.output = request->start_values;
 		{
 			auto iter = history.find(request->begin);
-			if((iter != history.end() && iter->second != request->start_values)
+			if((iter != history.end() && iter->second.output != request->start_values)
 				|| (iter == history.end() && latest_point && latest_point->num_iters > request->begin))
 			{
 				log(WARN) << "Our VDF forked from the network, restarting ...";
@@ -211,7 +214,7 @@ void TimeLord::update()
 				auto proof = ProofOfTime::create();
 				proof->start = iters_begin;
 				proof->height = iter->second;
-				proof->input = begin->second;
+				proof->input = begin->second.output;
 
 				for(uint32_t k = 0; k < 2; ++k) {
 					auto iter = infuse_history[k].find(iters_begin);
@@ -226,12 +229,17 @@ void TimeLord::update()
 				for(auto iter = begin; iter != end; ++iter) {
 					time_segment_t seg;
 					seg.num_iters = iter->first - prev_iters;
-					seg.output = iter->second;
+					seg.output = iter->second.output;
 					prev_iters = iter->first;
 					proof->segments.push_back(seg);
-				}
 
-				proof->timelord_reward = reward_addr;
+					if(enable_reward) {
+						proof->reward_segments.push_back(iter->second.reward_output);
+					}
+				}
+				if(enable_reward) {
+					proof->reward_addr = reward_addr;
+				}
 				proof->timelord_key = timelord_key;
 				proof->hash = proof->calc_hash().first;
 				proof->timelord_sig = signature_t::sign(timelord_sk, proof->hash);
@@ -255,14 +263,18 @@ void TimeLord::update()
 void TimeLord::vdf_loop(vdf_point_t point)
 {
 	bool do_notify = false;
+	vnx::ThreadPool threads(enable_reward ? 3 : 2);
 
 	while(vnx_do_run())
 	{
 		const auto time_begin = vnx::get_wall_time_micros();
 
 		uint64_t next_target = 0;
+		uint64_t checkpoint_iters_ = 0;
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
+
+			checkpoint_iters_ = checkpoint_iters;
 
 			if(!is_running) {
 				break;
@@ -278,7 +290,7 @@ void TimeLord::vdf_loop(vdf_point_t point)
 				}
 				*latest_point = point;
 			}
-			history.emplace(point.num_iters, point.output);
+			history.emplace(point.num_iters, point);
 
 			// purge history
 			while(history.size() > max_history) {
@@ -287,16 +299,13 @@ void TimeLord::vdf_loop(vdf_point_t point)
 
 			for(uint32_t k = 0; k < 2; ++k)
 			{
-				// purge history
-				if(history.size() >= max_history)
-				{
-					const auto begin = history.begin()->first;
-					infuse_history[k].erase(infuse_history[k].begin(), infuse_history[k].lower_bound(begin));
-				}
 				{
 					// apply infusions
 					auto iter = infuse[k].find(point.num_iters);
 					if(iter != infuse[k].end()) {
+						if(enable_reward && k == 0) {
+							point.reward_output = hash_t(point.output[k] + (*reward_addr));
+						}
 						point.output[k] = hash_t(point.output[k] + iter->second);
 						infuse_history[k].insert(*iter);
 					}
@@ -309,6 +318,10 @@ void TimeLord::vdf_loop(vdf_point_t point)
 							next_target = iter->first;
 						}
 					}
+				}
+				// purge history
+				while(infuse_history[k].size() > 1000) {
+					infuse_history[k].erase(infuse_history[k].begin());
 				}
 			}
 			{
@@ -330,7 +343,7 @@ void TimeLord::vdf_loop(vdf_point_t point)
 		}
 		do_notify = false;
 
-		const auto checkpoint = point.num_iters + checkpoint_iters;
+		const auto checkpoint = point.num_iters + checkpoint_iters_;
 
 		if(next_target <= point.num_iters) {
 			next_target = checkpoint;
@@ -343,29 +356,45 @@ void TimeLord::vdf_loop(vdf_point_t point)
 		}
 		const auto num_iters = next_target - point.num_iters;
 
-#pragma omp parallel for num_threads(2)
-		for(int k = 0; k < 2; ++k) {
-			point.output[k] = compute(point.output[k], num_iters);
+		for(auto& hash : point.output) {
+			threads.add_task([num_iters, &hash]() {
+				hash = compute(hash, num_iters);
+			});
 		}
+		if(enable_reward) {
+			threads.add_task([num_iters, &point]() {
+				point.reward_output = compute(point.reward_output, num_iters);
+			});
+		}
+		threads.sync();
+
 		point.num_iters += num_iters;
 
 		const auto time_end = vnx::get_wall_time_micros();
 
-		if(time_end > time_begin && num_iters > checkpoint_iters / 2)
+		if(time_end > time_begin && num_iters > checkpoint_iters_ / 2)
 		{
 			// update estimated number of iterations per second
 			const auto speed = (num_iters * 1000000) / (time_end - time_begin);
 			avg_iters_per_sec = (avg_iters_per_sec * 255 + speed) / 256;
 		}
 	}
+	threads.close();
+
 	log(INFO) << "Stopped VDF";
 }
 
 hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
 {
+	static bool have_sha_ni = sha256_ni_available();
+
 	hash_t hash = input;
 	for(uint64_t i = 0; i < num_iters; ++i) {
-		hash = hash_t(hash.bytes);
+		if(have_sha_ni) {
+			sha256_ni(hash.data(), hash.data(), hash.size());
+		} else {
+			hash = hash_t(hash.bytes);
+		}
 	}
 	return hash;
 }

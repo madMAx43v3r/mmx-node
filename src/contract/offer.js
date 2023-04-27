@@ -46,20 +46,14 @@ function cancel() public
 {
 	check_owner();
 	
-	const amount = this.balance[bid_currency];
-	if(amount > 0) {
-		send(owner, amount, bid_currency);
-	}
+	send(owner, this.balance[bid_currency], bid_currency);
 }
 
 function withdraw() public
 {
 	check_owner();
 	
-	const amount = this.balance[ask_currency];
-	if(amount > 0) {
-		send(owner, amount, ask_currency);
-	}
+	send(owner, this.balance[ask_currency], ask_currency);
 }
 
 function trade(dst_addr) public payable
@@ -70,12 +64,16 @@ function trade(dst_addr) public payable
 		fail("currency mismatch", 3);
 	}
 	const bid_amount = (this.deposit.amount * inv_price) >> FRACT_BITS;
+	if(bid_amount == 0) {
+		fail("empty trade", 4);
+	}
 	send(bech32(dst_addr), bid_amount, bid_currency);
 }
 
 function accept(dst_addr) public payable
 {
 	check_partner();
+	
 	dst_addr = bech32(dst_addr);
 	
 	if(this.deposit.currency != ask_currency) {
@@ -83,15 +81,12 @@ function accept(dst_addr) public payable
 	}
 	const bid_amount = this.balance[bid_currency];
 	if(bid_amount == 0) {
-		fail("empty offer");
+		fail("empty offer", 5);
 	}
 	const ask_amount = ((bid_amount << FRACT_BITS) + inv_price - 1) / inv_price;
 	const ret_amount = this.deposit.amount - ask_amount;
 	send(dst_addr, bid_amount, bid_currency);
-	
-	if(ret_amount > 0) {
-		send(dst_addr, ret_amount, ask_currency);
-	}
+	send(dst_addr, ret_amount, ask_currency);
 }
 
 

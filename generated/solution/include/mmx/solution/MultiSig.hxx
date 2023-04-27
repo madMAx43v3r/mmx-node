@@ -7,6 +7,7 @@
 #include <mmx/solution/package.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Solution.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 
 
@@ -16,7 +17,7 @@ namespace solution {
 class MMX_SOLUTION_EXPORT MultiSig : public ::mmx::Solution {
 public:
 	
-	std::vector<std::shared_ptr<const ::mmx::Solution>> solutions;
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Solution>> solutions;
 	uint32_t num_required = 0;
 	
 	typedef ::mmx::Solution Super;
@@ -32,6 +33,7 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	

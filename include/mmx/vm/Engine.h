@@ -34,11 +34,12 @@ static constexpr uint64_t SEND_COST = 1000;
 static constexpr uint64_t MINT_COST = 500;
 static constexpr uint64_t WRITE_COST = 10;
 static constexpr uint64_t WRITE_BYTE_COST = 1;
-static constexpr uint64_t STOR_READ_COST = 200;
+static constexpr uint64_t STOR_READ_COST = 200;			// TODO: 100
 static constexpr uint64_t STOR_WRITE_COST = 1000;
-static constexpr uint64_t STOR_READ_BYTE_COST = 2;
+static constexpr uint64_t STOR_READ_BYTE_COST = 2;		// TODO: 1
 static constexpr uint64_t STOR_WRITE_BYTE_COST = 10;
-static constexpr uint64_t SHA256_BYTE_COST = 20;
+static constexpr uint64_t SHA256_BYTE_COST = 20;		// TODO: SHA256_BLOCK_COST = 1000
+static constexpr uint64_t ECDSA_VERIFY_COST = 10000;	// TODO: 2000
 
 enum externvar_e : uint32_t {
 
@@ -76,7 +77,9 @@ public:
 
 	uint64_t total_gas = 0;
 	uint64_t total_cost = 0;
+
 	uint32_t error_code = 0;
+	uint32_t error_addr = -1;
 
 	const addr_t contract;
 	const std::shared_ptr<StorageProxy> storage;
@@ -142,6 +145,7 @@ public:
 	void memcpy(const uint64_t dst, const uint64_t src, const uint64_t count, const uint64_t offset);
 	void conv(const uint64_t dst, const uint64_t src, const uint64_t dflags, const uint64_t sflags);
 	void sha256(const uint64_t dst, const uint64_t src);
+	void verify(const uint64_t dst, const uint64_t msg, const uint64_t pubkey, const uint64_t signature);
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
 	void send(const uint64_t address, const uint64_t amount, const uint64_t currency);
@@ -205,7 +209,8 @@ T* Engine::read(const uint64_t src, const vartype_e& type)
 {
 	if(auto var = read(src)) {
 		if(var->type != type) {
-			throw std::logic_error("read type mismatch");
+			throw std::logic_error("read type mismatch: expected "
+				+ to_string(type) + ", got " + to_string(var->type));
 		}
 		return (T*)var;
 	}
@@ -217,7 +222,8 @@ T& Engine::read_fail(const uint64_t src, const vartype_e& type)
 {
 	auto& var = read_fail(src);
 	if(var.type != type) {
-		throw std::logic_error("read type mismatch");
+		throw std::logic_error("read type mismatch: expected "
+				+ to_string(type) + ", got " + to_string(var.type));
 	}
 	return (T&)var;
 }
@@ -227,7 +233,8 @@ T* Engine::read_key(const uint64_t src, const uint64_t key, const vartype_e& typ
 {
 	if(auto var = read_key(src, key)) {
 		if(var->type != type) {
-			throw std::logic_error("read type mismatch");
+			throw std::logic_error("read type mismatch: expected "
+				+ to_string(type) + ", got " + to_string(var->type));
 		}
 		return (T*)var;
 	}
@@ -239,7 +246,8 @@ T& Engine::read_key_fail(const uint64_t src, const uint64_t key, const vartype_e
 {
 	auto& var = read_key_fail(src, key);
 	if(var.type != type) {
-		throw std::logic_error("read type mismatch");
+		throw std::logic_error("read type mismatch: expected "
+				+ to_string(type) + ", got " + to_string(var.type));
 	}
 	return (T&)var;
 }

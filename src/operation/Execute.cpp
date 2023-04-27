@@ -40,7 +40,7 @@ hash_t Execute::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t Execute::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	uint64_t payload = 0;
+	uint64_t payload = method.size();
 	for(const auto& arg : args) {
 		payload += arg.size();
 	}

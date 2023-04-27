@@ -38,7 +38,7 @@ struct statement;
 struct expression;
 
 static constexpr auto ws = dsl::whitespace(dsl::ascii::space);
-static constexpr auto kw_id = dsl::identifier(dsl::ascii::alpha);
+static constexpr auto kw_id = dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
 
 static constexpr auto kw_if = LEXY_KEYWORD("if", kw_id);
 static constexpr auto kw_do = LEXY_KEYWORD("do", kw_id);
@@ -87,7 +87,7 @@ struct expected_identifier {
 
 struct identifier : lexy::token_production {
 	static constexpr auto name = "mmx.lang.identifier";
-	static constexpr auto rule = dsl::identifier(dsl::ascii::alpha_underscore, dsl::ascii::alpha_digit_underscore);
+	static constexpr auto rule = kw_id;
 };
 
 struct restricted_identifier : lexy::transparent_production {
@@ -313,6 +313,8 @@ public:
 
 	uint8_t math_flags = OPFLAG_CATCH_OVERFLOW;
 
+	bool is_debug = false;
+
 	Compiler();
 
 	std::shared_ptr<const contract::Binary> compile(const std::string& source);
@@ -428,7 +430,8 @@ protected:
 private:
 	int depth = 0;
 	int curr_pass = 0;
-	bool is_debug = true;
+	int curr_line = -1;
+
 	size_t code_offset = 0;
 	vnx::optional<node_t> curr_node;
 	vnx::optional<function_t> curr_function;
@@ -441,6 +444,7 @@ private:
 
 	std::map<varptr_t, uint32_t> const_table;
 	std::map<std::string, function_t> function_map;
+	std::map<uint32_t, uint32_t> line_info;
 	std::map<uint32_t, std::string> linker_map;
 	std::map<std::string, int> rank_map;
 	std::map<std::string, int> simple_code_map;
@@ -452,7 +456,7 @@ private:
 
 };
 
-const std::string Compiler::version = "0.0.0";
+const std::string Compiler::version = "1.0.0";
 
 Compiler::Compiler()
 {
@@ -538,6 +542,8 @@ Compiler::Compiler()
 	function_map["fail"].name = "fail";
 	function_map["bech32"].name = "bech32";
 	function_map["uint"].name = "uint";
+	function_map["sha256"].name = "sha256";
+	function_map["ecdsa_verify"].name = "ecdsa_verify";
 	function_map["to_string"].name = "to_string";
 	function_map["to_string_hex"].name = "to_string_hex";
 	function_map["to_string_bech32"].name = "to_string_bech32";
@@ -576,6 +582,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		recurse(tree.root());
 
 		curr_pass++;
+		curr_line = -1;
 		frame.clear();
 
 		debug() << std::endl << "Second pass ..." << std::endl;
@@ -587,7 +594,11 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 			}
 		}
 		for(const auto& entry : linker_map) {
-			code[entry.first].a = find_function(entry.second)->address;
+			if(auto func = find_function(entry.second)) {
+				code[entry.first].a = func->address;
+			} else {
+				throw std::runtime_error("undefined reference to function '" + entry.second + "'");
+			}
 		}
 	}
 	catch(const std::exception& ex) {
@@ -603,7 +614,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		binary->constant.insert(binary->constant.end(), data.first.get(), data.first.get() + data.second);
 	}
 	for(const auto& var : global.var_list) {
-		if(!var.is_const) {
+		if(var.is_static) {
 			binary->fields[var.name] = var.address;
 		}
 	}
@@ -626,6 +637,8 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		const auto data = vm::serialize(code);
 		binary->binary = std::vector<uint8_t>(data.first.get(), data.first.get() + data.second);
 	}
+	binary->line_info = line_info;
+
 	debug() << std::endl;
 	dump_code(debug(), binary);
 	return binary;
@@ -678,10 +691,10 @@ varptr_t Compiler::parse_constant(const node_t& node)
 		}
 	}
 	else if(name == lang::constant::name) {
-		if(list.size() != 1) {
+		if(list.size() > 2) {
 			throw std::logic_error("invalid constant");
 		}
-		return parse_constant(list[0]);
+		return parse_constant(list.back());
 	}
 	else if(name == lang::primitive::name) {
 		if(list.size() != 1) {
@@ -757,7 +770,7 @@ std::string Compiler::get_namespace(const bool concat) const
 
 std::ostream& Compiler::debug(bool ident) const
 {
-	auto& out = is_debug ? std::cout : debug_out;
+	auto& out = is_debug ? std::cerr : debug_out;
 	for(int i = 0; ident && i < depth; ++i) {
 		out << "  ";
 	}
@@ -1507,7 +1520,8 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(args.size() != 1 && args.size() != 2) {
 					throw std::logic_error("expected 1 or 2 arguments for fail(message, [code])");
 				}
-				code.emplace_back(OP_FAIL, 0, get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
+				code.emplace_back(OP_FAIL, args.size() > 1 ? OPFLAG_REF_B : 0,
+						get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
 				out.address = 0;
 			}
 			else if(name == "bech32") {
@@ -1523,6 +1537,20 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_DEFAULT);
+			}
+			else if(name == "sha256") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for sha256()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_SHA256, 0, out.address, get(recurse(args[0])));
+			}
+			else if(name == "ecdsa_verify") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 3 arguments for ecdsa_verify(msg, pubkey, signature)");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_VERIFY, 0, out.address, get(recurse(args[0])), get(recurse(args[1])), get(recurse(args[2])));
 			}
 			else if(name == "to_string") {
 				if(args.size() != 1) {
@@ -1549,9 +1577,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(args.size() < 2) {
 					throw std::logic_error("expected at least two arguments for rcall(contract, method, ...)");
 				}
+				std::vector<vref_t> fargs;
+				for(size_t i = 2; i < args.size(); ++i) {
+					fargs.push_back(recurse(args[i]));
+				}
 				const auto offset = stack.new_addr();
-				for(size_t i = 0; i + 2 < args.size(); ++i) {
-					copy(offset + 1 + i, recurse(args[i + 2]));
+				for(size_t i = 0; i < fargs.size(); ++i) {
+					copy(offset + 1 + i, fargs[i]);
 				}
 				code.emplace_back(OP_COPY, 0, offset, 0);
 				code.emplace_back(OP_RCALL, 0, get(recurse(args[0])), get(recurse(args[1])), offset - MEM_STACK, args.size() - 2);
@@ -1565,9 +1597,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					throw std::logic_error("too many function arguments: "
 							+ std::to_string(args.size()) + " > " + std::to_string(lhs->func->args.size()));
 				}
-				const auto offset = stack.new_addr();
+				std::vector<vref_t> fargs;
 				for(size_t i = 0; i < args.size(); ++i) {
-					copy(offset + 1 + i, recurse(args[i]));
+					fargs.push_back(recurse(args[i]));
+				}
+				const auto offset = stack.new_addr();
+				for(size_t i = 0; i < fargs.size(); ++i) {
+					copy(offset + 1 + i, fargs[i]);
 				}
 				for(size_t i = args.size(); i < lhs->func->args.size(); ++i) {
 					code.emplace_back(OP_COPY, 0, offset + 1 + i, 0);
@@ -1747,7 +1783,7 @@ uint32_t Compiler::get_const_address(const std::string& value)
 }
 
 
-std::shared_ptr<const contract::Binary> compile(const std::string& source)
+std::shared_ptr<const contract::Binary> compile(const std::string& source, const compile_flags_t& flags)
 {
 //#ifdef _WIN32
 //	lexy_ext::shell<lexy_ext::default_prompt<lexy::ascii_encoding>> shell;
@@ -1762,15 +1798,18 @@ std::shared_ptr<const contract::Binary> compile(const std::string& source)
 //#endif // _WIN32
 
 	Compiler compiler;
+	compiler.is_debug = flags.debug;
 	return compiler.compile(source);
 }
 
-std::shared_ptr<const contract::Binary> compile_file(const std::string& file_name)
+std::shared_ptr<const contract::Binary> compile_files(const std::vector<std::string>& file_names, const compile_flags_t& flags)
 {
-	std::ifstream stream(file_name);
 	std::stringstream buffer;
-	buffer << stream.rdbuf();
-	return vm::compile(buffer.str());
+	for(const auto& src : file_names) {
+		std::ifstream stream(src);
+		buffer << stream.rdbuf();
+	}
+	return vm::compile(buffer.str(), flags);
 }
 
 

@@ -12,7 +12,6 @@
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/contract/NFT.hxx>
-#include <mmx/contract/PlotNFT.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
@@ -63,6 +62,8 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 			case mmx::tx_type_e::TXFEE:   std::cout << "TXFEE   - "; arrow = "<-"; break;
 			case mmx::tx_type_e::RECEIVE: std::cout << "RECEIVE + "; break;
 			case mmx::tx_type_e::REWARD:  std::cout << "REWARD  + "; break;
+			case mmx::tx_type_e::VDF_REWARD:  std::cout << "VDF_REWARD + "; break;
+			case mmx::tx_type_e::PROJECT_REWARD:  std::cout << "PROJECT_REWARD + "; break;
 			default: std::cout << "????    "; break;
 		}
 		const auto contract = get_contract(node, entry.contract);
@@ -125,6 +126,7 @@ int main(int argc, char** argv)
 	options["ask-currency"] = "address";
 	options["fee-ratio"] = "1";
 	options["gas-limit"] = "MMX";
+	options["min-amount"] = "0..1";
 	options["user"] = "mmx-admin";
 	options["passwd"] = "PASSWD";
 	options["mnemonic"] = "words";
@@ -149,6 +151,7 @@ int main(int argc, char** argv)
 	mmx::fixed128 ask_amount;
 	double fee_ratio = 1;
 	double gas_limit = 1;
+	double min_amount = 0.95;
 	bool pre_accept = false;
 	vnx::read_config("$1", module);
 	vnx::read_config("$2", command);
@@ -165,6 +168,7 @@ int main(int argc, char** argv)
 	vnx::read_config("ask-currency", ask_currency_addr);
 	vnx::read_config("fee-ratio", fee_ratio);
 	vnx::read_config("gas-limit", gas_limit);
+	vnx::read_config("min-amount", min_amount);
 	vnx::read_config("user", user);
 	vnx::read_config("passwd", passwd);
 
@@ -306,6 +310,15 @@ int main(int argc, char** argv)
 							continue;
 						}
 						std::cout << "Contract: " << address << " (" << contract->get_type_name();
+
+						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
+							if(!token->symbol.empty()) {
+								std::cout << ", " << token->symbol;
+							}
+							if(!token->name.empty()) {
+								std::cout << ", " << token->name;
+							}
+						}
 						if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
 							if(offer) {
 								if(offer->is_open()) {
@@ -315,27 +328,10 @@ int main(int argc, char** argv)
 								}
 							}
 						}
-						else if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
-							if(!token->symbol.empty()) {
-								std::cout << ", " << token->symbol;
-								if(!token->name.empty()) {
-									std::cout << ", " << token->name;
-								}
-							}
-						}
-						else if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
+						if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
 							const auto balance = node.get_virtual_plot_balance(entry.first);
 							std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
 							std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
-						}
-						else if(auto nft = std::dynamic_pointer_cast<const mmx::contract::PlotNFT>(contract)) {
-							std::cout << ", name = " << nft->name << ", ";
-							if(nft->unlock_height) {
-								std::cout << "unlocked at " << *nft->unlock_height;
-							} else {
-								std::cout << "locked";
-							}
-							std::cout << ", server = " << vnx::to_string(nft->server_url);
 						}
 						std::cout << ")" << std::endl;
 
@@ -490,10 +486,13 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
 				}
+				if(!spend_options.user) {
+					spend_options.user = to_addr(node.read_storage_field(contract, "owner").first);
+				}
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.mint(index, mojo, target, contract, spend_options);
+				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo)}, nullptr, spend_options);
 				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
@@ -525,39 +524,26 @@ int main(int argc, char** argv)
 				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(tx->id) << "]" << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
-			else if(command == "mutate")
-			{
-				std::string method;
-				vnx::Object args;
-				vnx::read_config("$3", method);
-				vnx::read_config("$4", args);
-
-				if(wallet.is_locked(index)) {
-					spend_options.passphrase = vnx::input_password("Passphrase: ");
-				}
-				args["__type"] = method;
-				const auto tx = wallet.mutate(index, contract, args, spend_options);
-				std::cout << "Executed " << method << " with:" << std::endl;
-				vnx::PrettyPrinter printer(std::cout);
-				args.accept(printer);
-				std::cout << std::endl << "Transaction ID: " << tx->id << std::endl;
-			}
 			else if(command == "exec" || command == "deposit")
 			{
 				std::string method;
 				std::vector<vnx::Variant> args;
 				vnx::read_config("$3", method);
-				vnx::read_config("$4", args);
-
+				{
+					vnx::Variant tmp;
+					for(int i = 4; vnx::read_config("$" + std::to_string(i), tmp); ++i) {
+						args.push_back(tmp);
+					}
+				}
+				if(!spend_options.user && offset >= 0) {
+					spend_options.user = wallet.get_address(index, offset);
+				}
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				if(!spend_options.user) {
-					spend_options.user = wallet.get_address(index, offset);
-				}
 				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
-					tx = wallet.execute(index, contract, method, args, spend_options);
+					tx = wallet.execute(index, contract, method, args, nullptr, spend_options);
 					std::cout << "Executed " << method << "() with ";
 				} else {
 					if(method.empty()) {
@@ -692,28 +678,28 @@ int main(int argc, char** argv)
 			}
 			else if(command == "buy" || command == "sell")
 			{
-				if(ask_amount > 1) {
-					std::cerr << "Invalid ask amount: " << ask_amount << " (needs to be between 0 and 1, ie. between 0% and 100%)" << std::endl;
+				if(min_amount < 0 || min_amount > 1) {
+					std::cerr << "Invalid min amount: " << min_amount << " (needs to be between 0 and 1, ie. between 0% and 100%)" << std::endl;
 					goto failed;
-				}
-				if(ask_amount < 0) {
-					ask_amount = 0.95;
 				}
 				const auto i = (command == "sell" ? 0 : 1);
 				const auto k = (i + 1) % 2;
 				const auto info = node.get_swap_info(contract);
 				const auto token_i = get_token(node, info.tokens[i]);
 				const auto token_k = get_token(node, info.tokens[k]);
-				const uint64_t deposit_amount = mmx::to_amount(amount, token_i->decimals);
-				const uint128_t expected_amount = info.get_trade_amount(i, deposit_amount);
+				const auto deposit_amount = mmx::to_amount(amount, token_i->decimals);
+				const auto trade_estimate = node.get_swap_trade_estimate(contract, i, deposit_amount);
+				const auto expected_amount = trade_estimate[0];
+
 				if(expected_amount.upper()) {
 					throw std::logic_error("amount overflow");
 				}
-				const uint64_t min_trade_amount = expected_amount.lower() * ask_amount;
+				const uint64_t min_trade_amount = expected_amount.lower() * min_amount;
 
 				std::cout << "You send: " << mmx::to_value(deposit_amount, token_i->decimals) << " " << token_i->symbol << std::endl;
 				std::cout << "You receive at least:  " << mmx::to_value(min_trade_amount, token_k->decimals) << " " << token_k->symbol << std::endl;
-				std::cout << "You expect to receive: " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (approximately)" << std::endl;
+				std::cout << "You expect to receive: " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (estimated)" << std::endl;
+				std::cout << "Fee:   " << mmx::to_value(trade_estimate[1], token_k->decimals) << " " << token_k->symbol << std::endl;
 				std::cout << "Price: " << (command == "sell" ? double(expected_amount.lower()) / deposit_amount : double(deposit_amount) / expected_amount.lower())
 						<< " " << (command == "sell" ? token_k : token_i)->symbol << " / " << (command == "sell" ? token_i : token_k)->symbol << std::endl;
 
@@ -738,6 +724,11 @@ int main(int argc, char** argv)
 					const auto info = node.get_swap_info(contract);
 					const auto token_0 = get_token(node, info.tokens[0]);
 					const auto token_1 = get_token(node, info.tokens[1]);
+
+					if(offset < 0 || size_t(offset) >= info.fee_rates.size()) {
+						std::cerr << "invalid pool offset: " << offset << std::endl;
+						goto failed;
+					}
 					if(have_amount) {
 						add_amount[0] = mmx::to_amount(amount, token_0->decimals);
 					} else {
@@ -774,6 +765,8 @@ int main(int argc, char** argv)
 						}
 						std::cout << std::endl;
 					}
+					std::cout << "Pool Fee: " << info.fee_rates[offset] * 100 << " %" << std::endl;
+
 					if(!add_amount[0] && !add_amount[1]) {
 						std::cerr << usage << std::endl;
 						goto failed;
@@ -782,7 +775,7 @@ int main(int argc, char** argv)
 						if(wallet.is_locked(index)) {
 							spend_options.passphrase = vnx::input_password("Passphrase: ");
 						}
-						if(auto tx = wallet.swap_add_liquid(index, contract, add_amount, spend_options)) {
+						if(auto tx = wallet.swap_add_liquid(index, contract, add_amount, offset, spend_options)) {
 							std::cout << "Transaction ID: " << tx->id << std::endl;
 						}
 					}
@@ -820,11 +813,10 @@ int main(int argc, char** argv)
 							std::cout << "You remove:  " << mmx::to_value(rem_amount[i], token->decimals) << " " << token->symbol << std::endl;
 						}
 					}
-					const auto expected_amount = info.get_remove_amount(user_info, rem_amount);
 					for(int i = 0; i < 2; ++i) {
 						const auto token = i ? token_1 : token_0;
-						if(expected_amount[i]) {
-							std::cout << "You receive: " << mmx::to_value(expected_amount[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+						if(user_info.equivalent_liquidity[i]) {
+							std::cout << "You receive: " << mmx::to_value(user_info.equivalent_liquidity[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
 						}
 					}
 					if(pre_accept || accept_prompt()) {
@@ -843,7 +835,7 @@ int main(int argc, char** argv)
 					}
 					spend_options.user = wallet.get_address(index, offset);
 
-					if(auto tx = wallet.execute(index, contract, "payout", {}, spend_options)) {
+					if(auto tx = wallet.execute(index, contract, "payout", {}, nullptr, spend_options)) {
 						std::cout << "Transaction ID: " << tx->id << std::endl;
 					}
 				}
@@ -857,11 +849,10 @@ int main(int argc, char** argv)
 						const auto token = i ? token_1 : token_0;
 						std::cout << "Balance: " << mmx::to_value(user_info.balance[i], token->decimals) << " " << token->symbol << std::endl;
 					}
-					const auto earned_fees = info.get_earned_fees(user_info);
 					for(int i = 0; i < 2; ++i) {
 						const auto token = i ? token_1 : token_0;
 						if(user_info.balance[i]) {
-							std::cout << "Earned fees: " << mmx::to_value(earned_fees[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
+							std::cout << "Earned fees: " << mmx::to_value(user_info.fees_earned[i], token->decimals) << " " << token->symbol << " (approximate)" << std::endl;
 						}
 					}
 					std::cout << "Unlock height: " << user_info.unlock_height << std::endl;
@@ -925,7 +916,7 @@ int main(int argc, char** argv)
 						<< std::endl << wallet.seed_value << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | mutate | exec | transfer | create | accounts | keys | lock | unlock]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | accounts | keys | lock | unlock]" << std::endl;
 			}
 		}
 		else if(module == "node")
@@ -965,7 +956,7 @@ int main(int argc, char** argv)
 				const auto info = node.get_network_info();
 				std::cout << "Synced:     " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
 				std::cout << "Height:     " << info->height << std::endl;
-				std::cout << "Netspace:   " << info->total_space / pow(1000, 5) << " PB (" << int(info->netspace_ratio * 1000) / 10. << " % physical)" << std::endl;
+				std::cout << "Netspace:   " << info->total_space / pow(1000, 5) << " PB (" << info->netspace_ratio * 100 << " % physical)" << std::endl;
 				std::cout << "VDF Speed:  " << info->time_diff * params->time_diff_constant / params->block_time / 1e6 << " MH/s" << std::endl;
 				std::cout << "Reward:     " << info->block_reward / pow(10, params->decimals) << " MMX" << std::endl;
 				std::cout << "Supply:     " << info->total_supply / pow(10, params->decimals) << " MMX" << std::endl;

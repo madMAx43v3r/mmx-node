@@ -1,4 +1,5 @@
 {
 	"num_threads": 16,
+	"max_queue_ms": 120000,
 	"config_path": "config/local/"
 }

@@ -1,0 +1,42 @@
+{
+	"port": 12340,
+	"block_time": 10,
+	"plot_filter": 8,
+	"plot_filter_nhash": 64,
+	"min_ksize": 26,
+	"infuse_delay": 3,
+	"challenge_delay": 6,
+	"challenge_interval": 64,
+	"commit_delay": 24,
+	"min_vdf_segments": 1000,
+	"num_vdf_segments": 1150,
+	"max_vdf_segments": 2048,
+	"vdf_seed": "test10",
+	"reward_factor": {
+		"value": 3048,
+		"inverse": 1000000000000000
+	},
+	"vdf_reward": 2500,
+	"min_reward": 500000,
+	"min_txfee": 2000,
+	"min_txfee_io": 1000,
+	"min_txfee_sign": 1000,
+	"min_txfee_exec": 2000,
+	"min_txfee_deploy": 2000,
+	"min_txfee_byte": 10,
+	"min_txfee_activate": 10000,
+	"max_block_size": 10000000,
+	"max_block_cost": 200000000,
+	"min_time_diff": 100000,
+	"initial_time_diff": 200000,
+	"initial_space_diff": 1,
+	"time_diff_constant": 1000,
+	"space_diff_constant": 100000000,
+	"virtual_space_constant": 1524,
+	"fixed_project_reward": 50000,
+	"project_ratio": {
+		"value": 1,
+		"inverse": 100
+	},
+	"project_addr": "mmx1cvc060jcsk3ywg36c5sm7zmrgth0ex7wp9s7jxvh4kgjgy2c90ss46rhwp"
+}

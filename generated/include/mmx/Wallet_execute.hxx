@@ -20,6 +20,7 @@ public:
 	::mmx::addr_t address;
 	std::string method;
 	std::vector<::vnx::Variant> args;
+	vnx::optional<uint32_t> user;
 	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
@@ -64,13 +65,14 @@ public:
 
 template<typename T>
 void Wallet_execute::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_execute>(5);
+	_visitor.template type_begin<Wallet_execute>(6);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("method", 2); _visitor.accept(method);
 	_visitor.type_field("args", 3); _visitor.accept(args);
-	_visitor.type_field("options", 4); _visitor.accept(options);
-	_visitor.template type_end<Wallet_execute>(5);
+	_visitor.type_field("user", 4); _visitor.accept(user);
+	_visitor.type_field("options", 5); _visitor.accept(options);
+	_visitor.template type_end<Wallet_execute>(6);
 }
 
 
