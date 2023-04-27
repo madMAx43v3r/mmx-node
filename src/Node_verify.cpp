@@ -419,9 +419,11 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 					if(i == 2) {
 						point->vdf_reward_valid = true;
 					}
-				} catch(...) {
+				} catch(const std::exception& ex) {
 					if(i < 2) {
 						throw;
+					} else {
+						log(WARN) << "Invalid VDF reward proof for height " << proof->height << ": " << ex.what();
 					}
 				}
 			}
