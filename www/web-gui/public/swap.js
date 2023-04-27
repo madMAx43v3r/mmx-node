@@ -831,6 +831,7 @@ Vue.component('swap-liquid', {
 			}
 		},
 		wallet() {
+			this.pool_idx = -1;
 			this.update_user();
 		},
 		amount_0() {
