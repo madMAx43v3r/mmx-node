@@ -457,29 +457,6 @@ Vue.component('block-view', {
 					</v-card>
 	
 					<v-card class="my-2">
-						<v-simple-table v-if="data.tx_base">
-							<template v-slot:default>
-								<thead>
-									<tr>
-										<th class="key-cell"></th>
-										<th>{{ $t('block_view.amount') }}</th>
-										<th></th>
-										<th>{{ $t('block_view.address') }}</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="(item, index) in data.tx_base.outputs" :key="index">
-										<td class="key-cell">{{ $t('block_view.reward') }}[{{index}}]</td>
-										<td><b>{{item.value}}</b></td>
-										<td>{{item.symbol}}</td>
-										<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
-									</tr>
-								</tbody>
-							</template>
-						</v-simple-table>
-					</v-card>
-	
-					<v-card class="my-2">
 						<v-simple-table v-if="data.tx_list.length">
 							<thead>
 								<tr>
