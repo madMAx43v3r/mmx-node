@@ -2107,9 +2107,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 
 	for(const auto& out : block->get_outputs(params))
 	{
-		if(out.type != tx_type_e::PROJECT_REWARD) {
-			recv_log.insert(std::make_tuple(out.address, block->height, counter++), out);
-		}
+		recv_log.insert(std::make_tuple(out.address, block->height, counter++), out);
 		balance_cache.get(out.address, out.contract) += out.amount;
 	}
 	for(const auto& in : block->get_inputs(params))
