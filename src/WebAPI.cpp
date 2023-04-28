@@ -632,14 +632,19 @@ public:
 	}
 
 	void augment_block_header(vnx::Object& tmp, std::shared_ptr<const BlockHeader> value) {
-		tmp["time"] = context->get_time(value->height);
-		tmp["tx_fees"] = to_amount_object(value->tx_fees, context->params->decimals);
-		tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
-		tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
-		tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
-		tmp["average_txfee"] = to_amount_object(value->average_txfee, context->params->decimals);
-		tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
-		tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+		if(context) {
+			tmp["time"] = context->get_time(value->height);
+			tmp["tx_fees"] = to_amount_object(value->tx_fees, context->params->decimals);
+			tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
+			tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
+			tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
+			tmp["vdf_reward"] = to_amount_object(value->vdf_reward_addr ? context->params->vdf_reward : 0, context->params->decimals);
+			tmp["project_reward"] = to_amount_object(calc_project_reward(context->params, value->tx_fees), context->params->decimals);
+			tmp["project_reward_addr"] = context->params->project_addr.to_string();
+			tmp["average_txfee"] = to_amount_object(value->average_txfee, context->params->decimals);
+			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
+			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+		}
 	}
 
 	void accept(std::shared_ptr<const BlockHeader> value) {
