@@ -76,6 +76,7 @@ function _payout(user)
 		}
 		user.last_fees_paid[i] = entry.fees_paid[i];
 	}
+	return user_share;
 }
 
 function payout() public
@@ -84,51 +85,143 @@ function payout() public
 	if(user == null) {
 		fail("no such user", 2);
 	}
-	_payout(user);
+	return _payout(user);
 }
 
-function _add_liquid(i, pool_idx, amount)
+function _disable(user)
 {
-	if(pool_idx >= size(state)) {
-		fail("invalid pool_idx", 8);
+	_payout(user);
+	
+	const entry = state[user.pool_idx];
+	
+	const user_sum = user.balance[0] + user.balance[1];
+	const pool_sum = entry.balance[0] + entry.balance[1];
+	const user_ratio = (user_sum << FRACT_BITS) / pool_sum;
+	
+	for(var i = 0; i < 2; ++i) {
+		const amount = (entry.balance[i] * user_ratio) >> FRACT_BITS;
+		
+		entry.balance[i] -= amount;
+		entry.user_total[i] -= user.balance[i];
+		
+		user.balance[i] = amount;
+	}
+	user.pool_idx = null;
+	
+	return user.balance;
+}
+
+function disable() public
+{
+	var user = users[this.user];
+	if(user == null) {
+		return;
+	}
+	if(user.pool_idx == null) {
+		return;
+	}
+	return _disable(user);
+}
+
+function _activate(user, pool_idx)
+{
+	if(user.pool_idx != null) {
+		fail("already activated", 9);
+	}
+	const total_balance = get_total_balance();
+	
+	const amount = [0, 0];
+	const balance = user.balance;
+	
+	if(total_balance[0] > 0 && total_balance[1] > 0)
+	{
+		const price = (total_balance[0] << FRACT_BITS) / (total_balance[1]);
+		
+		amount[0] = (balance[1] * price) >> FRACT_BITS;
+		
+		if(amount[0] <= balance[0]) {
+			amount[1] = balance[1];
+		} else {
+			amount[0] = balance[0];
+			amount[1] = (balance[0] << FRACT_BITS) / price;
+		}
+	}
+	else {
+		amount[0] = balance[0];
+		amount[1] = balance[1];
 	}
 	const entry = state[pool_idx];
+	
+	if(entry == null) {
+		fail("invalid pool_idx", 8);
+	}
+	
+	for(var i = 0; i < 2; ++i) {
+		total_balance[i] += amount[i];
+		entry.balance[i] += amount[i];
+		entry.user_total[i] += amount[i];
+		
+		user.last_fees_paid[i] = entry.fees_paid[i];
+	}
+	const amount_left = [0, 0];
+	
+	for(var i = 0; i < 2; ++i) {
+		amount_left[i] = balance[i] - amount[i];
+		balance[i] = amount[i];
+	}
+	
+	for(var i = 0; i < 2; ++i) {
+		const half_amount = amount_left[i] / 2;
+		if(half_amount > 0) {
+			const k = (i + 1) % 2;
+			const trade_amount = _trade(i, half_amount)[0];
+			
+			balance[i] += half_amount;
+			balance[k] += trade_amount;
+			entry.balance[i] += half_amount;
+			entry.balance[k] += trade_amount;
+			entry.user_total[i] += half_amount;
+			entry.user_total[k] += trade_amount;
+		}
+	}
+	
+	for(var i = 0; i < 2; ++i) {
+		user.last_user_total[i] = entry.user_total[i];
+	}
+	user.pool_idx = pool_idx;
+	
+	return balance;
+}
+
+function activate(pool_idx) public
+{
+	var user = users[this.user];
+	if(user == null) {
+		fail("no such user", 2);
+	}
+	return _activate(user, pool_idx);
+}
+
+function add_liquid(i) public payable
+{
+	if(this.deposit.currency != tokens[i]) {
+		fail("currency mismatch", 1);
+	}
 	
 	var user = users[this.user];
 	if(user == null) {
 		user = {};
-		user.pool_idx = pool_idx;
+		user.pool_idx = null;
 		user.balance = [0, 0];
 		user.last_fees_paid = [0, 0];
 		user.last_user_total = [0, 0];
 		users[this.user] = user;
 	} else {
-		if(user.balance[0] > 0 || user.balance[1] > 0) {
-			if(pool_idx != user.pool_idx) {
-				fail("pool_idx mismatch", 9);
-			}
-			// need to payout now, to avoid fee stealing
-			_payout(user);
+		if(user.pool_idx != null) {
+			fail("already activated", 9);
 		}
-		user.pool_idx = pool_idx;
 	}
-	entry.balance[i] += amount;
-	entry.user_total[i] += amount;
-	
-	for(var k = 0; k < 2; ++k) {
-		user.last_fees_paid[k] = entry.fees_paid[k];
-		user.last_user_total[k] = entry.user_total[k];
-	}
-	user.balance[i] += amount;
-	user.unlock_height = this.height + LOCK_DURATION;
-}
-
-function add_liquid(i, pool_idx) public payable
-{
-	if(this.deposit.currency != tokens[i]) {
-		fail("currency mismatch", 1);
-	}
-	_add_liquid(i, pool_idx, this.deposit.amount);
+	user.balance[i] += this.deposit.amount;
 }
 
 function _rem_liquid(user, i, amount, do_send = true)
@@ -170,7 +263,7 @@ function _rem_liquid(user, i, amount, do_send = true)
 	return out;
 }
 
-function rem_liquid(i, amount, dry_run = false) public
+function rem_liquid(i, amount) public
 {
 	if(amount == 0) {
 		fail("amount == 0");
@@ -213,32 +306,14 @@ function rem_all_liquid(dry_run = false) public
 
 function switch_pool(pool_idx) public
 {
-	if(pool_idx >= size(state)) {
-		fail("invalid pool_idx", 8);
-	}
 	const user = users[this.user];
 	if(user == null) {
 		fail("no such user", 2);
 	}
-	_payout(user);
+	_disable(user);
+	_activate(user, pool_idx);
 	
-	const amount = [user.balance[0], user.balance[1]];
-	const new_amount = [0, 0];
-	
-	for(var i = 0; i < 2; ++i) {
-		if(amount[i] > 0) {
-			const ret = _rem_liquid(user, i, amount[i], false);
-			for(var k = 0; k < 2; ++k) {
-				new_amount[k] += ret[k];
-			}
-		}
-	}
-	for(var i = 0; i < 2; ++i) {
-		if(new_amount[i] > 0) {
-			_add_liquid(i, pool_idx, new_amount[i]);
-		}
-	}
-	return new_amount;
+	return user.balance;
 }
 
 function get_total_balance() public const
@@ -273,7 +348,8 @@ function trade(i, address, min_amount) public payable
 	var amount_left = amount;
 	var trade_amount_left = trade_amount;
 	
-	for(var j = 0; j < size(state) && trade_amount_left > 0; ++j) {
+	for(var j = 0; j < size(state) && trade_amount_left > 0; ++j)
+	{
 		const entry = state[j];
 		
 		if(entry.balance[k] > 0) {
@@ -305,9 +381,6 @@ function trade(i, address, min_amount) public payable
 		if(actual_amount < min_amount) {
 			fail("minimum amount not reached", 7);
 		}
-	}
-	if(actual_amount == 0) {
-		fail("empty trade", 7);
 	}
 	send(bech32(address), actual_amount, tokens[k]);
 	
