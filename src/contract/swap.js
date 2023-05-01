@@ -1,6 +1,5 @@
 
 const FRACT_BITS = 64;
-const LOCK_DURATION = 8640;	// 24 hours
 
 const fee_rates = [
 	1844674407370955,		// 0.0001
@@ -19,8 +18,9 @@ var state = [];
 var tokens = [];
 var volume = [0, 0];
 var users = {};
+var unfreeze_height;
 
-function init(token, currency)
+function init(token, currency, unfreeze_height_)
 {
 	push(tokens, bech32(token));
 	push(tokens, bech32(currency));
@@ -33,6 +33,7 @@ function init(token, currency)
 		out.fees_claimed = [0, 0];
 		push(state, out);
 	}
+	unfreeze_height = unfreeze_height_;
 }
 
 function _get_earned_fees(user) const
@@ -94,17 +95,27 @@ function _disable(user)
 	
 	const entry = state[user.pool_idx];
 	
-	const user_sum = user.balance[0] + user.balance[1];
-	const pool_sum = entry.balance[0] + entry.balance[1];
-	const user_ratio = (user_sum << FRACT_BITS) / pool_sum;
-	
-	for(var i = 0; i < 2; ++i) {
-		const amount = (entry.balance[i] * user_ratio) >> FRACT_BITS;
+	if(this.height >= unfreeze_height)
+	{
+		const user_sum = user.balance[0] + user.balance[1];
+		const pool_sum = entry.balance[0] + entry.balance[1];
+		const user_ratio = (user_sum << FRACT_BITS) / pool_sum;
 		
-		entry.balance[i] -= amount;
-		entry.user_total[i] -= user.balance[i];
-		
-		user.balance[i] = amount;
+		for(var i = 0; i < 2; ++i) {
+			const amount = (entry.balance[i] * user_ratio) >> FRACT_BITS;
+			
+			entry.balance[i] -= amount;
+			entry.user_total[i] -= user.balance[i];
+			
+			user.balance[i] = amount;
+		}
+	}
+	else {
+		for(var i = 0; i < 2; ++i) {
+			const amount = user.balance[i];
+			entry.balance[i] -= amount;
+			entry.user_total[i] -= amount;
+		}
 	}
 	user.pool_idx = null;
 	
@@ -126,14 +137,14 @@ function disable() public
 function _activate(user, pool_idx)
 {
 	if(user.pool_idx != null) {
-		fail("already activated", 9);
+		fail("already activated", 3);
 	}
 	const total_balance = get_total_balance();
 	
 	const amount = [0, 0];
 	const balance = user.balance;
 	
-	if(total_balance[0] > 0 && total_balance[1] > 0)
+	if(this.height >= unfreeze_height && total_balance[0] > 0 && total_balance[1] > 0)
 	{
 		const price = (total_balance[0] << FRACT_BITS) / (total_balance[1]);
 		
@@ -157,37 +168,30 @@ function _activate(user, pool_idx)
 	}
 	
 	for(var i = 0; i < 2; ++i) {
-		total_balance[i] += amount[i];
+		send(this.user, balance[i] - amount[i], tokens[i]);
+		
 		entry.balance[i] += amount[i];
 		entry.user_total[i] += amount[i];
 		
-		user.last_fees_paid[i] = entry.fees_paid[i];
-	}
-	const amount_left = [0, 0];
-	
-	for(var i = 0; i < 2; ++i) {
-		amount_left[i] = balance[i] - amount[i];
 		balance[i] = amount[i];
-	}
-	
-	for(var i = 0; i < 2; ++i) {
-		const half_amount = amount_left[i] / 2;
-		if(half_amount > 0) {
-			const k = (i + 1) % 2;
-			const trade_amount = _trade(i, half_amount)[0];
-			
-			balance[i] += half_amount;
-			balance[k] += trade_amount;
-			entry.balance[i] += half_amount;
-			entry.balance[k] += trade_amount;
-			entry.user_total[i] += half_amount;
-			entry.user_total[k] += trade_amount;
-		}
-	}
-	
-	for(var i = 0; i < 2; ++i) {
+		user.last_fees_paid[i] = entry.fees_paid[i];
 		user.last_user_total[i] = entry.user_total[i];
 	}
+	
+// 	for(var i = 0; i < 2; ++i) {
+// 		const half_amount = amount_left[i] / 2;
+// 		if(half_amount > 0) {
+// 			const k = (i + 1) % 2;
+// 			const trade_amount = _trade(i, k, half_amount, null)[2];
+// 			
+// 			balance[i] += half_amount;
+// 			balance[k] += trade_amount;
+// 			entry.balance[i] += half_amount;
+// 			entry.balance[k] += trade_amount;
+// 			entry.user_total[i] += half_amount;
+// 			entry.user_total[k] += trade_amount;
+// 		}
+// 	}
 	user.pool_idx = pool_idx;
 	
 	return balance;
@@ -218,88 +222,26 @@ function add_liquid(i) public payable
 		users[this.user] = user;
 	} else {
 		if(user.pool_idx != null) {
-			fail("already activated", 9);
+			fail("already activated", 3);
 		}
 	}
 	user.balance[i] += this.deposit.amount;
 }
 
-function _rem_liquid(user, i, amount, do_send = true)
-{
-	const k = (i + 1) % 2;
-	const entry = state[user.pool_idx];
-	
-	var ret_amount = (amount * entry.balance[i]) / entry.user_total[i];
-	var trade_amount = 0;
-	
-	if(entry.balance[i] < entry.user_total[i]) {
-		if(entry.balance[k] > entry.user_total[k]) {
-			// token k was bought
-			trade_amount = ((entry.balance[k] - entry.user_total[k]) * amount) / entry.user_total[i];
-		}
-	} else if(entry.balance[k] < entry.user_total[k]) {
-		// no trade happened
-		ret_amount = amount;
-	}
-	
-	if(ret_amount > 0) {
-		if(do_send) {
-			send(this.user, ret_amount, tokens[i]);
-		}
-		entry.balance[i] -= ret_amount;
-	}
-	if(trade_amount > 0) {
-		if(do_send) {
-			send(this.user, trade_amount, tokens[k]);
-		}
-		entry.balance[k] -= trade_amount;
-	}
-	user.balance[i] -= amount;
-	entry.user_total[i] -= amount;
-	
-	var out = [0, 0];
-	out[i] = ret_amount;
-	out[k] = trade_amount;
-	return out;
-}
-
-function rem_liquid(i, amount) public
-{
-	if(amount == 0) {
-		fail("amount == 0");
-	}
-	const user = users[this.user];
-	if(user == null) {
-		fail("no such user", 2);
-	}
-	if(!dry_run) {
-		if(this.height < user.unlock_height) {
-			fail("liquidity still locked", 3);
-		}
-	}
-	if(amount > user.balance[i]) {
-		fail("amount > user balance", 4);
-	}
-	return _rem_liquid(user, i, amount, !dry_run);
-}
-
-function rem_all_liquid(dry_run = false) public
+function rem_all_liquid() public
 {
 	const user = users[this.user];
 	if(user == null) {
 		fail("no such user", 2);
 	}
-	_payout(user);
+	_disable(user);
 	
-	var out = [0, 0];
+	const out = clone(user.balance);
+	
 	for(var i = 0; i < 2; ++i) {
 		const amount = user.balance[i];
-		if(amount > 0) {
-			const ret = rem_liquid(i, amount, dry_run);
-			for(var k = 0; k < 2; ++k) {
-				out[k] += ret[k];
-			}
-		}
+		send(this.user, amount, tokens[i]);
+		user.balance[i] = 0;
 	}
 	return out;
 }
@@ -326,25 +268,15 @@ function get_total_balance() public const
 	return total;
 }
 
-function trade(i, address, min_amount) public payable
+function _trade(i, k, amount, min_amount) public payable
 {
-	if(this.deposit.currency != tokens[i]) {
-		fail("currency mismatch", 1);
-	}
 	const total_balance = get_total_balance();
 	
-	const k = (i + 1) % 2;
-	if(total_balance[k] == 0) {
-		fail("liquidity pool is empty", 5);
-	}
-	const amount = this.deposit.amount;
-
 	const price = (total_balance[k] << FRACT_BITS) / (total_balance[i] + amount);
 	
 	const trade_amount = (amount * price) >> FRACT_BITS;
 	
-	var out = [0, 0];
-	var actual_amount = 0;
+	var out = [0, 0, 0];
 	var amount_left = amount;
 	var trade_amount_left = trade_amount;
 	
@@ -361,9 +293,7 @@ function trade(i, address, min_amount) public payable
 			} else {
 				pool_amount = amount_left;
 			}
-			
 			const fee_amount = min(1 + ((pool_trade_amount * fee_rates[j]) >> FRACT_BITS), pool_trade_amount);
-			actual_amount += pool_trade_amount - fee_amount;
 			
 			out[0] += pool_trade_amount;
 			out[1] += fee_amount;
@@ -376,15 +306,30 @@ function trade(i, address, min_amount) public payable
 			trade_amount_left -= pool_trade_amount;
 		}
 	}
+	out[2] = out[0] - out[1];
 	
 	if(min_amount != null) {
-		if(actual_amount < min_amount) {
+		if(out[2] < min_amount) {
 			fail("minimum amount not reached", 7);
 		}
 	}
-	send(bech32(address), actual_amount, tokens[k]);
-	
 	volume[k] += trade_amount;
+	
+	return out;
+}
+
+function trade(i, address, min_amount) public payable
+{
+	if(this.height < unfreeze_height) {
+		fail("swap still freezed", 4);
+	}
+	if(this.deposit.currency != tokens[i]) {
+		fail("currency mismatch", 1);
+	}
+	const k = (i + 1) % 2;
+	const out = _trade(i, k, this.deposit.amount, min_amount);
+	
+	send(bech32(address), out[2], tokens[k]);
 	
 	return out;
 }
