@@ -122,6 +122,8 @@ const enLocale = {
         "plots": "Plots",
         "offer": "Offer",
         "history": "History",
+        "liquidity": "Liquidity",
+        "info": "Info",
         "details": "Details"
     },
 
