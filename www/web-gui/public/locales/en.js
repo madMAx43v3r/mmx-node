@@ -37,7 +37,8 @@ const enLocale = {
         "any": "Any",
 
         "link": "Link",
-        "owner": "Owner"
+        "owner": "Owner",
+        "manage": "Manage"
     },
 
     "main_menu": {

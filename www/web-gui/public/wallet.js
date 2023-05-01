@@ -985,9 +985,9 @@ Vue.component('account-liquid', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Balance", value: 'balance' },
-				{ text: "Symbol", value: 'symbol' },
-				{ text: "Address", value: 'address' },
+				{ text: this.$t('common.balance'), value: 'balance' },
+				{ text: this.$t('common.symbol'), value: 'symbol' },
+				{ text: this.$t('common.address'), value: 'address' },
 				{ text: "", value: 'actions' },
 			]
 		}
@@ -1040,7 +1040,7 @@ Vue.component('account-liquid', {
 				
 				<template v-slot:item.actions="{ item }">
 					<router-link :to="'/swap/liquid/' + item.address">
-						<v-btn outlined>Manage</v-btn>
+						<v-btn outlined>{{ $t('common.manage') }}</v-btn>
 					</router-link>
 				</template>
 			</v-data-table>
