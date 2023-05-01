@@ -85,7 +85,7 @@ function loadLanguageAsync(locale) {
 
     if (availableLanguages.filter( lang => lang.code == locale ).length > 0 ) {
         return fetch(`./locales/${locale}.json`).then(
-            response => response.json()     
+            response => response.json()
         ).then(
             messages => {            
                 messages = customFallback(messages);
