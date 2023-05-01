@@ -168,7 +168,8 @@ const enLocale = {
 
     "explore_menu": {
         "transactions": "Transactions",
-        "block_height": "block height"
+        "farmers": "Farmers",
+        "block_height": "block height",
     },
 
     "explore_blocks": {
@@ -186,6 +187,11 @@ const enLocale = {
         "n_out": "N(out)",
         "n_op": "N(op)",
         "transaction_id": "Transaction ID"
+    },
+
+    "explore_farmers": {
+        "no_blocks": "No. Blocks",
+        "farmer_key": "Farmer Key"
     },
 
     "block_view": {

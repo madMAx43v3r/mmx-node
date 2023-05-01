@@ -43,7 +43,7 @@ Vue.component('explore-menu', {
 			<v-tabs class="mb-2">
 				<v-tab to="/explore/blocks">{{ $t('explore_menu.blocks') }}</v-tab>
 				<v-tab to="/explore/transactions">{{ $t('explore_menu.transactions') }}</v-tab>
-				<v-tab to="/explore/farmers">Farmers</v-tab>
+				<v-tab to="/explore/farmers">{{ $t('explore_menu.farmers') }}</v-tab>
 			</v-tabs>
 		</div>
 	`
@@ -246,8 +246,8 @@ Vue.component('explore-farmers', {
 	computed: {
 		headers() {
 			return [
-				{ text: "No. Blocks", value: 'block_count'},
-				{ text: "Farmer Key", value: 'farmer_key'},
+				{ text: this.$t('explore_farmers.no_blocks'), value: 'block_count'},
+				{ text: this.$t('explore_farmers.farmer_key'), value: 'farmer_key'},
 			]
 		}
 	},

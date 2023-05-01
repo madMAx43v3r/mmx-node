@@ -152,6 +152,7 @@
 
     "explore_menu": {
         "transactions": "Транзакции",
+        "farmers": "Фермеры",
         "block_height": "Высота блока"
     },
 
@@ -162,6 +163,11 @@
     "explore_transactions": {
         "transaction_id": "ID транзакции"
     },
+
+    "explore_farmers": {
+        "no_blocks": "Кол-во блоков",
+        "farmer_key": "Ключ фермера"
+    },    
 
     "block_view": {
         "previous": "Предыдущий",
