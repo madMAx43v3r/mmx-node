@@ -567,7 +567,7 @@ Vue.component('status', {
 					.catch( () => {
 						this.synced_fails++;
 						this.$root.nodeInfo = null;
-					} );				
+					} );
 			}
 			
 			// console.log('--------------------------------');
@@ -679,7 +679,12 @@ Vue.component('git-update-checker', {
 			this.commit_status_message = '';
 			this.show = false;
 			fetch('GIT_COMMIT_HASH.json')
-			.then( response => response.json() )
+			.then( response => {
+                if (!response.ok) {
+                    throw Error(response.statusText);
+                }
+                return response.json();
+            })
 			.then( data => {
 				var hash = data.GIT_COMMIT_HASH;
 				if(hash) {
@@ -699,9 +704,12 @@ Vue.component('git-update-checker', {
 							}
 
 						}
-					});
+					})
 				}
 			})
+			.catch((err) => {
+				console.log(`git-update-checker: ${err}`);
+			});
 		}
 	},
 	created() {
