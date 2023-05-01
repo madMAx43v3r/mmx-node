@@ -44,6 +44,7 @@ const enLocale = {
         "market": "Market",
         "farmer": "Farmer",
         "exchange": "Exchange",
+        "swap": "Swap",
         "settings": "Settings",
         "logout": "Logout"
     },

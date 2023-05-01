@@ -502,7 +502,7 @@ Vue.component('main-menu', {
 			<v-tab to="/farmer">{{ $t('main_menu.farmer') }}</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
-			<v-tab to="/swap">Swap</v-tab>
+			<v-tab to="/swap">{{ $t('main_menu.swap') }}</v-tab>
 			<v-spacer></v-spacer>
 			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
 			<template v-if="!$route.meta.is_login && !$isWinGUI">
