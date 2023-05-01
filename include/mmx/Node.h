@@ -515,7 +515,7 @@ private:
 
 	mutable std::mutex vdf_mutex;
 	std::unordered_set<uint32_t> vdf_verify_pending;		// height
-	std::shared_ptr<OCL_VDF> opencl_vdf[3];
+	std::vector<std::shared_ptr<OCL_VDF>> opencl_vdf;
 	std::shared_ptr<vnx::ThreadPool> vdf_threads;
 
 	friend class vnx::addons::HttpInterface<Node>;

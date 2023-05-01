@@ -117,6 +117,12 @@ void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t ch
 	}
 }
 
+void OCL_VDF::release()
+{
+	std::lock_guard<std::mutex> lock(g_mutex);
+	g_program = nullptr;
+}
+
 #else
 
 OCL_VDF::OCL_VDF(cl_context context, cl_device_id device) {}
@@ -124,6 +130,8 @@ OCL_VDF::OCL_VDF(cl_context context, cl_device_id device) {}
 void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 
 void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
+
+void OCL_VDF::release() {}
 
 #endif // WITH_OPENCL
 

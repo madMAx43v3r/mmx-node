@@ -31,6 +31,8 @@ public:
 
 	void verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain);
 
+	static void release();
+
 private:
 #ifdef WITH_OPENCL
 	using Kernel = automy::basic_opencl::Kernel;

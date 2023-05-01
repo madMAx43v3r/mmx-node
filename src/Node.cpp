@@ -35,7 +35,8 @@
 namespace mmx {
 
 Node::Node(const std::string& _vnx_name)
-	:	NodeBase(_vnx_name)
+	:	NodeBase(_vnx_name),
+		opencl_vdf(3)
 {
 	params = mmx::get_params();
 }
@@ -91,7 +92,7 @@ void Node::main()
 				if(size_t(opencl_device) < devices.size()) {
 					const auto device = devices[opencl_device];
 					opencl_context = automy::basic_opencl::create_context(platform, {device});
-					for(int i = 0; i < 3; ++i) {
+					for(size_t i = 0; i < opencl_vdf.size(); ++i) {
 						opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_context, device);
 					}
 					log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] "
@@ -332,8 +333,10 @@ void Node::main()
 	if(vdf_threads) {
 		vdf_threads->close();
 	}
+	opencl_vdf.clear();
 
 #ifdef WITH_OPENCL
+	OCL_VDF::release();
 	automy::basic_opencl::release_context(opencl_context);
 #endif
 }
