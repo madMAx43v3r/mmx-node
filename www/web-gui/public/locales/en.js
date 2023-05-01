@@ -319,7 +319,8 @@ const enLocale = {
         "they_offer": "They Offer",
         "they_ask": "They Ask",
         "anything": "Anything",
-        "offers": "Offers"
+        "offers": "Offers",
+        "history": "History"
     },
 
     "market_offers": {
