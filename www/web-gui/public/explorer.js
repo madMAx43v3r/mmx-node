@@ -66,8 +66,8 @@ Vue.component('blocks-table', {
 				{ text: this.$t('explore_blocks.score'), value: 'score' },
 				{ text: this.$t('explore_blocks.reward'), value: 'reward' },
 				{ text: "TX Fees", value: 'tx_fees' },
-				{ text: "Size", value: 'static_cost_ratio' },
-				{ text: "Cost", value: 'total_cost_ratio' },
+				{ text: this.$t('explore_blocks.size'), value: 'static_cost_ratio' },
+				{ text: this.$t('explore_blocks.cost'), value: 'total_cost_ratio' },
 				{ text: this.$t('explore_blocks.hash'), value: 'hash' },
 			]
 		}

@@ -1921,11 +1921,11 @@ Vue.component('account-offers', {
 			<v-simple-table>
 				<thead>
 				<tr>
-					<th colspan="2">Offering</th>
-					<th colspan="2">Received</th>
-					<th colspan="2">Price</th>
+					<th colspan="2">{{ $t('account_offers.offering') }}</th>
+					<th colspan="2">{{ $t('account_offers.received') }}</th>
+					<th colspan="2">{{ $t('account_offers.price') }}</th>
 					<th>{{ $t('account_offers.address') }}</th>
-					<th>{{ $t('account_offers.actions') }}</th>
+					<th></th>
 				</tr>
 				</thead>
 				<tbody>
@@ -1944,7 +1944,7 @@ Vue.component('account-offers', {
 						<template v-if="item.ask_balance && !withdrawn.has(item.address)">
 							<v-btn outlined text @click="withdraw(item)">Withdraw</v-btn>
 						</template>
-						<v-btn outlined text color="green darken-1" @click="deposit(item)">Deposit</v-btn>
+						<v-btn outlined text color="green darken-1" @click="deposit(item)">{{ $t('account_offers.deposit') }}</v-btn>
 					</td>
 				</tr>
 				</tbody>
@@ -1955,17 +1955,17 @@ Vue.component('account-offers', {
 			<template v-slot:default="dialog">
 				<v-card>
 					<v-toolbar color="primary"></v-toolbar>
-					<v-card-title>Deposit to {{dialog_item.address}}</v-card-title>
+					<v-card-title>{{ $t('account_offers.deposit_to') }} {{dialog_item.address}}</v-card-title>
 					<v-card-text class="pb-0">
 						<v-text-field class="text-align-right"
 							v-model="dialog_amount"
-							label="Amount"
+							:label="$t('common.amount')"
 							:suffix="dialog_item.bid_symbol">
 						</v-text-field>
 					</v-card-text>
 					<v-card-actions class="justify-end">
-						<v-btn @click="submit_deposit(dialog_item, dialog_amount)" color="primary" :disabled="!(dialog_amount > 0)">Deposit</v-btn>
-						<v-btn @click="dialog.value = false">Abort</v-btn>
+						<v-btn @click="submit_deposit(dialog_item, dialog_amount)" color="primary" :disabled="!(dialog_amount > 0)">{{ $t('common.deposit') }}</v-btn>
+						<v-btn @click="dialog.value = false">{{ $t('common.cancel') }}</v-btn>
 					</v-card-actions>
 				</v-card>
 			</template>

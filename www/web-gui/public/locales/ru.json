@@ -26,6 +26,9 @@
         "deploy": "Развернуть",
         "create": "Создать",
 		"remove": "Удалить",
+
+        "accept": "Принять",
+        "cancel": "Отмена",
 		
         "transaction_has_been_sent": "Транзакция отправлена",
         "failed_with": "Ошибка",
@@ -36,7 +39,8 @@
         "link": "Ссылка",
         "owner": "Владелец",
         "manage": "Управлять",
-        "harvester": "Комбайн"
+        "harvester": "Комбайн",
+        "deposit": "Вклад"
     },
 
     "main_menu": {
@@ -149,15 +153,17 @@
     },
 
     "account_offers": {
-        "offer": "Предложить",
-        "receive": "Получить",
+        "offering": "Предложено",
+        "received": "Получено",
+        "price": "Цена",
         "status": "Статус",
         "actions": "Действия",
         "revoke": "Отозвать",
 
         "accepted": "Принято",
         "revoked": "Отозвано",
-        "open": "Открыто"
+        "open": "Открыто",
+        "deposit_to": "Сделать вклад на"
     },
 
     "account_offer_form": {
@@ -176,7 +182,9 @@
     },
 
     "explore_blocks": {
-        "score": "Оценка"
+        "score": "Оценка",
+        "size": "Объём",
+        "cost": "Расходы"
     },
 
     "explore_transactions": {
@@ -313,8 +321,6 @@
 
     "market_offers": {
         "price": "Цена",
-        "accept": "Принять",
-        "cancel": "Отменить",
 
         "accept_offer": "Принять оффер",
         "you_receive": "Вы получите",

@@ -30,6 +30,9 @@ const enLocale = {
         "create": "Create",
         "remove": "Remove",
 
+        "accept": "Accept",
+        "cancel": "Cancel",
+
         "transaction_has_been_sent": "Transaction has been sent",
         "failed_with": "Failed with",
         "deployed_as": "Deployed as",
@@ -39,7 +42,8 @@ const enLocale = {
         "link": "Link",
         "owner": "Owner",
         "manage": "Manage",
-        "harvester": "Harvester"
+        "harvester": "Harvester",
+        "deposit": "Deposit"
     },
 
     "main_menu": {
@@ -165,8 +169,9 @@ const enLocale = {
     },
 
     "account_offers": {
-        "offer": "Offer",
-        "receive": "Receive",
+        "offering": "Offering",
+        "received": "Received",
+        "price": "Price",
         "status": "Status",
         "actions": "Actions",
         "revoke": "Revoke",
@@ -174,7 +179,8 @@ const enLocale = {
         "accepted": "Accepted",
         "revoked": "Revoked",
 
-        "open": "Open"
+        "open": "Open",
+        "deposit_to": "Deposit to"
     },
 
     "account_offer_form": {
@@ -199,7 +205,10 @@ const enLocale = {
         "score": "Score",
         
         "tdiff": "T-Diff",
-        "sdiff": "S-Diff"
+        "sdiff": "S-Diff",
+
+        "size": "Size",
+        "cost": "Cost"
     },
 
     "explore_transactions": {
@@ -344,8 +353,6 @@ const enLocale = {
 
     "market_offers": {
         "price": "Price",
-        "accept": "Accept",
-        "cancel": "Cancel",
 
         "accept_offer": "Accept Offer",
         "you_receive": "You Receive",

@@ -131,6 +131,7 @@ const commonLocale = {
         "height": "@:common.height",
         "address": "@:common.address",
         "time": "@:common.time",
+        "deposit": "@:common.deposit",
     },
 
     "account_offer_form": {
@@ -194,6 +195,11 @@ const commonLocale = {
 
     "market_menu": {
         "wallet": "@:common.wallet"
+    },
+
+    "market_offers": {
+        "accept": "@:common.accept",
+        "cancel": "@:common.cancel"
     },
 
     "market_offers": {
