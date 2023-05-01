@@ -235,15 +235,22 @@ const enLocale = {
     },
 
     "node_settings": {
+        "gui": "GUI",
         "language": "Language",
-        "enable_timelord": "Enable TimeLord",
-        "farmer_reward_address": "Farmer Reward Address",
-        "timeLord_reward_address": "TimeLord Reward Address",
-        "restart_needed": "(restart needed to apply)",
 
         "theme": "Theme",
         "light": "Light",
         "dark": "Dark",
+
+        "general": "General",
+        "enable_timelord": "Enable TimeLord",
+        "enable_timelord_reward": "Enable TimeLord Rewards (requires one more CPU core)",
+        "verify_timelord_reward": "Verify TimeLord Rewards (disable to speed up VDF verify)",
+        "open_port": "Open network port to allow incoming connections (UPnP)",
+        "farmer_reward_address": "Farmer Reward Address",
+        "timeLord_reward_address": "TimeLord Reward Address",
+        "restart_needed": "(restart needed to apply)",
+
         "opencl_device": "OpenCL Device"
     },
 

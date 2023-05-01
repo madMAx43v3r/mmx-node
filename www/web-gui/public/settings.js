@@ -213,7 +213,7 @@ Vue.component('node-settings', {
 	template: `
 		<div>
 			<v-card v-if="!$isWinGUI">
-				<v-card-title>GUI</v-card-title>
+				<v-card-title>{{ $t('node_settings.gui') }}</v-card-title>
 				<v-card-text>
 					<v-select
 						v-model="$i18n.locale"
@@ -235,7 +235,7 @@ Vue.component('node-settings', {
 			</v-card>
 
 			<v-card class="my-2">
-				<v-card-title>General</v-card-title>
+				<v-card-title>{{ $t('node_settings.general') }}</v-card-title>
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 					
@@ -247,17 +247,17 @@ Vue.component('node-settings', {
 					<v-checkbox
 						:disabled="!timelord"
 						v-model="enable_timelord_reward"
-						label="Enable TimeLord Rewards (requires one more CPU core)"
+						:label="$t('node_settings.enable_timelord_reward')"
 						class="my-0"
 					></v-checkbox>
 					<v-checkbox
 						v-model="verify_timelord_reward"
-						label="Verify TimeLord Rewards (disable to speed up VDF verify)"
+						:label="$t('node_settings.verify_timelord_reward')"
 						class="my-0"
 					></v-checkbox>
 					<v-checkbox
 						v-model="open_port"
-						label="Open network port to allow incoming connections (UPnP)"
+						:label="$t('node_settings.open_port')"
 						class="my-0"
 					></v-checkbox>
 					

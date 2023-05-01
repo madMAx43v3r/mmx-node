@@ -209,15 +209,21 @@
     },
 
     "node_settings": {
+        "gui": "Графический интерфейс",
         "language": "Язык",
-        "enable_timelord": "Включить Таймлорд",
-        "farmer_reward_address": "Адрес награды Фермера",
-        "timeLord_reward_address": "Адрес награды Таймлорда",
-        "restart_needed": "(необходим перезапуск)",
 
         "theme": "Тема",
         "light": "Светлая",
         "dark": "Темная",
+
+        "general": "Основные",
+        "enable_timelord": "Включить Таймлорд",
+        "enable_timelord_reward": "Включить вознаграждения Таймлорда (требуется еще одно ядро ЦП)",
+        "verify_timelord_reward": "Подтвердить вознаграждения Таймлорда (отключить, чтобы ускорить проверку VDF)",
+        "open_port": "Открыть сетевой порт, чтобы разрешить входящие подключения (UPnP)",
+        "farmer_reward_address": "Адрес награды Фермера",
+        "timeLord_reward_address": "Адрес награды Таймлорда",
+        "restart_needed": "(необходим перезапуск)",
 
         "opencl_device": "Устройство OpenCL"
     },
