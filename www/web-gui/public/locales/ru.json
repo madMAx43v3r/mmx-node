@@ -71,7 +71,7 @@
         "total_farm_size": "Общий объем фермы"
     },    
 
-    "node_log": {   
+    "node_log": {
         "terminal": "Терминал",
         "router": "Маршрутизатор",
         "farmer": "Фермер",
@@ -230,6 +230,13 @@
         "blockchain": "Блокчейн",
         "revert_db_to_height": "Откатить базу данных на высоту",
         "revert": "Откатить"
+    },
+
+    "harvester_settings": {
+        "harvester": "Комбайн",
+        "harvester_reload_interval": "Интервал перезарядки комбайна (сек)",
+        "plot_directory": "Каталог с плотами",
+        "add_directory": "Добавить каталог"
     },
 
     "wallet_settings": {

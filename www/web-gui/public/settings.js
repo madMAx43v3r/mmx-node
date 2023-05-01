@@ -304,12 +304,12 @@ Vue.component('node-settings', {
 			</v-card>
 			
 			<v-card class="my-2">
-				<v-card-title>Harvester</v-card-title>
+				<v-card-title>{{ $t('harvester_settings.harvester') }}</v-card-title>
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 					
 					<v-text-field
-						label="Harvester Reload Interval (sec)"
+						:label="$t('harvester_settings.harvester_reload_interval')"
 						:value="reload_interval" @change="value => reload_interval = parseInt(value)"
 					></v-text-field>
 					
@@ -317,7 +317,7 @@ Vue.component('node-settings', {
 						<v-simple-table>
 							<thead>
 								<tr>
-									<th>Plot Directory</th>
+									<th>{{ $t('harvester_settings.plot_directory') }}</th>
 									<th></th>
 								</tr>
 							</thead>
@@ -331,10 +331,10 @@ Vue.component('node-settings', {
 					</v-card>
 					
 					<v-text-field
-						label="Plot Directory"
+						:label="$t('harvester_settings.plot_directory')"
 						v-model="new_plot_dir"
 					></v-text-field>
-					<v-btn @click="add_plot_dir(new_plot_dir)" outlined color="primary">Add Directory</v-btn>
+					<v-btn @click="add_plot_dir(new_plot_dir)" outlined color="primary">{{ $t('harvester_settings.add_directory') }}</v-btn>
 				</v-card-text>
 			</v-card>
 							

@@ -258,6 +258,13 @@ const enLocale = {
         "revert": "Revert"
     },
 
+    "harvester_settings": {
+        "harvester": "Harvester",
+        "harvester_reload_interval": "Harvester Reload Interval (sec)",
+        "plot_directory": "Plot Directory",
+        "add_directory": "Add Directory"
+    },
+
     "wallet_settings": {
         "token_whitelist": "Token Whitelist",
         "name": "Name",
