@@ -35,7 +35,8 @@
 
         "link": "Ссылка",
         "owner": "Владелец",
-        "manage": "Управлять"
+        "manage": "Управлять",
+        "harvester": "Комбайн"
     },
 
     "main_menu": {
@@ -85,7 +86,6 @@
         "terminal": "Терминал",
         "router": "Маршрутизатор",
         "farmer": "Фермер",
-        "harvester": "Комбайн",
         "timelord": "Таймлорд"
     },
 
@@ -258,7 +258,6 @@
     },
 
     "harvester_settings": {
-        "harvester": "Комбайн",
         "harvester_reload_interval": "Интервал перезарядки комбайна (сек)",
         "plot_directory": "Каталог с плотами",
         "add_directory": "Добавить каталог"

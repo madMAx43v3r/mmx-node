@@ -25,7 +25,12 @@ const commonLocale = {
 
     "node_log": {
         "wallet": "@:common.wallet",
-        "node": "@:common.node"
+        "node": "@:common.node",
+        "harvester": "@:common.harvester",
+    },
+
+    "harvester_settings": {
+        "harvester": "@:common.harvester"
     },
 
     "node_log_table": {
@@ -217,7 +222,7 @@ const commonLocale = {
         "sdiff": "@:explore_blocks.sdiff",
         "time": "@:common.time",
         "plot_id": "@:block_view.plot_id",
-        "harvester": "@:node_log.harvester"
+        "harvester": "@:common.harvester"
     }
 
 }

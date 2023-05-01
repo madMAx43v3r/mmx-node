@@ -103,7 +103,7 @@ Vue.component('farmer-plots', {
 		},
 		headers2() {
 			return [
-				{ text: "Harvester", value: 'name' },
+				{ text: this.$t('common.harvester'), value: 'name' },
 				{ text: this.$t('farmer_info.physical_size'), value: 'bytes' },
 			]
 		}

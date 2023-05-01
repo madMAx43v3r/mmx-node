@@ -38,7 +38,8 @@ const enLocale = {
 
         "link": "Link",
         "owner": "Owner",
-        "manage": "Manage"
+        "manage": "Manage",
+        "harvester": "Harvester"
     },
 
     "main_menu": {
@@ -89,7 +90,6 @@ const enLocale = {
         "terminal": "Terminal",
         "router": "Router",
         "farmer": "Farmer",
-        "harvester": "Harvester",
         "timelord": "TimeLord"
     },
 
@@ -285,7 +285,6 @@ const enLocale = {
     },
 
     "harvester_settings": {
-        "harvester": "Harvester",
         "harvester_reload_interval": "Harvester Reload Interval (sec)",
         "plot_directory": "Plot Directory",
         "add_directory": "Add Directory"
