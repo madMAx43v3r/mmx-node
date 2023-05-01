@@ -293,13 +293,13 @@ Vue.component('node-settings', {
 			</v-card>
 			
 			<v-card class="my-2">
-				<v-card-title>Blockchain</v-card-title>
+				<v-card-title>{{ $t('node_settings.blockchain') }}</v-card-title>
 				<v-card-text>
 					<v-text-field
-						label="Revert DB to height"
+						:label="$t('node_settings.revert_db_to_height')"
 						v-model="revert_height"
 					></v-text-field>
-					<v-btn @click="revert_sync(revert_height)" outlined color="error">Revert</v-btn>
+					<v-btn @click="revert_sync(revert_height)" outlined color="error">{{ $t('node_settings.revert') }}</v-btn>
 				</v-card-text>
 			</v-card>
 			

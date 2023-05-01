@@ -219,13 +219,17 @@
         "general": "Основные",
         "enable_timelord": "Включить Таймлорд",
         "enable_timelord_reward": "Включить вознаграждения Таймлорда (требуется еще одно ядро ЦП)",
-        "verify_timelord_reward": "Подтвердить вознаграждения Таймлорда (отключить, чтобы ускорить проверку VDF)",
+        "verify_timelord_reward": "Подтверждать вознаграждения Таймлорда (отключить, чтобы ускорить проверку VDF)",
         "open_port": "Открыть сетевой порт, чтобы разрешить входящие подключения (UPnP)",
         "farmer_reward_address": "Адрес награды Фермера",
         "timeLord_reward_address": "Адрес награды Таймлорда",
         "restart_needed": "(необходим перезапуск)",
 
-        "opencl_device": "Устройство OpenCL"
+        "opencl_device": "Устройство OpenCL",
+
+        "blockchain": "Блокчейн",
+        "revert_db_to_height": "Откатить базу данных на высоту",
+        "revert": "Откатить"
     },
 
     "wallet_settings": {

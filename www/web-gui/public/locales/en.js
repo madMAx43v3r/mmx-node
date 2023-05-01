@@ -251,7 +251,11 @@ const enLocale = {
         "timeLord_reward_address": "TimeLord Reward Address",
         "restart_needed": "(restart needed to apply)",
 
-        "opencl_device": "OpenCL Device"
+        "opencl_device": "OpenCL Device",
+
+        "blockchain": "Blockchain",
+        "revert_db_to_height": "Revert DB to height",
+        "revert": "Revert"
     },
 
     "wallet_settings": {
