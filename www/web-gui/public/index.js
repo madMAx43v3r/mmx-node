@@ -132,7 +132,7 @@ const AccountPlots = {
 	template: `
 		<div>
 			<router-link :to="'/wallet/account/' + index + '/create/virtualplot'">
-				<v-btn outlined>New Plot</v-btn>
+				<v-btn outlined>{{ this.$t('account_plots.new_plot') }}</v-btn>
 			</router-link>
 			<account-plots class="my-2" :index="index"></account-plots>
 		</div>

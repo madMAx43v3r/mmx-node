@@ -23,7 +23,7 @@ const commonLocale = {
         "block_size": "@:node_common.block_size"
     },
 
-    "node_log": {   
+    "node_log": {
         "wallet": "@:common.wallet",
         "node": "@:common.node"
     },
@@ -33,7 +33,7 @@ const commonLocale = {
     },
 
     "node_peers": {
-    	"ip": "IP",        
+    	"ip": "IP",
         "height": "@:common.height",
         "type": "@:common.type"
     },
@@ -93,6 +93,11 @@ const commonLocale = {
         "spendable": "@:balance_table.spendable",
         "token": "@:common.token",
         "contract": "@:balance_table.contract"
+    },
+
+    "account_plots": {
+        "balance": "@:common.balance",
+        "address": "@:common.address"
     },
 
     "account_history": {

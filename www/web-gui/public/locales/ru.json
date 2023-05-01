@@ -33,7 +33,8 @@
 
         "any": "Все",
 
-        "link": "Ссылка"
+        "link": "Ссылка",
+        "owner": "Владелец"
     },
 
     "main_menu": {
@@ -114,6 +115,7 @@
         "contracts": "Контракты",
         "addresses": "Адреса",
         "send": "Отправить",
+        "plots": "Плоты",
         "offer": "Офферы",
         "history": "История",
         "details": "Подробности"
@@ -135,6 +137,11 @@
 
     "account_balance": {
         "reserved": "Зарезервировано"
+    },
+
+    "account_plots": {
+        "size": "Объём",
+        "new_plot": "Новый плот"
     },
 
     "account_offers": {

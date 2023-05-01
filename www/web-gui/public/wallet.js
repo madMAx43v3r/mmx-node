@@ -46,7 +46,7 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
-			<v-btn :to="'/wallet/account/' + index + '/plots'">Plots</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/plots'">{{ $t('account_menu.plots') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/liquid'">Liquidity</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/details'">Info</v-btn>
@@ -809,9 +809,9 @@ Vue.component('account-plots', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Balance", value: 'balance' },
-				{ text: "Size", value: 'size_bytes' },
-				{ text: "Address", value: 'address' },
+				{ text: this.$t('account_plots.balance'), value: 'balance' },
+				{ text: this.$t('account_plots.size'), value: 'size_bytes' },
+				{ text: this.$t('account_plots.address'), value: 'address' },
 				{ text: "", value: 'actions' },
 			]
 		}
@@ -2206,7 +2206,7 @@ Vue.component('create-virtual-plot-contract', {
 			<v-card class="my-2">
 				<v-card-text>
 					<v-text-field
-						label="Owner"
+						:label="$t('common.owner')"
 						v-model="owner"
 						:placeholder="$t('common.reward_address_placeholder')">
 					</v-text-field>

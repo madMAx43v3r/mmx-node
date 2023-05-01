@@ -36,7 +36,8 @@ const enLocale = {
 
         "any": "Any",
 
-        "link": "Link"
+        "link": "Link",
+        "owner": "Owner"
     },
 
     "main_menu": {
@@ -118,6 +119,7 @@ const enLocale = {
         "contracts": "Contracts",
         "addresses": "Addresses",
         "send": "Send",
+        "plots": "Plots",
         "offer": "Offer",
         "history": "History",
         "details": "Details"
@@ -151,6 +153,11 @@ const enLocale = {
 
     "account_balance": {
         "reserved": "Reserved"
+    },
+
+    "account_plots": {
+        "size": "Size",
+        "new_plot": "New Plot"
     },
 
     "account_offers": {
