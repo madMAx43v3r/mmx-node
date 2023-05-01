@@ -20,7 +20,7 @@ var volume = [0, 0];
 var users = {};
 var unfreeze_height;
 
-function init(token, currency, unfreeze_height_)
+function init(token, currency, unfreeze_delay)
 {
 	push(tokens, bech32(token));
 	push(tokens, bech32(currency));
@@ -33,7 +33,7 @@ function init(token, currency, unfreeze_height_)
 		out.fees_claimed = [0, 0];
 		push(state, out);
 	}
-	unfreeze_height = unfreeze_height_;
+	unfreeze_height = this.height + unfreeze_delay;
 }
 
 function _get_earned_fees(user) const
