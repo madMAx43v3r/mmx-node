@@ -45,6 +45,14 @@
         "logout": "Выйти"
     },
 
+    "node_status": {
+        "disconnected": "Отключено от узла",
+        "logged_off": "Вылогенненый",
+        "connecting": "Подключение",
+        "syncing": "Синхронизация",
+        "synced": "Синхронизировано"
+    },    
+
     "node_common": {
         "vdf_speed": "Скорость VDF",
         "block_reward": "Награда за блок",

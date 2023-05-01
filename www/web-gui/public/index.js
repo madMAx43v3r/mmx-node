@@ -496,7 +496,7 @@ Vue.component('main-menu', {
 	},
 	template: `
 		<v-tabs>
-			<status/>
+			<node-status/>
 			<v-tab to="/node">{{ $t('main_menu.node') }}</v-tab>
 			<v-tab to="/wallet">{{ $t('main_menu.wallet') }}</v-tab>
 			<v-tab to="/farmer">{{ $t('main_menu.farmer') }}</v-tab>
@@ -512,17 +512,16 @@ Vue.component('main-menu', {
 		`
 })
 
-const AppStatus = {
-	DisconnectedFromNode: "Disconnected from node",
-	LoggedOff: "Logged off",
-	Connecting: "Connecting",
-	Syncing: "Syncing",
-	Synced: "Synced"
-}
-
-Vue.component('status', {
+Vue.component('node-status', {
 	data() {
 		return {
+            node_status: {
+                DisconnectedFromNode: this.$t('node_status.disconnected'),
+                LoggedOff: this.$t('node_status.logged_off'),
+                Connecting: this.$t('node_status.connecting'),
+                Syncing: this.$t('node_status.syncing'),
+                Synced: this.$t('node_status.synced')
+            },
 			timer: null,
 			session_fails: 99,
 			peer_fails: 99,
@@ -532,14 +531,14 @@ Vue.component('status', {
 	methods: {
 		async update() {
 
-			if(this.status = AppStatus.LoggedOff || this.status == AppStatus.DisconnectedFromNode 
-				|| this.status == AppStatus.Connecting) {
+			if(this.status = this.node_status.LoggedOff || this.status == this.node_status.DisconnectedFromNode 
+				|| this.status == node_status.Connecting) {
 				await fetch('/server/session')
 					.then( () => this.session_fails = 0 )
 					.catch( () => this.session_fails++ );
 			}
 
-			if(this.status == AppStatus.Connecting || this.status == AppStatus.Syncing) {
+			if(this.status == this.node_status.Connecting || this.status == this.node_status.Syncing) {
 				await fetch('/api/router/get_peer_info')
 					.then( response => response.json() )
 					.then( data => {
@@ -552,8 +551,8 @@ Vue.component('status', {
 					.catch( () => this.peer_fails++ );
 			}
 
-			if(this.status == AppStatus.Connecting || this.status == AppStatus.Syncing 
-				|| this.status == AppStatus.Synced) {
+			if(this.status == this.node_status.Connecting || this.status == this.node_status.Syncing 
+				|| this.status == this.node_status.Synced) {
 				await fetch('/wapi/node/info')
 					.then( response => response.json() )
 					.then( data => {
@@ -595,19 +594,19 @@ Vue.component('status', {
 			return this.synced_fails == 0;
 		},
 		status() {
-			let result = AppStatus.DisconnectedFromNode
+			let result = this.node_status.DisconnectedFromNode
 			if(this.connectedToNode) {
-				if(this.loggedIn) {					
-					result = AppStatus.Connecting;
+				if(this.loggedIn) {
+					result = this.node_status.Connecting;
 					if(this.connectedToNetwork) {
-						result = AppStatus.Syncing;
+						result = this.node_status.Syncing;
 					}
 
 					if(this.synced) {
-						result = AppStatus.Synced;
+						result = this.node_status.Synced;
 					}
 				} else {
-					result = AppStatus.LoggedOff;
+					result = this.node_status.LoggedOff;
 				}
 			}
 			//console.log(result)
@@ -626,25 +625,25 @@ Vue.component('status', {
 
 			<git-update-checker class="pr-5"/>
 
-			<t-icon v-if="status == AppStatus.Connecting"
+			<t-icon v-if="status == node_status.Connecting"
 				color="red"
-				:tooltip="AppStatus.Connecting">mdi-connection</t-icon>
+				:tooltip="node_status.Connecting">mdi-connection</t-icon>
 
-			<t-icon v-else-if="status == AppStatus.Syncing"
+			<t-icon v-else-if="status == node_status.Syncing"
 				color="yellow darken-3" 
-				:tooltip="AppStatus.Syncing">mdi-sync</t-icon>
+				:tooltip="node_status.Syncing">mdi-sync</t-icon>
 
-			<t-icon v-else-if="status == AppStatus.Synced"
+			<t-icon v-else-if="status == node_status.Synced"
 				color="green" 
-				:tooltip="AppStatus.Synced">mdi-cloud-check</t-icon>
+				:tooltip="node_status.Synced">mdi-cloud-check</t-icon>
 
-			<t-icon v-else-if="status == AppStatus.LoggedOff" 
+			<t-icon v-else-if="status == node_status.LoggedOff" 
 				color="red" 
-				:tooltip="AppStatus.LoggedOff">mdi-shield-key</t-icon>
+				:tooltip="node_status.LoggedOff">mdi-shield-key</t-icon>
 
 			<t-icon v-else
 				color="red" 
-				:tooltip="AppStatus.DisconnectedFromNode">mdi-emoticon-dead</t-icon>
+				:tooltip="node_status.DisconnectedFromNode">mdi-emoticon-dead</t-icon>
 
 		</div>
 		`

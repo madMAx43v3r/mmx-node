@@ -49,6 +49,14 @@ const enLocale = {
         "logout": "Logout"
     },
 
+    "node_status": {
+        "disconnected": "Disconnected from node",
+        "logged_off": "Logged off",
+        "connecting": "Connecting...",
+        "syncing": "Syncing",
+        "synced": "Synced"
+    },
+
     "node_common": {
         "vdf_speed": "VDF Speed",
         "block_reward": "Block Reward",
