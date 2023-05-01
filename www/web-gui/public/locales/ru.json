@@ -136,7 +136,8 @@
     },
 
     "account_balance": {
-        "reserved": "Зарезервировано"
+        "reserved": "Зарезервировано",
+        "show_unknown": "Показывать неизвестные"
     },
 
     "account_plots": {

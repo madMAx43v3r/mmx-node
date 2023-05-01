@@ -224,7 +224,7 @@ Vue.component('account-balance', {
 					<div class="align-self-center ml-auto">
 						<v-switch
 							v-model="show_all" 
-							label="Show unknown"
+							:label="$t('account_balance.show_unknown')"
 							hide-details
 							class="ma-0 pa-0"
 							style="transform: scale(0.75);"/>

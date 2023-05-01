@@ -152,7 +152,8 @@ const enLocale = {
     },
 
     "account_balance": {
-        "reserved": "Reserved"
+        "reserved": "Reserved",
+        "show_unknown": "Show unknown"
     },
 
     "account_plots": {
