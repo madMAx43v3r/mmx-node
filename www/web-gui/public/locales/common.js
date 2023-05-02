@@ -198,16 +198,14 @@ const commonLocale = {
     },
 
     "market_offers": {
-        "accept": "@:common.accept",
-        "cancel": "@:common.cancel"
-    },
-
-    "market_offers": {
         "they_offer": "@:market_menu.they_offer",
         "they_ask": "@:market_menu.they_ask",
         "time": "@:common.time",
         "link": "@:common.link",
-        "address": "@:common.address"
+        "address": "@:common.address",
+
+        "accept": "@:common.accept",
+        "cancel": "@:common.cancel"
     },
 
     "account_history_form": {

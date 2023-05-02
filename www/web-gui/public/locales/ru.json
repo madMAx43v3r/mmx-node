@@ -323,8 +323,13 @@
         "price": "Цена",
 
         "accept_offer": "Принять оффер",
+        "wallet_ballance": "Баланс кошелька",
+        "you_send": "Вы отправляете",
         "you_receive": "Вы получите",
-        "you_pay": "Вы платите"
+        "you_pay": "Вы платите",
+
+        "increase": "Увеличить",
+        "trade": "Обменять"
     },
 
     "login": {

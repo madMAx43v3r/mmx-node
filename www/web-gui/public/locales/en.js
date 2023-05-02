@@ -353,10 +353,15 @@ const enLocale = {
 
     "market_offers": {
         "price": "Price",
-
+        
         "accept_offer": "Accept Offer",
+        "wallet_ballance": "Wallet Balance",
+        "you_send": "You send",
         "you_receive": "You Receive",
-        "you_pay": "You Pay"
+        "you_pay": "You Pay",
+
+        "increase": "Increase",
+        "trade": "Trade"
     },
 
     "login": {
