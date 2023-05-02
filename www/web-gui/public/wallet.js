@@ -814,6 +814,15 @@ Vue.component('account-plots', {
 				{ text: this.$t('account_plots.address'), value: 'address' },
 				{ text: "", value: 'actions' },
 			]
+		},
+		submit_button_label() {
+			return this.dialog_mode == 'Deposit'? this.$t('account_contract_summary.deposit') : this.$t('account_contract_summary.withdraw')
+		},
+		from_to(){
+			return this.dialog_mode == "Deposit" ? this.$t('account_plots.to') : this.$t('account_plots.from')
+		},
+		card_title() {
+			return `${this.submit_button_label} ${this.from_to} ${this.dialog_address}`
 		}
 	},
 	methods: {
@@ -929,8 +938,8 @@ Vue.component('account-plots', {
 				</template>
 				
 				<template v-slot:item.actions="{ item }">
-					<v-btn color="green darken-1" @click="deposit(item.address, item.owner)" outlined>Deposit</v-btn>
-					<v-btn color="red darken-1" @click="withdraw(item.address, item.owner)" outlined>Withdraw</v-btn>
+					<v-btn color="green darken-1" @click="deposit(item.address, item.owner)" outlined>{{ $t('account_contract_summary.deposit') }}</v-btn>
+					<v-btn color="red darken-1" @click="withdraw(item.address, item.owner)" outlined>{{ $t('account_contract_summary.withdraw') }}</v-btn>
 				</template>
 			</v-data-table>
 			
@@ -938,11 +947,11 @@ Vue.component('account-plots', {
 				<template v-slot:default="dialog">
 					<v-card>
 						<v-toolbar color="primary"></v-toolbar>
-						<v-card-title>{{dialog_mode}} {{dialog_mode == "Deposit" ? "to" : "from"}} {{dialog_address}}</v-card-title>
+						<v-card-title>{{ card_title }}</v-card-title>
 						<v-card-text class="pb-0">
 							<v-text-field class="text-align-right"
 								v-model="dialog_amount"
-								label="Amount"
+								:label="$t('common.amount')"
 								suffix="MMX">
 							</v-text-field>
 							<v-alert
@@ -953,16 +962,16 @@ Vue.component('account-plots', {
 								class="my-2"
 							>
 								<template v-if="dialog_mode == 'Deposit'">
-									Only 90% of the amount deposited will be returned on withdraw, the rest is burned as fee.
+									{{ $t('account_plots.deposit_warning') }}
 								</template>
 								<template v-else>
-									Only 90% of the amount will be returned, the rest is burned as fee.
+									{{ $t('account_plots.withdraw_warning') }}
 								</template>
 							</v-alert>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn @click="submit()" color="primary" :disabled="!(dialog_amount > 0)">{{dialog_mode}}</v-btn>
-							<v-btn @click="dialog.value = false">Abort</v-btn>
+							<v-btn @click="submit()" color="primary" :disabled="!(dialog_amount > 0)">{{ submit_button_label }}</v-btn>
+							<v-btn @click="dialog.value = false">{{ $t('common.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</template>
@@ -1233,7 +1242,7 @@ Vue.component('create-account', {
 						<v-col>
 							<v-text-field type="text" :label="$t('create_account.account_index')" v-model.number="offset" class="text-align-right"/>
 						</v-col>
-						<v-col cols="6">							
+						<v-col cols="6">
 							<v-text-field type="text" :label="$t('create_account.account_name')" v-model="name"/>
 						</v-col>
 						<v-col>
@@ -2298,7 +2307,7 @@ Vue.component('wallet-menu', {
 		<v-select
 			v-model="wallet"
 			:items="wallets"
-			:lablel="$t('market_menu.wallet')"
+			:label="$t('market_menu.wallet')"
 			item-text="[0]"
 			item-value="[0]">
 			<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">

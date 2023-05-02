@@ -165,7 +165,13 @@ const enLocale = {
 
     "account_plots": {
         "size": "Size",
-        "new_plot": "New Plot"
+        "new_plot": "New Plot",
+
+        "from": "from",
+        "to": "to",
+        
+        "deposit_warning": "Only 90% of the amount deposited will be returned on withdraw, the rest is burned as fee.",
+        "withdraw_warning": "Only 90% of the amount will be returned, the rest is burned as fee."
     },
 
     "account_offers": {
@@ -353,7 +359,7 @@ const enLocale = {
 
     "market_offers": {
         "price": "Price",
-        
+
         "accept_offer": "Accept Offer",
         "wallet_ballance": "Wallet Balance",
         "you_send": "You send",
