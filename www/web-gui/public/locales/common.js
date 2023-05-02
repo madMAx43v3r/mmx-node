@@ -23,9 +23,14 @@ const commonLocale = {
         "block_size": "@:node_common.block_size"
     },
 
-    "node_log": {   
+    "node_log": {
         "wallet": "@:common.wallet",
-        "node": "@:common.node"
+        "node": "@:common.node",
+        "harvester": "@:common.harvester",
+    },
+
+    "harvester_settings": {
+        "harvester": "@:common.harvester"
     },
 
     "node_log_table": {
@@ -33,7 +38,7 @@ const commonLocale = {
     },
 
     "node_peers": {
-    	"ip": "IP",        
+    	"ip": "IP",
         "height": "@:common.height",
         "type": "@:common.type"
     },
@@ -95,6 +100,11 @@ const commonLocale = {
         "contract": "@:balance_table.contract"
     },
 
+    "account_plots": {
+        "balance": "@:common.balance",
+        "address": "@:common.address"
+    },
+
     "account_history": {
         "height": "@:common.height",
         "type": "@:common.type",
@@ -121,6 +131,7 @@ const commonLocale = {
         "height": "@:common.height",
         "address": "@:common.address",
         "time": "@:common.time",
+        "deposit": "@:common.deposit",
     },
 
     "account_offer_form": {
@@ -191,7 +202,10 @@ const commonLocale = {
         "they_ask": "@:market_menu.they_ask",
         "time": "@:common.time",
         "link": "@:common.link",
-        "address": "@:common.address"
+        "address": "@:common.address",
+
+        "accept": "@:common.accept",
+        "cancel": "@:common.cancel"
     },
 
     "account_history_form": {
@@ -212,7 +226,7 @@ const commonLocale = {
         "sdiff": "@:explore_blocks.sdiff",
         "time": "@:common.time",
         "plot_id": "@:block_view.plot_id",
-        "harvester": "@:node_log.harvester"
+        "harvester": "@:common.harvester"
     }
 
 }

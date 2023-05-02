@@ -30,13 +30,20 @@ const enLocale = {
         "create": "Create",
         "remove": "Remove",
 
+        "accept": "Accept",
+        "cancel": "Cancel",
+
         "transaction_has_been_sent": "Transaction has been sent",
         "failed_with": "Failed with",
         "deployed_as": "Deployed as",
 
         "any": "Any",
 
-        "link": "Link"
+        "link": "Link",
+        "owner": "Owner",
+        "manage": "Manage",
+        "harvester": "Harvester",
+        "deposit": "Deposit"
     },
 
     "main_menu": {
@@ -44,8 +51,17 @@ const enLocale = {
         "market": "Market",
         "farmer": "Farmer",
         "exchange": "Exchange",
+        "swap": "Swap",
         "settings": "Settings",
         "logout": "Logout"
+    },
+
+    "node_status": {
+        "disconnected": "Disconnected from node",
+        "logged_off": "Logged off",
+        "connecting": "Connecting...",
+        "syncing": "Syncing",
+        "synced": "Synced"
     },
 
     "node_common": {
@@ -78,7 +94,6 @@ const enLocale = {
         "terminal": "Terminal",
         "router": "Router",
         "farmer": "Farmer",
-        "harvester": "Harvester",
         "timelord": "TimeLord"
     },
 
@@ -109,8 +124,11 @@ const enLocale = {
         "contracts": "Contracts",
         "addresses": "Addresses",
         "send": "Send",
+        "plots": "Plots",
         "offer": "Offer",
         "history": "History",
+        "liquidity": "Liquidity",
+        "info": "Info",
         "details": "Details"
     },
 
@@ -141,12 +159,25 @@ const enLocale = {
     },
 
     "account_balance": {
-        "reserved": "Reserved"
+        "reserved": "Reserved",
+        "show_unknown": "Show unknown"
+    },
+
+    "account_plots": {
+        "size": "Size",
+        "new_plot": "New Plot",
+
+        "from": "from",
+        "to": "to",
+        
+        "deposit_warning": "Only 90% of the amount deposited will be returned on withdraw, the rest is burned as fee.",
+        "withdraw_warning": "Only 90% of the amount will be returned, the rest is burned as fee."
     },
 
     "account_offers": {
-        "offer": "Offer",
-        "receive": "Receive",
+        "offering": "Offering",
+        "received": "Received",
+        "price": "Price",
         "status": "Status",
         "actions": "Actions",
         "revoke": "Revoke",
@@ -154,7 +185,8 @@ const enLocale = {
         "accepted": "Accepted",
         "revoked": "Revoked",
 
-        "open": "Open"
+        "open": "Open",
+        "deposit_to": "Deposit to"
     },
 
     "account_offer_form": {
@@ -168,7 +200,8 @@ const enLocale = {
 
     "explore_menu": {
         "transactions": "Transactions",
-        "block_height": "block height"
+        "farmers": "Farmers",
+        "block_height": "block height",
     },
 
     "explore_blocks": {
@@ -178,7 +211,10 @@ const enLocale = {
         "score": "Score",
         
         "tdiff": "T-Diff",
-        "sdiff": "S-Diff"
+        "sdiff": "S-Diff",
+
+        "size": "Size",
+        "cost": "Cost"
     },
 
     "explore_transactions": {
@@ -186,6 +222,11 @@ const enLocale = {
         "n_out": "N(out)",
         "n_op": "N(op)",
         "transaction_id": "Transaction ID"
+    },
+
+    "explore_farmers": {
+        "no_blocks": "No. Blocks",
+        "farmer_key": "Farmer Key"
     },
 
     "block_view": {
@@ -235,16 +276,33 @@ const enLocale = {
     },
 
     "node_settings": {
+        "gui": "GUI",
         "language": "Language",
-        "enable_timelord": "Enable TimeLord",
-        "farmer_reward_address": "Farmer Reward Address",
-        "timeLord_reward_address": "TimeLord Reward Address",
-        "restart_needed": "(restart needed to apply)",
 
         "theme": "Theme",
         "light": "Light",
         "dark": "Dark",
-        "opencl_device": "OpenCL Device"
+
+        "general": "General",
+        "enable_timelord": "Enable TimeLord",
+        "enable_timelord_reward": "Enable TimeLord Rewards (requires one more CPU core)",
+        "verify_timelord_reward": "Verify TimeLord Rewards (disable to speed up VDF verify)",
+        "open_port": "Open network port to allow incoming connections (UPnP)",
+        "farmer_reward_address": "Farmer Reward Address",
+        "timeLord_reward_address": "TimeLord Reward Address",
+        "restart_needed": "(restart needed to apply)",
+
+        "opencl_device": "OpenCL Device",
+
+        "blockchain": "Blockchain",
+        "revert_db_to_height": "Revert DB to height",
+        "revert": "Revert"
+    },
+
+    "harvester_settings": {
+        "harvester_reload_interval": "Harvester Reload Interval (sec)",
+        "plot_directory": "Plot Directory",
+        "add_directory": "Add Directory"
     },
 
     "wallet_settings": {
@@ -295,17 +353,21 @@ const enLocale = {
         "they_offer": "They Offer",
         "they_ask": "They Ask",
         "anything": "Anything",
-        "offers": "Offers"
+        "offers": "Offers",
+        "history": "History"
     },
 
     "market_offers": {
         "price": "Price",
-        "accept": "Accept",
-        "cancel": "Cancel",
 
         "accept_offer": "Accept Offer",
+        "wallet_ballance": "Wallet Balance",
+        "you_send": "You send",
         "you_receive": "You Receive",
-        "you_pay": "You Pay"
+        "you_pay": "You Pay",
+
+        "increase": "Increase",
+        "trade": "Trade"
     },
 
     "login": {

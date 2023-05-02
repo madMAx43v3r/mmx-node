@@ -26,6 +26,9 @@
         "deploy": "Развернуть",
         "create": "Создать",
 		"remove": "Удалить",
+
+        "accept": "Принять",
+        "cancel": "Отмена",
 		
         "transaction_has_been_sent": "Транзакция отправлена",
         "failed_with": "Ошибка",
@@ -33,7 +36,11 @@
 
         "any": "Все",
 
-        "link": "Ссылка"
+        "link": "Ссылка",
+        "owner": "Владелец",
+        "manage": "Управлять",
+        "harvester": "Комбайн",
+        "deposit": "Вклад"
     },
 
     "main_menu": {
@@ -44,6 +51,14 @@
         "settings": "Настройки",
         "logout": "Выйти"
     },
+
+    "node_status": {
+        "disconnected": "Отключено от узла",
+        "logged_off": "Вылогенненый",
+        "connecting": "Подключение",
+        "syncing": "Синхронизация",
+        "synced": "Синхронизировано"
+    },    
 
     "node_common": {
         "vdf_speed": "Скорость VDF",
@@ -71,11 +86,10 @@
         "total_farm_size": "Общий объем фермы"
     },    
 
-    "node_log": {   
+    "node_log": {
         "terminal": "Терминал",
         "router": "Маршрутизатор",
         "farmer": "Фермер",
-        "harvester": "Комбайн",
         "timelord": "Таймлорд"
     },
 
@@ -106,8 +120,11 @@
         "contracts": "Контракты",
         "addresses": "Адреса",
         "send": "Отправить",
+        "plots": "Плоты",
         "offer": "Офферы",
         "history": "История",
+        "liquidity": "Ликвидность",
+        "info": "Информация",
         "details": "Подробности"
     },
 
@@ -126,19 +143,33 @@
     },
 
     "account_balance": {
-        "reserved": "Зарезервировано"
+        "reserved": "Зарезервировано",
+        "show_unknown": "Показывать неизвестные"
+    },
+
+    "account_plots": {
+        "size": "Объём",
+        "new_plot": "Новый плот",
+
+        "from": "с",
+        "to": "на",
+
+        "deposit_warning": "Только 90% суммы депозита будет возвращено при снятии средств, остальное сжигается в качестве комиссии.",
+        "withdraw_warning": "Возвращается только 90% суммы, остальное сжигается в качестве комиссии."
     },
 
     "account_offers": {
-        "offer": "Предложить",
-        "receive": "Получить",
+        "offering": "Предложено",
+        "received": "Получено",
+        "price": "Цена",
         "status": "Статус",
         "actions": "Действия",
         "revoke": "Отозвать",
 
         "accepted": "Принято",
         "revoked": "Отозвано",
-        "open": "Открыто"
+        "open": "Открыто",
+        "deposit_to": "Сделать вклад на"
     },
 
     "account_offer_form": {
@@ -152,16 +183,24 @@
 
     "explore_menu": {
         "transactions": "Транзакции",
+        "farmers": "Фермеры",
         "block_height": "Высота блока"
     },
 
     "explore_blocks": {
-        "score": "Оценка"
+        "score": "Оценка",
+        "size": "Объём",
+        "cost": "Расходы"
     },
 
     "explore_transactions": {
         "transaction_id": "ID транзакции"
     },
+
+    "explore_farmers": {
+        "no_blocks": "Кол-во блоков",
+        "farmer_key": "Ключ фермера"
+    },    
 
     "block_view": {
         "previous": "Предыдущий",
@@ -209,17 +248,33 @@
     },
 
     "node_settings": {
+        "gui": "Графический интерфейс",
         "language": "Язык",
-        "enable_timelord": "Включить Таймлорд",
-        "farmer_reward_address": "Адрес награды Фермера",
-        "timeLord_reward_address": "Адрес награды Таймлорда",
-        "restart_needed": "(необходим перезапуск)",
 
         "theme": "Тема",
         "light": "Светлая",
         "dark": "Темная",
 
-        "opencl_device": "Устройство OpenCL"
+        "general": "Основные",
+        "enable_timelord": "Включить Таймлорд",
+        "enable_timelord_reward": "Включить вознаграждения Таймлорда (требуется еще одно ядро ЦП)",
+        "verify_timelord_reward": "Подтверждать вознаграждения Таймлорда (отключить, чтобы ускорить проверку VDF)",
+        "open_port": "Открыть сетевой порт, чтобы разрешить входящие подключения (UPnP)",
+        "farmer_reward_address": "Адрес награды Фермера",
+        "timeLord_reward_address": "Адрес награды Таймлорда",
+        "restart_needed": "(необходим перезапуск)",
+
+        "opencl_device": "Устройство OpenCL",
+
+        "blockchain": "Блокчейн",
+        "revert_db_to_height": "Откатить базу данных на высоту",
+        "revert": "Откатить"
+    },
+
+    "harvester_settings": {
+        "harvester_reload_interval": "Интервал перезарядки комбайна (сек)",
+        "plot_directory": "Каталог с плотами",
+        "add_directory": "Добавить каталог"
     },
 
     "wallet_settings": {
@@ -266,17 +321,21 @@
         "they_offer": "Предлагают",
         "they_ask": "Запрашивают",
         "anything": "Всё",
-        "offers": "Офферы"
+        "offers": "Офферы",
+        "history": "История"
     },
 
     "market_offers": {
         "price": "Цена",
-        "accept": "Принять",
-        "cancel": "Отменить",
 
         "accept_offer": "Принять оффер",
+        "wallet_ballance": "Баланс кошелька",
+        "you_send": "Вы отправляете",
         "you_receive": "Вы получите",
-        "you_pay": "Вы платите"
+        "you_pay": "Вы платите",
+
+        "increase": "Увеличить",
+        "trade": "Обменять"
     },
 
     "login": {

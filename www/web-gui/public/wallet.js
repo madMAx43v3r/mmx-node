@@ -46,10 +46,10 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
-			<v-btn :to="'/wallet/account/' + index + '/plots'">Plots</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/plots'">{{ $t('account_menu.plots') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</v-btn>
-			<v-btn :to="'/wallet/account/' + index + '/liquid'">Liquidity</v-btn>
-			<v-btn :to="'/wallet/account/' + index + '/details'">Info</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/liquid'">{{ $t('account_menu.liquidity') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.info') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/options'"><v-icon>mdi-cog</v-icon></v-btn>
 		</v-btn-toggle>
 		`
@@ -224,7 +224,7 @@ Vue.component('account-balance', {
 					<div class="align-self-center ml-auto">
 						<v-switch
 							v-model="show_all" 
-							label="Show unknown"
+							:label="$t('account_balance.show_unknown')"
 							hide-details
 							class="ma-0 pa-0"
 							style="transform: scale(0.75);"/>
@@ -809,11 +809,20 @@ Vue.component('account-plots', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Balance", value: 'balance' },
-				{ text: "Size", value: 'size_bytes' },
-				{ text: "Address", value: 'address' },
+				{ text: this.$t('account_plots.balance'), value: 'balance' },
+				{ text: this.$t('account_plots.size'), value: 'size_bytes' },
+				{ text: this.$t('account_plots.address'), value: 'address' },
 				{ text: "", value: 'actions' },
 			]
+		},
+		submit_button_label() {
+			return this.dialog_mode == 'Deposit'? this.$t('account_contract_summary.deposit') : this.$t('account_contract_summary.withdraw')
+		},
+		from_to(){
+			return this.dialog_mode == "Deposit" ? this.$t('account_plots.to') : this.$t('account_plots.from')
+		},
+		card_title() {
+			return `${this.submit_button_label} ${this.from_to} ${this.dialog_address}`
 		}
 	},
 	methods: {
@@ -929,8 +938,8 @@ Vue.component('account-plots', {
 				</template>
 				
 				<template v-slot:item.actions="{ item }">
-					<v-btn color="green darken-1" @click="deposit(item.address, item.owner)" outlined>Deposit</v-btn>
-					<v-btn color="red darken-1" @click="withdraw(item.address, item.owner)" outlined>Withdraw</v-btn>
+					<v-btn color="green darken-1" @click="deposit(item.address, item.owner)" outlined>{{ $t('account_contract_summary.deposit') }}</v-btn>
+					<v-btn color="red darken-1" @click="withdraw(item.address, item.owner)" outlined>{{ $t('account_contract_summary.withdraw') }}</v-btn>
 				</template>
 			</v-data-table>
 			
@@ -938,11 +947,11 @@ Vue.component('account-plots', {
 				<template v-slot:default="dialog">
 					<v-card>
 						<v-toolbar color="primary"></v-toolbar>
-						<v-card-title>{{dialog_mode}} {{dialog_mode == "Deposit" ? "to" : "from"}} {{dialog_address}}</v-card-title>
+						<v-card-title>{{ card_title }}</v-card-title>
 						<v-card-text class="pb-0">
 							<v-text-field class="text-align-right"
 								v-model="dialog_amount"
-								label="Amount"
+								:label="$t('common.amount')"
 								suffix="MMX">
 							</v-text-field>
 							<v-alert
@@ -953,16 +962,16 @@ Vue.component('account-plots', {
 								class="my-2"
 							>
 								<template v-if="dialog_mode == 'Deposit'">
-									Only 90% of the amount deposited will be returned on withdraw, the rest is burned as fee.
+									{{ $t('account_plots.deposit_warning') }}
 								</template>
 								<template v-else>
-									Only 90% of the amount will be returned, the rest is burned as fee.
+									{{ $t('account_plots.withdraw_warning') }}
 								</template>
 							</v-alert>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn @click="submit()" color="primary" :disabled="!(dialog_amount > 0)">{{dialog_mode}}</v-btn>
-							<v-btn @click="dialog.value = false">Abort</v-btn>
+							<v-btn @click="submit()" color="primary" :disabled="!(dialog_amount > 0)">{{ submit_button_label }}</v-btn>
+							<v-btn @click="dialog.value = false">{{ $t('common.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</template>
@@ -985,9 +994,9 @@ Vue.component('account-liquid', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Balance", value: 'balance' },
-				{ text: "Symbol", value: 'symbol' },
-				{ text: "Address", value: 'address' },
+				{ text: this.$t('common.balance'), value: 'balance' },
+				{ text: this.$t('common.symbol'), value: 'symbol' },
+				{ text: this.$t('common.address'), value: 'address' },
 				{ text: "", value: 'actions' },
 			]
 		}
@@ -1040,7 +1049,7 @@ Vue.component('account-liquid', {
 				
 				<template v-slot:item.actions="{ item }">
 					<router-link :to="'/swap/liquid/' + item.address">
-						<v-btn outlined>Manage</v-btn>
+						<v-btn outlined>{{ $t('common.manage') }}</v-btn>
 					</router-link>
 				</template>
 			</v-data-table>
@@ -1233,7 +1242,7 @@ Vue.component('create-account', {
 						<v-col>
 							<v-text-field type="text" :label="$t('create_account.account_index')" v-model.number="offset" class="text-align-right"/>
 						</v-col>
-						<v-col cols="6">							
+						<v-col cols="6">
 							<v-text-field type="text" :label="$t('create_account.account_name')" v-model="name"/>
 						</v-col>
 						<v-col>
@@ -1921,11 +1930,11 @@ Vue.component('account-offers', {
 			<v-simple-table>
 				<thead>
 				<tr>
-					<th colspan="2">Offering</th>
-					<th colspan="2">Received</th>
-					<th colspan="2">Price</th>
+					<th colspan="2">{{ $t('account_offers.offering') }}</th>
+					<th colspan="2">{{ $t('account_offers.received') }}</th>
+					<th colspan="2">{{ $t('account_offers.price') }}</th>
 					<th>{{ $t('account_offers.address') }}</th>
-					<th>{{ $t('account_offers.actions') }}</th>
+					<th></th>
 				</tr>
 				</thead>
 				<tbody>
@@ -1944,7 +1953,7 @@ Vue.component('account-offers', {
 						<template v-if="item.ask_balance && !withdrawn.has(item.address)">
 							<v-btn outlined text @click="withdraw(item)">Withdraw</v-btn>
 						</template>
-						<v-btn outlined text color="green darken-1" @click="deposit(item)">Deposit</v-btn>
+						<v-btn outlined text color="green darken-1" @click="deposit(item)">{{ $t('account_offers.deposit') }}</v-btn>
 					</td>
 				</tr>
 				</tbody>
@@ -1955,17 +1964,17 @@ Vue.component('account-offers', {
 			<template v-slot:default="dialog">
 				<v-card>
 					<v-toolbar color="primary"></v-toolbar>
-					<v-card-title>Deposit to {{dialog_item.address}}</v-card-title>
+					<v-card-title>{{ $t('account_offers.deposit_to') }} {{dialog_item.address}}</v-card-title>
 					<v-card-text class="pb-0">
 						<v-text-field class="text-align-right"
 							v-model="dialog_amount"
-							label="Amount"
+							:label="$t('common.amount')"
 							:suffix="dialog_item.bid_symbol">
 						</v-text-field>
 					</v-card-text>
 					<v-card-actions class="justify-end">
-						<v-btn @click="submit_deposit(dialog_item, dialog_amount)" color="primary" :disabled="!(dialog_amount > 0)">Deposit</v-btn>
-						<v-btn @click="dialog.value = false">Abort</v-btn>
+						<v-btn @click="submit_deposit(dialog_item, dialog_amount)" color="primary" :disabled="!(dialog_amount > 0)">{{ $t('common.deposit') }}</v-btn>
+						<v-btn @click="dialog.value = false">{{ $t('common.cancel') }}</v-btn>
 					</v-card-actions>
 				</v-card>
 			</template>
@@ -2206,7 +2215,7 @@ Vue.component('create-virtual-plot-contract', {
 			<v-card class="my-2">
 				<v-card-text>
 					<v-text-field
-						label="Owner"
+						:label="$t('common.owner')"
 						v-model="owner"
 						:placeholder="$t('common.reward_address_placeholder')">
 					</v-text-field>
@@ -2298,7 +2307,7 @@ Vue.component('wallet-menu', {
 		<v-select
 			v-model="wallet"
 			:items="wallets"
-			:lablel="$t('market_menu.wallet')"
+			:label="$t('market_menu.wallet')"
 			item-text="[0]"
 			item-value="[0]">
 			<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">

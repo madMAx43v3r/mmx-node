@@ -136,7 +136,7 @@ Vue.component('market-menu', {
 
 				<v-tabs>
 					<v-tab :to="'/market/offers/' + wallet + '/' + bid + '/' + ask">{{ $t('market_menu.offers') }}</v-tab>
-					<v-tab :to="'/market/history/' + wallet + '/' + bid + '/' + ask">History</v-tab>
+					<v-tab :to="'/market/history/' + wallet + '/' + bid + '/' + ask">{{ $t('market_menu.history') }}</v-tab>
 				</v-tabs>
 			</div>
 
@@ -307,27 +307,27 @@ Vue.component('market-offers', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="wallet_balance"
-										label="Wallet Balance"
+										:label="$t('market_offers.wallet_ballance')"
 										:suffix="offer.ask_symbol" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="trade_amount"
-										label="You send"
+										:label="$t('market_offers.you_send')"
 										:suffix="offer.ask_symbol">
 									</v-text-field>
 								</v-col>
 							</v-row>
 							<v-text-field class="text-align-right"
 								v-model="trade_estimate"
-								label="You receive"
+								:label="$t('market_offers.you_receive')"
 								:suffix="offer.bid_symbol" disabled>
 							</v-text-field>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="primary" @click="submit(offer, trade_amount)" :disabled="!is_valid_trade()">Trade</v-btn>
-							<v-btn @click="increase()">Increase</v-btn>
+							<v-btn color="primary" @click="submit(offer, trade_amount)" :disabled="!is_valid_trade()">{{ $t('market_offers.trade') }}</v-btn>
+							<v-btn @click="increase()">{{ $t('market_offers.increase') }}</v-btn>
 							<v-btn @click="trade_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
@@ -344,17 +344,17 @@ Vue.component('market-offers', {
 						<v-card-text>
 							<v-text-field class="text-align-right"
 								v-model="offer.ask_value"
-								label="You send"
+								:label="$t('market_offers.you_send')"
 								:suffix="offer.ask_symbol" disabled>
 							</v-text-field>
 							<v-text-field class="text-align-right"
 								v-model="offer.bid_balance_value"
-								label="You receive"
+								:label="$t('market_offers.you_receive')"
 								:suffix="offer.bid_symbol" disabled>
 							</v-text-field>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="primary" @click="submit_accept(offer)">Accept</v-btn>
+							<v-btn color="primary" @click="submit_accept(offer)">{{ $t('market_offers.accept') }}</v-btn>
 							<v-btn @click="accept_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
@@ -407,9 +407,9 @@ Vue.component('market-offers', {
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
 								<td>
-									<v-btn outlined text @click="trade(item)">Trade</v-btn>
+									<v-btn outlined text @click="trade(item)">{{ $t('market_offers.trade') }}</v-btn>
 									<template v-if="!accepted.has(item.address)">
-										<v-btn outlined text color="green darken-1" @click="accept(item)">Accept</v-btn>
+										<v-btn outlined text color="green darken-1" @click="accept(item)">{{ $t('common.accept') }}</v-btn>
 									</template>
 								</td>
 							</tr>

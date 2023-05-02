@@ -109,52 +109,52 @@ var vuetify = new Vuetify({
 
 Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
 
-var app = new Vue({
-	data: {
-		nodeInfo: null
-	},
-	el: '#app',
-	vuetify: vuetify,
-	router: router,
-	i18n: i18n,
+(async () => {
 
-	beforeMount() {
-		(async () => {
+    var locale;
 
-			var locale;
+    if(Vue.prototype.$isWinGUI) {
+        locale = window.mmx.locale;
+    } else {
+        locale = localStorage.getItem('language');
+    }
 
-			if(this.$isWinGUI) {
-				
-				locale = window.mmx.locale;
-				this.$vuetify.theme.dark = window.mmx.theme_dark;
+    if (locale) {
+        await loadLanguageAsync(locale);
+    } else {
+        setI18nLanguage('en');
+    }
 
-				setInterval( () => { 
-					var locale = window.mmx.locale;	
-					if (i18n.locale != locale) {
-						loadLanguageAsync(locale);
-					}
+    new Vue({
+        data: {
+            nodeInfo: null
+        },
+        el: '#app',
+        vuetify: vuetify,
+        router: router,
+        i18n: i18n,
+    
+        beforeMount() {
+            if(this.$isWinGUI) {
+                this.$vuetify.theme.dark = window.mmx.theme_dark;
 
-					this.$vuetify.theme.dark = window.mmx.theme_dark;
-				}, 1000);
-			} else {
-				locale = localStorage.getItem('language');
-				this.$vuetify.theme.dark = localStorage.getItem('theme_dark') === 'true';
-			}
+                setInterval( () => { 
+                    var locale = window.mmx.locale;	
+                    if (i18n.locale != locale) {
+                        loadLanguageAsync(locale);
+                    }
+                    this.$vuetify.theme.dark = window.mmx.theme_dark;
+                }, 1000);
 
-			if (locale) {
-				await loadLanguageAsync(locale);
-			} else {
-				setI18nLanguage('en');
-			}
+            } else {
+                this.$vuetify.theme.dark = localStorage.getItem('theme_dark') === 'true';
+            }
+        }
 
-		})()
-	},
+    });
+})();
 
-	beforeDestroy() {
 
-	}
-
-});
 
 
 
