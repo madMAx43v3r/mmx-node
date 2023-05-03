@@ -883,7 +883,7 @@ Vue.component('swap-liquid', {
 							<v-select
 								v-model="pool_idx"
 								:items="fee_rates"
-								label="Fee Level"
+								:label="$t('swap.fee_level')"
 								item-text="text"
 								item-value="value"
 							></v-select>
@@ -891,7 +891,7 @@ Vue.component('swap-liquid', {
 						<v-col>
 							<v-text-field class="text-align-right"
 								v-model="price"
-								label="Price"
+								:label="$t('common.price')"
 								:suffix="data.symbols[1] + ' / ' + data.symbols[0]"
 								disabled>
 							</v-text-field>
@@ -899,26 +899,26 @@ Vue.component('swap-liquid', {
 						<v-col>
 							<v-text-field class="text-align-right"
 								v-model="amount_0"
-								label="Token Amount"
+								:label="$t('swap.token_amount')"
 								:suffix="data.symbols[0]">
 							</v-text-field>
 						</v-col>
 						<v-col>
 							<v-text-field class="text-align-right"
 								v-model="amount_1"
-								label="Currency Amount"
+								:label="$t('swap.currency_amount')"
 								:suffix="data.symbols[1]">
 							</v-text-field>
 						</v-col>
 					</v-row>
 				</v-card-text>
 				<v-card-actions class="justify-end">
-					<v-btn @click="match()">Price Match</v-btn>
-					<v-btn @click="payout()" :disabled="disable_payout">Payout</v-btn>
-					<v-btn @click="switch_pool()" :disabled="disable_switch">Switch Fee</v-btn>
-					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem || disable_add">Add Liquidity</v-btn>
-					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">Remove Liquidity</v-btn>
-					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">Remove All</v-btn>
+					<v-btn @click="match()">{{ $t('swap.price_match') }}</v-btn>
+					<v-btn @click="payout()" :disabled="disable_payout">{{ $t('swap.payout') }}</v-btn>
+					<v-btn @click="switch_pool()" :disabled="disable_switch">{{ $t('swap.switch_fee') }}</v-btn>
+					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem || disable_add">{{ $t('swap.add_liquidity') }}</v-btn>
+					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">{{ $t('swap.remove_iquidity') }}</v-btn>
+					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">{{ $t('swap.remove_all') }}</v-btn>
 				</v-card-actions>
 			</v-card>
 			

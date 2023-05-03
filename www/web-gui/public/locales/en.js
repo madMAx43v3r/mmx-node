@@ -415,7 +415,17 @@ const enLocale = {
         "fee_level": "Fee Level",
         "unlock_height": "Unlock Height",
 
-        "user_total": "User Total"
+        "user_total": "User Total",
+
+        "token_amount": "Token Amount",
+        "currency_amount": "Currency Amount",
+
+        "price_match": "Price Match",
+        "payout": "Payout",
+        "switch_fee": "Switch Fee",
+        "add_liquidity": "Add Liquidity",
+        "remove_iquidity": "Remove Liquidity",
+        "remove_all": "Remove All"
     },
 
     "$vuetify": {

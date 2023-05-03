@@ -383,7 +383,17 @@
         "fee_level": "Уровень комиссии",
         "unlock_height": "Высота разблокировки",
 
-        "user_total": "Всего"
+        "user_total": "Всего",
+
+        "token_amount": "Количество токенов",
+        "currency_amount": "Количество валюты",
+
+        "price_match": "Price Match",
+        "payout": "Выплата",
+        "switch_fee": "Изменить уровень комиссии",
+        "add_liquidity": "Добавить ликвидность",
+        "remove_iquidity": "Забрать ликвидность",
+        "remove_all": "Забрать всё"
     },
 
     "$vuetify": {
