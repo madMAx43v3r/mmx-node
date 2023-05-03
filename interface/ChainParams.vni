@@ -46,6 +46,7 @@ class ChainParams {
 	
 	ulong max_block_size = 10000000;		// max static size
 	ulong max_block_cost = 100000000;		// includes dynamic cost
+	// TODO: ulong max_tx_cost = 10000000;
 	
 	double block_time = 10;					// [sec]
 	

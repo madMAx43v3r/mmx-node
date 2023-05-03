@@ -300,7 +300,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false);
 	{
 		const auto avail_gas = (uint64_t(tx->max_fee_amount) * 1024) / tx->fee_ratio;
-		engine->total_gas = std::min(avail_gas - std::min(tx_cost, avail_gas), params->max_block_cost);
+		engine->total_gas = std::min(avail_gas - std::min(tx_cost, avail_gas), params->max_block_cost);	// TODO: max_tx_cost
 	}
 	if(op->user) {
 		const auto contract = get_contract_for(*op->user);
@@ -636,6 +636,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 		}
 
+		// TODO: check against max_tx_cost
 		if(tx_cost > params->max_block_cost) {
 			throw mmx::static_failure("tx cost > max_block_cost");
 		}
