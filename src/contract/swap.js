@@ -98,8 +98,8 @@ function _disable(user)
 	if(this.height >= unfreeze_height)
 	{
 		const user_sum = user.balance[0] + user.balance[1];
-		const pool_sum = entry.balance[0] + entry.balance[1];
-		const user_ratio = (user_sum << FRACT_BITS) / pool_sum;
+		const total_sum = entry.user_total[0] + entry.user_total[1];
+		const user_ratio = (user_sum << FRACT_BITS) / total_sum;
 		
 		for(var i = 0; i < 2; ++i) {
 			const amount = (entry.balance[i] * user_ratio) >> FRACT_BITS;
