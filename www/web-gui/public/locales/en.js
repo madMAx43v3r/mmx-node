@@ -10,8 +10,11 @@ const enLocale = {
         "height": "Height",
         "blocks": "Blocks",
         "balance": "Balance",
+        "name": "Name",
         "token": "Token",
+        "currency": "Currency",
         "symbol": "Symbol",
+        "price": "Price",
         "hash": "Hash",
         "reward": "Reward",
         "amount": "Amount",
@@ -149,7 +152,6 @@ const enLocale = {
         "destination": "Destination",
         "destination_address": "Destination Address",
         "address_input": "Address Input",
-        "currency": "Currency",
         "send": "Send"
     },
 
@@ -177,7 +179,6 @@ const enLocale = {
     "account_offers": {
         "offering": "Offering",
         "received": "Received",
-        "price": "Price",
         "status": "Status",
         "actions": "Actions",
         "revoke": "Revoke",
@@ -307,7 +308,6 @@ const enLocale = {
 
     "wallet_settings": {
         "token_whitelist": "Token Whitelist",
-        "name": "Name",
         "token_address": "Token Address",
         "add_token": "Add Token"
     },
@@ -358,8 +358,6 @@ const enLocale = {
     },
 
     "market_offers": {
-        "price": "Price",
-
         "accept_offer": "Accept Offer",
         "wallet_ballance": "Wallet Balance",
         "you_send": "You send",
@@ -396,6 +394,22 @@ const enLocale = {
 
     "farmer_plot_dirs": {
         "path": "Path"
+    },
+
+    "swap": {                
+        "pool_balance": "Pool Balance",
+        "volume": "Volume",
+        "24h": "24h",
+        "7d": "7 days",
+        "apy": "APY",
+
+        "trade": "Trade",
+        "history": "History",
+        "my_liquidity": "My Liquidity",
+        "pool_state": "Pool State",
+
+        "fee_level": "Fee Level",
+        "user_total": "User Total"
     },
 
     "$vuetify": {

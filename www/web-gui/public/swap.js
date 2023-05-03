@@ -63,7 +63,7 @@ Vue.component('swap-menu', {
 			<v-select
 				v-model="token"
 				:items="selectItems"
-				label="Token"
+				:label="$t('common.token')"
 				item-text="text"
 				item-value="value"
 			></v-select>
@@ -71,7 +71,7 @@ Vue.component('swap-menu', {
 			<v-select
 				v-model="currency"
 				:items="selectItems"
-				label="Currency"
+				:label="$t('common.currency')"
 				item-text="text"
 				item-value="value"
 			></v-select>
@@ -151,12 +151,12 @@ Vue.component('swap-list', {
 					<v-simple-table>
 						<thead>
 							<tr>
-								<th>Name</th>
-								<th>Token</th>
-								<th>Currency</th>
-								<th>Price</th>
-								<th>Pool Balance</th>
-								<th>Pool Balance</th>
+								<th>{{ $t('common.name') }}</th>
+								<th>{{ $t('common.token') }}</th>
+								<th>{{ $t('common.currency') }}</th>
+								<th>{{ $t('common.price') }}</th>
+								<th>{{ $t('swap.pool_balance') }}</th>
+								<th>{{ $t('swap.pool_balance') }}</th>
 								<th></th>
 							</tr>
 						</thead>
@@ -202,10 +202,10 @@ Vue.component('swap-sub-menu', {
 	},
 	template: `
 		<v-tabs>
-			<v-tab :to="'/swap/trade/' + address">Trade</v-tab>
-			<v-tab :to="'/swap/history/' + address">History</v-tab>
-			<v-tab :to="'/swap/liquid/' + address">My Liquidity</v-tab>
-			<v-tab :to="'/swap/pool/' + address">Pool State</v-tab>
+			<v-tab :to="'/swap/trade/' + address">{{ $t('swap.trade') }}</v-tab>
+			<v-tab :to="'/swap/history/' + address">{{ $t('swap.history') }}</v-tab>
+			<v-tab :to="'/swap/liquid/' + address">{{ $t('swap.my_liquidity') }}</v-tab>
+			<v-tab :to="'/swap/pool/' + address">{{ $t('swap.pool_state') }}</v-tab>
 		</v-tabs>
 	`
 })
@@ -256,17 +256,17 @@ Vue.component('swap-info', {
 					<thead>
 						<tr>
 							<th></th>
-							<th>Pool Balance</th>
-							<th>Volume (24h)</th>
-							<th>Volume (7 days)</th>
-							<th>APY (24h)</th>
-							<th>APY (7 days)</th>
+							<th>{{ $t('swap.pool_balance') }}</th>
+							<th>{{ $t('swap.volume') }} ({{ $t('swap.24h') }})</th>
+							<th>{{ $t('swap.volume') }} ({{ $t('swap.7d') }})</th>
+							<th>{{ $t('swap.apy') }} ({{ $t('swap.24h') }})</th>
+							<th>{{ $t('swap.apy') }} ({{ $t('swap.7d') }})</th>
 						</tr>
 					</thead>
 					<tbody>
 						<template v-for="i in [0, 1]">
 							<tr>
-								<td class="key-cell">{{i == 0 ? "Token" : "Currency"}}</td>
+								<td class="key-cell">{{i == 0 ? $t('common.token') : $t('common.currency') }}</td>
 								<td>
 									<b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b>
 									<template v-if="data.symbols[i] == 'MMX'">MMX</template>
@@ -325,11 +325,11 @@ Vue.component('swap-pool-info', {
 			<v-simple-table v-if="data">
 				<thead>
 					<tr>
-						<th>Fee Level</th>
-						<th>Balance</th><th></th>
-						<th>Balance</th><th></th>
-						<th>User Total</th>
-						<th>User Total</th>
+						<th>{{ $t('swap.fee_level') }}</th>
+						<th>{{ $t('common.balance') }}</th><th></th>
+						<th>{{ $t('common.balance') }}</th><th></th>
+						<th>{{ $t('swap.user_total') }}</th>
+						<th>{{ $t('swap.user_total') }}</th>
 					</tr>
 				</thead>
 				<tbody>

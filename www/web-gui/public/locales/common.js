@@ -79,10 +79,12 @@ const commonLocale = {
     "account_send_form": {
         "amount": "@:common.amount",
         "wallet": "@:common.wallet", 
-        "confirm": "@:common.confirm"
+        "confirm": "@:common.confirm",
+        "currency": "@:common.currency"
     },
 
     "wallet_settings": {
+        "name": "@:common.name",
         "symbol": "@:common.symbol",
         "contract": "@:common.contract"
     },
@@ -132,6 +134,7 @@ const commonLocale = {
         "address": "@:common.address",
         "time": "@:common.time",
         "deposit": "@:common.deposit",
+        "price": "@:common.price"
     },
 
     "account_offer_form": {
@@ -198,6 +201,7 @@ const commonLocale = {
     },
 
     "market_offers": {
+        "price": "@:common.price",
         "they_offer": "@:market_menu.they_offer",
         "they_ask": "@:market_menu.they_ask",
         "time": "@:common.time",
@@ -227,6 +231,11 @@ const commonLocale = {
         "time": "@:common.time",
         "plot_id": "@:block_view.plot_id",
         "harvester": "@:common.harvester"
+    },
+
+    "swap": {
+        "volume_24h": "@:swap.volume (@:swap.24h)",
+        "volume_7d": "@:swap.volume (@:swap.7d)"
     }
 
 }
