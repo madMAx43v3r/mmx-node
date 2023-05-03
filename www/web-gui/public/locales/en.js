@@ -399,6 +399,7 @@ const enLocale = {
     },
 
     "swap": {
+        "swap": "Swap",
         "pool_balance": "Pool Balance",
         "volume": "Volume",
         "24h": "24h",

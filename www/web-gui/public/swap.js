@@ -185,7 +185,7 @@ Vue.component('swap-list', {
 								<td><b>{{ parseFloat( (item.balance[0].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[1].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}}</td>
 								<td>
-									<v-btn :to="'/swap/trade/' + item.address" outlined text>Swap</v-btn>
+									<v-btn :to="'/swap/trade/' + item.address" outlined text>{{ $t('swap.swap') }}</v-btn>
 								</td>
 							</tr>
 						</tbody>
@@ -241,7 +241,7 @@ Vue.component('swap-info', {
 	template: `
 		<div>
 			<template v-if="data">
-				<v-chip label>Swap</v-chip>
+				<v-chip label>{{ $t('swap.swap') }}</v-chip>
 				<v-chip label>{{data.display_price ? parseFloat((data.display_price).toPrecision(6)) : "N/A"}}&nbsp; {{data.symbols[1]}} / {{data.symbols[0]}}</v-chip>
 				<v-chip label>{{data.address}}</v-chip>
 			</template>
