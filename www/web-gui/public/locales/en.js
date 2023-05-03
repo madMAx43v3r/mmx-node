@@ -425,7 +425,16 @@ const enLocale = {
         "switch_fee": "Switch Fee",
         "add_liquidity": "Add Liquidity",
         "remove_iquidity": "Remove Liquidity",
-        "remove_all": "Remove All"
+        "remove_all": "Remove All",
+
+        "wallet_ballance": "Wallet Balance",
+        "buy_amount": "Buy Amount",
+        "sell_amount": "Sell Amount",
+        "trade_fee_estimated": "Trade Fee (estimated)",
+        "you_receive_estimated": "You receive (estimated)",
+
+        "sell": "Sell",
+        "buy": "Buy"
     },
 
     "$vuetify": {

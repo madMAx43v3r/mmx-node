@@ -613,14 +613,14 @@ Vue.component('swap-trade', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="buy_balance"
-										label="Wallet Balance"
+										:label="$t('swap.wallet_ballance')"
 										:suffix="data.symbols[1]" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="buy_amount"
-										label="Buy Amount"
+										:label="$t('swap.buy_amount')"
 										:suffix="data.symbols[1]">
 									</v-text-field>
 								</v-col>
@@ -629,21 +629,21 @@ Vue.component('swap-trade', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="buy_fee"
-										label="Trade Fee (estimated)"
+										:label="$t('swap.trade_fee_estimated')"
 										suffix="%" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="buy_estimate"
-										label="You receive (estimated)"
+										:label="$t('swap.you_receive_estimated')"
 										:suffix="data.symbols[0]" disabled>
 									</v-text-field>
 								</v-col>
 							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="green lighten-1" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">Buy</v-btn>
+							<v-btn color="green lighten-1" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">{{ $t('swap.buy') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -655,14 +655,14 @@ Vue.component('swap-trade', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="sell_balance"
-										label="Wallet Balance"
+										:label="$t('swap.wallet_ballance')"
 										:suffix="data.symbols[0]" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="sell_amount"
-										label="Sell Amount"
+										:label="$t('swap.sell_amount')"
 										:suffix="data.symbols[0]">
 									</v-text-field>
 								</v-col>
@@ -671,21 +671,21 @@ Vue.component('swap-trade', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="sell_fee"
-										label="Trade Fee (estimated)"
+										:label="$t('swap.trade_fee_estimated')"
 										suffix="%" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="sell_estimate"
-										label="You receive (estimated)"
+										:label="$t('swap.you_receive_estimated')"
 										:suffix="data.symbols[1]" disabled>
 									</v-text-field>
 								</v-col>
 							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="red lighten-1" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">Sell</v-btn>
+							<v-btn color="red lighten-1" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">{{ $t('swap.sell') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
