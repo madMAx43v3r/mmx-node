@@ -2243,11 +2243,16 @@ void Node::apply(	std::shared_ptr<const Block> block,
 								swap_liquid_map.find(key, balance);
 								if(exec->method == "add_liquid" && deposit) {
 									balance[index] += deposit->amount;
+									swap_liquid_map.insert(key, balance);
 								}
 								if(exec->method == "rem_liquid" && entry.args.size() > 1) {
 									balance[index] -= entry.args[1].to<uint128>();
+									swap_liquid_map.insert(key, balance);
 								}
-								swap_liquid_map.insert(key, balance);
+								if(exec->method == "rem_all_liquid") {
+									balance = std::array<uint128, 2>();
+									swap_liquid_map.insert(key, balance);
+								}
 							}
 						}
 					}
