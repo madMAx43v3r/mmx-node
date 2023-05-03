@@ -399,11 +399,11 @@ Vue.component('swap-user-info', {
 			<v-simple-table v-if="data">
 				<thead>
 					<tr>
-						<th>My Balance</th>
-						<th>My Liquidity</th>
-						<th>Fees Earned</th>
-						<th>Fee Level</th>
-						<th>Unlock Height</th>
+						<th>{{ $t('swap.my_balance') }}</th>
+						<th>{{ $t('swap.my_liquidity') }}</th>
+						<th>{{ $t('swap.fees_earned') }}</th>
+						<th>{{ $t('swap.fee_level') }}</th>
+						<th>{{ $t('swap.unlock_height') }}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -440,13 +440,13 @@ Vue.component('swap-history', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Height", value: 'height' },
-				{ text: "Type", value: 'type' },
-				{ text: "Amount", value: 'value' },
-				{ text: "Symbol", value: 'symbol' },
-				{ text: "User", value: 'user' },
-				{ text: "Link", value: 'txid' },
-				{ text: "Time", value: 'time' },
+				{ text: this.$t('common.height'), value: 'height' },
+				{ text: this.$t('common.type'), value: 'type' },
+				{ text: this.$t('common.amount'), value: 'value' },
+				{ text: this.$t('common.symbol'), value: 'symbol' },
+				{ text: this.$t('common.user'), value: 'user' },
+				{ text: this.$t('common.link'), value: 'txid' },
+				{ text: this.$t('common.time'), value: 'time' },
 			]
 		}
 	},

@@ -46,7 +46,9 @@ const enLocale = {
         "owner": "Owner",
         "manage": "Manage",
         "harvester": "Harvester",
-        "deposit": "Deposit"
+        "deposit": "Deposit",
+
+        "user": "User"
     },
 
     "main_menu": {
@@ -396,7 +398,7 @@ const enLocale = {
         "path": "Path"
     },
 
-    "swap": {                
+    "swap": {
         "pool_balance": "Pool Balance",
         "volume": "Volume",
         "24h": "24h",
@@ -408,7 +410,11 @@ const enLocale = {
         "my_liquidity": "My Liquidity",
         "pool_state": "Pool State",
 
+        "my_balance": "My Balance",
+        "fees_earned": "Fees Earned",
         "fee_level": "Fee Level",
+        "unlock_height": "Unlock Height",
+
         "user_total": "User Total"
     },
 
