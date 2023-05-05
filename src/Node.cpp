@@ -330,9 +330,9 @@ void Node::main()
 	vnx::write(block_chain->out, nullptr);
 	block_chain->close();
 
-	if(vdf_threads) {
-		vdf_threads->close();
-	}
+	threads->close();
+	vdf_threads->close();
+
 	opencl_vdf.clear();
 
 #ifdef WITH_OPENCL

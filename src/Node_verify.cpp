@@ -465,11 +465,17 @@ void Node::check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const Bl
 	}
 	const auto num_iters = block->vdf_iters - prev->vdf_iters;
 
-	for(uint64_t i = 0; i < num_iters; ++i) {
-		for(int chain = 0; chain < 2; ++chain) {
-			point[chain] = hash_t(point[chain].bytes);
-		}
+	vnx::ThreadPool threads(2);
+
+	for(int chain = 0; chain < 2; ++chain) {
+		threads.add_task([&point, chain, num_iters]() {
+			for(uint64_t i = 0; i < num_iters; ++i) {
+				point[chain] = hash_t(point[chain].bytes);
+			}
+		});
 	}
+	threads.sync();
+
 	if(point == block->vdf_output) {
 		fork->is_vdf_verified = true;
 		const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
