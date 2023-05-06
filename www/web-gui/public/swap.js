@@ -63,7 +63,7 @@ Vue.component('swap-menu', {
 			<v-select
 				v-model="token"
 				:items="selectItems"
-				label="Token"
+				:label="$t('common.token')"
 				item-text="text"
 				item-value="value"
 			></v-select>
@@ -71,7 +71,7 @@ Vue.component('swap-menu', {
 			<v-select
 				v-model="currency"
 				:items="selectItems"
-				label="Currency"
+				:label="$t('common.currency')"
 				item-text="text"
 				item-value="value"
 			></v-select>
@@ -151,12 +151,12 @@ Vue.component('swap-list', {
 					<v-simple-table>
 						<thead>
 							<tr>
-								<th>Name</th>
-								<th>Token</th>
-								<th>Currency</th>
-								<th>Price</th>
-								<th>Pool Balance</th>
-								<th>Pool Balance</th>
+								<th>{{ $t('common.name') }}</th>
+								<th>{{ $t('common.token') }}</th>
+								<th>{{ $t('common.currency') }}</th>
+								<th>{{ $t('common.price') }}</th>
+								<th>{{ $t('swap.pool_balance') }}</th>
+								<th>{{ $t('swap.pool_balance') }}</th>
 								<th></th>
 							</tr>
 						</thead>
@@ -185,7 +185,7 @@ Vue.component('swap-list', {
 								<td><b>{{ parseFloat( (item.balance[0].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[1].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}}</td>
 								<td>
-									<v-btn :to="'/swap/trade/' + item.address" outlined text>Swap</v-btn>
+									<v-btn :to="'/swap/trade/' + item.address" outlined text>{{ $t('swap.swap') }}</v-btn>
 								</td>
 							</tr>
 						</tbody>
@@ -202,10 +202,10 @@ Vue.component('swap-sub-menu', {
 	},
 	template: `
 		<v-tabs>
-			<v-tab :to="'/swap/trade/' + address">Trade</v-tab>
-			<v-tab :to="'/swap/history/' + address">History</v-tab>
-			<v-tab :to="'/swap/liquid/' + address">My Liquidity</v-tab>
-			<v-tab :to="'/swap/pool/' + address">Pool State</v-tab>
+			<v-tab :to="'/swap/trade/' + address">{{ $t('swap.trade') }}</v-tab>
+			<v-tab :to="'/swap/history/' + address">{{ $t('swap.history') }}</v-tab>
+			<v-tab :to="'/swap/liquid/' + address">{{ $t('swap.my_liquidity') }}</v-tab>
+			<v-tab :to="'/swap/pool/' + address">{{ $t('swap.pool_state') }}</v-tab>
 		</v-tabs>
 	`
 })
@@ -241,7 +241,7 @@ Vue.component('swap-info', {
 	template: `
 		<div>
 			<template v-if="data">
-				<v-chip label>Swap</v-chip>
+				<v-chip label>{{ $t('swap.swap') }}</v-chip>
 				<v-chip label>{{data.display_price ? parseFloat((data.display_price).toPrecision(6)) : "N/A"}}&nbsp; {{data.symbols[1]}} / {{data.symbols[0]}}</v-chip>
 				<v-chip label>{{data.address}}</v-chip>
 			</template>
@@ -256,17 +256,17 @@ Vue.component('swap-info', {
 					<thead>
 						<tr>
 							<th></th>
-							<th>Pool Balance</th>
-							<th>Volume (24h)</th>
-							<th>Volume (7 days)</th>
-							<th>APY (24h)</th>
-							<th>APY (7 days)</th>
+							<th>{{ $t('swap.pool_balance') }}</th>
+							<th>{{ $t('swap.volume') }} ({{ $t('swap.24h') }})</th>
+							<th>{{ $t('swap.volume') }} ({{ $t('swap.7d') }})</th>
+							<th>{{ $t('swap.apy') }} ({{ $t('swap.24h') }})</th>
+							<th>{{ $t('swap.apy') }} ({{ $t('swap.7d') }})</th>
 						</tr>
 					</thead>
 					<tbody>
 						<template v-for="i in [0, 1]">
 							<tr>
-								<td class="key-cell">{{i == 0 ? "Token" : "Currency"}}</td>
+								<td class="key-cell">{{i == 0 ? $t('common.token') : $t('common.currency') }}</td>
 								<td>
 									<b>{{ parseFloat( (data.balance[i].value).toPrecision(6) ) }}</b>
 									<template v-if="data.symbols[i] == 'MMX'">MMX</template>
@@ -325,11 +325,11 @@ Vue.component('swap-pool-info', {
 			<v-simple-table v-if="data">
 				<thead>
 					<tr>
-						<th>Fee Level</th>
-						<th>Balance</th><th></th>
-						<th>Balance</th><th></th>
-						<th>User Total</th>
-						<th>User Total</th>
+						<th>{{ $t('swap.fee_level') }}</th>
+						<th>{{ $t('common.balance') }}</th><th></th>
+						<th>{{ $t('common.balance') }}</th><th></th>
+						<th>{{ $t('swap.user_total') }}</th>
+						<th>{{ $t('swap.user_total') }}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -399,11 +399,11 @@ Vue.component('swap-user-info', {
 			<v-simple-table v-if="data">
 				<thead>
 					<tr>
-						<th>My Balance</th>
-						<th>My Liquidity</th>
-						<th>Fees Earned</th>
-						<th>Fee Level</th>
-						<th>Unlock Height</th>
+						<th>{{ $t('swap.my_balance') }}</th>
+						<th>{{ $t('swap.my_liquidity') }}</th>
+						<th>{{ $t('swap.fees_earned') }}</th>
+						<th>{{ $t('swap.fee_level') }}</th>
+						<th>{{ $t('swap.unlock_height') }}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -440,13 +440,13 @@ Vue.component('swap-history', {
 	computed: {
 		headers() {
 			return [
-				{ text: "Height", value: 'height' },
-				{ text: "Type", value: 'type' },
-				{ text: "Amount", value: 'value' },
-				{ text: "Symbol", value: 'symbol' },
-				{ text: "User", value: 'user' },
-				{ text: "Link", value: 'txid' },
-				{ text: "Time", value: 'time' },
+				{ text: this.$t('common.height'), value: 'height' },
+				{ text: this.$t('common.type'), value: 'type' },
+				{ text: this.$t('common.amount'), value: 'value' },
+				{ text: this.$t('common.symbol'), value: 'symbol' },
+				{ text: this.$t('common.user'), value: 'user' },
+				{ text: this.$t('common.link'), value: 'txid' },
+				{ text: this.$t('common.time'), value: 'time' },
 			]
 		}
 	},
@@ -613,14 +613,14 @@ Vue.component('swap-trade', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="buy_balance"
-										label="Wallet Balance"
+										:label="$t('swap.wallet_ballance')"
 										:suffix="data.symbols[1]" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="buy_amount"
-										label="Buy Amount"
+										:label="$t('swap.buy_amount')"
 										:suffix="data.symbols[1]">
 									</v-text-field>
 								</v-col>
@@ -629,21 +629,21 @@ Vue.component('swap-trade', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="buy_fee"
-										label="Trade Fee (estimated)"
+										:label="$t('swap.trade_fee_estimated')"
 										suffix="%" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="buy_estimate"
-										label="You receive (estimated)"
+										:label="$t('swap.you_receive_estimated')"
 										:suffix="data.symbols[0]" disabled>
 									</v-text-field>
 								</v-col>
 							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="green lighten-1" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">Buy</v-btn>
+							<v-btn color="green lighten-1" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">{{ $t('swap.buy') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -655,14 +655,14 @@ Vue.component('swap-trade', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="sell_balance"
-										label="Wallet Balance"
+										:label="$t('swap.wallet_ballance')"
 										:suffix="data.symbols[0]" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="sell_amount"
-										label="Sell Amount"
+										:label="$t('swap.sell_amount')"
 										:suffix="data.symbols[0]">
 									</v-text-field>
 								</v-col>
@@ -671,21 +671,21 @@ Vue.component('swap-trade', {
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="sell_fee"
-										label="Trade Fee (estimated)"
+										:label="$t('swap.trade_fee_estimated')"
 										suffix="%" disabled>
 									</v-text-field>
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
 										v-model="sell_estimate"
-										label="You receive (estimated)"
+										:label="$t('swap.you_receive_estimated')"
 										:suffix="data.symbols[1]" disabled>
 									</v-text-field>
 								</v-col>
 							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="red lighten-1" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">Sell</v-btn>
+							<v-btn color="red lighten-1" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">{{ $t('swap.sell') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -883,7 +883,7 @@ Vue.component('swap-liquid', {
 							<v-select
 								v-model="pool_idx"
 								:items="fee_rates"
-								label="Fee Level"
+								:label="$t('swap.fee_level')"
 								item-text="text"
 								item-value="value"
 							></v-select>
@@ -891,7 +891,7 @@ Vue.component('swap-liquid', {
 						<v-col>
 							<v-text-field class="text-align-right"
 								v-model="price"
-								label="Price"
+								:label="$t('common.price')"
 								:suffix="data.symbols[1] + ' / ' + data.symbols[0]"
 								disabled>
 							</v-text-field>
@@ -899,26 +899,26 @@ Vue.component('swap-liquid', {
 						<v-col>
 							<v-text-field class="text-align-right"
 								v-model="amount_0"
-								label="Token Amount"
+								:label="$t('swap.token_amount')"
 								:suffix="data.symbols[0]">
 							</v-text-field>
 						</v-col>
 						<v-col>
 							<v-text-field class="text-align-right"
 								v-model="amount_1"
-								label="Currency Amount"
+								:label="$t('swap.currency_amount')"
 								:suffix="data.symbols[1]">
 							</v-text-field>
 						</v-col>
 					</v-row>
 				</v-card-text>
 				<v-card-actions class="justify-end">
-					<v-btn @click="match()">Price Match</v-btn>
-					<v-btn @click="payout()" :disabled="disable_payout">Payout</v-btn>
-					<v-btn @click="switch_pool()" :disabled="disable_switch">Switch Fee</v-btn>
-					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem || disable_add">Add Liquidity</v-btn>
-					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">Remove Liquidity</v-btn>
-					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">Remove All</v-btn>
+					<v-btn @click="match()">{{ $t('swap.price_match') }}</v-btn>
+					<v-btn @click="payout()" :disabled="disable_payout">{{ $t('swap.payout') }}</v-btn>
+					<v-btn @click="switch_pool()" :disabled="disable_switch">{{ $t('swap.switch_fee') }}</v-btn>
+					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem || disable_add">{{ $t('swap.add_liquidity') }}</v-btn>
+					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">{{ $t('swap.remove_iquidity') }}</v-btn>
+					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">{{ $t('swap.remove_all') }}</v-btn>
 				</v-card-actions>
 			</v-card>
 			

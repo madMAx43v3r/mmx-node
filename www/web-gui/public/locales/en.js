@@ -10,8 +10,11 @@ const enLocale = {
         "height": "Height",
         "blocks": "Blocks",
         "balance": "Balance",
+        "name": "Name",
         "token": "Token",
+        "currency": "Currency",
         "symbol": "Symbol",
+        "price": "Price",
         "hash": "Hash",
         "reward": "Reward",
         "amount": "Amount",
@@ -43,7 +46,9 @@ const enLocale = {
         "owner": "Owner",
         "manage": "Manage",
         "harvester": "Harvester",
-        "deposit": "Deposit"
+        "deposit": "Deposit",
+
+        "user": "User"
     },
 
     "main_menu": {
@@ -149,7 +154,6 @@ const enLocale = {
         "destination": "Destination",
         "destination_address": "Destination Address",
         "address_input": "Address Input",
-        "currency": "Currency",
         "send": "Send"
     },
 
@@ -177,7 +181,6 @@ const enLocale = {
     "account_offers": {
         "offering": "Offering",
         "received": "Received",
-        "price": "Price",
         "status": "Status",
         "actions": "Actions",
         "revoke": "Revoke",
@@ -307,7 +310,6 @@ const enLocale = {
 
     "wallet_settings": {
         "token_whitelist": "Token Whitelist",
-        "name": "Name",
         "token_address": "Token Address",
         "add_token": "Add Token"
     },
@@ -358,8 +360,6 @@ const enLocale = {
     },
 
     "market_offers": {
-        "price": "Price",
-
         "accept_offer": "Accept Offer",
         "wallet_ballance": "Wallet Balance",
         "you_send": "You send",
@@ -396,6 +396,46 @@ const enLocale = {
 
     "farmer_plot_dirs": {
         "path": "Path"
+    },
+
+    "swap": {
+        "swap": "Swap",
+        "pool_balance": "Pool Balance",
+        "volume": "Volume",
+        "24h": "24h",
+        "7d": "7 days",
+        "apy": "APY",
+
+        "trade": "Trade",
+        "history": "History",
+        "my_liquidity": "My Liquidity",
+        "pool_state": "Pool State",
+
+        "my_balance": "My Balance",
+        "fees_earned": "Fees Earned",
+        "fee_level": "Fee Level",
+        "unlock_height": "Unlock Height",
+
+        "user_total": "User Total",
+
+        "token_amount": "Token Amount",
+        "currency_amount": "Currency Amount",
+
+        "price_match": "Price Match",
+        "payout": "Payout",
+        "switch_fee": "Switch Fee",
+        "add_liquidity": "Add Liquidity",
+        "remove_iquidity": "Remove Liquidity",
+        "remove_all": "Remove All",
+
+        "wallet_ballance": "Wallet Balance",
+        "buy_amount": "Buy Amount",
+        "sell_amount": "Sell Amount",
+        "trade_fee_estimated": "Trade Fee (estimated)",
+        "you_receive_estimated": "You receive (estimated)",
+
+        "sell": "Sell",
+        "buy": "Buy"
     },
 
     "$vuetify": {

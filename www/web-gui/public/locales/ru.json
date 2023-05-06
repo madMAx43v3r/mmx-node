@@ -10,8 +10,11 @@
         "height": "Высота",
         "blocks": "Блоки",
         "balance": "Баланс",
+        "name": "Название",
         "token": "Токен",
+        "currency": "Валюта",
         "symbol": "Символ",
+        "price": "Цена",
         "hash": "Хэш",
         "reward": "Награда",
         "amount": "Сумма",
@@ -40,7 +43,9 @@
         "owner": "Владелец",
         "manage": "Управлять",
         "harvester": "Комбайн",
-        "deposit": "Вклад"
+        "deposit": "Вклад",
+
+        "user": "Пользователь"
     },
 
     "main_menu": {
@@ -133,7 +138,6 @@
         "destination": "Получатель",
         "destination_address": "Адрес получателя",
         "address_input": "Ввод адреса",
-        "currency": "Валюта",
         "send": "Отправить"
     },
 
@@ -161,7 +165,6 @@
     "account_offers": {
         "offering": "Предложено",
         "received": "Получено",
-        "price": "Цена",
         "status": "Статус",
         "actions": "Действия",
         "revoke": "Отозвать",
@@ -279,7 +282,6 @@
 
     "wallet_settings": {
         "token_whitelist": "Белый список токенов",
-        "name": "Название",
         "token_address": "Адрес токена",
         "add_token": "Добавить токен"
     },
@@ -326,8 +328,6 @@
     },
 
     "market_offers": {
-        "price": "Цена",
-
         "accept_offer": "Принять оффер",
         "wallet_ballance": "Баланс кошелька",
         "you_send": "Вы отправляете",
@@ -365,6 +365,44 @@
 
     "farmer_plot_dirs": {
         "path": "Путь"
+    },
+
+    "swap": {
+        "pool_balance": "Баланс пула",
+        "volume": "Объем",
+        "24h": "24ч",
+        "7d": "7 дней",
+
+        "trade": "Обмен",
+        "history": "История",
+        "my_liquidity": "Моя ликвидность",
+        "pool_state": "Состояние пула",
+
+        "my_balance": "Мой баланс",
+        "fees_earned": "Заработанная комиссия",
+        "fee_level": "Уровень комиссии",
+        "unlock_height": "Высота разблокировки",
+
+        "user_total": "Всего",
+
+        "token_amount": "Количество токенов",
+        "currency_amount": "Количество валюты",
+
+        "price_match": "Price Match",
+        "payout": "Выплата",
+        "switch_fee": "Изменить уровень комиссии",
+        "add_liquidity": "Добавить ликвидность",
+        "remove_iquidity": "Забрать ликвидность",
+        "remove_all": "Забрать всё",
+
+        "wallet_ballance": "Баланс кошелька",
+        "buy_amount": "Сумма покупки",
+        "sell_amount": "Сумма продажи",
+        "trade_fee_estimated": "Комиссия (предполагаемая)",
+        "you_receive_estimated": "Вы получите (предположительно)",
+
+        "sell": "Продать",
+        "buy": "Kупить"
     },
 
     "$vuetify": {
