@@ -29,9 +29,9 @@ Roadmap
 | testnet8 | Oct 2022 | Finished. Incentivized testnet, until height 425k. <sup>[2]</sup> |
 | testnet9 | Dec 2022 | Finished. Incentivized testnet, until height 1220k.  <sup>[2]</sup> |
 | testnet10 | Apr 2023 | Active. Incentivized testnet. <sup>[2]</sup> |
-| testnet11 | Q3 2023 | Planned. <sup>[2]</sup> |
+| testnet11 | _tbd_ | Planned Q3 2023. <sup>[2]</sup> |
 | testnetX | _tbd_ | As needed. <sup>[2]</sup> |
-| mainnet | _tbd_ | Expected Q1 2023. |
+| mainnet | _tbd_ | Expected H2 2023. |
 
 _<sup>[1]</sup> Coins farmed on testnets are not worth anything, now or later._\
 _<sup>[2]</sup> A fixed reward of 0.5 MMX per block win, in incentivized testnet, will be given on mainnet genesis._
