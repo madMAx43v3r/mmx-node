@@ -27,12 +27,14 @@ Roadmap
 | :--- | :--- | :--- |
 | testnet7 | Sep 2022 | Finished. <sup>[1]</sup> |
 | testnet8 | Oct 2022 | Finished. Incentivized testnet, until height 425k. <sup>[2]</sup> |
-| testnet9 | Dec 2022 | Active. Incentivized testnet. <sup>[2]</sup> |
+| testnet9 | Dec 2022 | Finished. Incentivized testnet, until height 1220k.  <sup>[2]</sup> |
+| testnet10 | Apr 2023 | Active. Incentivized testnet. <sup>[2]</sup> |
+| testnet11 | Q3 2023 | Planned. <sup>[2]</sup> |
 | testnetX | _tbd_ | As needed. <sup>[2]</sup> |
 | mainnet | _tbd_ | Expected Q1 2023. |
 
-_<sup>[1]</sup> Coins farmed on testnet7 and earlier are not worth anything, now or later._\
-_<sup>[2]</sup> A fixed reward of 0.25 MMX per block win (starting at height 25k) will be given on mainnet genesis._
+_<sup>[1]</sup> Coins farmed on testnets are not worth anything, now or later._\
+_<sup>[2]</sup> A fixed reward of 0.5 MMX per block win, in incentivized testnet, will be given on mainnet genesis._
 
 See `#mmx-news` and `#mmx-general` on Discord: https://discord.gg/BswFhNkMzY
 
@@ -62,3 +64,15 @@ Login password is auto-generated at first launch, located in `$MMX_HOME/PASSWD` 
 - Re-designed `Virtual Plots`: withdrawal is now possible with a 10% fee (no lock duration, fee is burned), also there is no more expiration
 - Network traffic is now compressed via `deflate` level 1
 - Second best farmer will now create an empty block (just to get the reward), in case the first farmer fails or is too slow
+
+### Testnet10
+
+- Decentralized Timelord rewards (fixed 0.0025 MMX per block, paid by TX fees when possible (but never more than 1/8))
+- New AMM Swap with multi-fee tier system (you can chose between 10 fee levels for your liquidity)
+- Account activation TX fee (0.01 MMX when transferring to a new address with zero balance)
+- Increased min block reward to 0.5 MMX
+- Full transition to smart contracts with compiled JS like code
+- Harvester improvements for compressed plots (graceful degradation)
+- New dev fee system, based only on TX fees, with a fixed amount plus 1% (but never more than 1/4 of TX fees)
+- Plot filter has been decreased to 256 now, as it is planned for mainnet
+- Many improvements to the code base
