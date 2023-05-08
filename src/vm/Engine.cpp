@@ -834,7 +834,7 @@ void Engine::verify(const uint64_t dst, const uint64_t msg, const uint64_t pubke
 	write(dst, var_t(
 			signature_t(read_fail<binary_t>(signature, TYPE_BINARY).to_vector()).verify(
 					pubkey_t(read_fail<binary_t>(pubkey, TYPE_BINARY).to_vector()),
-					hash_t::from_bytes(read_fail<uint_t>(msg, TYPE_BINARY).value))));
+					hash_t::from_bytes(read_fail<uint_t>(msg, TYPE_UINT).value))));
 }
 
 void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags, const uint64_t sflags)
