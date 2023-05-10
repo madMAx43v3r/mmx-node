@@ -38,6 +38,8 @@ add_library(mmx_chiapos STATIC
 	${FSE_PATH}/hist.c
 )
 
+install(TARGETS ProofOfSpace DESTINATION bin)
+
 if(MSVC)
 	target_link_libraries(mmx_chiapos PRIVATE uint256_t)
 	
