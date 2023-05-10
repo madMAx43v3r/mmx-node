@@ -54,46 +54,59 @@ int main(int argc, char** argv)
 	flags.debug = verbose;
 
 	int ret_value = 0;
-
-	const auto bin = vm::compile_files(file_names, flags);
-
-	if(txmode) {
-		auto tx = Transaction::create();
-		tx->deploy = bin;
-		tx->id = tx->calc_hash(false);
-		tx->content_hash = tx->calc_hash(true);
-		vnx::write_to_file(output, tx);
-		std::cout << addr_t(tx->id).to_string() << std::endl;
-	} else {
-		vnx::write_to_file(output, bin);
+	std::shared_ptr<const contract::Binary> bin;
+	try {
+		bin = vm::compile_files(file_names, flags);
+	}
+	catch (const std::exception& ex) {
+		if (verbose || !assert_fail) {
+			std::cerr << "Compilation failed with: " << ex.what() << std::endl;
+		}
+		ret_value = 1;
 	}
 
-	if(execute) {
-		auto storage = std::make_shared<vm::StorageRAM>();
-		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
-		engine->total_gas = gas_limit;
-		vm::load(engine, bin);
-		engine->begin(0);
-
-		try {
-			engine->run();
-			engine->commit();
-		} catch(const std::exception& ex) {
-			if(verbose || !assert_fail) {
-				std::cerr << "Failed at 0x" << vnx::to_hex_string(engine->error_addr) << " with: " << ex.what() << std::endl;
-			}
-			ret_value = 1;
+	if (bin) {
+		if (txmode) {
+			auto tx = Transaction::create();
+			tx->deploy = bin;
+			tx->id = tx->calc_hash(false);
+			tx->content_hash = tx->calc_hash(true);
+			vnx::write_to_file(output, tx);
+			std::cout << addr_t(tx->id).to_string() << std::endl;
 		}
-		if(assert_fail) {
-			if(ret_value) {
-				ret_value = 0;
-			} else {
-				std::cerr << "Expected execution failure on " << vnx::to_string(file_names) << std::endl;
+		else {
+			vnx::write_to_file(output, bin);
+		}
+
+		if (execute) {
+			auto storage = std::make_shared<vm::StorageRAM>();
+			auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
+			engine->total_gas = gas_limit;
+			vm::load(engine, bin);
+			engine->begin(0);
+
+			try {
+				engine->run();
+				engine->commit();
+			}
+			catch (const std::exception& ex) {
+				if (verbose || !assert_fail) {
+					std::cerr << "Failed at 0x" << vnx::to_hex_string(engine->error_addr) << " with: " << ex.what() << std::endl;
+				}
 				ret_value = 1;
 			}
-		}
-		if(verbose) {
-			std::cerr << "Total Cost: " << engine->total_cost << std::endl;
+			if (assert_fail) {
+				if (ret_value) {
+					ret_value = 0;
+				}
+				else {
+					std::cerr << "Expected execution failure on " << vnx::to_string(file_names) << std::endl;
+					ret_value = 1;
+				}
+			}
+			if (verbose) {
+				std::cerr << "Total Cost: " << engine->total_cost << std::endl;
+			}
 		}
 	}
 
