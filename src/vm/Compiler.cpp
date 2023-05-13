@@ -1606,7 +1606,8 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					copy(offset + 1 + i, fargs[i]);
 				}
 				for(size_t i = args.size(); i < lhs->func->args.size(); ++i) {
-					code.emplace_back(OP_COPY, 0, offset + 1 + i, 0);
+					const auto& var = lhs->func->args[i];
+					code.emplace_back(OP_COPY, 0, offset + 1 + i, var.value ? get_const_address(var.value) : 0);
 				}
 				linker_map[code.size()] = name;
 				code.emplace_back(OP_CALL, 0, -1, offset - MEM_STACK);
