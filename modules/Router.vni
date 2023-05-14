@@ -71,8 +71,6 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	node_info_t get_info() const;
 	
-	pair<pubkey_t, signature_t> sign_msg(hash_t msg) const;
-	
 	vector<string> get_peers(uint max_count = 10) const;
 	
 	vector<string> get_known_peers() const;
