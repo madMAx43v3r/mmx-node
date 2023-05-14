@@ -7,7 +7,7 @@ class ChainParams {
 	uint min_ksize = 30;
 	uint max_ksize = 60;
 	uint plot_filter = 9;
-	uint plot_filter_nhash = 64;			// how many hash interations for plot filter
+	uint plot_filter_exclusion = 8;			// TODO: new exclusion rule
 	
 	uint commit_delay = 18;					// for writing to disk (should be less than challenge_interval - challenge_delay)
 	uint infuse_delay = 6;					// for primary VDF infusion
