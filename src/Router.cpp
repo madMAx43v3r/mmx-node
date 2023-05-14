@@ -959,11 +959,9 @@ void Router::exec_fork_check()
 void Router::discover()
 {
 	if(peer_set.size() < max_peer_set) {
-		auto method = Router_get_peers::create();
-		method->max_count = 4 * num_peers_out;
 		auto req = Request::create();
 		req->id = next_request_id++;
-		req->method = method;
+		req->method = Router_get_peers::create();
 		send_all(req, {node_type_e::FULL_NODE}, false);
 	}
 
@@ -1692,6 +1690,9 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	req->msg = peer->challenge;
 	send_request(peer, req);
 
+	if(peer_set.size() < max_peer_set) {
+		send_request(peer, Router_get_peers::create());
+	}
 	log(DEBUG) << "Connected to peer " << peer->address;
 }
 
