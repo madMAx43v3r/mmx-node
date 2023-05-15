@@ -61,6 +61,7 @@ int main(int argc, char** argv)
 	}
 	catch(const std::exception& ex) {
 		std::cerr << "Compilation failed with: " << ex.what() << std::endl;
+		vnx::close();
 		return 1;
 	}
 
