@@ -395,7 +395,7 @@ void Node::update()
 												}
 											}
 										} else {
-											// previous block was a dummy
+											// previous block was a dummy, we create a second block to mitigate faster timelord attack
 											do_create = true;
 											log(INFO) << "Creating second block for a dummy previous at height " << key.first;
 										}
