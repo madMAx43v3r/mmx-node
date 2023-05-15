@@ -199,11 +199,6 @@ node_info_t Router::get_info() const
 	return info;
 }
 
-std::pair<pubkey_t, signature_t> Router::sign_msg(const hash_t& msg) const
-{
-	return std::make_pair(node_key, signature_t::sign(node_sk, hash_t(msg.bytes)));
-}
-
 static
 bool is_valid_address(const std::string& addr)
 {
