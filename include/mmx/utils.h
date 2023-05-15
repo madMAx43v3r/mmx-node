@@ -117,6 +117,9 @@ inline
 bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
 						const std::vector<hash_t>& challenges, const hash_t& plot_id)
 {
+	if(challenges.empty()) {
+		return false;
+	}
 	for(size_t i = 0; i < challenges.size(); ++i) {
 		const auto pass = check_plot_filter_single(params, challenges[i], plot_id);
 		if((!pass && i == 0) || (pass && i > 0)) {
