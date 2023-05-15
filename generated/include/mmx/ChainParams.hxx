@@ -20,7 +20,7 @@ public:
 	uint32_t min_ksize = 30;
 	uint32_t max_ksize = 60;
 	uint32_t plot_filter = 9;
-	uint32_t plot_filter_nhash = 64;
+	uint32_t plot_filter_exclusion = 8;
 	uint32_t commit_delay = 18;
 	uint32_t infuse_delay = 6;
 	uint32_t challenge_delay = 9;
@@ -50,6 +50,7 @@ public:
 	uint64_t min_txfee_activate = 100000;
 	uint64_t max_block_size = 10000000;
 	uint64_t max_block_cost = 100000000;
+	uint64_t max_tx_cost = 1000000;
 	vnx::float64_t block_time = 10;
 	std::string vdf_seed;
 	::mmx::addr_t plot_binary;
@@ -106,13 +107,13 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(45);
+	_visitor.template type_begin<ChainParams>(46);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
 	_visitor.type_field("max_ksize", 3); _visitor.accept(max_ksize);
 	_visitor.type_field("plot_filter", 4); _visitor.accept(plot_filter);
-	_visitor.type_field("plot_filter_nhash", 5); _visitor.accept(plot_filter_nhash);
+	_visitor.type_field("plot_filter_exclusion", 5); _visitor.accept(plot_filter_exclusion);
 	_visitor.type_field("commit_delay", 6); _visitor.accept(commit_delay);
 	_visitor.type_field("infuse_delay", 7); _visitor.accept(infuse_delay);
 	_visitor.type_field("challenge_delay", 8); _visitor.accept(challenge_delay);
@@ -142,17 +143,18 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("min_txfee_activate", 32); _visitor.accept(min_txfee_activate);
 	_visitor.type_field("max_block_size", 33); _visitor.accept(max_block_size);
 	_visitor.type_field("max_block_cost", 34); _visitor.accept(max_block_cost);
-	_visitor.type_field("block_time", 35); _visitor.accept(block_time);
-	_visitor.type_field("vdf_seed", 36); _visitor.accept(vdf_seed);
-	_visitor.type_field("plot_binary", 37); _visitor.accept(plot_binary);
-	_visitor.type_field("swap_binary", 38); _visitor.accept(swap_binary);
-	_visitor.type_field("offer_binary", 39); _visitor.accept(offer_binary);
-	_visitor.type_field("token_binary", 40); _visitor.accept(token_binary);
-	_visitor.type_field("plot_nft_binary", 41); _visitor.accept(plot_nft_binary);
-	_visitor.type_field("project_addr", 42); _visitor.accept(project_addr);
-	_visitor.type_field("fixed_project_reward", 43); _visitor.accept(fixed_project_reward);
-	_visitor.type_field("project_ratio", 44); _visitor.accept(project_ratio);
-	_visitor.template type_end<ChainParams>(45);
+	_visitor.type_field("max_tx_cost", 35); _visitor.accept(max_tx_cost);
+	_visitor.type_field("block_time", 36); _visitor.accept(block_time);
+	_visitor.type_field("vdf_seed", 37); _visitor.accept(vdf_seed);
+	_visitor.type_field("plot_binary", 38); _visitor.accept(plot_binary);
+	_visitor.type_field("swap_binary", 39); _visitor.accept(swap_binary);
+	_visitor.type_field("offer_binary", 40); _visitor.accept(offer_binary);
+	_visitor.type_field("token_binary", 41); _visitor.accept(token_binary);
+	_visitor.type_field("plot_nft_binary", 42); _visitor.accept(plot_nft_binary);
+	_visitor.type_field("project_addr", 43); _visitor.accept(project_addr);
+	_visitor.type_field("fixed_project_reward", 44); _visitor.accept(fixed_project_reward);
+	_visitor.type_field("project_ratio", 45); _visitor.accept(project_ratio);
+	_visitor.template type_end<ChainParams>(46);
 }
 
 

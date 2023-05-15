@@ -13,8 +13,6 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>
-#include <mmx/pubkey_t.hpp>
-#include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
@@ -40,10 +38,6 @@ public:
 	
 	uint64_t get_info(
 			const std::function<void(const ::mmx::node_info_t&)>& _callback = std::function<void(const ::mmx::node_info_t&)>(),
-			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
-	
-	uint64_t sign_msg(const ::mmx::hash_t& msg = ::mmx::hash_t(), 
-			const std::function<void(const std::pair<::mmx::pubkey_t, ::mmx::signature_t>&)>& _callback = std::function<void(const std::pair<::mmx::pubkey_t, ::mmx::signature_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_peers(const uint32_t& max_count = 10, 
@@ -135,7 +129,6 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_discover;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_id;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::node_info_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_info;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::pair<::mmx::pubkey_t, ::mmx::signature_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_msg;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_peers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_known_peers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_connected_peers;

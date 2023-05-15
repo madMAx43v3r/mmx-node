@@ -292,8 +292,6 @@
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Router_kick_peer.hxx>
 #include <mmx/Router_kick_peer_return.hxx>
-#include <mmx/Router_sign_msg.hxx>
-#include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Solution_calc_cost.hxx>
 #include <mmx/Solution_calc_cost_return.hxx>
@@ -3950,30 +3948,6 @@ void type<::mmx::Router_kick_peer_return>::create_dynamic_code(std::vector<uint1
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::Router_sign_msg>::get_type_code() {
-	return mmx::vnx_native_type_code_Router_sign_msg;
-}
-
-void type<::mmx::Router_sign_msg>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Router_sign_msg());
-}
-
-void type<::mmx::Router_sign_msg>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Router_sign_msg_return>::get_type_code() {
-	return mmx::vnx_native_type_code_Router_sign_msg_return;
-}
-
-void type<::mmx::Router_sign_msg_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Router_sign_msg_return());
-}
-
-void type<::mmx::Router_sign_msg_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::Solution>::get_type_code() {
 	return mmx::vnx_native_type_code_Solution;
 }
@@ -6701,8 +6675,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Router_get_peers_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_kick_peer::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_kick_peer_return::static_create_type_code());
-	vnx::register_type_code(::mmx::Router_sign_msg::static_create_type_code());
-	vnx::register_type_code(::mmx::Router_sign_msg_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::Solution_calc_cost_return::static_create_type_code());
@@ -7197,8 +7169,6 @@ const vnx::TypeCode* const vnx_native_type_code_Router_get_peers = vnx::get_type
 const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return = vnx::get_type_code(vnx::Hash64(0x595714f80f272d86ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_kick_peer = vnx::get_type_code(vnx::Hash64(0x359a21379021beedull));
 const vnx::TypeCode* const vnx_native_type_code_Router_kick_peer_return = vnx::get_type_code(vnx::Hash64(0xd7189e110cc3a50full));
-const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg = vnx::get_type_code(vnx::Hash64(0x88ede2fbb99ab63eull));
-const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg_return = vnx::get_type_code(vnx::Hash64(0x67c8c37a7b5fc991ull));
 const vnx::TypeCode* const vnx_native_type_code_Solution = vnx::get_type_code(vnx::Hash64(0x9f693babd1a91ccdull));
 const vnx::TypeCode* const vnx_native_type_code_Solution_calc_cost = vnx::get_type_code(vnx::Hash64(0xb8838a691144ca1eull));
 const vnx::TypeCode* const vnx_native_type_code_Solution_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xa6e602a441df68d6ull));
