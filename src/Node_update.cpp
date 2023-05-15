@@ -125,10 +125,9 @@ void Node::verify_block_proofs()
 			threads->add_task([this, fork, &mutex]() {
 				const auto& block = fork->block;
 				try {
-					hash_t vdf_challenge;
-					if(find_vdf_challenge(block, vdf_challenge))
+					hash_t challenge;
+					if(find_challenge(block, challenge))
 					{
-						const auto challenge = get_challenge(block, vdf_challenge);
 						verify_proof(fork, challenge);
 
 						if(auto proof = block->proof) {
@@ -363,10 +362,9 @@ void Node::update()
 			prev = fork->block;
 		}
 		if(prev) {
-			hash_t vdf_challenge;
-			if(find_vdf_challenge(prev, vdf_challenge, 1))
+			hash_t challenge;
+			if(find_challenge(prev, challenge, 1))
 			{
-				const auto challenge = get_challenge(prev, vdf_challenge, 1);
 				const auto proof_list = find_proof(challenge);
 
 				// Note: proof_list already limited to max_blocks_per_height
@@ -433,7 +431,7 @@ void Node::update()
 		{
 			auto value = Challenge::create();
 			value->height = peak->height + i;
-			value->challenge = get_challenge(peak, vdf_block->vdf_output[1], i);
+			value->challenge = vdf_block->vdf_output[1];
 			const auto diff_block = get_diff_header(peak, i);
 			value->space_diff = diff_block->space_diff;
 			value->diff_block_hash = diff_block->hash;
