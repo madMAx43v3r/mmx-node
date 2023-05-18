@@ -9,7 +9,17 @@ if(MSVC)
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	
 	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
-	add_definitions(/openmp ${CUSTOM_ADD_DEFINITIONS})
+	add_compile_options(/openmp /EHsc /MP)
+
+	set(MSVC_DEBUG_OPTIONS /Od)
+	set(MSVC_RELEASE_OPTIONS /W1 /O2)
+
+	add_compile_options( 
+		"$<$<CONFIG:Debug>:${MSVC_DEBUG_OPTIONS}>"
+		"$<$<CONFIG:RelWithDebInfo>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<CONFIG:Release>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<CONFIG:MinSizeRel>:${MSVC_RELEASE_OPTIONS}>"
+    )
 	
 	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
 	add_library(secp256k1 INTERFACE IMPORTED)
