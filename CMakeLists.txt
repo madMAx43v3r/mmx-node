@@ -243,6 +243,15 @@ if(MSVC)
 
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
+	# Workaround for:
+	#	LNK1189: library limit of 65535 objects exceeded
+	#	D8040: error creating or communicating with child process
+	set(MSVC_MMX_IFACE_DEBUG_OPTIONS /Ob1)
+	target_compile_options(mmx_iface PRIVATE
+		"$<$<CONFIG:Debug>:${MSVC_MMX_IFACE_DEBUG_OPTIONS}>"
+	)
+
 else()
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)
