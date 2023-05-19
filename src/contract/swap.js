@@ -131,16 +131,18 @@ function _rem_liquid(user, i, amount, do_send = true)
 {
 	const k = (i + 1) % 2;
 	const entry = state[user.pool_idx];
+	const balance = entry.balance;
+	const user_total = entry.user_total;
 	
-	var ret_amount = (amount * entry.balance[i]) / entry.user_total[i];
+	var ret_amount = (balance[i] * amount) / user_total[i];
 	var trade_amount = 0;
 	
-	if(entry.balance[i] < entry.user_total[i]) {
-		if(entry.balance[k] > entry.user_total[k]) {
+	if(balance[i] < user_total[i]) {
+		if(balance[k] > user_total[k]) {
 			// token k was bought
-			trade_amount = ((entry.balance[k] - entry.user_total[k]) * amount) / entry.user_total[i];
+			trade_amount = ((balance[k] - user_total[k]) * amount) / user_total[i];
 		}
-	} else if(entry.balance[k] < entry.user_total[k]) {
+	} else if(balance[k] < user_total[k]) {
 		// no trade happened
 		ret_amount = amount;
 	}
@@ -149,18 +151,18 @@ function _rem_liquid(user, i, amount, do_send = true)
 		if(do_send) {
 			send(this.user, ret_amount, tokens[i]);
 		}
-		entry.balance[i] -= ret_amount;
+		balance[i] -= ret_amount;
 	}
 	if(trade_amount > 0) {
 		if(do_send) {
 			send(this.user, trade_amount, tokens[k]);
 		}
-		entry.balance[k] -= trade_amount;
+		balance[k] -= trade_amount;
 	}
 	user.balance[i] -= amount;
-	entry.user_total[i] -= amount;
+	user_total[i] -= amount;
 	
-	var out = [0, 0];
+	const out = [0, 0];
 	out[i] = ret_amount;
 	out[k] = trade_amount;
 	return out;
@@ -194,7 +196,7 @@ function rem_all_liquid(dry_run = false) public
 	}
 	_payout(user);
 	
-	var out = [0, 0];
+	const out = [0, 0];
 	for(var i = 0; i < 2; ++i) {
 		const amount = user.balance[i];
 		if(amount > 0) {
@@ -218,15 +220,14 @@ function switch_pool(pool_idx) public
 	}
 	_payout(user);
 	
-	const amount = [user.balance[0], user.balance[1]];
 	const new_amount = [0, 0];
 	
 	for(var i = 0; i < 2; ++i) {
-		if(amount[i] > 0) {
-			const ret = _rem_liquid(user, i, amount[i], false);
-			for(var k = 0; k < 2; ++k) {
-				new_amount[k] += ret[k];
-			}
+		const amount = user.balance[i];
+		if(amount > 0) {
+			const ret = _rem_liquid(user, i, amount, false);
+			new_amount[0] += ret[0];
+			new_amount[1] += ret[1];
 		}
 	}
 	for(var i = 0; i < 2; ++i) {
@@ -239,7 +240,7 @@ function switch_pool(pool_idx) public
 
 function get_total_balance() public const
 {
-	var total = [0, 0];
+	const total = [0, 0];
 	for(const entry of state) {
 		total[0] += entry.balance[0];
 		total[1] += entry.balance[1];
@@ -256,7 +257,7 @@ function trade(i, address, min_amount, num_iter) public payable
 	const amount = this.deposit.amount;
 	const chunk_size = (amount + num_iter - 1) / num_iter;
 
-	var out = [0, 0];
+	const out = [0, 0];
 	var actual_amount = 0;
 	var amount_left = amount;
 	
