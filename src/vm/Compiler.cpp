@@ -1018,6 +1018,9 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		if(is_expression) {
 			copy(var.address, recurse(list.back()));
 		}
+		if(!is_constant && !is_expression) {
+			copy(var.address, 0);
+		}
 		out.address = var.address;
 	}
 	else if(name == lang::if_ex::name)

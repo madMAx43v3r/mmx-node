@@ -1,4 +1,11 @@
 
+{
+	var test;
+	if(test != null) {
+		fail("empty var");
+	}
+}
+
 function test1(a, b = 1) {
 	return a + b;
 }
