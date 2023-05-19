@@ -78,7 +78,7 @@ enum opcode_e : uint8_t {
 	OP_VERIFY,		// dst, msg, pubkey, signature
 
 	OP_LOG = 0xC0,	// level, message
-	OP_SEND,		// address, amount, currency
+	OP_SEND,		// address, amount, currency, memo
 	OP_MINT,		// address, amount
 	OP_EVENT,		// name, data
 	OP_FAIL,		// message, code

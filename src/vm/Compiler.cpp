@@ -1502,11 +1502,12 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 			}
 			else if(name == "send") {
-				if(args.size() != 2 && args.size() != 3) {
-					throw std::logic_error("expected 2 or 3 arguments for send(address, amount, [currency])");
+				if(args.size() < 2 || args.size() > 4) {
+					throw std::logic_error("expected 2, 3 or 4 arguments for send(address, amount, [currency], [memo])");
 				}
 				code.emplace_back(OP_SEND, 0, get(recurse(args[0])), get(recurse(args[1])),
-						args.size() > 2 ? get(recurse(args[2])) : get_const_address(uint256_t()));
+						args.size() > 2 ? get(recurse(args[2])) : get_const_address(uint256_t()),
+						args.size() > 3 ? get(recurse(args[3])) : 0);
 				out.address = 0;
 			}
 			else if(name == "mint") {

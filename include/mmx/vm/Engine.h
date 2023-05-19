@@ -148,7 +148,7 @@ public:
 	void verify(const uint64_t dst, const uint64_t msg, const uint64_t pubkey, const uint64_t signature);
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
-	void send(const uint64_t address, const uint64_t amount, const uint64_t currency);
+	void send(const uint64_t address, const uint64_t amount, const uint64_t currency, const uint64_t memo);
 	void mint(const uint64_t address, const uint64_t amount);
 	void rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs);
 

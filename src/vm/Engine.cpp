@@ -1033,7 +1033,7 @@ void Engine::event(const uint64_t name, const uint64_t data)
 	push_back(MEM_HEAP + GLOBAL_EVENT_HISTORY, ref_t(entry));
 }
 
-void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t currency)
+void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t currency, const uint64_t memo)
 {
 	const auto value = read_fail<uint_t>(amount, TYPE_UINT).value;
 	if(value == 0) {
@@ -1052,6 +1052,34 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	out.contract = addr_t(read_fail<uint_t>(currency, TYPE_UINT).value);
 	out.address = addr_t(read_fail<uint_t>(address, TYPE_UINT).value);
 	out.amount = value;
+	{
+		const auto& value = read_fail(memo);
+		switch(value.type) {
+			case TYPE_NIL: break;
+			case TYPE_UINT: {
+				const auto& uint = ((const uint_t&)value).value;
+				if(uint >> 16) {
+					out.memo = hash_t::from_bytes(uint);
+				} else {
+					out.memo = uint;
+				}
+				break;
+			}
+			case TYPE_STRING:
+				out.memo = ((const binary_t&)value).to_string();
+				break;
+			case TYPE_BINARY: {
+				const auto& bin = (const binary_t&)value;
+				if(bin.size > out.memo.size()) {
+					throw std::runtime_error("binary memo too large: " + std::to_string(bin.size));
+				}
+				::memcpy(out.memo.data(), bin.data(), bin.size);
+				break;
+			}
+			default:
+				throw std::runtime_error("invalid memo type: " + to_string(value.type));
+		}
+	}
 	outputs.push_back(out);
 	total_cost += SEND_COST;
 }
@@ -1069,6 +1097,7 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 	out.contract = contract;
 	out.address = addr_t(read_fail<uint_t>(address, TYPE_UINT).value);
 	out.amount = value;
+	out.memo = std::string("mmx.mint");
 	mint_outputs.push_back(out);
 	total_cost += MINT_COST;
 }
@@ -1559,7 +1588,8 @@ void Engine::exec(const instr_t& instr)
 	case OP_SEND:
 		send(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
-				deref_addr(instr.c, instr.flags & OPFLAG_REF_C));
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C),
+				deref_addr(instr.d, instr.flags & OPFLAG_REF_D));
 		break;
 	case OP_MINT:
 		mint(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
