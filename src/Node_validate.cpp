@@ -726,7 +726,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			for(size_t i = 0; i < exec_outputs.size(); ++i) {
 				const auto& lhs = exec_outputs[i];
 				const auto& rhs = result->outputs[i];
-				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount) {
+				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.memo != rhs.memo) {
 					throw std::logic_error("execution output mismatch at index " + std::to_string(i));
 				}
 			}

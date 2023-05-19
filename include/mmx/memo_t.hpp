@@ -77,7 +77,7 @@ void write(std::ostream& out, const mmx::memo_t& value) {
 
 inline
 void accept(vnx::Visitor& visitor, const mmx::memo_t& value) {
-	vnx::accept(visitor, value.to_string());
+	vnx::accept(visitor, value.bytes);
 }
 
 } // vnx

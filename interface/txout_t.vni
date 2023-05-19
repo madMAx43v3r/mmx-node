@@ -1,7 +1,9 @@
 package mmx;
 
+import mmx.memo_t;
+
 struct txout_t extends txio_t {
 	
-	// TODO: ulong memo;
+	memo_t memo;
 	
 }
