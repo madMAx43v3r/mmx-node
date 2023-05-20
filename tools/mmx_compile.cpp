@@ -54,8 +54,16 @@ int main(int argc, char** argv)
 	flags.debug = verbose;
 
 	int ret_value = 0;
+	std::shared_ptr<const contract::Binary> bin;
 
-	const auto bin = vm::compile_files(file_names, flags);
+	try {
+		bin = vm::compile_files(file_names, flags);
+	}
+	catch(const std::exception& ex) {
+		std::cerr << "Compilation failed with: " << ex.what() << std::endl;
+		vnx::close();
+		return 1;
+	}
 
 	if(txmode) {
 		auto tx = Transaction::create();

@@ -9,7 +9,17 @@ if(MSVC)
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	
 	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
-	add_definitions(/openmp ${CUSTOM_ADD_DEFINITIONS})
+	add_compile_options(/openmp /EHsc /MP)
+
+	set(MSVC_DEBUG_OPTIONS /Od)
+	set(MSVC_RELEASE_OPTIONS /W1 /O2)
+
+	add_compile_options( 
+		"$<$<CONFIG:Debug>:${MSVC_DEBUG_OPTIONS}>"
+		"$<$<CONFIG:RelWithDebInfo>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<CONFIG:Release>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<CONFIG:MinSizeRel>:${MSVC_RELEASE_OPTIONS}>"
+    )
 	
 	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
 	add_library(secp256k1 INTERFACE IMPORTED)
@@ -234,6 +244,15 @@ if(MSVC)
 
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
+	# Workaround for:
+	#	LNK1189: library limit of 65535 objects exceeded
+	#	D8040: error creating or communicating with child process
+	set(MSVC_MMX_IFACE_DEBUG_OPTIONS /Ob1)
+	target_compile_options(mmx_iface PRIVATE
+		"$<$<CONFIG:Debug>:${MSVC_MMX_IFACE_DEBUG_OPTIONS}>"
+	)
+
 else()
 	target_link_libraries(mmx_db OpenMP::OpenMP_CXX)
 	target_link_libraries(mmx_modules OpenMP::OpenMP_CXX)

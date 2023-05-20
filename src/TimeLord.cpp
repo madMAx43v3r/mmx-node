@@ -389,10 +389,10 @@ hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
 	static bool have_sha_ni = sha256_ni_available();
 
 	hash_t hash = input;
-	for(uint64_t i = 0; i < num_iters; ++i) {
-		if(have_sha_ni) {
-			sha256_ni(hash.data(), hash.data(), hash.size());
-		} else {
+	if(have_sha_ni) {
+		recursive_sha256_ni(hash.data(), num_iters);
+	} else {
+		for(uint64_t i = 0; i < num_iters; ++i) {
 			hash = hash_t(hash.bytes);
 		}
 	}

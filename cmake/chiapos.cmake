@@ -28,14 +28,18 @@ set(BLAKE3_SRC
 )
 ENDIF()
 
-add_library(mmx_chiapos STATIC
-	src/chiapos/chiapos.cpp
-	chiapos/src/chacha8.c
-	${BLAKE3_SRC}
+set(FSE_SRC
 	${FSE_PATH}/fse_compress.c
 	${FSE_PATH}/fse_decompress.c
 	${FSE_PATH}/entropy_common.c
 	${FSE_PATH}/hist.c
+)
+
+add_library(mmx_chiapos STATIC
+	src/chiapos/chiapos.cpp
+	chiapos/src/chacha8.c
+	${BLAKE3_SRC}
+	${FSE_SRC}
 )
 
 if(MSVC)

@@ -156,7 +156,7 @@ if ("${MMX_GIGAHORSE}" STREQUAL "TRUE")
 	FetchContent_Declare(
 		chia_gigahorse
 		GIT_REPOSITORY https://github.com/madMAx43v3r/chia-gigahorse.git
-		GIT_TAG 4f1ddcaeb2c03d1019b4565ee7fc6c7d6878e308
+		GIT_TAG a91714d475d6e30b52a61106edee4d2a0669f720
 	)
 	FetchContent_MakeAvailable(chia_gigahorse)
 
