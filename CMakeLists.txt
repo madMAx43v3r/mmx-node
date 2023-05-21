@@ -260,6 +260,7 @@ else()
 		message(STATUS "Enabling -mavx2 -msha")
 		set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-msse4.2 -msha")
 		set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
+		set_source_files_properties(src/TimeLord.cpp PROPERTIES COMPILE_FLAGS "-msse4.2 -msha")
 	endif()
 endif()
 
