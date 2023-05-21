@@ -12,7 +12,7 @@ if(MSVC)
 	add_compile_options(/openmp /EHsc /MP)
 
 	set(MSVC_DEBUG_OPTIONS /Od)
-	set(MSVC_RELEASE_OPTIONS /W1 /O2)
+	set(MSVC_RELEASE_OPTIONS /W1 /O3)
 
 	add_compile_options( 
 		"$<$<CONFIG:Debug>:${MSVC_DEBUG_OPTIONS}>"
