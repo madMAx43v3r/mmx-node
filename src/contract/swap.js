@@ -251,10 +251,13 @@ function get_total_balance() public const
 	return total;
 }
 
-function trade(i, address, min_amount, num_iter) public payable
+function trade(i, address, min_trade, num_iter) public payable
 {
 	if(this.deposit.currency != tokens[i]) {
 		fail("currency mismatch", 1);
+	}
+	if(num_iter < 1) {
+		fail("invalid num_iter", 10);
 	}
 	const k = (i + 1) % 2;
 	const amount = this.deposit.amount;
@@ -303,9 +306,9 @@ function trade(i, address, min_amount, num_iter) public payable
 		}
 	}
 	
-	if(min_amount != null) {
-		if(actual_amount < min_amount) {
-			fail("minimum amount not reached", 7);
+	if(min_trade != null) {
+		if(actual_amount < min_trade) {
+			fail("minimum trade amount not reached", 7);
 		}
 	}
 	if(actual_amount == 0) {
