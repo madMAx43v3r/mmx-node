@@ -569,11 +569,10 @@ Vue.component('swap-trade', {
 			req.amount = amount;
 			req.min_trade = min_trade;
 			req.num_iter = num_iter;
-			const options = {};
+			req.options = {};
 			if(fee_ratio) {
-				options.fee_ratio = fee_ratio;
+				req.options.fee_ratio = fee_ratio;
 			}
-			req.options = options;
 			fetch('/wapi/wallet/swap/trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -633,10 +632,10 @@ Vue.component('swap-trade', {
 			}
 		},
 		buy_amount() {
-			this.update_buy_estimate(true);
+			this.update_buy_estimate();
 		},
 		buy_num_iter() {
-			this.update_buy_estimate(true);
+			this.update_buy_estimate();
 		},
 		sell_amount() {
 			this.update_sell_estimate();
