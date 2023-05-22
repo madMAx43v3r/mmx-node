@@ -361,13 +361,14 @@ uint64_t WalletAsyncClient::cancel_offer(const uint32_t& index, const ::mmx::add
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const ::mmx::addr_t& currency, const vnx::optional<uint64_t>& min_trade, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const ::mmx::addr_t& currency, const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_swap_trade::create();
 	_method->index = index;
 	_method->address = address;
 	_method->amount = amount;
 	_method->currency = currency;
 	_method->min_trade = min_trade;
+	_method->num_iter = num_iter;
 	_method->options = options;
 	const auto _request_id = ++vnx_next_id;
 	{

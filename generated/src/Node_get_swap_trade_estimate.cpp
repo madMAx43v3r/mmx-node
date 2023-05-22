@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_swap_trade_estimate::VNX_TYPE_HASH(0x1c3d2e0c3a431e9eull);
-const vnx::Hash64 Node_get_swap_trade_estimate::VNX_CODE_HASH(0x1c484a488973128ull);
+const vnx::Hash64 Node_get_swap_trade_estimate::VNX_CODE_HASH(0xa9f22ec5e5347624ull);
 
 vnx::Hash64 Node_get_swap_trade_estimate::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,6 +50,7 @@ void Node_get_swap_trade_estimate::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, i);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, amount);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, num_iter);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,6 +59,7 @@ void Node_get_swap_trade_estimate::write(std::ostream& _out) const {
 	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"i\": "; vnx::write(_out, i);
 	_out << ", \"amount\": "; vnx::write(_out, amount);
+	_out << ", \"num_iter\": "; vnx::write(_out, num_iter);
 	_out << "}";
 }
 
@@ -73,6 +75,7 @@ vnx::Object Node_get_swap_trade_estimate::to_object() const {
 	_object["address"] = address;
 	_object["i"] = i;
 	_object["amount"] = amount;
+	_object["num_iter"] = num_iter;
 	return _object;
 }
 
@@ -84,6 +87,8 @@ void Node_get_swap_trade_estimate::from_object(const vnx::Object& _object) {
 			_entry.second.to(amount);
 		} else if(_entry.first == "i") {
 			_entry.second.to(i);
+		} else if(_entry.first == "num_iter") {
+			_entry.second.to(num_iter);
 		}
 	}
 }
@@ -98,6 +103,9 @@ vnx::Variant Node_get_swap_trade_estimate::get_field(const std::string& _name) c
 	if(_name == "amount") {
 		return vnx::Variant(amount);
 	}
+	if(_name == "num_iter") {
+		return vnx::Variant(num_iter);
+	}
 	return vnx::Variant();
 }
 
@@ -108,6 +116,8 @@ void Node_get_swap_trade_estimate::set_field(const std::string& _name, const vnx
 		_value.to(i);
 	} else if(_name == "amount") {
 		_value.to(amount);
+	} else if(_name == "num_iter") {
+		_value.to(num_iter);
 	}
 }
 
@@ -135,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_trade_estimate::static_create_type_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_swap_trade_estimate";
 	type_code->type_hash = vnx::Hash64(0x1c3d2e0c3a431e9eull);
-	type_code->code_hash = vnx::Hash64(0x1c484a488973128ull);
+	type_code->code_hash = vnx::Hash64(0xa9f22ec5e5347624ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -143,7 +153,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_trade_estimate::static_create_type_
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_swap_trade_estimate>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_swap_trade_estimate_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -161,6 +171,13 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_trade_estimate::static_create_type_
 		field.data_size = 8;
 		field.name = "amount";
 		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.data_size = 4;
+		field.name = "num_iter";
+		field.value = vnx::to_string(20);
+		field.code = {7};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -211,6 +228,9 @@ void read(TypeInput& in, ::mmx::Node_get_swap_trade_estimate& value, const TypeC
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[3]) {
+			vnx::read_value(_buf + _field->offset, value.num_iter, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -233,9 +253,10 @@ void write(TypeOutput& out, const ::mmx::Node_get_swap_trade_estimate& value, co
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(12);
+	char* const _buf = out.write(16);
 	vnx::write_value(_buf + 0, value.i);
 	vnx::write_value(_buf + 4, value.amount);
+	vnx::write_value(_buf + 12, value.num_iter);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 }
 

@@ -17,6 +17,7 @@ public:
 	::mmx::addr_t address;
 	uint32_t i = 0;
 	uint64_t amount = 0;
+	int32_t num_iter = 20;
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,11 +61,12 @@ public:
 
 template<typename T>
 void Node_get_swap_trade_estimate::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_swap_trade_estimate>(3);
+	_visitor.template type_begin<Node_get_swap_trade_estimate>(4);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("i", 1); _visitor.accept(i);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.template type_end<Node_get_swap_trade_estimate>(3);
+	_visitor.type_field("num_iter", 3); _visitor.accept(num_iter);
+	_visitor.template type_end<Node_get_swap_trade_estimate>(4);
 }
 
 

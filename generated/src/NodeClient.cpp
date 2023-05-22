@@ -1030,11 +1030,12 @@ std::vector<::mmx::swap_entry_t> NodeClient::get_swap_history(const ::mmx::addr_
 	}
 }
 
-std::array<::mmx::uint128, 2> NodeClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount) {
+std::array<::mmx::uint128, 2> NodeClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) {
 	auto _method = ::mmx::Node_get_swap_trade_estimate::create();
 	_method->address = address;
 	_method->i = i;
 	_method->amount = amount;
+	_method->num_iter = num_iter;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_swap_trade_estimate_return>(_return_value)) {
 		return _result->_ret_0;

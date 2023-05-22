@@ -43,8 +43,6 @@ struct MMX_EXPORT swap_info_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
-	vnx::float64_t get_price() const;
-	
 	static std::shared_ptr<swap_info_t> create();
 	std::shared_ptr<swap_info_t> clone() const;
 	

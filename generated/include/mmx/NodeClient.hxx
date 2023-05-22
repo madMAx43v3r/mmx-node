@@ -170,7 +170,7 @@ public:
 	
 	std::vector<::mmx::swap_entry_t> get_swap_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = 100);
 	
-	std::array<::mmx::uint128, 2> get_swap_trade_estimate(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& i = 0, const uint64_t& amount = 0);
+	std::array<::mmx::uint128, 2> get_swap_trade_estimate(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& i = 0, const uint64_t& amount = 0, const int32_t& num_iter = 20);
 	
 	std::array<::mmx::uint128, 2> get_swap_fees_earned(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& user = ::mmx::addr_t());
 	
