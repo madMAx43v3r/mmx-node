@@ -257,7 +257,7 @@ function trade(i, address, min_trade, num_iter) public payable
 		fail("currency mismatch", 1);
 	}
 	if(num_iter < 1) {
-		fail("invalid num_iter", 10);
+		fail("invalid num_iter");
 	}
 	const k = (i + 1) % 2;
 	const amount = this.deposit.amount;
@@ -306,6 +306,9 @@ function trade(i, address, min_trade, num_iter) public payable
 		}
 	}
 	
+	if(amount_left > 0) {
+		fail("incomplete trade");
+	}
 	if(min_trade != null) {
 		if(actual_amount < min_trade) {
 			fail("minimum trade amount not reached", 7);
