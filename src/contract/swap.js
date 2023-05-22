@@ -218,6 +218,9 @@ function switch_pool(pool_idx) public
 	if(user == null) {
 		fail("no such user", 2);
 	}
+	if(this.height < user.unlock_height) {
+		fail("liquidity still locked", 3);
+	}
 	_payout(user);
 	
 	const new_amount = [0, 0];
