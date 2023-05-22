@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 				wallet.send(index, amount, *target, contract, spend_options);
 			}
 			if(swap) {
-				wallet.swap_trade(index, *swap, amount, contract, nullptr, spend_options);
+				wallet.swap_trade(index, *swap, amount, contract, nullptr, 10, spend_options);
 			}
 			counter++;
 			total++;

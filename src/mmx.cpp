@@ -707,7 +707,7 @@ int main(int argc, char** argv)
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.swap_trade(index, contract, deposit_amount, info.tokens[i], min_trade_amount, spend_options)) {
+					if(auto tx = wallet.swap_trade(index, contract, deposit_amount, info.tokens[i], min_trade_amount, 20, spend_options)) {
 						std::cout << "Transaction ID: " << tx->id << std::endl;
 					}
 				}
@@ -1379,14 +1379,17 @@ int main(int argc, char** argv)
 				for(const auto& data : node.get_swaps(0, token))
 				{
 					std::cout << "[" << data.address << "] ";
+					std::array<int, 2> decimals;
 					std::array<std::string, 2> symbols;
 					for(int i = 0; i < 2; ++i) {
 						if(auto token = get_token(node, data.tokens[i])) {
+							decimals[i] = token->decimals;
 							symbols[i] = token->symbol;
 							std::cout << mmx::to_value(data.balance[i], token->decimals) << " " << token->symbol << (i == 0 ? " / " : "");
 						}
 					}
-					std::cout << " (" << data.get_price() << " " << symbols[1] << " / " << symbols[0] << ")" << std::endl;
+					const auto price = to_value(data.balance[1], decimals[1]) / to_value(data.balance[0], decimals[0]);
+					std::cout << " (" << price << " " << symbols[1] << " / " << symbols[0] << ")" << std::endl;
 				}
 			}
 			else if(command == "swap")
@@ -1398,9 +1401,11 @@ int main(int argc, char** argv)
 				}
 				const auto data = node.get_swap_info(address);
 
+				std::array<int, 2> decimals;
 				std::array<std::string, 2> symbols;
 				for(int i = 0; i < 2; ++i) {
 					if(auto token = get_token(node, data.tokens[i])) {
+						decimals[i] = token->decimals;
 						symbols[i] = token->symbol;
 						std::cout << (i ? "Currency" : "Token") << ": " << data.tokens[i] << std::endl;
 						std::cout << "  Pool Balance:   " << mmx::to_value(data.balance[i], token->decimals) << " " << token->symbol << std::endl;
@@ -1409,7 +1414,8 @@ int main(int argc, char** argv)
 						std::cout << "  Total Fees:     " << mmx::to_value(data.fees_paid[i], token->decimals) << " " << token->symbol << std::endl;
 					}
 				}
-				std::cout << "Price: " << data.get_price() << " " << symbols[1] << " / " << symbols[0] << std::endl;
+				const auto price = to_value(data.balance[1], decimals[1]) / to_value(data.balance[0], decimals[0]);
+				std::cout << "Price: " << price << " " << symbols[1] << " / " << symbols[0] << std::endl;
 			}
 			else {
 				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | history | offers | swaps | swap | sync | revert | call | read | dump | dump_code]" << std::endl;

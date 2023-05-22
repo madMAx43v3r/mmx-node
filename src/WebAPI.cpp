@@ -514,6 +514,7 @@ public:
 						user_total[i] = to_amount_object(info.user_total[i], token->decimals);
 					}
 				}
+				tmp["price"] = to_value(info.balance[1], decimals[1]) / to_value(info.balance[0], decimals[0]);
 				tmp["balance"] = balance;
 				tmp["fees_paid"] = fees_paid;
 				tmp["fees_claimed"] = fees_claimed;
@@ -531,8 +532,7 @@ public:
 		tmp["volume_1d"] = volume_1d;
 		tmp["volume_7d"] = volume_7d;
 		tmp["pools"] = pools;
-		tmp["price"] = value.get_price();
-		tmp["display_price"] = value.get_price() * pow(10, decimals[0] - decimals[1]);
+		tmp["price"] = to_value(value.balance[1], decimals[1]) / to_value(value.balance[0], decimals[0]);
 		set(tmp);
 	}
 
@@ -1463,20 +1463,22 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_id = query.find("id");
 		const auto iter_index = query.find("index");
 		const auto iter_amount = query.find("amount");
+		const auto iter_iters = query.find("iters");
 		if(iter_id != query.end() && iter_index != query.end() && iter_amount != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
 			const auto index = vnx::from_string_value<uint32_t>(iter_index->second);
 			const auto value = vnx::from_string_value<fixed128>(iter_amount->second);
+			const auto num_iter = iter_iters != query.end() ? vnx::from_string_value<int32_t>(iter_iters->second) : 20;
 			node->get_swap_info(address,
-				[this, request_id, index, value](const swap_info_t& info) {
+				[this, request_id, index, value, num_iter](const swap_info_t& info) {
 					get_context({info.tokens[0], info.tokens[1]}, request_id,
-						[this, request_id, index, info, value](std::shared_ptr<RenderContext> context) {
+						[this, request_id, index, info, value, num_iter](std::shared_ptr<RenderContext> context) {
 							const auto token_i = context->find_currency(info.tokens[index]);
 							const auto token_k = context->find_currency(info.tokens[(index + 1) % 2]);
 							if(token_i && token_k) {
 								const auto token_k_decimals = token_k->decimals;
 								const auto amount = to_amount(value, token_i->decimals);
-								node->get_swap_trade_estimate(info.address, index, amount,
+								node->get_swap_trade_estimate(info.address, index, amount, num_iter,
 									[this, request_id, token_k_decimals](const std::array<uint128, 2>& ret) {
 										vnx::Object out;
 										out["trade"] = to_amount_object_str(ret[0], token_k_decimals);
@@ -1491,7 +1493,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "swap/trade_estimate?id|index|amount");
+			respond_status(request_id, 404, "swap/trade_estimate?id|index|amount|iters");
 		}
 	}
 	else if(sub_path == "/offer/trade_estimate") {
@@ -2166,7 +2168,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							const auto wallet_i = args["wallet"].to<uint32_t>();
 							const auto index = args["index"].to<uint32_t>();
 							const auto value = args["amount"].to<fixed128>();
-							const auto min_value = args["min_amount"].to<vnx::optional<double>>();
+							const auto min_value = args["min_trade"].to<vnx::optional<double>>();
+							const auto num_iter = args["num_iter"].to<int32_t>();
 							const auto options = args["options"].to<spend_options_t>();
 
 							const auto token_i = context->find_currency(info.tokens[index % 2]);
@@ -2176,11 +2179,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							}
 							const auto amount = to_amount(value, token_i->decimals);
 
-							vnx::optional<uint64_t> min_amount;
+							vnx::optional<uint64_t> min_trade;
 							if(min_value) {
-								min_amount = to_amount(min_value, token_k->decimals);
+								min_trade = to_amount(*min_value, token_k->decimals);
 							}
-							wallet->swap_trade(wallet_i, address, amount, info.tokens[index % 2], min_amount, options,
+							wallet->swap_trade(wallet_i, address, amount, info.tokens[index % 2], min_trade, num_iter > 0 ? num_iter : 20, options,
 								[this, request_id](std::shared_ptr<const Transaction> tx) {
 									respond(request_id, render(tx));
 								},

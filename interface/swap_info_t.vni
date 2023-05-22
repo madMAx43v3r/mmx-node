@@ -25,7 +25,4 @@ struct swap_info_t {
 	
 	vector<swap_pool_info_t> pools;
 	
-	
-	double get_price() const;
-	
 }

@@ -171,7 +171,7 @@ protected:
 
 	std::vector<swap_entry_t> get_swap_history(const addr_t& address, const int32_t& limit) const override;
 
-	std::array<uint128, 2> get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount) const override;
+	std::array<uint128, 2> get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) const override;
 
 	std::array<uint128, 2> get_swap_fees_earned(const addr_t& address, const addr_t& user) const override;
 

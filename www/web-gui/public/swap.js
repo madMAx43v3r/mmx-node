@@ -181,7 +181,7 @@ Vue.component('swap-list', {
 										</router-link>
 									</template>
 								</td>
-								<td><b>{{ item.display_price ? parseFloat( (item.display_price).toPrecision(6) ) : "N/A" }}</b>&nbsp; {{item.symbols[1]}} / {{item.symbols[0]}}</td>
+								<td><b>{{ item.price ? parseFloat( (item.price).toPrecision(6) ) : "N/A" }}</b>&nbsp; {{item.symbols[1]}} / {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[0].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[0]}}</td>
 								<td><b>{{ parseFloat( (item.balance[1].value).toPrecision(6) ) }}</b>&nbsp; {{item.symbols[1]}}</td>
 								<td>
@@ -242,7 +242,7 @@ Vue.component('swap-info', {
 		<div>
 			<template v-if="data">
 				<v-chip label>{{ $t('swap.swap') }}</v-chip>
-				<v-chip label>{{data.display_price ? parseFloat((data.display_price).toPrecision(6)) : "N/A"}}&nbsp; {{data.symbols[1]}} / {{data.symbols[0]}}</v-chip>
+				<v-chip label>{{data.price ? parseFloat((data.price).toPrecision(6)) : "N/A"}}&nbsp; {{data.symbols[1]}} / {{data.symbols[0]}}</v-chip>
 				<v-chip label>{{data.address}}</v-chip>
 			</template>
 			
@@ -326,8 +326,9 @@ Vue.component('swap-pool-info', {
 				<thead>
 					<tr>
 						<th>{{ $t('swap.fee_level') }}</th>
-						<th>{{ $t('common.balance') }}</th><th></th>
-						<th>{{ $t('common.balance') }}</th><th></th>
+						<th>{{ $t('common.balance') }}</th>
+						<th>{{ $t('common.balance') }}</th>
+						<th>Price</th>
 						<th>{{ $t('swap.user_total') }}</th>
 						<th>{{ $t('swap.user_total') }}</th>
 					</tr>
@@ -338,8 +339,8 @@ Vue.component('swap-pool-info', {
 							<td class="key-cell">{{fee_rate * 100}} %</td>
 							<template v-for="i in [0, 1]">
 								<td><b>{{ parseFloat( (data.pools[k].balance[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
-								<td>{{(data.pools[k].balance[i].value / data.balance[i].value * 100).toFixed(1)}} %</td>
 							</template>
+							<td>{{data.pools[k].price != null ? parseFloat((data.pools[k].price).toPrecision(6)) : "N/A"}}</td>
 							<template v-for="i in [0, 1]">
 								<td><b>{{ parseFloat( (data.pools[k].user_total[i].value).toPrecision(6) ) }}</b> {{data.symbols[i]}}</td>
 							</template>
@@ -519,12 +520,26 @@ Vue.component('swap-trade', {
 			buy_amount: null,
 			buy_balance: null,
 			buy_estimate: null,
+			buy_num_iter: 20,
+			buy_slippage: 0.98,
+			buy_tx_fee: null,
 			sell_fee: null,
 			sell_amount: null,
 			sell_balance: null,
 			sell_estimate: null,
+			sell_num_iter: 20,
+			sell_slippage: 0.98,
+			sell_tx_fee: null,
 			result: null,
 			error: null,
+			num_iter_items: [1, 5, 10, 20, 50, 200],
+			slippage_items: [
+				{text: "0.5 %", value: 0.995},
+				{text: "1 %", value: 0.99},
+				{text: "2 %", value: 0.98},
+				{text: "5 %", value: 0.95},
+				{text: "10 %", value: 0.9},
+			],
 		}
 	},
 	methods: {
@@ -544,12 +559,19 @@ Vue.component('swap-trade', {
 				.then(response => response.json())
 				.then(data => this.buy_balance = data ? data.spendable : 0);
 		},
-		submit(index, amount) {
+		submit(index, amount, min_trade, num_iter, fee_ratio) {
 			const req = {};
 			req.wallet = this.wallet;
 			req.address = this.address;
 			req.index = index;
 			req.amount = amount;
+			req.min_trade = min_trade;
+			req.num_iter = num_iter;
+			const options = {};
+			if(fee_ratio) {
+				options.fee_ratio = fee_ratio;
+			}
+			req.options = options;
 			fetch('/wapi/wallet/swap/trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -566,16 +588,18 @@ Vue.component('swap-trade', {
 				});
 			this.buy_amount = null;
 			this.sell_amount = null;
-		}
-	},
-	watch: {
-		wallet() {
-			this.update_wallet();
 		},
-		buy_amount(value) {
+		submit_buy() {
+			this.submit(1, this.buy_amount, this.buy_estimate * this.buy_slippage, this.buy_num_iter, this.buy_tx_fee);
+		},
+		submit_sell() {
+			this.submit(0, this.sell_amount, this.sell_estimate * this.sell_slippage, this.sell_num_iter, this.sell_tx_fee);
+		},
+		update_buy_estimate() {
+			this.buy_fee = null;
 			this.buy_estimate = null;
-			if(value > 0) {
-				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1&amount=' + value)
+			if(this.buy_amount > 0) {
+				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1&amount=' + this.buy_amount + '&iters=' + this.buy_num_iter)
 					.then(response => response.json())
 					.then(data => {
 						this.buy_fee = (100 * data.fee.value / (parseFloat(data.trade.value) + parseFloat(data.fee.value))).toFixed(2);
@@ -583,16 +607,36 @@ Vue.component('swap-trade', {
 					});
 			}
 		},
-		sell_amount(value) {
+		update_sell_estimate() {
+			this.sell_fee = null;
 			this.sell_estimate = null;
-			if(value > 0) {
-				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0&amount=' + value)
+			if(this.sell_amount > 0) {
+				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0&amount=' + this.sell_amount + '&iters=' + this.sell_num_iter)
 					.then(response => response.json())
 					.then(data => {
 						this.sell_fee = (100 * data.fee.value / (parseFloat(data.trade.value) + parseFloat(data.fee.value))).toFixed(2);
 						this.sell_estimate = data.trade.value;
 					});
 			}
+		}
+	},
+	watch: {
+		wallet() {
+			if(this.data) {
+				this.update_wallet();
+			}
+		},
+		buy_amount() {
+			this.update_buy_estimate();
+		},
+		buy_num_iter() {
+			this.update_buy_estimate();
+		},
+		sell_amount() {
+			this.update_sell_estimate();
+		},
+		sell_num_iter() {
+			this.update_sell_estimate();
 		}
 	},
 	created() {
@@ -641,9 +685,28 @@ Vue.component('swap-trade', {
 									</v-text-field>
 								</v-col>
 							</v-row>
+							<v-row>
+								<v-col>
+									<v-select
+										v-model="buy_num_iter"
+										:items="num_iter_items"
+										label="Trade Iterations"
+									></v-select>
+								</v-col>
+								<v-col>
+									<v-select
+										v-model="buy_slippage"
+										:items="slippage_items"
+										label="Max Slippage"
+									></v-select>
+								</v-col>
+								<v-col>
+									<tx-fee-select @update-value="value => this.buy_tx_fee = value"></tx-fee-select>
+								</v-col>
+							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="green lighten-1" @click="submit(1, buy_amount)" :disabled="!(buy_amount > 0)">{{ $t('swap.buy') }}</v-btn>
+							<v-btn color="green lighten-1" @click="submit_buy()" :disabled="!(buy_amount > 0) || !(buy_estimate > 0)">{{ $t('swap.buy') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -683,9 +746,28 @@ Vue.component('swap-trade', {
 									</v-text-field>
 								</v-col>
 							</v-row>
+							<v-row>
+								<v-col>
+									<v-select
+										v-model="sell_num_iter"
+										:items="num_iter_items"
+										label="Trade Iterations"
+									></v-select>
+								</v-col>
+								<v-col>
+									<v-select
+										v-model="sell_slippage"
+										:items="slippage_items"
+										label="Max Slippage"
+									></v-select>
+								</v-col>
+								<v-col>
+									<tx-fee-select @update-value="value => this.sell_tx_fee = value"></tx-fee-select>
+								</v-col>
+							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="red lighten-1" @click="submit(0, sell_amount)" :disabled="!(sell_amount > 0)">{{ $t('swap.sell') }}</v-btn>
+							<v-btn color="red lighten-1" @click="submit_sell()" :disabled="!(sell_amount > 0) || !(sell_estimate > 0)">{{ $t('swap.sell') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -762,9 +844,9 @@ Vue.component('swap-liquid', {
 		},
 		match() {
 			if(this.amount_0 && !this.amount_1) {
-				this.amount_1 = parseFloat((this.amount_0 * this.data.display_price).toFixed(this.data.decimals[1]));
+				this.amount_1 = parseFloat((this.amount_0 * this.data.price).toFixed(this.data.decimals[1]));
 			} else if(!this.amount_0 && this.amount_1) {
-				this.amount_0 = parseFloat((this.amount_1 / this.data.display_price).toFixed(this.data.decimals[0]));
+				this.amount_0 = parseFloat((this.amount_1 / this.data.price).toFixed(this.data.decimals[0]));
 			}
 		},
 		on_response(response, type) {

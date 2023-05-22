@@ -457,6 +457,42 @@ const Login = {
 		`
 }
 
+Vue.component('tx-fee-select', {
+	emits: [
+		"update-value"
+	],
+	data() {
+		return {
+			value: null,
+			items: [
+				{text: "1x (min fee)", value: 1024},
+				{text: "1.1x", value: 1126},
+				{text: "1.5x", value: 1536},
+				{text: "2x", value: 2048},
+				{text: "3x", value: 3072},
+				{text: "5x", value: 5120},
+				{text: "10x", value: 10240},
+				{text: "100x", value: 102400},
+			]
+		}
+	},
+	watch: {
+		value() {
+			this.$emit('update-value', this.value);
+		}
+	},
+	created() {
+		this.value = 1024;
+	},
+	template: `
+		<v-select
+			v-model="value"
+			:items="items"
+			label="TX Fee"
+		></v-select>
+	`
+})
+
 Vue.component('main-menu', {
 	methods: {
 		data() {
