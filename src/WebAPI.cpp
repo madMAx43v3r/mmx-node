@@ -1476,13 +1476,17 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							const auto token_i = context->find_currency(info.tokens[index]);
 							const auto token_k = context->find_currency(info.tokens[(index + 1) % 2]);
 							if(token_i && token_k) {
-								const auto token_k_decimals = token_k->decimals;
+								const auto decimals_k = token_k->decimals;
 								const auto amount = to_amount(value, token_i->decimals);
 								node->get_swap_trade_estimate(info.address, index, amount, num_iter,
-									[this, request_id, token_k_decimals](const std::array<uint128, 2>& ret) {
+									[this, request_id, value, decimals_k](const std::array<uint128, 2>& ret) {
 										vnx::Object out;
-										out["trade"] = to_amount_object_str(ret[0], token_k_decimals);
-										out["fee"] = to_amount_object_str(ret[1], token_k_decimals);
+										out["trade"] = to_amount_object_str(ret[0], decimals_k);
+										out["fee"] = to_amount_object_str(ret[1], decimals_k);
+										const auto fee_value = to_value(ret[1], decimals_k);
+										const auto trade_value = to_value(ret[0], decimals_k);
+										out["fee_percent"] = (100 * fee_value) / (trade_value + fee_value);
+										out["avg_price"] = trade_value / value.to_value();
 										respond(request_id, render_value(out));
 									},
 									std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
