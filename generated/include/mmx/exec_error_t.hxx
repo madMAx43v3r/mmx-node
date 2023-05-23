@@ -16,7 +16,8 @@ struct MMX_EXPORT exec_error_t {
 	static const uint32_t MAX_MESSAGE_LENGTH = 256;
 	
 	uint32_t code = 0;
-	uint32_t address = 0;
+	uint32_t address = -1;
+	uint32_t operation = -1;
 	vnx::optional<uint32_t> line;
 	std::string message;
 	
@@ -63,12 +64,13 @@ struct MMX_EXPORT exec_error_t {
 
 template<typename T>
 void exec_error_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<exec_error_t>(4);
+	_visitor.template type_begin<exec_error_t>(5);
 	_visitor.type_field("code", 0); _visitor.accept(code);
 	_visitor.type_field("address", 1); _visitor.accept(address);
-	_visitor.type_field("line", 2); _visitor.accept(line);
-	_visitor.type_field("message", 3); _visitor.accept(message);
-	_visitor.template type_end<exec_error_t>(4);
+	_visitor.type_field("operation", 2); _visitor.accept(operation);
+	_visitor.type_field("line", 3); _visitor.accept(line);
+	_visitor.type_field("message", 4); _visitor.accept(message);
+	_visitor.template type_end<exec_error_t>(5);
 }
 
 

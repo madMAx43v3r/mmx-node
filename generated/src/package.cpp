@@ -459,6 +459,7 @@
 #include <mmx/account_t.hxx>
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
+#include <mmx/error_code_e.hxx>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_error_t.hxx>
 #include <mmx/exec_result_t.hxx>
@@ -492,6 +493,7 @@
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/fixed128.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/memo_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <mmx/skey_t.hpp>
@@ -5952,6 +5954,22 @@ void type<::mmx::bls_signature_t>::create_dynamic_code(std::vector<uint16_t>& co
 	const std::vector<int> tmp = {11, 96, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
+const TypeCode* type<::mmx::error_code_e>::get_type_code() {
+	return mmx::vnx_native_type_code_error_code_e;
+}
+
+void type<::mmx::error_code_e>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::error_code_e());
+}
+
+void type<::mmx::error_code_e>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::error_code_e& value, bool special) {
+	if(!special || value.is_valid()) {
+		code.push_back(CODE_STRING);
+	} else {
+		code.push_back(CODE_UINT32);
+	}
+}
+
 const TypeCode* type<::mmx::exec_entry_t>::get_type_code() {
 	return mmx::vnx_native_type_code_exec_entry_t;
 }
@@ -6010,6 +6028,18 @@ void type<::mmx::hash_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 
 void type<::mmx::hash_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::hash_t& value, bool special) {
 	const std::vector<int> tmp = {11, 32, 1};
+	code.insert(code.end(), tmp.begin(), tmp.end());}
+
+const TypeCode* type<::mmx::memo_t>::get_type_code() {
+	return nullptr;
+}
+
+void type<::mmx::memo_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::memo_t());
+}
+
+void type<::mmx::memo_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::memo_t& value, bool special) {
+	const std::vector<int> tmp = {11, 20, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
 const TypeCode* type<::mmx::node_info_t>::get_type_code() {
@@ -6842,6 +6872,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::account_t::static_create_type_code());
 	vnx::register_type_code(::mmx::address_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::balance_t::static_create_type_code());
+	vnx::register_type_code(::mmx::error_code_e::static_create_type_code());
 	vnx::register_type_code(::mmx::exec_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::exec_error_t::static_create_type_code());
 	vnx::register_type_code(::mmx::exec_result_t::static_create_type_code());
@@ -7336,6 +7367,7 @@ const vnx::TypeCode* const vnx_native_type_code_WebAPI_shutdown_return = vnx::ge
 const vnx::TypeCode* const vnx_native_type_code_account_t = vnx::get_type_code(vnx::Hash64(0xc0c163f453729a7ull));
 const vnx::TypeCode* const vnx_native_type_code_address_info_t = vnx::get_type_code(vnx::Hash64(0xbafe22d4f9e3d761ull));
 const vnx::TypeCode* const vnx_native_type_code_balance_t = vnx::get_type_code(vnx::Hash64(0x613173c7e5ce65b4ull));
+const vnx::TypeCode* const vnx_native_type_code_error_code_e = vnx::get_type_code(vnx::Hash64(0xc3330407879f46ull));
 const vnx::TypeCode* const vnx_native_type_code_exec_entry_t = vnx::get_type_code(vnx::Hash64(0xd30282844b1862a4ull));
 const vnx::TypeCode* const vnx_native_type_code_exec_error_t = vnx::get_type_code(vnx::Hash64(0x5cd84f2d984d4bfull));
 const vnx::TypeCode* const vnx_native_type_code_exec_result_t = vnx::get_type_code(vnx::Hash64(0x18fe02e2374b039eull));

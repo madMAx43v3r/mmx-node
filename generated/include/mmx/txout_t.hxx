@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_txout_t_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/memo_t.hpp>
 #include <mmx/txio_t.hxx>
 
 
@@ -13,6 +14,7 @@ namespace mmx {
 struct MMX_EXPORT txout_t : ::mmx::txio_t {
 	
 	
+	::mmx::memo_t memo;
 	
 	typedef ::mmx::txio_t Super;
 	
@@ -56,11 +58,12 @@ struct MMX_EXPORT txout_t : ::mmx::txio_t {
 
 template<typename T>
 void txout_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<txout_t>(3);
+	_visitor.template type_begin<txout_t>(4);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.template type_end<txout_t>(3);
+	_visitor.type_field("memo", 3); _visitor.accept(memo);
+	_visitor.template type_end<txout_t>(4);
 }
 
 
