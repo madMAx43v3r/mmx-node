@@ -28,20 +28,20 @@ namespace vm {
 
 class StorageProxy;
 
-static constexpr uint64_t INSTR_COST = 100;
+static constexpr uint64_t INSTR_COST = 40;
 static constexpr uint64_t INSTR_READ_COST = 5;
 static constexpr uint64_t INSTR_DIV_128_COST = 1000;
 static constexpr uint64_t INSTR_DIV_256_COST = 10000;
 static constexpr uint64_t SEND_COST = 20000;
 static constexpr uint64_t MINT_COST = 10000;
-static constexpr uint64_t WRITE_COST = 20;
+static constexpr uint64_t WRITE_COST = 10;
 static constexpr uint64_t WRITE_BYTE_COST = 1;
 static constexpr uint64_t STOR_READ_COST = 2000;
 static constexpr uint64_t STOR_WRITE_COST = 2000;
 static constexpr uint64_t STOR_READ_BYTE_COST = 1;
 static constexpr uint64_t STOR_WRITE_BYTE_COST = 50;
 static constexpr uint64_t SHA256_BLOCK_COST = 2000;
-static constexpr uint64_t ECDSA_VERIFY_COST = 10000;
+static constexpr uint64_t ECDSA_VERIFY_COST = 2000;
 
 enum externvar_e : uint32_t {
 
