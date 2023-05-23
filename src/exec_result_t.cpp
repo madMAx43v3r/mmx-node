@@ -6,6 +6,7 @@
  */
 
 #include <mmx/exec_result_t.hxx>
+#include <mmx/error_code_e.hxx>
 #include <mmx/write_bytes.h>
 
 
@@ -38,11 +39,24 @@ std::string exec_result_t::get_error_msg() const
 {
 	if(did_fail) {
 		if(error) {
-			std::string location = "0x" + vnx::to_hex_string(error->address);
-			if(error->line) {
-				location += ", line " + std::to_string(*error->line);
+			std::string code;
+			if(error->code) {
+				const auto name = error_code_e(error_code_e::enum_t(error->code)).to_string_value();
+				if(name != std::to_string(error->code)) {
+					code = " (" + name + ")";
+				} else {
+					code = " (code " + name + ")";
+				}
 			}
-			return "exception at " + location + ": " + error->message;
+			if(error->operation < uint32_t(-1)) {
+				std::string location = "0x" + vnx::to_hex_string(error->address);
+				if(error->line) {
+					location += ", line " + std::to_string(*error->line);
+				}
+				return "[" + std::to_string(error->operation) + "] exception at " + location + ": " + error->message + code;
+			} else {
+				return error->message + code;
+			}
 		}
 		return "tx failed";
 	}

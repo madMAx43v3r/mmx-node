@@ -9,6 +9,7 @@
 #include <mmx/vm/StorageProxy.h>
 #include <mmx/vm_interface.h>
 #include <mmx/signature_t.hpp>
+#include <mmx/error_code_e.hxx>
 
 #include <iostream>
 
@@ -666,9 +667,10 @@ void Engine::step()
 	}
 }
 
-void Engine::check_gas() const
+void Engine::check_gas()
 {
 	if(total_cost > total_gas) {
+		error_code = error_code_e::TXFEE_OVERRUN;
 		throw std::runtime_error("out of gas: " + std::to_string(total_cost) + " > " + std::to_string(total_gas));
 	}
 }
@@ -1602,8 +1604,7 @@ void Engine::exec(const instr_t& instr)
 	case OP_FAIL:
 		error_code = deref_value(instr.b, instr.flags & OPFLAG_REF_B);
 		throw std::runtime_error("failed with: "
-				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A)))
-				+ (error_code ? " (code " + std::to_string(error_code) + ")" : ""));
+				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),

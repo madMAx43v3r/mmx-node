@@ -160,7 +160,7 @@ public:
 	void begin(const uint64_t instr_ptr);
 	void run();
 	void step();
-	void check_gas() const;
+	void check_gas();
 	void jump(const uint64_t instr_ptr);
 	void call(const uint64_t instr_ptr, const uint64_t stack_ptr);
 	bool ret();

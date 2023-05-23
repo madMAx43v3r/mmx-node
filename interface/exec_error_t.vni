@@ -4,7 +4,9 @@ struct exec_error_t {
 	
 	uint code;
 	
-	uint address;				// -1 = unknown
+	uint address = -1;				// (-1 = unknown)
+	
+	uint operation = -1;			// index in execute array
 	
 	optional<uint> line;
 	

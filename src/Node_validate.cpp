@@ -20,6 +20,7 @@
 #include <mmx/utils.h>
 #include <mmx/vm_interface.h>
 #include <mmx/exception.h>
+#include <mmx/error_code_e.hxx>
 
 #include <vnx/vnx.h>
 
@@ -504,19 +505,23 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 
 	const auto balance = balance_cache.find(*tx->sender, addr_t());
 	if(!balance || static_fee > *balance) {
+		error.code = error_code_e::INSUFFICIENT_FUNDS_TXFEE;
 		throw mmx::static_failure("insufficient funds for static tx fee");
 	}
 	*balance -= static_fee;
 
 	try {
 		if(tx->expires < context->height) {
-			throw std::logic_error("tx expired");
+			error.code = error_code_e::TX_EXPIRED;
+			throw std::logic_error("tx expired at height " + std::to_string(tx->expires));
 		}
+		error.address = 0;
 
 		for(const auto& in : tx->inputs)
 		{
 			const auto balance = balance_cache.find(in.address, in.contract);
 			if(!balance || in.amount > *balance) {
+				error.code = error_code_e::INSUFFICIENT_FUNDS;
 				throw std::logic_error("insufficient funds for " + in.address.to_string());
 			}
 			const auto solution = tx->get_solution(in.solution);
@@ -545,7 +550,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 
 			*balance -= in.amount;
 			amounts[in.contract] += in.amount;
+			error.address++;
 		}
+		error.address = 0;
 
 		for(const auto& out : tx->outputs)
 		{
@@ -557,10 +564,13 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				throw std::logic_error("tx over-spend");
 			}
 			value -= out.amount;
+			error.address++;
 		}
+		error.address = -1;
 
 		if(tx->deploy) {
 			if(!tx->deploy->is_valid()) {
+				error.code = error_code_e::INVALID_CONTRACT;
 				throw std::logic_error("invalid contract");
 			}
 			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
@@ -588,10 +598,12 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				execute(tx, context, exec, executable, tx->id, exec_inputs, exec_outputs, amounts, storage_cache, tx_cost, error, false);
 			}
 		}
+		error.operation = 0;
 
 		for(const auto& op : tx->get_operations())
 		{
 			if(!op || !op->is_valid()) {
+				error.code = error_code_e::INVALID_OPERATION;
 				throw std::logic_error("invalid operation");
 			}
 			const auto address = (op->address == addr_t() ? addr_t(tx->id) : op->address);
@@ -605,7 +617,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			{
 				execute(tx, context, exec, contract, address, exec_inputs, exec_outputs, amounts, storage_cache, tx_cost, error, true);
 			}
+			error.operation++;
 		}
+		error.operation = -1;
 
 		// consolidate exec inputs
 		std::vector<txin_t> new_exec_inputs;
@@ -664,11 +678,13 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		const auto dynamic_fee = tx_fee - static_fee;
 		const auto balance = balance_cache.find(*tx->sender, addr_t());
 		if(!balance || dynamic_fee > *balance) {
+			error.code = error_code_e::INSUFFICIENT_FUNDS_TXFEE;
 			throw mmx::static_failure("insufficient funds for tx fee");
 		}
 		*balance -= dynamic_fee;
 
 		if(total_fee > tx->max_fee_amount && !failed_ex) {
+			error.code = error_code_e::TXFEE_OVERRUN;
 			throw std::logic_error("tx fee > max_fee_amount: " + std::to_string(total_fee) + " > " + std::to_string(tx->max_fee_amount));
 		}
 	} catch(const mmx::static_failure& ex) {
@@ -733,13 +749,18 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		}
 		if(result->error) {
 			if(result->error->code != error.code) {
-				throw std::logic_error("error code mismatch: "
-						+ std::to_string(result->error->code) + " != " + std::to_string(error.code));
+				throw std::logic_error("error code mismatch");
 			}
 			if(result->error->address != error.address) {
-				throw std::logic_error("error address mismatch: "
-						+ std::to_string(result->error->address) + " != " + std::to_string(error.address));
+				throw std::logic_error("error address mismatch");
 			}
+			if(result->error->operation != error.operation) {
+				throw std::logic_error("error operation mismatch");
+			}
+			// Note: error line and message are not enforced by consensus
+			// Note: message length already checked in is_valid()
+		} else if(result->did_fail) {
+			throw std::logic_error("missing error information");
 		}
 	} else {
 		out = std::make_shared<exec_result_t>();
