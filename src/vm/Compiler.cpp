@@ -1566,7 +1566,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_SHA256, 0, out.address, get(recurse(args[0])));
 			}
 			else if(name == "ecdsa_verify") {
-				if(args.size() != 1) {
+				if(args.size() != 3) {
 					throw std::logic_error("expected 3 arguments for ecdsa_verify(msg, pubkey, signature)");
 				}
 				out.address = stack.new_addr();
