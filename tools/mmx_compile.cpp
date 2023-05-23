@@ -10,6 +10,7 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageRAM.h>
 #include <mmx/vm_interface.h>
+#include <mmx/secp256k1.hpp>
 
 #include <vnx/vnx.h>
 
@@ -18,6 +19,8 @@ using namespace mmx;
 
 int main(int argc, char** argv)
 {
+	mmx::secp256k1_init();
+
 	std::map<std::string, std::string> options;
 	options["f"] = "files";
 	options["o"] = "output";
@@ -60,7 +63,7 @@ int main(int argc, char** argv)
 		bin = vm::compile_files(file_names, flags);
 	}
 	catch(const std::exception& ex) {
-		std::cerr << "Compilation failed with: " << ex.what() << std::endl;
+		std::cerr << "Compilation failed with:" << std::endl << "\t" << ex.what() << std::endl;
 		vnx::close();
 		return 1;
 	}
@@ -77,6 +80,8 @@ int main(int argc, char** argv)
 	}
 
 	if(execute) {
+		const auto time_begin = vnx::get_wall_time_micros();
+
 		auto storage = std::make_shared<vm::StorageRAM>();
 		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
 		engine->total_gas = gas_limit;
@@ -88,7 +93,8 @@ int main(int argc, char** argv)
 			engine->commit();
 		} catch(const std::exception& ex) {
 			if(verbose || !assert_fail) {
-				std::cerr << "Failed at 0x" << vnx::to_hex_string(engine->error_addr) << " with: " << ex.what() << std::endl;
+				std::cerr << "Failed at 0x" << vnx::to_hex_string(engine->error_addr)
+						<< " with: " << ex.what() << " (code " << engine->error_code << ")" << std::endl;
 			}
 			ret_value = 1;
 		}
@@ -101,11 +107,16 @@ int main(int argc, char** argv)
 			}
 		}
 		if(verbose) {
+			const auto exec_time_ms = (vnx::get_wall_time_micros() - time_begin) / 1e3;
 			std::cerr << "Total Cost: " << engine->total_cost << std::endl;
+			std::cerr << "Execution Time: " << exec_time_ms << " ms" << std::endl;
+			std::cerr << "Execution Time Cost: " << exec_time_ms / (engine->total_cost / 1e6) << " ms/MMX" << std::endl;
 		}
 	}
 
 	vnx::close();
+
+	mmx::secp256k1_free();
 
 	return ret_value;
 }
