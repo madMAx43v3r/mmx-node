@@ -1290,9 +1290,12 @@ void Engine::exec(const instr_t& instr)
 		if(R == uint256_0) {
 			throw std::runtime_error("division by zero");
 		}
-		if(L >> 64) {
-			total_cost += INSTR_DIV_COST;
+		if(L.upper()) {
+			total_cost += INSTR_DIV_256_COST;
+		} else if(L.lower().upper()) {
+			total_cost += INSTR_DIV_128_COST;
 		}
+		check_gas();
 		write(dst, uint_t(L / R));
 		break;
 	}
@@ -1305,9 +1308,12 @@ void Engine::exec(const instr_t& instr)
 		if(R == uint256_0) {
 			throw std::runtime_error("division by zero");
 		}
-		if(L >> 64) {
-			total_cost += INSTR_DIV_COST;
+		if(L.upper()) {
+			total_cost += INSTR_DIV_256_COST;
+		} else if(L.lower().upper()) {
+			total_cost += INSTR_DIV_128_COST;
 		}
+		check_gas();
 		write(dst, uint_t(L % R));
 		break;
 	}
