@@ -58,6 +58,7 @@ static constexpr uint64_t ECDSA_VERIFY_COST = 20000;
 static constexpr uint64_t SEND_COST = 20000;
 static constexpr uint64_t MINT_COST = 10000;
 
+static constexpr uint64_t MAX_KEY_BYTES = 256;
 static constexpr uint64_t MAX_VALUE_BYTES = 16 * 1024;
 
 enum externvar_e : uint32_t {

@@ -146,6 +146,10 @@ uint64_t Engine::lookup(const var_t& var, const bool read_only)
 	if(var.type == TYPE_NIL) {
 		throw std::runtime_error("invalid key type");
 	}
+	const auto size = num_bytes(var);
+	if(size > MAX_KEY_BYTES) {
+		throw std::runtime_error("invalid key size: " + std::to_string(size));
+	}
 	const auto iter = key_map.find(&var);
 	if(iter != key_map.end()) {
 		return iter->second;
@@ -629,7 +633,10 @@ void Engine::init()
 	}
 	// Note: address 0 is not a valid key (used to denote "key not found")
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
-		key_map.emplace(iter->second.get(), iter->first);
+		const auto* key = iter->second.get();
+		if(num_bytes(key) < MAX_KEY_BYTES) {
+			key_map.emplace(key, iter->first);
+		}
 	}
 	have_init = true;
 }
