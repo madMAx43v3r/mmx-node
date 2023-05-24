@@ -1265,7 +1265,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				throw std::logic_error("missing right operand");
 			}
 			int flags = 0;
-			const auto op_code = opcode_e(iter->second);
+			auto op_code = opcode_e(iter->second);
 			switch(op_code) {
 				case OP_ADD:
 				case OP_SUB:
@@ -1275,20 +1275,55 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					flags |= math_flags; break;
 				default: break;
 			}
-			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
+			auto rhs = get(recurse_expr(p_node, expr_len, nullptr, rank));
+			switch(op_code) {
+				case OP_DIV:
+				case OP_MOD:
+					if(rhs < const_vars.size()) {
+						// optimize division by power of two
+						if(const auto& value = const_vars[rhs].value) {
+							if(value->type == TYPE_UINT) {
+								const auto& uint = ((const uint_t*)value.get())->value;
+								if(uint != 0 && (uint & (uint - 1)) == 0) {
+									int count = 0;
+									auto tmp = uint;
+									for(; count <= 256 && !(tmp & 1); ++count, tmp >>= 1);
+									if(count < 256) {
+										debug(false) << "Optimizing DIV / MOD by power of two: " << uint << " => " << count << std::endl;
+										switch(op_code) {
+											case OP_DIV:
+												op_code = OP_SHR;
+												rhs = get_const_address(count);
+												break;
+											case OP_MOD:
+												op_code = OP_AND;
+												rhs = get_const_address((uint256_1 << count) - 1);
+												break;
+											default:
+												break;
+										}
+									}
+								}
+							}
+						}
+					}
+					break;
+				default:
+					break;
+			}
 			if(is_assign) {
 				if(lhs->key) {
 					const auto tmp_addr = stack.new_addr();
-					code.emplace_back(op_code, flags, tmp_addr, get(*lhs), get(rhs));
+					code.emplace_back(op_code, flags, tmp_addr, get(*lhs), rhs);
 					copy(*lhs, tmp_addr);
 				} else {
 					lhs->check_value();
-					code.emplace_back(op_code, flags, lhs->address, lhs->address, get(rhs));
+					code.emplace_back(op_code, flags, lhs->address, lhs->address, rhs);
 				}
 				out = *lhs;
 			} else {
 				out.address = stack.new_addr();
-				code.emplace_back(op_code, flags, out.address, get(*lhs), get(rhs));
+				code.emplace_back(op_code, flags, out.address, get(*lhs), rhs);
 			}
 		}
 		else if(op == "=") {
