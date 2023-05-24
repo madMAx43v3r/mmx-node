@@ -193,7 +193,33 @@ if(ecdsa_verify(
 	fail("ecdsa_verify", 2);
 }
 
-
+{
+	var array = [];
+	if(size(array) != 0) {
+		fail("size(array) != 0");
+	}
+	push(array, 11);
+	if(array[0] != 11) {
+		fail("array[0] != 11");
+	}
+	if(size(array) != 1) {
+		fail("size(array) != 1");
+	}
+}
+{
+	var map = {};
+	if(map.field != null) {
+		fail("map.field != null");
+	}
+	map.field = 1337;
+	if(map.field != 1337) {
+		fail("map.field != 1337");
+	}
+	map.field++;
+	if(map.field != 1338) {
+		fail("map.field != 1338");
+	}
+}
 
 
 
