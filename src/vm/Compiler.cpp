@@ -1293,7 +1293,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 										switch(op_code) {
 											case OP_DIV:
 												op_code = OP_SHR;
-												rhs = get_const_address(count);
+												rhs = count;
 												break;
 											case OP_MOD:
 												op_code = OP_AND;
