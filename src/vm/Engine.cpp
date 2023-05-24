@@ -405,9 +405,10 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 		throw std::logic_error("already initialized");
 	}
 	auto& var = entries[std::make_pair(dst, key)];
-	if(!var && dst >= MEM_STATIC) {
+
+	if(!var && dst >= MEM_STATIC && (read_fail(dst).flags & FLAG_STORED)) {
 		var = storage->read(contract, dst, key);
-		total_cost += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
+		add_storage_read_cost(var.get());
 	}
 	return write(var, nullptr, src);
 }
