@@ -24,6 +24,7 @@
 	"min_txfee_exec": 10000,
 	"min_txfee_deploy": 50000,
 	"min_txfee_byte": 100,
+	"min_txfee_read_byte": 2,
 	"min_txfee_activate": 100000,
 	"max_block_size": 100000000,
 	"max_block_cost": 200000000,

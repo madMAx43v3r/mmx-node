@@ -12,6 +12,6 @@ class Data extends mmx.Contract {
 	
 	ulong num_bytes() const;
 	
-	ulong calc_cost(mmx.ChainParams* params) const;
+	ulong calc_cost(mmx.ChainParams* params, bool is_read) const;
 	
 }

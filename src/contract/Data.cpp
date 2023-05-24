@@ -31,9 +31,9 @@ uint64_t Data::num_bytes() const
 	return value.size();
 }
 
-uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params) const
+uint64_t Data::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
 {
-	return num_bytes() * params->min_txfee_byte;
+	return num_bytes() * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
 

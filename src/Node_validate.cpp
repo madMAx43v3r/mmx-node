@@ -84,6 +84,7 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 	auto list = std::vector<addr_t>(mutate_set.begin(), mutate_set.end());
 	while(!list.empty()) {
 		std::vector<addr_t> more;
+		// TODO: parallelize get_contract() calls
 		for(const auto& address : list) {
 			std::shared_ptr<const Contract> contract = (address == tx->id ? tx->deploy : get_contract(address));
 			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
@@ -305,6 +306,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	if(op->user) {
 		const auto contract = get_contract_for(*op->user);
+		tx_cost += contract->calc_cost(params, true);
+
 		if(std::dynamic_pointer_cast<const contract::Executable>(contract)) {
 			// do not allow to impersonate another contract
 			throw std::logic_error("invalid execution user: " + op->user->to_string());
@@ -364,7 +367,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					const std::string& method_name,
 					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const
 {
-	const auto binary = get_contract_as<contract::Binary>(executable->binary);
+	const auto binary = get_contract_as<contract::Binary>(executable->binary, &tx_cost);
 	if(!binary) {
 		throw std::logic_error("no such binary: " + executable->binary.to_string());
 	}
@@ -394,7 +397,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		}
 		const auto& address = iter->second;
 
-		const auto contract = get_contract_as<contract::Executable>(address);
+		const auto contract = get_contract_as<contract::Executable>(address, &tx_cost);
 		if(!contract) {
 			throw std::logic_error("not an executable: " + address.to_string());
 		}
@@ -540,6 +543,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(!contract) {
 				throw std::logic_error("no such contract: " + in.address.to_string());
 			}
+			if(in.flags & txin_t::IS_EXEC) {
+				tx_cost += contract->calc_cost(params, true);
+			}
 			auto spend = operation::Spend::create();
 			spend->address = in.address;
 			spend->solution = solution;
@@ -576,6 +582,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
 			{
 				const auto creator = get_contract_for(nft->creator);
+				tx_cost += params->min_txfee_exec + creator->calc_cost(params, true);
 				{
 					auto op = operation::Spend::create();
 					op->address = nft->creator;
@@ -610,6 +617,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			const auto contract = (address == tx->id ? tx->deploy : get_contract(address));
 			if(!contract) {
 				throw std::logic_error("no such contract: " + address.to_string());
+			}
+			if(address != tx->id) {
+				tx_cost += contract->calc_cost(params, true);
 			}
 			contract->validate(op, tx->id);
 

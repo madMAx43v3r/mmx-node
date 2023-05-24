@@ -21,7 +21,7 @@ hash_t Contract::calc_hash(const vnx::bool_t& full_hash) const
 	throw std::logic_error("not implemented");
 }
 
-uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params) const
+uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
 {
 	throw std::logic_error("not implemented");
 }

@@ -33,7 +33,7 @@ hash_t PubKey::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t PubKey::calc_cost(std::shared_ptr<const ChainParams> params) const {
+uint64_t PubKey::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const {
 	return 0;
 }
 

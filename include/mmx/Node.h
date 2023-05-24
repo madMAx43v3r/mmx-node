@@ -437,7 +437,7 @@ private:
 	void write_block(std::shared_ptr<const Block> block);
 
 	template<typename T>
-	std::shared_ptr<const T> get_contract_as(const addr_t& address) const;
+	std::shared_ptr<const T> get_contract_as(const addr_t& address, uint64_t* read_cost = nullptr) const;
 
 private:
 	DataBase db;
@@ -524,8 +524,12 @@ private:
 
 
 template<typename T>
-std::shared_ptr<const T> Node::get_contract_as(const addr_t& address) const {
-	return std::dynamic_pointer_cast<const T>(get_contract(address));
+std::shared_ptr<const T> Node::get_contract_as(const addr_t& address, uint64_t* read_cost) const {
+	const auto contract = get_contract(address);
+	if(read_cost) {
+		read_cost += contract->calc_cost(params, true);
+	}
+	return std::dynamic_pointer_cast<const T>(contract);
 }
 
 

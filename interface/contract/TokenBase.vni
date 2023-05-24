@@ -18,6 +18,6 @@ class TokenBase extends mmx.Contract {
 	
 	hash_t calc_hash(bool full_hash) const;
 	
-	ulong calc_cost(mmx.ChainParams* params) const;
+	ulong calc_cost(mmx.ChainParams* params, bool is_read) const;
 	
 }

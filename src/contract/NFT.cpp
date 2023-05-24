@@ -47,9 +47,19 @@ uint64_t NFT::num_bytes() const
 	return num_bytes;
 }
 
-uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params) const
+uint64_t NFT::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
 {
-	return params->min_txfee_io + num_bytes() * params->min_txfee_byte + (solution ? solution->calc_cost(params) : 0);
+	uint64_t cost = 0;
+	if(is_read) {
+		cost += num_bytes() * params->min_txfee_read_byte;
+	} else {
+		cost += params->min_txfee_io;
+		cost += num_bytes() * params->min_txfee_byte;
+	}
+	if(solution) {
+		cost += solution->calc_cost(params);
+	}
+	return cost;
 }
 
 

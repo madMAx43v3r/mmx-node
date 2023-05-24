@@ -39,7 +39,7 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
+uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
 {
 	uint64_t payload = init_method.size() + depends.size() * 32;
 	for(const auto& arg : init_args) {
@@ -48,7 +48,7 @@ uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
 	for(const auto& entry : depends) {
 		payload += entry.first.size();
 	}
-	return Super::calc_cost(params) + payload * params->min_txfee_byte;
+	return Super::calc_cost(params, is_read) + payload * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
 void Executable::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const

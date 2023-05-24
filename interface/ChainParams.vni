@@ -42,6 +42,7 @@ class ChainParams {
 	ulong min_txfee_exec = 10000;			// per contract operation
 	ulong min_txfee_deploy = 100000;		// per contract
 	ulong min_txfee_byte = 10;				// per byte of data
+	ulong min_txfee_read_byte = 1;			// per byte of data
 	ulong min_txfee_activate = 100000;		// sending to a new address
 	
 	ulong max_block_size = 10000000;		// max static size

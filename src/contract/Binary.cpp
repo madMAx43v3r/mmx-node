@@ -47,7 +47,7 @@ hash_t Binary::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t Binary::calc_cost(std::shared_ptr<const ChainParams> params) const
+uint64_t Binary::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
 {
 	uint64_t payload = fields.size() * 4 + line_info.size() * 8 + source_info.size() * 8;
 	for(const auto& entry : fields) {
@@ -61,7 +61,7 @@ uint64_t Binary::calc_cost(std::shared_ptr<const ChainParams> params) const
 	}
 	payload += name.size() + constant.size() + binary.size() + source.size() + compiler.size();
 
-	return payload * params->min_txfee_byte;
+	return payload * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
 vnx::optional<uint32_t> Binary::find_field(const std::string& name) const
