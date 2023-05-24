@@ -71,7 +71,7 @@ var_t* Engine::assign(const uint64_t dst, std::unique_ptr<var_t> value)
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
-		total_cost += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
+		add_storage_read_cost(var.get());
 	}
 	return assign(var, std::move(value));
 }
@@ -94,7 +94,7 @@ var_t* Engine::assign_entry(const uint64_t dst, const uint64_t key, std::unique_
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
-		total_cost += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
+		add_storage_read_cost(var.get());
 	}
 	return assign(var, std::move(value));
 }
@@ -150,7 +150,7 @@ uint64_t Engine::lookup(const var_t& var, const bool read_only)
 	if(iter != key_map.end()) {
 		return iter->second;
 	}
-	total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
+	add_storage_read_cost(&var);
 
 	if(auto key = storage->lookup(contract, var)) {
 		auto& value = read_fail(key);
@@ -190,7 +190,7 @@ var_t* Engine::write(const uint64_t dst, const var_t& src)
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
-		total_cost += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
+		add_storage_read_cost(var.get());
 	}
 	return write(var, &dst, src);
 }
@@ -1207,6 +1207,11 @@ uint64_t Engine::deref_value(uint32_t src, const bool flag)
 		return read_fail<uint_t>(deref_addr(src, false), TYPE_UINT).value;
 	}
 	return src;
+}
+
+void Engine::add_storage_read_cost(const var_t* var)
+{
+	total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
 }
 
 void Engine::exec(const instr_t& instr)

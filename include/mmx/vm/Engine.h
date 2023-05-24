@@ -206,6 +206,8 @@ private:
 	uint64_t deref_addr(uint32_t src, const bool flag);
 	uint64_t deref_value(uint32_t src, const bool flag);
 
+	void add_storage_read_cost(const var_t* var);
+
 private:
 	bool have_init = false;
 	std::map<uint64_t, std::unique_ptr<var_t>> memory;
