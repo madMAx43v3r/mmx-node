@@ -114,11 +114,11 @@ var_t* Engine::assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value)
 		value->ref_count = var->ref_count.load();
 		clear(var.get());
 	}
-	const auto size = num_bytes(var.get());
+	const auto size = num_bytes(value.get());
 	if(size > MAX_VALUE_BYTES) {
 		throw std::runtime_error("value size too large: " + std::to_string(size) + " bytes");
 	}
-	total_cost += WRITE_COST + size * WRITE_BYTE_COST;
+	total_cost += WRITE_COST + (size * WRITE_32_BYTE_COST) / 32;
 
 	var = std::move(value);
 	var->flags |= FLAG_DIRTY;
@@ -153,7 +153,7 @@ uint64_t Engine::lookup(const var_t& var, const bool read_only)
 	add_storage_read_cost(&var);
 
 	if(auto key = storage->lookup(contract, var)) {
-		auto& value = read_fail(key);
+		const auto& value = read_fail(key);
 		if(value.ref_count == 0) {
 			throw std::logic_error("lookup(): key with ref_count == 0");
 		}
@@ -1160,6 +1160,8 @@ void Engine::call(const uint64_t instr_ptr, const uint64_t stack_ptr)
 	if(stack_ptr >= STACK_SIZE) {
 		throw std::logic_error("stack overflow");
 	}
+	total_cost += INSTR_CALL_COST;
+
 	auto frame = get_frame();
 	frame.instr_ptr = instr_ptr;
 	frame.stack_ptr += stack_ptr;
@@ -1304,6 +1306,11 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
 		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
+		if((L >> 64) || (R >> 64)) {
+			total_cost += INSTR_MUL_256_COST;
+		} else {
+			total_cost += INSTR_MUL_128_COST;
+		}
 		const uint256_t D = L * R;
 		if((instr.flags & OPFLAG_CATCH_OVERFLOW) && (D < L && D < R)) {
 			throw std::runtime_error("integer overflow");
@@ -1324,8 +1331,9 @@ void Engine::exec(const instr_t& instr)
 			total_cost += INSTR_DIV_256_COST;
 		} else if(L.lower().upper()) {
 			total_cost += INSTR_DIV_128_COST;
+		} else {
+			total_cost += INSTR_DIV_64_COST;
 		}
-		check_gas();
 		write(dst, uint_t(L / R));
 		break;
 	}
@@ -1342,8 +1350,9 @@ void Engine::exec(const instr_t& instr)
 			total_cost += INSTR_DIV_256_COST;
 		} else if(L.lower().upper()) {
 			total_cost += INSTR_DIV_128_COST;
+		} else {
+			total_cost += INSTR_DIV_64_COST;
 		}
-		check_gas();
 		write(dst, uint_t(L % R));
 		break;
 	}

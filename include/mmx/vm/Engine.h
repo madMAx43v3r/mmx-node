@@ -28,19 +28,21 @@ namespace vm {
 
 class StorageProxy;
 
-static constexpr uint64_t INSTR_COST = 40;
+static constexpr uint64_t INSTR_COST = 20;
+static constexpr uint64_t INSTR_CALL_COST = 100;
+static constexpr uint64_t INSTR_MUL_128_COST = 50;
+static constexpr uint64_t INSTR_MUL_256_COST = 200;
+static constexpr uint64_t INSTR_DIV_64_COST = 50;
 static constexpr uint64_t INSTR_DIV_128_COST = 1000;
 static constexpr uint64_t INSTR_DIV_256_COST = 10000;
-static constexpr uint64_t SEND_COST = 20000;
-static constexpr uint64_t MINT_COST = 10000;
-static constexpr uint64_t WRITE_COST = 10;
-static constexpr uint64_t WRITE_BYTE_COST = 1;
+
+static constexpr uint64_t WRITE_COST = 50;
+static constexpr uint64_t WRITE_32_BYTE_COST = 30;
 static constexpr uint64_t STOR_READ_COST = 2000;
-static constexpr uint64_t STOR_WRITE_COST = 2000;
+static constexpr uint64_t STOR_WRITE_COST = 4000;
 static constexpr uint64_t STOR_READ_BYTE_COST = 2;
-static constexpr uint64_t STOR_WRITE_BYTE_COST = 50;
-static constexpr uint64_t SHA256_BLOCK_COST = 2000;
-static constexpr uint64_t ECDSA_VERIFY_COST = 20000;
+static constexpr uint64_t STOR_WRITE_BYTE_COST = 100;
+
 static constexpr uint64_t CONV_STRING_UINT_CHAR_COST = 200;
 static constexpr uint64_t CONV_UINT_32_STRING_COST = 400;
 static constexpr uint64_t CONV_UINT_64_STRING_COST = 800;
@@ -49,6 +51,12 @@ static constexpr uint64_t CONV_UINT_256_STRING_COST = 300000;
 static constexpr uint64_t CONV_STRING_HEX_BINARY_BYTE_COST = 10;
 static constexpr uint64_t CONV_STRING_BECH32_COST = 1000;
 static constexpr uint64_t CONV_BECH32_STRING_COST = 1000;
+
+static constexpr uint64_t SHA256_BLOCK_COST = 2000;
+static constexpr uint64_t ECDSA_VERIFY_COST = 20000;
+
+static constexpr uint64_t SEND_COST = 20000;
+static constexpr uint64_t MINT_COST = 10000;
 
 static constexpr uint64_t MAX_VALUE_BYTES = 16 * 1024;
 
