@@ -27,6 +27,7 @@ int main(int argc, char** argv)
 	options["t"] = "txmode";
 	options["v"] = "verbose";
 	options["e"] = "execute";
+	options["w"] = "commit";
 	options["g"] = "gas";
 	options["files"] = "source files";
 	options["output"] = "output name";
@@ -42,6 +43,7 @@ int main(int argc, char** argv)
 	int verbose = 0;
 	bool txmode = false;
 	bool execute = false;
+	bool commit = false;
 	bool assert_fail = false;
 	uint64_t gas_limit = -1;
 	std::string output = "binary.dat";
@@ -49,6 +51,7 @@ int main(int argc, char** argv)
 	vnx::read_config("verbose", verbose);
 	vnx::read_config("txmode", txmode);
 	vnx::read_config("execute", execute);
+	vnx::read_config("commit", commit);
 	vnx::read_config("output", output);
 	vnx::read_config("files", file_names);
 	vnx::read_config("gas", gas_limit);
@@ -90,7 +93,9 @@ int main(int argc, char** argv)
 
 		try {
 			engine->run();
-			engine->commit();
+			if(commit) {
+				engine->commit();
+			}
 		} catch(const std::exception& ex) {
 			if(verbose || !assert_fail) {
 				std::cerr << "Failed at 0x" << vnx::to_hex_string(engine->error_addr)
