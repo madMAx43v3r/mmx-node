@@ -994,8 +994,18 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 							assign(dst, binary_t::alloc(sstr, TYPE_BINARY)); break;
 						case 16: {
 							const auto value = sstr.to_string();
-							total_cost += (value.size() - (value.substr(0, 2) == "0x" ? 2 : 0)) * CONV_STRING_HEX_BINARY_BYTE_COST;
+							if(value.size() % 2) {
+								throw std::runtime_error("hex string length not multiple of 2");
+							}
+							const size_t prefix = (value.substr(0, 2) == "0x" ? 2 : 0);
+							total_cost += (value.size() - prefix) * CONV_STRING_HEX_BINARY_BYTE_COST;
 							check_gas();
+							for(size_t i = prefix; i < value.size(); ++i) {
+								const auto c = value[i];
+								if(!('0' <= c && c <= '9') && !('a' <= c && c <= 'z') && !('A' <= c && c <= 'Z')) {
+									throw std::runtime_error("invalid hex string");
+								}
+							}
 							const auto tmp = vnx::from_hex_string(value);
 							assign(dst, binary_t::alloc(tmp.data(), tmp.size(), TYPE_BINARY));
 							break;
