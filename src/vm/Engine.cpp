@@ -621,8 +621,6 @@ void Engine::init()
 	if(have_init) {
 		throw std::logic_error("already initialized");
 	}
-	total_cost += code.size() * INSTR_READ_COST;
-
 	// Note: address 0 is not a valid key (used to denote "key not found")
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
 		key_map.emplace(iter->second.get(), iter->first);
@@ -866,10 +864,10 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			}
 			break;
 		case TYPE_UINT: {
-			const auto& sint = (const uint_t&)svar;
+			const auto& value = ((const uint_t&)svar).value;
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL:
-					write(dst, var_t(sint.value != uint256_0));
+					write(dst, var_t(value != uint256_0));
 					break;
 				case CONVTYPE_UINT:
 					write(dst, svar);
@@ -885,14 +883,26 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						case CONVTYPE_BASE_16: base = 16; break;
 						default: throw std::logic_error("invalid conversion: UINT to STRING with base " + to_hex(bflags));
 					}
-					assign(dst, binary_t::alloc(sint.value.str(base)));
+					if(value >> 128) {
+						total_cost += CONV_UINT_256_STRING_COST;
+					} else if(value >> 64) {
+						total_cost += CONV_UINT_128_STRING_COST;
+					} else if(value >> 32) {
+						total_cost += CONV_UINT_64_STRING_COST;
+					} else {
+						total_cost += CONV_UINT_32_STRING_COST;
+					}
+					check_gas();
+					assign(dst, binary_t::alloc(value.str(base)));
 					break;
 				}
 				case CONVTYPE_BINARY:
-					assign(dst, binary_t::alloc(&sint.value, sizeof(sint.value)));
+					assign(dst, binary_t::alloc(&value, sizeof(value)));
 					break;
 				case CONVTYPE_ADDRESS:
-					assign(dst, binary_t::alloc(addr_t(sint.value).to_string()));
+					total_cost += CONV_BECH32_STRING_COST;
+					check_gas();
+					assign(dst, binary_t::alloc(addr_t(value).to_string()));
 					break;
 				default:
 					throw std::logic_error("invalid conversion: UINT to " + to_hex(dflags));
@@ -906,19 +916,20 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					write(dst, var_t(bool(sstr.size)));
 					break;
 				case CONVTYPE_UINT: {
-					int base = 10;
 					auto value = sstr.to_string();
+					const auto prefix_2 = value.substr(0, 2);
+
+					int base = 10;
 					switch(sflags & 0xFF) {
-						case CONVTYPE_DEFAULT: {
-							if(value.find("0x") == 0) {
+						case CONVTYPE_DEFAULT:
+							if(prefix_2 == "0x") {
 								base = 16;
-							} else if(value.find("0b") == 0) {
+							} else if(prefix_2 == "0b") {
 								base = 2;
-							} else if(value.find("mmx1") == 0) {
+							} else if(value.substr(0, 4) == "mmx1") {
 								base = 32;
 							}
 							break;
-						}
 						case CONVTYPE_BASE_2: base = 2; break;
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
@@ -928,9 +939,12 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					}
 					switch(base) {
 						case 32:
-							write(dst, uint_t(addr_t(value).to_uint256())); break;
+							total_cost += CONV_STRING_BECH32_COST;
+							check_gas();
+							write(dst, uint_t(addr_t(value).to_uint256()));
+							break;
 						default:
-							if(value.find("0x") == 0 || value.find("0b") == 0) {
+							if(prefix_2 == "0x" || prefix_2 == "0b") {
 								value = value.substr(2);
 							}
 							for(const auto c : value) {
@@ -946,6 +960,8 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 									throw std::logic_error("invalid string of base " + std::to_string(base));
 								}
 							}
+							total_cost += value.size() * CONV_STRING_UINT_CHAR_COST;
+							check_gas();
 							write(dst, uint_t(uint256_t(value.c_str(), base)));
 					}
 					break;
@@ -964,7 +980,10 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						case 0:
 							assign(dst, binary_t::alloc(sstr, TYPE_BINARY)); break;
 						case 16: {
-							const auto tmp = vnx::from_hex_string(sstr.to_string());
+							const auto value = sstr.to_string();
+							total_cost += (value.size() - (value.substr(0, 2) == "0x" ? 2 : 0)) * CONV_STRING_HEX_BINARY_BYTE_COST;
+							check_gas();
+							const auto tmp = vnx::from_hex_string(value);
 							assign(dst, binary_t::alloc(tmp.data(), tmp.size(), TYPE_BINARY));
 							break;
 						}
