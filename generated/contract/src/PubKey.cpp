@@ -191,7 +191,7 @@ std::shared_ptr<vnx::Value> PubKey::vnx_call_switch(std::shared_ptr<const vnx::V
 		case 0xb23d047adf8b2612ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_cost>(_method);
 			auto _return_value = ::mmx::Contract_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
+			_return_value->_ret_0 = calc_cost(_args->params, _args->is_read);
 			return _return_value;
 		}
 		case 0x622fcf1cba1952edull: {
@@ -227,7 +227,7 @@ std::shared_ptr<vnx::Value> PubKey::vnx_call_switch(std::shared_ptr<const vnx::V
 		case 0x502d1edce44719b3ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::PubKey_calc_cost>(_method);
 			auto _return_value = ::mmx::contract::PubKey_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
+			_return_value->_ret_0 = calc_cost(_args->params, _args->is_read);
 			return _return_value;
 		}
 		case 0x803fd5ba81d56d4cull: {

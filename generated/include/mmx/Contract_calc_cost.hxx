@@ -15,6 +15,7 @@ class MMX_EXPORT Contract_calc_cost : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::ChainParams> params;
+	vnx::bool_t is_read = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,9 +59,10 @@ public:
 
 template<typename T>
 void Contract_calc_cost::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Contract_calc_cost>(1);
+	_visitor.template type_begin<Contract_calc_cost>(2);
 	_visitor.type_field("params", 0); _visitor.accept(params);
-	_visitor.template type_end<Contract_calc_cost>(1);
+	_visitor.type_field("is_read", 1); _visitor.accept(is_read);
+	_visitor.template type_end<Contract_calc_cost>(2);
 }
 
 

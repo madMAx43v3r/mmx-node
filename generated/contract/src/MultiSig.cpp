@@ -204,7 +204,7 @@ std::shared_ptr<vnx::Value> MultiSig::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0xb23d047adf8b2612ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_cost>(_method);
 			auto _return_value = ::mmx::Contract_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
+			_return_value->_ret_0 = calc_cost(_args->params, _args->is_read);
 			return _return_value;
 		}
 		case 0x622fcf1cba1952edull: {
@@ -240,7 +240,7 @@ std::shared_ptr<vnx::Value> MultiSig::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x1f65ef156660d39full: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::MultiSig_calc_cost>(_method);
 			auto _return_value = ::mmx::contract::MultiSig_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
+			_return_value->_ret_0 = calc_cost(_args->params, _args->is_read);
 			return _return_value;
 		}
 		case 0xcf77247303f2a760ull: {

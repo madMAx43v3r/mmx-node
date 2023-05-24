@@ -15,7 +15,7 @@ namespace contract {
 
 
 const vnx::Hash64 PubKey_calc_cost::VNX_TYPE_HASH(0x502d1edce44719b3ull);
-const vnx::Hash64 PubKey_calc_cost::VNX_CODE_HASH(0xd09d04c96a569552ull);
+const vnx::Hash64 PubKey_calc_cost::VNX_CODE_HASH(0x7a3105ebf36a3f20ull);
 
 vnx::Hash64 PubKey_calc_cost::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,12 +49,14 @@ void PubKey_calc_cost::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_PubKey_calc_cost;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, params);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, is_read);
 	_visitor.type_end(*_type_code);
 }
 
 void PubKey_calc_cost::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.PubKey.calc_cost\"";
 	_out << ", \"params\": "; vnx::write(_out, params);
+	_out << ", \"is_read\": "; vnx::write(_out, is_read);
 	_out << "}";
 }
 
@@ -68,12 +70,15 @@ vnx::Object PubKey_calc_cost::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.PubKey.calc_cost";
 	_object["params"] = params;
+	_object["is_read"] = is_read;
 	return _object;
 }
 
 void PubKey_calc_cost::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "params") {
+		if(_entry.first == "is_read") {
+			_entry.second.to(is_read);
+		} else if(_entry.first == "params") {
 			_entry.second.to(params);
 		}
 	}
@@ -83,12 +88,17 @@ vnx::Variant PubKey_calc_cost::get_field(const std::string& _name) const {
 	if(_name == "params") {
 		return vnx::Variant(params);
 	}
+	if(_name == "is_read") {
+		return vnx::Variant(is_read);
+	}
 	return vnx::Variant();
 }
 
 void PubKey_calc_cost::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "params") {
 		_value.to(params);
+	} else if(_name == "is_read") {
+		_value.to(is_read);
 	}
 }
 
@@ -116,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> PubKey_calc_cost::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.PubKey.calc_cost";
 	type_code->type_hash = vnx::Hash64(0x502d1edce44719b3ull);
-	type_code->code_hash = vnx::Hash64(0xd09d04c96a569552ull);
+	type_code->code_hash = vnx::Hash64(0x7a3105ebf36a3f20ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -124,12 +134,18 @@ std::shared_ptr<vnx::TypeCode> PubKey_calc_cost::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PubKey_calc_cost>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::contract::PubKey_calc_cost_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "params";
 		field.code = {16};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.data_size = 1;
+		field.name = "is_read";
+		field.code = {31};
 	}
 	type_code->build();
 	return type_code;
@@ -172,8 +188,11 @@ void read(TypeInput& in, ::mmx::contract::PubKey_calc_cost& value, const TypeCod
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.is_read, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -196,6 +215,8 @@ void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_cost& value, cons
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(1);
+	vnx::write_value(_buf + 0, value.is_read);
 	vnx::write(out, value.params, type_code, type_code->fields[0].code.data());
 }
 

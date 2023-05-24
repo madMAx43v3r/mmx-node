@@ -36,7 +36,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, const vnx::bool_t& is_read = 0) const override;
 	virtual void validate(std::shared_ptr<const ::mmx::Operation> operation = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const override;
 	
 	static std::shared_ptr<MultiSig> create();
