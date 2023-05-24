@@ -50,6 +50,8 @@ static constexpr uint64_t CONV_STRING_HEX_BINARY_BYTE_COST = 10;
 static constexpr uint64_t CONV_STRING_BECH32_COST = 1000;
 static constexpr uint64_t CONV_BECH32_STRING_COST = 1000;
 
+static constexpr uint64_t MAX_VALUE_BYTES = 16 * 1024;
+
 enum externvar_e : uint32_t {
 
 	EXTERN_HEIGHT,

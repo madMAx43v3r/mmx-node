@@ -114,10 +114,15 @@ var_t* Engine::assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value)
 		value->ref_count = var->ref_count.load();
 		clear(var.get());
 	}
+	const auto size = num_bytes(var.get());
+	if(size > MAX_VALUE_BYTES) {
+		throw std::runtime_error("value size too large: " + std::to_string(size) + " bytes");
+	}
+	total_cost += WRITE_COST + size * WRITE_BYTE_COST;
+
 	var = std::move(value);
 	var->flags |= FLAG_DIRTY;
 	var->flags &= ~FLAG_DELETED;
-	total_cost += WRITE_COST + num_bytes(var.get()) * WRITE_BYTE_COST;
 	return var.get();
 }
 
