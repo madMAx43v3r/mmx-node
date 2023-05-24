@@ -1446,7 +1446,7 @@ Vue.component('account-send-form', {
 			source: null,
 			address: "",
 			currency: null,
-			fee_ratio: 1,	// TODO
+			fee_ratio: 1024,
 			confirmed: false,
 			result: null,
 			error: null,
@@ -1507,6 +1507,7 @@ Vue.component('account-send-form', {
 			}
 			req.dst_addr = this.target;
 			req.options = {};
+			req.options.fee_ratio = this.fee_ratio;
 			req.options.passphrase = passphrase;
 			
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
@@ -1596,11 +1597,18 @@ Vue.component('account-send-form', {
 						:disabled="!!target_">
 					</v-select>
 
-					<v-text-field 
-						v-model="target"
-						:label="$t('account_send_form.destination_address')"
-						:disabled="!!address || !!target_" placeholder="mmx1...">
-					</v-text-field>
+					<v-row>
+						<v-col>
+							<v-text-field
+								v-model="target"
+								:label="$t('account_send_form.destination_address')"
+								:disabled="!!address || !!target_" placeholder="mmx1...">
+							</v-text-field>
+						</v-col>
+						<v-col cols="2">
+							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
+						</v-col>
+					</v-row>
 
 					<v-row>
 						<v-col cols="3">
@@ -1627,7 +1635,7 @@ Vue.component('account-send-form', {
 					</v-row>
 
 					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
-					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_send_form.send') }}</v-btn>
+					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed || !target || !currency || !amount">{{ $t('account_send_form.send') }}</v-btn>
 
 				</v-card-text>
 			</v-card>

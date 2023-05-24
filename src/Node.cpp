@@ -1463,7 +1463,7 @@ std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const in
 	return result;
 }
 
-std::array<uint128, 2> Node::get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount) const
+std::array<uint128, 2> Node::get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) const
 {
 	const auto info = get_swap_info(address);
 
@@ -1471,6 +1471,7 @@ std::array<uint128, 2> Node::get_swap_trade_estimate(const addr_t& address, cons
 	args.emplace_back(i);
 	args.emplace_back(address.to_string());
 	args.emplace_back(nullptr);
+	args.emplace_back(num_iter);
 	const auto ret = call_contract(address, "trade", args, nullptr, std::make_pair(info.tokens[i], amount)).to<std::array<uint128, 2>>();
 	return {ret[0] - ret[1], ret[1]};
 }

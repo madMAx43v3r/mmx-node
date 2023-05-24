@@ -361,13 +361,14 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::cancel_offer(const uint3
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const ::mmx::addr_t& currency, const vnx::optional<uint64_t>& min_trade, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const ::mmx::addr_t& currency, const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_swap_trade::create();
 	_method->index = index;
 	_method->address = address;
 	_method->amount = amount;
 	_method->currency = currency;
 	_method->min_trade = min_trade;
+	_method->num_iter = num_iter;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_swap_trade_return>(_return_value)) {

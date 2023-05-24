@@ -70,7 +70,7 @@ protected:
 
 	std::shared_ptr<const Transaction> swap_trade(
 			const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
-			const vnx::optional<uint64_t>& min_trade, const spend_options_t& options) const override;
+			const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_add_liquid(
 			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const override;

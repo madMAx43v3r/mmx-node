@@ -871,7 +871,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x4b5a42cbf6657910ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_swap_trade>(_method);
 			auto _return_value = ::mmx::Wallet_swap_trade_return::create();
-			_return_value->_ret_0 = swap_trade(_args->index, _args->address, _args->amount, _args->currency, _args->min_trade, _args->options);
+			_return_value->_ret_0 = swap_trade(_args->index, _args->address, _args->amount, _args->currency, _args->min_trade, _args->num_iter, _args->options);
 			return _return_value;
 		}
 		case 0x800deedf12a4df74ull: {

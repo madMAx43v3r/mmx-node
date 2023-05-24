@@ -5,7 +5,7 @@ const LOCK_DURATION = 8640;	// 24 hours
 const fee_rates = [
 	1844674407370955,		// 0.0001
 	9223372036854776,		// 0.0005
-	36893488147419103,		// 0.002
+	46116860184273879,		// 0.0025
 	184467440737095516,		// 0.01
 ];
 
@@ -218,6 +218,9 @@ function switch_pool(pool_idx) public
 	if(user == null) {
 		fail("no such user", 2);
 	}
+	if(this.height < user.unlock_height) {
+		fail("liquidity still locked", 3);
+	}
 	_payout(user);
 	
 	const new_amount = [0, 0];
@@ -248,10 +251,13 @@ function get_total_balance() public const
 	return total;
 }
 
-function trade(i, address, min_amount, num_iter) public payable
+function trade(i, address, min_trade, num_iter) public payable
 {
 	if(this.deposit.currency != tokens[i]) {
 		fail("currency mismatch", 1);
+	}
+	if(num_iter < 1) {
+		fail("invalid num_iter");
 	}
 	const k = (i + 1) % 2;
 	const amount = this.deposit.amount;
@@ -300,9 +306,12 @@ function trade(i, address, min_amount, num_iter) public payable
 		}
 	}
 	
-	if(min_amount != null) {
-		if(actual_amount < min_amount) {
-			fail("minimum amount not reached", 7);
+	if(amount_left > 0) {
+		fail("incomplete trade");
+	}
+	if(min_trade != null) {
+		if(actual_amount < min_trade) {
+			fail("minimum trade amount not reached", 7);
 		}
 	}
 	if(actual_amount == 0) {

@@ -179,7 +179,7 @@ protected:
 	virtual ::mmx::swap_info_t get_swap_info(const ::mmx::addr_t& address) const = 0;
 	virtual ::mmx::swap_user_info_t get_swap_user_info(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
 	virtual std::vector<::mmx::swap_entry_t> get_swap_history(const ::mmx::addr_t& address, const int32_t& limit) const = 0;
-	virtual std::array<::mmx::uint128, 2> get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount) const = 0;
+	virtual std::array<::mmx::uint128, 2> get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) const = 0;
 	virtual std::array<::mmx::uint128, 2> get_swap_fees_earned(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
 	virtual std::array<::mmx::uint128, 2> get_swap_equivalent_liquidity(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
 	virtual std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses) const = 0;

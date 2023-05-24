@@ -1,4 +1,29 @@
 
+function(get_all_targets var)
+    set(targets)
+    get_all_targets_recursive(targets ${CMAKE_CURRENT_SOURCE_DIR})
+    set(${var} ${targets} PARENT_SCOPE)
+endfunction()
+
+macro(get_all_targets_recursive targets dir)
+    get_property(subdirectories DIRECTORY ${dir} PROPERTY SUBDIRECTORIES)
+    foreach(subdir ${subdirectories})
+        get_all_targets_recursive(${targets} ${subdir})
+    endforeach()
+
+    get_property(current_targets DIRECTORY ${dir} PROPERTY BUILDSYSTEM_TARGETS)
+    list(APPEND ${targets} ${current_targets})
+endmacro()
+
+set(NETWORK "testnet10")
+get_all_targets(all_targets)
+set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_ENVIRONMENT "MMX_HOME=$(USERPROFILE)\\.mmx\\\nMMX_DATA=$(USERPROFILE)\\.mmx\\\nNETWORK=${NETWORK}\nMMX_NETWORK=$(USERPROFILE)\\.mmx\\${NETWORK}\\\n")
+set_target_properties(mmx_node PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "-c config\\${NETWORK}\\ config\\node\\ $(USERPROFILE)\\.mmx\\config\\local\\")
+set_target_properties(mmx_timelord PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "-c config\\${NETWORK}\\ config\\timelord\\ $(USERPROFILE)\\.mmx\\config\\local\\")
+set_target_properties(mmx_wallet PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "-c config\\${NETWORK}\\ config\\wallet\\ $(USERPROFILE)\\.mmx\\config\\local\\")
+set_target_properties(mmx_farmer mmx_harvester PROPERTIES VS_DEBUGGER_COMMAND_ARGUMENTS "-c config\\${NETWORK}\\ config\\farmer\\ $(USERPROFILE)\\.mmx\\config\\local\\")
+
 
 add_custom_command(TARGET mmx PRE_BUILD
 COMMAND ${CMAKE_COMMAND} -E copy_directory

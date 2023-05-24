@@ -1368,7 +1368,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x1c3d2e0c3a431e9eull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_swap_trade_estimate>(_method);
 			auto _return_value = ::mmx::Node_get_swap_trade_estimate_return::create();
-			_return_value->_ret_0 = get_swap_trade_estimate(_args->address, _args->i, _args->amount);
+			_return_value->_ret_0 = get_swap_trade_estimate(_args->address, _args->i, _args->amount, _args->num_iter);
 			return _return_value;
 		}
 		case 0xb92b8fb7df56ec0full: {

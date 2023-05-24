@@ -554,7 +554,7 @@ Vue.component('transaction-view', {
 						<tbody>
 						<tr>
 							<td class="key-cell">{{ $t('transaction_view.height') }}</td>
-							<td colspan="2">
+							<td>
 								<template v-if="data.height">
 									<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
 								</template>
@@ -563,41 +563,39 @@ Vue.component('transaction-view', {
 						</tr>
 						<tr v-if="data.did_fail" class="red--text">
 							<td class="key-cell">{{ $t('transaction_view.message') }}</td>
-							<td colspan="2">{{data.message}}</td>
+							<td>{{data.message}}</td>
 						</tr>
 						<tr v-if="data.confirm">
 							<td class="key-cell">{{ $t('transaction_view.confirmed') }}</td>
-							<td colspan="2">{{data.confirm}}</td>
+							<td>{{data.confirm}}</td>
 						</tr>
-						<tr v-if="data.expires != 4294967295">
+						<tr v-if="data.expires < 4294967295">
 							<td class="key-cell">{{ $t('transaction_view.expires') }}</td>
-							<td colspan="2">{{data.expires}}</td>
+							<td>{{data.expires}}</td>
 						</tr>
 						<tr>
 							<td class="key-cell">{{ $t('transaction_view.note') }}</td>
-							<td colspan="2">{{data.note}}</td>
+							<td>{{data.note}}</td>
 						</tr>
 						<tr v-if="data.time">
 							<td class="key-cell">{{ $t('transaction_view.time') }}</td>
-							<td colspan="2">{{new Date(data.time * 1000).toLocaleString()}}</td>
+							<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
 						</tr>
 						<tr v-if="data.deployed">
 							<td class="key-cell">{{ $t('transaction_view.address') }}</td>
-							<td colspan="2"><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
+							<td><router-link :to="'/explore/address/' + data.address">{{data.address}}</router-link></td>
 						</tr>
 						<tr v-if="data.sender">
 							<td class="key-cell">{{ $t('transaction_view.sender') }}</td>
-							<td colspan="2"><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
+							<td><router-link :to="'/explore/address/' + data.sender">{{data.sender}}</router-link></td>
 						</tr>
 						<tr>
 							<td class="key-cell">{{ $t('transaction_view.cost') }}</td>
-							<td class="collapsing"><b>{{data.cost.value}}</b></td>
-							<td>MMX</td>
+							<td><b>{{data.cost.value}}</b> MMX</td>
 						</tr>
 						<tr>
 							<td class="key-cell">{{ $t('transaction_view.fee') }}</td>
-							<td class="collapsing"><b>{{data.fee.value}}</b></td>
-							<td>MMX</td>
+							<td><b>{{data.fee.value}}</b> MMX</td>
 						</tr>
 						</tbody>
 					</v-simple-table>

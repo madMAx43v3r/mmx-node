@@ -20,6 +20,7 @@ public:
 	uint64_t amount = 0;
 	::mmx::addr_t currency;
 	vnx::optional<uint64_t> min_trade;
+	int32_t num_iter = 20;
 	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
@@ -64,14 +65,15 @@ public:
 
 template<typename T>
 void Wallet_swap_trade::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_swap_trade>(6);
+	_visitor.template type_begin<Wallet_swap_trade>(7);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
 	_visitor.type_field("currency", 3); _visitor.accept(currency);
 	_visitor.type_field("min_trade", 4); _visitor.accept(min_trade);
-	_visitor.type_field("options", 5); _visitor.accept(options);
-	_visitor.template type_end<Wallet_swap_trade>(6);
+	_visitor.type_field("num_iter", 5); _visitor.accept(num_iter);
+	_visitor.type_field("options", 6); _visitor.accept(options);
+	_visitor.template type_end<Wallet_swap_trade>(7);
 }
 
 

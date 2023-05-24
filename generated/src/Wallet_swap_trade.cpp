@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_swap_trade::VNX_TYPE_HASH(0x4b5a42cbf6657910ull);
-const vnx::Hash64 Wallet_swap_trade::VNX_CODE_HASH(0xe53a42a88eab9249ull);
+const vnx::Hash64 Wallet_swap_trade::VNX_CODE_HASH(0xd91433c12391be63ull);
 
 vnx::Hash64 Wallet_swap_trade::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -53,7 +53,8 @@ void Wallet_swap_trade::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, amount);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, currency);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, min_trade);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, options);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, num_iter);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, options);
 	_visitor.type_end(*_type_code);
 }
 
@@ -64,6 +65,7 @@ void Wallet_swap_trade::write(std::ostream& _out) const {
 	_out << ", \"amount\": "; vnx::write(_out, amount);
 	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << ", \"min_trade\": "; vnx::write(_out, min_trade);
+	_out << ", \"num_iter\": "; vnx::write(_out, num_iter);
 	_out << ", \"options\": "; vnx::write(_out, options);
 	_out << "}";
 }
@@ -82,6 +84,7 @@ vnx::Object Wallet_swap_trade::to_object() const {
 	_object["amount"] = amount;
 	_object["currency"] = currency;
 	_object["min_trade"] = min_trade;
+	_object["num_iter"] = num_iter;
 	_object["options"] = options;
 	return _object;
 }
@@ -98,6 +101,8 @@ void Wallet_swap_trade::from_object(const vnx::Object& _object) {
 			_entry.second.to(index);
 		} else if(_entry.first == "min_trade") {
 			_entry.second.to(min_trade);
+		} else if(_entry.first == "num_iter") {
+			_entry.second.to(num_iter);
 		} else if(_entry.first == "options") {
 			_entry.second.to(options);
 		}
@@ -120,6 +125,9 @@ vnx::Variant Wallet_swap_trade::get_field(const std::string& _name) const {
 	if(_name == "min_trade") {
 		return vnx::Variant(min_trade);
 	}
+	if(_name == "num_iter") {
+		return vnx::Variant(num_iter);
+	}
 	if(_name == "options") {
 		return vnx::Variant(options);
 	}
@@ -137,6 +145,8 @@ void Wallet_swap_trade::set_field(const std::string& _name, const vnx::Variant& 
 		_value.to(currency);
 	} else if(_name == "min_trade") {
 		_value.to(min_trade);
+	} else if(_name == "num_iter") {
+		_value.to(num_iter);
 	} else if(_name == "options") {
 		_value.to(options);
 	}
@@ -166,7 +176,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_trade::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.swap_trade";
 	type_code->type_hash = vnx::Hash64(0x4b5a42cbf6657910ull);
-	type_code->code_hash = vnx::Hash64(0xe53a42a88eab9249ull);
+	type_code->code_hash = vnx::Hash64(0xd91433c12391be63ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -176,7 +186,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_trade::static_create_type_code() {
 	type_code->depends[0] = ::mmx::spend_options_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_swap_trade_return::static_get_type_code();
-	type_code->fields.resize(6);
+	type_code->fields.resize(7);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -209,6 +219,13 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_trade::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[5];
+		field.data_size = 4;
+		field.name = "num_iter";
+		field.value = vnx::to_string(20);
+		field.code = {7};
+	}
+	{
+		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "options";
 		field.code = {19, 0};
@@ -262,13 +279,16 @@ void read(TypeInput& in, ::mmx::Wallet_swap_trade& value, const TypeCode* type_c
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[5]) {
+			vnx::read_value(_buf + _field->offset, value.num_iter, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.currency, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.min_trade, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.options, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.options, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -287,13 +307,14 @@ void write(TypeOutput& out, const ::mmx::Wallet_swap_trade& value, const TypeCod
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(12);
+	char* const _buf = out.write(16);
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write_value(_buf + 4, value.amount);
+	vnx::write_value(_buf + 12, value.num_iter);
 	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.currency, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.min_trade, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.options, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.options, type_code, type_code->fields[6].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_swap_trade& value) {

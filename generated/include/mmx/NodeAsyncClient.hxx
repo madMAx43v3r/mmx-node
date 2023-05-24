@@ -286,7 +286,7 @@ public:
 			const std::function<void(const std::vector<::mmx::swap_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::swap_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_swap_trade_estimate(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& i = 0, const uint64_t& amount = 0, 
+	uint64_t get_swap_trade_estimate(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& i = 0, const uint64_t& amount = 0, const int32_t& num_iter = 20, 
 			const std::function<void(const std::array<::mmx::uint128, 2>&)>& _callback = std::function<void(const std::array<::mmx::uint128, 2>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

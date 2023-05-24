@@ -352,7 +352,7 @@ std::shared_ptr<const Transaction> Wallet::offer_withdraw(
 
 std::shared_ptr<const Transaction> Wallet::swap_trade(
 		const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
-		const vnx::optional<uint64_t>& min_trade, const spend_options_t& options) const
+		const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	const auto info = node->get_swap_info(address);
@@ -369,6 +369,7 @@ std::shared_ptr<const Transaction> Wallet::swap_trade(
 	args.emplace_back(token);
 	args.emplace_back(wallet->get_address(0).to_string());
 	args.emplace_back(min_trade);
+	args.emplace_back(num_iter);
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;

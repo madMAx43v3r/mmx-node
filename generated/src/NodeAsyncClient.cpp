@@ -1031,11 +1031,12 @@ uint64_t NodeAsyncClient::get_swap_history(const ::mmx::addr_t& address, const i
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount, const std::function<void(const std::array<::mmx::uint128, 2>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter, const std::function<void(const std::array<::mmx::uint128, 2>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_swap_trade_estimate::create();
 	_method->address = address;
 	_method->i = i;
 	_method->amount = amount;
+	_method->num_iter = num_iter;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

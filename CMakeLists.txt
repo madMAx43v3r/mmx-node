@@ -158,7 +158,6 @@ add_library(mmx_iface SHARED
 	src/wordlist_en.cpp
 	src/mnemonic.cpp
 	src/offer_data_t.cpp
-	src/swap_info_t.cpp
 	src/memo_t.cpp
 )
 

@@ -6,5 +6,5 @@ cd build
 
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="-fno-omit-frame-pointer -fmax-errors=1" $@ ..
 
-make -j8
+make -j16
 
