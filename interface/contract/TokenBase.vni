@@ -9,9 +9,9 @@ class TokenBase extends mmx.Contract {
 	
 	string symbol;
 	
-	int decimals = 6;
+	int decimals = 0;
 	
-	optional<addr_t> meta_data;
+	vnx.Variant meta_data;
 	
 	
 	bool is_valid() const;

@@ -19,6 +19,15 @@ bool Executable::is_valid() const
 	return Super::is_valid() && binary != addr_t();
 }
 
+addr_t Executable::get_external(const std::string& name) const
+{
+	auto iter = depends.find(name);
+	if(iter == depends.end()) {
+		throw std::runtime_error("no such external contract: " + name);
+	}
+	return iter->second;
+}
+
 hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;

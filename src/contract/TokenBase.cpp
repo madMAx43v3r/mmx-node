@@ -38,7 +38,7 @@ hash_t TokenBase::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t TokenBase::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
 {
-	const auto num_bytes = 4 + 8 + name.size() + symbol.size() + (meta_data ? 32 : 0);
+	const auto num_bytes = 4 + 4 * 2 + name.size() + symbol.size() + meta_data.size();
 
 	return num_bytes * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }

@@ -21,6 +21,7 @@
 #include <mmx/uint128.hpp>
 #include <mmx/balance_cache_t.h>
 #include <mmx/table.h>
+#include <mmx/tx_index_t.hxx>
 #include <mmx/multi_table.h>
 
 #include <mmx/vm/Engine.h>
@@ -340,21 +341,20 @@ private:
 					std::shared_ptr<const operation::Execute> op,
 					std::shared_ptr<const Contract> contract,
 					const addr_t& address,
-					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
-					std::unordered_map<addr_t, uint128>& amounts,
+					std::map<std::pair<addr_t, addr_t>, uint128>& exec_spend_map,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
 					std::shared_ptr<const contract::Executable> executable,
-					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
+					std::map<std::pair<addr_t, addr_t>, uint128>& exec_spend_map,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
-					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
+					exec_error_t& error, const bool is_public) const;
 
 	std::shared_ptr<const exec_result_t> validate(
 			std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context) const;
@@ -432,12 +432,16 @@ private:
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const;
 
 	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
-			int64_t* block_offset = nullptr, std::vector<std::pair<hash_t, int64_t>>* tx_offsets = nullptr) const;
+			int64_t* block_offset = nullptr, std::vector<int64_t>* tx_offsets = nullptr) const;
 
 	void write_block(std::shared_ptr<const Block> block);
 
 	template<typename T>
-	std::shared_ptr<const T> get_contract_as(const addr_t& address, uint64_t* read_cost = nullptr) const;
+	std::shared_ptr<const T> get_contract_as(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t max_cost = 0) const;
+
+	std::shared_ptr<const Contract> get_contract_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t max_cost = 0) const;
+
+	std::shared_ptr<const Contract> get_contract_for_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t max_cost = 0) const;
 
 private:
 	DataBase db;
@@ -483,7 +487,7 @@ private:
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageDB> storage;
 	hash_table<hash_t, uint32_t> hash_index;									// [block hash => height]
-	hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;					// [txid => [file offset, height]]
+	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
 	uint_table<uint32_t, std::pair<int64_t, std::pair<hash_t, hash_t>>> block_index;		// [height => [file offset, [block hash, content hash]]]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
 	hash_multi_table<bls_pubkey_t, uint32_t> farmer_block_map;					// [farmer_key => height]
@@ -524,12 +528,9 @@ private:
 
 
 template<typename T>
-std::shared_ptr<const T> Node::get_contract_as(const addr_t& address, uint64_t* read_cost) const {
-	const auto contract = get_contract(address);
-	if(read_cost) {
-		read_cost += contract->calc_cost(params, true);
-	}
-	return std::dynamic_pointer_cast<const T>(contract);
+std::shared_ptr<const T> Node::get_contract_as(const addr_t& address, uint64_t* read_cost, const uint64_t max_cost) const
+{
+	return std::dynamic_pointer_cast<const T>(get_contract_ex(address, read_cost, max_cost));
 }
 
 

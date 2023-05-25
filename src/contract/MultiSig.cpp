@@ -39,26 +39,26 @@ uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params, const vn
 	return 8 + 32 * owners.size() * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
-void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
+void MultiSig::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
 {
-	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
+	if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(solution))
 	{
 		if(num_required != 1) {
 			throw mmx::invalid_solution("num_required != 1");
 		}
-		if(owners.count(solution->pubkey.get_addr()))
+		if(owners.count(sol->pubkey.get_addr()))
 		{
-			if(!solution->signature.verify(solution->pubkey, txid)) {
+			if(!sol->signature.verify(sol->pubkey, txid)) {
 				throw mmx::invalid_solution("invalid signature");
 			}
 			return;
 		}
 		throw mmx::invalid_solution("no such owner");
 	}
-	if(auto solution = std::dynamic_pointer_cast<const solution::MultiSig>(operation->solution))
+	if(auto sol = std::dynamic_pointer_cast<const solution::MultiSig>(solution))
 	{
 		size_t count = 0;
-		for(const auto& entry : solution->solutions)
+		for(const auto& entry : sol->solutions)
 		{
 			if(owners.count(entry.first))
 			{
@@ -79,7 +79,7 @@ void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t
 		}
 		return;
 	}
-	if(operation->solution) {
+	if(solution) {
 		throw mmx::invalid_solution("invalid type");
 	} else {
 		throw mmx::invalid_solution("missing");

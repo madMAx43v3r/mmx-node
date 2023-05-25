@@ -674,6 +674,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 					{
 						auto copy = vnx::clone(tx);
 						copy->exec_result = *res;
+						copy->static_cost = copy->calc_cost(params);
 						copy->content_hash = copy->calc_hash(true);
 						tx = copy;
 					}

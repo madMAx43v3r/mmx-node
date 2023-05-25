@@ -14,11 +14,9 @@
 
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/MultiSig.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -72,16 +70,18 @@ public:
 
 	void add_contract(const addr_t& address, std::shared_ptr<const Contract> contract)
 	{
-		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(contract)) {
-			auto& currency = currency_map[address];
-			currency.is_nft = true;
-			currency.symbol = "NFT";
-		}
-		else if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
+		if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
 			auto& currency = currency_map[address];
 			currency.decimals = token->decimals;
 			currency.symbol = token->symbol;
 			currency.name = token->name;
+		}
+		if(auto exe = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+			if(exe->binary == params->nft_binary) {
+				auto& currency = currency_map[address];
+				currency.is_nft = true;
+				currency.symbol = "NFT";
+			}
 		}
 	}
 
@@ -583,9 +583,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Operation> base) {
-		if(auto value = std::dynamic_pointer_cast<const operation::Spend>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
+		if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Execute>(base)) {
 			set(render(value, context));
@@ -605,9 +603,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Contract> base) {
-		if(auto value = std::dynamic_pointer_cast<const contract::NFT>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
+		if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));

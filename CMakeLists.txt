@@ -133,7 +133,6 @@ add_library(mmx_iface SHARED
 	src/exec_error_t.cpp
 	src/vm/var_t.cpp
 	src/vm/varptr_t.cpp
-	src/contract/NFT.cpp
 	src/contract/Data.cpp
 	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
@@ -146,10 +145,8 @@ add_library(mmx_iface SHARED
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
 	src/solution/BLS_PubKey.cpp
-	src/operation/Spend.cpp
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp
-	src/operation/Vote.cpp
 	src/sha256_avx2.cpp
 	src/sha256_64_x8.cpp
 	src/sha256_ni.cpp

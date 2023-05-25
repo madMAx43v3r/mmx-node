@@ -38,24 +38,25 @@ uint64_t PubKey::calc_cost(std::shared_ptr<const ChainParams> params, const vnx:
 	return 32 * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
-vnx::optional<addr_t> PubKey::get_owner() const {
+vnx::optional<addr_t> PubKey::get_owner() const
+{
 	return address;
 }
 
-void PubKey::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
+void PubKey::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
 {
-	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
+	if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(solution))
 	{
-		const auto sol_address = solution->pubkey.get_addr();
+		const auto sol_address = sol->pubkey.get_addr();
 		if(sol_address != address) {
 			throw mmx::invalid_solution("wrong pubkey: " + sol_address.to_string() + " != " + address.to_string());
 		}
-		if(!solution->signature.verify(solution->pubkey, txid)) {
+		if(!sol->signature.verify(sol->pubkey, txid)) {
 			throw mmx::invalid_solution("invalid signature for " + address.to_string());
 		}
 		return;
 	}
-	if(operation->solution) {
+	if(solution) {
 		throw mmx::invalid_solution("invalid type");
 	} else {
 		throw mmx::invalid_solution("missing");

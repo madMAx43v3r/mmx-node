@@ -1,0 +1,11 @@
+package mmx;
+
+struct tx_index_t {
+	
+	uint height;
+	uint static_cost;
+	uint contract_read_cost;
+	
+	long file_offset;
+	
+}

@@ -26,7 +26,8 @@ uint64_t Contract::calc_cost(std::shared_ptr<const ChainParams> params, const vn
 	throw std::logic_error("not implemented");
 }
 
-vnx::optional<addr_t> Contract::get_owner() const {
+vnx::optional<addr_t> Contract::get_owner() const
+{
 	return nullptr;
 }
 
@@ -35,7 +36,7 @@ vnx::bool_t Contract::is_locked(const uint32_t& height) const
 	return !get_owner();
 }
 
-void Contract::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
+void Contract::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
 {
 	throw std::logic_error("invalid operation");
 }

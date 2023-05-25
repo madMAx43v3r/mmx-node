@@ -16,11 +16,12 @@ class Executable extends TokenBase {
 	
 	bool is_valid() const;
 	
+	addr_t get_external(string name) const;
+	
 	hash_t calc_hash(bool full_hash) const;
 	
 	ulong calc_cost(mmx.ChainParams* params, bool is_read) const;
 	
 	vnx.Variant read_field(string name) const;
-	void validate(mmx.Operation* operation, hash_t txid) const;
 	
 }

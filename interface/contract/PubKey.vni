@@ -16,7 +16,7 @@ class PubKey extends mmx.Contract {
 	
 	optional<addr_t> get_owner() const;
 	
-	void validate(mmx.Operation* operation, hash_t txid) const;
+	void validate(mmx.Solution* solution, hash_t txid) const;
 	
 	vnx.Variant read_field(string name) const;
 	

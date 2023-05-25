@@ -10,7 +10,6 @@
 
 #include <mmx/Transaction.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -314,14 +313,26 @@ public:
 
 			std::unordered_map<addr_t, uint32_t> solution_map;
 
+			auto sign_msg_ex = [tx, &options, &solution_map](const addr_t& owner) -> uint16_t
+			{
+				auto iter = solution_map.find(owner);
+				if(iter != solution_map.end()) {
+					return iter->second;
+				}
+				if(auto sol = sign_msg(owner, tx->id, options))
+				{
+					const auto index = tx->solutions.size();
+					solution_map[owner] = index;
+					tx->solutions.push_back(sol);
+					return index;
+				}
+				return -1;
+			};
+
 			// sign sender
 			if(tx->sender && tx->solutions.empty())
 			{
-				if(auto sol = sign_msg(*tx->sender, tx->id, options))
-				{
-					solution_map[*tx->sender] = tx->solutions.size();
-					tx->solutions.push_back(sol);
-				}
+				sign_msg_ex(*tx->sender);
 			}
 
 			// sign all inputs
@@ -338,26 +349,13 @@ public:
 						owner = iter->second;
 					}
 				}
-				{
-					auto iter = solution_map.find(owner);
-					if(iter != solution_map.end()) {
-						// re-use solution
-						in.solution = iter->second;
-						continue;
-					}
-				}
-				if(auto sol = sign_msg(owner, tx->id, options))
-				{
-					in.solution = tx->solutions.size();
-					solution_map[owner] = in.solution;
-					tx->solutions.push_back(sol);
-				}
+				in.solution = sign_msg_ex(owner);
 			}
 
 			// sign all operations
 			for(auto& op : tx->execute)
 			{
-				if(op->solution) {
+				if(op->solution != Operation::NO_SOLUTION) {
 					continue;
 				}
 				addr_t owner = op->address;
@@ -374,23 +372,9 @@ public:
 						owner = iter->second;
 					}
 				}
-				if(auto sol = sign_msg(owner, tx->id, options)) {
-					auto copy = vnx::clone(op);
-					copy->solution = sol;
-					op = copy;
-				}
-			}
-
-			// sign NFT mint
-			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
-			{
-				if(!nft->solution) {
-					if(auto sol = sign_msg(nft->creator, tx->id, options)) {
-						auto copy = vnx::clone(nft);
-						copy->solution = sol;
-						tx->deploy = copy;
-					}
-				}
+				auto copy = vnx::clone(op);
+				copy->solution = sign_msg_ex(owner);
+				op = copy;
 			}
 
 			// compute final content hash
@@ -423,7 +407,10 @@ public:
 		return nullptr;
 	}
 
-	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
+	void complete(
+			std::shared_ptr<Transaction> tx,
+			const spend_options_t& options = {},
+			const std::vector<std::pair<addr_t, uint64_t>>& deposit = {})
 	{
 		if(is_locked()) {
 			throw std::logic_error("wallet is locked");
@@ -457,6 +444,9 @@ public:
 				amount = 0;
 			}
 		}
+		for(const auto& entry : deposit) {
+			missing[entry.first] += entry.second;
+		}
 		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
 		for(const auto& entry : missing) {
 			if(const auto& amount = entry.second) {
@@ -471,6 +461,7 @@ public:
 			if(options.sender) {
 				tx->sender = *options.sender;
 			} else {
+				// pick a sender address
 				addr_t max_address;
 				uint128_t max_amount = 0;
 				for(const auto& entry : balance_map) {

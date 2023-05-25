@@ -15,7 +15,7 @@ class Contract {
 	
 	bool is_locked(uint height) const;
 	
-	void validate(Operation* operation, hash_t txid) const;
+	void validate(Solution* solution, hash_t txid) const;
 	
 	vnx.Variant read_field(string name) const;
 	

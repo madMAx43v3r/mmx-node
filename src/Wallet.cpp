@@ -157,6 +157,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 		if(auto owner = contract->get_owner()) {
 			options_.owner_map.emplace(src_addr, *owner);
 		} else {
+			// TODO: handle MultiSig
 			throw std::logic_error("contract has no owner");
 		}
 	}
@@ -284,14 +285,10 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	tx->note = tx_note_e::OFFER;
 	tx->deploy = offer;
 
-	auto op = operation::Deposit::create();
-	op->method = "deposit";
-	op->amount = bid_amount;
-	op->currency = bid_currency;
-	op->user = owner_addr;
-	tx->execute.push_back(op);
+	std::vector<std::pair<addr_t, uint64_t>> deposit;
+	deposit.emplace_back(bid_currency, bid_amount);
 
-	wallet->complete(tx, options);
+	wallet->complete(tx, options, deposit);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
