@@ -118,9 +118,9 @@ int main(int argc, char** argv)
 		if(verbose) {
 			const auto exec_time_ms = (vnx::get_wall_time_micros() - time_begin) / 1e3;
 			std::cerr << "-------------------------------------------" << std::endl;
-			std::cerr << "Total cost: " << engine->total_cost << std::endl;
+			std::cerr << "Total cost: " << engine->gas_used << std::endl;
 			std::cerr << "Execution time: " << exec_time_ms << " ms" << std::endl;
-			std::cerr << "Execution time cost: " << exec_time_ms / (engine->total_cost / 1e6) << " ms/MMX" << std::endl;
+			std::cerr << "Execution time cost: " << exec_time_ms / (engine->gas_used / 1e6) << " ms/MMX" << std::endl;
 		}
 	}
 
