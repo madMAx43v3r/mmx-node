@@ -1126,7 +1126,6 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 		}
 	}
 	outputs.push_back(out);
-	total_cost += SEND_COST;
 }
 
 void Engine::mint(const uint64_t address, const uint64_t amount)
@@ -1144,7 +1143,6 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 	out.amount = value;
 	out.memo = std::string("mmx.mint");
 	mint_outputs.push_back(out);
-	total_cost += MINT_COST;
 }
 
 void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs)
@@ -1161,6 +1159,8 @@ void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t st
 	if(!remote) {
 		throw std::logic_error("unable to make remote calls");
 	}
+	gas_used += INSTR_CALL_COST;
+
 	auto frame = get_frame();
 	frame.stack_ptr += stack_ptr;
 	call_stack.push_back(frame);
