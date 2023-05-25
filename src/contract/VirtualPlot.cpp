@@ -39,6 +39,14 @@ hash_t VirtualPlot::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
+uint64_t VirtualPlot::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
+{
+	const auto num_bytes = 48 + (reward_address ? 32 : 0);
+
+	return Super::calc_cost(params, is_read)
+			+ num_bytes * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
+}
+
 
 } // contract
 } // mmx

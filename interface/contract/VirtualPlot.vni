@@ -15,4 +15,6 @@ class VirtualPlot extends mmx.contract.Executable {
 	
 	hash_t calc_hash(bool full_hash) const;
 	
+	ulong calc_cost(mmx.ChainParams* params, bool is_read) const;
+	
 }

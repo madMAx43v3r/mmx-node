@@ -41,7 +41,7 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
 {
-	uint64_t payload = init_method.size() + depends.size() * 32;
+	uint64_t payload = 32 + 4 * 3 + init_method.size() + depends.size() * 32;
 	for(const auto& arg : init_args) {
 		payload += arg.size();
 	}

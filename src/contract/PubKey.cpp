@@ -33,8 +33,9 @@ hash_t PubKey::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t PubKey::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const {
-	return 0;
+uint64_t PubKey::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
+{
+	return 32 * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
 vnx::optional<addr_t> PubKey::get_owner() const {

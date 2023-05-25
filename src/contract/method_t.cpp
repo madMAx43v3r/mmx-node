@@ -13,7 +13,7 @@ namespace contract {
 
 uint64_t method_t::num_bytes() const
 {
-	uint64_t payload = 8 + name.size() + info.size() + args.size() * 4;
+	uint64_t payload = 3 + 4 + 4 * 3 + name.size() + info.size() + args.size() * 4;
 	for(const auto& entry : args) {
 		payload += entry.size();
 	}

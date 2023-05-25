@@ -36,7 +36,7 @@ hash_t MultiSig::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
 {
-	return 32 * owners.size() * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
+	return 8 + 32 * owners.size() * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
 void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const

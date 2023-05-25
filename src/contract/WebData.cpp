@@ -34,7 +34,7 @@ hash_t WebData::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t WebData::num_bytes() const
 {
-	return mime_type.size() + payload.size();
+	return 8 + mime_type.size() + payload.size();
 }
 
 uint64_t WebData::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
