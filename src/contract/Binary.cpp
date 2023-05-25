@@ -42,6 +42,7 @@ hash_t Binary::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "source_info",	source_info);
 	write_field(out, "source", 		source);
 	write_field(out, "compiler", 	compiler);
+	write_field(out, "build_flags", build_flags);
 	out.flush();
 
 	return hash_t(buffer);

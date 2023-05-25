@@ -104,7 +104,7 @@ void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
 				visitor.visit(int64_t(uint64_t(value)));
 			}
 			else {
-				visitor.visit(vnx::to_hex_string(&value, sizeof(value), false));
+				visitor.visit(vnx::to_hex_string(&value, sizeof(value), false, false));
 			}
 			break;
 		}
