@@ -51,12 +51,19 @@ uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params, const 
 	return Super::calc_cost(params, is_read) + payload * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
-void Executable::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
+vnx::Variant Executable::read_field(const std::string& name) const
 {
-	if(std::dynamic_pointer_cast<const operation::Execute>(operation)) {
-		return;
+	if(name == "binary") {
+		return vnx::Variant(binary.to_string());
 	}
-	throw std::logic_error("invalid operation");
+	if(name == "depends") {
+		std::map<std::string, std::string> tmp;
+		for(const auto& entry : depends) {
+			tmp[entry.first] = entry.second.to_string();
+		}
+		return vnx::Variant(tmp);
+	}
+	return Super::read_field(name);
 }
 
 

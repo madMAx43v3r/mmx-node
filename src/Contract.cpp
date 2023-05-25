@@ -40,5 +40,13 @@ void Contract::validate(std::shared_ptr<const Operation> operation, const hash_t
 	throw std::logic_error("invalid operation");
 }
 
+vnx::Variant Contract::read_field(const std::string& name) const
+{
+	if(name == "__type") {
+		return vnx::Variant(get_type_name());
+	}
+	return get_field(name);
+}
+
 
 } // mmx

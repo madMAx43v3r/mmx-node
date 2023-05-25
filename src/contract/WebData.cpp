@@ -42,6 +42,14 @@ uint64_t WebData::calc_cost(std::shared_ptr<const ChainParams> params, const vnx
 	return num_bytes() * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
+vnx::Variant WebData::read_field(const std::string& name) const
+{
+	if(name == "payload") {
+		return vnx::Variant(vnx::to_hex_string(payload.data(), payload.size(), false, false));
+	}
+	return Super::read_field(name);
+}
+
 
 } // contract
 } // mmx

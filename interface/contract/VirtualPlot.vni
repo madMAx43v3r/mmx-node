@@ -17,4 +17,6 @@ class VirtualPlot extends mmx.contract.Executable {
 	
 	ulong calc_cost(mmx.ChainParams* params, bool is_read) const;
 	
+	vnx.Variant read_field(string name) const;
+	
 }

@@ -62,6 +62,14 @@ void PubKey::validate(std::shared_ptr<const Operation> operation, const hash_t& 
 	}
 }
 
+vnx::Variant PubKey::read_field(const std::string& name) const
+{
+	if(name == "address") {
+		return vnx::Variant(address.to_string());
+	}
+	return Super::read_field(name);
+}
+
 
 } // contract
 } // mmx

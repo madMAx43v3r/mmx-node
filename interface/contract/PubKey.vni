@@ -18,4 +18,6 @@ class PubKey extends mmx.Contract {
 	
 	void validate(mmx.Operation* operation, hash_t txid) const;
 	
+	vnx.Variant read_field(string name) const;
+	
 }

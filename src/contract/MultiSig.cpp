@@ -86,6 +86,18 @@ void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t
 	}
 }
 
+vnx::Variant MultiSig::read_field(const std::string& name) const
+{
+	if(name == "owners") {
+		std::vector<std::string> tmp;
+		for(const auto& entry : owners) {
+			tmp.push_back(entry.to_string());
+		}
+		return vnx::Variant(tmp);
+	}
+	return Super::read_field(name);
+}
+
 
 } // contract
 } // mmx

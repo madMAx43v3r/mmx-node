@@ -47,6 +47,17 @@ uint64_t VirtualPlot::calc_cost(std::shared_ptr<const ChainParams> params, const
 			+ num_bytes * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
 }
 
+vnx::Variant VirtualPlot::read_field(const std::string& name) const
+{
+	if(name == "farmer_key") {
+		return vnx::Variant(farmer_key.to_string());
+	}
+	if(name == "reward_address") {
+		return reward_address ? vnx::Variant(reward_address->to_string()) : vnx::Variant(nullptr);
+	}
+	return Super::read_field(name);
+}
+
 
 } // contract
 } // mmx
