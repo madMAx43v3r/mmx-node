@@ -330,7 +330,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	} catch(...) {
 		failed_ex = std::current_exception();
 	}
-	tx_cost += engine->gas_used;
+	// decouple gas checking from consensus by clamping cost to limit
+	tx_cost += std::min(engine->gas_used, engine->gas_limit);
 
 	if(failed_ex) {
 		std::rethrow_exception(failed_ex);
