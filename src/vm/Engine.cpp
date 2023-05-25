@@ -118,7 +118,7 @@ var_t* Engine::assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value)
 	if(size > MAX_VALUE_BYTES) {
 		throw std::runtime_error("value size too large: " + std::to_string(size) + " bytes");
 	}
-	total_cost += WRITE_COST + (size * WRITE_32_BYTE_COST) / 32;
+	gas_used += WRITE_COST + (size * WRITE_32_BYTE_COST) / 32;
 
 	var = std::move(value);
 	var->flags |= FLAG_DIRTY;
@@ -446,10 +446,10 @@ void Engine::erase_entry(const uint64_t dst, const uint64_t key)
 	auto iter = entries.find(mapkey);
 	if(iter == entries.end() && dst >= MEM_STATIC) {
 		if(auto var = storage->read(contract, dst, key)) {
-			total_cost += num_bytes(var.get()) * STOR_READ_BYTE_COST;
+			gas_used += num_bytes(var.get()) * STOR_READ_BYTE_COST;
 			iter = entries.emplace(mapkey, std::move(var)).first;
 		}
-		total_cost += STOR_READ_COST;
+		gas_used += STOR_READ_COST;
 	}
 	if(iter != entries.end()) {
 		erase(iter->second);
@@ -480,10 +480,10 @@ void Engine::erase(const uint64_t dst)
 	}
 	else if(dst >= MEM_STATIC) {
 		if(auto var = storage->read(contract, dst)) {
-			total_cost += num_bytes(var.get()) * STOR_READ_BYTE_COST;
+			gas_used += num_bytes(var.get()) * STOR_READ_BYTE_COST;
 			erase(memory[dst] = std::move(var));
 		}
-		total_cost += STOR_READ_COST;
+		gas_used += STOR_READ_COST;
 	}
 }
 
@@ -507,7 +507,7 @@ void Engine::erase(std::unique_ptr<var_t>& var)
 	} else {
 		var->flags = FLAG_DELETED;
 	}
-	total_cost += WRITE_COST;
+	gas_used += WRITE_COST;
 }
 
 void Engine::clear(var_t* var)
@@ -548,9 +548,9 @@ var_t* Engine::read(const uint64_t src)
 		return var;
 	}
 	if(src >= MEM_STATIC) {
-		total_cost += STOR_READ_COST;
+		gas_used += STOR_READ_COST;
 		if(auto var = storage->read(contract, src)) {
-			total_cost += num_bytes(var.get()) * STOR_READ_BYTE_COST;
+			gas_used += num_bytes(var.get()) * STOR_READ_BYTE_COST;
 			return (memory[src] = std::move(var)).get();
 		}
 	}
@@ -579,9 +579,9 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 		return var;
 	}
 	if(src >= MEM_STATIC) {
-		total_cost += STOR_READ_COST;
+		gas_used += STOR_READ_COST;
 		if(auto var = storage->read(contract, src, key)) {
-			total_cost += num_bytes(var.get()) * STOR_READ_BYTE_COST;
+			gas_used += num_bytes(var.get()) * STOR_READ_BYTE_COST;
 			return (entries[mapkey] = std::move(var)).get();
 		}
 	}
@@ -680,9 +680,9 @@ void Engine::step()
 
 void Engine::check_gas()
 {
-	if(total_cost > total_gas) {
+	if(gas_used > gas_limit) {
 		error_code = error_code_e::TXFEE_OVERRUN;
-		throw std::runtime_error("out of gas: " + std::to_string(total_cost) + " > " + std::to_string(total_gas));
+		throw std::runtime_error("out of gas: " + std::to_string(gas_used) + " > " + std::to_string(gas_limit));
 	}
 }
 
@@ -830,7 +830,7 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 		case TYPE_STRING:
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
-			total_cost += ((sbin.size + 63) / 64) * SHA256_BLOCK_COST;
+			gas_used += ((sbin.size + 63) / 64) * SHA256_BLOCK_COST;
 			check_gas();
 			const hash_t hash(sbin.data(), sbin.size);
 			write(dst, binary_t::alloc(hash.data(), hash.size()));
@@ -843,7 +843,7 @@ void Engine::sha256(const uint64_t dst, const uint64_t src)
 
 void Engine::verify(const uint64_t dst, const uint64_t msg, const uint64_t pubkey, const uint64_t signature)
 {
-	total_cost += ECDSA_VERIFY_COST;
+	gas_used += ECDSA_VERIFY_COST;
 	check_gas();
 	write(dst, var_t(
 			signature_t(read_fail<binary_t>(signature, TYPE_BINARY).to_vector()).verify(
@@ -897,13 +897,13 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						default: throw std::logic_error("invalid conversion: UINT to STRING with base " + to_hex(bflags));
 					}
 					if(value >> 128) {
-						total_cost += CONV_UINT_256_STRING_COST;
+						gas_used += CONV_UINT_256_STRING_COST;
 					} else if(value >> 64) {
-						total_cost += CONV_UINT_128_STRING_COST;
+						gas_used += CONV_UINT_128_STRING_COST;
 					} else if(value >> 32) {
-						total_cost += CONV_UINT_64_STRING_COST;
+						gas_used += CONV_UINT_64_STRING_COST;
 					} else {
-						total_cost += CONV_UINT_32_STRING_COST;
+						gas_used += CONV_UINT_32_STRING_COST;
 					}
 					check_gas();
 					assign(dst, binary_t::alloc(value.str(base)));
@@ -913,7 +913,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					assign(dst, binary_t::alloc(&value, sizeof(value)));
 					break;
 				case CONVTYPE_ADDRESS:
-					total_cost += CONV_BECH32_STRING_COST;
+					gas_used += CONV_BECH32_STRING_COST;
 					check_gas();
 					assign(dst, binary_t::alloc(addr_t(value).to_string()));
 					break;
@@ -952,7 +952,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					}
 					switch(base) {
 						case 32:
-							total_cost += CONV_STRING_BECH32_COST;
+							gas_used += CONV_STRING_BECH32_COST;
 							check_gas();
 							write(dst, uint_t(addr_t(value).to_uint256()));
 							break;
@@ -973,7 +973,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 									throw std::logic_error("invalid string of base " + std::to_string(base));
 								}
 							}
-							total_cost += value.size() * CONV_STRING_UINT_CHAR_COST;
+							gas_used += value.size() * CONV_STRING_UINT_CHAR_COST;
 							check_gas();
 							write(dst, uint_t(uint256_t(value.c_str(), base)));
 					}
@@ -998,7 +998,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 								throw std::runtime_error("hex string length not multiple of 2");
 							}
 							const size_t prefix = (value.substr(0, 2) == "0x" ? 2 : 0);
-							total_cost += (value.size() - prefix) * CONV_STRING_HEX_BINARY_BYTE_COST;
+							gas_used += (value.size() - prefix) * CONV_STRING_HEX_BINARY_BYTE_COST;
 							check_gas();
 							for(size_t i = prefix; i < value.size(); ++i) {
 								const auto c = value[i];
@@ -1177,7 +1177,7 @@ void Engine::call(const uint64_t instr_ptr, const uint64_t stack_ptr)
 	if(stack_ptr >= STACK_SIZE) {
 		throw std::logic_error("stack overflow");
 	}
-	total_cost += INSTR_CALL_COST;
+	gas_used += INSTR_CALL_COST;
 
 	auto frame = get_frame();
 	frame.instr_ptr = instr_ptr;
@@ -1231,12 +1231,12 @@ uint64_t Engine::deref_value(uint32_t src, const bool flag)
 
 void Engine::add_storage_read_cost(const var_t* var)
 {
-	total_cost += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
+	gas_used += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
 }
 
 void Engine::exec(const instr_t& instr)
 {
-	total_cost += INSTR_COST;
+	gas_used += INSTR_COST;
 
 	switch(instr.code) {
 	case OP_NOP:
@@ -1324,9 +1324,9 @@ void Engine::exec(const instr_t& instr)
 		const auto& L = read_fail<uint_t>(lhs, TYPE_UINT).value;
 		const auto& R = read_fail<uint_t>(rhs, TYPE_UINT).value;
 		if((L >> 64) || (R >> 64)) {
-			total_cost += INSTR_MUL_256_COST;
+			gas_used += INSTR_MUL_256_COST;
 		} else {
-			total_cost += INSTR_MUL_128_COST;
+			gas_used += INSTR_MUL_128_COST;
 		}
 		const uint256_t D = L * R;
 		if((instr.flags & OPFLAG_CATCH_OVERFLOW) && (D < L && D < R)) {
@@ -1345,11 +1345,11 @@ void Engine::exec(const instr_t& instr)
 			throw std::runtime_error("division by zero");
 		}
 		if(L.upper()) {
-			total_cost += INSTR_DIV_256_COST;
+			gas_used += INSTR_DIV_256_COST;
 		} else if(L.lower().upper()) {
-			total_cost += INSTR_DIV_128_COST;
+			gas_used += INSTR_DIV_128_COST;
 		} else {
-			total_cost += INSTR_DIV_64_COST;
+			gas_used += INSTR_DIV_64_COST;
 		}
 		write(dst, uint_t(L / R));
 		break;
@@ -1364,11 +1364,11 @@ void Engine::exec(const instr_t& instr)
 			throw std::runtime_error("division by zero");
 		}
 		if(L.upper()) {
-			total_cost += INSTR_DIV_256_COST;
+			gas_used += INSTR_DIV_256_COST;
 		} else if(L.lower().upper()) {
-			total_cost += INSTR_DIV_128_COST;
+			gas_used += INSTR_DIV_128_COST;
 		} else {
-			total_cost += INSTR_DIV_64_COST;
+			gas_used += INSTR_DIV_64_COST;
 		}
 		write(dst, uint_t(L % R));
 		break;
@@ -1711,7 +1711,7 @@ void Engine::commit()
 		if(auto var = iter->second.get()) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first, *var);
-				total_cost += (STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST) * (var->flags & FLAG_KEY ? 2 : 1);
+				gas_used += (STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST) * (var->flags & FLAG_KEY ? 2 : 1);
 				var->flags &= ~FLAG_DIRTY;
 			}
 		}
@@ -1721,7 +1721,7 @@ void Engine::commit()
 		if(auto var = iter->second.get()) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first.first, iter->first.second, *var);
-				total_cost += STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST;
+				gas_used += STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST;
 				var->flags &= ~FLAG_DIRTY;
 			}
 		}

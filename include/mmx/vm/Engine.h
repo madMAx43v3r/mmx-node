@@ -95,8 +95,8 @@ public:
 	std::vector<txout_t> outputs;
 	std::vector<txout_t> mint_outputs;
 
-	uint64_t total_gas = 0;
-	uint64_t total_cost = 0;
+	uint64_t gas_used = 0;
+	uint64_t gas_limit = 0;
 
 	uint32_t error_code = 0;
 	uint32_t error_addr = -1;
