@@ -313,7 +313,7 @@ public:
 
 			std::unordered_map<addr_t, uint32_t> solution_map;
 
-			auto sign_msg_ex = [tx, &options, &solution_map](const addr_t& owner) -> uint16_t
+			auto sign_msg_ex = [this, tx, &options, &solution_map](const addr_t& owner) -> uint16_t
 			{
 				auto iter = solution_map.find(owner);
 				if(iter != solution_map.end()) {
