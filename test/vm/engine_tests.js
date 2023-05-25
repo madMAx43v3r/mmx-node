@@ -219,6 +219,10 @@ if(ecdsa_verify(
 	if(map.field != 1338) {
 		fail("map.field != 1338");
 	}
+	erase(map, "field");
+	if(map.field != null) {
+		fail("after erase: map.field != null");
+	}
 }
 
 
