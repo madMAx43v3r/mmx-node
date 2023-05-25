@@ -60,6 +60,7 @@ static constexpr uint64_t MINT_COST = 10000;
 
 static constexpr uint64_t MAX_KEY_BYTES = 256;
 static constexpr uint64_t MAX_VALUE_BYTES = 16 * 1024;
+static constexpr uint64_t MAX_RECURSION = 1000;
 
 enum externvar_e : uint32_t {
 

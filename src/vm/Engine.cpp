@@ -1152,6 +1152,9 @@ void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t st
 	if(stack_ptr >= STACK_SIZE) {
 		throw std::logic_error("stack overflow");
 	}
+	if(call_stack.size() >= MAX_RECURSION) {
+		throw std::logic_error("recursion overflow");
+	}
 	if(nargs > 4096) {
 		throw std::logic_error("nargs > 4096");
 	}
@@ -1176,6 +1179,9 @@ void Engine::call(const uint64_t instr_ptr, const uint64_t stack_ptr)
 {
 	if(stack_ptr >= STACK_SIZE) {
 		throw std::logic_error("stack overflow");
+	}
+	if(call_stack.size() >= MAX_RECURSION) {
+		throw std::logic_error("recursion overflow");
 	}
 	gas_used += INSTR_CALL_COST;
 
