@@ -483,6 +483,7 @@ struct address_info_t;
 struct balance_t;
 class bls_pubkey_t;
 class bls_signature_t;
+struct compile_flags_t;
 struct error_code_e;
 struct exec_entry_t;
 struct exec_error_t;
@@ -978,6 +979,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebAPI_shutdow
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_account_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_address_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_balance_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_compile_flags_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_error_code_e; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_exec_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_exec_error_t; ///< \private
@@ -1474,6 +1476,7 @@ void read(TypeInput& in, ::mmx::address_info_t& value, const TypeCode* type_code
 void read(TypeInput& in, ::mmx::balance_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::bls_pubkey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::bls_signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::compile_flags_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::error_code_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exec_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exec_error_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1972,6 +1975,7 @@ void write(TypeOutput& out, const ::mmx::address_info_t& value, const TypeCode* 
 void write(TypeOutput& out, const ::mmx::balance_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::bls_pubkey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::bls_signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::compile_flags_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::error_code_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exec_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exec_error_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2470,6 +2474,7 @@ void read(std::istream& in, ::mmx::address_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::balance_t& value); ///< \private
 void read(std::istream& in, ::mmx::bls_pubkey_t& value); ///< \private
 void read(std::istream& in, ::mmx::bls_signature_t& value); ///< \private
+void read(std::istream& in, ::mmx::compile_flags_t& value); ///< \private
 void read(std::istream& in, ::mmx::error_code_e& value); ///< \private
 void read(std::istream& in, ::mmx::exec_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::exec_error_t& value); ///< \private
@@ -2968,6 +2973,7 @@ void write(std::ostream& out, const ::mmx::address_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::balance_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::bls_pubkey_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::bls_signature_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::compile_flags_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::error_code_e& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_error_t& value); ///< \private
@@ -3466,6 +3472,7 @@ void accept(Visitor& visitor, const ::mmx::address_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::balance_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::bls_pubkey_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::bls_signature_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::compile_flags_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::error_code_e& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_error_t& value); ///< \private
@@ -14083,6 +14090,29 @@ struct type<::mmx::bls_signature_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::bls_signature_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::compile_flags_t> {
+	void read(TypeInput& in, ::mmx::compile_flags_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::compile_flags_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::compile_flags_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::compile_flags_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::compile_flags_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::compile_flags_t& value, bool special = false);
 };
 
 /// \private

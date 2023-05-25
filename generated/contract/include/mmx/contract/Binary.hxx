@@ -8,6 +8,7 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/compile_flags_t.hxx>
 #include <mmx/contract/method_t.hxx>
 #include <mmx/hash_t.hpp>
 
@@ -27,6 +28,7 @@ public:
 	std::map<uint32_t, std::pair<std::string, uint32_t>> source_info;
 	std::string source;
 	std::string compiler;
+	::mmx::compile_flags_t build_flags;
 	
 	typedef ::mmx::Contract Super;
 	
@@ -79,7 +81,7 @@ protected:
 
 template<typename T>
 void Binary::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Binary>(10);
+	_visitor.template type_begin<Binary>(11);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("name", 1); _visitor.accept(name);
 	_visitor.type_field("fields", 2); _visitor.accept(fields);
@@ -90,7 +92,8 @@ void Binary::accept_generic(T& _visitor) const {
 	_visitor.type_field("source_info", 7); _visitor.accept(source_info);
 	_visitor.type_field("source", 8); _visitor.accept(source);
 	_visitor.type_field("compiler", 9); _visitor.accept(compiler);
-	_visitor.template type_end<Binary>(10);
+	_visitor.type_field("build_flags", 10); _visitor.accept(build_flags);
+	_visitor.template type_end<Binary>(11);
 }
 
 
