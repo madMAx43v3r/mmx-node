@@ -18,12 +18,4 @@ if(concat(to_string(1), to_string(2), to_string(3)) != "123") {
 	fail("concat()", 1);
 }
 
-// for(var i = 0; i < 10; ++i) {
-// 	if(i > 3) {
-// 		break;
-// 	}
-// 	if(i > 3) {
-// 		fail("for() break");
-// 	}
-// }
 
