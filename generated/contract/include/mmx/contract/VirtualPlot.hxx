@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_contract_VirtualPlot_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/bls_pubkey_t.hpp>
 #include <mmx/contract/Executable.hxx>
@@ -35,6 +36,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, const vnx::bool_t& is_read = 0) const override;
 	
 	static std::shared_ptr<VirtualPlot> create();
 	std::shared_ptr<vnx::Value> clone() const override;

@@ -66,6 +66,8 @@
 #include <mmx/contract/TokenBase_is_valid.hxx>
 #include <mmx/contract/TokenBase_is_valid_return.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
+#include <mmx/contract/VirtualPlot_calc_cost.hxx>
+#include <mmx/contract/VirtualPlot_calc_cost_return.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash.hxx>
 #include <mmx/contract/VirtualPlot_calc_hash_return.hxx>
 #include <mmx/contract/VirtualPlot_is_valid.hxx>
@@ -868,6 +870,30 @@ void type<::mmx::contract::VirtualPlot>::create_dynamic_code(std::vector<uint16_
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::VirtualPlot_calc_cost>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VirtualPlot_calc_cost;
+}
+
+void type<::mmx::contract::VirtualPlot_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VirtualPlot_calc_cost());
+}
+
+void type<::mmx::contract::VirtualPlot_calc_cost>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_calc_cost& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::VirtualPlot_calc_cost_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VirtualPlot_calc_cost_return;
+}
+
+void type<::mmx::contract::VirtualPlot_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VirtualPlot_calc_cost_return());
+}
+
+void type<::mmx::contract::VirtualPlot_calc_cost_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_calc_cost_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::VirtualPlot_calc_hash>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_VirtualPlot_calc_hash;
 }
@@ -1110,6 +1136,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::TokenBase_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TokenBase_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_cost::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_cost_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid::static_create_type_code());
@@ -1197,6 +1225,8 @@ const vnx::TypeCode* const vnx_native_type_code_TokenBase_calc_hash_return = vnx
 const vnx::TypeCode* const vnx_native_type_code_TokenBase_is_valid = vnx::get_type_code(vnx::Hash64(0x771fd1948e99a4b4ull));
 const vnx::TypeCode* const vnx_native_type_code_TokenBase_is_valid_return = vnx::get_type_code(vnx::Hash64(0xba07e7639507bde8ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot = vnx::get_type_code(vnx::Hash64(0xab02561c615511e8ull));
+const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost = vnx::get_type_code(vnx::Hash64(0xfed2dc74861bef28ull));
+const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xac85fcecbe875f5aull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash = vnx::get_type_code(vnx::Hash64(0x2ec01712e3899bd7ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xd7d3a1e038583226ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid = vnx::get_type_code(vnx::Hash64(0xe97074988602acadull));
