@@ -540,7 +540,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["max"].name = "max";
 	function_map["clone"].name = "clone";
 	function_map["deref"].name = "deref";
-	function_map["delete"].name = "delete";
+	function_map["erase"].name = "erase";
 	function_map["typeof"].name = "typeof";
 	function_map["concat"].name = "concat";
 	function_map["send"].name = "send";
@@ -1529,9 +1529,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = stack.new_addr();
 				code.emplace_back(OP_COPY, OPFLAG_REF_B, out.address, get(recurse(args[0])));
 			}
-			else if(name == "delete") {
+			else if(name == "erase") {
 				if(args.size() != 2) {
-					throw std::logic_error("expected 2 arguments for delete(object, key)");
+					throw std::logic_error("expected 2 arguments for erase(object, key)");
 				}
 				out.address = 0;
 				code.emplace_back(OP_ERASE, OPFLAG_REF_A, get(recurse(args[0])), get(recurse(args[1])));
