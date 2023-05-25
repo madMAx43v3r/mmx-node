@@ -12,6 +12,6 @@ echo "Pass"
 
 for file in test/vm/fails/*.js; do
 	echo "Asserting fail on [$file]"
-	./build/tools/mmx_compile -e --assert-fail -f $file
+	./build/tools/mmx_compile -e -g 10000000 --assert-fail -f $file
 	echo "Pass"
 done

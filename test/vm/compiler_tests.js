@@ -1,4 +1,6 @@
 
+null;
+
 {
 	var test;
 	if(test != null) {
