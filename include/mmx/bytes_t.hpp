@@ -116,7 +116,7 @@ bool bytes_t<N>::is_zero() const {
 
 template<size_t N>
 std::string bytes_t<N>::to_string() const {
-	return vnx::to_hex_string(bytes.data(), N, false);
+	return vnx::to_hex_string(bytes.data(), N, false, false);
 }
 
 template<size_t N>

@@ -145,7 +145,7 @@ struct binary_t : var_t {
 		return std::string(c_str(), size);
 	}
 	std::string to_hex_string() const {
-		return vnx::to_hex_string(c_str(), size, false);
+		return vnx::to_hex_string(c_str(), size, false, false);
 	}
 	std::vector<uint8_t> to_vector() const {
 		std::vector<uint8_t> out(size);

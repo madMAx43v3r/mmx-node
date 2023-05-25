@@ -1034,7 +1034,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					break;
 				}
 				case CONVTYPE_STRING:
-					assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size, false)));
+					assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size, false, false)));
 					break;
 				case CONVTYPE_BINARY:
 					write(dst, svar);
