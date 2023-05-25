@@ -8,7 +8,7 @@ struct spend_options_t {
 	
 	uint fee_ratio = 1024;
 	
-	uint max_extra_cost = 1000000;
+	uint max_extra_cost = 5000000;
 	
 	optional<uint> expire_at;					// overrides delta if set
 	optional<uint> expire_delta;				// expire at current height + delta
