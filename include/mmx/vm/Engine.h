@@ -106,6 +106,7 @@ public:
 	const std::shared_ptr<StorageProxy> storage;
 
 	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote;
+	std::function<void(const addr_t& address, const std::string& field, const uint64_t dst)> read_contract;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
 
@@ -172,6 +173,7 @@ public:
 	void send(const uint64_t address, const uint64_t amount, const uint64_t currency, const uint64_t memo);
 	void mint(const uint64_t address, const uint64_t amount);
 	void rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs);
+	void cread(const uint64_t dst, const uint64_t address, const uint64_t field);
 
 	frame_t& get_frame();
 	uint64_t deref(const uint64_t src);

@@ -1170,6 +1170,16 @@ void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t st
 	ret();
 }
 
+void Engine::cread(const uint64_t dst, const uint64_t address, const uint64_t field)
+{
+	if(!read_contract) {
+		throw std::logic_error("unable to read contract fields");
+	}
+	read_contract(
+			addr_t::from_bytes(read_fail<uint_t>(address, TYPE_UINT).value),
+			read_fail<binary_t>(field, TYPE_STRING).to_string(), dst);
+}
+
 void Engine::jump(const uint64_t instr_ptr)
 {
 	get_frame().instr_ptr = instr_ptr;
@@ -1685,6 +1695,11 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
 				deref_value(instr.c, instr.flags & OPFLAG_REF_C),
 				deref_value(instr.d, instr.flags & OPFLAG_REF_D));
+		break;
+	case OP_CREAD:
+		cread(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C));
 		break;
 	default:
 		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint32_t(instr.code)));

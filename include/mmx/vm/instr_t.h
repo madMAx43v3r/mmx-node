@@ -82,8 +82,8 @@ enum opcode_e : uint8_t {
 	OP_MINT,		// address, amount
 	OP_EVENT,		// name, data
 	OP_FAIL,		// message, code
-	OP_RCALL,		// name, method, stack_ptr, nargs
-	OP_DEPOSIT,		// TODO: name, method, stack_ptr, nargs
+	OP_RCALL,		// name, method, stack_ptr, nargs (remote call)
+	OP_CREAD,		// dst, address, field (contract read)
 
 };
 
