@@ -100,7 +100,6 @@ public:
 	uint32_t error_addr = -1;
 
 	const addr_t contract;
-	const std::shared_ptr<StorageProxy> storage;
 
 	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote;
 	std::function<void(const addr_t& address, const std::string& field, const uint64_t dst)> read_contract;
@@ -215,10 +214,9 @@ private:
 	uint64_t deref_addr(uint32_t src, const bool flag);
 	uint64_t deref_value(uint32_t src, const bool flag);
 
-	void add_storage_read_cost(const var_t* var);
-
 private:
 	bool have_init = false;
+	std::shared_ptr<StorageProxy> storage;
 	std::map<uint64_t, std::unique_ptr<var_t>> memory;
 	std::map<std::pair<uint64_t, uint64_t>, std::unique_ptr<var_t>> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;

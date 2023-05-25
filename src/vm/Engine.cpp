@@ -25,13 +25,14 @@ std::string to_hex(const uint64_t addr) {
 
 Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only)
 	:	contract(contract),
-		storage(std::make_shared<StorageProxy>(backend, read_only))
+		storage(std::make_shared<StorageProxy>(this, backend, read_only))
 {
 }
 
 Engine::~Engine()
 {
 	key_map.clear();
+	storage = nullptr;
 }
 
 void Engine::addref(const uint64_t dst)
@@ -71,7 +72,6 @@ var_t* Engine::assign(const uint64_t dst, std::unique_ptr<var_t> value)
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
-		add_storage_read_cost(var.get());
 	}
 	return assign(var, std::move(value));
 }
@@ -94,7 +94,6 @@ var_t* Engine::assign_entry(const uint64_t dst, const uint64_t key, std::unique_
 	auto& var = entries[std::make_pair(dst, key)];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst, key);
-		add_storage_read_cost(var.get());
 	}
 	return assign(var, std::move(value));
 }
@@ -154,8 +153,6 @@ uint64_t Engine::lookup(const var_t& var, const bool read_only)
 	if(iter != key_map.end()) {
 		return iter->second;
 	}
-	add_storage_read_cost(&var);
-
 	if(auto key = storage->lookup(contract, var)) {
 		const auto& value = read_fail(key);
 		if(value.ref_count == 0) {
@@ -194,7 +191,6 @@ var_t* Engine::write(const uint64_t dst, const var_t& src)
 	auto& var = memory[dst];
 	if(!var && dst >= MEM_STATIC) {
 		var = storage->read(contract, dst);
-		add_storage_read_cost(var.get());
 	}
 	return write(var, &dst, src);
 }
@@ -412,7 +408,6 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 
 	if(!var && dst >= MEM_STATIC && (read_fail(dst).flags & FLAG_STORED)) {
 		var = storage->read(contract, dst, key);
-		add_storage_read_cost(var.get());
 	}
 	return write(var, nullptr, src);
 }
@@ -446,10 +441,8 @@ void Engine::erase_entry(const uint64_t dst, const uint64_t key)
 	auto iter = entries.find(mapkey);
 	if(iter == entries.end() && dst >= MEM_STATIC) {
 		if(auto var = storage->read(contract, dst, key)) {
-			gas_used += num_bytes(var.get()) * STOR_READ_BYTE_COST;
 			iter = entries.emplace(mapkey, std::move(var)).first;
 		}
-		gas_used += STOR_READ_COST;
 	}
 	if(iter != entries.end()) {
 		erase(iter->second);
@@ -480,10 +473,8 @@ void Engine::erase(const uint64_t dst)
 	}
 	else if(dst >= MEM_STATIC) {
 		if(auto var = storage->read(contract, dst)) {
-			gas_used += num_bytes(var.get()) * STOR_READ_BYTE_COST;
 			erase(memory[dst] = std::move(var));
 		}
-		gas_used += STOR_READ_COST;
 	}
 }
 
@@ -548,9 +539,7 @@ var_t* Engine::read(const uint64_t src)
 		return var;
 	}
 	if(src >= MEM_STATIC) {
-		gas_used += STOR_READ_COST;
 		if(auto var = storage->read(contract, src)) {
-			gas_used += num_bytes(var.get()) * STOR_READ_BYTE_COST;
 			return (memory[src] = std::move(var)).get();
 		}
 	}
@@ -579,9 +568,7 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 		return var;
 	}
 	if(src >= MEM_STATIC) {
-		gas_used += STOR_READ_COST;
 		if(auto var = storage->read(contract, src, key)) {
-			gas_used += num_bytes(var.get()) * STOR_READ_BYTE_COST;
 			return (entries[mapkey] = std::move(var)).get();
 		}
 	}
@@ -1245,11 +1232,6 @@ uint64_t Engine::deref_value(uint32_t src, const bool flag)
 	return src;
 }
 
-void Engine::add_storage_read_cost(const var_t* var)
-{
-	gas_used += STOR_READ_COST + num_bytes(var) * STOR_READ_BYTE_COST;
-}
-
 void Engine::exec(const instr_t& instr)
 {
 	gas_used += INSTR_COST;
@@ -1713,6 +1695,7 @@ void Engine::clear_stack(const uint64_t offset)
 		clear(iter->second.get());
 		iter = memory.erase(iter);
 	}
+	check_gas();
 }
 
 void Engine::reset()
@@ -1732,7 +1715,6 @@ void Engine::commit()
 		if(auto var = iter->second.get()) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first, *var);
-				gas_used += (STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST) * (var->flags & FLAG_KEY ? 2 : 1);
 				var->flags &= ~FLAG_DIRTY;
 			}
 		}
@@ -1742,12 +1724,11 @@ void Engine::commit()
 		if(auto var = iter->second.get()) {
 			if(var->flags & FLAG_DIRTY) {
 				storage->write(contract, iter->first.first, iter->first.second, *var);
-				gas_used += STOR_WRITE_COST + num_bytes(var) * STOR_WRITE_BYTE_COST;
 				var->flags &= ~FLAG_DIRTY;
 			}
 		}
 	}
-	check_gas();	// check at the end is fine since writing to cache only at this point
+	check_gas();
 }
 
 std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
