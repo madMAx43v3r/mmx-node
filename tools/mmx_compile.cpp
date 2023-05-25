@@ -29,6 +29,7 @@ int main(int argc, char** argv)
 	options["e"] = "execute";
 	options["w"] = "commit";
 	options["g"] = "gas";
+	options["O"] = "opt-level";
 	options["files"] = "source files";
 	options["output"] = "output name";
 	options["gas"] = "gas limit";
@@ -38,9 +39,10 @@ int main(int argc, char** argv)
 
 	vnx::init("mmx_compile", argc, argv, options);
 
-	vm::compile_flags_t flags;
+	compile_flags_t flags;
 
 	int verbose = 0;
+	int opt_level = 3;
 	bool txmode = false;
 	bool execute = false;
 	bool commit = false;
@@ -49,6 +51,7 @@ int main(int argc, char** argv)
 	std::string output = "binary.dat";
 	std::vector<std::string> file_names;
 	vnx::read_config("verbose", verbose);
+	vnx::read_config("opt-level", opt_level);
 	vnx::read_config("txmode", txmode);
 	vnx::read_config("execute", execute);
 	vnx::read_config("commit", commit);
@@ -57,7 +60,8 @@ int main(int argc, char** argv)
 	vnx::read_config("gas", gas_limit);
 	vnx::read_config("assert-fail", assert_fail);
 
-	flags.debug = verbose;
+	flags.verbose = verbose;
+	flags.opt_level = opt_level;
 
 	int ret_value = 0;
 	std::shared_ptr<const contract::Binary> bin;

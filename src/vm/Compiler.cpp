@@ -311,11 +311,9 @@ class Compiler {
 public:
 	static const std::string version;
 
-	uint8_t math_flags = OPFLAG_CATCH_OVERFLOW;
+	const compile_flags_t flags;
 
-	bool is_debug = false;
-
-	Compiler();
+	Compiler(const compile_flags_t& flags = compile_flags_t());
 
 	std::shared_ptr<const contract::Binary> compile(const std::string& source);
 
@@ -432,6 +430,8 @@ private:
 	int curr_pass = 0;
 	int curr_line = -1;
 
+	uint8_t math_flags = 0;
+
 	size_t code_offset = 0;
 	vnx::optional<node_t> curr_node;
 	vnx::optional<function_t> curr_function;
@@ -458,8 +458,13 @@ private:
 
 const std::string Compiler::version = "1.0.0";
 
-Compiler::Compiler()
+Compiler::Compiler(const compile_flags_t& flags)
+	:	flags(flags)
 {
+	if(flags.catch_overflow) {
+		math_flags |= OPFLAG_CATCH_OVERFLOW;
+	}
+
 	int rank = 0;
 	rank_map[lang::constant::name] = rank++;
 	rank_map[lang::identifier::name] = rank++;
@@ -567,6 +572,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 	binary = std::make_shared<contract::Binary>();
 	binary->source = source;
 	binary->compiler = std::string("mmx") + "-" + version;
+	binary->build_flags = flags;
 
 	parse_tree_t tree;
 	parse(tree, source);
@@ -772,7 +778,7 @@ std::string Compiler::get_namespace(const bool concat) const
 
 std::ostream& Compiler::debug(bool ident) const
 {
-	auto& out = is_debug ? std::cerr : debug_out;
+	auto& out = flags.verbose ? std::cerr : debug_out;
 	for(int i = 0; ident && i < depth; ++i) {
 		out << "  ";
 	}
@@ -1264,7 +1270,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(expr_len < 1) {
 				throw std::logic_error("missing right operand");
 			}
-			int flags = 0;
+			int op_flags = 0;
 			auto op_code = opcode_e(iter->second);
 			switch(op_code) {
 				case OP_ADD:
@@ -1272,14 +1278,15 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				case OP_MUL:
 				case OP_DIV:
 				case OP_MOD:
-					flags |= math_flags; break;
+					op_flags |= math_flags; break;
 				default: break;
 			}
 			auto rhs = get(recurse_expr(p_node, expr_len, nullptr, rank));
+
 			switch(op_code) {
 				case OP_DIV:
 				case OP_MOD:
-					if(rhs < const_vars.size()) {
+					if(rhs < const_vars.size() && flags.opt_level > 0) {
 						// optimize division by power of two
 						if(const auto& value = const_vars[rhs].value) {
 							if(value->type == TYPE_UINT) {
@@ -1314,16 +1321,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(is_assign) {
 				if(lhs->key) {
 					const auto tmp_addr = stack.new_addr();
-					code.emplace_back(op_code, flags, tmp_addr, get(*lhs), rhs);
+					code.emplace_back(op_code, op_flags, tmp_addr, get(*lhs), rhs);
 					copy(*lhs, tmp_addr);
 				} else {
 					lhs->check_value();
-					code.emplace_back(op_code, flags, lhs->address, lhs->address, rhs);
+					code.emplace_back(op_code, op_flags, lhs->address, lhs->address, rhs);
 				}
 				out = *lhs;
 			} else {
 				out.address = stack.new_addr();
-				code.emplace_back(op_code, flags, out.address, get(*lhs), rhs);
+				code.emplace_back(op_code, op_flags, out.address, get(*lhs), rhs);
 			}
 		}
 		else if(op == "=") {
@@ -1853,8 +1860,7 @@ std::shared_ptr<const contract::Binary> compile(const std::string& source, const
 //			lexy::string_input<lexy::utf8_encoding>(source), {lexy::visualize_fancy});
 //#endif // _WIN32
 
-	Compiler compiler;
-	compiler.is_debug = flags.debug;
+	Compiler compiler(flags);
 	return compiler.compile(source);
 }
 
