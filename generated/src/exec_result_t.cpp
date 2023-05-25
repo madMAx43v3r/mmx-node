@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/exec_result_t.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/exec_error_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/txin_t.hxx>

@@ -13,6 +13,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_index_t.hxx>
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/txout_t.hxx>
@@ -70,6 +71,7 @@ public:
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
 	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_operations() const;
 	virtual std::map<::mmx::addr_t, std::pair<::mmx::uint128, ::mmx::uint128>> get_balance() const;
+	virtual ::mmx::tx_index_t get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, const uint32_t& height = 0, const int64_t& file_offset = 0) const;
 	
 	static std::shared_ptr<Transaction> create();
 	std::shared_ptr<vnx::Value> clone() const override;

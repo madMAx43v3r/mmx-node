@@ -14,6 +14,8 @@
 #include <mmx/Contract_is_locked_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
+#include <mmx/Contract_read_field.hxx>
+#include <mmx/Contract_read_field_return.hxx>
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
 #include <mmx/addr_t.hpp>
@@ -23,10 +25,12 @@
 #include <mmx/contract/Executable_calc_cost_return.hxx>
 #include <mmx/contract/Executable_calc_hash.hxx>
 #include <mmx/contract/Executable_calc_hash_return.hxx>
+#include <mmx/contract/Executable_get_external.hxx>
+#include <mmx/contract/Executable_get_external_return.hxx>
 #include <mmx/contract/Executable_is_valid.hxx>
 #include <mmx/contract/Executable_is_valid_return.hxx>
-#include <mmx/contract/Executable_validate.hxx>
-#include <mmx/contract/Executable_validate_return.hxx>
+#include <mmx/contract/Executable_read_field.hxx>
+#include <mmx/contract/Executable_read_field_return.hxx>
 #include <mmx/contract/TokenBase_calc_cost.hxx>
 #include <mmx/contract/TokenBase_calc_cost_return.hxx>
 #include <mmx/contract/TokenBase_calc_hash.hxx>
@@ -39,7 +43,10 @@
 #include <mmx/contract/VirtualPlot_calc_hash_return.hxx>
 #include <mmx/contract/VirtualPlot_is_valid.hxx>
 #include <mmx/contract/VirtualPlot_is_valid_return.hxx>
+#include <mmx/contract/VirtualPlot_read_field.hxx>
+#include <mmx/contract/VirtualPlot_read_field_return.hxx>
 #include <mmx/hash_t.hpp>
+#include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
 
@@ -49,7 +56,7 @@ namespace contract {
 
 
 const vnx::Hash64 VirtualPlot::VNX_TYPE_HASH(0xab02561c615511e8ull);
-const vnx::Hash64 VirtualPlot::VNX_CODE_HASH(0x7fc8da8af298fe1full);
+const vnx::Hash64 VirtualPlot::VNX_CODE_HASH(0x4ac895e98862de35ull);
 
 vnx::Hash64 VirtualPlot::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -250,7 +257,7 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.VirtualPlot";
 	type_code->type_hash = vnx::Hash64(0xab02561c615511e8ull);
-	type_code->code_hash = vnx::Hash64(0x7fc8da8af298fe1full);
+	type_code->code_hash = vnx::Hash64(0x4ac895e98862de35ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::VirtualPlot);
@@ -259,23 +266,26 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 	type_code->parents[1] = ::mmx::contract::TokenBase::static_get_type_code();
 	type_code->parents[2] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<VirtualPlot>(); };
-	type_code->methods.resize(16);
+	type_code->methods.resize(19);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_owner::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_is_locked::static_get_type_code();
 	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[6] = ::mmx::contract::Executable_calc_cost::static_get_type_code();
-	type_code->methods[7] = ::mmx::contract::Executable_calc_hash::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::Executable_is_valid::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::Executable_validate::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::VirtualPlot_calc_cost::static_get_type_code();
-	type_code->methods[14] = ::mmx::contract::VirtualPlot_calc_hash::static_get_type_code();
-	type_code->methods[15] = ::mmx::contract::VirtualPlot_is_valid::static_get_type_code();
+	type_code->methods[5] = ::mmx::Contract_read_field::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[7] = ::mmx::contract::Executable_calc_cost::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::Executable_calc_hash::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::Executable_get_external::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::Executable_is_valid::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::Executable_read_field::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::VirtualPlot_calc_cost::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::VirtualPlot_calc_hash::static_get_type_code();
+	type_code->methods[17] = ::mmx::contract::VirtualPlot_is_valid::static_get_type_code();
+	type_code->methods[18] = ::mmx::contract::VirtualPlot_read_field::static_get_type_code();
 	type_code->fields.resize(11);
 	{
 		auto& field = type_code->fields[0];
@@ -299,14 +309,14 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 		auto& field = type_code->fields[3];
 		field.data_size = 4;
 		field.name = "decimals";
-		field.value = vnx::to_string(6);
+		field.value = vnx::to_string(0);
 		field.code = {7};
 	}
 	{
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "meta_data";
-		field.code = {33, 11, 32, 1};
+		field.code = {17};
 	}
 	{
 		auto& field = type_code->fields[5];
@@ -381,10 +391,16 @@ std::shared_ptr<vnx::Value> VirtualPlot::vnx_call_switch(std::shared_ptr<const v
 			_return_value->_ret_0 = is_valid();
 			return _return_value;
 		}
+		case 0xeff036bd3bb1c0ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Contract_read_field>(_method);
+			auto _return_value = ::mmx::Contract_read_field_return::create();
+			_return_value->_ret_0 = read_field(_args->name);
+			return _return_value;
+		}
 		case 0xc2126a44901c8d52ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
 			auto _return_value = ::mmx::Contract_validate_return::create();
-			validate(_args->operation, _args->txid);
+			validate(_args->solution, _args->txid);
 			return _return_value;
 		}
 		case 0x5637ec4f54b3d1baull: {
@@ -399,16 +415,22 @@ std::shared_ptr<vnx::Value> VirtualPlot::vnx_call_switch(std::shared_ptr<const v
 			_return_value->_ret_0 = calc_hash(_args->full_hash);
 			return _return_value;
 		}
+		case 0xa01782afd210c138ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_get_external>(_method);
+			auto _return_value = ::mmx::contract::Executable_get_external_return::create();
+			_return_value->_ret_0 = get_external(_args->name);
+			return _return_value;
+		}
 		case 0xb8eff28f88909a73ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_is_valid>(_method);
 			auto _return_value = ::mmx::contract::Executable_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
 			return _return_value;
 		}
-		case 0x9950617982fe2536ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_validate>(_method);
-			auto _return_value = ::mmx::contract::Executable_validate_return::create();
-			validate(_args->operation, _args->txid);
+		case 0xc5f16832024ff681ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_read_field>(_method);
+			auto _return_value = ::mmx::contract::Executable_read_field_return::create();
+			_return_value->_ret_0 = read_field(_args->name);
 			return _return_value;
 		}
 		case 0xc758d95e2799f160ull: {
@@ -445,6 +467,12 @@ std::shared_ptr<vnx::Value> VirtualPlot::vnx_call_switch(std::shared_ptr<const v
 			auto _args = std::static_pointer_cast<const ::mmx::contract::VirtualPlot_is_valid>(_method);
 			auto _return_value = ::mmx::contract::VirtualPlot_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0x852a4df8176997efull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::VirtualPlot_read_field>(_method);
+			auto _return_value = ::mmx::contract::VirtualPlot_read_field_return::create();
+			_return_value->_ret_0 = read_field(_args->name);
 			return _return_value;
 		}
 	}

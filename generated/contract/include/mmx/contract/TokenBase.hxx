@@ -9,6 +9,7 @@
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <vnx/Variant.hpp>
 
 
 namespace mmx {
@@ -19,8 +20,8 @@ public:
 	
 	std::string name;
 	std::string symbol;
-	int32_t decimals = 6;
-	vnx::optional<::mmx::addr_t> meta_data;
+	int32_t decimals = 0;
+	::vnx::Variant meta_data;
 	
 	typedef ::mmx::Contract Super;
 	

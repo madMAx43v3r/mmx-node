@@ -14,6 +14,8 @@
 #include <mmx/Contract_is_locked_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
+#include <mmx/Contract_read_field.hxx>
+#include <mmx/Contract_read_field_return.hxx>
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
 #include <mmx/Solution.hxx>
@@ -165,13 +167,14 @@ std::shared_ptr<vnx::TypeCode> Identity::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Identity>(); };
-	type_code->methods.resize(6);
+	type_code->methods.resize(7);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_owner::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_is_locked::static_get_type_code();
 	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[5] = ::mmx::Contract_read_field::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_validate::static_get_type_code();
 	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
@@ -233,10 +236,16 @@ std::shared_ptr<vnx::Value> Identity::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = is_valid();
 			return _return_value;
 		}
+		case 0xeff036bd3bb1c0ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Contract_read_field>(_method);
+			auto _return_value = ::mmx::Contract_read_field_return::create();
+			_return_value->_ret_0 = read_field(_args->name);
+			return _return_value;
+		}
 		case 0xc2126a44901c8d52ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
 			auto _return_value = ::mmx::Contract_validate_return::create();
-			validate(_args->operation, _args->txid);
+			validate(_args->solution, _args->txid);
 			return _return_value;
 		}
 	}

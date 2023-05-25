@@ -61,6 +61,8 @@ class Contract_is_locked;
 class Contract_is_locked_return;
 class Contract_is_valid;
 class Contract_is_valid_return;
+class Contract_read_field;
+class Contract_read_field_return;
 class Contract_validate;
 class Contract_validate_return;
 class FarmInfo;
@@ -349,6 +351,8 @@ class Transaction_get_outputs;
 class Transaction_get_outputs_return;
 class Transaction_get_solution;
 class Transaction_get_solution_return;
+class Transaction_get_tx_index;
+class Transaction_get_tx_index_return;
 class Transaction_is_signed;
 class Transaction_is_signed_return;
 class Transaction_is_valid;
@@ -508,6 +512,7 @@ struct swap_user_info_t;
 struct time_segment_t;
 struct trade_entry_t;
 struct tx_entry_t;
+struct tx_index_t;
 class tx_info_t;
 struct tx_log_entry_t;
 struct tx_note_e;
@@ -560,6 +565,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_lo
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_locked_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_valid; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_is_valid_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_read_field; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_read_field_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_validate; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Contract_validate_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_FarmInfo; ///< \private
@@ -848,6 +855,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_ge
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_get_outputs_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_get_solution; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_get_solution_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_get_tx_index; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_get_tx_index_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_is_signed; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_is_signed_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction_is_valid; ///< \private
@@ -998,6 +1007,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_user_info
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_time_segment_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_entry_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_index_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_log_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_note_e; ///< \private
@@ -1054,6 +1064,8 @@ void read(TypeInput& in, ::mmx::Contract_is_locked& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Contract_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Contract_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Contract_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Contract_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1342,6 +1354,8 @@ void read(TypeInput& in, ::mmx::Transaction_get_outputs& value, const TypeCode* 
 void read(TypeInput& in, ::mmx::Transaction_get_outputs_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_get_solution& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_get_solution_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Transaction_get_tx_index& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Transaction_get_tx_index_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_is_signed& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_is_signed_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Transaction_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1501,6 +1515,7 @@ void read(TypeInput& in, ::mmx::swap_user_info_t& value, const TypeCode* type_co
 void read(TypeInput& in, ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::tx_index_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_log_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_note_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1553,6 +1568,8 @@ void write(TypeOutput& out, const ::mmx::Contract_is_locked& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Contract_is_locked_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Contract_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Contract_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Contract_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1841,6 +1858,8 @@ void write(TypeOutput& out, const ::mmx::Transaction_get_outputs& value, const T
 void write(TypeOutput& out, const ::mmx::Transaction_get_outputs_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_get_solution& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_get_solution_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Transaction_get_tx_index& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Transaction_get_tx_index_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_is_signed& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_is_signed_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Transaction_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2000,6 +2019,7 @@ void write(TypeOutput& out, const ::mmx::swap_user_info_t& value, const TypeCode
 void write(TypeOutput& out, const ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::tx_index_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_log_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_note_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2052,6 +2072,8 @@ void read(std::istream& in, ::mmx::Contract_is_locked& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_is_locked_return& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::Contract_read_field& value); ///< \private
+void read(std::istream& in, ::mmx::Contract_read_field_return& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_validate& value); ///< \private
 void read(std::istream& in, ::mmx::Contract_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::FarmInfo& value); ///< \private
@@ -2340,6 +2362,8 @@ void read(std::istream& in, ::mmx::Transaction_get_outputs& value); ///< \privat
 void read(std::istream& in, ::mmx::Transaction_get_outputs_return& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_get_solution& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_get_solution_return& value); ///< \private
+void read(std::istream& in, ::mmx::Transaction_get_tx_index& value); ///< \private
+void read(std::istream& in, ::mmx::Transaction_get_tx_index_return& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_is_signed& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_is_signed_return& value); ///< \private
 void read(std::istream& in, ::mmx::Transaction_is_valid& value); ///< \private
@@ -2499,6 +2523,7 @@ void read(std::istream& in, ::mmx::swap_user_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::time_segment_t& value); ///< \private
 void read(std::istream& in, ::mmx::trade_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_entry_t& value); ///< \private
+void read(std::istream& in, ::mmx::tx_index_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_log_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_note_e& value); ///< \private
@@ -2551,6 +2576,8 @@ void write(std::ostream& out, const ::mmx::Contract_is_locked& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Contract_is_locked_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Contract_read_field& value); ///< \private
+void write(std::ostream& out, const ::mmx::Contract_read_field_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::Contract_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::FarmInfo& value); ///< \private
@@ -2839,6 +2866,8 @@ void write(std::ostream& out, const ::mmx::Transaction_get_outputs& value); ///<
 void write(std::ostream& out, const ::mmx::Transaction_get_outputs_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_get_solution& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_get_solution_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Transaction_get_tx_index& value); ///< \private
+void write(std::ostream& out, const ::mmx::Transaction_get_tx_index_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_is_signed& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_is_signed_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Transaction_is_valid& value); ///< \private
@@ -2998,6 +3027,7 @@ void write(std::ostream& out, const ::mmx::swap_user_info_t& value); ///< \priva
 void write(std::ostream& out, const ::mmx::time_segment_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::trade_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_entry_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::tx_index_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_log_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_note_e& value); ///< \private
@@ -3050,6 +3080,8 @@ void accept(Visitor& visitor, const ::mmx::Contract_is_locked& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Contract_is_locked_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Contract_read_field& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Contract_read_field_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Contract_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::FarmInfo& value); ///< \private
@@ -3338,6 +3370,8 @@ void accept(Visitor& visitor, const ::mmx::Transaction_get_outputs& value); ///<
 void accept(Visitor& visitor, const ::mmx::Transaction_get_outputs_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_get_solution& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_get_solution_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Transaction_get_tx_index& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Transaction_get_tx_index_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_is_signed& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_is_signed_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Transaction_is_valid& value); ///< \private
@@ -3497,6 +3531,7 @@ void accept(Visitor& visitor, const ::mmx::swap_user_info_t& value); ///< \priva
 void accept(Visitor& visitor, const ::mmx::time_segment_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::trade_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_entry_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::tx_index_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_log_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_note_e& value); ///< \private
@@ -4405,6 +4440,52 @@ struct type<::mmx::Contract_is_valid_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Contract_read_field> {
+	void read(TypeInput& in, ::mmx::Contract_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Contract_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Contract_read_field& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Contract_read_field& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Contract_read_field& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_read_field& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Contract_read_field_return> {
+	void read(TypeInput& in, ::mmx::Contract_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Contract_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Contract_read_field_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Contract_read_field_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Contract_read_field_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Contract_read_field_return& value, bool special = false);
 };
 
 /// \private
@@ -11018,6 +11099,52 @@ struct type<::mmx::Transaction_get_solution_return> {
 
 /// \private
 template<>
+struct type<::mmx::Transaction_get_tx_index> {
+	void read(TypeInput& in, ::mmx::Transaction_get_tx_index& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Transaction_get_tx_index& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Transaction_get_tx_index& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Transaction_get_tx_index& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Transaction_get_tx_index& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction_get_tx_index& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Transaction_get_tx_index_return> {
+	void read(TypeInput& in, ::mmx::Transaction_get_tx_index_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Transaction_get_tx_index_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Transaction_get_tx_index_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Transaction_get_tx_index_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Transaction_get_tx_index_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Transaction_get_tx_index_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::Transaction_is_signed> {
 	void read(TypeInput& in, ::mmx::Transaction_is_signed& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -14665,6 +14792,29 @@ struct type<::mmx::tx_entry_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_entry_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::tx_index_t> {
+	void read(TypeInput& in, ::mmx::tx_index_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::tx_index_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::tx_index_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::tx_index_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::tx_index_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::tx_index_t& value, bool special = false);
 };
 
 /// \private
