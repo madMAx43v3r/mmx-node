@@ -8,6 +8,9 @@
 #ifndef INCLUDE_MMX_VM_VAR_T_H_
 #define INCLUDE_MMX_VM_VAR_T_H_
 
+#include <mmx/hash_t.hpp>
+#include <mmx/addr_t.hpp>
+
 #include <vnx/Util.h>
 #include <uint256_t.h>
 
@@ -145,12 +148,24 @@ struct binary_t : var_t {
 		return std::string(c_str(), size);
 	}
 	std::string to_hex_string() const {
-		return vnx::to_hex_string(c_str(), size, false, false);
+		return vnx::to_hex_string(data(), size, false, false);
 	}
 	std::vector<uint8_t> to_vector() const {
 		std::vector<uint8_t> out(size);
 		::memcpy(out.data(), p_data, size);
 		return out;
+	}
+	hash_t to_hash() const {
+		if(size != 32) {
+			throw std::logic_error("to_hash(): binary size != 32: " + std::to_string(size));
+		}
+		return hash_t::from_bytes(data());
+	}
+	addr_t to_addr() const {
+		if(size != 32) {
+			throw std::logic_error("to_addr(): binary size != 32: " + std::to_string(size));
+		}
+		return addr_t::from_bytes(data());
 	}
 
 	static std::unique_ptr<binary_t> clone(const binary_t& src) {
@@ -290,6 +305,11 @@ inline size_t num_bytes(const var_t* var) {
 }
 
 std::string to_string(const vartype_e& type);
+
+template<size_t N>
+std::unique_ptr<binary_t> to_binary(const bytes_t<N>& value) {
+	return binary_t::alloc(value.data(), value.size());
+}
 
 
 } // vm

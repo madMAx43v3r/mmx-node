@@ -874,14 +874,13 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					break;
 				case CONVTYPE_STRING: {
 					int base = 10;
-					const auto bflags = (dflags >> 8) & 0xFF;
-					switch(bflags) {
+					switch((dflags >> 8) & 0xFF) {
 						case CONVTYPE_DEFAULT: break;
 						case CONVTYPE_BASE_2: base = 2; break;
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
-						default: throw std::logic_error("invalid conversion: UINT to STRING with base " + to_hex(bflags));
+						default: throw std::logic_error("invalid conversion: UINT to STRING with flags " + to_hex(dflags));
 					}
 					if(value >> 128) {
 						gas_used += CONV_UINT_256_STRING_COST;
@@ -898,11 +897,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 				}
 				case CONVTYPE_BINARY:
 					assign(dst, binary_t::alloc(&value, sizeof(value)));
-					break;
-				case CONVTYPE_ADDRESS:
-					gas_used += CONV_BECH32_STRING_COST;
-					check_gas();
-					assign(dst, binary_t::alloc(addr_t(value).to_string()));
 					break;
 				default:
 					throw std::logic_error("invalid conversion: UINT to " + to_hex(dflags));
@@ -934,36 +928,27 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
-						case CONVTYPE_ADDRESS: base = 32; break;
 						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags & 0xFF));
 					}
-					switch(base) {
-						case 32:
-							gas_used += CONV_STRING_BECH32_COST;
-							check_gas();
-							write(dst, uint_t(addr_t(value).to_uint256()));
-							break;
-						default:
-							if(prefix_2 == "0x" || prefix_2 == "0b") {
-								value = value.substr(2);
-							}
-							for(const auto c : value) {
-								int digit = 0;
-								if('0' <= c && c <= '9') {
-									digit = c - '0';
-								} else if('a' <= c && c <= 'z') {
-									digit = c - 'a' + 10;
-								} else if('A' <= c && c <= 'Z') {
-									digit = c - 'A' + 10;
-								}
-								if(digit < 0 || digit >= base) {
-									throw std::logic_error("invalid string of base " + std::to_string(base));
-								}
-							}
-							gas_used += value.size() * CONV_STRING_UINT_CHAR_COST;
-							check_gas();
-							write(dst, uint_t(uint256_t(value.c_str(), base)));
+					if(prefix_2 == "0x" || prefix_2 == "0b") {
+						value = value.substr(2);
 					}
+					for(const auto c : value) {
+						int digit = -1;
+						if('0' <= c && c <= '9') {
+							digit = c - '0';
+						} else if('a' <= c && c <= 'z') {
+							digit = c - 'a' + 10;
+						} else if('A' <= c && c <= 'Z') {
+							digit = c - 'A' + 10;
+						}
+						if(digit < 0 || digit >= base) {
+							throw std::logic_error("invalid string of base " + std::to_string(base) + ": " + value);
+						}
+					}
+					gas_used += value.size() * CONV_STRING_UINT_CHAR_COST;
+					check_gas();
+					write(dst, uint_t(uint256_t(value.c_str(), base)));
 					break;
 				}
 				case CONVTYPE_STRING:
@@ -978,7 +963,8 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					}
 					switch(base) {
 						case 0:
-							assign(dst, binary_t::alloc(sstr, TYPE_BINARY)); break;
+							assign(dst, binary_t::alloc(sstr, TYPE_BINARY));
+							break;
 						case 16: {
 							const auto value = sstr.to_string();
 							if(value.size() % 2) {
@@ -990,14 +976,24 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 							for(size_t i = prefix; i < value.size(); ++i) {
 								const auto c = value[i];
 								if(!('0' <= c && c <= '9') && !('a' <= c && c <= 'z') && !('A' <= c && c <= 'Z')) {
-									throw std::runtime_error("invalid hex string");
+									throw std::runtime_error("invalid hex string: " + value);
 								}
 							}
 							const auto tmp = vnx::from_hex_string(value);
 							assign(dst, binary_t::alloc(tmp.data(), tmp.size(), TYPE_BINARY));
 							break;
 						}
+						default:
+							throw std::logic_error("invalid conversion: STRING to BINARY with base " + std::to_string(base));
 					}
+					break;
+				}
+				case CONVTYPE_ADDRESS: {
+					const auto value = sstr.to_string();
+					gas_used += CONV_STRING_BECH32_COST;
+					check_gas();
+					const addr_t tmp(value);
+					assign(dst, binary_t::alloc(tmp.data(), tmp.size()));
 					break;
 				}
 				default:
@@ -1011,19 +1007,38 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 				case CONVTYPE_BOOL:
 					write(dst, var_t(bool(sbin.size)));
 					break;
-				case CONVTYPE_UINT: {
-					if(sbin.size > 32) {
-						throw std::runtime_error("invalid conversion: BINARY to UINT: source size > 32");
+				case CONVTYPE_STRING: {
+					int base = 0;
+					switch((dflags >> 8) & 0xFF) {
+						case CONVTYPE_DEFAULT: break;
+						case CONVTYPE_BASE_16: base = 16; break;
+						case CONVTYPE_ADDRESS: base = 32; break;
+						default: throw std::logic_error("invalid conversion: BINARY to STRING with flags " + to_hex(dflags));
 					}
-					uint_t var;
-					::memcpy(&var.value, sbin.data(), sbin.size);
-					write(dst, var);
+					switch(base) {
+						case 32:
+							gas_used += CONV_BECH32_STRING_COST;
+							check_gas();
+							assign(dst, binary_t::alloc(sbin.to_addr().to_string()));
+							break;
+						case 16:
+							assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size, false, false)));
+							break;
+						case 0:
+							assign(dst, binary_t::alloc(sbin.data(), sbin.size, TYPE_STRING));
+							break;
+						default:
+							throw std::logic_error("invalid conversion: BINARY to STRING with base " + std::to_string(base));
+					}
 					break;
 				}
-				case CONVTYPE_STRING:
-					assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size, false, false)));
-					break;
 				case CONVTYPE_BINARY:
+					write(dst, svar);
+					break;
+				case CONVTYPE_ADDRESS:
+					if(sbin.size != 32) {
+						throw std::runtime_error("invalid conversion: BINARY to ADDRESS: size != 32");
+					}
 					write(dst, svar);
 					break;
 				default:
@@ -1033,8 +1048,11 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		}
 		default:
 			switch(dflags & 0xFF) {
-				case CONVTYPE_BOOL: write(dst, var_t(TYPE_TRUE)); break;
-				default: throw std::logic_error("invalid conversion: " + to_hex(svar.type) + " to " + to_hex(dflags));
+				case CONVTYPE_BOOL:
+					write(dst, var_t(TYPE_TRUE));
+					break;
+				default:
+					throw std::logic_error("invalid conversion: " + to_hex(svar.type) + " to " + to_hex(dflags));
 			}
 	}
 }
@@ -1081,22 +1099,17 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	balance->value -= value;
 
 	txout_t out;
-	out.contract = addr_t(read_fail<uint_t>(currency, TYPE_UINT).value);
-	out.address = addr_t(read_fail<uint_t>(address, TYPE_UINT).value);
+	out.contract = read_fail<binary_t>(currency, TYPE_BINARY).to_addr();
+	out.address = read_fail<binary_t>(address, TYPE_BINARY).to_addr();
 	out.amount = value;
 	{
 		const auto& value = read_fail(memo);
 		switch(value.type) {
-			case TYPE_NIL: break;
-			case TYPE_UINT: {
-				const auto& uint = ((const uint_t&)value).value;
-				if(uint >> 16) {
-					out.memo = hash_t::from_bytes(uint);
-				} else {
-					out.memo = uint;
-				}
+			case TYPE_NIL:
 				break;
-			}
+			case TYPE_UINT:
+				out.memo = ((const uint_t&)value).value;
+				break;
 			case TYPE_STRING:
 				out.memo = ((const binary_t&)value).to_string();
 				break;
@@ -1126,7 +1139,7 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 	}
 	txout_t out;
 	out.contract = contract;
-	out.address = addr_t(read_fail<uint_t>(address, TYPE_UINT).value);
+	out.address = read_fail<binary_t>(address, TYPE_BINARY).to_addr();
 	out.amount = value;
 	out.memo = std::string("mmx.mint");
 	mint_outputs.push_back(out);
@@ -1163,7 +1176,7 @@ void Engine::cread(const uint64_t dst, const uint64_t address, const uint64_t fi
 		throw std::logic_error("unable to read contract fields");
 	}
 	read_contract(
-			addr_t::from_bytes(read_fail<uint_t>(address, TYPE_UINT).value),
+			read_fail<binary_t>(address, TYPE_BINARY).to_addr(),
 			read_fail<binary_t>(field, TYPE_STRING).to_string(), dst);
 }
 

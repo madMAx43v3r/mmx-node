@@ -156,6 +156,7 @@ add_library(mmx_iface SHARED
 	src/mnemonic.cpp
 	src/offer_data_t.cpp
 	src/memo_t.cpp
+	src/bls_pubkey_t.cpp
 )
 
 add_library(mmx_vm SHARED
@@ -181,6 +182,7 @@ add_library(mmx_modules SHARED
 	src/Node_verify.cpp
 	src/Node_validate.cpp
 	src/Wallet.cpp
+	src/BLS_Wallet.cpp
 	src/Farmer.cpp
 	src/Harvester.cpp
 	src/Router.cpp

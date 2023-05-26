@@ -105,13 +105,17 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 		const auto local_key_bls = local_sk_bls.GetG1Element();
 		local_sk = skey_t(local_sk_bls);
 
+		const auto farmer_key = bls_pubkey_t(chia_proof->farmer_key);
+		bls::G1Element farmer_key_bls;
+		farmer_key.to(farmer_key_bls);
+
 		auto proof = ProofOfSpaceOG::create();
 		proof->ksize = chia_proof->k;
 		proof->score = score;
 		proof->plot_id = plot_id;
 		proof->proof_bytes = chia_proof->proof;
-		proof->farmer_key = bls_pubkey_t(chia_proof->farmer_key);
-		proof->plot_key = local_key_bls + proof->farmer_key.to_bls();
+		proof->farmer_key = farmer_key;
+		proof->plot_key = local_key_bls + farmer_key_bls;
 		proof->pool_key = bls_pubkey_t(chia_proof->pool_key);
 		proof->local_key = local_key_bls;
 		out->proof = proof;
@@ -421,10 +425,11 @@ void Harvester::reload()
 					const auto local_sk = derive_local_key(plot->get_master_skey());
 					const auto pool_key = plot->get_pool_key();
 
-					const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key.to_bls();
+					bls::G1Element farmer_key_bls;
+					farmer_key.to(farmer_key_bls);
+					const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key_bls;
 					if(!pool_key.empty()) {
-						const uint32_t port = 11337;
-						if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>(&port, 4)) != plot_id) {
+						if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>().from_uint(11337u)) != plot_id) {
 							throw std::logic_error("invalid keys or port");
 						}
 					} else {

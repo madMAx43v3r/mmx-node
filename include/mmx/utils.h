@@ -103,7 +103,7 @@ uint64_t to_amount(const double value, std::shared_ptr<const ChainParams> params
 inline
 bool check_tx_inclusion(const hash_t& txid, const uint32_t height)
 {
-	return uint32_t(txid.to_uint256() & 0x1) == (height & 0x1);
+	return uint32_t(txid.bytes[31] & 0x1) == (height & 0x1);
 }
 
 inline
@@ -263,7 +263,7 @@ std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::
 	for(int i = 0; i < 16384; ++i) {
 		hash = hash_t(hash + seed_value + pass_hash);
 	}
-	return std::to_string(uint32_t(hash.to_uint256()));
+	return std::to_string(hash.to_uint<uint32_t>());
 }
 
 inline

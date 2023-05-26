@@ -28,7 +28,7 @@ void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
 	engine->assign(addr, std::make_unique<vm::map_t>());
 	for(const auto& entry : balance) {
-		engine->write_key(addr, vm::uint_t(entry.first.to_uint256()), vm::uint_t(entry.second));
+		engine->write_key(addr, to_binary(entry.first), std::make_unique<vm::uint_t>(entry.second));
 	}
 }
 
@@ -36,7 +36,7 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, con
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
 	engine->assign(addr, std::make_unique<vm::array_t>());
-	engine->push_back(addr, vm::uint_t(currency.to_uint256()));
+	engine->push_back(addr, to_binary(currency));
 	engine->push_back(addr, vm::uint_t(amount));
 }
 
@@ -131,6 +131,8 @@ public:
 	AssignTo(std::shared_ptr<vm::Engine> engine, const uint64_t dst)
 		:	engine(engine)
 	{
+		enable_binary = true;
+
 		frame_t frame;
 		frame.dst = dst;
 		stack.push_back(frame);
@@ -173,27 +175,51 @@ public:
 	}
 
 	void visit(const int8_t& value) override {
-		visit(uint256_t(value));
+		if(value < 0) {
+			throw std::logic_error("negative values not supported");
+		}
+		visit(uint64_t(value));
 	}
 	void visit(const int16_t& value) override {
-		visit(uint256_t(value));
+		if(value < 0) {
+			throw std::logic_error("negative values not supported");
+		}
+		visit(uint64_t(value));
 	}
 	void visit(const int32_t& value) override {
-		visit(uint256_t(value));
+		if(value < 0) {
+			throw std::logic_error("negative values not supported");
+		}
+		visit(uint64_t(value));
 	}
 	void visit(const int64_t& value) override {
-		visit(uint256_t(value));
+		if(value < 0) {
+			throw std::logic_error("negative values not supported");
+		}
+		visit(uint64_t(value));
 	}
 
 	void visit(const vnx::float32_t& value) override {
-		visit(uint256_t(int64_t(value)));
+		throw std::logic_error("type float not supported");
 	}
 	void visit(const vnx::float64_t& value) override {
-		visit(uint256_t(int64_t(value)));
+		throw std::logic_error("type double not supported");
 	}
 
 	void visit(const std::string& value) override {
 		auto var = vm::binary_t::alloc(value);
+		auto& frame = stack.back();
+		if(frame.lookup) {
+			frame.key = engine->lookup(var.get(), false);
+		} else if(frame.key) {
+			engine->assign_entry(frame.dst, *frame.key, std::move(var));
+		} else {
+			engine->assign(frame.dst, std::move(var));
+		}
+	}
+
+	void visit(const std::vector<uint8_t>& value) override {
+		auto var = vm::binary_t::alloc(value.data(), value.size());
 		auto& frame = stack.back();
 		if(frame.lookup) {
 			frame.key = engine->lookup(var.get(), false);
@@ -295,13 +321,10 @@ vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
 				return convert(engine, engine->read(((const vm::ref_t*)var)->address));
 			case vm::TYPE_UINT: {
 				const auto& value = ((const vm::uint_t*)var)->value;
-				if(!value.upper()) {
-					if(!value.lower().upper()) {
-						return vnx::Variant(value.lower().lower());
-					}
-					return vnx::Variant(mmx::uint128(value.lower()));
+				if(value >> 64 == 0) {
+					return vnx::Variant(value.lower().lower());
 				}
-				return vnx::Variant(hash_t::from_bytes(value));
+				return vnx::Variant(value.str(10));
 			}
 			case vm::TYPE_STRING:
 				return vnx::Variant(((const vm::binary_t*)var)->to_string());
@@ -371,20 +394,18 @@ std::string to_string(const var_t* var)
 			return "false";
 		case TYPE_REF:
 			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
-		case TYPE_UINT: {
-			const auto& value = ((const uint_t*)var)->value;
-			if(value >> 128 == 0) {
-				return value.str(10);
-			}
-			if(value >> 128 == uint128_t(-1)) {
-				return std::to_string(int64_t(uint64_t(value)));
-			}
-			return value.str(10) + " | " + hash_t::from_bytes(value).to_string() + " | " + addr_t(value).to_string();
-		}
+		case TYPE_UINT:
+			return ((const uint_t*)var)->value.str(10);
 		case TYPE_STRING:
 			return "\"" + ((const binary_t*)var)->to_string() + "\"";
-		case TYPE_BINARY:
-			return "0x" + ((const binary_t*)var)->to_hex_string();
+		case TYPE_BINARY: {
+			auto bin = (const binary_t*)var;
+			std::string out = "0x" + bin->to_hex_string();
+			if(bin->size == 32) {
+				out += " | " + bin->to_addr().to_string();
+			}
+			return out;
+		}
 		case TYPE_ARRAY: {
 			auto array = (const array_t*)var;
 			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
@@ -461,8 +482,8 @@ hash_t to_hash(const var_t* var)
 		return hash_t();
 	}
 	switch(var->type) {
-		case TYPE_UINT:
-			return hash_t::from_bytes(((const uint_t*)var)->value);
+		case TYPE_BINARY:
+			return ((const binary_t*)var)->to_hash();
 		default:
 			return hash_t();
 	}
@@ -478,8 +499,8 @@ addr_t to_addr(const var_t* var)
 		return addr_t();
 	}
 	switch(var->type) {
-		case TYPE_UINT:
-			return addr_t(((const uint_t*)var)->value);
+		case TYPE_BINARY:
+			return ((const binary_t*)var)->to_addr();
 		case TYPE_STRING:
 			return addr_t(((const binary_t*)var)->to_string());
 		default:

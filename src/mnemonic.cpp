@@ -72,7 +72,9 @@ hash_t words_to_seed(const std::vector<std::string>& words, const std::vector<st
 	if(checksum != expect) {
 		throw std::runtime_error("invalid mnemonic checksum: " + std::to_string(checksum) + " != " + std::to_string(expect));
 	}
-	return hash_t::from_bytes(seed);
+	hash_t out;
+	out.from_uint(seed);
+	return out;
 }
 
 std::string words_to_string(const std::vector<std::string>& words)

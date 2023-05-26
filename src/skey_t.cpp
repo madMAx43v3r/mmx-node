@@ -15,14 +15,9 @@ namespace mmx {
 skey_t::skey_t(const bls::PrivateKey& key)
 {
 	if(bls::PrivateKey::PRIVATE_KEY_SIZE != size()) {
-		throw std::logic_error("key size mismatch");
+		throw std::logic_error("bls::PrivateKey skey_t size mismatch");
 	}
 	key.Serialize(data());
-}
-
-bls::PrivateKey skey_t::to_bls() const
-{
-	return bls::PrivateKey::FromBytes(bls::Bytes(data(), size()));
 }
 
 

@@ -278,7 +278,7 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	offer->init_args.emplace_back(owner_addr.to_string());
 	offer->init_args.emplace_back(bid_currency.to_string());
 	offer->init_args.emplace_back(ask_currency.to_string());
-	offer->init_args.emplace_back(((uint128_t(bid_amount) << 64) / ask_amount).str());
+	offer->init_args.emplace_back("0x" + ((uint128_t(bid_amount) << 64) / ask_amount).str(16));
 	offer->init_args.emplace_back();
 
 	auto tx = Transaction::create();
@@ -710,7 +710,7 @@ std::vector<virtual_plot_info_t> Wallet::get_virtual_plots(const uint32_t& index
 	return node->get_virtual_plots_owned_by(wallet->get_all_addresses());
 }
 
-vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
+std::vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
 {
 	const auto wallet = get_wallet(index);
 	return node->get_offers_by(wallet->get_all_addresses(), state);

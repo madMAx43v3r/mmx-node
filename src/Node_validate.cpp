@@ -306,11 +306,11 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		const auto contract = get_contract_for_ex(*op->user, &engine->gas_used, engine->gas_limit);
 		contract->validate(tx->get_solution(op->solution), tx->id);
 
-		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(op->user->to_uint256()));
+		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(*op->user));
 	} else {
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 	}
-	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
 
 	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
 		{
@@ -396,8 +396,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		for(uint32_t i = 0; i < nargs; ++i) {
 			vm::copy(child, engine, vm::MEM_STACK + 1 + i, vm::MEM_STACK + stack_ptr + 1 + i);
 		}
-		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(engine->contract.to_uint256()));
-		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
+		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(engine->contract));
+		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
 
 		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, true);
 
@@ -426,7 +426,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	};
 
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->height));
-	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::uint_t(tx->id.to_uint256()));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::to_binary(tx->id));
 
 	vm::set_balance(engine, storage_cache->get_balances(engine->contract));
 

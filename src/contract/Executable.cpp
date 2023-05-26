@@ -62,16 +62,6 @@ uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params, const 
 
 vnx::Variant Executable::read_field(const std::string& name) const
 {
-	if(name == "binary") {
-		return vnx::Variant(binary.to_string());
-	}
-	if(name == "depends") {
-		std::map<std::string, std::string> tmp;
-		for(const auto& entry : depends) {
-			tmp[entry.first] = entry.second.to_string();
-		}
-		return vnx::Variant(tmp);
-	}
 	return Super::read_field(name);
 }
 

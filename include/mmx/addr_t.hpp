@@ -23,8 +23,6 @@ public:
 
 	addr_t(const std::string& addr);
 
-	explicit addr_t(const uint256_t& value);
-
 	std::string to_string() const;
 
 	void from_string(const std::string& addr);
@@ -35,12 +33,6 @@ public:
 inline
 addr_t::addr_t(const hash_t& hash)
 	:	super_t(hash)
-{
-}
-
-inline
-addr_t::addr_t(const uint256_t& value)
-	:	super_t(hash_t::from_bytes(&value))
 {
 }
 

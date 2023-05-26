@@ -121,6 +121,9 @@ if(0x100 != 256) {
 if(0b100 != 4) {
 	fail("bin", 1);
 }
+if(uint("") != 0) {
+	fail("uint('')");
+}
 if(uint("0b01011101010001") != 0b01011101010001) {
 	fail("uint(bin)", 1);
 }
@@ -142,11 +145,14 @@ if(uint("0x09292D77A8DF8E790D467F458B29591C1AFB11F0676CC7ABBB778C60D90D38F7") !=
 if(uint("0b1001") != 9) {
 	fail("uint(bin)", 1);
 }
-if(bech32("mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev") != 0) {
+if(bech32("mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev") != binary_hex("0000000000000000000000000000000000000000000000000000000000000000")) {
 	fail("bech32", 1);
 }
-if(bech32("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") != 0xF7380DD9608C77BBABC76C67F011FB1A1C59298B457F460D798EDFA8772D2909) {
+if(bech32("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") != binary_hex("09292D77A8DF8E790D467F458B29591C1AFB11F0676CC7ABBB778C60D90D38F7")) {
 	fail("bech32", 2);
+}
+if(to_string_bech32(binary_hex("09292D77A8DF8E790D467F458B29591C1AFB11F0676CC7ABBB778C60D90D38F7")) != "mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") {
+	fail("bech32", 3);
 }
 if(to_string(1337) != "1337") {
 	fail("to_string(1337)");
@@ -166,13 +172,16 @@ if(to_string_hex(0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b
 if(to_string_bech32(bech32("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")) != "mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") {
 	fail("to_string_bech32(mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf)");
 }
-if(to_string(binary("ABCDEF")) != "414243444546") {
+if(to_string(binary("ABCDEF")) != "ABCDEF") {
 	fail("binary(ABCDEF)");
 }
-if(to_string(binary_hex("0123456789ABCDEF")) != "0123456789ABCDEF") {
+if(to_string_hex(binary("AB")) != "4142") {
+	fail("binary(AB)");
+}
+if(to_string_hex(binary_hex("0123456789ABCDEF")) != "0123456789ABCDEF") {
 	fail("binary_hex(0123456789ABCDEF)");
 }
-if(to_string(binary_hex("0x0123456789ABCDEF")) != "0123456789ABCDEF") {
+if(to_string_hex(binary_hex("0x0123456789ABCDEF")) != "0123456789ABCDEF") {
 	fail("binary_hex(0x0123456789ABCDEF)");
 }
 if(concat("A", "BC", "D") != "ABCD") {

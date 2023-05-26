@@ -125,7 +125,7 @@ protected:
 
 	std::vector<virtual_plot_info_t> get_virtual_plots(const uint32_t& index) const override;
 
-	vector<offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const override;
+	std::vector<offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const override;
 
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity(const uint32_t& index) const override;
 

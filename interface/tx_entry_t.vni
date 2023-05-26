@@ -14,6 +14,8 @@ struct tx_entry_t {
 	
 	uint128 amount;
 	
+	// TODO: memo_t memo;
+	
 	bool is_validated;		// if token is in whitelist
 	
 }

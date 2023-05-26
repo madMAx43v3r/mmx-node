@@ -49,7 +49,7 @@ void addr_t::from_string(const std::string& addr)
 	bits |= res.dp[50] & 0x1F;
 	bits <<= 1;
 	bits |= (res.dp[51] >> 4) & 1;
-	::memcpy(data(), &bits, 32);
+	from_uint(bits);
 }
 
 } // mmx
