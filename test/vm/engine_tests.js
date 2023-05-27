@@ -187,6 +187,12 @@ if(to_string_hex(binary_hex("0x0123456789ABCDEF")) != "0123456789ABCDEF") {
 if(concat("A", "BC", "D") != "ABCD") {
 	fail("concat()", 1);
 }
+if(memcpy("ABC", 1) != "A") {
+	fail(concat("memcpy(ABC, 1): '", memcpy("ABC", 1), "'"));
+}
+if(memcpy("ABC", 2, 1) != "BC") {
+	fail("memcpy(ABC, 2, 1)");
+}
 if(sha256("") != binary_hex("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")) {
 	fail("sha256()", 1);
 }
@@ -219,6 +225,12 @@ if(ecdsa_verify(
 	}
 	if(size(array) != 1) {
 		fail("size(array) != 1");
+	}
+	if(pop(array) != 11) {
+		fail("pop(array) != 11");
+	}
+	if(size(array) != 0) {
+		fail("size(array) != 0");
 	}
 }
 {

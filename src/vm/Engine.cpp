@@ -802,6 +802,7 @@ void Engine::memcpy(const uint64_t dst, const uint64_t src, const uint64_t count
 			}
 			auto res = binary_t::unsafe_alloc(count, svar.type);
 			::memcpy(res->data(), sbin.data(offset), count);
+			res->size = count;
 			assign(dst, std::move(res));
 			break;
 		}

@@ -543,6 +543,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["erase"].name = "erase";
 	function_map["typeof"].name = "typeof";
 	function_map["concat"].name = "concat";
+	function_map["memcpy"].name = "memcpy";
 	function_map["send"].name = "send";
 	function_map["mint"].name = "mint";
 	function_map["fail"].name = "fail";
@@ -1556,7 +1557,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			}
 			else if(name == "send") {
 				if(args.size() < 2 || args.size() > 4) {
-					throw std::logic_error("expected 2, 3 or 4 arguments for send(address, amount, [currency], [memo])");
+					throw std::logic_error("expected 2 to 4 arguments for send(address, amount, [currency], [memo])");
 				}
 				code.emplace_back(OP_SEND, 0, get(recurse(args[0])), get(recurse(args[1])),
 						args.size() > 2 ? get(recurse(args[2])) : get_const_address(uint256_t()),
@@ -1640,6 +1641,15 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING | (CONVTYPE_ADDRESS << 8), CONVTYPE_DEFAULT);
+			}
+			else if(name == "memcpy") {
+				if(args.size() < 2 || args.size() > 3) {
+					throw std::logic_error("expected 2 to 3 arguments for memcpy(src, count, [offset])");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_MEMCPY, OPFLAG_REF_C | OPFLAG_REF_D, out.address,
+						get(recurse(args[0])), get(recurse(args[1])),
+						(args.size() > 2 ? get(recurse(args[2])) : get_const_address(uint256_0)));
 			}
 			else if(name == "rcall") {
 				if(args.size() < 2) {
