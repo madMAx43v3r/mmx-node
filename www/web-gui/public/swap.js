@@ -1020,9 +1020,9 @@ Vue.component('swap-liquid', {
 					</v-row>
 				</v-card-text>
 				<v-card-actions class="justify-end">
-					<v-btn @click="match()">{{ $t('swap.price_match') }}</v-btn>
 					<v-btn @click="payout()" :disabled="disable_payout">{{ $t('swap.payout') }}</v-btn>
 					<v-btn @click="switch_pool()" :disabled="disable_switch">{{ $t('swap.switch_fee') }}</v-btn>
+					<v-btn @click="match()">{{ $t('swap.price_match') }}</v-btn>
 					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem || disable_add">{{ $t('swap.add_liquidity') }}</v-btn>
 					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">{{ $t('swap.remove_iquidity') }}</v-btn>
 					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">{{ $t('swap.remove_all') }}</v-btn>
