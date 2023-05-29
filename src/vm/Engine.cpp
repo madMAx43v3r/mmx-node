@@ -326,7 +326,7 @@ void Engine::push_back(const uint64_t dst, const var_t& var)
 {
 	auto& array = read_fail<array_t>(dst, TYPE_ARRAY);
 	if(array.size >= std::numeric_limits<uint32_t>::max()) {
-		throw std::runtime_error("push_back overflow at " + to_hex(dst));
+		throw std::runtime_error("push_back() overflow at " + to_hex(dst));
 	}
 	write_entry(dst, array.size++, var);
 	array.flags |= FLAG_DIRTY;
@@ -344,7 +344,7 @@ void Engine::push_back(const uint64_t dst, const varptr_t& var)
 void Engine::push_back(const uint64_t dst, const uint64_t src)
 {
 	if(dst == src) {
-		throw std::logic_error("dst == src");
+		throw std::logic_error("push_back(): dst == src");
 	}
 	push_back(dst, read_fail(src));
 }
@@ -352,11 +352,11 @@ void Engine::push_back(const uint64_t dst, const uint64_t src)
 void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 {
 	if(dst == src) {
-		throw std::logic_error("dst == src");
+		throw std::logic_error("pop_back(): dst == src");
 	}
 	auto& array = read_fail<array_t>(src, TYPE_ARRAY);
 	if(array.size == 0) {
-		throw std::logic_error("pop_back underflow at " + to_hex(dst));
+		throw std::logic_error("pop_back() underflow at " + to_hex(dst));
 	}
 	const auto index = array.size - 1;
 	write(dst, read_entry_fail(src, index));
@@ -368,7 +368,7 @@ void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 std::unique_ptr<array_t> Engine::clone_array(const uint64_t dst, const array_t& src)
 {
 	if(dst == src.address) {
-		throw std::logic_error("dst == src");
+		throw std::logic_error("clone_array(): dst == src");
 	}
 	for(uint64_t i = 0; i < src.size; ++i) {
 		write_entry(dst, i, read_entry_fail(src.address, i));
@@ -382,7 +382,7 @@ std::unique_ptr<array_t> Engine::clone_array(const uint64_t dst, const array_t& 
 std::unique_ptr<map_t> Engine::clone_map(const uint64_t dst, const map_t& src)
 {
 	if(dst == src.address) {
-		throw std::logic_error("dst == src");
+		throw std::logic_error("clone_map(): dst == src");
 	}
 	if(src.flags & FLAG_STORED) {
 		throw std::logic_error("cannot clone map from storage");
