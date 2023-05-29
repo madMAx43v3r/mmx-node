@@ -97,15 +97,7 @@ void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
 			break;
 		case mmx::vm::TYPE_UINT: {
 			const auto& value = ((const mmx::vm::uint_t*)var)->value;
-			if(value >> 128 == 0) {
-				visitor.visit(value.str(10));
-			}
-			else if(value >> 128 == uint128_t(-1)) {
-				visitor.visit(int64_t(uint64_t(value)));
-			}
-			else {
-				visitor.visit(vnx::to_hex_string(&value, sizeof(value), false, false));
-			}
+			visitor.visit(value.str(10));
 			break;
 		}
 		case mmx::vm::TYPE_STRING: {
