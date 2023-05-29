@@ -406,7 +406,7 @@ void Engine::erase_entry(const uint64_t dst, const uint64_t key)
 {
 	const auto mapkey = std::make_pair(dst, key);
 	auto iter = entries.find(mapkey);
-	if(iter == entries.end() && dst >= MEM_STATIC) {
+	if(iter == entries.end() && dst >= MEM_STATIC && (read_fail(dst).flags & FLAG_STORED)) {
 		if(auto var = storage->read(contract, dst, key)) {
 			iter = entries.emplace(mapkey, std::move(var)).first;
 		}
