@@ -305,6 +305,13 @@ if(deref(clone(1)) != 1) {
 	if(size(array) != 1) {
 		fail("size(array) != 1");
 	}
+	{
+		var tmp = clone(array);
+		if(tmp[0] != 11) {
+			fail("clone: array[0] != 11");
+		}
+		pop(tmp);
+	}
 	if(pop(array) != 11) {
 		fail("pop(array) != 11");
 	}
@@ -329,6 +336,13 @@ if(deref(clone(1)) != 1) {
 		fail("map.field != 1338");
 	}
 	set(map, "field", 1339);
+	{
+		var tmp = clone(map);
+		if(tmp.field != 1339) {
+			fail("clone: tmp.field != 1339");
+		}
+		erase(tmp, "field");
+	}
 	if(map.field != 1339) {
 		fail("map.field != 1339");
 	}

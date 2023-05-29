@@ -8,3 +8,6 @@ cmake -DCMAKE_BUILD_TYPE=Debug -DWITH_COVERAGE=1 -DCMAKE_CXX_FLAGS="-fmax-errors
 
 make -j8
 
+cd ..
+
+./scripts/reset_coverage.sh

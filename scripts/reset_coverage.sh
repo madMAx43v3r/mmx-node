@@ -1,3 +1,3 @@
 #!/bin/bash
 
-find build/ -name *.gcda -delete
+find build/ -name "*.gcda" -delete
