@@ -56,11 +56,16 @@ void test_serialize(vm::varptr_t var) {
 	test_serialize(var, false, false);
 }
 
-void test_compare_self(vm::varptr_t var) {
+void test_compare(vm::varptr_t var) {
 	vnx::test::expect(var == var, true);
 	vnx::test::expect(var != var, false);
 	vnx::test::expect(var < var, false);
 	vnx::test::expect(var > var, false);
+
+	vm::varptr_t null;
+	vnx::test::expect(var == null, var.get() == nullptr);
+	vnx::test::expect(var < null, false);
+	vnx::test::expect(var > null, var.get() != nullptr);
 }
 
 void test_clone(vm::varptr_t var) {
@@ -112,16 +117,16 @@ int main(int argc, char** argv) {
 
 	VNX_TEST_BEGIN("compare_func")
 	{
-		test_compare_self(std::make_unique<vm::var_t>());
-		test_compare_self(std::make_unique<vm::var_t>(true));
-		test_compare_self(std::make_unique<vm::var_t>(false));
-		test_compare_self(std::make_unique<vm::ref_t>(0));
-		test_compare_self(std::make_unique<vm::uint_t>());
-		test_compare_self(std::make_unique<vm::uint_t>(uint256_max));
-		test_compare_self(vm::binary_t::alloc("test"));
-		test_compare_self(vm::binary_t::alloc(10, vm::TYPE_BINARY));
-		test_compare_self(std::make_unique<vm::array_t>());
-		test_compare_self(std::make_unique<vm::map_t>());
+		test_compare(std::make_unique<vm::var_t>());
+		test_compare(std::make_unique<vm::var_t>(true));
+		test_compare(std::make_unique<vm::var_t>(false));
+		test_compare(std::make_unique<vm::ref_t>(0));
+		test_compare(std::make_unique<vm::uint_t>());
+		test_compare(std::make_unique<vm::uint_t>(uint256_max));
+		test_compare(vm::binary_t::alloc("test"));
+		test_compare(vm::binary_t::alloc(10, vm::TYPE_BINARY));
+		test_compare(std::make_unique<vm::array_t>());
+		test_compare(std::make_unique<vm::map_t>());
 		vnx::test::expect(compare(vm::var_t(), vm::var_t(false)), -1);
 		vnx::test::expect(compare(vm::var_t(false), vm::var_t(true)), -1);
 		vnx::test::expect(compare(vm::ref_t(0), vm::ref_t(1)), -1);
@@ -130,6 +135,17 @@ int main(int argc, char** argv) {
 		vnx::test::expect(compare(vm::uint_t(1), vm::uint_t(1)), 0);
 		vnx::test::expect(vm::varptr_t(vm::binary_t::alloc("")) < vm::varptr_t(vm::binary_t::alloc("test")), true);
 		vnx::test::expect(vm::varptr_t(vm::binary_t::alloc("test")) == vm::varptr_t(vm::binary_t::alloc("test")), true);
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("stuff")
+	{
+		vnx::test::expect(vm::to_binary(hash_t(""))->to_hash(), hash_t(""));
+		{
+			auto var = vm::binary_t::alloc("test");
+			var = vm::binary_t::alloc("test1");
+			vnx::test::expect(var->to_string(), std::string("test1"));
+		}
 	}
 	VNX_TEST_END()
 

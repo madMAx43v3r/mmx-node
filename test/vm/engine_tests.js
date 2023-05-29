@@ -194,6 +194,9 @@ if(bech32("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") != b
 if(to_string_bech32(binary_hex("09292D77A8DF8E790D467F458B29591C1AFB11F0676CC7ABBB778C60D90D38F7")) != "mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") {
 	fail("bech32", 3);
 }
+if(bech32("MMX") != binary_hex("0000000000000000000000000000000000000000000000000000000000000000")) {
+	fail("bech32", 4);
+}
 if(to_string(1337) != "1337") {
 	fail("to_string(1337)");
 }
@@ -262,6 +265,33 @@ if(min(1, 2, 3) != 1) {
 if(max(1, 2, 3) != 3) {
 	fail("max()");
 }
+if(typeof(null) != 0) {
+	fail("typeof(null)");
+}
+if(typeof(false) != 1) {
+	fail("typeof(false)");
+}
+if(typeof(true) != 2) {
+	fail("typeof(true)");
+}
+if(typeof(1) != 4) {
+	fail("typeof(1)");
+}
+if(typeof("") != 5) {
+	fail("typeof('')");
+}
+if(typeof(binary("")) != 6) {
+	fail("typeof(binary)");
+}
+if(typeof([]) != 7) {
+	fail("typeof([])");
+}
+if(typeof({}) != 8) {
+	fail("typeof({})");
+}
+if(deref(clone(1)) != 1) {
+	fail("deref(clone(1)) != 1");
+}
 
 {
 	var array = [];
@@ -291,12 +321,16 @@ if(max(1, 2, 3) != 3) {
 		fail("map.field != null");
 	}
 	map.field = 1337;
-	if(map.field != 1337) {
+	if(get(map, "field") != 1337) {
 		fail("map.field != 1337");
 	}
 	map.field++;
 	if(map.field != 1338) {
 		fail("map.field != 1338");
+	}
+	set(map, "field", 1339);
+	if(map.field != 1339) {
+		fail("map.field != 1339");
 	}
 	erase(map, "field");
 	if(map.field != null) {
@@ -337,7 +371,23 @@ if(max(1, 2, 3) != 3) {
 		fail("map[tmp1] == null");
 	}
 }
-
+{
+	var test = {
+		field: "value",
+		"field1": 123
+	};
+	if(test.field != "value") {
+		fail("test.field");
+	}
+	if(test.field1 != 123) {
+		fail("test.field1");
+	}
+	var test2 = {};
+	test2.field = test.field;
+	if(test2.field != test.field) {
+		fail("test2.field");
+	}
+}
 
 
 
