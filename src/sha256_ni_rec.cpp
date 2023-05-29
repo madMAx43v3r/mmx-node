@@ -1,9 +1,13 @@
 /*
- * sha256_ni.cpp
+ * sha256_ni_rec.cpp
  *
- *  Created on: Jul 19, 2022
- *      Author: mad
+ *  Created on: May 29, 2023
+ *      Author: Max, voidxno
  */
+
+// purpose: rewrite of generic sha256_ni into optimized recursive_sha256_ni
+// prerequisite: length is 32 bytes (recursive sha256)
+// optimization: rewrite with prerequisite to help compiler optimizations
 
 #include <sha256_ni.h>
 
@@ -16,16 +20,16 @@
 
 #ifdef _WIN32
 #include <intrin.h>
-#define cpuid(info, x)    __cpuidex(info, x, 0)
+#endif
+
+#ifdef _WIN32
+#define OPTIMALINLINE inline
 #else
-#include <cpuid.h>
-inline void cpuid(int info[4], int InfoType) {
-	__cpuid_count(InfoType, 0, info[0], info[1], info[2], info[3]);
-}
+#define OPTIMALINLINE __attribute__((always_inline)) inline
 #endif
 
 alignas(64)
-static const uint32_t K[] = {
+static const uint32_t local_K[] = {
 	0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
 	0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
 	0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3,
@@ -44,17 +48,19 @@ static const uint32_t K[] = {
 	0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2,
 };
 
-inline uint32_t bswap_32(const uint32_t val) {
+OPTIMALINLINE uint32_t local_bswap_32(const uint32_t val) {
 	return ((val & 0xFF) << 24) | ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | ((val & 0xFF000000) >> 24);
 }
 
-inline uint64_t bswap_64(const uint64_t val) {
-	return (uint64_t(bswap_32(val)) << 32) | bswap_32(val >> 32);
+OPTIMALINLINE uint64_t local_bswap_64(const uint64_t val) {
+	return (uint64_t(local_bswap_32(val)) << 32) | local_bswap_32(val >> 32);
 }
 
-static void compress_digest(uint32_t* state, const uint8_t* input, size_t blocks)
+OPTIMALINLINE void local_compress_digest(uint32_t* state, const uint8_t* input) // (CHANGED/PRECALC) static void local_compress_digest(uint32_t* state, const uint8_t* input, size_t blocks)
 {
-	const __m128i* K_mm = reinterpret_cast<const __m128i*>(K);
+	// prerequisite: length is 32 bytes (recursive sha256)
+
+	const __m128i* K_mm = reinterpret_cast<const __m128i*>(local_K);
 
 	const __m128i* input_mm = reinterpret_cast<const __m128i*>(input);
 	const __m128i MASK = _mm_set_epi64x(0x0c0d0e0f08090a0b, 0x0405060700010203);
@@ -70,8 +76,8 @@ static void compress_digest(uint32_t* state, const uint8_t* input, size_t blocks
 	STATE1 = _mm_blend_epi16(STATE1, STATE0, 0xF0); // CDGH
 	STATE0 = TMP;
 
-	while(blocks > 0)
-	{
+	// (REMOVED) while(blocks > 0)
+	// (REMOVED) {
 		// Save current state
 		const __m128i ABEF_SAVE = STATE0;
 		const __m128i CDGH_SAVE = STATE1;
@@ -218,8 +224,8 @@ static void compress_digest(uint32_t* state, const uint8_t* input, size_t blocks
 		STATE1 = _mm_add_epi32(STATE1, CDGH_SAVE);
 
 		input_mm += 4;
-		blocks--;
-	}
+		// (REMOVED) blocks--;
+	// (REMOVED) }
 
 	STATE0 = _mm_shuffle_epi32(STATE0, 0x1B); // FEBA
 	STATE1 = _mm_shuffle_epi32(STATE1, 0xB1); // DCHG
@@ -229,68 +235,51 @@ static void compress_digest(uint32_t* state, const uint8_t* input, size_t blocks
 	_mm_storeu_si128(reinterpret_cast<__m128i*>(&state[4]), _mm_alignr_epi8(STATE1, STATE0, 8)); // ABEF
 }
 
-void sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length)
+OPTIMALINLINE void local_sha256_ni(uint8_t* out, const uint8_t* in) // (CHANGED/PRECALC) void local_sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length)
 {
+	// prerequisite: length is 32 bytes (recursive sha256)
+
 	uint32_t state[] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 
-	const auto num_blocks = length / 64;
-	if(num_blocks) {
-		compress_digest(state, in, num_blocks);
-	}
-	const auto remain = length % 64;
-	const auto final_blocks = (remain + 9 + 63) / 64;
-	const uint64_t num_bits = bswap_64(length * 8);
+	// (REMOVED) const auto num_blocks = length / 64;
+	// (REMOVED) if(num_blocks) {
+	// (REMOVED) 	compress_digest(state, in, num_blocks);
+	// (REMOVED) }
+	// (REMOVED) const auto remain = length % 64;
+	// (REMOVED) const auto final_blocks = (remain + 9 + 63) / 64;
+	const uint64_t num_bits = local_bswap_64(32 * 8); // (CHANGED/PRECALC) const uint64_t num_bits = local_bswap_64(length * 8);
 	const uint8_t end_bit = 0x80;
 
 	uint8_t last[128] = {};
-	::memcpy(last, in + num_blocks * 64, remain);
-	::memset(last + remain, 0, sizeof(last) - remain);
-	::memcpy(last + remain, &end_bit, 1);
-	::memcpy(last + final_blocks * 64 - 8, &num_bits, 8);
+	::memcpy(last, in + 0 * 64, 32); // (CHANGED/PRECALC) ::memcpy(last, in + num_blocks * 64, remain);
+	::memset(last + 32, 0, sizeof(last) - 32); // (CHANGED/PRECALC) ::memset(last + remain, 0, sizeof(last) - remain);
+	::memcpy(last + 32, &end_bit, 1); // (CHANGED/PRECALC) ::memcpy(last + remain, &end_bit, 1);
+	::memcpy(last + 1 * 64 - 8, &num_bits, 8); // (CHANGED/PRECALC) ::memcpy(last + final_blocks * 64 - 8, &num_bits, 8);
 
-	compress_digest(state, last, final_blocks);
+	local_compress_digest(state, last); // (CHANGED/PRECALC) local_compress_digest(state, last, final_blocks);
 
 	for(int k = 0; k < 8; ++k) {
-		state[k] = bswap_32(state[k]);
+		state[k] = local_bswap_32(state[k]);
 	}
 	::memcpy(out, state, 32);
 }
 
-bool sha256_ni_available()
+void recursive_sha256_ni(uint8_t* hash, const uint64_t num_iters)
 {
-//	int a, b, c, d;
-//
-//	// Look for CPUID.7.0.EBX[29]
-//	// EAX = 7, ECX = 0
-//	a = 7;
-//	c = 0;
-//
-//	asm volatile ("cpuid"
-//		:"=a"(a), "=b"(b), "=c"(c), "=d"(d)
-//		:"a"(a), "c"(c)
-//	);
+	// prerequisite: length is 32 bytes (recursive sha256)
 
-	int info[4];
-	cpuid(info, 0);
-	const int nIds = info[0];
-
-	if(nIds < 7) {
-		return false;
+	// (REMOVED) uint8_t tmp[32];
+	// (REMOVED) ::memcpy(tmp, hash, 32);
+	for(uint64_t i = 0; i < num_iters; ++i) {
+		local_sha256_ni(hash, hash); // (CHANGED/PRECALC) local_sha256_ni(tmp, tmp, 32);
 	}
-	cpuid(info, 7);
-
-	// Intel® SHA Extensions feature bit is EBX[29]
-	return ((info[1] >> 29) & 1);
+	// (REMOVED) ::memcpy(hash, tmp, 32);
 }
 
 #else // __SHA__
 
-void sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length) {
-	throw std::logic_error("sha256_ni() not available");
-}
-
-bool sha256_ni_available() {
-	return false;
+void recursive_sha256_ni(uint8_t* hash, const uint64_t num_iters)
+	throw std::logic_error("recursive_sha256_ni() not available");
 }
 
 #endif // __SHA__

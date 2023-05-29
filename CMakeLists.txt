@@ -153,6 +153,7 @@ add_library(mmx_iface SHARED
 	src/sha256_avx2.cpp
 	src/sha256_64_x8.cpp
 	src/sha256_ni.cpp
+	src/sha256_ni_rec.cpp
 	src/sha512.cpp
 	src/hmac_sha512.cpp
 	src/wordlist_en.cpp
@@ -258,6 +259,7 @@ else()
 	if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 		message(STATUS "Enabling -mavx2 -msha")
 		set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-msse4.2 -msha")
+		set_source_files_properties(src/sha256_ni_rec.cpp PROPERTIES COMPILE_FLAGS "-msse4.2 -msha")
 		set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
 	endif()
 endif()
