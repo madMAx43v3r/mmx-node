@@ -223,7 +223,7 @@ public:
 		if(frame.lookup) {
 			frame.key = engine->lookup(var.get(), false);
 		} else if(frame.key) {
-			engine->assign_entry(frame.dst, *frame.key, std::move(var));
+			engine->write_entry(frame.dst, *frame.key, *var);
 		} else {
 			engine->assign(frame.dst, std::move(var));
 		}
@@ -235,7 +235,7 @@ public:
 		if(frame.lookup) {
 			frame.key = engine->lookup(var.get(), false);
 		} else if(frame.key) {
-			engine->assign_entry(frame.dst, *frame.key, std::move(var));
+			engine->write_entry(frame.dst, *frame.key, *var);
 		} else {
 			engine->assign(frame.dst, std::move(var));
 		}

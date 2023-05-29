@@ -114,8 +114,6 @@ public:
 	void unref(const uint64_t dst);
 
 	var_t* assign(const uint64_t dst, std::unique_ptr<var_t> value);
-	var_t* assign_entry(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value);
-	var_t* assign_key(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value);
 
 	uint64_t lookup(const uint64_t src, const bool read_only);
 	uint64_t lookup(const var_t* var, const bool read_only);

@@ -76,33 +76,6 @@ var_t* Engine::assign(const uint64_t dst, std::unique_ptr<var_t> value)
 	return assign(var, std::move(value));
 }
 
-var_t* Engine::assign_entry(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value)
-{
-	if(!value) {
-		return nullptr;
-	}
-	if(have_init && dst < MEM_EXTERN) {
-		throw std::logic_error("already initialized");
-	}
-	switch(value->type) {
-		case TYPE_ARRAY:
-		case TYPE_MAP:
-			throw std::logic_error("cannot assign array or map as entry");
-		default:
-			break;
-	}
-	auto& var = entries[std::make_pair(dst, key)];
-	if(!var && dst >= MEM_STATIC) {
-		var = storage->read(contract, dst, key);
-	}
-	return assign(var, std::move(value));
-}
-
-var_t* Engine::assign_key(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value)
-{
-	return assign_entry(dst, lookup(key, false), std::move(value));
-}
-
 var_t* Engine::assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value)
 {
 	if(var) {
