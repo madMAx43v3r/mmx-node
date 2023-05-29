@@ -78,43 +78,54 @@ void load(	std::shared_ptr<vm::Engine> engine,
 void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 			const uint64_t dst_addr, const uint64_t* dst_key, const vm::var_t* var)
 {
-	std::unique_ptr<vm::var_t> out;
+	const vm::var_t* out = nullptr;
+	std::unique_ptr<vm::var_t> tmp;
 	if(var) {
 		switch(var->type) {
 			case vm::TYPE_REF: {
 				const auto heap = dst->alloc();
 				copy(dst, src, heap, ((const vm::ref_t*)var)->address);
-				out = std::make_unique<vm::ref_t>(heap);
+				tmp = std::make_unique<vm::ref_t>(heap);
 				break;
 			}
 			case vm::TYPE_ARRAY: {
+				if(dst_key) {
+					throw std::logic_error("cannot assign array here");
+				}
 				const auto array = (const vm::array_t*)var;
+				dst->assign(dst_addr, std::make_unique<vm::array_t>(array->size));
+
 				for(uint64_t i = 0; i < array->size; ++i) {
 					copy(dst, src, dst_addr, &i, src->read_entry(array->address, i));
 				}
-				out = std::make_unique<vm::array_t>(array->size);
 				break;
 			}
 			case vm::TYPE_MAP: {
+				if(dst_key) {
+					throw std::logic_error("cannot assign map here");
+				}
 				const auto map = (const vm::map_t*)var;
+				dst->assign(dst_addr, std::make_unique<vm::map_t>());
+
 				for(const auto& entry : src->find_entries(map->address)) {
 					const auto key = dst->lookup(src->read(entry.first), false);
 					copy(dst, src, dst_addr, &key, entry.second);
 				}
-				out = std::make_unique<vm::map_t>();
 				break;
 			}
 			default:
-				out = clone(var);
+				out = var;
 		}
 	}
 	if(!out) {
-		out = std::make_unique<vm::var_t>();
+		out = tmp.get();
 	}
-	if(dst_key) {
-		dst->assign_entry(dst_addr, *dst_key, std::move(out));
-	} else {
-		dst->assign(dst_addr, std::move(out));
+	if(out) {
+		if(dst_key) {
+			dst->write_entry(dst_addr, *dst_key, *out);
+		} else {
+			dst->write(dst_addr, *out);
+		}
 	}
 	dst->check_gas();
 }
