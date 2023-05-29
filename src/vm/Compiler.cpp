@@ -1551,7 +1551,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				auto lhs = get(recurse(args[0]));
 				for(size_t i = 1; i < args.size(); ++i) {
 					out.address = stack.new_addr();
-					code.emplace_back(OP_CONCAT, 0, out.address, lhs, get(recurse(args[i])));
+					code.emplace_back(OP_CONCAT, OPFLAG_REF_B | OPFLAG_REF_C, out.address, lhs, get(recurse(args[i])));
 					lhs = out.address;
 				}
 			}
