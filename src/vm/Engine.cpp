@@ -304,18 +304,44 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 		case TYPE_BINARY:
 			assign(var, binary_t::alloc((const binary_t&)src));
 			break;
-		case TYPE_ARRAY:
+		case TYPE_ARRAY: {
 			if(!dst) {
 				throw std::logic_error("cannot assign array here");
 			}
-			assign(var, clone_array(*dst, (const array_t&)src));
+			const auto& asrc = (const array_t&)src;
+			{
+				auto tmp = std::make_unique<array_t>(asrc.size);
+				tmp->address = *dst;
+				assign(var, std::move(tmp));
+			}
+			for(uint64_t i = 0; i < asrc.size; ++i) {
+				write_entry(*dst, i, read_entry_fail(asrc.address, i));
+				check_gas();
+			}
 			break;
-		case TYPE_MAP:
+		}
+		case TYPE_MAP: {
 			if(!dst) {
 				throw std::logic_error("cannot assign map here");
 			}
-			assign(var, clone_map(*dst, (const map_t&)src));
+			if(src.flags & FLAG_STORED) {
+				throw std::logic_error("cannot clone map from storage");
+			}
+			const auto& msrc = (const map_t&)src;
+			{
+				auto tmp = std::make_unique<map_t>();
+				tmp->address = *dst;
+				assign(var, std::move(tmp));
+			}
+			const auto begin = entries.lower_bound(std::make_pair(msrc.address, 0));
+			for(auto iter = begin; iter != entries.end() && iter->first.first == msrc.address; ++iter) {
+				if(auto value = iter->second.get()) {
+					write_entry(*dst, iter->first.second, *value);
+					check_gas();
+				}
+			}
 			break;
+		}
 		default:
 			throw invalid_type(src);
 	}
@@ -363,40 +389,6 @@ void Engine::pop_back(const uint64_t dst, const uint64_t& src)
 	erase_entry(src, index);
 	array.size--;
 	array.flags |= FLAG_DIRTY;
-}
-
-std::unique_ptr<array_t> Engine::clone_array(const uint64_t dst, const array_t& src)
-{
-	if(dst == src.address) {
-		throw std::logic_error("clone_array(): dst == src");
-	}
-	for(uint64_t i = 0; i < src.size; ++i) {
-		write_entry(dst, i, read_entry_fail(src.address, i));
-		check_gas();
-	}
-	auto var = std::make_unique<array_t>(src.size);
-	var->address = dst;
-	return var;
-}
-
-std::unique_ptr<map_t> Engine::clone_map(const uint64_t dst, const map_t& src)
-{
-	if(dst == src.address) {
-		throw std::logic_error("clone_map(): dst == src");
-	}
-	if(src.flags & FLAG_STORED) {
-		throw std::logic_error("cannot clone map from storage");
-	}
-	const auto begin = entries.lower_bound(std::make_pair(src.address, 0));
-	for(auto iter = begin; iter != entries.end() && iter->first.first == src.address; ++iter) {
-		if(auto value = iter->second.get()) {
-			write_entry(dst, iter->first.second, *value);
-			check_gas();
-		}
-	}
-	auto var = std::make_unique<map_t>();
-	var->address = dst;
-	return var;
 }
 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& src)

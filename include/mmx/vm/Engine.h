@@ -151,9 +151,6 @@ public:
 	var_t* read_key(const uint64_t src, const uint64_t key);
 	var_t& read_key_fail(const uint64_t src, const uint64_t key);
 
-	std::unique_ptr<array_t> clone_array(const uint64_t dst, const array_t& src);
-	std::unique_ptr<map_t> clone_map(const uint64_t dst, const map_t& src);
-
 	void copy(const uint64_t dst, const uint64_t src);
 	void clone(const uint64_t dst, const uint64_t src);
 	void get(const uint64_t dst, const uint64_t addr, const uint64_t key, const uint8_t flags);
