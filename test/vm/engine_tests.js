@@ -305,15 +305,16 @@ if(deref(clone(1)) != 1) {
 	if(size(array) != 1) {
 		fail("size(array) != 1");
 	}
+	array[0] = 12;
 	{
 		var tmp = clone(array);
-		if(tmp[0] != 11) {
-			fail("clone: array[0] != 11");
+		if(tmp[0] != 12) {
+			fail("clone: array[0] != 12");
 		}
 		pop(tmp);
 	}
-	if(pop(array) != 11) {
-		fail("pop(array) != 11");
+	if(pop(array) != 12) {
+		fail("pop(array) != 12");
 	}
 	if(size(array) != 0) {
 		fail("size(array) != 0");
@@ -408,8 +409,35 @@ if(deref(clone(1)) != 1) {
 		fail("test2.field");
 	}
 }
-
-
+{
+	var test = null;
+	if(test.field != null) {
+		fail("null.field != null");
+	}
+}
+{
+	var test = concat([1, 2], [3, 4], [5]);
+	if(size(test) != 5) {
+		fail("concat: size(test) != 5");
+	}
+	for(var i = 0; i < 5; ++i) {
+		if(test[i] != i + 1) {
+			fail("test[i] != i + 1");
+		}
+	}
+}
+{
+	var test = {
+		field: {
+			field: 1337
+		}
+	};
+	var test2 = test;
+	test = null;
+	if(test2.field.field != 1337) {
+		fail("test2.field.field != 1337");
+	}
+}
 
 
 
