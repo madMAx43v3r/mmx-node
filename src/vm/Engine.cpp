@@ -175,9 +175,6 @@ var_t* Engine::write(const uint64_t dst, const varptr_t& var)
 
 var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
 {
-	if(var.size() >= MEM_HEAP) {
-		throw std::logic_error("array too large");
-	}
 	auto array = assign(dst, std::make_unique<array_t>());
 	for(const auto& entry : var) {
 		push_back(dst, entry);
