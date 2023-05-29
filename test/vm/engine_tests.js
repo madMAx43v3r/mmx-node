@@ -1,4 +1,44 @@
 
+if(false) {
+	fail("false");
+}
+if(!true) {
+	fail("!");
+}
+if(!(!false)) {
+	fail("!!");
+}
+if(true && false) {
+	fail("true && false");
+}
+if(!(true || false)) {
+	fail("true || false");
+}
+if(true) {
+	// nop
+} else {
+	fail("else");
+}
+
+if(!(1 > 0)) {
+	fail("1 > 0");
+}
+if(!(1 >= 0)) {
+	fail("1 >= 0");
+}
+if(!(1 >= 1)) {
+	fail("1 >= 1");
+}
+if(!(0 < 1)) {
+	fail("0 < 1");
+}
+if(!(0 <= 1)) {
+	fail("0 <= 1");
+}
+if(!(1 <= 1)) {
+	fail("1 <= 1");
+}
+
 if((1 >> 0) != 1) {
 	fail("1 >> 0");
 }
@@ -215,6 +255,12 @@ if(ecdsa_verify(
 }
 if(size(null) != null) {
 	fail("size(null) != null");
+}
+if(min(1, 2, 3) != 1) {
+	fail("min()");
+}
+if(max(1, 2, 3) != 3) {
+	fail("max()");
 }
 
 {
