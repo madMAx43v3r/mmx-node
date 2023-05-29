@@ -746,17 +746,19 @@ void Engine::concat(const uint64_t dst, const uint64_t lhs, const uint64_t rhs)
 			if(dst == lhs || dst == rhs) {
 				throw std::logic_error("dst == lhs || dst == rhs");
 			}
+			const auto addr = alloc();
 			const auto& L = (const array_t&)lvar;
 			const auto& R = (const array_t&)rvar;
-			assign(dst, std::make_unique<array_t>());
+			assign(addr, std::make_unique<array_t>());
 			for(uint64_t i = 0; i < L.size; ++i) {
-				push_back(dst, read_entry_fail(L.address, i));
+				push_back(addr, read_entry_fail(L.address, i));
 				check_gas();
 			}
 			for(uint64_t i = 0; i < R.size; ++i) {
-				push_back(dst, read_entry_fail(R.address, i));
+				push_back(addr, read_entry_fail(R.address, i));
 				check_gas();
 			}
+			write(dst, ref_t(addr));
 			break;
 		}
 		default:
