@@ -12,7 +12,6 @@
 #include <vnx/vnx.h>
 
 #include <sha256_ni.h>
-#include <sha256_ni_rec.h>
 
 
 namespace mmx {
