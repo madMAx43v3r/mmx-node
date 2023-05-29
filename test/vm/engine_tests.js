@@ -350,6 +350,12 @@ if(deref(clone(1)) != 1) {
 	if(map.field != null) {
 		fail("after erase: map.field != null");
 	}
+	{
+		var tmp = clone(map);
+		if(tmp.field != null) {
+			fail("clone: tmp.field != null");
+		}
+	}
 }
 {
 	var map = {};
