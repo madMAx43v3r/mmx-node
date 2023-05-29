@@ -33,14 +33,16 @@ public:
 	virtual uint64_t lookup(const addr_t& contract, const var_t& value) const = 0;
 
 
-	virtual void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) {}
+	virtual void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) {
+		throw std::logic_error("not implemented");
+	}
 
 	virtual std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const {
-		return nullptr;
+		throw std::logic_error("not implemented");
 	}
 
 	virtual std::map<addr_t, uint128> get_balances(const addr_t& contract) const {
-		return std::map<addr_t, uint128>();
+		throw std::logic_error("not implemented");
 	}
 
 

@@ -1021,7 +1021,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 							assign(dst, binary_t::alloc(sbin.to_addr().to_string()));
 							break;
 						case 16:
-							assign(dst, binary_t::alloc(vnx::to_hex_string(sbin.data(), sbin.size, false, false)));
+							assign(dst, binary_t::alloc(sbin.to_hex_string()));
 							break;
 						case 0:
 							assign(dst, binary_t::alloc(sbin.data(), sbin.size, TYPE_STRING));
