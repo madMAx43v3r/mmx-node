@@ -213,6 +213,9 @@ if(ecdsa_verify(
 {
 	fail("ecdsa_verify", 2);
 }
+if(size(null) != null) {
+	fail("size(null) != null");
+}
 
 {
 	var array = [];
@@ -231,6 +234,9 @@ if(ecdsa_verify(
 	}
 	if(size(array) != 0) {
 		fail("size(array) != 0");
+	}
+	if(array[35345345345] != null) {
+		fail("array[35345345345] != null");
 	}
 }
 {
@@ -251,6 +257,49 @@ if(ecdsa_verify(
 		fail("after erase: map.field != null");
 	}
 }
+{
+	var map = {};
+	map[0] = true;
+	map[false] = true;
+	map[true] = true;
+	map["test"] = true;
+	map[binary("bin123")] = true;
+	var tmp0 = [];
+	map[tmp0] = true;
+	var tmp1 = {};
+	map[tmp1] = true;
+	
+	if(map[0] == null) {
+		fail("map[0] == null");
+	}
+	if(map[false] == null) {
+		fail("map[false] == null");
+	}
+	if(map[true] == null) {
+		fail("map[true] == null");
+	}
+	if(map["test"] == null) {
+		fail("map['test'] == null");
+	}
+	if(map[binary("bin123")] == null) {
+		fail("map[bin123] == null");
+	}
+	if(map[tmp0] == null) {
+		fail("map[tmp0] == null");
+	}
+	if(map[tmp1] == null) {
+		fail("map[tmp1] == null");
+	}
+}
+
+
+
+
+
+
+
+
+
 
 
 
