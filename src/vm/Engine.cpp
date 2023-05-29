@@ -198,6 +198,9 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 	if(var.get() == &src) {
 		return var.get();
 	}
+	if(src.flags & FLAG_DELETED) {
+		throw std::logic_error("write(): src has FLAG_DELETED");
+	}
 	if(var) {
 		if(var->flags & FLAG_CONST) {
 			if(dst) {
