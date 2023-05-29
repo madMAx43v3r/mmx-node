@@ -1,8 +1,8 @@
 /*
  * sha256_ni_rec.cpp
  *
- *  Created on: May 28, 2023
- *      Author: mad
+ *  Created on: May 29, 2023
+ *      Author: Max, voidxno
  */
 
 // purpose: rewrite of generic sha256_ni into optimized recursive_sha256_ni
