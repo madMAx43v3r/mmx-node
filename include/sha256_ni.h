@@ -12,6 +12,8 @@
 
 void sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length);
 
+void recursive_sha256_ni(uint8_t* hash, const uint64_t num_iters);
+
 bool sha256_ni_available();
 
 
