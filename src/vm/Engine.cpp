@@ -1713,7 +1713,11 @@ std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
 	std::map<uint64_t, const var_t*> out;
 	const auto begin = entries.lower_bound(std::make_pair(dst, 0));
 	for(auto iter = begin; iter != entries.end() && iter->first.first == dst; ++iter) {
-		out[iter->first.second] = iter->second.get();
+		if(auto var = iter->second.get()) {
+			if((var->flags & FLAG_DELETED) == 0) {
+				out[iter->first.second] = var;
+			}
+		}
 	}
 	return out;
 }
