@@ -730,9 +730,7 @@ void Engine::set(const uint64_t addr, const uint64_t key, const uint64_t src, co
 			write_key(addr, key, read_fail(src));
 			break;
 		default:
-			if(flags & OPFLAG_HARD_FAIL) {
-				throw invalid_type(var);
-			}
+			throw invalid_type(var);
 	}
 }
 
