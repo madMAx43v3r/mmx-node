@@ -309,8 +309,10 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 			const auto begin = entries.lower_bound(std::make_pair(msrc.address, 0));
 			for(auto iter = begin; iter != entries.end() && iter->first.first == msrc.address; ++iter) {
 				if(auto value = iter->second.get()) {
-					write_entry(*dst, iter->first.second, *value);
-					check_gas();
+					if((value->flags & FLAG_DELETED) == 0) {
+						write_entry(*dst, iter->first.second, *value);
+						check_gas();
+					}
 				}
 			}
 			break;
