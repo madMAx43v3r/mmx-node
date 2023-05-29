@@ -384,7 +384,7 @@ std::unique_ptr<map_t> Engine::clone_map(const uint64_t dst, const map_t& src)
 	if(dst == src.address) {
 		throw std::logic_error("dst == src");
 	}
-	if(src.address >= MEM_STATIC) {
+	if(src.flags & FLAG_STORED) {
 		throw std::logic_error("cannot clone map from storage");
 	}
 	const auto begin = entries.lower_bound(std::make_pair(src.address, 0));
