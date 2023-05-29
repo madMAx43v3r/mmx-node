@@ -60,6 +60,9 @@ var_t* Engine::assign(const uint64_t dst, std::unique_ptr<var_t> value)
 		throw std::logic_error("already initialized");
 	}
 	switch(value->type) {
+		case TYPE_REF:
+			addref(((const ref_t*)value.get())->address);
+			break;
 		case TYPE_ARRAY:
 			((array_t*)value.get())->address = dst;
 			break;
