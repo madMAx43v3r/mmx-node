@@ -652,6 +652,9 @@ void Engine::step()
 		exec(code[instr_ptr]);
 		check_gas();
 	} catch(...) {
+		if(is_debug) {
+			dump_memory();
+		}
 		error_addr = instr_ptr;
 		throw;
 	}

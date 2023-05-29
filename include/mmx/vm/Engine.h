@@ -101,6 +101,8 @@ public:
 
 	const addr_t contract;
 
+	bool is_debug = false;
+
 	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote;
 	std::function<void(const addr_t& address, const std::string& field, const uint64_t dst)> read_contract;
 

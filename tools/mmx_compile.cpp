@@ -91,6 +91,9 @@ int main(int argc, char** argv)
 
 		auto storage = std::make_shared<vm::StorageRAM>();
 		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
+		if(verbose) {
+			engine->is_debug = true;
+		}
 		engine->gas_limit = gas_limit;
 		vm::load(engine, bin);
 		engine->begin(0);
