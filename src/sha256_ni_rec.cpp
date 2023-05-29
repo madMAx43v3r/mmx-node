@@ -9,7 +9,7 @@
 // prerequisite: length is 32 bytes (recursive sha256)
 // optimization: rewrite with prerequisite to help compiler optimizations
 
-#include <sha256_ni_rec.h>
+#include <sha256_ni.h>
 
 #include <cstring>
 #include <stdexcept>
@@ -23,9 +23,9 @@
 #endif
 
 #ifdef _WIN32
-#define optimalinline inline
+#define OPTIMALINLINE inline
 #else
-#define optimalinline __attribute__((always_inline)) inline
+#define OPTIMALINLINE __attribute__((always_inline)) inline
 #endif
 
 alignas(64)
@@ -48,15 +48,15 @@ static const uint32_t local_K[] = {
 	0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2,
 };
 
-optimalinline uint32_t local_bswap_32(const uint32_t val) {
+OPTIMALINLINE uint32_t local_bswap_32(const uint32_t val) {
 	return ((val & 0xFF) << 24) | ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | ((val & 0xFF000000) >> 24);
 }
 
-optimalinline uint64_t local_bswap_64(const uint64_t val) {
+OPTIMALINLINE uint64_t local_bswap_64(const uint64_t val) {
 	return (uint64_t(local_bswap_32(val)) << 32) | local_bswap_32(val >> 32);
 }
 
-optimalinline void local_compress_digest(uint32_t* state, const uint8_t* input) // (CHANGED/PRECALC) static void local_compress_digest(uint32_t* state, const uint8_t* input, size_t blocks)
+OPTIMALINLINE void local_compress_digest(uint32_t* state, const uint8_t* input) // (CHANGED/PRECALC) static void local_compress_digest(uint32_t* state, const uint8_t* input, size_t blocks)
 {
 	// prerequisite: length is 32 bytes (recursive sha256)
 
@@ -235,7 +235,7 @@ optimalinline void local_compress_digest(uint32_t* state, const uint8_t* input) 
 	_mm_storeu_si128(reinterpret_cast<__m128i*>(&state[4]), _mm_alignr_epi8(STATE1, STATE0, 8)); // ABEF
 }
 
-optimalinline void local_sha256_ni(uint8_t* out, const uint8_t* in) // (CHANGED/PRECALC) void local_sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length)
+OPTIMALINLINE void local_sha256_ni(uint8_t* out, const uint8_t* in) // (CHANGED/PRECALC) void local_sha256_ni(uint8_t* out, const uint8_t* in, const uint64_t length)
 {
 	// prerequisite: length is 32 bytes (recursive sha256)
 
