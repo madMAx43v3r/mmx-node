@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.13)
 project(mmx-node C CXX ASM)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 if(MSVC)
 	set(CMAKE_CXX_STANDARD 20)
@@ -36,6 +38,12 @@ else()
 	include(cmake/commit_hash_json.cmake)
 	
 	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs)
+	
+	if(WITH_COVERAGE)
+		message(STATUS "Enabling -O0 -coverage")
+		add_compile_options(-O0 --coverage)
+		add_link_options(-lgcov --coverage)
+	endif()
 	
 	set_source_files_properties(src/vm/Compiler.cpp
 		PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)

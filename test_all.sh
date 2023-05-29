@@ -2,6 +2,8 @@
 
 set -e
 
+./scripts/reset_coverage.sh
+
 echo "Unit tests [mmx_tests]"
 ./build/test/mmx_tests
 echo "Pass"

@@ -45,6 +45,7 @@ CMakeUserPresets.json
 /DB_VERSION
 /testnet*
 /tmp
+/coverage.info
 /.idea
 /_deps
 /*.dat
