@@ -137,6 +137,8 @@ void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, cons
 
 class AssignTo : public vnx::Visitor {
 public:
+	// Note: This class is consensus critical.
+
 	std::shared_ptr<vm::Engine> engine;
 
 	AssignTo(std::shared_ptr<vm::Engine> engine, const uint64_t dst)
@@ -150,26 +152,11 @@ public:
 	}
 
 	void visit_null() override {
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(vm::var_t(), false);
-		} else if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, vm::var_t());
-		} else {
-			engine->write(frame.dst, vm::var_t());
-		}
+		handle(std::make_unique<vm::var_t>());
 	}
 
 	void visit(const bool& value) override {
-		const auto var = vm::var_t(value ? vm::TYPE_TRUE : vm::TYPE_FALSE);
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(var, false);
-		} else if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, var);
-		} else {
-			engine->write(frame.dst, var);
-		}
+		handle(std::make_unique<vm::var_t>(value ? vm::TYPE_TRUE : vm::TYPE_FALSE));
 	}
 
 	void visit(const uint8_t& value) override {
@@ -218,39 +205,15 @@ public:
 	}
 
 	void visit(const std::string& value) override {
-		auto var = vm::binary_t::alloc(value);
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(var.get(), false);
-		} else if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, *var);
-		} else {
-			engine->assign(frame.dst, std::move(var));
-		}
+		handle(vm::binary_t::alloc(value));
 	}
 
 	void visit(const std::vector<uint8_t>& value) override {
-		auto var = vm::binary_t::alloc(value.data(), value.size());
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(var.get(), false);
-		} else if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, *var);
-		} else {
-			engine->assign(frame.dst, std::move(var));
-		}
+		handle(vm::binary_t::alloc(value.data(), value.size()));
 	}
 
 	void visit(const uint256_t& value) {
-		const auto var = vm::uint_t(value);
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(var, false);
-		} else if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, var);
-		} else {
-			engine->write(frame.dst, var);
-		}
+		handle(std::make_unique<vm::uint_t>(value));
 	}
 
 	void list_begin(size_t size) override {
@@ -264,15 +227,7 @@ public:
 	void list_end(size_t size) override {
 		const auto addr = stack.back().dst;
 		stack.pop_back();
-		const auto& frame = stack.back();
-		if(frame.lookup) {
-			throw std::logic_error("key type not supported");
-		}
-		if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, vm::ref_t(addr));
-		} else {
-			engine->write(frame.dst, vm::ref_t(addr));
-		}
+		handle(std::make_unique<vm::ref_t>(addr));
 	}
 
 	void map_begin(size_t size) override {
@@ -289,14 +244,26 @@ public:
 	void map_end(size_t size) override {
 		const auto addr = stack.back().dst;
 		stack.pop_back();
-		const auto& frame = stack.back();
+		handle(std::make_unique<vm::ref_t>(addr));
+	}
+
+private:
+	void handle(std::unique_ptr<var_t> var) {
+		auto& frame = stack.back();
 		if(frame.lookup) {
-			throw std::logic_error("key type not supported");
-		}
-		if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, vm::ref_t(addr));
+			switch(var->type) {
+				case TYPE_UINT:
+				case TYPE_STRING:
+				case TYPE_BINARY:
+					break;
+				default:
+					throw std::logic_error("invalid key type: " + to_string(var->type));
+			}
+			frame.key = engine->lookup(*var, false);
+		} else if(frame.key) {
+			engine->write_entry(frame.dst, *frame.key, *var);
 		} else {
-			engine->write(frame.dst, vm::ref_t(addr));
+			engine->assign(frame.dst, std::move(var));
 		}
 	}
 
