@@ -40,6 +40,11 @@ memo_t::memo_t(const std::string& str)
 	}
 }
 
+hash_t memo_t::to_hash() const
+{
+	return hash_t::from_bytes(bytes);
+}
+
 uint256_t memo_t::to_uint() const
 {
 	uint256_t out = 0;

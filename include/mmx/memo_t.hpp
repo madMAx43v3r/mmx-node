@@ -35,6 +35,8 @@ public:
 
 	explicit memo_t(const char* str) : memo_t(std::string(str)) {}
 
+	hash_t to_hash() const;
+
 	uint256_t to_uint() const;
 
 	std::string to_string() const;
