@@ -147,11 +147,11 @@ int main(int argc, char** argv)
 	VNX_TEST_END()
 
 	auto storage = std::make_shared<vm::StorageRAM>();
+	auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
+	engine->gas_limit = 1000000;
 
 	VNX_TEST_BEGIN("setup")
 	{
-		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
-		engine->gas_limit = 1000000;
 		vm::assign(engine, vm::MEM_STATIC + 1, vnx::Variant());
 		vm::assign(engine, vm::MEM_STATIC + 2, vnx::Variant(true));
 		vm::assign(engine, vm::MEM_STATIC + 3, vnx::Variant(false));
@@ -169,24 +169,21 @@ int main(int argc, char** argv)
 			vm::assign(engine, vm::MEM_STATIC + 10, vnx::Variant(tmp));
 		}
 		engine->write(vm::MEM_STATIC + 11, vm::uint_t(-1));
-		engine->commit();
 	}
 	VNX_TEST_END()
 
-	VNX_TEST_BEGIN("assign")
+	const auto check_func_1 = [](std::shared_ptr<vm::Engine> engine, const uint64_t offset)
 	{
-		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, true);
-		engine->gas_limit = 1000000;
-		expect(engine->read(vm::MEM_STATIC + 1), vm::var_t());
-		expect(engine->read(vm::MEM_STATIC + 2), vm::var_t(true));
-		expect(engine->read(vm::MEM_STATIC + 3), vm::var_t(false));
-		expect(engine->read(vm::MEM_STATIC + 4), vm::uint_t(1337));
-		expect(engine->read(vm::MEM_STATIC + 5), vm::to_binary("test"));
-		expect(engine->read(vm::MEM_STATIC + 6), vm::to_binary(bytes_t<4>(std::vector<uint8_t>{1, 2, 3, 4})));
-		expect(engine->read(vm::MEM_STATIC + 7), vm::to_binary(hash_t("test")));
-		expect(engine->read(vm::MEM_STATIC + 8), vm::to_binary(addr_t("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")));
+		expect(engine->read(offset + 1), vm::var_t());
+		expect(engine->read(offset + 2), vm::var_t(true));
+		expect(engine->read(offset + 3), vm::var_t(false));
+		expect(engine->read(offset + 4), vm::uint_t(1337));
+		expect(engine->read(offset + 5), vm::to_binary("test"));
+		expect(engine->read(offset + 6), vm::to_binary(bytes_t<4>(std::vector<uint8_t>{1, 2, 3, 4})));
+		expect(engine->read(offset + 7), vm::to_binary(hash_t("test")));
+		expect(engine->read(offset + 8), vm::to_binary(addr_t("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")));
 		{
-			const auto& ref = engine->read_fail<vm::ref_t>(vm::MEM_STATIC + 9, vm::TYPE_REF);
+			const auto& ref = engine->read_fail<vm::ref_t>(offset + 9, vm::TYPE_REF);
 			const auto& var = engine->read_fail<vm::array_t>(ref.address, vm::TYPE_ARRAY);
 			vnx::test::expect(var.size, 4u);
 			vnx::test::expect(var.address, ref.address);
@@ -196,7 +193,7 @@ int main(int argc, char** argv)
 			}
 		}
 		{
-			const auto& ref = engine->read_fail<vm::ref_t>(vm::MEM_STATIC + 10, vm::TYPE_REF);
+			const auto& ref = engine->read_fail<vm::ref_t>(offset + 10, vm::TYPE_REF);
 			const auto& var = engine->read_fail<vm::map_t>(ref.address, vm::TYPE_MAP);
 			vnx::test::expect(var.address, ref.address);
 			expect(engine->read_key(ref.address, vm::to_binary("field")), vm::uint_t(123));
@@ -211,7 +208,27 @@ int main(int argc, char** argv)
 				}
 			}
 		}
-		expect(engine->read(vm::MEM_STATIC + 11), vm::uint_t(-1));
+		expect(engine->read(offset + 11), vm::uint_t(-1));
+	};
+
+	VNX_TEST_BEGIN("copy")
+	{
+		auto engine1 = std::make_shared<vm::Engine>(hash_t("1"), storage, false);
+		engine1->gas_limit = 1000000;
+		for(size_t i = 1; i <= 11; ++i) {
+			vm::copy(engine1, engine, vm::MEM_STACK + i, vm::MEM_STATIC + i);
+		}
+		check_func_1(engine1, vm::MEM_STACK);
+	}
+	VNX_TEST_END()
+
+	engine->commit();
+
+	VNX_TEST_BEGIN("assign")
+	{
+		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, true);
+		engine->gas_limit = 1000000;
+		check_func_1(engine, vm::MEM_STATIC);
 	}
 	VNX_TEST_END()
 
@@ -238,7 +255,6 @@ int main(int argc, char** argv)
 			const auto var = vm::read(engine, vm::MEM_STATIC + 10);
 			vnx::test::expect(var.is_object(), true);
 			const auto value = var.to_object();
-			std::cout << value.to_string() << std::endl;
 			vnx::test::expect(value["field"].to<uint64_t>(), 123u);
 			vnx::test::expect(value["field1"].to<std::string>(), "test");
 			vnx::test::expect(value["field2"].to<std::vector<uint32_t>>(), std::vector<uint32_t>{11, 12, 13, 14});
