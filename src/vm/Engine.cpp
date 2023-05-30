@@ -860,6 +860,12 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						default: throw std::logic_error("invalid conversion: UINT to STRING with flags " + to_hex(dflags));
 					}
 					if(value >> 128) {
+						switch(base) {
+							case 2:
+							case 8:
+							case 16: break;
+							default: throw std::logic_error("invalid conversion: 256-bit UINT to STRING with base " + std::to_string(base));
+						}
 						gas_used += CONV_UINT_256_STRING_COST;
 					} else if(value >> 64) {
 						gas_used += CONV_UINT_128_STRING_COST;
