@@ -83,7 +83,7 @@ std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const std::vector<instr_
 	for(const auto& instr : code) {
 		length += 2 + get_opcode_info(instr.code).nargs * 4;
 	}
-	auto data = (uint8_t*)::malloc(length);
+	auto data = new uint8_t[length];
 
 	size_t offset = 0;
 	for(const auto& instr : code)
