@@ -5,6 +5,8 @@
 #include <mmx/BlockHeader.hxx>
 #include <mmx/BlockHeader_calc_hash.hxx>
 #include <mmx/BlockHeader_calc_hash_return.hxx>
+#include <mmx/BlockHeader_get_block_index.hxx>
+#include <mmx/BlockHeader_get_block_index_return.hxx>
 #include <mmx/BlockHeader_get_header.hxx>
 #include <mmx/BlockHeader_get_header_return.hxx>
 #include <mmx/BlockHeader_is_valid.hxx>
@@ -13,6 +15,7 @@
 #include <mmx/BlockHeader_validate_return.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/block_index_t.hxx>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/uint128.hpp>
@@ -361,11 +364,12 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<BlockHeader>(); };
-	type_code->methods.resize(4);
+	type_code->methods.resize(5);
 	type_code->methods[0] = ::mmx::BlockHeader_calc_hash::static_get_type_code();
-	type_code->methods[1] = ::mmx::BlockHeader_get_header::static_get_type_code();
-	type_code->methods[2] = ::mmx::BlockHeader_is_valid::static_get_type_code();
-	type_code->methods[3] = ::mmx::BlockHeader_validate::static_get_type_code();
+	type_code->methods[1] = ::mmx::BlockHeader_get_block_index::static_get_type_code();
+	type_code->methods[2] = ::mmx::BlockHeader_get_header::static_get_type_code();
+	type_code->methods[3] = ::mmx::BlockHeader_is_valid::static_get_type_code();
+	type_code->methods[4] = ::mmx::BlockHeader_validate::static_get_type_code();
 	type_code->fields.resize(24);
 	{
 		auto& field = type_code->fields[0];
@@ -521,6 +525,12 @@ std::shared_ptr<vnx::Value> BlockHeader::vnx_call_switch(std::shared_ptr<const v
 			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_calc_hash>(_method);
 			auto _return_value = ::mmx::BlockHeader_calc_hash_return::create();
 			_return_value->_ret_0 = calc_hash();
+			return _return_value;
+		}
+		case 0x94b88dfa2f7fdcacull: {
+			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_get_block_index>(_method);
+			auto _return_value = ::mmx::BlockHeader_get_block_index_return::create();
+			_return_value->_ret_0 = get_block_index(_args->file_offset);
 			return _return_value;
 		}
 		case 0xd7c88d66a260d84aull: {

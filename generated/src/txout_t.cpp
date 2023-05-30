@@ -3,7 +3,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/txout_t.hxx>
-#include <mmx/memo_t.hpp>
 #include <mmx/txio_t.hxx>
 
 #include <vnx/vnx.h>
@@ -13,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txout_t::VNX_TYPE_HASH(0xaa91772752216576ull);
-const vnx::Hash64 txout_t::VNX_CODE_HASH(0x88ef1f10c52239f3ull);
+const vnx::Hash64 txout_t::VNX_CODE_HASH(0x16ffc0f3654ba71cull);
 
 vnx::Hash64 txout_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -144,7 +143,7 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txout_t";
 	type_code->type_hash = vnx::Hash64(0xaa91772752216576ull);
-	type_code->code_hash = vnx::Hash64(0x88ef1f10c52239f3ull);
+	type_code->code_hash = vnx::Hash64(0x16ffc0f3654ba71cull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txout_t);
 	type_code->parents.resize(1);

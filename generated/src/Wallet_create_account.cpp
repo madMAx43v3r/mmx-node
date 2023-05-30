@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_create_account::VNX_TYPE_HASH(0x11cd618b00e9e56cull);
-const vnx::Hash64 Wallet_create_account::VNX_CODE_HASH(0x18f016d87a9c7869ull);
+const vnx::Hash64 Wallet_create_account::VNX_CODE_HASH(0x5aec81a2465182full);
 
 vnx::Hash64 Wallet_create_account::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_create_account::static_create_type_code() 
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.create_account";
 	type_code->type_hash = vnx::Hash64(0x11cd618b00e9e56cull);
-	type_code->code_hash = vnx::Hash64(0x18f016d87a9c7869ull);
+	type_code->code_hash = vnx::Hash64(0x5aec81a2465182full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;

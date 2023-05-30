@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_txout_t_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/memo_t.hpp>
 #include <mmx/txio_t.hxx>
 
 
@@ -14,7 +13,6 @@ namespace mmx {
 struct MMX_EXPORT txout_t : ::mmx::txio_t {
 	
 	
-	::mmx::memo_t memo;
 	
 	typedef ::mmx::txio_t Super;
 	
