@@ -364,18 +364,13 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	vm::load(engine, binary);
 
-	std::weak_ptr<vm::Engine> parent = engine;
 	std::map<addr_t, std::shared_ptr<const Contract>> contract_cache;
 
 	contract_cache[tx->id] = tx->deploy;
 
-	engine->remote_call = [this, tx, context, executable, storage_cache, parent, &contract_cache, &exec_outputs, &exec_spend_map, &error]
+	engine->remote_call = [this, tx, context, executable, storage_cache, &engine, &contract_cache, &exec_outputs, &exec_spend_map, &error]
 		(const std::string& name, const std::string& method, const uint32_t nargs)
 	{
-		auto engine = parent.lock();
-		if(!engine) {
-			throw std::logic_error("!engine");
-		}
 		const auto address = executable->get_external(name);
 
 		auto& fetch = contract_cache[address];
@@ -407,13 +402,9 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		engine->check_gas();
 	};
 
-	engine->read_contract = [this, tx, executable, parent, &contract_cache]
+	engine->read_contract = [this, tx, executable, &engine, &contract_cache]
 		(const addr_t& address, const std::string& field, const uint64_t dst)
 	{
-		auto engine = parent.lock();
-		if(!engine) {
-			throw std::logic_error("!engine");
-		}
 		auto& contract = contract_cache[address];
 		if(!contract) {
 			contract = get_contract_ex(address, &engine->gas_used, engine->gas_limit);
