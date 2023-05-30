@@ -11,8 +11,38 @@ if(!(!false)) {
 if(true && false) {
 	fail("true && false");
 }
+if(false && true) {
+	fail("false && true");
+}
 if(!(true || false)) {
 	fail("true || false");
+}
+if(!(false || true)) {
+	fail("false || true");
+}
+if(!(true && true)) {
+	fail("true && true");
+}
+if(!(true || true)) {
+	fail("true && true");
+}
+if(false || false) {
+	fail("false || false");
+}
+if(false && false) {
+	fail("false && false");
+}
+if(false ^ false) {
+	fail("false ^ false");
+}
+if(true ^ true) {
+	fail("true ^ true");
+}
+if(!(false ^ true)) {
+	fail("false ^ true");
+}
+if(!(true ^ false)) {
+	fail("false ^ true");
 }
 if(true) {
 	// nop
@@ -256,8 +286,11 @@ if(ecdsa_verify(
 {
 	fail("ecdsa_verify", 2);
 }
-if(size(null) != null) {
-	fail("size(null) != null");
+if(size("123") != 3) {
+	fail("size('123')");
+}
+if(size(binary("123")) != 3) {
+	fail("size(binary('123'))");
 }
 if(min(1, 2, 3) != 1) {
 	fail("min()");
@@ -438,7 +471,6 @@ if(deref(clone(1)) != 1) {
 		fail("test2.field.field != 1337");
 	}
 }
-
 
 
 
