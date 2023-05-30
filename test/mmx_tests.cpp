@@ -24,8 +24,6 @@ int main(int argc, char** argv)
 {
 	vnx::test::init("mmx");
 
-	vnx::init("mmx_tests", argc, argv);
-
 	VNX_TEST_BEGIN("uint128")
 	{
 		vnx::test::expect(uint128().to_double(), 0);
@@ -36,12 +34,6 @@ int main(int argc, char** argv)
 		vnx::test::expect((uint128(256) / 4).lower(), 64u);
 		vnx::test::expect((uint128(256) / 8).lower(), 32u);
 		vnx::test::expect((uint128(256) / 16).lower(), 16u);
-	}
-	VNX_TEST_END()
-
-	VNX_TEST_BEGIN("skey_t")
-	{
-		// TODO
 	}
 	VNX_TEST_END()
 
@@ -111,7 +103,7 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
-	vnx::close();
+	vnx::test::exit();
 }
 
 

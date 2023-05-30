@@ -311,6 +311,11 @@ std::unique_ptr<binary_t> to_binary(const bytes_t<N>& value) {
 	return binary_t::alloc(value.data(), value.size());
 }
 
+inline
+std::unique_ptr<binary_t> to_binary(const std::string& value, const vartype_e& type = TYPE_STRING) {
+	return binary_t::alloc(value, type);
+}
+
 
 } // vm
 } // mmx

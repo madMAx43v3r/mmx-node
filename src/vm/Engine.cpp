@@ -568,6 +568,22 @@ var_t* Engine::read_key(const uint64_t src, const uint64_t key)
 	return nullptr;
 }
 
+var_t* Engine::read_key(const uint64_t src, const var_t& key)
+{
+	if(auto addr = lookup(key, true)) {
+		return read_entry(src, addr);
+	}
+	return nullptr;
+}
+
+var_t* Engine::read_key(const uint64_t src, const varptr_t& key)
+{
+	if(auto addr = lookup(key, true)) {
+		return read_entry(src, addr);
+	}
+	return nullptr;
+}
+
 var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 {
 	if(auto addr = lookup(key, true)) {

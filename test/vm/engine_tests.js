@@ -373,8 +373,20 @@ if(uint_hex("aabbc") != 0xaabbc) {
 if(uint(binary(0xABCDEF0)) != 0xABCDEF0) {
 	fail("uint(binary(0xABCDEF0))");
 }
+if(uint(binary(binary(0xABCDEF0))) != 0xABCDEF0) {
+	fail("uint(binary(binary(0xABCDEF0)))");
+}
 if(uint_le(binary_le(0xABCDEF0)) != 0xABCDEF0) {
 	fail("uint_le(binary_le(0xABCDEF0))");
+}
+if(bech32(binary(bech32("MMX"))) != bech32("MMX")) {
+	fail("bech32(binary(bech32(MMX)))");
+}
+if([] == []) {
+	fail("[] == []");
+}
+if({} == {}) {
+	fail("[] == []");
 }
 
 __nop();

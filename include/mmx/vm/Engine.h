@@ -150,6 +150,8 @@ public:
 	var_t& read_entry_fail(const uint64_t src, const uint64_t key);
 
 	var_t* read_key(const uint64_t src, const uint64_t key);
+	var_t* read_key(const uint64_t src, const var_t& key);
+	var_t* read_key(const uint64_t src, const varptr_t& key);
 	var_t& read_key_fail(const uint64_t src, const uint64_t key);
 
 	void copy(const uint64_t dst, const uint64_t src);

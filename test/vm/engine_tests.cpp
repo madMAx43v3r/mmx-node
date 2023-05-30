@@ -24,14 +24,13 @@ void expect(const vm::var_t* got, const vm::var_t* want) {
 		throw std::logic_error("expected " + to_string(want) + " but got " + to_string(got));
 	}
 }
+
+void expect(const vm::var_t* got, const vm::var_t& want) {
+	expect(got, &want);
+}
+
 void expect(const vm::var_t* got, vm::varptr_t want) {
 	expect(got, want.get());
-}
-void expect(vm::varptr_t got, const vm::var_t* want) {
-	expect(got.get(), want);
-}
-void expect(vm::varptr_t got, vm::varptr_t want) {
-	expect(got.get(), want.get());
 }
 
 void test_serialize(vm::varptr_t var, bool with_rc, bool with_vf)
@@ -74,11 +73,9 @@ void test_clone(vm::varptr_t var) {
 }
 
 
-int main(int argc, char** argv) {
-
+int main(int argc, char** argv)
+{
 	vnx::test::init("mmx.vm.engine");
-
-	vnx::init("vm_engine_tests", argc, argv);
 
 	VNX_TEST_BEGIN("serialize")
 	{
@@ -149,8 +146,110 @@ int main(int argc, char** argv) {
 	}
 	VNX_TEST_END()
 
-	vnx::close();
+	auto storage = std::make_shared<vm::StorageRAM>();
+
+	VNX_TEST_BEGIN("setup")
+	{
+		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
+		engine->gas_limit = 1000000;
+		vm::assign(engine, vm::MEM_STATIC + 1, vnx::Variant());
+		vm::assign(engine, vm::MEM_STATIC + 2, vnx::Variant(true));
+		vm::assign(engine, vm::MEM_STATIC + 3, vnx::Variant(false));
+		vm::assign(engine, vm::MEM_STATIC + 4, vnx::Variant(1337));
+		vm::assign(engine, vm::MEM_STATIC + 5, vnx::Variant("test"));
+		vm::assign(engine, vm::MEM_STATIC + 6, vnx::Variant(std::vector<uint8_t>{1, 2, 3, 4}));
+		vm::assign(engine, vm::MEM_STATIC + 7, vnx::Variant(hash_t("test")));
+		vm::assign(engine, vm::MEM_STATIC + 8, vnx::Variant(addr_t("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")));
+		vm::assign(engine, vm::MEM_STATIC + 9, vnx::Variant(std::vector<int64_t>{11, 12, 13, 14}));
+		{
+			vnx::Object tmp;
+			tmp["field"] = 123;
+			tmp["field1"] = "test";
+			tmp["field2"] = std::vector<uint32_t>{11, 12, 13, 14};
+			vm::assign(engine, vm::MEM_STATIC + 10, vnx::Variant(tmp));
+		}
+		engine->write(vm::MEM_STATIC + 11, vm::uint_t(-1));
+		engine->commit();
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("assign")
+	{
+		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, true);
+		engine->gas_limit = 1000000;
+		expect(engine->read(vm::MEM_STATIC + 1), vm::var_t());
+		expect(engine->read(vm::MEM_STATIC + 2), vm::var_t(true));
+		expect(engine->read(vm::MEM_STATIC + 3), vm::var_t(false));
+		expect(engine->read(vm::MEM_STATIC + 4), vm::uint_t(1337));
+		expect(engine->read(vm::MEM_STATIC + 5), vm::to_binary("test"));
+		expect(engine->read(vm::MEM_STATIC + 6), vm::to_binary(bytes_t<4>(std::vector<uint8_t>{1, 2, 3, 4})));
+		expect(engine->read(vm::MEM_STATIC + 7), vm::to_binary(hash_t("test")));
+		expect(engine->read(vm::MEM_STATIC + 8), vm::to_binary(addr_t("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")));
+		{
+			const auto& ref = engine->read_fail<vm::ref_t>(vm::MEM_STATIC + 9, vm::TYPE_REF);
+			const auto& var = engine->read_fail<vm::array_t>(ref.address, vm::TYPE_ARRAY);
+			vnx::test::expect(var.size, 4u);
+			vnx::test::expect(var.address, ref.address);
+			vnx::test::expect(var.ref_count, 1u);
+			for(size_t i = 0; i < 4; ++i) {
+				expect(engine->read_entry(ref.address, i), vm::uint_t(i + 11));
+			}
+		}
+		{
+			const auto& ref = engine->read_fail<vm::ref_t>(vm::MEM_STATIC + 10, vm::TYPE_REF);
+			const auto& var = engine->read_fail<vm::map_t>(ref.address, vm::TYPE_MAP);
+			vnx::test::expect(var.address, ref.address);
+			expect(engine->read_key(ref.address, vm::to_binary("field")), vm::uint_t(123));
+			expect(engine->read_key(ref.address, vm::to_binary("field1")), vm::to_binary("test"));
+			{
+				const auto& ref2 = engine->read_key_fail<vm::ref_t>(ref.address,
+						engine->lookup(vm::to_binary("field2"), true), vm::TYPE_REF);
+				const auto& var = engine->read_fail<vm::array_t>(ref2.address, vm::TYPE_ARRAY);
+				vnx::test::expect(var.size, 4u);
+				for(size_t i = 0; i < 4; ++i) {
+					expect(engine->read_entry(ref2.address, i), vm::uint_t(i + 11));
+				}
+			}
+		}
+		expect(engine->read(vm::MEM_STATIC + 11), vm::uint_t(-1));
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("convert")
+	{
+		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, true);
+		engine->gas_limit = 1000000;
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 1).is_null(), true);
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 2).to<bool>(), true);
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 3).to<bool>(), false);
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 4).to<int64_t>(), 1337);
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 5).to<std::string>(), "test");
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 6).to<std::vector<uint8_t>>(), std::vector<uint8_t>{1, 2, 3, 4});
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 7).to<hash_t>(), hash_t("test"));
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 8).to<addr_t>(), addr_t("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf"));
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 9).to<std::vector<int64_t>>(), std::vector<int64_t>{11, 12, 13, 14});
+		{
+			const auto& ref = engine->read_fail<vm::ref_t>(vm::MEM_STATIC + 10, vm::TYPE_REF);
+			engine->read_key(ref.address, vm::to_binary("field"));
+			engine->read_key(ref.address, vm::to_binary("field1"));
+			engine->read_key(ref.address, vm::to_binary("field2"));
+		}
+		{
+			const auto var = vm::read(engine, vm::MEM_STATIC + 10);
+			vnx::test::expect(var.is_object(), true);
+			const auto value = var.to_object();
+			std::cout << value.to_string() << std::endl;
+			vnx::test::expect(value["field"].to<uint64_t>(), 123u);
+			vnx::test::expect(value["field1"].to<std::string>(), "test");
+			vnx::test::expect(value["field2"].to<std::vector<uint32_t>>(), std::vector<uint32_t>{11, 12, 13, 14});
+		}
+		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 11).to<std::string>(), "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+	}
+	VNX_TEST_END()
+
+	vnx::test::exit();
 }
+
 
 
 
