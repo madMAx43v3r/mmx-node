@@ -1094,10 +1094,10 @@ vnx::optional<memo_t> Engine::parse_memo(const uint64_t addr)
 			return memo_t(((const binary_t&)value).to_string());
 		case TYPE_BINARY: {
 			const auto& bin = (const binary_t&)value;
-			if(bin.size > memo_t::size_) {
+			memo_t memo;
+			if(bin.size > memo.size()) {
 				throw std::runtime_error("binary memo too large: " + std::to_string(bin.size));
 			}
-			memo_t memo;
 			::memcpy(memo.data(), bin.data(), bin.size);
 			return memo;
 		}
