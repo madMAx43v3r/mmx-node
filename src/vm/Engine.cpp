@@ -887,9 +887,10 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					break;
 				}
 				case CONVTYPE_BINARY: {
-					bool big_endian = false;
+					bool big_endian = true;
 					switch((dflags >> 8) & 0xFF) {
-						case CONVTYPE_BIG_ENDIAN: big_endian = true; break;
+						case CONVTYPE_DEFAULT:
+						case CONVTYPE_BIG_ENDIAN: break;
 						case CONVTYPE_LITTLE_ENDIAN: big_endian = false; break;
 						default: throw std::logic_error("invalid conversion: UINT to BINARY with flags " + to_hex(dflags));
 					}
@@ -1011,9 +1012,10 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					if(sbin.size != 32) {
 						throw std::runtime_error("invalid conversion: BINARY to UINT: size != 32");
 					}
-					bool big_endian = false;
+					bool big_endian = true;
 					switch(sflags & 0xFF) {
-						case CONVTYPE_BIG_ENDIAN: big_endian = true; break;
+						case CONVTYPE_DEFAULT:
+						case CONVTYPE_BIG_ENDIAN: break;
 						case CONVTYPE_LITTLE_ENDIAN: big_endian = false; break;
 						default: throw std::logic_error("invalid conversion: BINARY to UINT with flags " + to_hex(sflags));
 					}
