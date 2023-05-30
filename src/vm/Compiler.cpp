@@ -548,6 +548,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["send"].name = "send";
 	function_map["mint"].name = "mint";
 	function_map["fail"].name = "fail";
+	function_map["cread"].name = "cread";
 	function_map["bech32"].name = "bech32";
 	function_map["binary"].name = "binary";
 	function_map["binary_hex"].name = "binary_hex";
@@ -1536,6 +1537,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					throw std::logic_error("expected 1 argument for delete()");
 				}
 				code.emplace_back(OP_CLR, 0, get(recurse(args[0])));
+				out.address = 0;
 			}
 			else if(name == "erase") {
 				if(args.size() != 2) {
@@ -1585,6 +1587,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_FAIL, args.size() > 1 ? OPFLAG_REF_B : 0,
 						get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
 				out.address = 0;
+			}
+			else if(name == "cread") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for cread(address, field)");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CREAD, 0, out.address, get(recurse(args[0])), get(recurse(args[1])));
 			}
 			else if(name == "bech32") {
 				if(args.size() != 1) {
