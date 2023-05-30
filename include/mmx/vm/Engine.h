@@ -74,8 +74,6 @@ enum externvar_e : uint32_t {
 enum globalvar_e : uint32_t {
 
 	GLOBAL_NEXT_ALLOC = 1,
-	GLOBAL_LOG_HISTORY,
-	GLOBAL_EVENT_HISTORY,
 	GLOBAL_DYNAMIC_START = 0x1000
 
 };
@@ -104,7 +102,9 @@ public:
 
 	bool is_debug = false;
 
-	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote;
+	std::function<void(uint32_t level, const std::string& msg)> log_func;
+	std::function<void(const std::string& name, const uint64_t data)> event_func;
+	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote_call;
 	std::function<void(const addr_t& address, const std::string& field, const uint64_t dst)> read_contract;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);

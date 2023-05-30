@@ -369,7 +369,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 	contract_cache[tx->id] = tx->deploy;
 
-	engine->remote = [this, tx, context, executable, storage_cache, parent, &contract_cache, &exec_outputs, &exec_spend_map, &error]
+	engine->remote_call = [this, tx, context, executable, storage_cache, parent, &contract_cache, &exec_outputs, &exec_spend_map, &error]
 		(const std::string& name, const std::string& method, const uint32_t nargs)
 	{
 		auto engine = parent.lock();

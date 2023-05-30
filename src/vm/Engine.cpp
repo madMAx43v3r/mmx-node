@@ -1070,28 +1070,16 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 
 void Engine::log(const uint64_t level, const uint64_t msg)
 {
-	if(!read(MEM_HEAP + GLOBAL_LOG_HISTORY)) {
-		assign(MEM_HEAP + GLOBAL_LOG_HISTORY, std::make_unique<array_t>())->pin();
+	if(log_func) {
+		log_func(level, read_fail<binary_t>(msg, TYPE_STRING).to_string());
 	}
-	const auto entry = alloc();
-	assign(entry, std::make_unique<array_t>());
-	push_back(entry, MEM_EXTERN + EXTERN_TXID);
-	push_back(entry, uint_t(level));
-	push_back(entry, msg);
-	push_back(MEM_HEAP + GLOBAL_LOG_HISTORY, ref_t(entry));
 }
 
 void Engine::event(const uint64_t name, const uint64_t data)
 {
-	if(!read(MEM_HEAP + GLOBAL_EVENT_HISTORY)) {
-		assign(MEM_HEAP + GLOBAL_EVENT_HISTORY, std::make_unique<array_t>())->pin();
+	if(event_func) {
+		event_func(read_fail<binary_t>(name, TYPE_STRING).to_string(), data);
 	}
-	const auto entry = alloc();
-	assign(entry, std::make_unique<array_t>());
-	push_back(entry, MEM_EXTERN + EXTERN_TXID);
-	push_back(entry, name);
-	push_back(entry, data);
-	push_back(MEM_HEAP + GLOBAL_EVENT_HISTORY, ref_t(entry));
 }
 
 void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t currency, const uint64_t memo)
@@ -1167,7 +1155,7 @@ void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t st
 	if(nargs > 4096) {
 		throw std::logic_error("nargs > 4096");
 	}
-	if(!remote) {
+	if(!remote_call) {
 		throw std::logic_error("unable to make remote calls");
 	}
 	gas_used += INSTR_CALL_COST;
@@ -1176,7 +1164,7 @@ void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t st
 	frame.stack_ptr += stack_ptr;
 	call_stack.push_back(frame);
 
-	remote(	read_fail<binary_t>(name, TYPE_STRING).to_string(),
+	remote_call(	read_fail<binary_t>(name, TYPE_STRING).to_string(),
 			read_fail<binary_t>(method, TYPE_STRING).to_string(), nargs);
 	ret();
 }
