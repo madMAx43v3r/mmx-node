@@ -169,11 +169,11 @@ void Node::main()
 
 		bool is_replay = true;
 		uint32_t height = -1;
-		std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
+		block_index_t entry;
 		// set block_chain position past last readable and valid block
 		while(block_index.find_last(height, entry)) {
 			try {
-				block_chain->seek_to(entry.first);
+				block_chain->seek_to(entry.file_offset);
 				const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
 				if(!block) {
 					throw std::runtime_error("failed to read block " + std::to_string(height));
@@ -217,7 +217,7 @@ void Node::main()
 						const auto& tx = block->tx_list[i];
 						tx_index.insert(tx->id, tx->get_tx_index(params, block->height, tx_offsets[i]));
 					}
-					block_index.insert(block->height, std::make_pair(block_offset, std::make_pair(block->hash, block->content_hash)));
+					block_index.insert(block->height, block->get_block_index(block_offset));
 
 					if(block->height) {
 						auto fork = std::make_shared<fork_t>();
@@ -440,11 +440,11 @@ std::shared_ptr<const BlockHeader> Node::get_block_at_ex(const uint32_t& height,
 			return iter->second;
 		}
 	}
-	std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
+	block_index_t entry;
 	if(block_index.find(height, entry)) {
 		vnx::File file(block_chain->get_path());
 		file.open("rb");
-		file.seek_to(entry.first);
+		file.seek_to(entry.file_offset);
 		return read_block(file, full_block);
 	}
 	return nullptr;
@@ -470,9 +470,9 @@ vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 
 vnx::optional<std::pair<hash_t, hash_t>> Node::get_block_hash_ex(const uint32_t& height) const
 {
-	std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
+	block_index_t entry;
 	if(block_index.find(height, entry)) {
-		return entry.second;
+		return std::make_pair(entry.hash, entry.content_hash);
 	}
 	return nullptr;
 }
@@ -2269,17 +2269,17 @@ void Node::revert(const uint32_t height)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 	if(block_chain) {
-		std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
+		block_index_t entry;
 		if(block_index.find(height, entry)) {
-			block_chain->seek_to(entry.first);
+			block_chain->seek_to(entry.file_offset);
 		}
 	}
 	db.revert(height);
 	contract_cache.clear();
 
-	std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
+	block_index_t entry;
 	if(block_index.find_last(entry)) {
-		state_hash = entry.second.first;
+		state_hash = entry.hash;
 	} else {
 		state_hash = hash_t();
 	}
@@ -2501,7 +2501,7 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	block_chain->flush();
 	block_chain->seek_to(end);
 
-	block_index.insert(block->height, std::make_pair(offset, std::make_pair(block->hash, block->content_hash)));
+	block_index.insert(block->height, block->get_block_index(offset));
 }
 
 

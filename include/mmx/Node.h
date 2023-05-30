@@ -17,12 +17,13 @@
 #include <mmx/operation/Execute.hxx>
 #include <mmx/txio_entry_t.hpp>
 #include <mmx/OCL_VDF.h>
-#include <mmx/utils.h>
 #include <mmx/uint128.hpp>
-#include <mmx/balance_cache_t.h>
-#include <mmx/table.h>
 #include <mmx/tx_index_t.hxx>
+#include <mmx/block_index_t.hxx>
+#include <mmx/table.h>
 #include <mmx/multi_table.h>
+#include <mmx/balance_cache_t.h>
+#include <mmx/utils.h>
 
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageDB.h>
@@ -32,6 +33,7 @@
 #include <vnx/addons/HttpInterface.h>
 
 #include <unordered_set>
+#include <unordered_map>
 
 
 namespace mmx {
@@ -455,7 +457,6 @@ private:
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
-	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
@@ -481,12 +482,16 @@ private:
 	bool is_synced = false;
 	bool update_pending = false;
 	uint32_t min_pool_fee_ratio = 0;
+
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageDB> storage;
+
 	hash_table<hash_t, uint32_t> hash_index;									// [block hash => height]
 	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
-	uint_table<uint32_t, std::pair<int64_t, std::pair<hash_t, hash_t>>> block_index;		// [height => [file offset, [block hash, content hash]]]
+	uint_table<uint32_t, block_index_t> block_index;							// [height => index]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
+
+	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 	hash_multi_table<bls_pubkey_t, uint32_t> farmer_block_map;					// [farmer_key => height]
 
 	uint32_t sync_pos = 0;									// current sync height
