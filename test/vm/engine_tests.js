@@ -471,8 +471,31 @@ if(deref(clone(1)) != 1) {
 		fail("test2.field.field != 1337");
 	}
 }
-
-
+{
+	var test = 1;
+	delete(test);
+	test = 1;
+	if(test != 1) {
+		fail("use after delete()");
+	}
+}
+{
+	var test = [1, 2, 3];
+	pop(test);
+	push(test, 3);
+	if(test[2] != 3) {
+		fail("test[2] != 3");
+	}
+}
+{
+	var test = [null, true, false, 1, "test", [], {}];
+	if(test[3] != 1) {
+		fail("test[3] != 1");
+	}
+	if(test[4] != "test") {
+		fail("test[4] != test");
+	}
+}
 
 
 
