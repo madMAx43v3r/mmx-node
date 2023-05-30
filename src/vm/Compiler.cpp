@@ -552,9 +552,12 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["cread"].name = "cread";
 	function_map["bech32"].name = "bech32";
 	function_map["binary"].name = "binary";
+	function_map["binary_le"].name = "binary_le";
 	function_map["binary_hex"].name = "binary_hex";
 	function_map["bool"].name = "bool";
 	function_map["uint"].name = "uint";
+	function_map["uint_le"].name = "uint_le";
+	function_map["uint_hex"].name = "uint_hex";
 	function_map["sha256"].name = "sha256";
 	function_map["ecdsa_verify"].name = "ecdsa_verify";
 	function_map["to_string"].name = "to_string";
@@ -1617,6 +1620,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BINARY, CONVTYPE_DEFAULT);
 			}
+			else if(name == "binary_le") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for binary_le()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), (CONVTYPE_BINARY | (CONVTYPE_LITTLE_ENDIAN << 8)), CONVTYPE_DEFAULT);
+			}
 			else if(name == "binary_hex") {
 				if(args.size() != 1) {
 					throw std::logic_error("expected 1 argument for binary_hex()");
@@ -1637,6 +1647,20 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_DEFAULT);
+			}
+			else if(name == "uint_le") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for uint_le()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_LITTLE_ENDIAN);
+			}
+			else if(name == "uint_hex") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for uint_hex()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_BASE_16);
 			}
 			else if(name == "sha256") {
 				if(args.size() != 1) {
