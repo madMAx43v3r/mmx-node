@@ -459,7 +459,7 @@ void Engine::erase(std::unique_ptr<var_t>& var)
 	}
 	erase_call_depth++;
 
-	if(erase_call_depth > MAX_RECURSION) {
+	if(erase_call_depth > MAX_ERASE_RECURSION) {
 		throw std::runtime_error("erase() recursion overflow");
 	}
 	// account cost here because of recursion in clear() -> unref() -> erase() -> clear()
@@ -1161,7 +1161,7 @@ void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t st
 	if(stack_ptr >= STACK_SIZE) {
 		throw std::logic_error("stack overflow");
 	}
-	if(call_stack.size() >= MAX_RECURSION) {
+	if(call_stack.size() >= MAX_CALL_RECURSION) {
 		throw std::logic_error("recursion overflow");
 	}
 	if(nargs > 4096) {
@@ -1201,7 +1201,7 @@ void Engine::call(const uint64_t instr_ptr, const uint64_t stack_ptr)
 	if(stack_ptr >= STACK_SIZE) {
 		throw std::logic_error("stack overflow");
 	}
-	if(call_stack.size() >= MAX_RECURSION) {
+	if(call_stack.size() >= MAX_CALL_RECURSION) {
 		throw std::logic_error("recursion overflow");
 	}
 	gas_used += INSTR_CALL_COST;
