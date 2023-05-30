@@ -1616,7 +1616,7 @@ void Engine::exec(const instr_t& instr)
 				write(dst, uint_t(((const array_t&)var).size));
 				break;
 			default:
-				write(dst, var_t());
+				throw invalid_type(var);
 		}
 		break;
 	}
