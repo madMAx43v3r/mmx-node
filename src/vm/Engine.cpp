@@ -53,16 +53,10 @@ void Engine::unref(const uint64_t dst)
 
 var_t* Engine::assign(const uint64_t dst, std::unique_ptr<var_t> value)
 {
-	if(!value) {
-		return nullptr;
-	}
 	if(have_init && dst < MEM_EXTERN) {
 		throw std::logic_error("already initialized");
 	}
 	switch(value->type) {
-		case TYPE_REF:
-			addref(((const ref_t*)value.get())->address);
-			break;
 		case TYPE_ARRAY:
 			((array_t*)value.get())->address = dst;
 			break;
@@ -98,6 +92,10 @@ var_t* Engine::assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value)
 	var = std::move(value);
 	var->flags |= FLAG_DIRTY;
 	var->flags &= ~FLAG_DELETED;
+
+	if(var->type == TYPE_REF) {
+		addref(((const ref_t*)var.get())->address);
+	}
 	return var.get();
 }
 
@@ -267,12 +265,9 @@ var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var
 		case TYPE_FALSE:
 			assign(var, std::make_unique<var_t>(src.type));
 			break;
-		case TYPE_REF: {
-			const auto address = ((const ref_t&)src).address;
-			addref(address);
-			assign(var, std::make_unique<ref_t>(address));
+		case TYPE_REF:
+			assign(var, std::make_unique<ref_t>(((const ref_t&)src).address));
 			break;
-		}
 		case TYPE_UINT:
 			assign(var, std::make_unique<uint_t>(((const uint_t&)src).value));
 			break;
