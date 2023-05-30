@@ -218,6 +218,8 @@ private:
 	std::map<std::pair<uint64_t, uint64_t>, std::unique_ptr<var_t>> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
 
+	size_t erase_call_depth = 0;
+
 };
 
 

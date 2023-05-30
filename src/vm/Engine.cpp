@@ -457,6 +457,11 @@ void Engine::erase(std::unique_ptr<var_t>& var)
 	if(var->ref_count) {
 		throw std::runtime_error("erase() with ref_count " + std::to_string(var->ref_count));
 	}
+	erase_call_depth++;
+
+	if(erase_call_depth > MAX_RECURSION) {
+		throw std::runtime_error("erase() recursion overflow");
+	}
 	// account cost here because of recursion in clear() -> unref() -> erase() -> clear()
 	gas_used += WRITE_COST;
 	check_gas();
@@ -470,6 +475,7 @@ void Engine::erase(std::unique_ptr<var_t>& var)
 	} else {
 		var->flags = FLAG_DELETED;
 	}
+	erase_call_depth--;
 }
 
 void Engine::clear(var_t* var)
