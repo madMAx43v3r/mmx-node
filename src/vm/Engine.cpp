@@ -462,6 +462,10 @@ void Engine::erase(std::unique_ptr<var_t>& var)
 	if(var->ref_count) {
 		throw std::runtime_error("erase() with ref_count " + std::to_string(var->ref_count));
 	}
+	// account cost here because of recursion in clear() -> unref() -> erase() -> clear()
+	gas_used += WRITE_COST;
+	check_gas();
+
 	clear(var.get());
 
 	const auto prev = std::move(var);
@@ -471,7 +475,6 @@ void Engine::erase(std::unique_ptr<var_t>& var)
 	} else {
 		var->flags = FLAG_DELETED;
 	}
-	gas_used += WRITE_COST;
 }
 
 void Engine::clear(var_t* var)
@@ -1679,8 +1682,8 @@ void Engine::clear_stack(const uint64_t offset)
 	for(auto iter = memory.lower_bound(MEM_STACK + offset); iter != memory.lower_bound(MEM_STATIC);) {
 		clear(iter->second.get());
 		iter = memory.erase(iter);
+		check_gas();
 	}
-	check_gas();
 }
 
 void Engine::reset()
