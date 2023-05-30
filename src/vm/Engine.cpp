@@ -872,9 +872,18 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					assign(dst, binary_t::alloc(value.str(base)));
 					break;
 				}
-				case CONVTYPE_BINARY:
-					assign(dst, binary_t::alloc(&value, sizeof(value)));
+				case CONVTYPE_BINARY: {
+					bool big_endian = false;
+					switch((dflags >> 8) & 0xFF) {
+						case CONVTYPE_BIG_ENDIAN: big_endian = true; break;
+						case CONVTYPE_LITTLE_ENDIAN: big_endian = false; break;
+						default: throw std::logic_error("invalid conversion: UINT to BINARY with flags " + to_hex(dflags));
+					}
+					bytes_t<32> tmp;
+					tmp.from_uint(value, big_endian);
+					assign(dst, binary_t::alloc(tmp.data(), tmp.size()));
 					break;
+				}
 				default:
 					throw std::logic_error("invalid conversion: UINT to " + to_hex(dflags));
 			}
@@ -984,6 +993,21 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 				case CONVTYPE_BOOL:
 					write(dst, var_t(bool(sbin.size)));
 					break;
+				case CONVTYPE_UINT: {
+					if(sbin.size != 32) {
+						throw std::runtime_error("invalid conversion: BINARY to UINT: size != 32");
+					}
+					bool big_endian = false;
+					switch(sflags & 0xFF) {
+						case CONVTYPE_BIG_ENDIAN: big_endian = true; break;
+						case CONVTYPE_LITTLE_ENDIAN: big_endian = false; break;
+						default: throw std::logic_error("invalid conversion: BINARY to UINT with flags " + to_hex(sflags));
+					}
+					bytes_t<32> tmp;
+					::memcpy(tmp.data(), sbin.data(), sbin.size);
+					write(dst, uint_t(tmp.to_uint<uint256_t>(big_endian)));
+					break;
+				}
 				case CONVTYPE_STRING: {
 					int base = 0;
 					switch((dflags >> 8) & 0xFF) {
