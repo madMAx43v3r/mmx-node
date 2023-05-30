@@ -358,6 +358,24 @@ if(bool([]) != true) {
 if(bool({}) != true) {
 	fail("bool({})");
 }
+if(uint(null) != 0) {
+	fail("uint(null)");
+}
+if(uint(false) != 0) {
+	fail("uint(false)");
+}
+if(uint(true) != 1) {
+	fail("uint(true)");
+}
+if(uint_hex("aabbc") != 0xaabbc) {
+	fail("uint_hex('aabbc')");
+}
+if(uint(binary(0xABCDEF0)) != 0xABCDEF0) {
+	fail("uint(binary(0xABCDEF0))");
+}
+if(uint_le(binary_le(0xABCDEF0)) != 0xABCDEF0) {
+	fail("uint_le(binary_le(0xABCDEF0))");
+}
 
 __nop();
 
@@ -523,7 +541,38 @@ __nop();
 	}
 }
 {
+	var test = [1, 2, 3];
+	var test2 = deref(test);
+	if(size(test2) != 3) {
+		fail("size(test2) != 3");
+	}
+	for(var i = 0; i < size(test2); ++i) {
+		if(test2[i] != i + 1) {
+			fail("test2[i] != i + 1");
+		}
+	}
+	pop(test2);
+	pop(test2);
+	if(size(test) != 3) {
+		fail("size(test) != 3");
+	}
+	for(var i = 0; i < size(test); ++i) {
+		if(test[i] != i + 1) {
+			fail("test[i] != i + 1");
+		}
+	}
+}
+{
 	var test = [null, true, false, 1, "test", [], {}];
+	if(test[0] != null) {
+		fail("test[0] != null");
+	}
+	if(test[1] != true) {
+		fail("test[1] != true");
+	}
+	if(test[2] != false) {
+		fail("test[2] != false");
+	}
 	if(test[3] != 1) {
 		fail("test[3] != 1");
 	}
