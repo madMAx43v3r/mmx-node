@@ -8,6 +8,6 @@ struct txio_t {
 	
 	ulong amount;
 	
-	memo_t memo;
+	optional<memo_t> memo;
 	
 }

@@ -21,9 +21,9 @@
 
 namespace mmx {
 
-class memo_t : public bytes_t<20> {
+class memo_t : public bytes_t<32> {
 public:
-	typedef bytes_t<20> super_t;
+	typedef bytes_t<32> super_t;
 
 	memo_t() = default;
 

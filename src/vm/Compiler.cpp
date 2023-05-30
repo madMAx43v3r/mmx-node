@@ -1585,10 +1585,11 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = 0;
 			}
 			else if(name == "mint") {
-				if(args.size() != 2) {
-					throw std::logic_error("expected 2 arguments for mint(address, amount)");
+				if(args.size() < 2 || args.size() > 3) {
+					throw std::logic_error("expected 2 to 3 arguments for mint(address, amount, [memo])");
 				}
-				code.emplace_back(OP_MINT, 0, get(recurse(args[0])), get(recurse(args[1])));
+				code.emplace_back(OP_MINT, 0, get(recurse(args[0])), get(recurse(args[1])),
+						args.size() > 2 ? get(recurse(args[2])) : 0);
 				out.address = 0;
 			}
 			else if(name == "fail") {

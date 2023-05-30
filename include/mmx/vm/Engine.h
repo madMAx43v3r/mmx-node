@@ -167,7 +167,7 @@ public:
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
 	void send(const uint64_t address, const uint64_t amount, const uint64_t currency, const uint64_t memo);
-	void mint(const uint64_t address, const uint64_t amount);
+	void mint(const uint64_t address, const uint64_t amount, const uint64_t memo);
 	void rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs);
 	void cread(const uint64_t dst, const uint64_t address, const uint64_t field);
 
@@ -189,6 +189,8 @@ public:
 	void commit();
 
 	void clear_stack(const uint64_t offset = 0);
+
+	vnx::optional<memo_t> parse_memo(const uint64_t addr);
 
 	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;
 

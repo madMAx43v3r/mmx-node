@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 		vnx::test::expect(memo_t("sD1.-=&^%{]|+)$#@!<").to_string(), "sD1.-=&^%{]|+)$#@!<");
 		{
 			const hash_t hash("fjskdfjksdjf");
-			const std::string text = "0x" + hash.to_string().substr(0, 40);
+			const std::string text = "0x" + hash.to_string();
 			vnx::test::expect(memo_t(hash).to_string(), text);
 			vnx::test::expect(memo_t(text).to_string(), text);
 		}

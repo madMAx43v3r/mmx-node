@@ -22,6 +22,8 @@ namespace mmx {
 template<size_t N>
 class bytes_t {
 public:
+	static constexpr size_t size_ = N;
+
 	std::array<uint8_t, N> bytes = {};
 
 	bytes_t() = default;

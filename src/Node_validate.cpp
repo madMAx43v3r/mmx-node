@@ -667,6 +667,16 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		}
 
 		if(!tx->exec_result) {
+			for(const auto& in: exec_inputs) {
+				if(in.memo) {
+					tx_cost += params->min_txfee_memo;
+				}
+			}
+			for(const auto& out: exec_outputs) {
+				if(out.memo) {
+					tx_cost += params->min_txfee_memo;
+				}
+			}
 			tx_cost += exec_inputs.size() * params->min_txfee_io;
 			tx_cost += exec_outputs.size() * params->min_txfee_io;
 		}

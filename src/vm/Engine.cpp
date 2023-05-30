@@ -1104,6 +1104,31 @@ void Engine::event(const uint64_t name, const uint64_t data)
 	}
 }
 
+vnx::optional<memo_t> Engine::parse_memo(const uint64_t addr)
+{
+	const auto& value = read_fail(addr);
+	switch(value.type) {
+		case TYPE_NIL:
+			return nullptr;
+		case TYPE_UINT:
+			return memo_t(((const uint_t&)value).value);
+		case TYPE_STRING:
+			return memo_t(((const binary_t&)value).to_string());
+		case TYPE_BINARY: {
+			const auto& bin = (const binary_t&)value;
+			if(bin.size > memo_t::size_) {
+				throw std::runtime_error("binary memo too large: " + std::to_string(bin.size));
+			}
+			memo_t memo;
+			::memcpy(memo.data(), bin.data(), bin.size);
+			return memo;
+		}
+		default:
+			throw std::runtime_error("invalid memo type: " + to_string(value.type));
+	}
+	return nullptr;
+}
+
 void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t currency, const uint64_t memo)
 {
 	const auto value = read_fail<uint_t>(amount, TYPE_UINT).value;
@@ -1123,33 +1148,11 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	out.contract = read_fail<binary_t>(currency, TYPE_BINARY).to_addr();
 	out.address = read_fail<binary_t>(address, TYPE_BINARY).to_addr();
 	out.amount = value;
-	{
-		const auto& value = read_fail(memo);
-		switch(value.type) {
-			case TYPE_NIL:
-				break;
-			case TYPE_UINT:
-				out.memo = ((const uint_t&)value).value;
-				break;
-			case TYPE_STRING:
-				out.memo = ((const binary_t&)value).to_string();
-				break;
-			case TYPE_BINARY: {
-				const auto& bin = (const binary_t&)value;
-				if(bin.size > out.memo.size()) {
-					throw std::runtime_error("binary memo too large: " + std::to_string(bin.size));
-				}
-				::memcpy(out.memo.data(), bin.data(), bin.size);
-				break;
-			}
-			default:
-				throw std::runtime_error("invalid memo type: " + to_string(value.type));
-		}
-	}
+	out.memo = parse_memo(memo);
 	outputs.push_back(out);
 }
 
-void Engine::mint(const uint64_t address, const uint64_t amount)
+void Engine::mint(const uint64_t address, const uint64_t amount, const uint64_t memo)
 {
 	const auto value = read_fail<uint_t>(amount, TYPE_UINT).value;
 	if(value == 0) {
@@ -1162,7 +1165,7 @@ void Engine::mint(const uint64_t address, const uint64_t amount)
 	out.contract = contract;
 	out.address = read_fail<binary_t>(address, TYPE_BINARY).to_addr();
 	out.amount = value;
-	out.memo = std::string("mmx.mint");
+	out.memo = parse_memo(memo);
 	mint_outputs.push_back(out);
 }
 
@@ -1656,7 +1659,8 @@ void Engine::exec(const instr_t& instr)
 		break;
 	case OP_MINT:
 		mint(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
-				deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
+				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
+				deref_addr(instr.c, instr.flags & OPFLAG_REF_C));
 		break;
 	case OP_EVENT:
 		event(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),

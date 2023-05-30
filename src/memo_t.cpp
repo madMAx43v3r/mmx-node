@@ -26,7 +26,7 @@ memo_t::memo_t(const uint256_t& value)
 
 memo_t::memo_t(const std::string& str)
 {
-	if(str.size() == 42 && str.substr(0, 2) == "0x") {
+	if(str.size() == 2 + 2 * size() && str.substr(0, 2) == "0x") {
 		const auto tmp = vnx::from_hex_string(str);
 		if(tmp.size() != size()) {
 			throw std::logic_error("invalid binary memo");
@@ -55,7 +55,14 @@ std::string memo_t::to_string() const
 	if(is_zero()) {
 		return std::string();
 	}
-	if(bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0) {
+	bool is_uint = true;
+	for(size_t i = 0; i < 12; ++i) {
+		if(bytes[i]) {
+			is_uint = false;
+			break;
+		}
+	}
+	if(is_uint) {
 		return to_uint().str(10);
 	}
 	bool is_ascii = true;

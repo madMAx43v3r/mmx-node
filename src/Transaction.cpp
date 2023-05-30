@@ -183,6 +183,16 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	if(exec_result) {
 		cost += exec_result->calc_cost(params);
 	}
+	for(const auto& in : inputs) {
+		if(in.memo) {
+			cost += params->min_txfee_memo;
+		}
+	}
+	for(const auto& out : outputs) {
+		if(out.memo) {
+			cost += params->min_txfee_memo;
+		}
+	}
 	for(const auto& op : execute) {
 		if(op) {
 			cost += op->calc_cost(params);
