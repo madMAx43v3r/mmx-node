@@ -593,7 +593,7 @@ uint64_t Engine::alloc()
 void Engine::init()
 {
 	if(have_init) {
-		throw std::logic_error("already initialized");
+		throw std::logic_error("init(): already initialized");
 	}
 	// Note: address 0 is not a valid key (used to denote "key not found")
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
@@ -607,8 +607,12 @@ void Engine::init()
 
 void Engine::begin(const uint64_t instr_ptr)
 {
-	call_stack.clear();
-
+	if(!have_init) {
+		throw std::logic_error("begin(): not initialized");
+	}
+	if(!call_stack.empty()) {
+		throw std::logic_error("begin(): call stack not empty");
+	}
 	for(auto iter = memory.begin(); iter != memory.lower_bound(MEM_STACK); ++iter) {
 		if(auto var = iter->second.get()) {
 			var->flags |= FLAG_CONST;
