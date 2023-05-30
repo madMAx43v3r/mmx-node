@@ -1273,22 +1273,17 @@ void Engine::exec(const instr_t& instr)
 		jump(	deref_value(instr.a, instr.flags & OPFLAG_REF_A));
 		return;
 	}
-	case OP_JUMPI: {
-		const auto dst = deref_value(instr.a, instr.flags & OPFLAG_REF_A);
-		const auto cond = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
-		const auto& var = read_fail(cond);
-		if(var.type == TYPE_TRUE) {
-			jump(dst);
-			return;
-		}
-		break;
-	}
+	case OP_JUMPI:
 	case OP_JUMPN: {
-		const auto dst = deref_value(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto cond = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(cond);
-		if(var.type != TYPE_TRUE) {
-			jump(dst);
+		switch(var.type) {
+			case TYPE_TRUE:
+			case TYPE_FALSE: break;
+			default: throw invalid_type(var);
+		}
+		if((instr.code == OP_JUMPI) == (var.type == TYPE_TRUE)) {
+			jump(deref_value(instr.a, instr.flags & OPFLAG_REF_A));
 			return;
 		}
 		break;
