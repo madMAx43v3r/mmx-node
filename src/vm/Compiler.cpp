@@ -553,6 +553,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["bech32"].name = "bech32";
 	function_map["binary"].name = "binary";
 	function_map["binary_hex"].name = "binary_hex";
+	function_map["bool"].name = "bool";
 	function_map["uint"].name = "uint";
 	function_map["sha256"].name = "sha256";
 	function_map["ecdsa_verify"].name = "ecdsa_verify";
@@ -1622,6 +1623,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BINARY, CONVTYPE_BASE_16);
+			}
+			else if(name == "bool") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for bool()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BOOL, CONVTYPE_DEFAULT);
 			}
 			else if(name == "uint") {
 				if(args.size() != 1) {
