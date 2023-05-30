@@ -51,10 +51,10 @@ public:
 	void from_string(const std::string& str);
 
 	template<typename T>
-	T to_uint() const;
+	T to_uint(const bool big_endian = false) const;
 
 	template<typename T>
-	bytes_t<N>& from_uint(T value);
+	bytes_t<N>& from_uint(T value, const bool big_endian = false);
 
 	bool operator==(const bytes_t& other) const {
 		return bytes == other.bytes;
@@ -122,22 +122,30 @@ bool bytes_t<N>::is_zero() const {
 
 template<size_t N>
 template<typename T>
-T bytes_t<N>::to_uint() const
+T bytes_t<N>::to_uint(const bool big_endian) const
 {
 	T out = 0;
 	for(size_t i = 0; i < N; ++i) {
 		out <<= 8;
-		out |= bytes[N - i - 1];
+		if(big_endian) {
+			out |= bytes[i];
+		} else {
+			out |= bytes[N - i - 1];
+		}
 	}
 	return out;
 }
 
 template<size_t N>
 template<typename T>
-bytes_t<N>& bytes_t<N>::from_uint(T value)
+bytes_t<N>& bytes_t<N>::from_uint(T value, const bool big_endian)
 {
 	for(size_t i = 0; i < N; ++i) {
-		bytes[i] = value & 0xFF;
+		if(big_endian) {
+			bytes[N - i - 1] = value & 0xFF;
+		} else {
+			bytes[i] = value & 0xFF;
+		}
 		value >>= 8;
 	}
 	return *this;
