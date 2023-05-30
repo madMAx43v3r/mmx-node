@@ -173,6 +173,11 @@ int main(int argc, char** argv)
 		vm::assign(engine, vm::MEM_STATIC + 13, vnx::Variant(uint16_t(1337)));
 		vm::assign(engine, vm::MEM_STATIC + 14, vnx::Variant(int8_t(127)));
 		vm::assign(engine, vm::MEM_STATIC + 15, vnx::Variant(int16_t(1337)));
+		{
+			engine->assign(vm::MEM_STATIC + 16, std::make_unique<vm::map_t>());
+			engine->write_key(vm::MEM_STATIC + 16, vm::uint_t(88), vm::uint_t(99));
+			engine->write_key(vm::MEM_STATIC + 16, vm::uint_t(888), vm::uint_t(999));
+		}
 	}
 	VNX_TEST_END()
 
@@ -223,7 +228,7 @@ int main(int argc, char** argv)
 	{
 		auto engine1 = std::make_shared<vm::Engine>(hash_t("1"), storage, false);
 		engine1->gas_limit = 1000000;
-		for(size_t i = 1; i <= 15; ++i) {
+		for(size_t i = 1; i <= 16; ++i) {
 			vm::copy(engine1, engine, vm::MEM_STACK + i, vm::MEM_STATIC + i);
 		}
 		check_func_1(engine1, vm::MEM_STACK);
@@ -268,6 +273,14 @@ int main(int argc, char** argv)
 			vnx::test::expect(value["field2"].to<std::vector<uint32_t>>(), std::vector<uint32_t>{11, 12, 13, 14});
 		}
 		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 11).to<std::string>(), "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+		{
+			engine->read_key(vm::MEM_STATIC + 16, vm::uint_t(88));
+			engine->read_key(vm::MEM_STATIC + 16, vm::uint_t(888));
+
+			auto value = vm::read(engine, vm::MEM_STATIC + 16).to<std::map<uint64_t, uint64_t>>();
+			vnx::test::expect(value[88], 99u);
+			vnx::test::expect(value[888], 999u);
+		}
 	}
 	VNX_TEST_END()
 
