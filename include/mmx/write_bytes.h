@@ -136,6 +136,7 @@ inline void write_bytes(vnx::OutputBuffer& out, const txio_t& value)
 	write_bytes(out, value.address);
 	write_bytes(out, value.contract);
 	write_bytes(out, value.amount);
+	write_bytes(out, value.memo);
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const txin_t& value, bool full_hash)
@@ -148,15 +149,6 @@ inline void write_bytes(vnx::OutputBuffer& out, const txin_t& value, bool full_h
 		write_bytes(out, value.solution);
 		write_bytes(out, value.flags);
 	}
-}
-
-inline void write_bytes(vnx::OutputBuffer& out, const txout_t& value)
-{
-	write_bytes_cstr(out, "txout_t<>");
-	write_bytes(out, value.address);
-	write_bytes(out, value.contract);
-	write_bytes(out, value.amount);
-	write_bytes(out, value.memo);
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const ulong_fraction_t& value)

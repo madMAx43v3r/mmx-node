@@ -1,9 +1,5 @@
 package mmx;
 
-import mmx.memo_t;
-
 struct txout_t extends txio_t {
-	
-	memo_t memo;
 	
 }
