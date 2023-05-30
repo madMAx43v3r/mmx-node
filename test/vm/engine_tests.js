@@ -325,6 +325,41 @@ if(typeof({}) != 8) {
 if(deref(clone(1)) != 1) {
 	fail("deref(clone(1)) != 1");
 }
+if(bool(null) != false) {
+	fail("bool(null)");
+}
+if(bool(false) != false) {
+	fail("bool(false)");
+}
+if(bool(true) != true) {
+	fail("bool(true)");
+}
+if(bool(0) != false) {
+	fail("bool(0)");
+}
+if(bool(10) != true) {
+	fail("bool(10)");
+}
+if(bool("") != false) {
+	fail("bool('')");
+}
+if(bool("0") != true) {
+	fail("bool('0')");
+}
+if(bool(binary("")) != false) {
+	fail("bool(binary(''))");
+}
+if(bool(binary("0")) != true) {
+	fail("bool(binary('0')");
+}
+if(bool([]) != true) {
+	fail("bool([])");
+}
+if(bool({}) != true) {
+	fail("bool({})");
+}
+
+__nop();
 
 {
 	var array = [];
