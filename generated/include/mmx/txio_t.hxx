@@ -18,7 +18,7 @@ struct MMX_EXPORT txio_t {
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
 	uint64_t amount = 0;
-	::mmx::memo_t memo;
+	vnx::optional<::mmx::memo_t> memo;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;

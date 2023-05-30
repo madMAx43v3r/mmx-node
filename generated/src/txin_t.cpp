@@ -14,7 +14,7 @@ const uint8_t txin_t::IS_EXEC;
 const uint16_t txin_t::NO_SOLUTION;
 
 const vnx::Hash64 txin_t::VNX_TYPE_HASH(0xda6587114a2413full);
-const vnx::Hash64 txin_t::VNX_CODE_HASH(0xa3c4bd5f9fec653full);
+const vnx::Hash64 txin_t::VNX_CODE_HASH(0x178a450663d069c1ull);
 
 vnx::Hash64 txin_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -165,7 +165,7 @@ std::shared_ptr<vnx::TypeCode> txin_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txin_t";
 	type_code->type_hash = vnx::Hash64(0xda6587114a2413full);
-	type_code->code_hash = vnx::Hash64(0xa3c4bd5f9fec653full);
+	type_code->code_hash = vnx::Hash64(0x178a450663d069c1ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txin_t);
 	type_code->parents.resize(1);
@@ -194,7 +194,7 @@ std::shared_ptr<vnx::TypeCode> txin_t::static_create_type_code() {
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "memo";
-		field.code = {11, 20, 1};
+		field.code = {33, 11, 20, 1};
 	}
 	{
 		auto& field = type_code->fields[4];

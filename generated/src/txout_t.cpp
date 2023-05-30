@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txout_t::VNX_TYPE_HASH(0xaa91772752216576ull);
-const vnx::Hash64 txout_t::VNX_CODE_HASH(0x16ffc0f3654ba71cull);
+const vnx::Hash64 txout_t::VNX_CODE_HASH(0xa1e150e9026c44bbull);
 
 vnx::Hash64 txout_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -143,7 +143,7 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txout_t";
 	type_code->type_hash = vnx::Hash64(0xaa91772752216576ull);
-	type_code->code_hash = vnx::Hash64(0x16ffc0f3654ba71cull);
+	type_code->code_hash = vnx::Hash64(0xa1e150e9026c44bbull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txout_t);
 	type_code->parents.resize(1);
@@ -172,7 +172,7 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "memo";
-		field.code = {11, 20, 1};
+		field.code = {33, 11, 20, 1};
 	}
 	type_code->build();
 	return type_code;
