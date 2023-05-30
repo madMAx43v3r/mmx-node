@@ -471,6 +471,7 @@ void Node::check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const Bl
 
 	for(int chain = 0; chain < 2; ++chain) {
 		threads.add_task([&point, chain, num_iters]() {
+			// TODO: use recursive_sha256_ni() if available
 			for(uint64_t i = 0; i < num_iters; ++i) {
 				point[chain] = hash_t(point[chain].bytes);
 			}

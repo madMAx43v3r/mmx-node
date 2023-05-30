@@ -614,6 +614,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		uint128_t recv = 0;
 		uint128_t spent = 0;
 	};
+	// TODO: memo
 	std::map<std::tuple<addr_t, hash_t, addr_t, tx_type_e>, entry_t> delta_map;
 
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
