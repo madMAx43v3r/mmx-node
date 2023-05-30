@@ -169,6 +169,10 @@ int main(int argc, char** argv)
 			vm::assign(engine, vm::MEM_STATIC + 10, vnx::Variant(tmp));
 		}
 		engine->write(vm::MEM_STATIC + 11, vm::uint_t(-1));
+		vm::assign(engine, vm::MEM_STATIC + 12, vnx::Variant(uint8_t(137)));
+		vm::assign(engine, vm::MEM_STATIC + 13, vnx::Variant(uint16_t(1337)));
+		vm::assign(engine, vm::MEM_STATIC + 14, vnx::Variant(int8_t(127)));
+		vm::assign(engine, vm::MEM_STATIC + 15, vnx::Variant(int16_t(1337)));
 	}
 	VNX_TEST_END()
 
@@ -209,13 +213,17 @@ int main(int argc, char** argv)
 			}
 		}
 		expect(engine->read(offset + 11), vm::uint_t(-1));
+		expect(engine->read(offset + 12), vm::uint_t(137));
+		expect(engine->read(offset + 13), vm::uint_t(1337));
+		expect(engine->read(offset + 14), vm::uint_t(127));
+		expect(engine->read(offset + 15), vm::uint_t(1337));
 	};
 
 	VNX_TEST_BEGIN("copy")
 	{
 		auto engine1 = std::make_shared<vm::Engine>(hash_t("1"), storage, false);
 		engine1->gas_limit = 1000000;
-		for(size_t i = 1; i <= 11; ++i) {
+		for(size_t i = 1; i <= 15; ++i) {
 			vm::copy(engine1, engine, vm::MEM_STACK + i, vm::MEM_STATIC + i);
 		}
 		check_func_1(engine1, vm::MEM_STACK);
