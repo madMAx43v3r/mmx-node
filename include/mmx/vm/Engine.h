@@ -124,8 +124,6 @@ public:
 	var_t* write(const uint64_t dst, const var_t* src);
 	var_t* write(const uint64_t dst, const var_t& src);
 	var_t* write(const uint64_t dst, const varptr_t& var);
-	var_t* write(const uint64_t dst, const std::vector<varptr_t>& var);
-	var_t* write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var);
 
 	var_t* write_entry(const uint64_t dst, const uint64_t key, const var_t& src);
 	var_t* write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var);

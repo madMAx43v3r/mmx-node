@@ -174,26 +174,6 @@ var_t* Engine::write(const uint64_t dst, const varptr_t& var)
 	return write(dst, var.get());
 }
 
-var_t* Engine::write(const uint64_t dst, const std::vector<varptr_t>& var)
-{
-	auto array = assign(dst, std::make_unique<array_t>());
-	for(const auto& entry : var) {
-		push_back(dst, entry);
-		check_gas();
-	}
-	return array;
-}
-
-var_t* Engine::write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var)
-{
-	auto map = assign(dst, std::make_unique<map_t>());
-	for(const auto& entry : var) {
-		write_key(dst, entry.first, entry.second);
-		check_gas();
-	}
-	return map;
-}
-
 var_t* Engine::write(std::unique_ptr<var_t>& var, const uint64_t* dst, const var_t& src)
 {
 	if(var.get() == &src) {
