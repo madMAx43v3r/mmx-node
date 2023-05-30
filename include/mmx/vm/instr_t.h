@@ -50,7 +50,6 @@ enum opcode_e : uint8_t {
 	OP_MAX,			// dst, lhs, rhs
 	OP_SHL,			// dst, src, count
 	OP_SHR,			// dst, src, count
-	OP_SAR,			// dst, src, count
 
 	OP_CMP_EQ = 0x60,	// dst, lhs, rhs
 	OP_CMP_NEQ,			// dst, lhs, rhs
@@ -58,10 +57,6 @@ enum opcode_e : uint8_t {
 	OP_CMP_GT,			// dst, lhs, rhs
 	OP_CMP_LTE,			// dst, lhs, rhs
 	OP_CMP_GTE,			// dst, lhs, rhs
-	OP_CMP_SLT,			// dst, lhs, rhs
-	OP_CMP_SGT,			// dst, lhs, rhs
-	OP_CMP_SLTE,		// dst, lhs, rhs
-	OP_CMP_SGTE,		// dst, lhs, rhs
 
 	OP_TYPE = 0x80,	// dst, addr
 	OP_SIZE,		// dst, addr
