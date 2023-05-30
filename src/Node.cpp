@@ -157,8 +157,8 @@ void Node::main()
 		const auto height = std::min(db.min_version(), replay_height);
 		revert(height);
 		if(height) {
-			log(INFO) << "Loaded DB at height " << (height - 1) << ", " << balance_map.size()
-					<< " balances, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+			log(INFO) << "Loaded DB at height " << (height - 1)
+					<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
@@ -348,8 +348,12 @@ std::shared_ptr<const ChainParams> Node::get_params() const {
 std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 {
 	if(const auto peak = get_peak()) {
-		if(!network || peak->height != network->height || is_synced != network->height) {
+		if(!network || peak->height != network->height || is_synced != network->height)
+		{
 			auto info = NetworkInfo::create();
+			balance_table.scan([info](const std::pair<addr_t, addr_t>& key, const uint128& value) {
+				info->address_count++;
+			});
 			info->is_synced = is_synced;
 			info->height = peak->height;
 			info->time_diff = peak->time_diff;
@@ -358,7 +362,6 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->block_reward = mmx::calc_block_reward(params, peak->space_diff);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
-			info->address_count = balance_map.size();
 			info->genesis_hash = get_genesis_hash();
 			info->average_txfee = peak->average_txfee;
 			info->netspace_ratio = double(peak->netspace_ratio) / (uint64_t(1) << (2 * params->max_diff_adjust));
@@ -775,21 +778,16 @@ std::vector<addr_t> Node::get_contracts_owned_by(const std::vector<addr_t>& addr
 
 uint128 Node::get_balance(const addr_t& address, const addr_t& currency) const
 {
-	const auto iter = balance_map.find(std::make_pair(address, currency));
-	if(iter != balance_map.end()) {
-		return iter->second;
-	}
-	return 0;
+	uint128 value = 0;
+	balance_table.find(std::make_pair(address, currency), value);
+	return value;
 }
 
 uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency) const
 {
-	uint128_t total = 0;
+	uint128 total = 0;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
-		const auto iter = balance_map.find(std::make_pair(address, currency));
-		if(iter != balance_map.end()) {
-			total += iter->second;
-		}
+		total += get_balance(address, currency);
 	}
 	return total;
 }
@@ -824,10 +822,10 @@ std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& ad
 {
 	std::map<addr_t, uint128> totals;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
-		const auto begin = balance_map.lower_bound(std::make_pair(address, addr_t()));
-		const auto end = balance_map.upper_bound(std::make_pair(address, addr_t::ones()));
-		for(auto iter = begin; iter != end; ++iter) {
-			totals[iter->first.second] += iter->second;
+		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
+		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result);
+		for(const auto& entry : result) {
+			totals[entry.first.second] += entry.second;
 		}
 	}
 	return totals;
@@ -837,10 +835,10 @@ std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::v
 {
 	std::map<std::pair<addr_t, addr_t>, uint128> totals;
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
-		const auto begin = balance_map.lower_bound(std::make_pair(address, addr_t()));
-		const auto end = balance_map.upper_bound(std::make_pair(address, addr_t::ones()));
-		for(auto iter = begin; iter != end; ++iter) {
-			totals[iter->first] += iter->second;
+		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
+		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result);
+		for(const auto& entry : result) {
+			totals[entry.first] += entry.second;
 		}
 	}
 	return totals;
@@ -971,12 +969,12 @@ vnx::Variant Node::call_contract(
 
 uint128 Node::get_total_supply(const addr_t& currency) const
 {
-	uint128_t total = 0;
-	for(const auto& entry : balance_map) {
-		if(entry.first.first != addr_t() && entry.first.second == currency) {
-			total += entry.second;
+	uint128 total = 0;
+	balance_table.scan([&total, currency](const std::pair<addr_t, addr_t>& key, const uint128& value) {
+		if(key.first != addr_t() && key.second == currency) {
+			total += value;
 		}
-	}
+	});
 	return total;
 }
 
@@ -1739,7 +1737,7 @@ void Node::print_stats()
 		fclose(file);
 	}
 #endif
-	log(INFO) << balance_map.size() << " addresses, " << fork_tree.size() << " blocks in memory, "
+	log(INFO) << fork_tree.size() << " blocks in memory, "
 			<< tx_pool.size() << " tx pool, " << tx_pool_fees.size() << " tx pool senders";
 }
 
@@ -2087,9 +2085,6 @@ void Node::commit(std::shared_ptr<const Block> block)
 	}
 	fork_tree.erase(block->hash);
 
-	if(!balance_log.empty()) {
-		balance_log.erase(balance_log.begin(), balance_log.upper_bound(height));
-	}
 	if(!pending_vdfs.empty()) {
 		pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.upper_bound(height));
 	}
@@ -2129,7 +2124,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	uint32_t counter = 0;
 	std::vector<hash_t> tx_ids;
 	std::unordered_set<hash_t> tx_set;
-	balance_cache_t balance_cache(&balance_map);
+	balance_cache_t balance_cache(&balance_table);
 
 	for(const auto& out : block->get_outputs(params))
 	{
@@ -2163,28 +2158,8 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 	}
 
-	auto& balance_delta = balance_log[block->height];
 	for(const auto& entry : balance_cache.balance) {
-		const auto& key = entry.first;
-		const auto& new_balance = entry.second;
-		const auto iter = balance_map.find(key);
-		if(iter != balance_map.end()) {
-			if(new_balance > iter->second) {
-				balance_delta.added[key] = new_balance - iter->second;
-			}
-			if(new_balance < iter->second) {
-				balance_delta.removed[key] = iter->second - new_balance;
-			}
-			if(new_balance) {
-				iter->second = new_balance;
-			} else {
-				balance_map.erase(iter);
-			}
-		} else if(new_balance) {
-			balance_map[key] = new_balance;
-			balance_delta.added[key] = new_balance;
-		}
-		balance_table.insert(key, new_balance);
+		balance_table.insert(entry.first, entry.second);
 	}
 	if(context) {
 		context->storage->commit();
@@ -2301,50 +2276,6 @@ void Node::revert(const uint32_t height)
 	}
 	db.revert(height);
 	contract_cache.clear();
-
-	if(!balance_log.empty() && balance_log.begin()->first <= height) {
-		for(auto iter = balance_log.rbegin(); iter != balance_log.rend() && iter->first >= height; ++iter) {
-			for(const auto& entry : iter->second.removed) {
-				balance_map[entry.first] += entry.second;
-			}
-			for(const auto& entry : iter->second.added) {
-				if(!(balance_map[entry.first] -= entry.second)) {
-					balance_map.erase(entry.first);
-				}
-			}
-		}
-		balance_log.erase(balance_log.lower_bound(height), balance_log.end());
-	} else {
-		balance_map.clear();
-		balance_log.clear();
-		balance_table.scan(
-			[this](const std::pair<addr_t, addr_t>& key, const uint128& value) {
-				if(value) {
-					balance_map[key] = value;
-				}
-			});
-	}
-
-	// TODO: remove
-	if(false) {
-		bool fail = false;
-		balance_table.scan(
-			[this, &fail](const std::pair<addr_t, addr_t>& key, const uint128& value) {
-				auto iter = balance_map.find(key);
-				if(iter != balance_map.end()) {
-					if(iter->second != value) {
-						log(ERROR) << "balance_map mismatch: " << iter->second.str(10) << " != " << value.str(10) << " for " << vnx::to_string(key);
-						fail = true;
-					}
-				} else if(value) {
-					log(ERROR) << "Missing balance_map entry for " << vnx::to_string(key);
-					fail = true;
-				}
-			});
-		if(fail) {
-			throw std::logic_error("balance_map error");
-		}
-	}
 
 	std::pair<int64_t, std::pair<hash_t, hash_t>> entry;
 	if(block_index.find_last(entry)) {

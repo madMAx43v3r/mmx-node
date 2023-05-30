@@ -697,7 +697,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	uint64_t total_cost = 0;
 	uint64_t static_cost = 0;
 	std::vector<tx_pool_t> result;
-	balance_cache_t balance_cache(&balance_map);
+	balance_cache_t balance_cache(&balance_table);
 
 	// select final set of transactions
 	for(auto& entry : tx_list)

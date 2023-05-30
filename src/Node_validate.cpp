@@ -196,7 +196,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	auto context = new_exec_context(block->height);
 	{
 		std::unordered_set<addr_t> tx_set;
-		balance_cache_t balance_cache(&balance_map);
+		balance_cache_t balance_cache(&balance_table);
 
 		for(const auto& tx : block->tx_list) {
 			if(!tx) {
@@ -471,7 +471,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	uint64_t tx_cost = tx->static_cost;
 	std::vector<txin_t> exec_inputs;
 	std::vector<txout_t> exec_outputs;
-	balance_cache_t balance_cache(&balance_map);
+	balance_cache_t balance_cache(&balance_table);
 	auto storage_cache = std::make_shared<vm::StorageCache>(context->storage);
 	std::unordered_map<addr_t, uint128> amounts;
 	std::map<std::pair<addr_t, addr_t>, uint128> deposit_map;

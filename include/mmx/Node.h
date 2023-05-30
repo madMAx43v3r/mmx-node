@@ -461,11 +461,8 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
 	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
 
-	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
-
 	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
-	std::map<std::pair<addr_t, addr_t>, uint128> balance_map;					// [[addr, currency] => balance]
-	std::map<uint32_t, balance_log_t> balance_log;								// [height => log]
+	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 	std::unordered_map<addr_t, uint64_t> tx_pool_fees;								// [address => total pending fees]
