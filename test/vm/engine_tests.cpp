@@ -181,6 +181,27 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
+	VNX_TEST_BEGIN("parse_memo")
+	{
+		vnx::test::expect(bool(engine->parse_memo(vm::MEM_STATIC + 1)), false);
+		{
+			auto memo = engine->parse_memo(vm::MEM_STATIC + 4);
+			vnx::test::expect(bool(memo), true);
+			vnx::test::expect(memo->to_uint().str(), "1337");
+		}
+		{
+			auto memo = engine->parse_memo(vm::MEM_STATIC + 5);
+			vnx::test::expect(bool(memo), true);
+			vnx::test::expect(memo->to_string(), "test");
+		}
+		{
+			auto memo = engine->parse_memo(vm::MEM_STATIC + 7);
+			vnx::test::expect(bool(memo), true);
+			vnx::test::expect(memo->to_hash(), hash_t("test"));
+		}
+	}
+	VNX_TEST_END()
+
 	const auto check_func_1 = [](std::shared_ptr<vm::Engine> engine, const uint64_t offset)
 	{
 		expect(engine->read(offset + 1), vm::var_t());

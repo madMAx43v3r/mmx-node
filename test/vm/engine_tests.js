@@ -388,6 +388,9 @@ if([] == []) {
 if({} == {}) {
 	fail("[] == []");
 }
+if(to_string("test") != "test") {
+	fail("to_string(test)");
+}
 
 __nop();
 
