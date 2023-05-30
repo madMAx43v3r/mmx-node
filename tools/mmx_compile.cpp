@@ -95,6 +95,14 @@ int main(int argc, char** argv)
 			engine->is_debug = true;
 		}
 		engine->gas_limit = gas_limit;
+
+		engine->log_func = [](uint32_t level, const std::string& msg) {
+			std::cout << "LOG[" << level << "] " << msg << std::endl;
+		};
+		engine->event_func = [&engine](const std::string& name, const uint64_t data) {
+			std::cout << "EVENT[" << name << "] " << vm::read(engine, data).to_string() << std::endl;
+		};
+
 		vm::load(engine, bin);
 		engine->begin(0);
 
