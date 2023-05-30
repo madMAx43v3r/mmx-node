@@ -261,7 +261,7 @@ void Node::update()
 				}
 			} else {
 				msg << ", " << sync_pending.size() << " pending";
-				if(auto count = vdf_threads->get_num_running()) {
+				if(auto count = vdf_threads->get_num_pending_total()) {
 					msg << ", " << count << " vdf checks";
 				}
 			}
@@ -271,7 +271,7 @@ void Node::update()
 		stuck_timer->reset();
 	}
 
-	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_running())
+	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_pending_total())
 	{
 		if(sync_retry < num_sync_retries) {
 			if(now_ms - sync_finish_ms > params->block_time * 500) {
