@@ -1396,7 +1396,6 @@ void Engine::exec(const instr_t& instr)
 		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(src);
 		switch(var.type) {
-			case TYPE_NIL: write(dst, var_t(TYPE_TRUE)); break;
 			case TYPE_TRUE: write(dst, var_t(TYPE_FALSE)); break;
 			case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
 			case TYPE_UINT:
