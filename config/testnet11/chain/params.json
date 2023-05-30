@@ -13,7 +13,7 @@
 	"max_vdf_segments": 2048,
 	"vdf_seed": "test11",
 	"reward_factor": {
-		"value": 3048,
+		"value": 1524,
 		"inverse": 1000000000000000
 	},
 	"vdf_reward": 5000,
