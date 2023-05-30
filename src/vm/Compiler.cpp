@@ -531,6 +531,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	this_obj_map["address"] = MEM_EXTERN + EXTERN_ADDRESS;
 	this_obj_map["deposit"] = MEM_EXTERN + EXTERN_DEPOSIT;
 
+	function_map["__nop"].name = "__nop";
 	function_map["size"].name = "size";
 	function_map["push"].name = "push";
 	function_map["pop"].name = "pop";
@@ -1469,7 +1470,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					args.push_back(node);
 				}
 			}
-			if(name == "size") {
+			if(name == "__nop") {
+				if(args.size()) {
+					throw std::logic_error("expected 0 arguments for __nop()");
+				}
+				code.emplace_back(OP_NOP);
+			}
+			else if(name == "size") {
 				if(args.size() != 1) {
 					throw std::logic_error("expected 1 argument for size()");
 				}
