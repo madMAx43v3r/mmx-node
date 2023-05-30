@@ -313,8 +313,8 @@ void Engine::push_back(const uint64_t dst, const var_t& var)
 
 void Engine::push_back(const uint64_t dst, const varptr_t& var)
 {
-	if(auto value = var.get()) {
-		push_back(dst, *value);
+	if(var) {
+		push_back(dst, *var);
 	} else {
 		push_back(dst, var_t());
 	}
@@ -359,8 +359,8 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var)
 {
-	if(auto value = var.get()) {
-		return write_entry(dst, key, *value);
+	if(var) {
+		return write_entry(dst, key, *var);
 	}
 	return write_entry(dst, key, var_t());
 }
