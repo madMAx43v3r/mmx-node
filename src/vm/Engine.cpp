@@ -917,8 +917,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 								base = 16;
 							} else if(prefix_2 == "0b") {
 								base = 2;
-							} else if(value.substr(0, 4) == "mmx1") {
-								base = 32;
 							}
 							break;
 						case CONVTYPE_BASE_2: base = 2; break;
@@ -972,7 +970,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 							check_gas();
 							for(size_t i = prefix; i < value.size(); ++i) {
 								const auto c = value[i];
-								if(!('0' <= c && c <= '9') && !('a' <= c && c <= 'z') && !('A' <= c && c <= 'Z')) {
+								if(!('0' <= c && c <= '9') && !('a' <= c && c <= 'f') && !('A' <= c && c <= 'F')) {
 									throw std::runtime_error("invalid hex string: " + value);
 								}
 							}
