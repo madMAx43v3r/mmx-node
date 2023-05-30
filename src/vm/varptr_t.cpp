@@ -97,7 +97,11 @@ void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
 			break;
 		case mmx::vm::TYPE_UINT: {
 			const auto& value = ((const mmx::vm::uint_t*)var)->value;
-			visitor.visit(value.str(10));
+			if(value >> 64) {
+				visitor.visit("0x" + value.str(16));
+			} else {
+				visitor.visit(value.lower().lower());
+			}
 			break;
 		}
 		case mmx::vm::TYPE_STRING: {
@@ -105,7 +109,11 @@ void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
 			break;
 		}
 		case mmx::vm::TYPE_BINARY: {
-			visitor.visit("0x" + ((const mmx::vm::binary_t*)var)->to_hex_string());
+			if(visitor.enable_binary) {
+				visitor.visit(((const mmx::vm::binary_t*)var)->to_vector());
+			} else {
+				visitor.visit("0x" + ((const mmx::vm::binary_t*)var)->to_hex_string());
+			}
 			break;
 		}
 		default:

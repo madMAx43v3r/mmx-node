@@ -335,12 +335,12 @@ vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
 				if(value >> 64 == 0) {
 					return vnx::Variant(value.lower().lower());
 				}
-				return vnx::Variant(value.str(10));
+				return vnx::Variant("0x" + value.str(16));
 			}
 			case vm::TYPE_STRING:
 				return vnx::Variant(((const vm::binary_t*)var)->to_string());
 			case vm::TYPE_BINARY:
-				return vnx::Variant(((const vm::binary_t*)var)->to_hex_string());
+				return vnx::Variant(((const vm::binary_t*)var)->to_vector());
 			case vm::TYPE_ARRAY: {
 				const auto array = (const vm::array_t*)var;
 				std::vector<vnx::Variant> tmp;
@@ -354,6 +354,20 @@ vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
 				std::map<vnx::Variant, vnx::Variant> tmp;
 				for(const auto& entry : engine->find_entries(map->address)) {
 					tmp[convert(engine, engine->read(entry.first))] = convert(engine, entry.second);
+				}
+				bool is_object = true;
+				for(const auto& entry : tmp) {
+					if(!entry.first.is_string()) {
+						is_object = false;
+						break;
+					}
+				}
+				if(is_object) {
+					vnx::Object obj;
+					for(const auto& entry : tmp) {
+						obj[entry.first.to_string_value()] = entry.second;
+					}
+					return vnx::Variant(obj);
 				}
 				return vnx::Variant(tmp);
 			}
