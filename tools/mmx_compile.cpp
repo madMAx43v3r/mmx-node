@@ -127,6 +127,10 @@ int main(int argc, char** argv)
 			}
 		}
 		if(verbose) {
+			if(commit) {
+				std::cerr << "-------------------------------------------" << std::endl;
+				storage->dump_memory(std::cerr);
+			}
 			const auto exec_time_ms = (vnx::get_wall_time_micros() - time_begin) / 1e3;
 			std::cerr << "-------------------------------------------" << std::endl;
 			std::cerr << "Total cost: " << engine->gas_used << std::endl;

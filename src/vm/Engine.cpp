@@ -1721,7 +1721,7 @@ void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
 		std::cout << "[" << to_hex(iter->first) << "] " << to_string(iter->second.get());
 		if(auto var = iter->second.get()) {
-			std::cout << "\t\t(vf: " << to_hex(int(var->flags)) << ") (rc: " << var->ref_count << ")";
+			std::cout << "\t\t(vf: " << to_bin(var->flags) << ") (rc: " << var->ref_count << ")";
 		}
 		std::cout << std::endl;
 	}
@@ -1729,7 +1729,7 @@ void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 		std::cout << "[" << to_hex(iter->first.first) << "]"
 				<< "[" << to_hex(iter->first.second) << "] " << to_string(iter->second.get());
 		if(auto var = iter->second.get()) {
-			std::cout << "\t\t(vf: " << to_hex(int(var->flags)) << ")";
+			std::cout << "\t\t(vf: " << to_bin(var->flags) << ")";
 		}
 		std::cout << std::endl;
 	}
