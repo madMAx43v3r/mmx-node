@@ -8,7 +8,8 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 #include <mmx/uint128.hpp>
-#include <mmx/addr_t.hpp>
+
+#include <vnx/vnx.h>
 
 
 namespace mmx {
@@ -380,138 +381,6 @@ void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& metho
 		engine->commit();
 	}
 	engine->check_gas();
-}
-
-std::string to_string(const var_t* var)
-{
-	if(!var) {
-		return "nullptr";
-	}
-	switch(var->type) {
-		case TYPE_NIL:
-			return "null";
-		case TYPE_TRUE:
-			return "true";
-		case TYPE_FALSE:
-			return "false";
-		case TYPE_REF:
-			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
-		case TYPE_UINT:
-			return ((const uint_t*)var)->value.str(10);
-		case TYPE_STRING:
-			return "\"" + ((const binary_t*)var)->to_string() + "\"";
-		case TYPE_BINARY: {
-			auto bin = (const binary_t*)var;
-			std::string out = "0x" + bin->to_hex_string();
-			if(bin->size == 32) {
-				out += " | " + bin->to_addr().to_string();
-			}
-			return out;
-		}
-		case TYPE_ARRAY: {
-			auto array = (const array_t*)var;
-			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
-		}
-		case TYPE_MAP:
-			return "{0x" + vnx::to_hex_string(((const map_t*)var)->address) + "}";
-		default:
-			return "?";
-	}
-}
-
-std::string to_string(const varptr_t& var) {
-	return to_string(var.get());
-}
-
-std::string to_string_value(const var_t* var)
-{
-	if(!var) {
-		return "nullptr";
-	}
-	switch(var->type) {
-		case TYPE_STRING:
-			return ((const binary_t*)var)->to_string();
-		default:
-			return to_string(var);
-	}
-}
-
-std::string to_string_value(const varptr_t& var) {
-	return to_string_value(var.get());
-}
-
-uint64_t to_ref(const var_t* var)
-{
-	if(!var) {
-		return 0;
-	}
-	switch(var->type) {
-		case TYPE_REF:
-			return ((const ref_t*)var)->address;
-		case TYPE_ARRAY:
-			return ((const array_t*)var)->address;
-		case TYPE_MAP:
-			return ((const map_t*)var)->address;
-		default:
-			return 0;
-	}
-}
-
-uint64_t to_ref(const varptr_t& var) {
-	return to_ref(var.get());
-}
-
-uint256_t to_uint(const var_t* var)
-{
-	if(!var) {
-		return 0;
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return ((const uint_t*)var)->value;
-		default:
-			return 0;
-	}
-}
-
-uint256_t to_uint(const varptr_t& var) {
-	return to_uint(var.get());
-}
-
-hash_t to_hash(const var_t* var)
-{
-	if(!var) {
-		return hash_t();
-	}
-	switch(var->type) {
-		case TYPE_BINARY:
-			return ((const binary_t*)var)->to_hash();
-		default:
-			return hash_t();
-	}
-}
-
-hash_t to_hash(const varptr_t& var) {
-	return to_hash(var.get());
-}
-
-addr_t to_addr(const var_t* var)
-{
-	if(!var) {
-		return addr_t();
-	}
-	switch(var->type) {
-		case TYPE_BINARY:
-			return ((const binary_t*)var)->to_addr();
-		case TYPE_STRING:
-			return addr_t(((const binary_t*)var)->to_string());
-		default:
-			return addr_t();
-	}
-}
-
-addr_t to_addr(const varptr_t& var) {
-	return to_addr(var.get());
 }
 
 void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, const vnx::optional<std::string>& method)

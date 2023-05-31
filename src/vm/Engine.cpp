@@ -17,12 +17,6 @@
 namespace mmx {
 namespace vm {
 
-std::string to_hex(const uint64_t addr) {
-	std::stringstream ss;
-	ss << "0x" << std::uppercase << std::hex << addr;
-	return ss.str();
-}
-
 Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only)
 	:	contract(contract),
 		storage(std::make_shared<StorageProxy>(this, backend, read_only))
@@ -437,9 +431,7 @@ void Engine::erase(std::unique_ptr<var_t>& var)
 	if(var->ref_count) {
 		throw std::runtime_error("erase() with ref_count " + std::to_string(var->ref_count));
 	}
-	erase_call_depth++;
-
-	if(erase_call_depth > MAX_ERASE_RECURSION) {
+	if(++erase_call_depth > MAX_ERASE_RECURSION) {
 		throw std::runtime_error("erase() recursion overflow");
 	}
 	// account cost here because of recursion in clear() -> unref() -> erase() -> clear()

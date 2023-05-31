@@ -20,6 +20,7 @@
 #include <cstring>
 #include <memory>
 #include <atomic>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -315,6 +316,18 @@ inline size_t num_bytes(const var_t* var) {
 
 std::string to_string(const vartype_e& type);
 
+std::string to_string(const var_t* var);
+
+std::string to_string_value(const var_t* var);
+
+uint64_t to_ref(const var_t* var);
+
+uint256_t to_uint(const var_t* var);
+
+hash_t to_hash(const var_t* var);
+
+addr_t to_addr(const var_t* var);
+
 template<size_t N>
 std::unique_ptr<binary_t> to_binary(const bytes_t<N>& value) {
 	return binary_t::alloc(value.data(), value.size());
@@ -323,6 +336,28 @@ std::unique_ptr<binary_t> to_binary(const bytes_t<N>& value) {
 inline
 std::unique_ptr<binary_t> to_binary(const std::string& value, const vartype_e& type = TYPE_STRING) {
 	return binary_t::alloc(value, type);
+}
+
+template<typename T>
+std::string to_hex(const T addr) {
+	std::stringstream ss;
+	ss << "0x" << std::uppercase << std::hex << addr;
+	return ss.str();
+}
+
+template<typename T>
+std::string to_bin(const T value) {
+	std::stringstream ss;
+	ss << "0b";
+	bool enable = false;
+	for(int i = sizeof(T) * 8 - 1; i >= 0; --i) {
+		const bool bit = (value >> i) & 1;
+		if(bit || enable || i == 0) {
+			ss << (bit ? '1' : '0');
+			enable = true;
+		}
+	}
+	return ss.str();
 }
 
 
