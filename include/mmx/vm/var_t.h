@@ -84,10 +84,16 @@ struct var_t {
 	virtual ~var_t() {}
 
 	void addref() {
+		if(flags & FLAG_STORED) {
+			return;
+		}
 		flags |= FLAG_DIRTY;
 		ref_count++;
 	}
 	bool unref() {
+		if(flags & FLAG_STORED) {
+			return false;
+		}
 		if(!ref_count) {
 			throw std::logic_error("var_t::unref() underflow");
 		}
@@ -95,6 +101,9 @@ struct var_t {
 		return (ref_count--) == 1;
 	}
 	var_t* pin() {
+		if(flags & FLAG_STORED) {
+			return this;
+		}
 		if(!ref_count) {
 			ref_count = 1;
 			flags |= FLAG_DIRTY;

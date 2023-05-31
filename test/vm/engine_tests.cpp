@@ -217,7 +217,6 @@ int main(int argc, char** argv)
 			const auto& var = engine->read_fail<vm::array_t>(ref.address, vm::TYPE_ARRAY);
 			vnx::test::expect(var.size, 4u);
 			vnx::test::expect(var.address, ref.address);
-			vnx::test::expect(var.ref_count, 1u);
 			for(size_t i = 0; i < 4; ++i) {
 				expect(engine->read_entry(ref.address, i), vm::uint_t(i + 11));
 			}

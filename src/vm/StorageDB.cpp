@@ -95,7 +95,7 @@ std::unique_ptr<var_t> StorageDB::read_ex(const addr_t& contract, const uint64_t
 	const auto key = get_key(contract, src);
 	if(auto value = table->find(key, height)) {
 		std::unique_ptr<var_t> var;
-		deserialize(var, value->data, value->size);
+		deserialize(var, value->data, value->size, false);
 		return var;
 	}
 	return nullptr;
@@ -115,7 +115,7 @@ std::unique_ptr<var_t> StorageDB::read(const addr_t& contract, const uint64_t sr
 void StorageDB::write(const addr_t& contract, const uint64_t dst, const var_t& value)
 {
 	const auto key = get_key(contract, dst);
-	auto data = serialize(value);
+	auto data = serialize(value, false);
 
 	if(value.flags & FLAG_KEY) {
 		const auto key = write_index_key(contract, std::make_pair(data.first.get() + 5, data.second - 5));

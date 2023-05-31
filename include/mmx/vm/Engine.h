@@ -141,7 +141,7 @@ public:
 
 	void erase(const uint64_t dst);
 
-	var_t* read(const uint64_t src);
+	var_t* read(const uint64_t src, const bool mem_only = false);
 	var_t& read_fail(const uint64_t src);
 
 	var_t* read_entry(const uint64_t src, const uint64_t key);

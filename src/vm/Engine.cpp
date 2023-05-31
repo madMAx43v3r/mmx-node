@@ -37,15 +37,15 @@ Engine::~Engine()
 
 void Engine::addref(const uint64_t dst)
 {
-	read_fail(dst).addref();
+	if(auto var = read(dst, true)) {
+		var->addref();
+	}
 }
 
 void Engine::unref(const uint64_t dst)
 {
-	auto& var = read_fail(dst);
-	if(var.unref()) {
-		// cannot erase stored arrays or maps
-		if(!(var.flags & FLAG_STORED) || (var.type != TYPE_ARRAY && var.type != TYPE_MAP)) {
+	if(auto var = read(dst, true)) {
+		if(var->unref()) {
 			erase(dst);
 		}
 	}
@@ -483,7 +483,7 @@ void Engine::clear(var_t* var)
 	}
 }
 
-var_t* Engine::read(const uint64_t src)
+var_t* Engine::read(const uint64_t src, const bool mem_only)
 {
 	auto iter = memory.find(src);
 	if(iter != memory.end()) {
@@ -494,6 +494,9 @@ var_t* Engine::read(const uint64_t src)
 			}
 		}
 		return var;
+	}
+	if(mem_only) {
+		return nullptr;
 	}
 	if(src >= MEM_STATIC) {
 		if(auto var = storage->read(contract, src)) {

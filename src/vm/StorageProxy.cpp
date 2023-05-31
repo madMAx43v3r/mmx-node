@@ -61,6 +61,12 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const var_t
 	if(read_only) {
 		throw std::logic_error("read-only storage");
 	}
+	if(value.type == TYPE_REF) {
+		const auto address = ((const ref_t&)value).address;
+		if(address < MEM_STATIC) {
+			throw std::logic_error("cannot store reference to non-static memory");
+		}
+	}
 	if((value.flags & FLAG_KEY) && !(value.flags & FLAG_CONST)) {
 		throw std::logic_error("keys need to be const");
 	}
@@ -74,6 +80,12 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const uint6
 {
 	if(read_only) {
 		throw std::logic_error("read-only storage");
+	}
+	if(value.type == TYPE_REF) {
+		const auto address = ((const ref_t&)value).address;
+		if(address < MEM_STATIC) {
+			throw std::logic_error("cannot store reference to non-static memory");
+		}
 	}
 	if(value.ref_count) {
 		throw std::logic_error("entries cannot have ref_count > 0");
