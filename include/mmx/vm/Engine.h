@@ -59,6 +59,7 @@ static constexpr uint64_t MAX_KEY_BYTES = 256;
 static constexpr uint64_t MAX_VALUE_BYTES = 16 * 1024;
 static constexpr uint64_t MAX_CALL_RECURSION = 1000;
 static constexpr uint64_t MAX_ERASE_RECURSION = 100;
+static constexpr uint64_t MAX_COPY_RECURSION = 100;
 
 enum externvar_e : uint32_t {
 

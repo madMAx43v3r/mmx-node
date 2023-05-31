@@ -75,16 +75,21 @@ void load(	std::shared_ptr<vm::Engine> engine,
 	engine->check_gas();
 }
 
+void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr, size_t call_depth);
+
 void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
-			const uint64_t dst_addr, const uint64_t* dst_key, const vm::var_t* var)
+			const uint64_t dst_addr, const uint64_t* dst_key, const vm::var_t* var, size_t call_depth)
 {
+	if(++call_depth > vm::MAX_COPY_RECURSION) {
+		throw std::runtime_error("copy recursion overflow");
+	}
 	const vm::var_t* out = nullptr;
 	std::unique_ptr<vm::var_t> tmp;
 	if(var) {
 		switch(var->type) {
 			case vm::TYPE_REF: {
 				const auto heap = dst->alloc();
-				copy(dst, src, heap, ((const vm::ref_t*)var)->address);
+				copy(dst, src, heap, ((const vm::ref_t*)var)->address, call_depth);
 				tmp = std::make_unique<vm::ref_t>(heap);
 				break;
 			}
@@ -96,7 +101,7 @@ void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 				dst->assign(dst_addr, std::make_unique<vm::array_t>(array->size));
 
 				for(uint64_t i = 0; i < array->size; ++i) {
-					copy(dst, src, dst_addr, &i, src->read_entry(array->address, i));
+					copy(dst, src, dst_addr, &i, src->read_entry(array->address, i), call_depth);
 				}
 				break;
 			}
@@ -109,7 +114,7 @@ void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 
 				for(const auto& entry : src->find_entries(map->address)) {
 					const auto key = dst->lookup(src->read(entry.first), false);
-					copy(dst, src, dst_addr, &key, entry.second);
+					copy(dst, src, dst_addr, &key, entry.second, call_depth);
 				}
 				break;
 			}
@@ -130,9 +135,14 @@ void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 	dst->check_gas();
 }
 
+void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr, size_t call_depth)
+{
+	copy(dst, src, dst_addr, nullptr, src->read(src_addr), call_depth);
+}
+
 void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr)
 {
-	copy(dst, src, dst_addr, nullptr, src->read(src_addr));
+	copy(dst, src, dst_addr, src_addr, 0);
 }
 
 class AssignTo : public vnx::Visitor {
