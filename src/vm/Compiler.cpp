@@ -549,6 +549,8 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["send"].name = "send";
 	function_map["mint"].name = "mint";
 	function_map["fail"].name = "fail";
+	function_map["log"].name = "log";
+	function_map["event"].name = "event";
 	function_map["cread"].name = "cread";
 	function_map["bech32"].name = "bech32";
 	function_map["binary"].name = "binary";
@@ -1598,6 +1600,20 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				code.emplace_back(OP_FAIL, args.size() > 1 ? OPFLAG_REF_B : 0,
 						get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
+				out.address = 0;
+			}
+			else if(name == "log") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for log(level, message)");
+				}
+				code.emplace_back(OP_LOG, OPFLAG_REF_A, get(recurse(args[0])), get(recurse(args[1])));
+				out.address = 0;
+			}
+			else if(name == "event") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for event(name, data)");
+				}
+				code.emplace_back(OP_EVENT, 0, get(recurse(args[0])), get(recurse(args[1])));
 				out.address = 0;
 			}
 			else if(name == "cread") {
