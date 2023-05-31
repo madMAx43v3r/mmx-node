@@ -255,20 +255,8 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
-	engine->commit();
-
-	VNX_TEST_BEGIN("assign")
-	{
-		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, true);
-		engine->gas_limit = 1000000;
-		check_func_1(engine, vm::MEM_STATIC);
-	}
-	VNX_TEST_END()
-
 	VNX_TEST_BEGIN("convert")
 	{
-		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, true);
-		engine->gas_limit = 1000000;
 		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 1).is_null(), true);
 		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 2).to<bool>(), true);
 		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 3).to<bool>(), false);
@@ -279,12 +267,6 @@ int main(int argc, char** argv)
 		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 8).to<addr_t>(), addr_t("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf"));
 		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 9).to<std::vector<int64_t>>(), std::vector<int64_t>{11, 12, 13, 14});
 		{
-			const auto& ref = engine->read_fail<vm::ref_t>(vm::MEM_STATIC + 10, vm::TYPE_REF);
-			engine->read_key(ref.address, vm::to_binary("field"));
-			engine->read_key(ref.address, vm::to_binary("field1"));
-			engine->read_key(ref.address, vm::to_binary("field2"));
-		}
-		{
 			const auto var = vm::read(engine, vm::MEM_STATIC + 10);
 			vnx::test::expect(var.is_object(), true);
 			const auto value = var.to_object();
@@ -294,13 +276,39 @@ int main(int argc, char** argv)
 		}
 		vnx::test::expect(vm::read(engine, vm::MEM_STATIC + 11).to<std::string>(), "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 		{
-			engine->read_key(vm::MEM_STATIC + 16, vm::uint_t(88));
-			engine->read_key(vm::MEM_STATIC + 16, vm::uint_t(888));
-
 			auto value = vm::read(engine, vm::MEM_STATIC + 16).to<std::map<uint64_t, uint64_t>>();
 			vnx::test::expect(value[88], 99u);
 			vnx::test::expect(value[888], 999u);
 		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("log_event")
+	{
+		engine->log_func = [](uint32_t level, const std::string& msg) {
+			vnx::test::expect(level, 1337u);
+			vnx::test::expect(msg, "test");
+		};
+		engine->event_func = [&engine](const std::string& name, const uint64_t data) {
+			vnx::test::expect(name, "test");
+			expect(engine->read(data), vm::to_binary(hash_t("test")));
+		};
+		engine->code.emplace_back(vm::OP_LOG, vm::OPFLAG_REF_A, vm::MEM_STATIC + 4, vm::MEM_STATIC + 5);
+		engine->code.emplace_back(vm::OP_EVENT, 0, vm::MEM_STATIC + 5, vm::MEM_STATIC + 7);
+		engine->code.emplace_back(vm::OP_RET);
+		engine->init();
+		engine->begin(0);
+		engine->run();
+	}
+	VNX_TEST_END()
+
+	engine->commit();
+
+	VNX_TEST_BEGIN("assign")
+	{
+		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, true);
+		engine->gas_limit = 1000000;
+		check_func_1(engine, vm::MEM_STATIC);
 	}
 	VNX_TEST_END()
 
