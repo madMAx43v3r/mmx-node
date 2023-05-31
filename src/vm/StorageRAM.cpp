@@ -140,30 +140,38 @@ std::map<addr_t, uint128> StorageRAM::get_balances(const addr_t& contract) const
 
 void StorageRAM::dump_memory(std::ostream& out) const
 {
+	auto dump_entries = [this, &out](const addr_t& address)
+	{
+		for(auto iter = entries.lower_bound(std::make_tuple(address, 0, 0)); iter != entries.upper_bound(std::make_tuple(address, -1, -1)); ++iter)
+		{
+			out << "[" << to_hex(std::get<1>(iter->first)) << "]"
+					<< "[" << to_hex(std::get<2>(iter->first)) << "] " << to_string(iter->second.get());
+			if(auto var = iter->second.get()) {
+				out << "\t\t(vf: " << to_bin(var->flags) << ")";
+			}
+			out << std::endl;
+		}
+	};
+
 	const addr_t* curr_addr = nullptr;
 
 	for(auto iter = memory.begin(); iter != memory.end(); ++iter)
 	{
 		if(!curr_addr || iter->first.first != *curr_addr) {
 			if(curr_addr) {
-				for(auto iter = entries.lower_bound(std::make_tuple(*curr_addr, 0, 0)); iter != entries.upper_bound(std::make_tuple(*curr_addr, -1, -1)); ++iter)
-				{
-					std::cout << "[" << std::get<1>(iter->first) << "]"
-							<< "[" << std::get<2>(iter->first) << "] " << to_string(iter->second.get());
-					if(auto var = iter->second.get()) {
-						std::cout << "\t\t(vf: " << to_bin(var->flags) << ")";
-					}
-					std::cout << std::endl;
-				}
+				dump_entries(*curr_addr);
 			}
 			curr_addr = &iter->first.first;
 			out << "[" << curr_addr->to_string() << "]" << std::endl;
 		}
-		std::cout << "[" << to_hex(iter->first.second) << "] " << to_string(iter->second.get());
+		out << "[" << to_hex(iter->first.second) << "] " << to_string(iter->second.get());
 		if(auto var = iter->second.get()) {
-			std::cout << "\t\t(vf: " << to_bin(var->flags) << ") (rc: " << var->ref_count << ")";
+			out << "\t\t(vf: " << to_bin(var->flags) << ") (rc: " << var->ref_count << ")";
 		}
-		std::cout << std::endl;
+		out << std::endl;
+	}
+	if(curr_addr) {
+		dump_entries(*curr_addr);
 	}
 }
 

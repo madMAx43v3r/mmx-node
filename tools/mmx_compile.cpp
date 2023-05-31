@@ -110,10 +110,14 @@ int main(int argc, char** argv)
 			engine->run();
 			if(commit) {
 				engine->commit();
+				if(verbose) {
+					std::cerr << "-------------------------------------------" << std::endl;
+					storage->dump_memory(std::cerr);
+				}
 			}
 		} catch(const std::exception& ex) {
 			if(verbose || !assert_fail) {
-				std::cerr << "Failed at 0x" << vnx::to_hex_string(engine->error_addr)
+				std::cerr << "Failed at " << vm::to_hex(engine->error_addr)
 						<< " with: " << ex.what() << " (code " << engine->error_code << ")" << std::endl;
 			}
 			ret_value = 1;
@@ -127,10 +131,6 @@ int main(int argc, char** argv)
 			}
 		}
 		if(verbose) {
-			if(commit) {
-				std::cerr << "-------------------------------------------" << std::endl;
-				storage->dump_memory(std::cerr);
-			}
 			const auto exec_time_ms = (vnx::get_wall_time_micros() - time_begin) / 1e3;
 			std::cerr << "-------------------------------------------" << std::endl;
 			std::cerr << "Total cost: " << engine->gas_used << std::endl;
