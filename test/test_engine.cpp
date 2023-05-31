@@ -49,7 +49,7 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_TYPE, 0, vm::MEM_STATIC + 9, vm::MEM_STATIC + 0);
 		code.emplace_back(vm::OP_RET);
 
-		engine.gas_limit = 100000;
+		engine.gas_limit = 1000000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
@@ -74,7 +74,7 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_POP_BACK, 0, vm::MEM_STATIC + 18, vm::MEM_STATIC + 1);
 		code.emplace_back(vm::OP_RET);
 
-		engine.gas_limit = 10000;
+		engine.gas_limit = 100000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
@@ -101,7 +101,7 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_CLONE, 0, vm::MEM_STATIC + 40, vm::MEM_STATIC + 32);
 		code.emplace_back(vm::OP_RET);
 
-		engine.gas_limit = 10000;
+		engine.gas_limit = 100000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
@@ -123,7 +123,7 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_JUMP, 0, 1);
 		code.emplace_back(vm::OP_RET);
 
-		engine.gas_limit = 1000000;
+		engine.gas_limit = 10000000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
