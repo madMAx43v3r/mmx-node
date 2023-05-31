@@ -111,6 +111,9 @@ void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
 					throw std::logic_error("cannot assign map here");
 				}
 				const auto map = (const vm::map_t*)var;
+				if(map->flags & FLAG_STORED) {
+					throw std::logic_error("cannot copy map from storage at " + to_hex(map->address));
+				}
 				dst->assign(dst_addr, std::make_unique<vm::map_t>());
 
 				for(const auto& entry : src->find_entries(map->address)) {
@@ -329,6 +332,9 @@ vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
 			}
 			case vm::TYPE_MAP: {
 				const auto map = (const vm::map_t*)var;
+				if(map->flags & FLAG_STORED) {
+					throw std::logic_error("cannot read map from storage at " + to_hex(map->address));
+				}
 				std::map<vnx::Variant, vnx::Variant> tmp;
 				for(const auto& entry : engine->find_entries(map->address)) {
 					tmp[convert(engine, engine->read(entry.first))] = convert(engine, entry.second);
