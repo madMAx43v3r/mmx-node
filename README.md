@@ -1,21 +1,23 @@
 # mmx-node
 
-MMX is a blockchain written from scratch, using proven logic from Chia's Proof of Space and improved SHA256 VDF similar to Solana.
+_“ MMX &ndash; fast, low power, feature rich, compatible, decentralized &ndash; with tokenomics of an actual currency ”_
+
+A base blockchain written from scratch, using proven logic from Chia's Proof of Space and improved SHA256 VDF similar to Solana.
 
 Design
 - High transaction capacity, with low and consistent block times
-- Energy efficient Proof of Space, future transition to virtual storage
+- Energy efficient Proof of Space, with transition to virtual storage
 - Rich compatible feature set, built into base blockchain
 - Balanced hardware requirements, with nodes in home networks
-- Native MMX is designed with the properties and usage of an actual currency
+- Designed with the properties and usage of an actual currency
 - Variable supply stabilizes the price, a key property of any currency
 - Efficient implementation provides low transaction fees, at high throughput
 
 Features
 - High performance code (1000 transactions per second or more)
 - Custom high-level VM for smart contracts (similar to JavaScript)
-- Variable supply (block reward scales with netspace, but also capped by TX fees)
-- Consistent block times (created every 10 seconds, governed by VDF)
+- Variable supply (reward scales with netspace, but capped by TX fees)
+- Consistent block times (every 10 seconds, governed by VDF)
 - Native token and NFT support (atomic swaps with standard transactions)
 - Smart contract offers for on-chain trading (bids locked into contract)
 - Energy efficient Proof of Space (same as Chia)
@@ -26,12 +28,12 @@ Roadmap
 | Release | Planned | Description |
 | :--- | :--- | :--- |
 | testnet7 | Sep 2022 | Finished. <sup>[1]</sup> |
-| testnet8 | Oct 2022 | Finished. Incentivized testnet, until height 425k. <sup>[2]</sup> |
-| testnet9 | Dec 2022 | Finished. Incentivized testnet, until height 1220k.  <sup>[2]</sup> |
-| testnet10 | Apr 2023 | Active. Incentivized testnet. <sup>[2]</sup> |
+| testnet8 | Oct 2022 | Finished. Incentivized testnet, height 25k-425k. <sup>[2]</sup> |
+| testnet9 | Dec 2022 | Finished. Incentivized testnet, height 25k-1220k. <sup>[2]</sup> |
+| testnet10 | Apr 2023 | Active. Incentivized testnet, height 40k-_tbd_. <sup>[2]</sup> |
 | testnet11 | _tbd_ | Planned Q3 2023. <sup>[2]</sup> |
 | testnetX | _tbd_ | As needed. <sup>[2]</sup> |
-| mainnet | _tbd_ |
+| mainnet | _tbd_ | |
 
 _<sup>[1]</sup> Coins farmed on testnets are not worth anything, now or later._\
 _<sup>[2]</sup> A fixed reward of 0.5 MMX per block win, in incentivized testnet, will be given on mainnet genesis._
