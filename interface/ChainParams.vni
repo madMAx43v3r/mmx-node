@@ -14,6 +14,7 @@ class ChainParams {
 	uint challenge_delay = 9;				// blocks until new challange is active
 	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
+	uint avg_txfee_adjust = 13;				// per block (1/2^x)
 	
 	uint min_vdf_segments = 320;
 	uint num_vdf_segments = 760;

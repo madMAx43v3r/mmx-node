@@ -229,7 +229,7 @@ uint64_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, cons
 inline
 uint64_t calc_new_average_txfee(std::shared_ptr<const ChainParams> params, const uint64_t prev_value, const uint64_t total_fees)
 {
-	return (prev_value * ((uint64_t(1) << params->max_diff_adjust) - 1) + total_fees) >> params->max_diff_adjust;
+	return (prev_value * ((uint64_t(1) << params->avg_txfee_adjust) - 1) + total_fees) >> params->avg_txfee_adjust;
 }
 
 inline
