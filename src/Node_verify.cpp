@@ -15,6 +15,7 @@
 
 #include <vnx/vnx.h>
 #include <sha256_avx2.h>
+#include <sha256_ni.h>
 
 
 namespace mmx {
@@ -276,6 +277,8 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) const
 {
+	static bool have_sha_ni = sha256_ni_available();
+
 	const auto& segments = proof->segments;
 	bool is_valid = !segments.empty();
 	size_t invalid_segment = -1;
@@ -313,18 +316,26 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 			}
 			max_iters = std::max(max_iters, segments[i].num_iters);
 		}
-		for(uint32_t k = 0; k < max_iters; ++k)
-		{
-			for(uint32_t j = 0; j < num_lanes; ++j) {
-				::memcpy(input[j], point[j].data(), 32);
-			}
-			sha256_64_x8(hash[0], input[0], 32);
-			sha256_64_x8(hash[8], input[8], 32);
-
-			for(uint32_t j = 0; j < num_lanes; ++j) {
+		if(have_sha_ni) {
+			for(uint32_t j = 0; j < num_lanes; ++j)
+			{
 				const uint32_t i = chunk * batch_size + j;
-				if(k < segments[i].num_iters) {
-					::memcpy(point[j].data(), hash[j], 32);
+				recursive_sha256_ni(point[j].data(), segments[i].num_iters);
+			}
+		} else {
+			for(uint32_t k = 0; k < max_iters; ++k)
+			{
+				for(uint32_t j = 0; j < num_lanes; ++j) {
+					::memcpy(input[j], point[j].data(), 32);
+				}
+				sha256_64_x8(hash[0], input[0], 32);
+				sha256_64_x8(hash[8], input[8], 32);
+
+				for(uint32_t j = 0; j < num_lanes; ++j) {
+					const uint32_t i = chunk * batch_size + j;
+					if(k < segments[i].num_iters) {
+						::memcpy(point[j].data(), hash[j], 32);
+					}
 				}
 			}
 		}
