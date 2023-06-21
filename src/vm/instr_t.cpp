@@ -80,7 +80,7 @@ const opcode_info_t& get_opcode_info(opcode_e code)
 	return g_opcode_info[code];
 }
 
-void encode_symbol(
+static void encode_symbol(
 		vnx::OutputBuffer& out, const uint32_t symbol,
 		const std::unordered_map<uint32_t, std::pair<uint32_t, uint8_t>>& sym_map)
 {
@@ -182,7 +182,7 @@ std::vector<uint8_t> serialize(const std::vector<instr_t>& code)
 	return buffer;
 }
 
-uint32_t decode_symbol(vnx::InputBuffer& in, const std::vector<uint32_t>& sym_list)
+static uint32_t decode_symbol(vnx::InputBuffer& in, const std::vector<uint32_t>& sym_list)
 {
 	uint8_t first = 0;
 	in.read(&first, 1);
