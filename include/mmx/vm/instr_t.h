@@ -128,7 +128,7 @@ struct opcode_info_t {
 
 const opcode_info_t& get_opcode_info(opcode_e code);
 
-std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const std::vector<instr_t>& code);
+std::vector<uint8_t> serialize(const std::vector<instr_t>& code);
 
 size_t deserialize(std::vector<instr_t>& code, const void* data, const size_t length);
 

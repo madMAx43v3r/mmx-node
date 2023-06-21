@@ -652,10 +652,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 			binary->methods[method.name] = method;
 		}
 	}
-	{
-		const auto data = vm::serialize(code);
-		binary->binary = std::vector<uint8_t>(data.first.get(), data.first.get() + data.second);
-	}
+	binary->binary = vm::serialize(code);
 	binary->line_info = line_info;
 
 	debug() << std::endl;
