@@ -100,6 +100,11 @@ static void encode_symbol(
 	}
 }
 
+inline uint32_t encode_instr(const instr_t& instr)
+{
+	return (uint32_t(instr.flags) << 8) | uint32_t(instr.code);
+}
+
 std::vector<uint8_t> serialize(const std::vector<instr_t>& code)
 {
 	std::unordered_map<uint32_t, uint32_t> sym_count;
@@ -117,6 +122,7 @@ std::vector<uint8_t> serialize(const std::vector<instr_t>& code)
 		if(info.nargs >= 4) {
 			sym_count[instr.d]++;
 		}
+		sym_count[encode_instr(instr)]++;
 	}
 	std::vector<std::pair<uint32_t, uint32_t>> sym_list;
 
@@ -160,8 +166,7 @@ std::vector<uint8_t> serialize(const std::vector<instr_t>& code)
 
 	for(const auto& instr : code)
 	{
-		out.write(&instr.code, 1);
-		out.write(&instr.flags, 1);
+		encode_symbol(out, encode_instr(instr), sym_map);
 
 		const auto& info = get_opcode_info(instr.code);
 		if(info.nargs >= 1) {
@@ -214,6 +219,15 @@ static uint32_t decode_symbol(vnx::InputBuffer& in, const std::vector<uint32_t>&
 	return value;
 }
 
+inline instr_t decode_instr(vnx::InputBuffer& in, const std::vector<uint32_t>& sym_list)
+{
+	const auto tmp = decode_symbol(in, sym_list);
+	instr_t out;
+	out.code = opcode_e(tmp & 0xFF);
+	out.flags = (tmp >> 8) & 0xFF;
+	return out;
+}
+
 size_t deserialize(std::vector<instr_t>& code, const void* data, const size_t length)
 {
 	vnx::PointerInputStream stream(data, length);
@@ -241,12 +255,8 @@ size_t deserialize(std::vector<instr_t>& code, const void* data, const size_t le
 
 	for(uint32_t i = 0; i < instr_count; ++i)
 	{
-		instr_t instr;
-		{
-			auto buf = in.read(2);
-			instr.code = opcode_e(uint8_t(buf[0]));
-			instr.flags = uint8_t(buf[1]);
-		}
+		auto instr = decode_instr(in, sym_list);
+
 		const auto& info = get_opcode_info(instr.code);
 		if(info.nargs >= 1) {
 			instr.a = decode_symbol(in, sym_list);
