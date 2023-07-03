@@ -190,7 +190,7 @@ void Node::main()
 			catch(const std::exception& ex) {
 				log(WARN) << ex.what();
 			}
-			db.revert(height);
+			revert(height);
 		}
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
