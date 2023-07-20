@@ -12,7 +12,7 @@ if(MSVC)
 	add_compile_options(/openmp /EHsc /MP)
 
 	set(MSVC_DEBUG_OPTIONS /Od)
-	set(MSVC_RELEASE_OPTIONS /W1 /O2)
+	set(MSVC_RELEASE_OPTIONS /W1 /O2 /arch:AVX)
 
 	add_compile_options( 
 		"$<$<CONFIG:Debug>:${MSVC_DEBUG_OPTIONS}>"
@@ -258,8 +258,8 @@ else()
 	
 	if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 		message(STATUS "Enabling -mavx2 -msha")
-		set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-msse4.2 -msha")
-		set_source_files_properties(src/sha256_ni_rec.cpp PROPERTIES COMPILE_FLAGS "-msse4.2 -msha")
+		set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "-mavx -msha")
+		set_source_files_properties(src/sha256_ni_rec.cpp PROPERTIES COMPILE_FLAGS "-mavx -msha")
 		set_source_files_properties(src/sha256_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
 	endif()
 endif()
