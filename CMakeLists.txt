@@ -12,7 +12,7 @@ if(MSVC)
 	add_compile_options(/openmp /EHsc /MP)
 
 	set(MSVC_DEBUG_OPTIONS /Od)
-	set(MSVC_RELEASE_OPTIONS /W1 /O2 /arch:AVX)
+	set(MSVC_RELEASE_OPTIONS /W1 /O2)
 
 	add_compile_options( 
 		"$<$<CONFIG:Debug>:${MSVC_DEBUG_OPTIONS}>"
@@ -243,6 +243,9 @@ if(MSVC)
 
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
+	set_source_files_properties(src/sha256_ni.cpp PROPERTIES COMPILE_FLAGS "/arch:AVX")
+	set_source_files_properties(src/sha256_ni_rec.cpp PROPERTIES COMPILE_FLAGS "/arch:AVX")
 
 	# Workaround for:
 	#	LNK1189: library limit of 65535 objects exceeded
