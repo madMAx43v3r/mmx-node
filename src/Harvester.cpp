@@ -257,6 +257,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		try {
 			const auto proof = prover->get_full_proof(best_entry.challenge.bytes, best_entry.index);
 			send_response(value, proof, nullptr, best_entry.plot_id, best_entry.score, time_begin);
+			log(DEBUG) << "[" << host_name << "] Best plot id: " << best_entry.plot_id << " (" << prover->get_file_path() << ")";
 		} catch(const std::exception& ex) {
 			log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
 		}
