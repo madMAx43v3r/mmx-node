@@ -70,7 +70,7 @@ Login password is auto-generated at first launch, located in `$MMX_HOME/PASSWD` 
 ### Testnet10
 
 - Decentralized Timelord rewards (fixed 0.0025 MMX per block, paid by TX fees when possible (but never more than 1/8))
-- New AMM Swap with multi-fee tier system (you can chose between 10 fee levels for your liquidity)
+- New AMM Swap with multi-fee tier system (you can chose between 4 fee levels for your liquidity)
 - Account activation TX fee (0.01 MMX when transferring to a new address with zero balance)
 - Increased min block reward to 0.5 MMX
 - Full transition to smart contracts with compiled JS like code
