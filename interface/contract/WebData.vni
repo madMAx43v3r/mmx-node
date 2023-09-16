@@ -14,9 +14,9 @@ class WebData extends mmx.Contract {
 	
 	hash_t calc_hash(bool full_hash) const;
 	
-	ulong num_bytes() const;
+	ulong num_bytes(bool total = true) const;
 	
-	ulong calc_cost(mmx.ChainParams* params, bool is_read) const;
+	ulong calc_cost(mmx.ChainParams* params) const;
 	
 	vnx.Variant read_field(string name) const;
 	

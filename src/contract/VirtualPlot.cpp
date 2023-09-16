@@ -40,11 +40,14 @@ hash_t VirtualPlot::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t VirtualPlot::calc_cost(std::shared_ptr<const ChainParams> params, const vnx::bool_t& is_read) const
+uint64_t VirtualPlot::num_bytes(const vnx::bool_t& total) const
 {
-	const auto num_bytes = 48 + (reward_address ? 32 : 0);
+	return (total ? Super::num_bytes() : 0) + 48 + (reward_address ? 32 : 0);
+}
 
-	return Super::calc_cost(params, is_read) + calc_byte_cost(params, num_bytes, is_read);
+uint64_t VirtualPlot::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
 }
 
 vnx::Variant VirtualPlot::read_field(const std::string& name) const

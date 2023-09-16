@@ -254,15 +254,6 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 }
 
 inline
-uint64_t calc_byte_cost(std::shared_ptr<const ChainParams> params, const uint64_t num_bytes, const bool is_read)
-{
-	if(is_read) {
-		return (num_bytes * params->min_txfee_read_kbyte) / 1000;
-	}
-	return num_bytes * params->min_txfee_byte;
-}
-
-inline
 std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::string>& passphrase)
 {
 	hash_t pass_hash;

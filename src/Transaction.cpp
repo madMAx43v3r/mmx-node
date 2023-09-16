@@ -262,7 +262,7 @@ tx_index_t Transaction::get_tx_index(std::shared_ptr<const ::mmx::ChainParams> p
 	index.file_offset = file_offset;
 	index.static_cost = static_cost;
 	if(deploy) {
-		index.contract_read_cost = deploy->calc_cost(params, true);
+		index.contract_read_cost = (deploy->num_bytes() * params->min_txfee_read_kbyte) / 1000;
 	}
 	return index;
 }
