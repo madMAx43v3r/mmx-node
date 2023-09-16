@@ -6,6 +6,7 @@
 
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/memo_t.hpp>
 
@@ -30,6 +31,8 @@ struct MMX_EXPORT txio_t {
 	vnx::Hash64 get_type_hash() const;
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
+	
+	uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	
 	static std::shared_ptr<txio_t> create();
 	std::shared_ptr<txio_t> clone() const;

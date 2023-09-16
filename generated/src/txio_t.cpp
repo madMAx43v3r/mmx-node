@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/txio_t.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/memo_t.hpp>
 

@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xa3f7db9e71d19326ull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x7414c494796b84acull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -82,7 +82,7 @@ void ChainParams::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, min_txfee_deploy);
 	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, min_txfee_byte);
 	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, min_txfee_read);
-	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, min_txfee_read_byte);
+	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, min_txfee_read_kbyte);
 	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, min_txfee_activate);
 	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, max_block_size);
 	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, max_block_cost);
@@ -138,7 +138,7 @@ void ChainParams::write(std::ostream& _out) const {
 	_out << ", \"min_txfee_deploy\": "; vnx::write(_out, min_txfee_deploy);
 	_out << ", \"min_txfee_byte\": "; vnx::write(_out, min_txfee_byte);
 	_out << ", \"min_txfee_read\": "; vnx::write(_out, min_txfee_read);
-	_out << ", \"min_txfee_read_byte\": "; vnx::write(_out, min_txfee_read_byte);
+	_out << ", \"min_txfee_read_kbyte\": "; vnx::write(_out, min_txfee_read_kbyte);
 	_out << ", \"min_txfee_activate\": "; vnx::write(_out, min_txfee_activate);
 	_out << ", \"max_block_size\": "; vnx::write(_out, max_block_size);
 	_out << ", \"max_block_cost\": "; vnx::write(_out, max_block_cost);
@@ -201,7 +201,7 @@ vnx::Object ChainParams::to_object() const {
 	_object["min_txfee_deploy"] = min_txfee_deploy;
 	_object["min_txfee_byte"] = min_txfee_byte;
 	_object["min_txfee_read"] = min_txfee_read;
-	_object["min_txfee_read_byte"] = min_txfee_read_byte;
+	_object["min_txfee_read_kbyte"] = min_txfee_read_kbyte;
 	_object["min_txfee_activate"] = min_txfee_activate;
 	_object["max_block_size"] = max_block_size;
 	_object["max_block_cost"] = max_block_cost;
@@ -276,8 +276,8 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(min_txfee_memo);
 		} else if(_entry.first == "min_txfee_read") {
 			_entry.second.to(min_txfee_read);
-		} else if(_entry.first == "min_txfee_read_byte") {
-			_entry.second.to(min_txfee_read_byte);
+		} else if(_entry.first == "min_txfee_read_kbyte") {
+			_entry.second.to(min_txfee_read_kbyte);
 		} else if(_entry.first == "min_txfee_sign") {
 			_entry.second.to(min_txfee_sign);
 		} else if(_entry.first == "min_vdf_segments") {
@@ -434,8 +434,8 @@ vnx::Variant ChainParams::get_field(const std::string& _name) const {
 	if(_name == "min_txfee_read") {
 		return vnx::Variant(min_txfee_read);
 	}
-	if(_name == "min_txfee_read_byte") {
-		return vnx::Variant(min_txfee_read_byte);
+	if(_name == "min_txfee_read_kbyte") {
+		return vnx::Variant(min_txfee_read_kbyte);
 	}
 	if(_name == "min_txfee_activate") {
 		return vnx::Variant(min_txfee_activate);
@@ -556,8 +556,8 @@ void ChainParams::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(min_txfee_byte);
 	} else if(_name == "min_txfee_read") {
 		_value.to(min_txfee_read);
-	} else if(_name == "min_txfee_read_byte") {
-		_value.to(min_txfee_read_byte);
+	} else if(_name == "min_txfee_read_kbyte") {
+		_value.to(min_txfee_read_kbyte);
 	} else if(_name == "min_txfee_activate") {
 		_value.to(min_txfee_activate);
 	} else if(_name == "max_block_size") {
@@ -615,7 +615,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0xa3f7db9e71d19326ull);
+	type_code->code_hash = vnx::Hash64(0x7414c494796b84acull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
@@ -869,8 +869,8 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	{
 		auto& field = type_code->fields[35];
 		field.data_size = 8;
-		field.name = "min_txfee_read_byte";
-		field.value = vnx::to_string(1);
+		field.name = "min_txfee_read_kbyte";
+		field.value = vnx::to_string(1000);
 		field.code = {4};
 	}
 	{
@@ -1120,7 +1120,7 @@ void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, c
 			vnx::read_value(_buf + _field->offset, value.min_txfee_read, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[35]) {
-			vnx::read_value(_buf + _field->offset, value.min_txfee_read_byte, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.min_txfee_read_kbyte, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[36]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_activate, _field->code.data());
@@ -1206,7 +1206,7 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	vnx::write_value(_buf + 176, value.min_txfee_deploy);
 	vnx::write_value(_buf + 184, value.min_txfee_byte);
 	vnx::write_value(_buf + 192, value.min_txfee_read);
-	vnx::write_value(_buf + 200, value.min_txfee_read_byte);
+	vnx::write_value(_buf + 200, value.min_txfee_read_kbyte);
 	vnx::write_value(_buf + 208, value.min_txfee_activate);
 	vnx::write_value(_buf + 216, value.max_block_size);
 	vnx::write_value(_buf + 224, value.max_block_cost);

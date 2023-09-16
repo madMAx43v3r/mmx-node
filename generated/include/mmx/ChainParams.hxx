@@ -50,7 +50,7 @@ public:
 	uint64_t min_txfee_deploy = 100000;
 	uint64_t min_txfee_byte = 10;
 	uint64_t min_txfee_read = 1000;
-	uint64_t min_txfee_read_byte = 1;
+	uint64_t min_txfee_read_kbyte = 1000;
 	uint64_t min_txfee_activate = 100000;
 	uint64_t max_block_size = 10000000;
 	uint64_t max_block_cost = 100000000;
@@ -148,7 +148,7 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("min_txfee_deploy", 32); _visitor.accept(min_txfee_deploy);
 	_visitor.type_field("min_txfee_byte", 33); _visitor.accept(min_txfee_byte);
 	_visitor.type_field("min_txfee_read", 34); _visitor.accept(min_txfee_read);
-	_visitor.type_field("min_txfee_read_byte", 35); _visitor.accept(min_txfee_read_byte);
+	_visitor.type_field("min_txfee_read_kbyte", 35); _visitor.accept(min_txfee_read_kbyte);
 	_visitor.type_field("min_txfee_activate", 36); _visitor.accept(min_txfee_activate);
 	_visitor.type_field("max_block_size", 37); _visitor.accept(max_block_size);
 	_visitor.type_field("max_block_cost", 38); _visitor.accept(max_block_cost);
