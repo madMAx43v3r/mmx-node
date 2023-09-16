@@ -351,6 +351,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 		if(!network || peak->height != network->height || is_synced != network->height)
 		{
 			auto info = NetworkInfo::create();
+			// TODO: this won't scale
 			balance_table.scan([info](const std::pair<addr_t, addr_t>& key, const uint128& value) {
 				info->address_count++;
 			});
