@@ -62,7 +62,7 @@ uint64_t Binary::calc_cost(std::shared_ptr<const ChainParams> params, const vnx:
 	}
 	payload += name.size() + constant.size() + binary.size() + source.size() + compiler.size();
 
-	return payload * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
+	return calc_byte_cost(params, payload, is_read);
 }
 
 vnx::optional<uint32_t> Binary::find_field(const std::string& name) const

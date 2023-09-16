@@ -57,7 +57,7 @@ uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params, const 
 	for(const auto& entry : depends) {
 		payload += entry.first.size();
 	}
-	return Super::calc_cost(params, is_read) + payload * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
+	return Super::calc_cost(params, is_read) + calc_byte_cost(params, payload, is_read);
 }
 
 vnx::Variant Executable::read_field(const std::string& name) const

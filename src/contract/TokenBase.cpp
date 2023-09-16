@@ -40,7 +40,7 @@ uint64_t TokenBase::calc_cost(std::shared_ptr<const ChainParams> params, const v
 {
 	const auto num_bytes = 4 + 4 * 2 + name.size() + symbol.size() + meta_data.size();
 
-	return num_bytes * (is_read ? params->min_txfee_read_byte : params->min_txfee_byte);
+	return calc_byte_cost(params, num_bytes, is_read);
 }
 
 
