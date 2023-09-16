@@ -2118,7 +2118,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const execution_context_t> context, bool is_replay)
 {
 	if(block->prev != state_hash) {
-		throw std::logic_error("block->prev != state_hash");
+		throw std::logic_error("apply(): block->prev != state_hash");
 	}
 	if(!is_replay) {
 		write_block(block);
