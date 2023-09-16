@@ -85,6 +85,7 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "note", 	note);
 	write_field(out, "nonce", 	nonce);
 	write_field(out, "network", network);
+	write_field(out, "memo",	memo);
 	write_field(out, "sender",	sender);
 	write_field(out, "inputs",	inputs, full_hash);
 	write_field(out, "outputs", outputs);
