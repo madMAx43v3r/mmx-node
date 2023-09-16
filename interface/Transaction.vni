@@ -16,7 +16,7 @@ class Transaction extends TransactionBase {
 	
 	ulong nonce;
 	
-	optional<hash_t> salt;
+	string network;
 	
 	optional<addr_t> sender;			// to pay for tx fee (first signature)
 	

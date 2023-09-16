@@ -51,7 +51,9 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 			return false;
 		}
 	}
-	return version == 0 && fee_ratio >= 1024 && nonce
+	return version == 0 && nonce
+			&& fee_ratio >= 1024
+			&& network == params->vdf_seed;
 			&& solutions.size() <= MAX_SOLUTIONS
 			&& (!exec_result || exec_result->is_valid())
 			&& static_cost == calc_cost(params)
@@ -82,7 +84,7 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "max_fee_amount", max_fee_amount);
 	write_field(out, "note", 	note);
 	write_field(out, "nonce", 	nonce);
-	write_field(out, "salt", 	salt);
+	write_field(out, "network", network);
 	write_field(out, "sender",	sender);
 	write_field(out, "inputs",	inputs, full_hash);
 	write_field(out, "outputs", outputs);
