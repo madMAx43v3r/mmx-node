@@ -690,14 +690,14 @@ std::shared_ptr<const Contract> Node::get_contract(const addr_t& address) const
 	return get_contract_ex(address);
 }
 
-std::shared_ptr<const Contract> Node::get_contract_ex(const addr_t& address, uint64_t* read_cost, const uint64_t max_cost) const
+std::shared_ptr<const Contract> Node::get_contract_ex(const addr_t& address, uint64_t* read_cost, const uint64_t gas_limit) const
 {
 	if(read_cost) {
 		tx_index_t index;
 		tx_index.find(address, index);
 
 		const auto cost = 2 * params->min_txfee_read + index.contract_read_cost;
-		if(cost > max_cost) {
+		if(*read_cost + cost > gas_limit) {
 			throw std::runtime_error("not enough gas to read contract");
 		}
 		*read_cost += cost;
@@ -729,9 +729,9 @@ std::shared_ptr<const Contract> Node::get_contract_for(const addr_t& address) co
 	return get_contract_for_ex(address);
 }
 
-std::shared_ptr<const Contract> Node::get_contract_for_ex(const addr_t& address, uint64_t* read_cost, const uint64_t max_cost) const
+std::shared_ptr<const Contract> Node::get_contract_for_ex(const addr_t& address, uint64_t* read_cost, const uint64_t gas_limit) const
 {
-	if(auto contract = get_contract_ex(address, read_cost, max_cost)) {
+	if(auto contract = get_contract_ex(address, read_cost, gas_limit)) {
 		return contract;
 	}
 	auto pubkey = contract::PubKey::create();

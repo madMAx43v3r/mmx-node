@@ -439,11 +439,11 @@ private:
 	void write_block(std::shared_ptr<const Block> block);
 
 	template<typename T>
-	std::shared_ptr<const T> get_contract_as(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t max_cost = 0) const;
+	std::shared_ptr<const T> get_contract_as(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
 
-	std::shared_ptr<const Contract> get_contract_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t max_cost = 0) const;
+	std::shared_ptr<const Contract> get_contract_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
 
-	std::shared_ptr<const Contract> get_contract_for_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t max_cost = 0) const;
+	std::shared_ptr<const Contract> get_contract_for_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
 
 private:
 	DataBase db;
@@ -530,9 +530,9 @@ private:
 
 
 template<typename T>
-std::shared_ptr<const T> Node::get_contract_as(const addr_t& address, uint64_t* read_cost, const uint64_t max_cost) const
+std::shared_ptr<const T> Node::get_contract_as(const addr_t& address, uint64_t* read_cost, const uint64_t gas_limit) const
 {
-	return std::dynamic_pointer_cast<const T>(get_contract_ex(address, read_cost, max_cost));
+	return std::dynamic_pointer_cast<const T>(get_contract_ex(address, read_cost, gas_limit));
 }
 
 
