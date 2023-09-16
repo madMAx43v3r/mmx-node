@@ -54,7 +54,7 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 	}
 	return version == 0 && nonce
 			&& fee_ratio >= 1024
-			&& network == params->vdf_seed;
+			&& network == params->vdf_seed
 			&& solutions.size() <= MAX_SOLUTIONS
 			&& (!exec_result || exec_result->is_valid())
 			&& static_cost == calc_cost(params)
