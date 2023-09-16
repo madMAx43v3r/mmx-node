@@ -9,6 +9,7 @@
 #include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {

@@ -7,6 +7,7 @@
 
 #include <mmx/contract/Data.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {

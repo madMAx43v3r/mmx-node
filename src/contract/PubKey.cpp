@@ -9,6 +9,7 @@
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
 #include <mmx/exception.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
