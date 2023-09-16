@@ -300,7 +300,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false);
 	{
-		const auto avail_gas = (uint64_t(tx->max_fee_amount) * 1024) / tx->fee_ratio;
+		const auto avail_gas = fee_to_cost<mmx::static_failure>(tx->max_fee_amount, tx->fee_ratio);
 		engine->gas_limit = std::min(avail_gas - std::min(tx_cost, avail_gas), params->max_tx_cost);
 	}
 	if(op->user) {
@@ -466,8 +466,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	if(tx_index.count(tx->id)) {
 		throw mmx::static_failure("duplicate tx");
 	}
-	const uint64_t gas_limit = std::min((uint64_t(tx->max_fee_amount) * 1024) / tx->fee_ratio, params->max_tx_cost);
-	const uint64_t static_fee = (uint64_t(tx->static_cost) * tx->fee_ratio) / 1024;
+	const uint64_t gas_limit = std::min(
+			fee_to_cost<mmx::static_failure>(tx->max_fee_amount, tx->fee_ratio), params->max_tx_cost);
+	const uint64_t static_fee = cost_to_fee<mmx::static_failure>(tx->static_cost, tx->fee_ratio);
 
 	uint64_t tx_cost = tx->static_cost;
 	std::vector<txin_t> exec_inputs;
@@ -686,14 +687,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	uint64_t tx_fee = 0;
 
 	try {
-		uint64_t total_fee = 0;
-		{
-			const auto amount = (uint128_t(tx_cost) * tx->fee_ratio) / 1024;
-			if(amount.upper()) {
-				throw mmx::static_failure("tx fee amount overflow");
-			}
-			total_fee = amount;
-		}
+		const auto total_fee = cost_to_fee<mmx::static_failure>(tx_cost, tx->fee_ratio);
+
 		tx_fee = std::min<uint64_t>(total_fee, tx->max_fee_amount);
 
 		const auto dynamic_fee = tx_fee - static_fee;

@@ -198,7 +198,7 @@ public:
 	{
 		if(tx->sender) {
 			const auto key = std::make_pair(*tx->sender, addr_t());
-			const auto static_fee = uint64_t(tx->static_cost) * tx->fee_ratio / 1024;
+			const auto static_fee = cost_to_fee<std::logic_error>(tx->static_cost, tx->fee_ratio);
 			clamped_sub_assign(balance_map[key], static_fee);
 			pending_map[tx->id][key] += static_fee;
 		}

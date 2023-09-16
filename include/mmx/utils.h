@@ -246,6 +246,7 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 	weight *= diff_block->time_diff;
 	// TODO: weight *= std::max(diff_block->netspace_ratio, 1u);
 	// TODO: weight >>= 2 * params->max_diff_adjust;
+
 	if(weight.upper()) {
 		throw std::logic_error("block weight overflow");
 	}
@@ -275,12 +276,32 @@ std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::
 	return std::to_string(hash.to_uint<uint32_t>());
 }
 
-inline
+template<typename error_t>
+uint64_t cost_to_fee(const uint64_t cost, const uint32_t fee_ratio)
+{
+	const auto fee = (uint128_t(cost) * fee_ratio) / 1024;
+	if(fee.upper()) {
+		throw error_t("fee amount overflow");
+	}
+	return fee;
+}
+
+template<typename error_t>
+uint64_t fee_to_cost(const uint64_t fee, const uint32_t fee_ratio)
+{
+	const auto cost = (uint128_t(fee) * 1024) / fee_ratio;
+	if(cost.upper()) {
+		throw error_t("cost value overflow");
+	}
+	return cost;
+}
+
+template<typename error_t>
 void safe_acc(uint64_t& lhs, const uint64_t& rhs)
 {
 	const auto tmp = uint128_t(lhs) + rhs;
 	if(tmp.upper()) {
-		throw std::runtime_error("accumulate overflow");
+		throw error_t("accumulate overflow");
 	}
 	lhs = tmp.lower();
 }
