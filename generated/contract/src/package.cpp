@@ -12,6 +12,8 @@
 #include <mmx/contract/Binary_find_method_return.hxx>
 #include <mmx/contract/Binary_is_valid.hxx>
 #include <mmx/contract/Binary_is_valid_return.hxx>
+#include <mmx/contract/Binary_num_bytes.hxx>
+#include <mmx/contract/Binary_num_bytes_return.hxx>
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/Data_calc_cost.hxx>
 #include <mmx/contract/Data_calc_cost_return.hxx>
@@ -28,6 +30,8 @@
 #include <mmx/contract/Executable_get_external_return.hxx>
 #include <mmx/contract/Executable_is_valid.hxx>
 #include <mmx/contract/Executable_is_valid_return.hxx>
+#include <mmx/contract/Executable_num_bytes.hxx>
+#include <mmx/contract/Executable_num_bytes_return.hxx>
 #include <mmx/contract/Executable_read_field.hxx>
 #include <mmx/contract/Executable_read_field_return.hxx>
 #include <mmx/contract/Identity.hxx>
@@ -38,6 +42,8 @@
 #include <mmx/contract/MultiSig_calc_hash_return.hxx>
 #include <mmx/contract/MultiSig_is_valid.hxx>
 #include <mmx/contract/MultiSig_is_valid_return.hxx>
+#include <mmx/contract/MultiSig_num_bytes.hxx>
+#include <mmx/contract/MultiSig_num_bytes_return.hxx>
 #include <mmx/contract/MultiSig_read_field.hxx>
 #include <mmx/contract/MultiSig_read_field_return.hxx>
 #include <mmx/contract/MultiSig_validate.hxx>
@@ -51,6 +57,8 @@
 #include <mmx/contract/PubKey_get_owner_return.hxx>
 #include <mmx/contract/PubKey_is_valid.hxx>
 #include <mmx/contract/PubKey_is_valid_return.hxx>
+#include <mmx/contract/PubKey_num_bytes.hxx>
+#include <mmx/contract/PubKey_num_bytes_return.hxx>
 #include <mmx/contract/PubKey_read_field.hxx>
 #include <mmx/contract/PubKey_read_field_return.hxx>
 #include <mmx/contract/PubKey_validate.hxx>
@@ -62,6 +70,8 @@
 #include <mmx/contract/TokenBase_calc_hash_return.hxx>
 #include <mmx/contract/TokenBase_is_valid.hxx>
 #include <mmx/contract/TokenBase_is_valid_return.hxx>
+#include <mmx/contract/TokenBase_num_bytes.hxx>
+#include <mmx/contract/TokenBase_num_bytes_return.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/contract/VirtualPlot_calc_cost.hxx>
 #include <mmx/contract/VirtualPlot_calc_cost_return.hxx>
@@ -69,6 +79,8 @@
 #include <mmx/contract/VirtualPlot_calc_hash_return.hxx>
 #include <mmx/contract/VirtualPlot_is_valid.hxx>
 #include <mmx/contract/VirtualPlot_is_valid_return.hxx>
+#include <mmx/contract/VirtualPlot_num_bytes.hxx>
+#include <mmx/contract/VirtualPlot_num_bytes_return.hxx>
 #include <mmx/contract/VirtualPlot_read_field.hxx>
 #include <mmx/contract/VirtualPlot_read_field_return.hxx>
 #include <mmx/contract/WebData.hxx>
@@ -220,6 +232,30 @@ void type<::mmx::contract::Binary_is_valid_return>::create_dynamic_code(std::vec
 }
 
 void type<::mmx::contract::Binary_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Binary_num_bytes>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Binary_num_bytes;
+}
+
+void type<::mmx::contract::Binary_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Binary_num_bytes());
+}
+
+void type<::mmx::contract::Binary_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_num_bytes& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Binary_num_bytes_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Binary_num_bytes_return;
+}
+
+void type<::mmx::contract::Binary_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Binary_num_bytes_return());
+}
+
+void type<::mmx::contract::Binary_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_num_bytes_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -415,6 +451,30 @@ void type<::mmx::contract::Executable_is_valid_return>::create_dynamic_code(std:
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::Executable_num_bytes>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Executable_num_bytes;
+}
+
+void type<::mmx::contract::Executable_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Executable_num_bytes());
+}
+
+void type<::mmx::contract::Executable_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_num_bytes& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::Executable_num_bytes_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_Executable_num_bytes_return;
+}
+
+void type<::mmx::contract::Executable_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::Executable_num_bytes_return());
+}
+
+void type<::mmx::contract::Executable_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_num_bytes_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::Executable_read_field>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_Executable_read_field;
 }
@@ -532,6 +592,30 @@ void type<::mmx::contract::MultiSig_is_valid_return>::create_dynamic_code(std::v
 }
 
 void type<::mmx::contract::MultiSig_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::MultiSig_num_bytes>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_MultiSig_num_bytes;
+}
+
+void type<::mmx::contract::MultiSig_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::MultiSig_num_bytes());
+}
+
+void type<::mmx::contract::MultiSig_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_num_bytes& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::MultiSig_num_bytes_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_MultiSig_num_bytes_return;
+}
+
+void type<::mmx::contract::MultiSig_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::MultiSig_num_bytes_return());
+}
+
+void type<::mmx::contract::MultiSig_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_num_bytes_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -691,6 +775,30 @@ void type<::mmx::contract::PubKey_is_valid_return>::create_dynamic_code(std::vec
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::PubKey_num_bytes>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PubKey_num_bytes;
+}
+
+void type<::mmx::contract::PubKey_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PubKey_num_bytes());
+}
+
+void type<::mmx::contract::PubKey_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_num_bytes& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::PubKey_num_bytes_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_PubKey_num_bytes_return;
+}
+
+void type<::mmx::contract::PubKey_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::PubKey_num_bytes_return());
+}
+
+void type<::mmx::contract::PubKey_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_num_bytes_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::PubKey_read_field>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_PubKey_read_field;
 }
@@ -823,6 +931,30 @@ void type<::mmx::contract::TokenBase_is_valid_return>::create_dynamic_code(std::
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::contract::TokenBase_num_bytes>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_TokenBase_num_bytes;
+}
+
+void type<::mmx::contract::TokenBase_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::TokenBase_num_bytes());
+}
+
+void type<::mmx::contract::TokenBase_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TokenBase_num_bytes& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::TokenBase_num_bytes_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_TokenBase_num_bytes_return;
+}
+
+void type<::mmx::contract::TokenBase_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::TokenBase_num_bytes_return());
+}
+
+void type<::mmx::contract::TokenBase_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TokenBase_num_bytes_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::contract::VirtualPlot>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_VirtualPlot;
 }
@@ -904,6 +1036,30 @@ void type<::mmx::contract::VirtualPlot_is_valid_return>::create_dynamic_code(std
 }
 
 void type<::mmx::contract::VirtualPlot_is_valid_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_valid_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::VirtualPlot_num_bytes>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VirtualPlot_num_bytes;
+}
+
+void type<::mmx::contract::VirtualPlot_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VirtualPlot_num_bytes());
+}
+
+void type<::mmx::contract::VirtualPlot_num_bytes>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_num_bytes& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::contract::VirtualPlot_num_bytes_return>::get_type_code() {
+	return mmx::contract::vnx_native_type_code_VirtualPlot_num_bytes_return;
+}
+
+void type<::mmx::contract::VirtualPlot_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::contract::VirtualPlot_num_bytes_return());
+}
+
+void type<::mmx::contract::VirtualPlot_num_bytes_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_num_bytes_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -1095,6 +1251,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Binary_find_method_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Binary_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Binary_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Binary_num_bytes::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Binary_num_bytes_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data_calc_cost_return::static_create_type_code());
@@ -1111,6 +1269,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Executable_get_external_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Executable_num_bytes::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::Executable_num_bytes_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable_read_field::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable_read_field_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Identity::static_create_type_code());
@@ -1121,6 +1281,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::MultiSig_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::MultiSig_num_bytes::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::MultiSig_num_bytes_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_read_field::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_read_field_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig_validate::static_create_type_code());
@@ -1134,6 +1296,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::PubKey_get_owner_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PubKey_num_bytes::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::PubKey_num_bytes_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_read_field::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_read_field_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey_validate::static_create_type_code());
@@ -1145,6 +1309,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::TokenBase_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TokenBase_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TokenBase_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::TokenBase_num_bytes::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::TokenBase_num_bytes_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_cost_return::static_create_type_code());
@@ -1152,6 +1318,8 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::contract::VirtualPlot_calc_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_is_valid_return::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VirtualPlot_num_bytes::static_create_type_code());
+	vnx::register_type_code(::mmx::contract::VirtualPlot_num_bytes_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_read_field::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::VirtualPlot_read_field_return::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData::static_create_type_code());
@@ -1185,6 +1353,8 @@ const vnx::TypeCode* const vnx_native_type_code_Binary_find_method = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Binary_find_method_return = vnx::get_type_code(vnx::Hash64(0xc1c7b09dd1d78f46ull));
 const vnx::TypeCode* const vnx_native_type_code_Binary_is_valid = vnx::get_type_code(vnx::Hash64(0x5dc8876a8b68a708ull));
 const vnx::TypeCode* const vnx_native_type_code_Binary_is_valid_return = vnx::get_type_code(vnx::Hash64(0xf524a791bf75117cull));
+const vnx::TypeCode* const vnx_native_type_code_Binary_num_bytes = vnx::get_type_code(vnx::Hash64(0xf3677c6845a332b8ull));
+const vnx::TypeCode* const vnx_native_type_code_Binary_num_bytes_return = vnx::get_type_code(vnx::Hash64(0x8250463a96341837ull));
 const vnx::TypeCode* const vnx_native_type_code_Data = vnx::get_type_code(vnx::Hash64(0xadfeee3822244f50ull));
 const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost = vnx::get_type_code(vnx::Hash64(0xd330303ae8af8a8bull));
 const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xffa8c93868ea4352ull));
@@ -1201,6 +1371,8 @@ const vnx::TypeCode* const vnx_native_type_code_Executable_get_external = vnx::g
 const vnx::TypeCode* const vnx_native_type_code_Executable_get_external_return = vnx::get_type_code(vnx::Hash64(0x960d6858aa165ca8ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid = vnx::get_type_code(vnx::Hash64(0xb8eff28f88909a73ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid_return = vnx::get_type_code(vnx::Hash64(0x92797cb1785e1d24ull));
+const vnx::TypeCode* const vnx_native_type_code_Executable_num_bytes = vnx::get_type_code(vnx::Hash64(0xa1936e7feccfa4adull));
+const vnx::TypeCode* const vnx_native_type_code_Executable_num_bytes_return = vnx::get_type_code(vnx::Hash64(0x6cbb161af31d6eb5ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable_read_field = vnx::get_type_code(vnx::Hash64(0xc5f16832024ff681ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable_read_field_return = vnx::get_type_code(vnx::Hash64(0x17fc046c802bba53ull));
 const vnx::TypeCode* const vnx_native_type_code_Identity = vnx::get_type_code(vnx::Hash64(0x69710dd250a33c5eull));
@@ -1211,6 +1383,8 @@ const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x5c85ee5a3873661dull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid = vnx::get_type_code(vnx::Hash64(0x613ac937350f5cd7ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid_return = vnx::get_type_code(vnx::Hash64(0x2b104aee1e626c8cull));
+const vnx::TypeCode* const vnx_native_type_code_MultiSig_num_bytes = vnx::get_type_code(vnx::Hash64(0xe8c16d25de1ca688ull));
+const vnx::TypeCode* const vnx_native_type_code_MultiSig_num_bytes_return = vnx::get_type_code(vnx::Hash64(0xa9f8edc026842d72ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_read_field = vnx::get_type_code(vnx::Hash64(0xf671f77b0633e84dull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_read_field_return = vnx::get_type_code(vnx::Hash64(0x869982a532d20af4ull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate = vnx::get_type_code(vnx::Hash64(0x40855ac13f61e392ull));
@@ -1224,6 +1398,8 @@ const vnx::TypeCode* const vnx_native_type_code_PubKey_get_owner = vnx::get_type
 const vnx::TypeCode* const vnx_native_type_code_PubKey_get_owner_return = vnx::get_type_code(vnx::Hash64(0xc13e7906259b5238ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid = vnx::get_type_code(vnx::Hash64(0xe97fdd91c060e967ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid_return = vnx::get_type_code(vnx::Hash64(0xce58570ddfcea36dull));
+const vnx::TypeCode* const vnx_native_type_code_PubKey_num_bytes = vnx::get_type_code(vnx::Hash64(0xa7899cec5c3b6ca4ull));
+const vnx::TypeCode* const vnx_native_type_code_PubKey_num_bytes_return = vnx::get_type_code(vnx::Hash64(0x4cded74c58c09aa3ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_read_field = vnx::get_type_code(vnx::Hash64(0x8178b9776d46e140ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_read_field_return = vnx::get_type_code(vnx::Hash64(0xe5133546d07cff86ull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey_validate = vnx::get_type_code(vnx::Hash64(0xc8c04e67ca0e5622ull));
@@ -1235,6 +1411,8 @@ const vnx::TypeCode* const vnx_native_type_code_TokenBase_calc_hash = vnx::get_t
 const vnx::TypeCode* const vnx_native_type_code_TokenBase_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xb84553c903d216ccull));
 const vnx::TypeCode* const vnx_native_type_code_TokenBase_is_valid = vnx::get_type_code(vnx::Hash64(0x771fd1948e99a4b4ull));
 const vnx::TypeCode* const vnx_native_type_code_TokenBase_is_valid_return = vnx::get_type_code(vnx::Hash64(0xba07e7639507bde8ull));
+const vnx::TypeCode* const vnx_native_type_code_TokenBase_num_bytes = vnx::get_type_code(vnx::Hash64(0x30fc5b6e9fe58477ull));
+const vnx::TypeCode* const vnx_native_type_code_TokenBase_num_bytes_return = vnx::get_type_code(vnx::Hash64(0x4d3850531d255da3ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot = vnx::get_type_code(vnx::Hash64(0xab02561c615511e8ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost = vnx::get_type_code(vnx::Hash64(0xfed2dc74861bef28ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost_return = vnx::get_type_code(vnx::Hash64(0xac85fcecbe875f5aull));
@@ -1242,6 +1420,8 @@ const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash = vnx::get
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash_return = vnx::get_type_code(vnx::Hash64(0xd7d3a1e038583226ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid = vnx::get_type_code(vnx::Hash64(0xe97074988602acadull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid_return = vnx::get_type_code(vnx::Hash64(0xd5a16e6bb7e26611ull));
+const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_num_bytes = vnx::get_type_code(vnx::Hash64(0x9765e443e679a3full));
+const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_num_bytes_return = vnx::get_type_code(vnx::Hash64(0x22aea27a26af7949ull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_read_field = vnx::get_type_code(vnx::Hash64(0x852a4df8176997efull));
 const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_read_field_return = vnx::get_type_code(vnx::Hash64(0xb0b5ca422f7ec829ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData = vnx::get_type_code(vnx::Hash64(0xf7c226b211c088c4ull));

@@ -14,6 +14,7 @@ namespace contract {
 class MMX_CONTRACT_EXPORT Data_num_bytes : public ::vnx::Value {
 public:
 	
+	vnx::bool_t total = true;
 	
 	typedef ::vnx::Value Super;
 	
@@ -57,8 +58,9 @@ public:
 
 template<typename T>
 void Data_num_bytes::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Data_num_bytes>(0);
-	_visitor.template type_end<Data_num_bytes>(0);
+	_visitor.template type_begin<Data_num_bytes>(1);
+	_visitor.type_field("total", 0); _visitor.accept(total);
+	_visitor.template type_end<Data_num_bytes>(1);
 }
 
 

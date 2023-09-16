@@ -14,6 +14,8 @@
 #include <mmx/Contract_is_locked_return.hxx>
 #include <mmx/Contract_is_valid.hxx>
 #include <mmx/Contract_is_valid_return.hxx>
+#include <mmx/Contract_num_bytes.hxx>
+#include <mmx/Contract_num_bytes_return.hxx>
 #include <mmx/Contract_read_field.hxx>
 #include <mmx/Contract_read_field_return.hxx>
 #include <mmx/Contract_validate.hxx>
@@ -27,6 +29,8 @@
 #include <mmx/contract/Executable_get_external_return.hxx>
 #include <mmx/contract/Executable_is_valid.hxx>
 #include <mmx/contract/Executable_is_valid_return.hxx>
+#include <mmx/contract/Executable_num_bytes.hxx>
+#include <mmx/contract/Executable_num_bytes_return.hxx>
 #include <mmx/contract/Executable_read_field.hxx>
 #include <mmx/contract/Executable_read_field_return.hxx>
 #include <mmx/contract/TokenBase.hxx>
@@ -36,6 +40,8 @@
 #include <mmx/contract/TokenBase_calc_hash_return.hxx>
 #include <mmx/contract/TokenBase_is_valid.hxx>
 #include <mmx/contract/TokenBase_is_valid_return.hxx>
+#include <mmx/contract/TokenBase_num_bytes.hxx>
+#include <mmx/contract/TokenBase_num_bytes_return.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Variant.hpp>
 
@@ -236,22 +242,25 @@ std::shared_ptr<vnx::TypeCode> Executable::static_create_type_code() {
 	type_code->parents[0] = ::mmx::contract::TokenBase::static_get_type_code();
 	type_code->parents[1] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Executable>(); };
-	type_code->methods.resize(15);
+	type_code->methods.resize(18);
 	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
 	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
 	type_code->methods[2] = ::mmx::Contract_get_owner::static_get_type_code();
 	type_code->methods[3] = ::mmx::Contract_is_locked::static_get_type_code();
 	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_read_field::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[7] = ::mmx::contract::Executable_calc_cost::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::Executable_calc_hash::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::Executable_get_external::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::Executable_is_valid::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::Executable_read_field::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
-	type_code->methods[14] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
+	type_code->methods[5] = ::mmx::Contract_num_bytes::static_get_type_code();
+	type_code->methods[6] = ::mmx::Contract_read_field::static_get_type_code();
+	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
+	type_code->methods[8] = ::mmx::contract::Executable_calc_cost::static_get_type_code();
+	type_code->methods[9] = ::mmx::contract::Executable_calc_hash::static_get_type_code();
+	type_code->methods[10] = ::mmx::contract::Executable_get_external::static_get_type_code();
+	type_code->methods[11] = ::mmx::contract::Executable_is_valid::static_get_type_code();
+	type_code->methods[12] = ::mmx::contract::Executable_num_bytes::static_get_type_code();
+	type_code->methods[13] = ::mmx::contract::Executable_read_field::static_get_type_code();
+	type_code->methods[14] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
+	type_code->methods[15] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
+	type_code->methods[16] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
+	type_code->methods[17] = ::mmx::contract::TokenBase_num_bytes::static_get_type_code();
 	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
@@ -318,7 +327,7 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 		case 0xb23d047adf8b2612ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_cost>(_method);
 			auto _return_value = ::mmx::Contract_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params, _args->is_read);
+			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0x622fcf1cba1952edull: {
@@ -345,6 +354,12 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 			_return_value->_ret_0 = is_valid();
 			return _return_value;
 		}
+		case 0x4599864a67f75305ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Contract_num_bytes>(_method);
+			auto _return_value = ::mmx::Contract_num_bytes_return::create();
+			_return_value->_ret_0 = num_bytes(_args->total);
+			return _return_value;
+		}
 		case 0xeff036bd3bb1c0ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Contract_read_field>(_method);
 			auto _return_value = ::mmx::Contract_read_field_return::create();
@@ -360,7 +375,7 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 		case 0x5637ec4f54b3d1baull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_calc_cost>(_method);
 			auto _return_value = ::mmx::contract::Executable_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params, _args->is_read);
+			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0x862527293121a545ull: {
@@ -381,6 +396,12 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 			_return_value->_ret_0 = is_valid();
 			return _return_value;
 		}
+		case 0xa1936e7feccfa4adull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_num_bytes>(_method);
+			auto _return_value = ::mmx::contract::Executable_num_bytes_return::create();
+			_return_value->_ret_0 = num_bytes(_args->total);
+			return _return_value;
+		}
 		case 0xc5f16832024ff681ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::Executable_read_field>(_method);
 			auto _return_value = ::mmx::contract::Executable_read_field_return::create();
@@ -390,7 +411,7 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 		case 0xc758d95e2799f160ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::contract::TokenBase_calc_cost>(_method);
 			auto _return_value = ::mmx::contract::TokenBase_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params, _args->is_read);
+			_return_value->_ret_0 = calc_cost(_args->params);
 			return _return_value;
 		}
 		case 0x174a1238420b859full: {
@@ -403,6 +424,12 @@ std::shared_ptr<vnx::Value> Executable::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::contract::TokenBase_is_valid>(_method);
 			auto _return_value = ::mmx::contract::TokenBase_is_valid_return::create();
 			_return_value->_ret_0 = is_valid();
+			return _return_value;
+		}
+		case 0x30fc5b6e9fe58477ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::contract::TokenBase_num_bytes>(_method);
+			auto _return_value = ::mmx::contract::TokenBase_num_bytes_return::create();
+			_return_value->_ret_0 = num_bytes(_args->total);
 			return _return_value;
 		}
 	}

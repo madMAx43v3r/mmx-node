@@ -37,8 +37,8 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
-	virtual uint64_t num_bytes() const;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, const vnx::bool_t& is_read = 0) const override;
+	virtual uint64_t num_bytes(const vnx::bool_t& total = true) const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual ::vnx::Variant read_field(const std::string& name = "") const override;
 	
 	static std::shared_ptr<WebData> create();

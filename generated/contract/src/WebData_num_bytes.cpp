@@ -14,7 +14,7 @@ namespace contract {
 
 
 const vnx::Hash64 WebData_num_bytes::VNX_TYPE_HASH(0xcc1f554d1bf66504ull);
-const vnx::Hash64 WebData_num_bytes::VNX_CODE_HASH(0x7639813356d40ce6ull);
+const vnx::Hash64 WebData_num_bytes::VNX_CODE_HASH(0x958f6910bdee82caull);
 
 vnx::Hash64 WebData_num_bytes::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,11 +47,13 @@ void WebData_num_bytes::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_
 void WebData_num_bytes::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::contract::vnx_native_type_code_WebData_num_bytes;
 	_visitor.type_begin(*_type_code);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, total);
 	_visitor.type_end(*_type_code);
 }
 
 void WebData_num_bytes::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.contract.WebData.num_bytes\"";
+	_out << ", \"total\": "; vnx::write(_out, total);
 	_out << "}";
 }
 
@@ -64,17 +66,29 @@ void WebData_num_bytes::read(std::istream& _in) {
 vnx::Object WebData_num_bytes::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.contract.WebData.num_bytes";
+	_object["total"] = total;
 	return _object;
 }
 
 void WebData_num_bytes::from_object(const vnx::Object& _object) {
+	for(const auto& _entry : _object.field) {
+		if(_entry.first == "total") {
+			_entry.second.to(total);
+		}
+	}
 }
 
 vnx::Variant WebData_num_bytes::get_field(const std::string& _name) const {
+	if(_name == "total") {
+		return vnx::Variant(total);
+	}
 	return vnx::Variant();
 }
 
 void WebData_num_bytes::set_field(const std::string& _name, const vnx::Variant& _value) {
+	if(_name == "total") {
+		_value.to(total);
+	}
 }
 
 /// \private
@@ -101,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> WebData_num_bytes::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.WebData.num_bytes";
 	type_code->type_hash = vnx::Hash64(0xcc1f554d1bf66504ull);
-	type_code->code_hash = vnx::Hash64(0x7639813356d40ce6ull);
+	type_code->code_hash = vnx::Hash64(0x958f6910bdee82caull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -109,6 +123,14 @@ std::shared_ptr<vnx::TypeCode> WebData_num_bytes::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<WebData_num_bytes>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::contract::WebData_num_bytes_return::static_get_type_code();
+	type_code->fields.resize(1);
+	{
+		auto& field = type_code->fields[0];
+		field.data_size = 1;
+		field.name = "total";
+		field.value = vnx::to_string(true);
+		field.code = {31};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -150,8 +172,11 @@ void read(TypeInput& in, ::mmx::contract::WebData_num_bytes& value, const TypeCo
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[0]) {
+			vnx::read_value(_buf + _field->offset, value.total, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -173,6 +198,8 @@ void write(TypeOutput& out, const ::mmx::contract::WebData_num_bytes& value, con
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	char* const _buf = out.write(1);
+	vnx::write_value(_buf + 0, value.total);
 }
 
 void read(std::istream& in, ::mmx::contract::WebData_num_bytes& value) {
