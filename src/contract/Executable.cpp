@@ -40,6 +40,7 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "name", 		name);
 	write_field(out, "symbol", 		symbol);
 	write_field(out, "decimals", 	decimals);
+	write_field(out, "meta_data", 	meta_data);
 	write_field(out, "binary", 		binary);
 	write_field(out, "init_method", init_method);
 	write_field(out, "init_args", 	init_args);
