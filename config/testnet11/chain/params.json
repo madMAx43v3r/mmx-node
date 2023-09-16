@@ -2,7 +2,7 @@
 	"port": 12341,
 	"block_time": 10,
 	"plot_filter": 8,
-	"plot_filter_exclusion": 8,
+	"plot_filter_exclusion": 10,
 	"min_ksize": 26,
 	"infuse_delay": 3,
 	"challenge_delay": 6,
