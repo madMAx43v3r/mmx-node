@@ -9,6 +9,7 @@
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/txio_t.hpp>
 
 
 namespace mmx {
@@ -179,22 +180,16 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 		throw std::logic_error("!params");
 	}
 	uint128_t cost = params->min_txfee;
-	cost += inputs.size() * params->min_txfee_io;
-	cost += outputs.size() * params->min_txfee_io;
 	cost += execute.size() * params->min_txfee_exec;
 
 	if(exec_result) {
 		cost += exec_result->calc_cost(params);
 	}
 	for(const auto& in : inputs) {
-		if(in.memo) {
-			cost += params->min_txfee_memo;
-		}
+		cost += in.calc_cost(params);
 	}
 	for(const auto& out : outputs) {
-		if(out.memo) {
-			cost += params->min_txfee_memo;
-		}
+		cost += out.calc_cost(params);
 	}
 	for(const auto& op : execute) {
 		if(op) {

@@ -10,4 +10,7 @@ struct txio_t {
 	
 	optional<memo_t> memo;
 	
+	
+	ulong calc_cost(ChainParams* params) const;
+	
 }

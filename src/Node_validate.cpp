@@ -20,6 +20,7 @@
 #include <mmx/vm_interface.h>
 #include <mmx/exception.h>
 #include <mmx/error_code_e.hxx>
+#include <mmx/txio_t.hpp>
 
 #include <vnx/vnx.h>
 
@@ -668,17 +669,11 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 
 		if(!tx->exec_result) {
 			for(const auto& in: exec_inputs) {
-				if(in.memo) {
-					tx_cost += params->min_txfee_memo;
-				}
+				tx_cost += in.calc_cost(params);
 			}
 			for(const auto& out: exec_outputs) {
-				if(out.memo) {
-					tx_cost += params->min_txfee_memo;
-				}
+				tx_cost += out.calc_cost(params);
 			}
-			tx_cost += exec_inputs.size() * params->min_txfee_io;
-			tx_cost += exec_outputs.size() * params->min_txfee_io;
 		}
 		if(tx_cost > params->max_tx_cost) {
 			throw mmx::static_failure("tx cost > max_tx_cost");
