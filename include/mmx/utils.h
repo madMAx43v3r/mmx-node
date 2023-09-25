@@ -156,12 +156,12 @@ uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const ui
 
 inline
 uint256_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
-							const uint8_t ksize, const hash_t& quality, const uint64_t space_diff)
+							const uint8_t ksize, const hash_t& quality, const hash_t& challenge, const uint64_t space_diff)
 {
 	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->space_diff_constant);
 	divider *= (2 * ksize) + 1;
 	divider <<= ksize - 1;
-	return quality.to_uint256() / divider;
+	return hash_t(std::string("quality_challenge") + quality + challenge).to_uint256() / divider;
 }
 
 inline
