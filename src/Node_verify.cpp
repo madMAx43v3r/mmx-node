@@ -167,7 +167,7 @@ uint256_t Node::verify_proof_impl(	std::shared_ptr<const T> proof, const hash_t&
 	const auto quality = hash_t::from_bytes(chiapos::verify(
 			proof->ksize, proof->plot_id.bytes, plot_challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
 
-	return calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
+	return calc_proof_score(params, proof->ksize, quality, challenge, diff_block->space_diff);
 }
 
 void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const std::vector<hash_t>& challenges,

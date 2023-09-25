@@ -238,7 +238,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						std::lock_guard<std::mutex> lock(mutex);
 
 						for(size_t k = 0; k < qualities.size(); ++k) {
-							const auto score = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
+							const auto score = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->challenges[0], value->space_diff);
 							if(score < params->score_threshold) {
 								if(score < best_entry.score) {
 									best_entry.index = k;
