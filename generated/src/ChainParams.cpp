@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x7414c494796b84acull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x8bdafe64ac512888ull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,7 +52,7 @@ void ChainParams::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, min_ksize);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, max_ksize);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, plot_filter);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, plot_filter_exclusion);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, plot_filter_cycle);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, commit_delay);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, infuse_delay);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, challenge_delay);
@@ -108,7 +108,7 @@ void ChainParams::write(std::ostream& _out) const {
 	_out << ", \"min_ksize\": "; vnx::write(_out, min_ksize);
 	_out << ", \"max_ksize\": "; vnx::write(_out, max_ksize);
 	_out << ", \"plot_filter\": "; vnx::write(_out, plot_filter);
-	_out << ", \"plot_filter_exclusion\": "; vnx::write(_out, plot_filter_exclusion);
+	_out << ", \"plot_filter_cycle\": "; vnx::write(_out, plot_filter_cycle);
 	_out << ", \"commit_delay\": "; vnx::write(_out, commit_delay);
 	_out << ", \"infuse_delay\": "; vnx::write(_out, infuse_delay);
 	_out << ", \"challenge_delay\": "; vnx::write(_out, challenge_delay);
@@ -171,7 +171,7 @@ vnx::Object ChainParams::to_object() const {
 	_object["min_ksize"] = min_ksize;
 	_object["max_ksize"] = max_ksize;
 	_object["plot_filter"] = plot_filter;
-	_object["plot_filter_exclusion"] = plot_filter_exclusion;
+	_object["plot_filter_cycle"] = plot_filter_cycle;
 	_object["commit_delay"] = commit_delay;
 	_object["infuse_delay"] = infuse_delay;
 	_object["challenge_delay"] = challenge_delay;
@@ -292,8 +292,8 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(plot_binary);
 		} else if(_entry.first == "plot_filter") {
 			_entry.second.to(plot_filter);
-		} else if(_entry.first == "plot_filter_exclusion") {
-			_entry.second.to(plot_filter_exclusion);
+		} else if(_entry.first == "plot_filter_cycle") {
+			_entry.second.to(plot_filter_cycle);
 		} else if(_entry.first == "plot_nft_binary") {
 			_entry.second.to(plot_nft_binary);
 		} else if(_entry.first == "port") {
@@ -344,8 +344,8 @@ vnx::Variant ChainParams::get_field(const std::string& _name) const {
 	if(_name == "plot_filter") {
 		return vnx::Variant(plot_filter);
 	}
-	if(_name == "plot_filter_exclusion") {
-		return vnx::Variant(plot_filter_exclusion);
+	if(_name == "plot_filter_cycle") {
+		return vnx::Variant(plot_filter_cycle);
 	}
 	if(_name == "commit_delay") {
 		return vnx::Variant(commit_delay);
@@ -496,8 +496,8 @@ void ChainParams::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(max_ksize);
 	} else if(_name == "plot_filter") {
 		_value.to(plot_filter);
-	} else if(_name == "plot_filter_exclusion") {
-		_value.to(plot_filter_exclusion);
+	} else if(_name == "plot_filter_cycle") {
+		_value.to(plot_filter_cycle);
 	} else if(_name == "commit_delay") {
 		_value.to(commit_delay);
 	} else if(_name == "infuse_delay") {
@@ -615,7 +615,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0x7414c494796b84acull);
+	type_code->code_hash = vnx::Hash64(0x8bdafe64ac512888ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
@@ -660,8 +660,8 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	{
 		auto& field = type_code->fields[5];
 		field.data_size = 4;
-		field.name = "plot_filter_exclusion";
-		field.value = vnx::to_string(8);
+		field.name = "plot_filter_cycle";
+		field.value = vnx::to_string(4);
 		field.code = {3};
 	}
 	{
@@ -1033,7 +1033,7 @@ void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, c
 			vnx::read_value(_buf + _field->offset, value.plot_filter, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[5]) {
-			vnx::read_value(_buf + _field->offset, value.plot_filter_exclusion, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.plot_filter_cycle, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.commit_delay, _field->code.data());
@@ -1177,7 +1177,7 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	vnx::write_value(_buf + 8, value.min_ksize);
 	vnx::write_value(_buf + 12, value.max_ksize);
 	vnx::write_value(_buf + 16, value.plot_filter);
-	vnx::write_value(_buf + 20, value.plot_filter_exclusion);
+	vnx::write_value(_buf + 20, value.plot_filter_cycle);
 	vnx::write_value(_buf + 24, value.commit_delay);
 	vnx::write_value(_buf + 28, value.infuse_delay);
 	vnx::write_value(_buf + 32, value.challenge_delay);

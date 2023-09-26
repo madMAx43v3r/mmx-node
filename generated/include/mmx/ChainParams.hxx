@@ -20,7 +20,7 @@ public:
 	uint32_t min_ksize = 30;
 	uint32_t max_ksize = 60;
 	uint32_t plot_filter = 9;
-	uint32_t plot_filter_exclusion = 8;
+	uint32_t plot_filter_cycle = 4;
 	uint32_t commit_delay = 18;
 	uint32_t infuse_delay = 6;
 	uint32_t challenge_delay = 9;
@@ -118,7 +118,7 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
 	_visitor.type_field("max_ksize", 3); _visitor.accept(max_ksize);
 	_visitor.type_field("plot_filter", 4); _visitor.accept(plot_filter);
-	_visitor.type_field("plot_filter_exclusion", 5); _visitor.accept(plot_filter_exclusion);
+	_visitor.type_field("plot_filter_cycle", 5); _visitor.accept(plot_filter_cycle);
 	_visitor.type_field("commit_delay", 6); _visitor.accept(commit_delay);
 	_visitor.type_field("infuse_delay", 7); _visitor.accept(infuse_delay);
 	_visitor.type_field("challenge_delay", 8); _visitor.accept(challenge_delay);
