@@ -107,26 +107,28 @@ bool check_tx_inclusion(const hash_t& txid, const uint32_t height)
 }
 
 inline
-bool check_plot_filter_single(	std::shared_ptr<const ChainParams> params,
-								const hash_t& challenge, const hash_t& plot_id)
+bool check_plot_filter_single(
+		std::shared_ptr<const ChainParams> params, const hash_t& challenge, const hash_t& plot_id)
 {
-	return (hash_t(std::string("plot_filter") + plot_id + challenge).to_uint256() >> (256 - params->plot_filter)) == 0;
+	const hash_t hash(std::string("plot_filter") + plot_id + challenge);
+	return (hash.to_uint256() >> (256 - params->plot_filter)) == 0;
 }
 
 inline
-bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
-						const std::vector<hash_t>& challenges, const hash_t& plot_id)
+bool check_plot_filter_cycle(
+		std::shared_ptr<const ChainParams> params, const hash_t& diff_challenge, const hash_t& plot_id, const uint32_t height)
 {
-	if(challenges.empty()) {
-		return false;
-	}
-	for(size_t i = 0; i < challenges.size(); ++i) {
-		const auto pass = check_plot_filter_single(params, challenges[i], plot_id);
-		if((!pass && i == 0) || (pass && i > 0)) {
-			return false;
-		}
-	}
-	return true;
+	const hash_t hash(std::string("plot_filter_cycle") + plot_id + diff_challenge);
+	return uint32_t(hash.to_uint256() >> (256 - params->plot_filter_cycle)) == (height & ((uint32_t(1) << params->plot_filter_cycle) - 1));
+}
+
+inline
+bool check_plot_filter(
+		std::shared_ptr<const ChainParams> params, const hash_t& diff_challenge,
+		const hash_t& vdf_challenge, const hash_t& plot_id, const uint32_t height)
+{
+	return check_plot_filter_cycle(params, diff_challenge, plot_id, height)
+			&& check_plot_filter_single(params, vdf_challenge, plot_id);
 }
 
 inline
@@ -144,8 +146,8 @@ uint64_t to_effective_space(const uint64_t& num_bytes)
 inline
 uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	const auto ideal = ((uint256_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target;
-	return (ideal * ((uint32_t(1) << params->plot_filter) - params->plot_filter_exclusion)) >> params->plot_filter;
+	const auto plot_filter = params->plot_filter + params->plot_filter_cycle;
+	return ((uint256_t(space_diff) * params->space_diff_constant) << (plot_filter + params->score_bits)) / params->score_target;
 }
 
 inline
