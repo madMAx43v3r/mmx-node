@@ -39,7 +39,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	uint block_credits = 256;				// node reward for valid block
 	uint proof_credits = 10;				// node + farmer reward for valid proof
 	
-	uint vdf_relay_cost = 768;				// node cost
+	uint vdf_relay_cost = 256;				// node cost
 	uint proof_relay_cost = 2;				// farmer cost
 	uint dummy_relay_cost = 2;				// farmer cost
 	uint block_relay_cost = 16;				// farmer cost
