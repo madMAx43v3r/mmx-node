@@ -68,8 +68,7 @@ void read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>
 
 void read_entry_sum(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value)
 {
-	read_key(in, version, key);
-	read_value(in, value);
+	read_entry(in, version, key, value);
 
 	uint32_t sum = 0;
 	vnx::read(in, sum);
