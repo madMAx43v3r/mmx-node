@@ -255,8 +255,14 @@ std::shared_ptr<db_val_t> Table::find(std::shared_ptr<db_val_t> key, const uint3
 				return iter->second.first;
 			} else {
 				auto iter = mem_block.lower_bound(std::make_pair(key, max_version));
-				if(iter != mem_block.end() && *iter->first.first == *key) {
-					return iter->second;
+				while(iter != mem_block.end() && *iter->first.first == *key) {
+					if(iter->first.second <= max_version) {
+						return iter->second;
+					} else if(iter != mem_block.begin()) {
+						iter--;
+					} else {
+						break;
+					}
 				}
 			}
 		}
