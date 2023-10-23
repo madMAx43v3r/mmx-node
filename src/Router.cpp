@@ -177,7 +177,11 @@ void Router::main()
 	save_data();
 
 	for(const auto& entry : connect_tasks) {
-		vnx::TcpEndpoint().shutdown(entry.second, 2);
+		try {
+			vnx::TcpEndpoint().shutdown(entry.second, 2);
+		} catch(const std::exception& ex) {
+			log(WARN) << "Failed to shutdown connecting socket " << entry.second << ", waiting for timeout ...";
+		}
 	}
 	if(upnp_mapper) {
 		upnp_mapper->stop();
