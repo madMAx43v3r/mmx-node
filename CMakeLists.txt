@@ -183,6 +183,10 @@ add_library(mmx_db SHARED
 	src/table.cpp
 )
 
+add_library(mmx_pos SHARED
+	src/pos/mem_hash.cpp
+)
+
 add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
@@ -202,6 +206,10 @@ add_library(mmx_modules SHARED
 add_library(uint256_t STATIC
 	uint256_t/uint128_t/uint128_t.cpp
 	uint256_t/uint256_t.cpp
+)
+
+target_include_directories(mmx_pos
+	PUBLIC include
 )
 
 target_include_directories(mmx_iface
@@ -232,7 +240,7 @@ target_link_libraries(mmx_db mmx_iface)
 
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 
-target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
+target_link_libraries(mmx_modules mmx_chiapos mmx_pos mmx_vm mmx_db mmx_iface)
 
 if(MSVC)
 	GENERATE_EXPORT_HEADER(mmx_iface)
