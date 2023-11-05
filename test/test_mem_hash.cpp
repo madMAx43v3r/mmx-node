@@ -17,9 +17,9 @@ using namespace mmx::pos;
 
 int main(int argc, char** argv)
 {
-	const int N = 16;
-	const int M = 11;
-	const int B = 8;
+	const int N = 32;
+	const int M = 8;
+	const int B = 5;
 
 	const int num_iter = argc > 1 ? std::atoi(argv[1]) : 1;
 
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 				}
 			}
 		}
-		mmx::bytes_t<64> hash;
+		mmx::bytes_t<32> hash;
 
 		calc_mem_hash(mem, hash.data(), M, B);
 

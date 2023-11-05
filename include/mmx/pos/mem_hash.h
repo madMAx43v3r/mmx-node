@@ -22,8 +22,8 @@ void gen_mem_array(uint32_t* mem, const uint8_t* key, const uint64_t mem_size);
 
 /*
  * M = log2 number of iterations
- * mem = array of size (16 << B)
- * hash = array of size 64
+ * mem = array of size (32 << B)
+ * hash = array of size 32
  */
 void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int M, const int B);
 
