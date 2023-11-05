@@ -65,7 +65,6 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int M, const int B)
 	for(int i = 0; i < N; ++i) {
 		state[i] = mem[index_mask * N + i];
 	}
-//	std::map<uint32_t, uint32_t> count;
 
 	for(int k = 0; k < num_iter; ++k)
 	{
@@ -78,7 +77,6 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int M, const int B)
 		const auto bits = tmp % 32;
 //		const auto offset = ((tmp >> 5) & index_mask) * N;
 		const auto offset = tmp & (index_mask << 5);
-//		count[offset]++;
 
 		for(int i = 0; i < N; ++i) {
 			const int shift = (k + i) % N;
@@ -89,13 +87,7 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int M, const int B)
 		}
 	}
 
-//	for(const auto& entry : count) {
-//		if(entry.second > uint32_t(3 << (M - B))) {
-//			std::cout << "WARN [" << entry.first << "] " << entry.second << std::endl;
-//		}
-//	}
-
-	for(int i = 0; i < 8; ++i) {
+	for(int i = 0; i < 16; ++i) {
 		for(int k = 0; k < 4; ++k) {
 			hash[i * 4 + k] = state[i] >> (24 - k * 8);
 		}

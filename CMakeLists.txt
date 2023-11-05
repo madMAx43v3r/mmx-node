@@ -185,6 +185,7 @@ add_library(mmx_db SHARED
 
 add_library(mmx_pos SHARED
 	src/pos/mem_hash.cpp
+	src/pos/verify.cpp
 )
 
 add_library(mmx_modules SHARED
@@ -237,7 +238,7 @@ target_include_directories(mmx_chiapos
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons)
 
 target_link_libraries(mmx_db mmx_iface)
-
+target_link_libraries(mmx_pos mmx_iface)
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 
 target_link_libraries(mmx_modules mmx_chiapos mmx_pos mmx_vm mmx_db mmx_iface)
