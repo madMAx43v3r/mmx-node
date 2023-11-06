@@ -6,6 +6,7 @@
  */
 
 #include <mmx/pos/verify.h>
+#include <vnx/vnx.h>
 #include <random>
 
 using namespace mmx;
@@ -16,21 +17,27 @@ int main(int argc, char** argv)
 	const int ksize = argc > 1 ? std::atoi(argv[1]) : 32;
 	const int xbits = argc > 2 ? std::atoi(argv[2]) : 0;
 
+	vnx::init("test_pos_compute", 0, nullptr);
+
 	std::cout << "ksize = " << ksize << std::endl;
 	std::cout << "xbits = " << xbits << std::endl;
+
+	const bool full_mode = (xbits == ksize);
 
 	uint8_t id[32] = {};
 
 	std::mt19937_64 generator(1337);
-	std::uniform_int_distribution<uint64_t> dist(0, (1 << (ksize - xbits)) - 1);
+	std::uniform_int_distribution<uint64_t> dist(0, (uint64_t(1) << (ksize - xbits)) - 1);
 
 	std::vector<uint32_t> X_values;
-	if(xbits < ksize) {
+	if(!full_mode) {
 		for(int i = 0; i < 256; ++i) {
 			X_values.push_back(dist(generator));
 		}
 	} else {
-		X_values.push_back(0);
+		for(int i = 0; i < 256; ++i) {
+			X_values.push_back(i);
+		}
 	}
 
 	std::cout << "X = ";
@@ -40,14 +47,21 @@ int main(int argc, char** argv)
 	std::cout << std::endl;
 
 	std::vector<uint32_t> X_out;
-	const auto res = pos::compute(X_values, &X_out, id, ksize, xbits);
+	const auto res = pos::compute(X_values, &X_out, id, ksize, full_mode ? ksize - 8 : xbits);
 
-	for(const auto& entry : res) {
-		std::cout << "Y = " << entry.first << std::endl;
-		std::cout << "M = " << entry.second.to_string() << std::endl;
+	for(size_t i = 0; i < std::min<size_t>(res.size(), 5); ++i)
+	{
+		std::cout << "Y = " << res[i].first << std::endl;
+		std::cout << "M = " << res[i].second.to_string() << std::endl;
+		std::cout << "X = ";
+		for(size_t k = 0; k < 256; ++k) {
+			std::cout << X_out[i * 256 + k] << " ";
+		}
+		std::cout << std::endl;
 	}
 	std::cout << "num_entries = " << res.size() << std::endl;
 
+	vnx::close();
 }
 
 
