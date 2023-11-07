@@ -18,9 +18,9 @@ void rsha256_kernel(__global uint* hash, __global uint* num_iters)
 	__attribute__((opencl_unroll_hint(8)))
 #endif
 	for(int i = 0; i < 8; ++i) {
-		msg[i] = sha_pack_u32(hash[id * 8 + i]);
+		msg[i] = bswap_32(hash[id * 8 + i]);
 	}
-	msg[8] = sha_pack_u32(0x80);
+	msg[8] = bswap_32(0x80);
 	
 #if __OPENCL_VERSION__ >= 200
 	__attribute__((opencl_unroll_hint(6)))
@@ -54,6 +54,6 @@ void rsha256_kernel(__global uint* hash, __global uint* num_iters)
 	__attribute__((opencl_unroll_hint(8)))
 #endif
 	for(int i = 0; i < 8; ++i) {
-		hash[id * 8 + i] = sha_pack_u32(state[i]);
+		hash[id * 8 + i] = bswap_32(state[i]);
 	}
 }
