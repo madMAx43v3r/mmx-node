@@ -240,31 +240,27 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 		throw std::logic_error("invalid proof");
 	}
 	const auto& result = entries[0];
+	const auto Y = result.first;
 
-	const auto Y_list = get_challenge_candidates(challenge, ksize, ycount);
+	const uint64_t ymask = ((uint64_t(1) << (ksize + Y_EXTRABITS)) - 1);
 
-	if(std::find(Y_list.begin(), Y_list.end(), result.first) == Y_list.end()) {
+	uint64_t Y_0 = 0;
+	::memcpy(&Y_0, challenge.data(), 8);
+
+	bool found = false;
+	for(int i = 0; i < ycount; ++i) {
+		if(Y == ((Y_0 + uint32_t(i)) & ymask)) {
+			found = true;
+			break;
+		}
+	}
+	if(!found) {
 		throw std::logic_error("invalid Y output");
 	}
 	if(X_out != X_values) {
 		throw std::logic_error("invalid proof order");
 	}
 	return hash_t(result.second + challenge);
-}
-
-std::vector<uint64_t> get_challenge_candidates(const hash_t& challenge, const int ksize, const int ycount)
-{
-	const uint64_t ymask = ((uint64_t(1) << (ksize + Y_EXTRABITS)) - 1);
-
-	uint64_t Y = 0;
-	::memcpy(&Y, challenge.data(), 8);
-
-	std::vector<uint64_t> out(ycount);
-	for(int i = 0; i < ycount; ++i) {
-		out[i] = (Y & ymask);
-		Y++;
-	}
-	return out;
 }
 
 

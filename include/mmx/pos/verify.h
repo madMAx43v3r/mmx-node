@@ -29,8 +29,6 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out,
 hash_t verify(	const std::vector<uint32_t>& X_values, const hash_t& challenge,
 				const uint8_t* id, const int ksize, const int ycount);
 
-std::vector<uint64_t> get_challenge_candidates(const hash_t& challenge, const int ksize, const int ycount);
-
 
 } // pos
 } // mmx
