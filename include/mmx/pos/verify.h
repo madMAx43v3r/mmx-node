@@ -15,11 +15,21 @@
 namespace mmx {
 namespace pos {
 
-std::vector<std::pair<uint32_t, bytes_t<48>>>
+static constexpr int N_META = 12;
+static constexpr int N_TABLE = 9;
+static constexpr int Y_EXTRABITS = 6;
+
+static constexpr int META_BYTES = N_META * 4;
+
+
+std::vector<std::pair<uint64_t, bytes_t<META_BYTES>>>
 compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out,
 		const uint8_t* id, const int ksize, const int xbits);
 
-hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const int ksize);
+hash_t verify(	const std::vector<uint32_t>& X_values, const hash_t& challenge,
+				const uint8_t* id, const int ksize, const int ycount);
+
+std::vector<uint64_t> get_challenge_candidates(const hash_t& challenge, const int ksize, const int ycount);
 
 
 } // pos

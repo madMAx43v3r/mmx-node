@@ -58,6 +58,13 @@ public:
 	template<typename T>
 	bytes_t<N>& from_uint(T value, const bool big_endian = false);
 
+	uint8_t& operator[](size_t i) {
+		return bytes[i];
+	}
+	const uint8_t& operator[](size_t i) const {
+		return bytes[i];
+	}
+
 	bool operator==(const bytes_t& other) const {
 		return bytes == other.bytes;
 	}

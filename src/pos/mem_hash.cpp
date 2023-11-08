@@ -87,7 +87,7 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int M, const int B)
 		}
 	}
 
-	for(int i = 0; i < 16; ++i) {
+	for(int i = 0; i < N; ++i) {
 		for(int k = 0; k < 4; ++k) {
 			hash[i * 4 + k] = state[i] >> (24 - k * 8);
 		}

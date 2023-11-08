@@ -9,6 +9,7 @@
 #include <mmx/pos/mem_hash.h>
 #include <mmx/hash_t.hpp>
 
+#include <algorithm>
 #include <vnx/vnx.h>
 #include <vnx/ThreadPool.h>
 
@@ -16,8 +17,6 @@
 namespace mmx {
 namespace pos {
 
-static constexpr int N_META = 12;
-static constexpr int N_TABLE = 9;
 static constexpr int MEM_HASH_N = 32;
 static constexpr int MEM_HASH_M = 8;
 static constexpr int MEM_HASH_B = 5;
@@ -30,7 +29,7 @@ static std::shared_ptr<vnx::ThreadPool> g_threads;
 
 void compute_f1(std::vector<uint32_t>* X_tmp,
 				std::vector<std::array<uint32_t, N_META>>& M_tmp,
-				std::vector<std::pair<uint32_t, uint32_t>>& entries,
+				std::vector<std::pair<uint64_t, uint32_t>>& entries,
 				std::mutex& mutex,
 				const uint32_t X,
 				const uint8_t* id, const int ksize, const int xbits)
@@ -39,28 +38,35 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 
 	std::vector<uint32_t> mem_buf(MEM_SIZE);
 
-	for(uint32_t i = 0; i < (uint32_t(1) << xbits); ++i)
+	for(uint32_t x_i = 0; x_i < (uint64_t(1) << xbits); ++x_i)
 	{
-		const uint32_t X_i = (X << xbits) | i;
+		const uint32_t X_i = (X << xbits) | x_i;
 
 		uint32_t msg[9] = {};
 		msg[0] = X_i;
 		::memcpy(msg + 1, id, 32);
 
-		const hash_t hash(&msg, 4 + 32);
-		gen_mem_array(mem_buf.data(), hash.data(), MEM_SIZE);
+		const hash_t key(&msg, 36);
+		gen_mem_array(mem_buf.data(), key.data(), MEM_SIZE);
 
-		uint32_t mem_hash[16] = {};
-		calc_mem_hash(mem_buf.data(), (uint8_t*)mem_hash, MEM_HASH_M, MEM_HASH_B);
+		uint8_t mem_hash[128 + 36] = {};
+		calc_mem_hash(mem_buf.data(), mem_hash, MEM_HASH_M, MEM_HASH_B);
 
-		const uint32_t Y_i = mem_hash[0] & kmask;
+		::memcpy(mem_hash + 128, msg, 36);
+
+		const hash_t mem_hash_hash(mem_hash, sizeof(mem_hash));
+
+		uint32_t hash[16] = {};
+		::memcpy(hash, hash_t(mem_hash_hash.data(), 32).data(), 32);
+		::memcpy(hash + 8, hash_t(hash, 32).data(), 32);
 
 		std::array<uint32_t, N_META> meta = {};
-		for(int k = 0; k < N_META; ++k) {
-			meta[k] = mem_hash[1 + k] & kmask;
+		for(int i = 0; i < N_META; ++i) {
+			meta[i] = hash[i] & kmask;
 		}
-		std::lock_guard<std::mutex> lock(mutex);
+		const uint32_t Y_i = hash[N_META] & kmask;
 
+		std::lock_guard<std::mutex> lock(mutex);
 		if(X_tmp) {
 			X_tmp->push_back(X_i);
 		}
@@ -69,7 +75,7 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 	}
 }
 
-std::vector<std::pair<uint32_t, bytes_t<48>>>
+std::vector<std::pair<uint64_t, bytes_t<META_BYTES>>>
 compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, const uint8_t* id, const int ksize, const int xbits)
 {
 	if(ksize < 8 || ksize > 32) {
@@ -90,6 +96,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		}
 	}
 	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
+	const uint64_t ymask = ((uint64_t(1) << (ksize + Y_EXTRABITS)) - 1);
 	const uint32_t num_entries_1 = X_values.size() << xbits;
 
 	std::mutex mutex;
@@ -97,7 +104,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	std::vector<uint32_t> X_tmp;
 	std::vector<uint32_t> mem_buf(MEM_SIZE);
 	std::vector<std::array<uint32_t, N_META>> M_tmp;
-	std::vector<std::pair<uint32_t, uint32_t>> entries;
+	std::vector<std::pair<uint64_t, uint32_t>> entries;
 	std::vector<std::vector<std::pair<uint32_t, uint32_t>>> LR_tmp(N_TABLE - 1);
 
 //	const auto t1_begin = vnx::get_time_millis();
@@ -108,7 +115,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	M_tmp.reserve(num_entries_1);
 	entries.reserve(num_entries_1);
 
-	for(const uint32_t X : X_values)
+	for(const auto X : X_values)
 	{
 		if(use_threads) {
 			const auto job = g_threads->add_task(
@@ -132,7 +139,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 //		const auto time_begin = vnx::get_time_millis();
 
 		std::vector<std::array<uint32_t, N_META>> M_next;
-		std::vector<std::pair<uint32_t, uint32_t>> matches;
+		std::vector<std::pair<uint64_t, uint32_t>> matches;
 
 		std::sort(entries.begin(), entries.end());
 
@@ -153,29 +160,28 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 					const auto& R_meta = M_tmp[PR];
 
 					uint32_t hash[16] = {};
-
-					for(int i = 0; i < 2; ++i)
 					{
 						uint32_t msg[2 + 2 * N_META] = {};
-						msg[0] = (t << 8) | i;
+						msg[0] = t;
 						msg[1] = YL;
 
-						for(int k = 0; k < N_META; ++k) {
-							msg[2 + k] = L_meta[k];
+						for(int i = 0; i < N_META; ++i) {
+							msg[2 + i] = L_meta[i];
 						}
-						for(int k = 0; k < N_META; ++k) {
-							msg[2 + N_META + k] = R_meta[k];
+						for(int i = 0; i < N_META; ++i) {
+							msg[2 + N_META + i] = R_meta[i];
 						}
-						const hash_t hash_i(&msg, sizeof(msg));
+						const hash_t first(&msg, sizeof(msg));
 
-						::memcpy(hash + i * 8, hash_i.data(), 32);
+						::memcpy(hash, hash_t(first.data(), 32).data(), 32);
+						::memcpy(hash + 8, hash_t(hash, 32).data(), 32);
 					}
-					const uint32_t Y_i = hash[0] & kmask;
-
 					std::array<uint32_t, N_META> meta = {};
-					for(int k = 0; k < N_META; ++k) {
-						meta[k] = hash[1 + k] & kmask;
+					for(int i = 0; i < N_META; ++i) {
+						meta[i] = hash[i] & kmask;
 					}
+					const uint64_t Y_i = ((uint64_t(hash[N_META + 1]) << 32) | hash[N_META]) & (t < N_TABLE ? kmask : ymask);
+
 					matches.emplace_back(Y_i, M_next.size());
 
 					if(X_out) {
@@ -200,7 +206,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 	std::sort(entries.begin(), entries.end());
 
-	std::vector<std::pair<uint32_t, bytes_t<48>>> out;
+	std::vector<std::pair<uint64_t, bytes_t<META_BYTES>>> out;
 	for(const auto& entry : entries)
 	{
 		if(X_out) {
@@ -220,15 +226,13 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 				X_out->push_back(X_tmp[i]);
 			}
 		}
-		const auto& Y = entry.first;
-		const auto& I = entry.second;
-		const auto& meta = M_tmp[I];
-		out.emplace_back(Y, bytes_t<48>(meta.data(), sizeof(meta)));
+		const auto& meta = M_tmp[entry.second];
+		out.emplace_back(entry.first, bytes_t<META_BYTES>(meta.data(), sizeof(meta)));
 	}
 	return out;
 }
 
-hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const int ksize)
+hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const int ksize, const int ycount)
 {
 	std::vector<uint32_t> X_out;
 	const auto entries = compute(X_values, &X_out, id, ksize, 0);
@@ -237,19 +241,30 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	}
 	const auto& result = entries[0];
 
-	const uint32_t kmask = ((uint32_t(1) << ksize) - 1);
+	const auto Y_list = get_challenge_candidates(challenge, ksize, ycount);
 
-	uint32_t tmp = {};
-	::memcpy(&tmp, challenge.data(), sizeof(tmp));
-
-	const auto Y_challenge = tmp & kmask;
-	if(result.first != Y_challenge) {
-		throw std::logic_error("Y output value != challenge");
+	if(std::find(Y_list.begin(), Y_list.end(), result.first) == Y_list.end()) {
+		throw std::logic_error("invalid Y output");
 	}
 	if(X_out != X_values) {
 		throw std::logic_error("invalid proof order");
 	}
 	return hash_t(result.second + challenge);
+}
+
+std::vector<uint64_t> get_challenge_candidates(const hash_t& challenge, const int ksize, const int ycount)
+{
+	const uint64_t ymask = ((uint64_t(1) << (ksize + Y_EXTRABITS)) - 1);
+
+	uint64_t Y = 0;
+	::memcpy(&Y, challenge.data(), 8);
+
+	std::vector<uint64_t> out(ycount);
+	for(int i = 0; i < ycount; ++i) {
+		out[i] = (Y & ymask);
+		Y++;
+	}
+	return out;
 }
 
 

@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 				}
 			}
 		}
-		mmx::bytes_t<64> hash;
+		mmx::bytes_t<128> hash;
 
 		calc_mem_hash(mem, hash.data(), M, B);
 
