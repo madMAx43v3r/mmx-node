@@ -234,27 +234,26 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const int ksize, const int ycount)
 {
+	if(ycount < 0) {
+		throw std::logic_error("invalid ycount");
+	}
 	std::vector<uint32_t> X_out;
 	const auto entries = compute(X_values, &X_out, id, ksize, 0);
 	if(entries.empty()) {
 		throw std::logic_error("invalid proof");
 	}
 	const auto& result = entries[0];
-	const auto Y = result.first;
+	const auto& Y = result.first;
 
 	const uint64_t ymask = ((uint64_t(1) << (ksize + Y_EXTRABITS)) - 1);
 
 	uint64_t Y_0 = 0;
 	::memcpy(&Y_0, challenge.data(), 8);
+	Y_0 &= ymask;
 
-	bool found = false;
-	for(int i = 0; i < ycount; ++i) {
-		if(Y == ((Y_0 + uint32_t(i)) & ymask)) {
-			found = true;
-			break;
-		}
-	}
-	if(!found) {
+	const uint64_t Y_end = Y_0 + ycount;
+
+	if(Y < Y_0 || Y >= Y_end) {
 		throw std::logic_error("invalid Y output");
 	}
 	if(X_out != X_values) {
