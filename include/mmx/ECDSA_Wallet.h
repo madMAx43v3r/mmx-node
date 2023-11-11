@@ -86,7 +86,7 @@ public:
 			first_addr = addresses[0];
 		}
 		const auto master = pbkdf2_hmac_sha512(seed_value, passphrase, PBKDF2_ITERS);
-		const auto chain = hmac_sha512_n(master.first, master.second, 11337);	// TODO(mainnet): use params.port
+		const auto chain = hmac_sha512_n(master.first, master.second, 11337);
 		const auto account = hmac_sha512_n(chain.first, chain.second, config.index);
 
 		for(size_t i = 0; i < config.num_addresses; ++i)
