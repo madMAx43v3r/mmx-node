@@ -4,10 +4,9 @@ class ChainParams {
 	
 	uint port;
 	int  decimals = 6;
-	uint min_ksize = 30;
-	uint max_ksize = 60;
-	uint plot_filter = 9;
-	uint plot_filter_cycle = 4;
+	uint min_ksize = 26;
+	uint max_ksize = 32;
+	uint plot_filter = 8;					// log2
 	
 	uint commit_delay = 18;					// for writing to disk (should be less than challenge_interval - challenge_delay)
 	uint infuse_delay = 6;					// for primary VDF infusion

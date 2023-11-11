@@ -107,28 +107,11 @@ bool check_tx_inclusion(const hash_t& txid, const uint32_t height)
 }
 
 inline
-bool check_plot_filter_single(
+bool check_plot_filter(
 		std::shared_ptr<const ChainParams> params, const hash_t& challenge, const hash_t& plot_id)
 {
 	const hash_t hash(std::string("plot_filter") + plot_id + challenge);
 	return (hash.to_uint256() >> (256 - params->plot_filter)) == 0;
-}
-
-inline
-bool check_plot_filter_cycle(
-		std::shared_ptr<const ChainParams> params, const hash_t& diff_challenge, const hash_t& plot_id, const uint32_t height)
-{
-	const hash_t hash(std::string("plot_filter_cycle") + plot_id + diff_challenge);
-	return uint32_t(hash.to_uint256() >> (256 - params->plot_filter_cycle)) == (height & ((uint32_t(1) << params->plot_filter_cycle) - 1));
-}
-
-inline
-bool check_plot_filter(
-		std::shared_ptr<const ChainParams> params, const hash_t& diff_challenge,
-		const hash_t& vdf_challenge, const hash_t& plot_id, const uint32_t height)
-{
-	return check_plot_filter_cycle(params, diff_challenge, plot_id, height)
-			&& check_plot_filter_single(params, vdf_challenge, plot_id);
 }
 
 inline
@@ -146,7 +129,7 @@ uint64_t to_effective_space(const uint64_t& num_bytes)
 inline
 uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	const auto plot_filter = params->plot_filter + params->plot_filter_cycle;
+	const auto plot_filter = params->plot_filter;
 	return ((uint256_t(space_diff) * params->space_diff_constant) << (plot_filter + params->score_bits)) / params->score_target;
 }
 
