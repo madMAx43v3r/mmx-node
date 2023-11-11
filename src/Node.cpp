@@ -282,8 +282,8 @@ void Node::main()
 		block->nonce = params->port;
 		block->time_diff = params->initial_time_diff;
 		block->space_diff = params->initial_space_diff;
-		block->vdf_output[0] = hash_t(params->vdf_seed);
-		block->vdf_output[1] = hash_t(params->vdf_seed);
+		block->vdf_output[0] = hash_t(params->network);
+		block->vdf_output[1] = hash_t(params->network);
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));

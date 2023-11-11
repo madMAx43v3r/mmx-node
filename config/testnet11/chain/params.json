@@ -11,7 +11,7 @@
 	"min_vdf_segments": 1000,
 	"num_vdf_segments": 1140,
 	"max_vdf_segments": 2048,
-	"vdf_seed": "test11",
+	"network": "testnet11",
 	"reward_factor": {
 		"value": 1524,
 		"inverse": 1000000000000000

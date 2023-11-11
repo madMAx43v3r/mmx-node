@@ -54,7 +54,7 @@ class ChainParams {
 	
 	double block_time = 10;					// [sec]
 	
-	string vdf_seed;
+	string network;
 	
 	addr_t nft_binary;
 	addr_t plot_binary;
