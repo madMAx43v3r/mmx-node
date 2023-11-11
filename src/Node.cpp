@@ -1574,7 +1574,9 @@ uint32_t Node::get_farmed_block_count_for(const std::vector<bls_pubkey_t>& farme
 		std::vector<uint32_t> tmp;
 		farmer_block_map.find(key, tmp);
 		for(auto height : tmp) {
-			total += (height >= since);
+			if(height >= since) {
+				total++;
+			}
 		}
 	}
 	return total;

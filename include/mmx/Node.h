@@ -453,7 +453,7 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 
-	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
+	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [address, contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
@@ -462,7 +462,7 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
 	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
 
-	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
+	balance_table_t<uint128> balance_table;										// [[address, currency] => balance]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
