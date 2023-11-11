@@ -252,7 +252,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint128 get_total_supply(addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<BlockHeader*> get_farmed_blocks(vector<bls_pubkey_t> farmer_keys, bool full_blocks, uint since) const;
+	vector<BlockHeader*> get_farmed_blocks(vector<bls_pubkey_t> farmer_keys, bool full_blocks, uint since, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
 	map<bls_pubkey_t, uint> get_farmed_block_count(uint since) const;

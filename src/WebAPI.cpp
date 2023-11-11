@@ -1568,7 +1568,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto iter_since = query.find("since");
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
-			node->get_farmed_blocks({farmer_key}, false, since,
+			node->get_farmed_blocks({farmer_key}, false, since, -1,
 				[this, request_id, farmer_key, limit](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
 					uint64_t total_reward = 0;
 					std::vector<std::shared_ptr<const BlockHeader>> recent;

@@ -183,7 +183,7 @@ protected:
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity_by(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
-			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0) const override;
+			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0, const int32_t& limit = -1) const override;
 
 	std::map<bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const override;
 

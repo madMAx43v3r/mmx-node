@@ -1533,7 +1533,7 @@ std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Node::get_swap_liqui
 }
 
 std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
-		const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since) const
+		const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const
 {
 	std::vector<uint32_t> entries;
 	for(const auto& key : farmer_keys) {
@@ -1541,10 +1541,14 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 		farmer_block_map.find(key, tmp);
 		entries.insert(entries.end(), tmp.begin(), tmp.end());
 	}
-	std::sort(entries.begin(), entries.end());
-
+	if(limit >= 0) {
+		std::sort(entries.begin(), entries.end(), std::greater<uint32_t>());
+		entries.resize(limit);
+	} else {
+		std::sort(entries.begin(), entries.end());
+	}
 	std::vector<std::shared_ptr<const BlockHeader>> out;
-	for(const auto& height : entries) {
+	for(auto height : entries) {
 		if(height >= since) {
 			out.push_back(get_block_at_ex(height, full_blocks));
 		}
