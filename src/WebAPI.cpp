@@ -2308,18 +2308,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/farmer/blocks") {
 		const auto iter_limit = query.find("limit");
 		const auto iter_since = query.find("since");
-		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		farmer->get_farmer_keys(
 				[this, request_id, limit, since](const std::vector<bls_pubkey_t>& farmer_keys) {
-					node->get_farmed_blocks(farmer_keys, false, since,
+					node->get_farmed_blocks(farmer_keys, false, since, limit,
 						[this, request_id, limit](const std::vector<std::shared_ptr<const BlockHeader>> blocks) {
-							auto data = blocks;
-							std::reverse(data.begin(), data.end());
-							if(data.size() > limit) {
-								data.resize(limit);
-							}
-							respond(request_id, render_value(data, get_context()));
+							respond(request_id, render_value(blocks, get_context()));
 						},
 						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 				},
