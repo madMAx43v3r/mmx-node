@@ -1260,7 +1260,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0xfc412d06ff25542eull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_farmed_blocks>(_method);
 			auto _return_value = ::mmx::Node_get_farmed_blocks_return::create();
-			_return_value->_ret_0 = get_farmed_blocks(_args->farmer_keys, _args->full_blocks, _args->since);
+			_return_value->_ret_0 = get_farmed_blocks(_args->farmer_keys, _args->full_blocks, _args->since, _args->limit);
 			return _return_value;
 		}
 		case 0xbfab786cb64c5a3ull: {

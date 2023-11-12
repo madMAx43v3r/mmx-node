@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_farmed_blocks::VNX_TYPE_HASH(0xfc412d06ff25542eull);
-const vnx::Hash64 Node_get_farmed_blocks::VNX_CODE_HASH(0xc324750314ad847full);
+const vnx::Hash64 Node_get_farmed_blocks::VNX_CODE_HASH(0x137a63ae1f66bbf0ull);
 
 vnx::Hash64 Node_get_farmed_blocks::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,6 +50,7 @@ void Node_get_farmed_blocks::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, farmer_keys);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, full_blocks);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, since);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, limit);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,6 +59,7 @@ void Node_get_farmed_blocks::write(std::ostream& _out) const {
 	_out << ", \"farmer_keys\": "; vnx::write(_out, farmer_keys);
 	_out << ", \"full_blocks\": "; vnx::write(_out, full_blocks);
 	_out << ", \"since\": "; vnx::write(_out, since);
+	_out << ", \"limit\": "; vnx::write(_out, limit);
 	_out << "}";
 }
 
@@ -73,6 +75,7 @@ vnx::Object Node_get_farmed_blocks::to_object() const {
 	_object["farmer_keys"] = farmer_keys;
 	_object["full_blocks"] = full_blocks;
 	_object["since"] = since;
+	_object["limit"] = limit;
 	return _object;
 }
 
@@ -82,6 +85,8 @@ void Node_get_farmed_blocks::from_object(const vnx::Object& _object) {
 			_entry.second.to(farmer_keys);
 		} else if(_entry.first == "full_blocks") {
 			_entry.second.to(full_blocks);
+		} else if(_entry.first == "limit") {
+			_entry.second.to(limit);
 		} else if(_entry.first == "since") {
 			_entry.second.to(since);
 		}
@@ -98,6 +103,9 @@ vnx::Variant Node_get_farmed_blocks::get_field(const std::string& _name) const {
 	if(_name == "since") {
 		return vnx::Variant(since);
 	}
+	if(_name == "limit") {
+		return vnx::Variant(limit);
+	}
 	return vnx::Variant();
 }
 
@@ -108,6 +116,8 @@ void Node_get_farmed_blocks::set_field(const std::string& _name, const vnx::Vari
 		_value.to(full_blocks);
 	} else if(_name == "since") {
 		_value.to(since);
+	} else if(_name == "limit") {
+		_value.to(limit);
 	}
 }
 
@@ -135,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_farmed_blocks::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_farmed_blocks";
 	type_code->type_hash = vnx::Hash64(0xfc412d06ff25542eull);
-	type_code->code_hash = vnx::Hash64(0xc324750314ad847full);
+	type_code->code_hash = vnx::Hash64(0x137a63ae1f66bbf0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -143,7 +153,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_farmed_blocks::static_create_type_code()
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_farmed_blocks>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_farmed_blocks_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -161,6 +171,13 @@ std::shared_ptr<vnx::TypeCode> Node_get_farmed_blocks::static_create_type_code()
 		field.data_size = 4;
 		field.name = "since";
 		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.data_size = 4;
+		field.name = "limit";
+		field.value = vnx::to_string(100);
+		field.code = {7};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -211,6 +228,9 @@ void read(TypeInput& in, ::mmx::Node_get_farmed_blocks& value, const TypeCode* t
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.since, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[3]) {
+			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -233,9 +253,10 @@ void write(TypeOutput& out, const ::mmx::Node_get_farmed_blocks& value, const Ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(5);
+	char* const _buf = out.write(9);
 	vnx::write_value(_buf + 0, value.full_blocks);
 	vnx::write_value(_buf + 1, value.since);
+	vnx::write_value(_buf + 5, value.limit);
 	vnx::write(out, value.farmer_keys, type_code, type_code->fields[0].code.data());
 }
 

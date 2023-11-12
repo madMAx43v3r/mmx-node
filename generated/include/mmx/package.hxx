@@ -497,6 +497,8 @@ struct error_code_e;
 struct exec_entry_t;
 struct exec_error_t;
 struct exec_result_t;
+struct farmed_block_info_t;
+struct farmer_info_t;
 class fixed128;
 class hash_t;
 class memo_t;
@@ -1003,6 +1005,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_error_code_e; 
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_exec_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_exec_error_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_exec_result_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_farmed_block_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_farmer_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_node_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_node_type_e; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_offer_data_t; ///< \private
@@ -1510,6 +1514,8 @@ void read(TypeInput& in, ::mmx::error_code_e& value, const TypeCode* type_code, 
 void read(TypeInput& in, ::mmx::exec_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exec_error_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exec_result_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::farmed_block_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::farmer_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::fixed128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::hash_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::memo_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2019,6 +2025,8 @@ void write(TypeOutput& out, const ::mmx::error_code_e& value, const TypeCode* ty
 void write(TypeOutput& out, const ::mmx::exec_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exec_error_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exec_result_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::farmed_block_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::farmer_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::fixed128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::hash_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::memo_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2528,6 +2536,8 @@ void read(std::istream& in, ::mmx::error_code_e& value); ///< \private
 void read(std::istream& in, ::mmx::exec_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::exec_error_t& value); ///< \private
 void read(std::istream& in, ::mmx::exec_result_t& value); ///< \private
+void read(std::istream& in, ::mmx::farmed_block_info_t& value); ///< \private
+void read(std::istream& in, ::mmx::farmer_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::fixed128& value); ///< \private
 void read(std::istream& in, ::mmx::hash_t& value); ///< \private
 void read(std::istream& in, ::mmx::memo_t& value); ///< \private
@@ -3037,6 +3047,8 @@ void write(std::ostream& out, const ::mmx::error_code_e& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_error_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_result_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::farmed_block_info_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::farmer_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::fixed128& value); ///< \private
 void write(std::ostream& out, const ::mmx::hash_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::memo_t& value); ///< \private
@@ -3546,6 +3558,8 @@ void accept(Visitor& visitor, const ::mmx::error_code_e& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_error_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_result_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::farmed_block_info_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::farmer_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::fixed128& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::hash_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::memo_t& value); ///< \private
@@ -14482,6 +14496,52 @@ struct type<::mmx::exec_result_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::exec_result_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::farmed_block_info_t> {
+	void read(TypeInput& in, ::mmx::farmed_block_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::farmed_block_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::farmed_block_info_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::farmed_block_info_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::farmed_block_info_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::farmed_block_info_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::farmer_info_t> {
+	void read(TypeInput& in, ::mmx::farmer_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::farmer_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::farmer_info_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::farmer_info_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::farmer_info_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::farmer_info_t& value, bool special = false);
 };
 
 /// \private

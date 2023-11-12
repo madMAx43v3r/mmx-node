@@ -71,7 +71,7 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0xdab1a1a805048646ull);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x7736a329b0c617f1ull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
@@ -819,7 +819,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0xdab1a1a805048646ull);
+	type_code->code_hash = vnx::Hash64(0x7736a329b0c617f1ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(2);
@@ -1162,7 +1162,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 		auto& field = type_code->fields[44];
 		field.data_size = 4;
 		field.name = "vdf_relay_cost";
-		field.value = vnx::to_string(768);
+		field.value = vnx::to_string(256);
 		field.code = {3};
 	}
 	{

@@ -55,7 +55,7 @@ public:
 	uint32_t vdf_credits = 1024;
 	uint32_t block_credits = 256;
 	uint32_t proof_credits = 10;
-	uint32_t vdf_relay_cost = 768;
+	uint32_t vdf_relay_cost = 256;
 	uint32_t proof_relay_cost = 2;
 	uint32_t dummy_relay_cost = 2;
 	uint32_t block_relay_cost = 16;
