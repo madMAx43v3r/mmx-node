@@ -57,6 +57,7 @@ private:
 
 	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const;
 
+	// thread safe
 	void send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const mmx::chiapos::Proof> chia_proof,
 						const virtual_plot_info_t* virtual_plot, const hash_t& plot_id, const uint32_t score, const int64_t time_begin_ms) const;
 
@@ -85,6 +86,8 @@ private:
 
 	std::shared_ptr<vnx::Timer> lookup_timer;
 	std::shared_ptr<vnx::addons::HttpInterface<Harvester>> http;
+
+	mutable std::mutex mutex;
 
 	friend class vnx::addons::HttpInterface<Harvester>;
 
