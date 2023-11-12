@@ -30,7 +30,6 @@ class ChainParams {
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 100000000;
 	ulong virtual_space_constant = 500;
-	// TODO: uint virtual_space_enable = 200000;	// block height at which to allow virtual proofs
 	
 	ulong min_time_diff = 10000;
 	ulong initial_time_diff = 50000;		// [iters/sec]
