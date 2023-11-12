@@ -374,13 +374,13 @@ private:
 
 	bool verify(std::shared_ptr<const ProofResponse> value);
 
-	void verify_proof(std::shared_ptr<fork_t> fork, const std::vector<hash_t>& challenges) const;
+	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) const;
 
 	template<typename T>
 	uint256_t verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge,
 								std::shared_ptr<const BlockHeader> diff_block) const;
 
-	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const std::vector<hash_t>& challenges, std::shared_ptr<const BlockHeader> diff_block) const;
+	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof) const;
 
@@ -422,9 +422,7 @@ private:
 
 	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block, uint32_t offset = 0) const;
 
-	std::vector<hash_t> get_challenges(std::shared_ptr<const BlockHeader> vdf_block) const;
-
-	bool find_challenges(std::shared_ptr<const BlockHeader> block, std::vector<hash_t>& challenges, uint32_t offset = 0) const;
+	bool find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset = 0) const;
 
 	std::shared_ptr<vdf_point_t> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
 			const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const;

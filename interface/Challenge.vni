@@ -4,7 +4,7 @@ class Challenge {
 	
 	uint height;
 	
-	vector<hash_t> challenges;
+	hash_t challenge;
 	
 	hash_t diff_block_hash;
 	

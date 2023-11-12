@@ -60,27 +60,26 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	if(!vdf_block) {
 		return false;
 	}
-	const auto challenges = get_challenges(vdf_block);
-
-	if(request->challenges != challenges) {
-		throw std::logic_error("invalid challenges");
-	}
 	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
+	const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
+	if(request->challenge != challenge) {
+		throw std::logic_error("invalid challenge");
+	}
 	if(request->space_diff != diff_block->space_diff) {
 		throw std::logic_error("invalid space_diff");
 	}
-	verify_proof(value->proof, challenges, diff_block);
+	verify_proof(value->proof, challenge, diff_block);
 
 	if(value->proof->score >= params->score_threshold) {
 		throw std::logic_error("invalid score");
 	}
-	add_proof(request->height, challenges[0], value->proof, value->farmer_addr);
+	add_proof(request->height, challenge, value->proof, value->farmer_addr);
 
 	publish(value, output_verified_proof);
 	return true;
 }
 
-void Node::verify_proof(std::shared_ptr<fork_t> fork, const std::vector<hash_t>& challenges) const
+void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) const
 {
 	const auto block = fork->block;
 	const auto prev = find_prev_header(block);
@@ -96,7 +95,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const std::vector<hash_t>&
 	// Note: vdf_output already verified to match vdf_iters
 
 	if(auto proof = block->proof) {
-		verify_proof(proof, challenges, diff_block);
+		verify_proof(proof, challenge, diff_block);
 	}
 
 	// check some VDFs during sync
@@ -170,7 +169,7 @@ uint256_t Node::verify_proof_impl(	std::shared_ptr<const T> proof, const hash_t&
 	return calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
 }
 
-void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const std::vector<hash_t>& challenges,
+void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge,
 							std::shared_ptr<const BlockHeader> diff_block) const
 {
 	if(!proof->is_valid()) {
@@ -178,11 +177,10 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const std::v
 	}
 	proof->validate();
 
-	if(!check_plot_filter(params, challenges, proof->plot_id)) {
+	if(!check_plot_filter(params, challenge, proof->plot_id)) {
 		throw std::logic_error("plot filter failed");
 	}
 	uint256_t score = uint256_max;
-	const auto& challenge = challenges[0];
 
 	if(auto og_proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof))
 	{

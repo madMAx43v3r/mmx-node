@@ -2373,28 +2373,13 @@ std::shared_ptr<const BlockHeader> Node::get_diff_header(std::shared_ptr<const B
 	throw std::logic_error("cannot find diff header");
 }
 
-std::vector<hash_t> Node::get_challenges(std::shared_ptr<const BlockHeader> vdf_block) const
-{
-	std::vector<hash_t> challenges;
-	challenges.push_back(vdf_block->vdf_output[1]);
-
-	auto prev = vdf_block;
-	for(uint32_t i = 0; prev && i < params->plot_filter_exclusion; ++i) {
-		prev = get_header(prev->prev);
-		if(prev) {
-			challenges.push_back(prev->vdf_output[1]);
-		}
-	}
-	return challenges;
-}
-
-bool Node::find_challenges(std::shared_ptr<const BlockHeader> block, std::vector<hash_t>& challenges, uint32_t offset) const
+bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset) const
 {
 	if(offset > params->challenge_delay) {
 		throw std::logic_error("offset out of range");
 	}
 	if(auto vdf_block = find_prev_header(block, params->challenge_delay - offset, true)) {
-		challenges = get_challenges(vdf_block);
+		challenge = vdf_block->vdf_output[1];
 		return true;
 	}
 	return false;

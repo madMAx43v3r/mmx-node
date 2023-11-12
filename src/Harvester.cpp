@@ -170,10 +170,7 @@ void Harvester::check_queue()
 
 void Harvester::handle(std::shared_ptr<const Challenge> value)
 {
-	if(value->challenges.empty()) {
-		return;
-	}
-	if(!already_checked.insert(value->challenges[0]).second) {
+	if(!already_checked.insert(value->challenge).second) {
 		return;
 	}
 	auto& entry = lookup_queue[value->height];
@@ -195,12 +192,12 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	{
 		threads->add_task([this, entry, value, time_begin, &best_score, &num_passed, &mutex]()
 		{
-			if(check_plot_filter(params, value->challenges, entry.first)) {
+			if(check_plot_filter(params, value->challenge, entry.first)) {
 				try {
 					std::lock_guard<std::mutex> lock(mutex);
 					const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
 					if(balance) {
-						const auto score = calc_virtual_score(params, value->challenges[0], entry.first, balance, value->space_diff);
+						const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
 						if(score < params->score_threshold) {
 							send_response(value, nullptr, &entry.second, entry.first, score, time_begin);
 						}
@@ -226,13 +223,13 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	{
 		threads->add_task([this, entry, value, &best_entry, &best_score, &num_passed, &mutex]()
 		{
-			if(check_plot_filter(params, value->challenges, entry.first))
+			if(check_plot_filter(params, value->challenge, entry.first))
 			{
 				const auto iter = plot_map.find(entry.second);
 				if(iter != plot_map.end()) {
 					const auto& prover = iter->second;
 					try {
-						const auto challenge = get_plot_challenge(value->challenges[0], entry.first);
+						const auto challenge = get_plot_challenge(value->challenge, entry.first);
 						const auto qualities = prover->get_qualities(challenge.bytes);
 
 						std::lock_guard<std::mutex> lock(mutex);

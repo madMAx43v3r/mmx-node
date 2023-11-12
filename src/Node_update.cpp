@@ -125,14 +125,14 @@ void Node::verify_block_proofs()
 			threads->add_task([this, fork, &mutex]() {
 				const auto& block = fork->block;
 				try {
-					std::vector<hash_t> challenges;
-					if(find_challenges(block, challenges))
+					hash_t challenge;
+					if(find_challenge(block, challenge))
 					{
-						verify_proof(fork, challenges);
+						verify_proof(fork, challenge);
 
 						if(auto proof = block->proof) {
 							std::lock_guard<std::mutex> lock(mutex);
-							add_proof(block->height, challenges[0], proof, vnx::Hash64());
+							add_proof(block->height, challenge, proof, vnx::Hash64());
 						}
 					}
 				} catch(const std::exception& ex) {
@@ -362,10 +362,10 @@ void Node::update()
 			prev = fork->block;
 		}
 		if(prev) {
-			std::vector<hash_t> challenges;
-			if(find_challenges(prev, challenges, 1))
+			hash_t challenge;
+			if(find_challenge(prev, challenge, 1))
 			{
-				const auto proof_list = find_proof(challenges[0]);
+				const auto proof_list = find_proof(challenge);
 
 				// Note: proof_list already limited to max_blocks_per_height
 				for(size_t k = 0; k < proof_list.size(); ++k)
@@ -431,7 +431,7 @@ void Node::update()
 		{
 			auto value = Challenge::create();
 			value->height = peak->height + i;
-			value->challenges = get_challenges(vdf_block);
+			value->challenge = vdf_block->vdf_output[1];
 			const auto diff_block = get_diff_header(peak, i);
 			value->space_diff = diff_block->space_diff;
 			value->diff_block_hash = diff_block->hash;
