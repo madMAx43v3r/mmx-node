@@ -20,6 +20,9 @@ vnx::bool_t Block::is_valid() const
 	uint64_t total_cost_sum = 0;
 	uint64_t tx_fees_sum = 0;
 	for(const auto& tx : tx_list) {
+		if(!tx || tx->content_hash != tx->calc_hash(true)) {
+			return false;
+		}
 		if(const auto& res = tx->exec_result) {
 			total_cost_sum += res->total_cost;
 			tx_fees_sum += res->total_fee;
@@ -42,10 +45,12 @@ hash_t Block::calc_tx_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(1024 * 1024);
+	buffer.reserve(1024 * 32);
+
+	// TODO: binary tree hash
 
 	for(const auto& tx : tx_list) {
-		write_bytes(out, tx ? tx->calc_hash(true) : hash_t());
+		write_bytes(out, tx->content_hash);
 	}
 	out.flush();
 
