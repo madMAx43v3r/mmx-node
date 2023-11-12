@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.13)
 project(mmx-node C CXX ASM)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 if(MSVC)
 	set(CMAKE_CXX_STANDARD 20)
@@ -36,6 +38,12 @@ else()
 	include(cmake/commit_hash_json.cmake)
 	
 	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs)
+	
+	if(WITH_COVERAGE)
+		message(STATUS "Enabling -O0 -coverage")
+		add_compile_options(-O0 --coverage)
+		add_link_options(-lgcov --coverage)
+	endif()
 	
 	set_source_files_properties(src/vm/Compiler.cpp
 		PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
@@ -133,7 +141,6 @@ add_library(mmx_iface SHARED
 	src/exec_error_t.cpp
 	src/vm/var_t.cpp
 	src/vm/varptr_t.cpp
-	src/contract/NFT.cpp
 	src/contract/Data.cpp
 	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
@@ -146,10 +153,8 @@ add_library(mmx_iface SHARED
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
 	src/solution/BLS_PubKey.cpp
-	src/operation/Spend.cpp
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp
-	src/operation/Vote.cpp
 	src/sha256_avx2.cpp
 	src/sha256_64_x8.cpp
 	src/sha256_ni.cpp
@@ -159,6 +164,8 @@ add_library(mmx_iface SHARED
 	src/wordlist_en.cpp
 	src/mnemonic.cpp
 	src/offer_data_t.cpp
+	src/memo_t.cpp
+	src/bls_pubkey_t.cpp
 )
 
 add_library(mmx_vm SHARED
@@ -177,6 +184,11 @@ add_library(mmx_db SHARED
 	src/table.cpp
 )
 
+add_library(mmx_pos SHARED
+	src/pos/mem_hash.cpp
+	src/pos/verify.cpp
+)
+
 add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
@@ -184,6 +196,7 @@ add_library(mmx_modules SHARED
 	src/Node_verify.cpp
 	src/Node_validate.cpp
 	src/Wallet.cpp
+	src/BLS_Wallet.cpp
 	src/Farmer.cpp
 	src/Harvester.cpp
 	src/Router.cpp
@@ -195,6 +208,10 @@ add_library(mmx_modules SHARED
 add_library(uint256_t STATIC
 	uint256_t/uint128_t/uint128_t.cpp
 	uint256_t/uint256_t.cpp
+)
+
+target_include_directories(mmx_pos
+	PUBLIC include
 )
 
 target_include_directories(mmx_iface
@@ -222,10 +239,10 @@ target_include_directories(mmx_chiapos
 target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons)
 
 target_link_libraries(mmx_db mmx_iface)
-
+target_link_libraries(mmx_pos mmx_iface)
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 
-target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
+target_link_libraries(mmx_modules mmx_chiapos mmx_pos mmx_vm mmx_db mmx_iface)
 
 if(MSVC)
 	GENERATE_EXPORT_HEADER(mmx_iface)

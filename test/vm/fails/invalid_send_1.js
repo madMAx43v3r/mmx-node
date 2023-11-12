@@ -1,0 +1,1 @@
+send(bech32("MMX"), 1, bech32("MMX"));

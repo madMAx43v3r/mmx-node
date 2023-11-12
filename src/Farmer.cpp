@@ -12,6 +12,8 @@
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/utils.h>
 
+#include <bls.hpp>
+
 
 namespace mmx {
 
@@ -167,14 +169,12 @@ bls_signature_t Farmer::sign_proof(
 
 	if(local_sk) {
 		plot_sk = bls::PrivateKey::Aggregate({
-			// inlined to calls to skey_t::to_bls() to avoid MSVC bug
+			// inlined calls to skey_t::to_bls() to avoid MSVC bug
 			bls::PrivateKey::FromBytes(bls::Bytes(local_sk->data(), local_sk->size())),
 			bls::PrivateKey::FromBytes(bls::Bytes(plot_sk.data(), plot_sk.size()))
 		});
 		key_map[value->proof->plot_key] = plot_sk;
 	}
-
-	// TODO: have node verify proof first
 	return bls_signature_t::sign(plot_sk, value->hash);
 }
 

@@ -9,14 +9,16 @@ class TokenBase extends mmx.Contract {
 	
 	string symbol;
 	
-	int decimals = 6;
+	int decimals = 0;
 	
-	optional<addr_t> meta_data;
+	vnx.Variant meta_data;
 	
 	
 	bool is_valid() const;
 	
 	hash_t calc_hash(bool full_hash) const;
+	
+	ulong num_bytes(bool total = true) const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	

@@ -31,7 +31,7 @@ hash_t Execute::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "user", 	user);
 
 	if(full_hash) {
-		write_field(out, "solution", solution ? solution->calc_hash() : hash_t());
+		write_field(out, "solution", solution);
 	}
 	out.flush();
 

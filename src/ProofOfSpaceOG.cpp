@@ -8,6 +8,8 @@
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/write_bytes.h>
 
+#include <bls.hpp>
+
 
 namespace mmx {
 
@@ -41,14 +43,18 @@ mmx::hash_t ProofOfSpaceOG::calc_hash(const vnx::bool_t& full_hash) const
 
 void ProofOfSpaceOG::validate() const
 {
-	const bls_pubkey_t plot_key_ = local_key.to_bls() + farmer_key.to_bls();
+	bls::G1Element local_key_bls;
+	bls::G1Element farmer_key_bls;
+
+	local_key.to(local_key_bls);
+	farmer_key.to(farmer_key_bls);
+
+	const bls_pubkey_t plot_key_ = local_key_bls + farmer_key_bls;
 
 	if(plot_key_ != plot_key) {
 		throw std::logic_error("invalid plot_key");
 	}
-
-	const uint32_t port = 11337;
-	if(hash_t(hash_t(pool_key + plot_key_) + bytes_t<4>(&port, sizeof(port))) != plot_id) {
+	if(hash_t(hash_t(pool_key + plot_key_) + bytes_t<4>().from_uint(11337u)) != plot_id) {
 		throw std::logic_error("invalid proof keys or port");
 	}
 }

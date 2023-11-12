@@ -17,11 +17,15 @@
 #include <mmx/operation/Execute.hxx>
 #include <mmx/txio_entry_t.hpp>
 #include <mmx/OCL_VDF.h>
-#include <mmx/utils.h>
 #include <mmx/uint128.hpp>
-#include <mmx/balance_cache_t.h>
+#include <mmx/tx_index_t.hxx>
+#include <mmx/block_index_t.hxx>
 #include <mmx/table.h>
 #include <mmx/multi_table.h>
+#include <mmx/balance_cache_t.h>
+#include <mmx/farmer_info_t.hxx>
+#include <mmx/farmed_block_info_t.hxx>
+#include <mmx/utils.h>
 
 #include <mmx/vm/Engine.h>
 #include <mmx/vm/StorageDB.h>
@@ -31,6 +35,7 @@
 #include <vnx/addons/HttpInterface.h>
 
 #include <unordered_set>
+#include <unordered_map>
 
 
 namespace mmx {
@@ -180,7 +185,7 @@ protected:
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity_by(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
-			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0) const override;
+			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0, const int32_t& limit = -1) const override;
 
 	std::map<bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const override;
 
@@ -340,21 +345,20 @@ private:
 					std::shared_ptr<const operation::Execute> op,
 					std::shared_ptr<const Contract> contract,
 					const addr_t& address,
-					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
-					std::unordered_map<addr_t, uint128>& amounts,
+					std::map<std::pair<addr_t, addr_t>, uint128>& exec_spend_map,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
 
 	void execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<const execution_context_t> context,
 					std::shared_ptr<const contract::Executable> executable,
-					std::vector<txin_t>& exec_inputs,
 					std::vector<txout_t>& exec_outputs,
+					std::map<std::pair<addr_t, addr_t>, uint128>& exec_spend_map,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
-					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const;
+					exec_error_t& error, const bool is_public) const;
 
 	std::shared_ptr<const exec_result_t> validate(
 			std::shared_ptr<const Transaction> tx, std::shared_ptr<const execution_context_t> context) const;
@@ -418,9 +422,7 @@ private:
 
 	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block, uint32_t offset = 0) const;
 
-	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const hash_t& vdf_challenge, uint32_t offset = 0) const;
-
-	bool find_vdf_challenge(std::shared_ptr<const BlockHeader> block, hash_t& vdf_challenge, uint32_t offset = 0) const;
+	bool find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset = 0) const;
 
 	std::shared_ptr<vdf_point_t> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
 			const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const;
@@ -432,12 +434,16 @@ private:
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const;
 
 	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
-			int64_t* block_offset = nullptr, std::vector<std::pair<hash_t, int64_t>>* tx_offsets = nullptr) const;
+			int64_t* block_offset = nullptr, std::vector<int64_t>* tx_offsets = nullptr) const;
 
 	void write_block(std::shared_ptr<const Block> block);
 
 	template<typename T>
-	std::shared_ptr<const T> get_contract_as(const addr_t& address) const;
+	std::shared_ptr<const T> get_contract_as(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
+
+	std::shared_ptr<const Contract> get_contract_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
+
+	std::shared_ptr<const Contract> get_contract_for_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
 
 private:
 	DataBase db;
@@ -447,21 +453,17 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 
-	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [addr, contract]
+	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [address, contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
-	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
 
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
 	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
 
+	balance_table_t<uint128> balance_table;										// [[address, currency] => balance]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
-
-	balance_table_t<uint128> balance_table;										// [[addr, currency] => balance]
-	std::map<std::pair<addr_t, addr_t>, uint128> balance_map;					// [[addr, currency] => balance]
-	std::map<uint32_t, balance_log_t> balance_log;								// [height => log]
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 	std::unordered_map<addr_t, uint64_t> tx_pool_fees;								// [address => total pending fees]
@@ -480,13 +482,19 @@ private:
 	bool is_synced = false;
 	bool update_pending = false;
 	uint32_t min_pool_fee_ratio = 0;
+
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageDB> storage;
+
 	hash_table<hash_t, uint32_t> hash_index;									// [block hash => height]
-	hash_table<hash_t, std::pair<int64_t, uint32_t>> tx_index;					// [txid => [file offset, height]]
-	uint_table<uint32_t, std::pair<int64_t, std::pair<hash_t, hash_t>>> block_index;		// [height => [file offset, block hash]]
+	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
+	uint_table<uint32_t, block_index_t> block_index;							// [height => index]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
-	hash_multi_table<bls_pubkey_t, uint32_t> farmer_block_map;					// [farmer_key => height]
+
+	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
+	hash_multi_table<bls_pubkey_t, farmed_block_info_t> farmer_block_map;		// TODO: [farmer key => info]
+
+	hash_table<addr_t, farmer_info_t> farmer_info_map;							// TODO: [reward address => info]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
@@ -524,8 +532,9 @@ private:
 
 
 template<typename T>
-std::shared_ptr<const T> Node::get_contract_as(const addr_t& address) const {
-	return std::dynamic_pointer_cast<const T>(get_contract(address));
+std::shared_ptr<const T> Node::get_contract_as(const addr_t& address, uint64_t* read_cost, const uint64_t gas_limit) const
+{
+	return std::dynamic_pointer_cast<const T>(get_contract_ex(address, read_cost, gas_limit));
 }
 
 

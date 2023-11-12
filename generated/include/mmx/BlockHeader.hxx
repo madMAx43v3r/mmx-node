@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/block_index_t.hxx>
 #include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/uint128.hpp>
@@ -60,6 +61,7 @@ public:
 	virtual std::pair<::mmx::hash_t, ::mmx::hash_t> calc_hash() const;
 	virtual void validate() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;
+	virtual ::mmx::block_index_t get_block_index(const int64_t& file_offset = 0) const;
 	
 	static std::shared_ptr<BlockHeader> create();
 	std::shared_ptr<vnx::Value> clone() const override;

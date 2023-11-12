@@ -77,6 +77,9 @@ struct db_val_t {
 	std::string to_string() const {
 		return std::string((const char*)data, size);
 	}
+	std::string to_hex_string() const {
+		return vnx::to_hex_string(data, size, false, false);
+	}
 };
 
 class Table {

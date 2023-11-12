@@ -1,2 +1,2 @@
 
-uint("abcdef!");
+uint("abcdef");

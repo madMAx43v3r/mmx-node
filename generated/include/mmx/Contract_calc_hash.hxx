@@ -13,7 +13,7 @@ namespace mmx {
 class MMX_EXPORT Contract_calc_hash : public ::vnx::Value {
 public:
 	
-	vnx::bool_t full_hash = false;
+	vnx::bool_t full_hash = 0;
 	
 	typedef ::vnx::Value Super;
 	

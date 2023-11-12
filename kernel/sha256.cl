@@ -5,7 +5,6 @@
  *      Author: mad
  */
 
-
 __constant uint k[] = {
    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
@@ -29,7 +28,12 @@ __constant uint h_init[] = { 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x5
 #define Ch(x, y, z) (z ^ (x & (y ^ z)))
 #define Ma(x, y, z) ((x & z) | (y & (x | z)))
 
+uint bswap_32(const uint value) {
+	return as_uint(as_uchar4(value).s3210);
+}
 
+// msg needs to be byte swapped already
+// output state is not byte swapped
 void sha256(	const uint* msg,
 				uint* s )
 {
@@ -95,9 +99,5 @@ void sha256(	const uint* msg,
 	s[7] += h;
 }
 
-
-uint sha_pack_u32(uint val) {
-	return ((val & 0xFF) << 24) | ((val & 0xFF00) << 8) | ((val & 0xFF0000) >> 8) | ((val & 0xFF000000) >> 24);
-}
 
 

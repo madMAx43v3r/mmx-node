@@ -8,4 +8,9 @@ struct txio_t {
 	
 	ulong amount;
 	
+	optional<memo_t> memo;
+	
+	
+	ulong calc_cost(ChainParams* params) const;
+	
 }

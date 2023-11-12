@@ -306,7 +306,7 @@ public:
 			const std::function<void(const ::mmx::uint128&)>& _callback = std::function<void(const ::mmx::uint128&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0, 
+	uint64_t get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0, const int32_t& limit = 100, 
 			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

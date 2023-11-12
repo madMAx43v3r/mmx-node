@@ -9,6 +9,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
+#include <mmx/memo_t.hpp>
 
 #include <vnx/vnx.h>
 #include <vnx/test/Test.h>
@@ -23,19 +24,16 @@ int main(int argc, char** argv)
 {
 	vnx::test::init("mmx");
 
-	vnx::init("mmx_tests", argc, argv);
-
 	VNX_TEST_BEGIN("uint128")
 	{
 		vnx::test::expect(uint128().to_double(), 0);
 		vnx::test::expect(uint128(11).to_double(), 11);
 		vnx::test::expect(uint128(1123456).to_double(), 1123456);
-	}
-	VNX_TEST_END()
-
-	VNX_TEST_BEGIN("skey_t")
-	{
-		// TODO
+		vnx::test::expect((uint128(256) / 1).lower(), 256u);
+		vnx::test::expect((uint128(256) / 2).lower(), 128u);
+		vnx::test::expect((uint128(256) / 4).lower(), 64u);
+		vnx::test::expect((uint128(256) / 8).lower(), 32u);
+		vnx::test::expect((uint128(256) / 16).lower(), 16u);
 	}
 	VNX_TEST_END()
 
@@ -63,11 +61,13 @@ int main(int argc, char** argv)
 		vnx::test::expect(fixed128(1.0001).to_amount(4), 10001);
 		vnx::test::expect(fixed128(1.00001).to_amount(6), 1000010);
 		vnx::test::expect(fixed128(1.000001).to_amount(6), 1000001);
+		vnx::test::expect(fixed128("1").to_amount(0), 1);
 		vnx::test::expect(fixed128("1.").to_amount(0), 1);
 		vnx::test::expect(fixed128("1.0").to_amount(0), 1);
 		vnx::test::expect(fixed128("1.000000").to_amount(0), 1);
 		vnx::test::expect(fixed128("1.2").to_amount(0), 1);
 		vnx::test::expect(fixed128("1,3").to_amount(1), 13);
+		vnx::test::expect(fixed128("1e1").to_amount(1), 100);
 		vnx::test::expect(fixed128("1,1e0").to_amount(2), 110);
 		vnx::test::expect(fixed128("1,1E2").to_amount(3), 110000);
 		vnx::test::expect(fixed128("1,4E-1").to_amount(2), 14);
@@ -86,7 +86,24 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
-	vnx::close();
+	VNX_TEST_BEGIN("memo_t")
+	{
+		vnx::test::expect(memo_t().to_string(), "");
+		vnx::test::expect(memo_t().to_uint().str(10), "0");
+		vnx::test::expect(memo_t(1337).to_string(), "1337");
+		vnx::test::expect(memo_t(1337).to_uint().str(10), "1337");
+		vnx::test::expect(memo_t(1337133713371337).to_uint().str(10), "1337133713371337");
+		vnx::test::expect(memo_t("sD1.-=&^%{]|+)$#@!<").to_string(), "sD1.-=&^%{]|+)$#@!<");
+		{
+			const hash_t hash("fjskdfjksdjf");
+			const std::string text = "0x" + hash.to_string();
+			vnx::test::expect(memo_t(hash).to_string(), text);
+			vnx::test::expect(memo_t(text).to_string(), text);
+		}
+	}
+	VNX_TEST_END()
+
+	vnx::test::exit();
 }
 
 

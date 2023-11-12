@@ -25,6 +25,7 @@ hash_t exec_error_t::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "code", 	code);
 	write_field(out, "address", address);
+	write_field(out, "operation", operation);
 	write_field(out, "line", 	line);
 	write_field(out, "message", message);
 	out.flush();

@@ -10,6 +10,7 @@
 
 #include <mmx/addr_t.hpp>
 #include <mmx/uint128.hpp>
+#include <mmx/table.h>
 
 #include <map>
 
@@ -22,7 +23,7 @@ public:
 
 	balance_cache_t(balance_cache_t* parent) : parent(parent) {}
 
-	balance_cache_t(const std::map<std::pair<addr_t, addr_t>, uint128>* source) : source(source) {}
+	balance_cache_t(const balance_table_t<uint128>* source) : source(source) {}
 
 	balance_cache_t& operator=(const balance_cache_t&) = default;
 
@@ -32,9 +33,9 @@ public:
 		auto iter = balance.find(key);
 		if(iter == balance.end()) {
 			if(source) {
-				auto iter2 = source->find(key);
-				if(iter2 != source->end()) {
-					iter = balance.emplace(key, iter2->second).first;
+				uint128 value = 0;
+				if(source->find(key, value)) {
+					iter = balance.emplace(key, value).first;
 				} else {
 					return nullptr;
 				}
@@ -69,7 +70,7 @@ public:
 
 private:
 	balance_cache_t* const parent = nullptr;
-	const std::map<std::pair<addr_t, addr_t>, uint128>* const source = nullptr;
+	const balance_table_t<uint128>* const source = nullptr;
 
 };
 

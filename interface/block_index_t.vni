@@ -1,0 +1,13 @@
+package mmx;
+
+struct block_index_t {
+	
+	hash_t hash;
+	hash_t content_hash;
+	
+	uint static_cost;
+	uint total_cost;
+	
+	long file_offset;
+	
+}

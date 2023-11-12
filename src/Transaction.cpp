@@ -9,6 +9,7 @@
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/txio_t.hpp>
 
 
 namespace mmx {
@@ -51,7 +52,9 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 			return false;
 		}
 	}
-	return version == 0 && fee_ratio >= 1024 && nonce
+	return version == 0 && nonce
+			&& fee_ratio >= 1024
+			&& network == params->network
 			&& solutions.size() <= MAX_SOLUTIONS
 			&& (!exec_result || exec_result->is_valid())
 			&& static_cost == calc_cost(params)
@@ -82,7 +85,8 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "max_fee_amount", max_fee_amount);
 	write_field(out, "note", 	note);
 	write_field(out, "nonce", 	nonce);
-	write_field(out, "salt", 	salt);
+	write_field(out, "network", network);
+	write_field(out, "memo",	memo);
 	write_field(out, "sender",	sender);
 	write_field(out, "inputs",	inputs, full_hash);
 	write_field(out, "outputs", outputs);
@@ -176,14 +180,16 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 		throw std::logic_error("!params");
 	}
 	uint128_t cost = params->min_txfee;
-	cost += inputs.size() * params->min_txfee_io;
-	cost += outputs.size() * params->min_txfee_io;
 	cost += execute.size() * params->min_txfee_exec;
 
+	if(exec_result) {
+		cost += exec_result->calc_cost(params);
+	}
 	for(const auto& in : inputs) {
-		if(in.flags & txin_t::IS_EXEC) {
-			cost += params->min_txfee_exec;
-		}
+		cost += in.calc_cost(params);
+	}
+	for(const auto& out : outputs) {
+		cost += out.calc_cost(params);
 	}
 	for(const auto& op : execute) {
 		if(op) {
@@ -247,6 +253,18 @@ std::map<addr_t, std::pair<uint128, uint128>> Transaction::get_balance() const
 		balance[out.contract].second += out.amount;
 	}
 	return balance;
+}
+
+tx_index_t Transaction::get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params, const uint32_t& height, const int64_t& file_offset) const
+{
+	tx_index_t index;
+	index.height = height;
+	index.file_offset = file_offset;
+	index.static_cost = static_cost;
+	if(deploy) {
+		index.contract_read_cost = (deploy->num_bytes() * params->min_txfee_read_kbyte) / 1000;
+	}
+	return index;
 }
 
 

@@ -6,10 +6,13 @@
  */
 
 #include <mmx/vm/instr_t.h>
+#include <vnx/vnx.h>
 
 #include <cstring>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
+#include <algorithm>
+#include <unordered_map>
 
 #define OPCODE_INFO(op, num) g_opcode_info[op] = {#op, num}
 
@@ -60,12 +63,14 @@ const struct global_init_t {
 		OPCODE_INFO(OP_CONCAT, 3);
 		OPCODE_INFO(OP_MEMCPY, 4);
 		OPCODE_INFO(OP_SHA256, 2);
+		OPCODE_INFO(OP_VERIFY, 4);
 		OPCODE_INFO(OP_LOG, 2);
-		OPCODE_INFO(OP_SEND, 3);
-		OPCODE_INFO(OP_MINT, 2);
+		OPCODE_INFO(OP_SEND, 4);
+		OPCODE_INFO(OP_MINT, 3);
 		OPCODE_INFO(OP_EVENT, 2);
 		OPCODE_INFO(OP_FAIL, 2);
 		OPCODE_INFO(OP_RCALL, 4);
+		OPCODE_INFO(OP_CREAD, 3);
 	}
 } global_init;
 
@@ -75,79 +80,199 @@ const opcode_info_t& get_opcode_info(opcode_e code)
 	return g_opcode_info[code];
 }
 
-std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const std::vector<instr_t>& code)
+static void encode_symbol(
+		vnx::OutputBuffer& out, const uint32_t symbol,
+		const std::unordered_map<uint32_t, std::pair<uint32_t, uint8_t>>& sym_map)
 {
-	size_t length = 0;
-	for(const auto& instr : code) {
-		length += 2 + get_opcode_info(instr.code).nargs * 4;
+	auto iter = sym_map.find(symbol);
+	if(iter != sym_map.end()) {
+		out.write(&iter->second.first, iter->second.second);
 	}
-	auto data = (uint8_t*)::malloc(length);
-
-	size_t offset = 0;
-	for(const auto& instr : code)
-	{
-		data[offset] = instr.code;
-		data[offset + 1] = instr.flags;
-		offset += 2;
-
-		const auto& info = get_opcode_info(instr.code);
-		if(info.nargs >= 1) {
-			::memcpy(data + offset, &instr.a, 4); offset += 4;
-		}
-		if(info.nargs >= 2) {
-			::memcpy(data + offset, &instr.b, 4); offset += 4;
-		}
-		if(info.nargs >= 3) {
-			::memcpy(data + offset, &instr.c, 4); offset += 4;
-		}
-		if(info.nargs >= 4) {
-			::memcpy(data + offset, &instr.d, 4); offset += 4;
-		}
+	else if(symbol < 0x7FFF) {
+		// raw 15-bit value
+		const uint32_t tmp = (((uint32_t(1) << 15) | symbol) << 8) | 0xFF;
+		out.write(&tmp, 3);
 	}
-	return std::make_pair(std::unique_ptr<uint8_t[]>(data), offset);
+	else {
+		// raw 32-bit value
+		const uint64_t tmp = (uint64_t(symbol) << 24) | 0xFFFFFF;
+		out.write(&tmp, 7);
+	}
 }
 
-size_t deserialize(std::vector<instr_t>& code, const void* data_, const size_t length)
+inline uint32_t encode_instr(const instr_t& instr)
 {
-	size_t offset = 0;
-	auto data = (const uint8_t*)data_;
-	while(offset < length) {
-		if(length < offset + 2) {
-			throw std::runtime_error("unexpected eof");
+	return (uint32_t(instr.flags) << 8) | uint32_t(instr.code);
+}
+
+std::vector<uint8_t> serialize(const std::vector<instr_t>& code)
+{
+	std::unordered_map<uint32_t, uint32_t> sym_count;
+	for(const auto& instr : code) {
+		const auto& info = get_opcode_info(instr.code);
+		if(info.nargs >= 1) {
+			sym_count[instr.a]++;
 		}
-		instr_t instr;
-		instr.code = opcode_e(data[offset]);
-		instr.flags = data[offset + 1];
-		offset += 2;
+		if(info.nargs >= 2) {
+			sym_count[instr.b]++;
+		}
+		if(info.nargs >= 3) {
+			sym_count[instr.c]++;
+		}
+		if(info.nargs >= 4) {
+			sym_count[instr.d]++;
+		}
+		sym_count[encode_instr(instr)]++;
+	}
+	std::vector<std::pair<uint32_t, uint32_t>> sym_list;
+
+	for(const auto& entry : sym_count) {
+		if(entry.second > 1) {
+			sym_list.push_back(entry);
+		}
+	}
+	std::sort(sym_list.begin(), sym_list.end(),
+		[](const std::pair<uint32_t, uint32_t>& L, const std::pair<uint32_t, uint32_t>& R) -> bool {
+			return L.second == R.second ? L.first < R.first : L.second > R.second;
+		});
+
+	sym_list.resize(std::min<size_t>(sym_list.size(), 0x7FFF + 0xFF));
+
+	std::unordered_map<uint32_t, std::pair<uint32_t, uint8_t>> sym_map;
+
+	for(uint32_t i = 0; i < sym_list.size(); ++i)
+	{
+		const auto& key = sym_list[i].first;
+		if(i < 0xFF) {
+			// 1-byte entry with 8-bit symbol
+			sym_map[key] = std::make_pair(i, 1);
+		} else {
+			// 3-byte entry with 15-bit symbol
+			sym_map[key] = std::make_pair(((i - 0xFF) << 8) | 0xFF, 3);
+		}
+	}
+
+	std::vector<uint8_t> buffer;
+	vnx::VectorOutputStream stream(&buffer);
+	vnx::TypeOutput out(&stream);
+
+	vnx::write(out, uint8_t(1));					// version
+	vnx::write(out, uint32_t(sym_list.size()));		// number of symbols
+
+	for(const auto& entry : sym_list) {
+		vnx::write(out, entry.first);				// symbols
+	}
+	vnx::write(out, uint32_t(code.size()));			// number of instructions
+
+	for(const auto& instr : code)
+	{
+		encode_symbol(out, encode_instr(instr), sym_map);
 
 		const auto& info = get_opcode_info(instr.code);
 		if(info.nargs >= 1) {
-			if(length < offset + 4) {
-				throw std::runtime_error("unexpected eof");
-			}
-			::memcpy(&instr.a, data + offset, 4); offset += 4;
+			encode_symbol(out, instr.a, sym_map);
 		}
 		if(info.nargs >= 2) {
-			if(length < offset + 4) {
-				throw std::runtime_error("unexpected eof");
-			}
-			::memcpy(&instr.b, data + offset, 4); offset += 4;
+			encode_symbol(out, instr.b, sym_map);
 		}
 		if(info.nargs >= 3) {
-			if(length < offset + 4) {
-				throw std::runtime_error("unexpected eof");
-			}
-			::memcpy(&instr.c, data + offset, 4); offset += 4;
+			encode_symbol(out, instr.c, sym_map);
 		}
 		if(info.nargs >= 4) {
-			if(length < offset + 4) {
-				throw std::runtime_error("unexpected eof");
-			}
-			::memcpy(&instr.d, data + offset, 4); offset += 4;
+			encode_symbol(out, instr.d, sym_map);
+		}
+	}
+	out.flush();
+
+	return buffer;
+}
+
+static uint32_t decode_symbol(vnx::InputBuffer& in, const std::vector<uint32_t>& sym_list)
+{
+	uint8_t first = 0;
+	in.read(&first, 1);
+
+	if(first < 0xFF) {
+		if(first < sym_list.size()) {
+			return sym_list[first];
+		} else {
+			throw std::logic_error("decode_symbol(): invalid 8-bit symbol: " + std::to_string(first));
+		}
+	}
+	uint16_t second = 0;
+	in.read(&second, 2);
+
+	if(second < 0x7FFF) {
+		second += 0xFF;
+		if(second < sym_list.size()) {
+			return sym_list[second];
+		} else {
+			throw std::logic_error("decode_symbol(): invalid 15-bit symbol: " + std::to_string(second));
+		}
+	}
+	if(second < 0xFFFF) {
+		// raw 15-bit value
+		return second & 0x7FFF;
+	}
+	uint32_t value = 0;
+	in.read(&value, 4);
+	return value;
+}
+
+inline instr_t decode_instr(vnx::InputBuffer& in, const std::vector<uint32_t>& sym_list)
+{
+	const auto tmp = decode_symbol(in, sym_list);
+	instr_t out;
+	out.code = opcode_e(tmp & 0xFF);
+	out.flags = (tmp >> 8) & 0xFF;
+	return out;
+}
+
+size_t deserialize(std::vector<instr_t>& code, const void* data, const size_t length)
+{
+	vnx::PointerInputStream stream(data, length);
+	vnx::TypeInput in(&stream);
+
+	uint8_t version = 0;
+	vnx::read(in, version);
+
+	if(version != 1) {
+		throw std::logic_error("deserialize(): invalid version: " + std::to_string(version));
+	}
+	uint32_t sym_count = 0;
+	vnx::read(in, sym_count);
+
+	if(sym_count > 0x7FFF + 0xFF) {
+		throw std::logic_error("deserialize(): invalid symbol count: " + std::to_string(sym_count));
+	}
+	std::vector<uint32_t> sym_list(sym_count);
+
+	for(uint32_t i = 0; i < sym_count; ++i) {
+		vnx::read(in, sym_list[i]);
+	}
+	uint32_t instr_count = 0;
+	vnx::read(in, instr_count);
+
+	for(uint32_t i = 0; i < instr_count; ++i)
+	{
+		auto instr = decode_instr(in, sym_list);
+
+		const auto& info = get_opcode_info(instr.code);
+		if(info.nargs >= 1) {
+			instr.a = decode_symbol(in, sym_list);
+		}
+		if(info.nargs >= 2) {
+			instr.b = decode_symbol(in, sym_list);
+		}
+		if(info.nargs >= 3) {
+			instr.c = decode_symbol(in, sym_list);
+		}
+		if(info.nargs >= 4) {
+			instr.d = decode_symbol(in, sym_list);
 		}
 		code.push_back(instr);
 	}
-	return offset;
+	return in.get_input_pos();
 }
 
 std::string to_string(const instr_t& instr)

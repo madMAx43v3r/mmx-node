@@ -11,7 +11,9 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/skey_t.hpp>
 
-#include <bls.hpp>
+namespace bls {
+	class G1Element;
+}
 
 
 namespace mmx {
@@ -28,37 +30,14 @@ public:
 
 	hash_t get_addr() const;
 
-	bls::G1Element to_bls() const;
+	void to(bls::G1Element& key) const;
 
 };
-
 
 inline
 bls_pubkey_t::bls_pubkey_t(const super_t& bytes)
 	:	super_t(bytes)
 {
-}
-
-inline
-bls_pubkey_t::bls_pubkey_t(const bls::G1Element& key)
-{
-	const auto tmp = key.Serialize();
-	if(tmp.size() != bytes.size()) {
-		throw std::logic_error("key size mismatch");
-	}
-	::memcpy(bytes.data(), tmp.data(), tmp.size());
-}
-
-inline
-bls::G1Element bls_pubkey_t::to_bls() const
-{
-	return bls::G1Element::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
-}
-
-inline
-hash_t bls_pubkey_t::get_addr() const
-{
-	return hash_t(bytes);
 }
 
 } // mmx

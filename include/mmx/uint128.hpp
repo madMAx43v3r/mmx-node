@@ -48,11 +48,7 @@ namespace vnx {
 
 void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_code, const uint16_t* code);
 
-inline
-void write(vnx::TypeOutput& out, const mmx::uint128& value, const vnx::TypeCode* type_code = nullptr, const uint16_t* code = nullptr)
-{
-	::memcpy(out.write(16), &value, 16);
-}
+void write(vnx::TypeOutput& out, const mmx::uint128& value, const vnx::TypeCode* type_code = nullptr, const uint16_t* code = nullptr);
 
 inline
 void read(std::istream& in, mmx::uint128& value)

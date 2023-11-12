@@ -60,13 +60,14 @@ struct MMX_EXPORT txin_t : ::mmx::txio_t {
 
 template<typename T>
 void txin_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<txin_t>(5);
+	_visitor.template type_begin<txin_t>(6);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.type_field("solution", 3); _visitor.accept(solution);
-	_visitor.type_field("flags", 4); _visitor.accept(flags);
-	_visitor.template type_end<txin_t>(5);
+	_visitor.type_field("memo", 3); _visitor.accept(memo);
+	_visitor.type_field("solution", 4); _visitor.accept(solution);
+	_visitor.type_field("flags", 5); _visitor.accept(flags);
+	_visitor.template type_end<txin_t>(6);
 }
 
 

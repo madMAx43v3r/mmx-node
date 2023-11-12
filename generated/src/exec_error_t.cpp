@@ -13,7 +13,7 @@ namespace mmx {
 const uint32_t exec_error_t::MAX_MESSAGE_LENGTH;
 
 const vnx::Hash64 exec_error_t::VNX_TYPE_HASH(0x5cd84f2d984d4bfull);
-const vnx::Hash64 exec_error_t::VNX_CODE_HASH(0x86664d0585d2c469ull);
+const vnx::Hash64 exec_error_t::VNX_CODE_HASH(0xe63ddc3bb4a33205ull);
 
 vnx::Hash64 exec_error_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,8 +48,9 @@ void exec_error_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, code);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, address);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, line);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, message);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, operation);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, line);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, message);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,6 +58,7 @@ void exec_error_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"code\": "; vnx::write(_out, code);
 	_out << ", \"address\": "; vnx::write(_out, address);
+	_out << ", \"operation\": "; vnx::write(_out, operation);
 	_out << ", \"line\": "; vnx::write(_out, line);
 	_out << ", \"message\": "; vnx::write(_out, message);
 	_out << "}";
@@ -73,6 +75,7 @@ vnx::Object exec_error_t::to_object() const {
 	_object["__type"] = "mmx.exec_error_t";
 	_object["code"] = code;
 	_object["address"] = address;
+	_object["operation"] = operation;
 	_object["line"] = line;
 	_object["message"] = message;
 	return _object;
@@ -88,6 +91,8 @@ void exec_error_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(line);
 		} else if(_entry.first == "message") {
 			_entry.second.to(message);
+		} else if(_entry.first == "operation") {
+			_entry.second.to(operation);
 		}
 	}
 }
@@ -98,6 +103,9 @@ vnx::Variant exec_error_t::get_field(const std::string& _name) const {
 	}
 	if(_name == "address") {
 		return vnx::Variant(address);
+	}
+	if(_name == "operation") {
+		return vnx::Variant(operation);
 	}
 	if(_name == "line") {
 		return vnx::Variant(line);
@@ -113,6 +121,8 @@ void exec_error_t::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(code);
 	} else if(_name == "address") {
 		_value.to(address);
+	} else if(_name == "operation") {
+		_value.to(operation);
 	} else if(_name == "line") {
 		_value.to(line);
 	} else if(_name == "message") {
@@ -144,11 +154,11 @@ std::shared_ptr<vnx::TypeCode> exec_error_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exec_error_t";
 	type_code->type_hash = vnx::Hash64(0x5cd84f2d984d4bfull);
-	type_code->code_hash = vnx::Hash64(0x86664d0585d2c469ull);
+	type_code->code_hash = vnx::Hash64(0xe63ddc3bb4a33205ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exec_error_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<exec_error_t>>(); };
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -159,16 +169,24 @@ std::shared_ptr<vnx::TypeCode> exec_error_t::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "address";
+		field.value = vnx::to_string(-1);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.data_size = 4;
+		field.name = "operation";
+		field.value = vnx::to_string(-1);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "line";
 		field.code = {33, 3};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "message";
 		field.code = {32};
@@ -221,11 +239,14 @@ void read(TypeInput& in, ::mmx::exec_error_t& value, const TypeCode* type_code, 
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.address, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.operation, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 2: vnx::read(in, value.line, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.message, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.line, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.message, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -244,11 +265,12 @@ void write(TypeOutput& out, const ::mmx::exec_error_t& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(8);
+	char* const _buf = out.write(12);
 	vnx::write_value(_buf + 0, value.code);
 	vnx::write_value(_buf + 4, value.address);
-	vnx::write(out, value.line, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.message, type_code, type_code->fields[3].code.data());
+	vnx::write_value(_buf + 8, value.operation);
+	vnx::write(out, value.line, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.message, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::exec_error_t& value) {

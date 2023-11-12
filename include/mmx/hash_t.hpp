@@ -10,7 +10,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/bytes_t.hpp>
-
 #include <uint256_t.h>
 
 
@@ -34,15 +33,15 @@ public:
 
 	explicit hash_t(const void* data, const size_t num_bytes);
 
-	uint256_t to_uint256() const;
+	uint256_t to_uint256() const {
+		return to_uint<uint256_t>();
+	}
 
 	static hash_t ones();
 
 	static hash_t empty();
 
 	static hash_t random();
-
-	static hash_t from_bytes(const uint256_t& bytes);
 
 	static hash_t from_bytes(const std::vector<uint8_t>& bytes);
 
@@ -77,13 +76,6 @@ hash_t::hash_t(const bytes_t<N>& data)
 }
 
 inline
-uint256_t hash_t::to_uint256() const {
-	uint256_t res;
-	::memcpy(&res, bytes.data(), bytes.size());
-	return res;
-}
-
-inline
 hash_t hash_t::ones() {
 	hash_t res;
 	::memset(res.data(), -1, res.size());
@@ -93,11 +85,6 @@ hash_t hash_t::ones() {
 inline
 hash_t hash_t::empty() {
 	return hash_t(nullptr, 0);
-}
-
-inline
-hash_t hash_t::from_bytes(const uint256_t& bytes) {
-	return from_bytes(&bytes);
 }
 
 inline

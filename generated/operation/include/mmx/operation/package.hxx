@@ -34,14 +34,6 @@ class Execute_calc_hash;
 class Execute_calc_hash_return;
 class Execute_is_valid;
 class Execute_is_valid_return;
-class Spend;
-class Spend_calc_hash;
-class Spend_calc_hash_return;
-class Vote;
-class Vote_calc_hash;
-class Vote_calc_hash_return;
-class Vote_is_valid;
-class Vote_is_valid_return;
 
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Deposit; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Deposit_calc_hash; ///< \private
@@ -55,14 +47,6 @@ MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Exec
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Execute_calc_hash_return; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Execute_is_valid; ///< \private
 MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Execute_is_valid_return; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Spend; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Spend_calc_hash_return; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Vote; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Vote_calc_hash; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Vote_calc_hash_return; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Vote_is_valid; ///< \private
-MMX_OPERATION_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Vote_is_valid_return; ///< \private
 
 } // namespace mmx
 } // namespace operation
@@ -82,14 +66,6 @@ void read(TypeInput& in, ::mmx::operation::Execute_calc_hash& value, const TypeC
 void read(TypeInput& in, ::mmx::operation::Execute_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Execute_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::operation::Execute_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Spend& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Spend_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Spend_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Vote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Vote_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Vote_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Vote_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::operation::Vote_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void write(TypeOutput& out, const ::mmx::operation::Deposit& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Deposit_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -103,14 +79,6 @@ void write(TypeOutput& out, const ::mmx::operation::Execute_calc_hash& value, co
 void write(TypeOutput& out, const ::mmx::operation::Execute_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Execute_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::operation::Execute_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Spend& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Spend_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Spend_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Vote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Vote_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Vote_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Vote_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::operation::Vote_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void read(std::istream& in, ::mmx::operation::Deposit& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Deposit_calc_hash& value); ///< \private
@@ -124,14 +92,6 @@ void read(std::istream& in, ::mmx::operation::Execute_calc_hash& value); ///< \p
 void read(std::istream& in, ::mmx::operation::Execute_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Execute_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::operation::Execute_is_valid_return& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Spend& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Spend_calc_hash& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Spend_calc_hash_return& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Vote& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Vote_calc_hash& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Vote_calc_hash_return& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Vote_is_valid& value); ///< \private
-void read(std::istream& in, ::mmx::operation::Vote_is_valid_return& value); ///< \private
 
 void write(std::ostream& out, const ::mmx::operation::Deposit& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Deposit_calc_hash& value); ///< \private
@@ -145,14 +105,6 @@ void write(std::ostream& out, const ::mmx::operation::Execute_calc_hash& value);
 void write(std::ostream& out, const ::mmx::operation::Execute_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Execute_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::operation::Execute_is_valid_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Spend& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Spend_calc_hash& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Spend_calc_hash_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Vote& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Vote_calc_hash& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Vote_calc_hash_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Vote_is_valid& value); ///< \private
-void write(std::ostream& out, const ::mmx::operation::Vote_is_valid_return& value); ///< \private
 
 void accept(Visitor& visitor, const ::mmx::operation::Deposit& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Deposit_calc_hash& value); ///< \private
@@ -166,14 +118,6 @@ void accept(Visitor& visitor, const ::mmx::operation::Execute_calc_hash& value);
 void accept(Visitor& visitor, const ::mmx::operation::Execute_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Execute_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Execute_is_valid_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Spend& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Spend_calc_hash& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Spend_calc_hash_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Vote& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Vote_calc_hash& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Vote_calc_hash_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Vote_is_valid& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::operation::Vote_is_valid_return& value); ///< \private
 
 /// \private
 template<>
@@ -449,190 +393,6 @@ struct type<::mmx::operation::Execute_is_valid_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Execute_is_valid_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Spend> {
-	void read(TypeInput& in, ::mmx::operation::Spend& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Spend& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Spend& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Spend& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Spend& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Spend& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Spend_calc_hash> {
-	void read(TypeInput& in, ::mmx::operation::Spend_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Spend_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Spend_calc_hash& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Spend_calc_hash& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Spend_calc_hash& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Spend_calc_hash& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Spend_calc_hash_return> {
-	void read(TypeInput& in, ::mmx::operation::Spend_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Spend_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Spend_calc_hash_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Spend_calc_hash_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Spend_calc_hash_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Spend_calc_hash_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Vote> {
-	void read(TypeInput& in, ::mmx::operation::Vote& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Vote& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Vote& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Vote& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Vote& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Vote& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Vote_calc_hash> {
-	void read(TypeInput& in, ::mmx::operation::Vote_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Vote_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Vote_calc_hash& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Vote_calc_hash& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Vote_calc_hash& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Vote_calc_hash& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Vote_calc_hash_return> {
-	void read(TypeInput& in, ::mmx::operation::Vote_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Vote_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Vote_calc_hash_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Vote_calc_hash_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Vote_calc_hash_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Vote_calc_hash_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Vote_is_valid> {
-	void read(TypeInput& in, ::mmx::operation::Vote_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Vote_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Vote_is_valid& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Vote_is_valid& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Vote_is_valid& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Vote_is_valid& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::operation::Vote_is_valid_return> {
-	void read(TypeInput& in, ::mmx::operation::Vote_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::operation::Vote_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::operation::Vote_is_valid_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::operation::Vote_is_valid_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::operation::Vote_is_valid_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::operation::Vote_is_valid_return& value, bool special = false);
 };
 
 

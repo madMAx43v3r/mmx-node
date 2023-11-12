@@ -6,6 +6,7 @@
  */
 
 #include <mmx/uint128.hpp>
+#include <mmx/bytes_t.hpp>
 
 #include <vnx/Variant.hpp>
 
@@ -16,16 +17,17 @@ namespace vnx {
 
 void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_code, const uint16_t* code)
 {
-	if(sizeof(value) != 16) {
-		throw std::logic_error("sizeof(uint128) != 16");
-	}
 	switch(code[0]) {
 		case CODE_STRING:
 		case CODE_ALT_STRING: {
 			std::string str;
 			vnx::read(in, str, type_code, code);
 			try {
-				value = uint128_t(str, 10);
+				if(str.substr(0, 2) == "0x") {
+					value = uint128_t(str.substr(2), 16);
+				} else {
+					value = uint128_t(str, 10);
+				}
 			} catch(...) {
 				value = uint128_0;
 			}
@@ -52,16 +54,19 @@ void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_cod
 			break;
 		}
 		default: {
-			std::array<uint8_t, 16> array = {};
-			vnx::read(in, array, type_code, code);
-			switch(code[0]) {
-				case CODE_ALT_LIST:
-				case CODE_ALT_ARRAY:
-					std::reverse(array.begin(), array.end());
-			}
-			::memcpy(&value, array.data(), array.size());
+			mmx::bytes_t<16> tmp;
+			vnx::read(in, tmp, type_code, code);
+			value = tmp.to_uint<mmx::uint128>();
 		}
 	}
 }
+
+void write(vnx::TypeOutput& out, const mmx::uint128& value, const vnx::TypeCode* type_code, const uint16_t* code)
+{
+	mmx::bytes_t<16> tmp;
+	tmp.from_uint(value);
+	vnx::write(out, tmp, type_code, code);
+}
+
 
 } // vnx

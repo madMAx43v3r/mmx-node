@@ -2,6 +2,7 @@ package mmx.contract;
 
 import mmx.hash_t;
 import mmx.addr_t;
+import mmx.compile_flags_t;
 
 class Binary extends mmx.Contract {
 	
@@ -23,10 +24,14 @@ class Binary extends mmx.Contract {
 	
 	string compiler;
 	
+	compile_flags_t build_flags;
+	
 	
 	bool is_valid() const;
 	
 	hash_t calc_hash(bool full_hash) const;
+	
+	ulong num_bytes(bool total = true) const;
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	

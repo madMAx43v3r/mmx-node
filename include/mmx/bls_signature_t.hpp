@@ -14,6 +14,10 @@
 
 #include <mutex>
 
+namespace bls {
+	class G2Element;
+}
+
 
 namespace mmx {
 
@@ -27,7 +31,7 @@ public:
 
 	bool verify(const bls_pubkey_t& pubkey, const hash_t& hash) const;
 
-	bls::G2Element to_bls() const;
+	void to(bls::G2Element& sig) const;
 
 	static bls_signature_t sign(const skey_t& skey, const hash_t& hash);
 

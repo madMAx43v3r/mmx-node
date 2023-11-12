@@ -8,16 +8,15 @@
 #include <mmx/WebAPI.h>
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
+#include <mmx/memo_t.hpp>
 #include <mmx/mnemonic.h>
 #include <mmx/utils.h>
 
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/MultiSig.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -71,16 +70,18 @@ public:
 
 	void add_contract(const addr_t& address, std::shared_ptr<const Contract> contract)
 	{
-		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(contract)) {
-			auto& currency = currency_map[address];
-			currency.is_nft = true;
-			currency.symbol = "NFT";
-		}
-		else if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
+		if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
 			auto& currency = currency_map[address];
 			currency.decimals = token->decimals;
 			currency.symbol = token->symbol;
 			currency.name = token->name;
+		}
+		if(auto exe = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+			if(exe->binary == params->nft_binary) {
+				auto& currency = currency_map[address];
+				currency.is_nft = true;
+				currency.symbol = "NFT";
+			}
 		}
 	}
 
@@ -247,6 +248,10 @@ public:
 	}
 
 	void accept(const fixed128& value) {
+		set(value.to_string());
+	}
+
+	void accept(const memo_t& value) {
 		set(value.to_string());
 	}
 
@@ -578,9 +583,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Operation> base) {
-		if(auto value = std::dynamic_pointer_cast<const operation::Spend>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
+		if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Execute>(base)) {
 			set(render(value, context));
@@ -600,9 +603,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Contract> base) {
-		if(auto value = std::dynamic_pointer_cast<const contract::NFT>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
+		if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
@@ -1567,7 +1568,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto iter_since = query.find("since");
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
-			node->get_farmed_blocks({farmer_key}, false, since,
+			node->get_farmed_blocks({farmer_key}, false, since, -1,
 				[this, request_id, farmer_key, limit](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
 					uint64_t total_reward = 0;
 					std::vector<std::shared_ptr<const BlockHeader>> recent;
@@ -1575,6 +1576,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
 						const auto& block = *iter;
 						if(block->reward_addr) {
+							// TODO: use Node::block_reward_map
 							total_reward += block->reward_amount;
 							reward_map[*block->reward_addr] += block->reward_amount;
 						}
@@ -2306,18 +2308,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/farmer/blocks") {
 		const auto iter_limit = query.find("limit");
 		const auto iter_since = query.find("since");
-		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		farmer->get_farmer_keys(
 				[this, request_id, limit, since](const std::vector<bls_pubkey_t>& farmer_keys) {
-					node->get_farmed_blocks(farmer_keys, false, since,
+					node->get_farmed_blocks(farmer_keys, false, since, limit,
 						[this, request_id, limit](const std::vector<std::shared_ptr<const BlockHeader>> blocks) {
-							auto data = blocks;
-							std::reverse(data.begin(), data.end());
-							if(data.size() > limit) {
-								data.resize(limit);
-							}
-							respond(request_id, render_value(data, get_context()));
+							respond(request_id, render_value(blocks, get_context()));
 						},
 						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 				},

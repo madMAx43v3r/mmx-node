@@ -1101,11 +1101,12 @@ uint64_t NodeAsyncClient::get_total_supply(const ::mmx::addr_t& currency, const 
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit, const std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_farmed_blocks::create();
 	_method->farmer_keys = farmer_keys;
 	_method->full_blocks = full_blocks;
 	_method->since = since;
+	_method->limit = limit;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

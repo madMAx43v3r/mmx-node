@@ -33,6 +33,8 @@ class Binary_find_method;
 class Binary_find_method_return;
 class Binary_is_valid;
 class Binary_is_valid_return;
+class Binary_num_bytes;
+class Binary_num_bytes_return;
 class Data;
 class Data_calc_cost;
 class Data_calc_cost_return;
@@ -45,10 +47,14 @@ class Executable_calc_cost;
 class Executable_calc_cost_return;
 class Executable_calc_hash;
 class Executable_calc_hash_return;
+class Executable_get_external;
+class Executable_get_external_return;
 class Executable_is_valid;
 class Executable_is_valid_return;
-class Executable_validate;
-class Executable_validate_return;
+class Executable_num_bytes;
+class Executable_num_bytes_return;
+class Executable_read_field;
+class Executable_read_field_return;
 class Identity;
 class MultiSig;
 class MultiSig_calc_cost;
@@ -57,17 +63,12 @@ class MultiSig_calc_hash;
 class MultiSig_calc_hash_return;
 class MultiSig_is_valid;
 class MultiSig_is_valid_return;
+class MultiSig_num_bytes;
+class MultiSig_num_bytes_return;
+class MultiSig_read_field;
+class MultiSig_read_field_return;
 class MultiSig_validate;
 class MultiSig_validate_return;
-class NFT;
-class NFT_calc_cost;
-class NFT_calc_cost_return;
-class NFT_calc_hash;
-class NFT_calc_hash_return;
-class NFT_is_valid;
-class NFT_is_valid_return;
-class NFT_num_bytes;
-class NFT_num_bytes_return;
 class PubKey;
 class PubKey_calc_cost;
 class PubKey_calc_cost_return;
@@ -77,6 +78,10 @@ class PubKey_get_owner;
 class PubKey_get_owner_return;
 class PubKey_is_valid;
 class PubKey_is_valid_return;
+class PubKey_num_bytes;
+class PubKey_num_bytes_return;
+class PubKey_read_field;
+class PubKey_read_field_return;
 class PubKey_validate;
 class PubKey_validate_return;
 class TokenBase;
@@ -86,11 +91,19 @@ class TokenBase_calc_hash;
 class TokenBase_calc_hash_return;
 class TokenBase_is_valid;
 class TokenBase_is_valid_return;
+class TokenBase_num_bytes;
+class TokenBase_num_bytes_return;
 class VirtualPlot;
+class VirtualPlot_calc_cost;
+class VirtualPlot_calc_cost_return;
 class VirtualPlot_calc_hash;
 class VirtualPlot_calc_hash_return;
 class VirtualPlot_is_valid;
 class VirtualPlot_is_valid_return;
+class VirtualPlot_num_bytes;
+class VirtualPlot_num_bytes_return;
+class VirtualPlot_read_field;
+class VirtualPlot_read_field_return;
 class WebData;
 class WebData_calc_cost;
 class WebData_calc_cost_return;
@@ -100,6 +113,8 @@ class WebData_is_valid;
 class WebData_is_valid_return;
 class WebData_num_bytes;
 class WebData_num_bytes_return;
+class WebData_read_field;
+class WebData_read_field_return;
 struct method_t;
 
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary; ///< \private
@@ -113,6 +128,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binar
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_find_method_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_is_valid_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_num_bytes; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Binary_num_bytes_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Data_calc_cost_return; ///< \private
@@ -125,10 +142,14 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Execu
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_calc_hash; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_calc_hash_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_get_external; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_get_external_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_is_valid_return; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_validate; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_validate_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_num_bytes; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_num_bytes_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_read_field; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Executable_read_field_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Identity; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_cost; ///< \private
@@ -137,17 +158,12 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Multi
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_is_valid_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_num_bytes; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_num_bytes_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_read_field; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_read_field_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig_validate_return; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT_calc_cost; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT_calc_cost_return; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT_calc_hash; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT_calc_hash_return; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT_is_valid; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT_is_valid_return; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT_num_bytes; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NFT_num_bytes_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_calc_cost_return; ///< \private
@@ -157,6 +173,10 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKe
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_get_owner_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_is_valid_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_num_bytes; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_num_bytes_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_read_field; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_read_field_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_validate; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey_validate_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TokenBase; ///< \private
@@ -166,11 +186,19 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Token
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TokenBase_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TokenBase_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TokenBase_is_valid_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TokenBase_num_bytes; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TokenBase_num_bytes_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_cost_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_calc_hash_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_is_valid_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_num_bytes; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_num_bytes_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_read_field; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot_read_field_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_calc_cost_return; ///< \private
@@ -180,6 +208,8 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebDa
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_is_valid_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_num_bytes; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_num_bytes_return; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_read_field; ///< \private
+MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData_read_field_return; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_method_t; ///< \private
 
 } // namespace mmx
@@ -199,6 +229,8 @@ void read(TypeInput& in, ::mmx::contract::Binary_find_method& value, const TypeC
 void read(TypeInput& in, ::mmx::contract::Binary_find_method_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Binary_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Binary_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Binary_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Binary_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Data& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Data_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Data_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -211,10 +243,14 @@ void read(TypeInput& in, ::mmx::contract::Executable_calc_cost& value, const Typ
 void read(TypeInput& in, ::mmx::contract::Executable_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_get_external& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_get_external_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Executable_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::Executable_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::Executable_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::Executable_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::Identity& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -223,17 +259,12 @@ void read(TypeInput& in, ::mmx::contract::MultiSig_calc_hash& value, const TypeC
 void read(TypeInput& in, ::mmx::contract::MultiSig_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MultiSig_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MultiSig_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MultiSig_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::MultiSig_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::MultiSig_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::NFT_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -243,6 +274,10 @@ void read(TypeInput& in, ::mmx::contract::PubKey_get_owner& value, const TypeCod
 void read(TypeInput& in, ::mmx::contract::PubKey_get_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PubKey_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PubKey_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PubKey_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::PubKey_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TokenBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -252,11 +287,19 @@ void read(TypeInput& in, ::mmx::contract::TokenBase_calc_hash& value, const Type
 void read(TypeInput& in, ::mmx::contract::TokenBase_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TokenBase_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TokenBase_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::TokenBase_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::TokenBase_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::VirtualPlot_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::VirtualPlot_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -266,6 +309,8 @@ void read(TypeInput& in, ::mmx::contract::WebData_is_valid& value, const TypeCod
 void read(TypeInput& in, ::mmx::contract::WebData_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::WebData_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::contract::WebData_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::method_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void write(TypeOutput& out, const ::mmx::contract::Binary& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -279,6 +324,8 @@ void write(TypeOutput& out, const ::mmx::contract::Binary_find_method& value, co
 void write(TypeOutput& out, const ::mmx::contract::Binary_find_method_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Binary_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Binary_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Binary_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Binary_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Data& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Data_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Data_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -291,10 +338,14 @@ void write(TypeOutput& out, const ::mmx::contract::Executable_calc_cost& value, 
 void write(TypeOutput& out, const ::mmx::contract::Executable_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_get_external& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_get_external_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Executable_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::Executable_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::Executable_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::Executable_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::Identity& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -303,17 +354,12 @@ void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_hash& value, co
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MultiSig_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MultiSig_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MultiSig_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::MultiSig_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::MultiSig_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::NFT_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -323,6 +369,10 @@ void write(TypeOutput& out, const ::mmx::contract::PubKey_get_owner& value, cons
 void write(TypeOutput& out, const ::mmx::contract::PubKey_get_owner_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PubKey_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PubKey_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PubKey_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::PubKey_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TokenBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -332,11 +382,19 @@ void write(TypeOutput& out, const ::mmx::contract::TokenBase_calc_hash& value, c
 void write(TypeOutput& out, const ::mmx::contract::TokenBase_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TokenBase_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TokenBase_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::TokenBase_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::TokenBase_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData_calc_cost& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -346,6 +404,8 @@ void write(TypeOutput& out, const ::mmx::contract::WebData_is_valid& value, cons
 void write(TypeOutput& out, const ::mmx::contract::WebData_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData_num_bytes& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::WebData_read_field& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::contract::WebData_read_field_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::method_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
 void read(std::istream& in, ::mmx::contract::Binary& value); ///< \private
@@ -359,6 +419,8 @@ void read(std::istream& in, ::mmx::contract::Binary_find_method& value); ///< \p
 void read(std::istream& in, ::mmx::contract::Binary_find_method_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Binary_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Binary_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Binary_num_bytes& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Binary_num_bytes_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Data& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Data_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Data_calc_cost_return& value); ///< \private
@@ -371,10 +433,14 @@ void read(std::istream& in, ::mmx::contract::Executable_calc_cost& value); ///< 
 void read(std::istream& in, ::mmx::contract::Executable_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable_calc_hash_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_get_external& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_get_external_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Executable_is_valid_return& value); ///< \private
-void read(std::istream& in, ::mmx::contract::Executable_validate& value); ///< \private
-void read(std::istream& in, ::mmx::contract::Executable_validate_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_num_bytes& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_num_bytes_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_read_field& value); ///< \private
+void read(std::istream& in, ::mmx::contract::Executable_read_field_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::Identity& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_calc_cost& value); ///< \private
@@ -383,17 +449,12 @@ void read(std::istream& in, ::mmx::contract::MultiSig_calc_hash& value); ///< \p
 void read(std::istream& in, ::mmx::contract::MultiSig_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MultiSig_num_bytes& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MultiSig_num_bytes_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MultiSig_read_field& value); ///< \private
+void read(std::istream& in, ::mmx::contract::MultiSig_read_field_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig_validate_return& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT_calc_cost& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT_calc_cost_return& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT_calc_hash& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT_calc_hash_return& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT_is_valid& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT_is_valid_return& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT_num_bytes& value); ///< \private
-void read(std::istream& in, ::mmx::contract::NFT_num_bytes_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_calc_cost_return& value); ///< \private
@@ -403,6 +464,10 @@ void read(std::istream& in, ::mmx::contract::PubKey_get_owner& value); ///< \pri
 void read(std::istream& in, ::mmx::contract::PubKey_get_owner_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PubKey_num_bytes& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PubKey_num_bytes_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PubKey_read_field& value); ///< \private
+void read(std::istream& in, ::mmx::contract::PubKey_read_field_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_validate& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey_validate_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TokenBase& value); ///< \private
@@ -412,11 +477,19 @@ void read(std::istream& in, ::mmx::contract::TokenBase_calc_hash& value); ///< \
 void read(std::istream& in, ::mmx::contract::TokenBase_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TokenBase_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TokenBase_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::TokenBase_num_bytes& value); ///< \private
+void read(std::istream& in, ::mmx::contract::TokenBase_num_bytes_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_cost& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_num_bytes& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_num_bytes_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_read_field& value); ///< \private
+void read(std::istream& in, ::mmx::contract::VirtualPlot_read_field_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData_calc_cost& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData_calc_cost_return& value); ///< \private
@@ -426,6 +499,8 @@ void read(std::istream& in, ::mmx::contract::WebData_is_valid& value); ///< \pri
 void read(std::istream& in, ::mmx::contract::WebData_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData_num_bytes& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData_num_bytes_return& value); ///< \private
+void read(std::istream& in, ::mmx::contract::WebData_read_field& value); ///< \private
+void read(std::istream& in, ::mmx::contract::WebData_read_field_return& value); ///< \private
 void read(std::istream& in, ::mmx::contract::method_t& value); ///< \private
 
 void write(std::ostream& out, const ::mmx::contract::Binary& value); ///< \private
@@ -439,6 +514,8 @@ void write(std::ostream& out, const ::mmx::contract::Binary_find_method& value);
 void write(std::ostream& out, const ::mmx::contract::Binary_find_method_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Binary_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Binary_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Binary_num_bytes& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Binary_num_bytes_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Data& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Data_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Data_calc_cost_return& value); ///< \private
@@ -451,10 +528,14 @@ void write(std::ostream& out, const ::mmx::contract::Executable_calc_cost& value
 void write(std::ostream& out, const ::mmx::contract::Executable_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable_calc_hash_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_get_external& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_get_external_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Executable_is_valid_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::Executable_validate& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::Executable_validate_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_num_bytes& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_num_bytes_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_read_field& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::Executable_read_field_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::Identity& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_cost& value); ///< \private
@@ -463,17 +544,12 @@ void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_hash& value);
 void write(std::ostream& out, const ::mmx::contract::MultiSig_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MultiSig_num_bytes& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MultiSig_num_bytes_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MultiSig_read_field& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::MultiSig_read_field_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::MultiSig_validate_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT_calc_cost& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT_calc_cost_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT_calc_hash& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT_calc_hash_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT_is_valid& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT_is_valid_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT_num_bytes& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::NFT_num_bytes_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_calc_cost_return& value); ///< \private
@@ -483,6 +559,10 @@ void write(std::ostream& out, const ::mmx::contract::PubKey_get_owner& value); /
 void write(std::ostream& out, const ::mmx::contract::PubKey_get_owner_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PubKey_num_bytes& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PubKey_num_bytes_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PubKey_read_field& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::PubKey_read_field_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey_validate_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TokenBase& value); ///< \private
@@ -492,11 +572,19 @@ void write(std::ostream& out, const ::mmx::contract::TokenBase_calc_hash& value)
 void write(std::ostream& out, const ::mmx::contract::TokenBase_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TokenBase_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TokenBase_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::TokenBase_num_bytes& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::TokenBase_num_bytes_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_cost& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_num_bytes& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_num_bytes_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_read_field& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::VirtualPlot_read_field_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData_calc_cost& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData_calc_cost_return& value); ///< \private
@@ -506,6 +594,8 @@ void write(std::ostream& out, const ::mmx::contract::WebData_is_valid& value); /
 void write(std::ostream& out, const ::mmx::contract::WebData_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData_num_bytes& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData_num_bytes_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::WebData_read_field& value); ///< \private
+void write(std::ostream& out, const ::mmx::contract::WebData_read_field_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::method_t& value); ///< \private
 
 void accept(Visitor& visitor, const ::mmx::contract::Binary& value); ///< \private
@@ -519,6 +609,8 @@ void accept(Visitor& visitor, const ::mmx::contract::Binary_find_method& value);
 void accept(Visitor& visitor, const ::mmx::contract::Binary_find_method_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Binary_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Binary_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Binary_num_bytes& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Binary_num_bytes_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Data& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Data_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Data_calc_cost_return& value); ///< \private
@@ -531,10 +623,14 @@ void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_cost& value
 void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable_calc_hash_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_get_external& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_get_external_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Executable_is_valid_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::Executable_validate& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::Executable_validate_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_num_bytes& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_num_bytes_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_read_field& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::Executable_read_field_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::Identity& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_cost& value); ///< \private
@@ -543,17 +639,12 @@ void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_hash& value);
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MultiSig_num_bytes& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MultiSig_num_bytes_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MultiSig_read_field& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::MultiSig_read_field_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig_validate_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT_calc_cost& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT_calc_cost_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT_calc_hash& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT_calc_hash_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT_is_valid& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT_is_valid_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT_num_bytes& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::NFT_num_bytes_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_calc_cost_return& value); ///< \private
@@ -563,6 +654,10 @@ void accept(Visitor& visitor, const ::mmx::contract::PubKey_get_owner& value); /
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_get_owner_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PubKey_num_bytes& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PubKey_num_bytes_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PubKey_read_field& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::PubKey_read_field_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey_validate_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TokenBase& value); ///< \private
@@ -572,11 +667,19 @@ void accept(Visitor& visitor, const ::mmx::contract::TokenBase_calc_hash& value)
 void accept(Visitor& visitor, const ::mmx::contract::TokenBase_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TokenBase_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TokenBase_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::TokenBase_num_bytes& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::TokenBase_num_bytes_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_cost& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_cost_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_hash_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_is_valid_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_num_bytes& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_num_bytes_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_read_field& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_read_field_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_calc_cost& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_calc_cost_return& value); ///< \private
@@ -586,6 +689,8 @@ void accept(Visitor& visitor, const ::mmx::contract::WebData_is_valid& value); /
 void accept(Visitor& visitor, const ::mmx::contract::WebData_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_num_bytes& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData_num_bytes_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::WebData_read_field& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::contract::WebData_read_field_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::method_t& value); ///< \private
 
 /// \private
@@ -839,6 +944,52 @@ struct type<::mmx::contract::Binary_is_valid_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary_num_bytes> {
+	void read(TypeInput& in, ::mmx::contract::Binary_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary_num_bytes& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary_num_bytes& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary_num_bytes& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_num_bytes& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Binary_num_bytes_return> {
+	void read(TypeInput& in, ::mmx::contract::Binary_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Binary_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Binary_num_bytes_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Binary_num_bytes_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Binary_num_bytes_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Binary_num_bytes_return& value, bool special = false);
 };
 
 /// \private
@@ -1119,6 +1270,52 @@ struct type<::mmx::contract::Executable_calc_hash_return> {
 
 /// \private
 template<>
+struct type<::mmx::contract::Executable_get_external> {
+	void read(TypeInput& in, ::mmx::contract::Executable_get_external& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_get_external& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_get_external& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_get_external& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_get_external& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_get_external& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_get_external_return> {
+	void read(TypeInput& in, ::mmx::contract::Executable_get_external_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_get_external_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_get_external_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_get_external_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_get_external_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_get_external_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::contract::Executable_is_valid> {
 	void read(TypeInput& in, ::mmx::contract::Executable_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -1165,48 +1362,94 @@ struct type<::mmx::contract::Executable_is_valid_return> {
 
 /// \private
 template<>
-struct type<::mmx::contract::Executable_validate> {
-	void read(TypeInput& in, ::mmx::contract::Executable_validate& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::contract::Executable_num_bytes> {
+	void read(TypeInput& in, ::mmx::contract::Executable_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::contract::Executable_validate& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::contract::Executable_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::contract::Executable_validate& value) {
+	void read(std::istream& in, ::mmx::contract::Executable_num_bytes& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::contract::Executable_validate& value) {
+	void write(std::ostream& out, const ::mmx::contract::Executable_num_bytes& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::contract::Executable_validate& value) {
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_num_bytes& value) {
 		vnx::accept(visitor, value);
 	}
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_validate& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_num_bytes& value, bool special = false);
 };
 
 /// \private
 template<>
-struct type<::mmx::contract::Executable_validate_return> {
-	void read(TypeInput& in, ::mmx::contract::Executable_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::contract::Executable_num_bytes_return> {
+	void read(TypeInput& in, ::mmx::contract::Executable_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::contract::Executable_validate_return& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::contract::Executable_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::contract::Executable_validate_return& value) {
+	void read(std::istream& in, ::mmx::contract::Executable_num_bytes_return& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::contract::Executable_validate_return& value) {
+	void write(std::ostream& out, const ::mmx::contract::Executable_num_bytes_return& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::contract::Executable_validate_return& value) {
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_num_bytes_return& value) {
 		vnx::accept(visitor, value);
 	}
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_validate_return& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_num_bytes_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_read_field> {
+	void read(TypeInput& in, ::mmx::contract::Executable_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_read_field& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_read_field& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_read_field& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_read_field& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::Executable_read_field_return> {
+	void read(TypeInput& in, ::mmx::contract::Executable_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::Executable_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::Executable_read_field_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::Executable_read_field_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::Executable_read_field_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable_read_field_return& value, bool special = false);
 };
 
 /// \private
@@ -1395,6 +1638,98 @@ struct type<::mmx::contract::MultiSig_is_valid_return> {
 
 /// \private
 template<>
+struct type<::mmx::contract::MultiSig_num_bytes> {
+	void read(TypeInput& in, ::mmx::contract::MultiSig_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MultiSig_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MultiSig_num_bytes& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MultiSig_num_bytes& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_num_bytes& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_num_bytes& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MultiSig_num_bytes_return> {
+	void read(TypeInput& in, ::mmx::contract::MultiSig_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MultiSig_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MultiSig_num_bytes_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MultiSig_num_bytes_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_num_bytes_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_num_bytes_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MultiSig_read_field> {
+	void read(TypeInput& in, ::mmx::contract::MultiSig_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MultiSig_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MultiSig_read_field& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MultiSig_read_field& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_read_field& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_read_field& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::MultiSig_read_field_return> {
+	void read(TypeInput& in, ::mmx::contract::MultiSig_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::MultiSig_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::MultiSig_read_field_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::MultiSig_read_field_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::MultiSig_read_field_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_read_field_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::contract::MultiSig_validate> {
 	void read(TypeInput& in, ::mmx::contract::MultiSig_validate& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -1437,213 +1772,6 @@ struct type<::mmx::contract::MultiSig_validate_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::MultiSig_validate_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT> {
-	void read(TypeInput& in, ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT_calc_cost> {
-	void read(TypeInput& in, ::mmx::contract::NFT_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT_calc_cost& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT_calc_cost& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT_calc_cost& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT_calc_cost& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT_calc_cost_return> {
-	void read(TypeInput& in, ::mmx::contract::NFT_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT_calc_cost_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT_calc_cost_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT_calc_cost_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT_calc_cost_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT_calc_hash> {
-	void read(TypeInput& in, ::mmx::contract::NFT_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT_calc_hash& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT_calc_hash& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT_calc_hash& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT_calc_hash& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT_calc_hash& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT_calc_hash_return> {
-	void read(TypeInput& in, ::mmx::contract::NFT_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT_calc_hash_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT_calc_hash_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT_calc_hash_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT_calc_hash_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT_is_valid> {
-	void read(TypeInput& in, ::mmx::contract::NFT_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT_is_valid& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT_is_valid& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT_is_valid& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT_is_valid& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT_is_valid& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT_is_valid_return> {
-	void read(TypeInput& in, ::mmx::contract::NFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT_is_valid_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT_is_valid_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT_is_valid_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT_is_valid_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT_is_valid_return& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT_num_bytes> {
-	void read(TypeInput& in, ::mmx::contract::NFT_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT_num_bytes& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT_num_bytes& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT_num_bytes& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT_num_bytes& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::NFT_num_bytes_return> {
-	void read(TypeInput& in, ::mmx::contract::NFT_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::NFT_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::NFT_num_bytes_return& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::NFT_num_bytes_return& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::NFT_num_bytes_return& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::NFT_num_bytes_return& value, bool special = false);
 };
 
 /// \private
@@ -1855,6 +1983,98 @@ struct type<::mmx::contract::PubKey_is_valid_return> {
 
 /// \private
 template<>
+struct type<::mmx::contract::PubKey_num_bytes> {
+	void read(TypeInput& in, ::mmx::contract::PubKey_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PubKey_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PubKey_num_bytes& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PubKey_num_bytes& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PubKey_num_bytes& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_num_bytes& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PubKey_num_bytes_return> {
+	void read(TypeInput& in, ::mmx::contract::PubKey_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PubKey_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PubKey_num_bytes_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PubKey_num_bytes_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PubKey_num_bytes_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_num_bytes_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PubKey_read_field> {
+	void read(TypeInput& in, ::mmx::contract::PubKey_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PubKey_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PubKey_read_field& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PubKey_read_field& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PubKey_read_field& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_read_field& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::PubKey_read_field_return> {
+	void read(TypeInput& in, ::mmx::contract::PubKey_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::PubKey_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::PubKey_read_field_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::PubKey_read_field_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::PubKey_read_field_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::PubKey_read_field_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::contract::PubKey_validate> {
 	void read(TypeInput& in, ::mmx::contract::PubKey_validate& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -2062,6 +2282,52 @@ struct type<::mmx::contract::TokenBase_is_valid_return> {
 
 /// \private
 template<>
+struct type<::mmx::contract::TokenBase_num_bytes> {
+	void read(TypeInput& in, ::mmx::contract::TokenBase_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::TokenBase_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::TokenBase_num_bytes& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::TokenBase_num_bytes& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::TokenBase_num_bytes& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TokenBase_num_bytes& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::TokenBase_num_bytes_return> {
+	void read(TypeInput& in, ::mmx::contract::TokenBase_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::TokenBase_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::TokenBase_num_bytes_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::TokenBase_num_bytes_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::TokenBase_num_bytes_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TokenBase_num_bytes_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::contract::VirtualPlot> {
 	void read(TypeInput& in, ::mmx::contract::VirtualPlot& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -2081,6 +2347,52 @@ struct type<::mmx::contract::VirtualPlot> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_calc_cost> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_cost& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_cost& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_cost& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_cost& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_calc_cost& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_calc_cost_return> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_calc_cost_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_calc_cost_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_calc_cost_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_calc_cost_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_calc_cost_return& value, bool special = false);
 };
 
 /// \private
@@ -2173,6 +2485,98 @@ struct type<::mmx::contract::VirtualPlot_is_valid_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_is_valid_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_num_bytes> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_num_bytes& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_num_bytes& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_num_bytes& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_num_bytes& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_num_bytes& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_num_bytes_return> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_num_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_num_bytes_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_num_bytes_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_num_bytes_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_num_bytes_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_read_field> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_read_field& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_read_field& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_read_field& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_read_field& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::VirtualPlot_read_field_return> {
+	void read(TypeInput& in, ::mmx::contract::VirtualPlot_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::VirtualPlot_read_field_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::VirtualPlot_read_field_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot_read_field_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot_read_field_return& value, bool special = false);
 };
 
 /// \private
@@ -2380,6 +2784,52 @@ struct type<::mmx::contract::WebData_num_bytes_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_num_bytes_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::WebData_read_field> {
+	void read(TypeInput& in, ::mmx::contract::WebData_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::WebData_read_field& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::WebData_read_field& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::WebData_read_field& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::WebData_read_field& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_read_field& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::contract::WebData_read_field_return> {
+	void read(TypeInput& in, ::mmx::contract::WebData_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::contract::WebData_read_field_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::contract::WebData_read_field_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::contract::WebData_read_field_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::contract::WebData_read_field_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::WebData_read_field_return& value, bool special = false);
 };
 
 /// \private

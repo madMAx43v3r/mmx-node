@@ -17,15 +17,15 @@ public:
 	
 	uint32_t port = 0;
 	int32_t decimals = 6;
-	uint32_t min_ksize = 30;
-	uint32_t max_ksize = 60;
-	uint32_t plot_filter = 9;
-	uint32_t plot_filter_nhash = 64;
+	uint32_t min_ksize = 26;
+	uint32_t max_ksize = 32;
+	uint32_t plot_filter = 8;
 	uint32_t commit_delay = 18;
 	uint32_t infuse_delay = 6;
 	uint32_t challenge_delay = 9;
 	uint32_t challenge_interval = 48;
 	uint32_t max_diff_adjust = 10;
+	uint32_t avg_txfee_adjust = 13;
 	uint32_t min_vdf_segments = 320;
 	uint32_t num_vdf_segments = 760;
 	uint32_t max_vdf_segments = 1024;
@@ -44,14 +44,19 @@ public:
 	uint64_t min_txfee = 100;
 	uint64_t min_txfee_io = 100;
 	uint64_t min_txfee_sign = 1000;
+	uint64_t min_txfee_memo = 50;
 	uint64_t min_txfee_exec = 10000;
 	uint64_t min_txfee_deploy = 100000;
 	uint64_t min_txfee_byte = 10;
+	uint64_t min_txfee_read = 1000;
+	uint64_t min_txfee_read_kbyte = 1000;
 	uint64_t min_txfee_activate = 100000;
 	uint64_t max_block_size = 10000000;
 	uint64_t max_block_cost = 100000000;
+	uint64_t max_tx_cost = 1000000;
 	vnx::float64_t block_time = 10;
-	std::string vdf_seed;
+	std::string network;
+	::mmx::addr_t nft_binary;
 	::mmx::addr_t plot_binary;
 	::mmx::addr_t swap_binary;
 	::mmx::addr_t offer_binary;
@@ -106,18 +111,18 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(45);
+	_visitor.template type_begin<ChainParams>(50);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
 	_visitor.type_field("max_ksize", 3); _visitor.accept(max_ksize);
 	_visitor.type_field("plot_filter", 4); _visitor.accept(plot_filter);
-	_visitor.type_field("plot_filter_nhash", 5); _visitor.accept(plot_filter_nhash);
-	_visitor.type_field("commit_delay", 6); _visitor.accept(commit_delay);
-	_visitor.type_field("infuse_delay", 7); _visitor.accept(infuse_delay);
-	_visitor.type_field("challenge_delay", 8); _visitor.accept(challenge_delay);
-	_visitor.type_field("challenge_interval", 9); _visitor.accept(challenge_interval);
-	_visitor.type_field("max_diff_adjust", 10); _visitor.accept(max_diff_adjust);
+	_visitor.type_field("commit_delay", 5); _visitor.accept(commit_delay);
+	_visitor.type_field("infuse_delay", 6); _visitor.accept(infuse_delay);
+	_visitor.type_field("challenge_delay", 7); _visitor.accept(challenge_delay);
+	_visitor.type_field("challenge_interval", 8); _visitor.accept(challenge_interval);
+	_visitor.type_field("max_diff_adjust", 9); _visitor.accept(max_diff_adjust);
+	_visitor.type_field("avg_txfee_adjust", 10); _visitor.accept(avg_txfee_adjust);
 	_visitor.type_field("min_vdf_segments", 11); _visitor.accept(min_vdf_segments);
 	_visitor.type_field("num_vdf_segments", 12); _visitor.accept(num_vdf_segments);
 	_visitor.type_field("max_vdf_segments", 13); _visitor.accept(max_vdf_segments);
@@ -136,23 +141,28 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("min_txfee", 26); _visitor.accept(min_txfee);
 	_visitor.type_field("min_txfee_io", 27); _visitor.accept(min_txfee_io);
 	_visitor.type_field("min_txfee_sign", 28); _visitor.accept(min_txfee_sign);
-	_visitor.type_field("min_txfee_exec", 29); _visitor.accept(min_txfee_exec);
-	_visitor.type_field("min_txfee_deploy", 30); _visitor.accept(min_txfee_deploy);
-	_visitor.type_field("min_txfee_byte", 31); _visitor.accept(min_txfee_byte);
-	_visitor.type_field("min_txfee_activate", 32); _visitor.accept(min_txfee_activate);
-	_visitor.type_field("max_block_size", 33); _visitor.accept(max_block_size);
-	_visitor.type_field("max_block_cost", 34); _visitor.accept(max_block_cost);
-	_visitor.type_field("block_time", 35); _visitor.accept(block_time);
-	_visitor.type_field("vdf_seed", 36); _visitor.accept(vdf_seed);
-	_visitor.type_field("plot_binary", 37); _visitor.accept(plot_binary);
-	_visitor.type_field("swap_binary", 38); _visitor.accept(swap_binary);
-	_visitor.type_field("offer_binary", 39); _visitor.accept(offer_binary);
-	_visitor.type_field("token_binary", 40); _visitor.accept(token_binary);
-	_visitor.type_field("plot_nft_binary", 41); _visitor.accept(plot_nft_binary);
-	_visitor.type_field("project_addr", 42); _visitor.accept(project_addr);
-	_visitor.type_field("fixed_project_reward", 43); _visitor.accept(fixed_project_reward);
-	_visitor.type_field("project_ratio", 44); _visitor.accept(project_ratio);
-	_visitor.template type_end<ChainParams>(45);
+	_visitor.type_field("min_txfee_memo", 29); _visitor.accept(min_txfee_memo);
+	_visitor.type_field("min_txfee_exec", 30); _visitor.accept(min_txfee_exec);
+	_visitor.type_field("min_txfee_deploy", 31); _visitor.accept(min_txfee_deploy);
+	_visitor.type_field("min_txfee_byte", 32); _visitor.accept(min_txfee_byte);
+	_visitor.type_field("min_txfee_read", 33); _visitor.accept(min_txfee_read);
+	_visitor.type_field("min_txfee_read_kbyte", 34); _visitor.accept(min_txfee_read_kbyte);
+	_visitor.type_field("min_txfee_activate", 35); _visitor.accept(min_txfee_activate);
+	_visitor.type_field("max_block_size", 36); _visitor.accept(max_block_size);
+	_visitor.type_field("max_block_cost", 37); _visitor.accept(max_block_cost);
+	_visitor.type_field("max_tx_cost", 38); _visitor.accept(max_tx_cost);
+	_visitor.type_field("block_time", 39); _visitor.accept(block_time);
+	_visitor.type_field("network", 40); _visitor.accept(network);
+	_visitor.type_field("nft_binary", 41); _visitor.accept(nft_binary);
+	_visitor.type_field("plot_binary", 42); _visitor.accept(plot_binary);
+	_visitor.type_field("swap_binary", 43); _visitor.accept(swap_binary);
+	_visitor.type_field("offer_binary", 44); _visitor.accept(offer_binary);
+	_visitor.type_field("token_binary", 45); _visitor.accept(token_binary);
+	_visitor.type_field("plot_nft_binary", 46); _visitor.accept(plot_nft_binary);
+	_visitor.type_field("project_addr", 47); _visitor.accept(project_addr);
+	_visitor.type_field("fixed_project_reward", 48); _visitor.accept(fixed_project_reward);
+	_visitor.type_field("project_ratio", 49); _visitor.accept(project_ratio);
+	_visitor.template type_end<ChainParams>(50);
 }
 
 

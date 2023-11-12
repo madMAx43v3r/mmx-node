@@ -207,7 +207,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MMX is a blockchain written from scratch 
 set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE)
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/madMAx43v3r/mmx-node")
 
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "MMX")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "MMX Node")
 
 # Define components and their display names
 set(CPACK_COMPONENTS_ALL applications libraries gui plotters tools)

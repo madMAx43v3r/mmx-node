@@ -26,8 +26,8 @@ inline std::pair<hash_t, hash_t> hmac_sha512(const hash_t& seed, const hash_t& k
 	func.Finalize(tmp);
 
 	std::pair<hash_t, hash_t> out;
-	memcpy(out.first.data(), tmp, 32);
-	memcpy(out.second.data(), tmp + 32, 32);
+	::memcpy(out.first.data(), tmp, 32);
+	::memcpy(out.second.data(), tmp + 32, 32);
 	return out;
 }
 
@@ -43,8 +43,8 @@ inline std::pair<hash_t, hash_t> hmac_sha512_n(const hash_t& seed, const hash_t&
 	func.Finalize(tmp);
 
 	std::pair<hash_t, hash_t> out;
-	memcpy(out.first.data(), tmp, 32);
-	memcpy(out.second.data(), tmp + 32, 32);
+	::memcpy(out.first.data(), tmp, 32);
+	::memcpy(out.second.data(), tmp + 32, 32);
 	return out;
 }
 
@@ -62,8 +62,8 @@ inline std::pair<hash_t, hash_t> pbkdf2_hmac_sha512(const hash_t& seed, const ha
 		func.Finalize(tmp);
 	}
 	std::pair<hash_t, hash_t> out;
-	memcpy(out.first.data(), tmp, 32);
-	memcpy(out.second.data(), tmp + 32, 32);
+	::memcpy(out.first.data(), tmp, 32);
+	::memcpy(out.second.data(), tmp + 32, 32);
 	return out;
 }
 

@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Contract_validate_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/Operation.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
@@ -15,7 +15,7 @@ namespace mmx {
 class MMX_EXPORT Contract_validate : public ::vnx::Value {
 public:
 	
-	std::shared_ptr<const ::mmx::Operation> operation;
+	std::shared_ptr<const ::mmx::Solution> solution;
 	::mmx::hash_t txid;
 	
 	typedef ::vnx::Value Super;
@@ -61,7 +61,7 @@ public:
 template<typename T>
 void Contract_validate::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Contract_validate>(2);
-	_visitor.type_field("operation", 0); _visitor.accept(operation);
+	_visitor.type_field("solution", 0); _visitor.accept(solution);
 	_visitor.type_field("txid", 1); _visitor.accept(txid);
 	_visitor.template type_end<Contract_validate>(2);
 }

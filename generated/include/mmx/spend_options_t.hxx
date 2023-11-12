@@ -19,7 +19,7 @@ struct MMX_EXPORT spend_options_t {
 	vnx::bool_t auto_send = true;
 	uint32_t min_confirm = 1;
 	uint32_t fee_ratio = 1024;
-	uint32_t max_extra_cost = 1000000;
+	uint32_t max_extra_cost = 5000000;
 	vnx::optional<uint32_t> expire_at;
 	vnx::optional<uint32_t> expire_delta;
 	vnx::optional<::mmx::addr_t> user;

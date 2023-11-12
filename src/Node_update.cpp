@@ -125,10 +125,9 @@ void Node::verify_block_proofs()
 			threads->add_task([this, fork, &mutex]() {
 				const auto& block = fork->block;
 				try {
-					hash_t vdf_challenge;
-					if(find_vdf_challenge(block, vdf_challenge))
+					hash_t challenge;
+					if(find_challenge(block, challenge))
 					{
-						const auto challenge = get_challenge(block, vdf_challenge);
 						verify_proof(fork, challenge);
 
 						if(auto proof = block->proof) {
@@ -262,7 +261,7 @@ void Node::update()
 				}
 			} else {
 				msg << ", " << sync_pending.size() << " pending";
-				if(auto count = vdf_threads->get_num_running()) {
+				if(auto count = vdf_threads->get_num_pending_total()) {
 					msg << ", " << count << " vdf checks";
 				}
 			}
@@ -272,7 +271,7 @@ void Node::update()
 		stuck_timer->reset();
 	}
 
-	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_running())
+	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_pending_total())
 	{
 		if(sync_retry < num_sync_retries) {
 			if(now_ms - sync_finish_ms > params->block_time * 500) {
@@ -363,10 +362,9 @@ void Node::update()
 			prev = fork->block;
 		}
 		if(prev) {
-			hash_t vdf_challenge;
-			if(find_vdf_challenge(prev, vdf_challenge, 1))
+			hash_t challenge;
+			if(find_challenge(prev, challenge, 1))
 			{
-				const auto challenge = get_challenge(prev, vdf_challenge, 1);
 				const auto proof_list = find_proof(challenge);
 
 				// Note: proof_list already limited to max_blocks_per_height
@@ -395,7 +393,7 @@ void Node::update()
 												}
 											}
 										} else {
-											// previous block was a dummy
+											// previous block was a dummy, we create a second block to mitigate faster timelord attack
 											do_create = true;
 											log(INFO) << "Creating second block for a dummy previous at height " << key.first;
 										}
@@ -433,7 +431,7 @@ void Node::update()
 		{
 			auto value = Challenge::create();
 			value->height = peak->height + i;
-			value->challenge = get_challenge(peak, vdf_block->vdf_output[1], i);
+			value->challenge = vdf_block->vdf_output[1];
 			const auto diff_block = get_diff_header(peak, i);
 			value->space_diff = diff_block->space_diff;
 			value->diff_block_hash = diff_block->hash;
@@ -676,6 +674,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 					{
 						auto copy = vnx::clone(tx);
 						copy->exec_result = *res;
+						copy->static_cost = copy->calc_cost(params);
 						copy->content_hash = copy->calc_hash(true);
 						tx = copy;
 					}
@@ -698,7 +697,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	uint64_t total_cost = 0;
 	uint64_t static_cost = 0;
 	std::vector<tx_pool_t> result;
-	balance_cache_t balance_cache(&balance_map);
+	balance_cache_t balance_cache(&balance_table);
 
 	// select final set of transactions
 	for(auto& entry : tx_list)

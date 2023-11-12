@@ -6,6 +6,7 @@
 
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/exec_error_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/txin_t.hxx>
@@ -37,6 +38,7 @@ struct MMX_EXPORT exec_result_t {
 	
 	vnx::bool_t is_valid() const;
 	::mmx::hash_t calc_hash() const;
+	uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	std::string get_error_msg() const;
 	
 	static std::shared_ptr<exec_result_t> create();

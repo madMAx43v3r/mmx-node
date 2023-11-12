@@ -19,6 +19,15 @@ std::string to_number(const T& value, const size_t n_zero)
 	return std::string(n_zero - std::min(n_zero, tmp.length()), '0') + tmp;
 }
 
+uint32_t calc_checksum_32(uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value)
+{
+	vnx::CRC64 crc;
+	crc.update(version);
+	crc.update((const char*)key->data, key->size);
+	crc.update((const char*)value->data, value->size);
+	return uint32_t(crc.get());
+}
+
 void read_key(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key)
 {
 	vnx::read(in, version);
@@ -57,6 +66,18 @@ void read_entry(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>
 	read_value(in, value);
 }
 
+void read_entry_sum(vnx::TypeInput& in, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value)
+{
+	read_entry(in, version, key, value);
+
+	uint32_t sum = 0;
+	vnx::read(in, sum);
+	if(sum != calc_checksum_32(version, key, value)) {
+		throw std::runtime_error("read_entry(): checksum fail (version = " + std::to_string(version)
+				+ ", key = " + std::to_string(key->size) + ", value = " + std::to_string(value->size) + ")");
+	}
+}
+
 void read_entry_at(const vnx::File& file, const int64_t offset, uint32_t& version, std::shared_ptr<db_val_t>& key, std::shared_ptr<db_val_t>& value)
 {
 	vnx::FileSectionInputStream stream(file.get_handle(), offset, -1, 1024);
@@ -72,6 +93,12 @@ void write_entry(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_
 	out.write(key->data, key->size);
 	vnx::write(out, value->size);
 	out.write(value->data, value->size);
+}
+
+void write_entry_sum(vnx::TypeOutput& out, uint32_t version, std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> value)
+{
+	write_entry(out, version, key, value);
+	vnx::write(out, calc_checksum_32(version, key, value));
 }
 
 const std::function<int(const db_val_t&, const db_val_t&)> Table::default_comparator =
@@ -154,7 +181,7 @@ Table::Table(const std::string& root_path, const options_t& options)
 				uint32_t version;
 				std::shared_ptr<db_val_t> key;
 				std::shared_ptr<db_val_t> value;
-				read_entry(write_log.in, version, key, value);
+				read_entry_sum(write_log.in, version, key, value);
 				if(version == uint32_t(-1)) {
 					const auto cmd = key->to_string();
 					if(cmd == "commit") {
@@ -228,7 +255,7 @@ void Table::insert(std::shared_ptr<db_val_t> key, std::shared_ptr<db_val_t> valu
 	if(write_lock) {
 		throw std::logic_error("table is write locked");
 	}
-	write_entry(write_log.out, curr_version, key, value);
+	write_entry_sum(write_log.out, curr_version, key, value);
 	insert_entry(curr_version, key, value);
 }
 
@@ -255,8 +282,14 @@ std::shared_ptr<db_val_t> Table::find(std::shared_ptr<db_val_t> key, const uint3
 				return iter->second.first;
 			} else {
 				auto iter = mem_block.lower_bound(std::make_pair(key, max_version));
-				if(iter != mem_block.end() && *iter->first.first == *key) {
-					return iter->second;
+				while(iter != mem_block.end() && *iter->first.first == *key) {
+					if(iter->first.second <= max_version) {
+						return iter->second;
+					} else if(iter != mem_block.begin()) {
+						iter--;
+					} else {
+						break;
+					}
 				}
 			}
 		}
@@ -355,7 +388,7 @@ void Table::commit(const uint32_t new_version)
 	{
 		// TODO: these can accumulate to form large write_log.dat files
 		const std::string cmd = "commit";
-		write_entry(write_log.out, -1,
+		write_entry_sum(write_log.out, -1,
 				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
 				std::make_shared<db_val_t>(&new_version, sizeof(new_version)));
 	}
@@ -378,7 +411,7 @@ void Table::revert(const uint32_t new_version)
 	}
 	{
 		const std::string cmd = "revert";
-		write_entry(write_log.out, -1,
+		write_entry_sum(write_log.out, -1,
 				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
 				std::make_shared<db_val_t>(&new_version, sizeof(new_version)));
 	}

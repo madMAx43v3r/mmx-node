@@ -14,6 +14,7 @@
 #include <mmx/txout_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 #include <mmx/time_segment_t.hxx>
+#include <mmx/compile_flags_t.hxx>
 #include <mmx/contract/method_t.hxx>
 
 #include <vnx/Buffer.hpp>
@@ -129,25 +130,28 @@ inline void write_bytes(vnx::OutputBuffer& out, const vnx::Object& value)
 	write_bytes(out, value.field);
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const txio_t& value)
+inline void write_bytes_ex(vnx::OutputBuffer& out, const txio_t& value)
 {
-	write_bytes_cstr(out, "txio_t<>");
 	write_bytes(out, value.address);
 	write_bytes(out, value.contract);
 	write_bytes(out, value.amount);
+	write_bytes(out, value.memo);
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const txin_t& value, bool full_hash)
+inline void write_bytes(vnx::OutputBuffer& out, const txin_t& value, bool full_hash = false)
 {
-	write_bytes(out, (const txio_t&)value);
+	write_bytes_cstr(out, "txin_t<>");
+	write_bytes_ex(out, value);
 	if(full_hash) {
 		write_bytes(out, value.solution);
 		write_bytes(out, value.flags);
 	}
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const txout_t& value) {
-	write_bytes(out, (const txio_t&)value);
+inline void write_bytes(vnx::OutputBuffer& out, const txout_t& value)
+{
+	write_bytes_cstr(out, "txout_t<>");
+	write_bytes_ex(out, value);
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const ulong_fraction_t& value)
@@ -162,6 +166,14 @@ inline void write_bytes(vnx::OutputBuffer& out, const time_segment_t& value)
 	write_bytes_cstr(out, "time_segment_t<>");
 	write_bytes(out, value.num_iters);
 	write_bytes(out, value.output);
+}
+
+inline void write_bytes(vnx::OutputBuffer& out, const compile_flags_t& value)
+{
+	write_bytes_cstr(out, "compile_flags_t<>");
+	write_field(out, "verbose", value.verbose);
+	write_field(out, "opt_level", value.opt_level);
+	write_field(out, "catch_overflow", value.catch_overflow);
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const contract::method_t& value)

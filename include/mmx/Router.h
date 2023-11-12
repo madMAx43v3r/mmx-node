@@ -40,8 +40,6 @@ protected:
 
 	node_info_t get_info() const override;
 
-	std::pair<pubkey_t, signature_t> sign_msg(const hash_t& msg) const override;
-
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
 
 	std::vector<std::string> get_known_peers() const override;

@@ -34,7 +34,7 @@ public:
 
 	fixed128(const std::string& str);
 
-	fixed128(const char* str) : fixed128(std::string(str)) {}
+	explicit fixed128(const char* str) : fixed128(std::string(str)) {}
 
 	uint128 uint() const {
 		return fixed / divider;

@@ -31,14 +31,10 @@
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Router_kick_peer.hxx>
 #include <mmx/Router_kick_peer_return.hxx>
-#include <mmx/Router_sign_msg.hxx>
-#include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>
-#include <mmx/pubkey_t.hpp>
-#include <mmx/signature_t.hpp>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_object.hxx>
@@ -112,19 +108,6 @@ void RouterClient::discover_async() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::mmx::node_info_t>();
-	} else {
-		throw std::logic_error("RouterClient: invalid return value");
-	}
-}
-
-std::pair<::mmx::pubkey_t, ::mmx::signature_t> RouterClient::sign_msg(const ::mmx::hash_t& msg) {
-	auto _method = ::mmx::Router_sign_msg::create();
-	_method->msg = msg;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Router_sign_msg_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::pair<::mmx::pubkey_t, ::mmx::signature_t>>();
 	} else {
 		throw std::logic_error("RouterClient: invalid return value");
 	}

@@ -17,8 +17,6 @@
 #include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_info.hxx>
 #include <mmx/Router_get_info_return.hxx>
-#include <mmx/Router_sign_msg.hxx>
-#include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Node_get_height.hxx>
@@ -78,9 +76,11 @@ void Router::main()
 			throw std::logic_error("min_sync_peers > max_connections");
 		}
 	}
-	tx_upload_bandwidth = max_tx_upload * to_value(params->max_block_size, params) / params->block_time;
-	max_pending_cost_value = max_pending_cost * to_value(params->max_block_size, params);
-
+	{
+		const auto max_block_size = to_value(params->max_block_size, params);
+		tx_upload_bandwidth = max_tx_upload * max_block_size / params->block_time;
+		max_pending_cost_value = max_pending_cost * max_block_size;
+	}
 	log(INFO) << "Global TX upload limit: " << tx_upload_bandwidth << " MMX/s";
 	log(INFO) << "Peer TX pending limit: " << max_pending_cost_value << " MMX";
 
@@ -177,7 +177,11 @@ void Router::main()
 	save_data();
 
 	for(const auto& entry : connect_tasks) {
-		vnx::TcpEndpoint().shutdown(entry.second, 2);
+		try {
+			vnx::TcpEndpoint().shutdown(entry.second, 2);
+		} catch(const std::exception& ex) {
+			log(WARN) << "Failed to shutdown connecting socket " << entry.second << ", waiting for timeout ...";
+		}
 	}
 	if(upnp_mapper) {
 		upnp_mapper->stop();
@@ -197,11 +201,6 @@ node_info_t Router::get_info() const
 	info.version = node_version;
 	info.type = mode;
 	return info;
-}
-
-std::pair<pubkey_t, signature_t> Router::sign_msg(const hash_t& msg) const
-{
-	return std::make_pair(node_key, signature_t::sign(node_sk, hash_t(msg.bytes)));
 }
 
 static
@@ -959,11 +958,9 @@ void Router::exec_fork_check()
 void Router::discover()
 {
 	if(peer_set.size() < max_peer_set) {
-		auto method = Router_get_peers::create();
-		method->max_count = 4 * num_peers_out;
 		auto req = Request::create();
 		req->id = next_request_id++;
-		req->method = method;
+		req->method = Router_get_peers::create();
 		send_all(req, {node_type_e::FULL_NODE}, false);
 	}
 
@@ -1504,8 +1501,12 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 	{
 		case Router_get_id_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_id_return>(result)) {
+				const auto peer = find_peer(client);
+				if(peer) {
+					peer->node_id = value->_ret_0;
+				}
 				if(value->_ret_0 == get_id()) {
-					if(auto peer = find_peer(client)) {
+					if(peer) {
 						log(INFO) << "Discovered our own address (or duplicate node ID?): " << peer->address;
 						self_addrs.insert(peer->address);
 						block_peers.insert(peer->address);
@@ -1518,18 +1519,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Router_get_info_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					peer->info = value->_ret_0;
-				}
-			}
-			break;
-		case Router_sign_msg_return::VNX_TYPE_ID:
-			if(auto value = std::dynamic_pointer_cast<const Router_sign_msg_return>(result)) {
-				if(auto peer = find_peer(client)) {
-					const auto& pair = value->_ret_0;
-					if(pair.second.verify(pair.first, hash_t(peer->challenge.bytes))) {
-						peer->node_id = pair.first.get_addr();
-					} else {
-						log(WARN) << "Peer " << peer->address << " failed to verify identity!";
-					}
 				}
 			}
 			break;
@@ -1688,10 +1677,9 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	send_request(peer, Router_get_info::create());
 	send_request(peer, Node_get_synced_height::create());
 
-	auto req = Router_sign_msg::create();
-	req->msg = peer->challenge;
-	send_request(peer, req);
-
+	if(peer_set.size() < max_peer_set) {
+		send_request(peer, Router_get_peers::create());
+	}
 	log(DEBUG) << "Connected to peer " << peer->address;
 }
 

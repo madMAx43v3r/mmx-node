@@ -84,5 +84,16 @@ std::shared_ptr<const BlockHeader> BlockHeader::get_header() const
 	return vnx::clone(*this);
 }
 
+block_index_t BlockHeader::get_block_index(const int64_t& file_offset) const
+{
+	block_index_t index;
+	index.hash = hash;
+	index.content_hash = content_hash;
+	index.static_cost = static_cost;
+	index.total_cost = total_cost;
+	index.file_offset = file_offset;
+	return index;
+}
+
 
 } // mmx

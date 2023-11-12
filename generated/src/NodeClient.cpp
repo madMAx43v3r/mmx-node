@@ -1100,11 +1100,12 @@ std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>
 	}
 }
 
-std::vector<std::shared_ptr<const ::mmx::BlockHeader>> NodeClient::get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since) {
+std::vector<std::shared_ptr<const ::mmx::BlockHeader>> NodeClient::get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_farmed_blocks::create();
 	_method->farmer_keys = farmer_keys;
 	_method->full_blocks = full_blocks;
 	_method->since = since;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_farmed_blocks_return>(_return_value)) {
 		return _result->_ret_0;

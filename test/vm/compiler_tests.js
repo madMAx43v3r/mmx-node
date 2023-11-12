@@ -1,4 +1,6 @@
 
+null;
+
 {
 	var test;
 	if(test != null) {
@@ -14,12 +16,8 @@ if(test1(1) != 2) {
 	fail("test1");
 }
 
-// for(var i = 0; i < 10; ++i) {
-// 	if(i > 3) {
-// 		break;
-// 	}
-// 	if(i > 3) {
-// 		fail("for() break");
-// 	}
-// }
+if(concat(to_string(1), to_string(2), to_string(3)) != "123") {
+	fail("concat()", 1);
+}
+
 

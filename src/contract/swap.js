@@ -3,10 +3,10 @@ const FRACT_BITS = 64;
 const LOCK_DURATION = 8640;	// 24 hours
 
 const fee_rates = [
-	1844674407370955,		// 0.0001
 	9223372036854776,		// 0.0005
 	46116860184273879,		// 0.0025
 	184467440737095516,		// 0.01
+	922337203685477581,		// 0.05
 ];
 
 var state = [];
@@ -264,43 +264,46 @@ function trade(i, address, min_trade, num_iter) public payable
 	const chunk_size = (amount + num_iter - 1) / num_iter;
 
 	const out = [0, 0];
-	var actual_amount = 0;
 	var amount_left = amount;
+	var total_actual_amount = 0;
 	
 	for(var iter = 0; iter < num_iter && amount_left > 0; ++iter)
 	{
 		const amount_i = min(chunk_size, amount_left);
 
 		var entry;
-		var best_price = 0;
+		var fee_amount_i = 0;
+		var trade_amount_i = 0;
+		var actual_amount_i = 0;
 		
 		for(const entry_j of state)
 		{
 			const balance = entry_j.balance;
 			if(balance[k] > 0) {
-				const rate = (1 << FRACT_BITS) - entry_j.fee_rate;
-				const price = (balance[k] * rate) / (balance[i] + amount_i);
-				if(price > best_price) {
+				const trade_amount = balance[k] - (balance[i] * balance[k]) / (balance[i] + amount_i);
+				
+				const fee_amount = min(((trade_amount * entry_j.fee_rate) >> FRACT_BITS) + 1, trade_amount);
+				
+				const actual_amount = trade_amount - fee_amount;
+				if(actual_amount > actual_amount_i) {
 					entry = entry_j;
-					best_price = price;
+					fee_amount_i = fee_amount;
+					trade_amount_i = trade_amount;
+					actual_amount_i = actual_amount;
 				}
 			}
 		}
 		if(entry != null) {
-			const price = (entry.balance[k] << FRACT_BITS) / (entry.balance[i] + amount_i);
-			const trade_amount = (amount_i * price) >> FRACT_BITS;
+			total_actual_amount += actual_amount_i;
 			
-			const fee_amount = min(((trade_amount * entry.fee_rate) >> FRACT_BITS) + 1, trade_amount);
-			actual_amount += trade_amount - fee_amount;
+			out[0] += trade_amount_i;
+			out[1] += fee_amount_i;
 			
-			out[0] += trade_amount;
-			out[1] += fee_amount;
-			
-			volume[k] += trade_amount;
+			volume[k] += trade_amount_i;
 			
 			entry.balance[i] += amount_i;
-			entry.balance[k] -= trade_amount;
-			entry.fees_paid[k] += fee_amount;
+			entry.balance[k] -= trade_amount_i;
+			entry.fees_paid[k] += fee_amount_i;
 			
 			amount_left -= amount_i;
 		}
@@ -310,14 +313,14 @@ function trade(i, address, min_trade, num_iter) public payable
 		fail("incomplete trade");
 	}
 	if(min_trade != null) {
-		if(actual_amount < min_trade) {
+		if(total_actual_amount < min_trade) {
 			fail("minimum trade amount not reached", 7);
 		}
 	}
-	if(actual_amount == 0) {
+	if(total_actual_amount == 0) {
 		fail("empty trade", 7);
 	}
-	send(bech32(address), actual_amount, tokens[k]);
+	send(bech32(address), total_actual_amount, tokens[k]);
 	
 	return out;
 }

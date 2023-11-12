@@ -11,7 +11,6 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
@@ -67,14 +66,16 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 			default: std::cout << "????    "; break;
 		}
 		const auto contract = get_contract(node, entry.contract);
-		if(auto nft = std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-			std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
-		} else {
-			const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
-			const auto decimals = token ? token->decimals : params->decimals;
-			std::cout << to_value_128(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
-					<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+		if(auto exe = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+			if(exe->binary == params->nft_binary) {
+				std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+				continue;
+			}
 		}
+		const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
+		const auto decimals = token ? token->decimals : params->decimals;
+		std::cout << to_value_128(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
+				<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
 	}
 }
 
@@ -268,6 +269,12 @@ int main(int argc, char** argv)
 					{
 						const auto& balance = entry.second;
 						const auto contract = get_contract(node, entry.first);
+						if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+							if(exec->binary == params->nft_binary) {
+								nfts.push_back(entry.first);
+								continue;
+							}
+						}
 						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
 							std::cout << "Balance: " << to_value_128(balance.total, token->decimals)
 									<< " " << token->symbol << (balance.is_validated ? "" : "?")
@@ -278,9 +285,6 @@ int main(int argc, char** argv)
 							}
 							std::cout << std::endl;
 							is_empty = false;
-						}
-						else if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-							nfts.push_back(entry.first);
 						}
 					}
 					if(is_empty) {
@@ -943,8 +947,9 @@ int main(int argc, char** argv)
 				}
 				for(const auto& entry : node.get_total_balances({address}))
 				{
-					const auto contract = get_contract(node, entry.first);
-					if(!std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
+					auto contract = get_contract(node, entry.first);
+					auto exe = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract);
+					if(!exe || exe->binary != params->nft_binary) {
 						const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 						const auto decimals = token ? token->decimals : params->decimals;
 						std::cout << "Balance: " << to_value_128(entry.second, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;

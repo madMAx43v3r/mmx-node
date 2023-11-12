@@ -8,18 +8,14 @@
 #ifndef INCLUDE_MMX_VM_INTERFACE_H_
 #define INCLUDE_MMX_VM_INTERFACE_H_
 
-#include <mmx/addr_t.hpp>
+#include <mmx/vm/Engine.h>
 #include <mmx/contract/Binary.hxx>
 
-#include <vnx/Visitor.h>
-#include <vnx/Variant.hpp>
+#include <vnx/Variant.h>
 
 
 namespace mmx {
 namespace vm {
-
-class Engine;
-struct var_t;
 
 const contract::method_t* find_method(std::shared_ptr<const contract::Binary> binary, const std::string& method_name);
 
@@ -43,24 +39,6 @@ void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant
 void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method, const bool read_only = false);
 
 void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, const vnx::optional<std::string>& method = nullptr);
-
-std::string to_string(const var_t* var);
-std::string to_string(const varptr_t& var);
-
-std::string to_string_value(const var_t* var);
-std::string to_string_value(const varptr_t& var);
-
-uint64_t to_ref(const var_t* var);
-uint64_t to_ref(const varptr_t& var);
-
-uint256_t to_uint(const var_t* var);
-uint256_t to_uint(const varptr_t& var);
-
-hash_t to_hash(const var_t* var);
-hash_t to_hash(const varptr_t& var);
-
-addr_t to_addr(const var_t* var);
-addr_t to_addr(const varptr_t& var);
 
 
 } // vm

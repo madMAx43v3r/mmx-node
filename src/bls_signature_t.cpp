@@ -7,6 +7,8 @@
 
 #include <mmx/bls_signature_t.hpp>
 
+#include <bls.hpp>
+
 
 namespace mmx {
 
@@ -35,8 +37,13 @@ bool bls_signature_t::verify(const bls_pubkey_t& pubkey, const hash_t& hash) con
 			return true;
 		}
 	}
+	bls::G1Element bls_pubkey;
+	bls::G2Element bls_sig;
+	pubkey.to(bls_pubkey);
+	to(bls_sig);
+
 	bls::AugSchemeMPL MPL;
-	const bool res = MPL.Verify(pubkey.to_bls(), bls::Bytes(hash.bytes.data(), hash.bytes.size()), to_bls());
+	const bool res = MPL.Verify(bls_pubkey, bls::Bytes(hash.bytes.data(), hash.bytes.size()), bls_sig);
 	if(res) {
 		std::lock_guard lock(mutex);
 		entry.sig = *this;
@@ -46,14 +53,15 @@ bool bls_signature_t::verify(const bls_pubkey_t& pubkey, const hash_t& hash) con
 	return res;
 }
 
-bls::G2Element bls_signature_t::to_bls() const
+void bls_signature_t::to(bls::G2Element& sig) const
 {
-	return bls::G2Element::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
+	sig = bls::G2Element::FromBytes(bls::Bytes(bytes.data(), bytes.size()));
 }
 
 bls_signature_t bls_signature_t::sign(const skey_t& skey, const hash_t& hash)
 {
-	return sign(skey.to_bls(), hash);
+	const auto key = bls::PrivateKey::FromBytes(bls::Bytes(skey.data(), skey.size()));
+	return sign(key, hash);
 }
 
 bls_signature_t bls_signature_t::sign(const bls::PrivateKey& skey, const hash_t& hash)

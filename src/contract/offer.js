@@ -16,8 +16,6 @@ function init(owner_, bid_currency_, ask_currency_, inv_price_, partner_)
 	
 	if(partner_ != null) {
 		partner = bech32(partner_);
-	} else {
-		partner = null;
 	}
 }
 

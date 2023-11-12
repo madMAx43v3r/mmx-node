@@ -157,6 +157,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 		if(auto owner = contract->get_owner()) {
 			options_.owner_map.emplace(src_addr, *owner);
 		} else {
+			// TODO: handle MultiSig
 			throw std::logic_error("contract has no owner");
 		}
 	}
@@ -277,21 +278,17 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	offer->init_args.emplace_back(owner_addr.to_string());
 	offer->init_args.emplace_back(bid_currency.to_string());
 	offer->init_args.emplace_back(ask_currency.to_string());
-	offer->init_args.emplace_back(((uint128_t(bid_amount) << 64) / ask_amount).str());
+	offer->init_args.emplace_back("0x" + ((uint128_t(bid_amount) << 64) / ask_amount).str(16));
 	offer->init_args.emplace_back();
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::OFFER;
 	tx->deploy = offer;
 
-	auto op = operation::Deposit::create();
-	op->method = "deposit";
-	op->amount = bid_amount;
-	op->currency = bid_currency;
-	op->user = owner_addr;
-	tx->execute.push_back(op);
+	std::vector<std::pair<addr_t, uint64_t>> deposit;
+	deposit.emplace_back(bid_currency, bid_amount);
 
-	wallet->complete(tx, options);
+	wallet->complete(tx, options, deposit);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
@@ -713,7 +710,7 @@ std::vector<virtual_plot_info_t> Wallet::get_virtual_plots(const uint32_t& index
 	return node->get_virtual_plots_owned_by(wallet->get_all_addresses());
 }
 
-vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
+std::vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
 {
 	const auto wallet = get_wallet(index);
 	return node->get_offers_by(wallet->get_all_addresses(), state);

@@ -1,2 +1,2 @@
 
-uint("0xghj!");
+uint("0xghj");

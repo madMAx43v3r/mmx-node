@@ -53,4 +53,6 @@ class BlockHeader {
 	
 	BlockHeader* get_header() const;
 	
+	block_index_t get_block_index(long file_offset) const;
+	
 }

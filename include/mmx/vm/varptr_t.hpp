@@ -104,6 +104,30 @@ inline bool operator!=(const varptr_t& lhs, const varptr_t& rhs) {
 	return compare(lhs.get(), rhs.get()) != 0;
 }
 
+inline std::string to_string(const varptr_t& var) {
+	return to_string(var.get());
+}
+
+inline std::string to_string_value(const varptr_t& var) {
+	return to_string_value(var.get());
+}
+
+inline uint64_t to_ref(const varptr_t& var) {
+	return to_ref(var.get());
+}
+
+inline uint256_t to_uint(const varptr_t& var) {
+	return to_uint(var.get());
+}
+
+inline hash_t to_hash(const varptr_t& var) {
+	return to_hash(var.get());
+}
+
+inline addr_t to_addr(const varptr_t& var) {
+	return to_addr(var.get());
+}
+
 
 } // vm
 } // mmx

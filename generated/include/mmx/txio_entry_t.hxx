@@ -63,14 +63,15 @@ struct MMX_EXPORT txio_entry_t : ::mmx::txio_t {
 
 template<typename T>
 void txio_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<txio_entry_t>(6);
+	_visitor.template type_begin<txio_entry_t>(7);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.type_field("txid", 3); _visitor.accept(txid);
-	_visitor.type_field("height", 4); _visitor.accept(height);
-	_visitor.type_field("type", 5); _visitor.accept(type);
-	_visitor.template type_end<txio_entry_t>(6);
+	_visitor.type_field("memo", 3); _visitor.accept(memo);
+	_visitor.type_field("txid", 4); _visitor.accept(txid);
+	_visitor.type_field("height", 5); _visitor.accept(height);
+	_visitor.type_field("type", 6); _visitor.accept(type);
+	_visitor.template type_end<txio_entry_t>(7);
 }
 
 
