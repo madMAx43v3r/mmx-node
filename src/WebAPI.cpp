@@ -1576,6 +1576,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
 						const auto& block = *iter;
 						if(block->reward_addr) {
+							// TODO: use Node::block_reward_map
 							total_reward += block->reward_amount;
 							reward_map[*block->reward_addr] += block->reward_amount;
 						}

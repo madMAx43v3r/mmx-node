@@ -199,6 +199,15 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		std::unordered_set<addr_t> tx_set;
 		balance_cache_t balance_cache(&balance_table);
 
+		/* TODO: minimum fee_ratio depending on block size
+		 *
+		 * <20% => 1x
+		 * <40% => 3x
+		 * <60% => 5x
+		 * <80% => 10x
+		 * <100% => 20x
+		 */
+
 		for(const auto& tx : block->tx_list) {
 			if(!tx) {
 				throw std::logic_error("null tx");
