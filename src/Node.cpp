@@ -1550,11 +1550,12 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 		const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const
 {
 	std::vector<uint32_t> entries;
-	for(const auto& key : farmer_keys) {
-		std::vector<uint32_t> tmp;
-		farmer_block_map.find(key, tmp);
-		entries.insert(entries.end(), tmp.begin(), tmp.end());
-	}
+//	TODO:
+//	for(const auto& key : farmer_keys) {
+//		std::vector<uint32_t> tmp;
+//		farmer_block_map.find(key, tmp);
+//		entries.insert(entries.end(), tmp.begin(), tmp.end());
+//	}
 	if(limit >= 0) {
 		std::sort(entries.begin(), entries.end(), std::greater<uint32_t>());
 		entries.resize(limit);
@@ -1573,26 +1574,28 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 std::map<bls_pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& since) const
 {
 	std::map<bls_pubkey_t, uint32_t> out;
-	farmer_block_map.scan([&out, since](const bls_pubkey_t& key, const uint32_t& height) {
-		if(height >= since) {
-			out[key]++;
-		}
-	});
+//	TODO:
+//	farmer_block_map.scan([&out, since](const bls_pubkey_t& key, const uint32_t& height) {
+//		if(height >= since) {
+//			out[key]++;
+//		}
+//	});
 	return out;
 }
 
 uint32_t Node::get_farmed_block_count_for(const std::vector<bls_pubkey_t>& farmer_keys, const uint32_t& since) const
 {
 	size_t total = 0;
-	for(const auto& key : farmer_keys) {
-		std::vector<uint32_t> tmp;
-		farmer_block_map.find(key, tmp);
-		for(auto height : tmp) {
-			if(height >= since) {
-				total++;
-			}
-		}
-	}
+//	TODO:
+//	for(const auto& key : farmer_keys) {
+//		std::vector<uint32_t> tmp;
+//		farmer_block_map.find(key, tmp);
+//		for(auto height : tmp) {
+//			if(height >= since) {
+//				total++;
+//			}
+//		}
+//	}
 	return total;
 }
 
@@ -2187,7 +2190,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		context->storage->commit();
 	}
 	if(auto proof = block->proof) {
-		farmer_block_map.insert(proof->farmer_key, block->height);
+//		TODO: farmer_block_map.insert(proof->farmer_key, block->height);
 	}
 	hash_index.insert(block->hash, block->height);
 
