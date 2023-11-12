@@ -176,22 +176,26 @@ void Node::main()
 				block_chain->seek_to(entry.file_offset);
 				const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
 				if(!block) {
-					throw std::runtime_error("failed to read block " + std::to_string(height));
+					throw std::runtime_error("not a block");
+				}
+				if(!block->is_valid()) {
+					throw std::runtime_error("invalid block");
 				}
 				if(block->height != height) {
-					throw std::runtime_error("expected block height " + std::to_string(height) + " but got " + std::to_string(block->height));
+					throw std::runtime_error("invalid block height");
 				}
 				if(block->hash != state_hash) {
-					throw std::runtime_error("expected block hash " + state_hash.to_string());
+					throw std::runtime_error("invalid block hash");
 				}
 				is_replay = false;
 				break;
 			}
 			catch(const std::exception& ex) {
-				log(WARN) << ex.what();
+				log(WARN) << "Validating on-disk peak " << height << " failed with: " << ex.what();
 			}
 			revert(height);
 		}
+
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
 			int64_t block_offset = 0;
@@ -199,48 +203,55 @@ void Node::main()
 			std::list<std::shared_ptr<const Block>> history;
 
 			block_chain->seek_begin();
-			while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets))
-			{
-				if(auto block = std::dynamic_pointer_cast<const Block>(header))
+			try {
+				while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets))
 				{
-					std::shared_ptr<execution_context_t> result;
-					if(block->height) {
-						try {
-							result = validate(block);
-						} catch(std::exception& ex) {
-							log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
-							block_chain->seek_to(block_offset);
-							break;
+					if(auto block = std::dynamic_pointer_cast<const Block>(header))
+					{
+						if(!block->is_valid()) {
+							throw std::runtime_error("invalid block " + std::to_string(block->height));
 						}
-					}
-					for(size_t i = 0; i < tx_offsets.size(); ++i) {
-						const auto& tx = block->tx_list[i];
-						tx_index.insert(tx->id, tx->get_tx_index(params, block->height, tx_offsets[i]));
-					}
-					block_index.insert(block->height, block->get_block_index(block_offset));
+						std::shared_ptr<execution_context_t> result;
+						if(block->height) {
+							try {
+								result = validate(block);
+							} catch(std::exception& ex) {
+								log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
+								throw;
+							}
+						}
+						for(size_t i = 0; i < tx_offsets.size(); ++i) {
+							const auto& tx = block->tx_list[i];
+							tx_index.insert(tx->id, tx->get_tx_index(params, block->height, tx_offsets[i]));
+						}
+						block_index.insert(block->height, block->get_block_index(block_offset));
 
-					if(block->height) {
-						auto fork = std::make_shared<fork_t>();
-						fork->block = block;
-						fork->is_vdf_verified = true;
-						add_fork(fork);
-					}
-					apply(block, result, true);
+						if(block->height) {
+							auto fork = std::make_shared<fork_t>();
+							fork->block = block;
+							fork->is_vdf_verified = true;
+							add_fork(fork);
+						}
+						apply(block, result, true);
 
-					history.push_back(block);
-					if(history.size() > params->commit_delay || block->height == 0) {
-						commit(history.front());
-						history.pop_front();
+						history.push_back(block);
+						if(history.size() > params->commit_delay || block->height == 0) {
+							commit(history.front());
+							history.pop_front();
+						}
+						if(block->height % 1000 == 0) {
+							log(INFO) << "Height " << block->height << " ...";
+						}
+						vnx_process(false);
 					}
-					if(block->height % 1000 == 0) {
-						log(INFO) << "Height " << block->height << " ...";
+					if(!vnx::do_run()) {
+						log(WARN) << "DB replay aborted";
+						return;
 					}
-					vnx_process(false);
 				}
-				if(!vnx::do_run()) {
-					log(WARN) << "DB replay interrupted";
-					return;
-				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "DB replay stopped due to error: " << ex.what();
+				block_chain->seek_to(block_offset);
 			}
 			if(auto peak = get_peak()) {
 				log(INFO) << "Replayed height " << peak->height << " from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
