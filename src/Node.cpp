@@ -605,6 +605,7 @@ std::vector<std::shared_ptr<const Transaction>> Node::get_transactions(const std
 	return list;
 }
 
+// TODO: add limit param
 std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, const int32_t& since) const
 {
 	const uint32_t height = get_height();
@@ -621,6 +622,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		{
 			std::vector<txio_entry_t> entries;
+			// TODO: use find_last_range()
 			recv_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 			for(const auto& entry : entries) {
 				tx_type_e type;
@@ -638,6 +640,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		}
 		{
 			std::vector<txio_entry_t> entries;
+			// TODO: use find_last_range()
 			spend_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
 			for(const auto& entry : entries) {
 				tx_type_e type;

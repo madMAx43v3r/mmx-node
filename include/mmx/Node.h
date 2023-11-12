@@ -23,6 +23,8 @@
 #include <mmx/table.h>
 #include <mmx/multi_table.h>
 #include <mmx/balance_cache_t.h>
+#include <mmx/farmer_info_t.hxx>
+#include <mmx/farmed_block_info_t.hxx>
 #include <mmx/utils.h>
 
 #include <mmx/vm/Engine.h>
@@ -491,8 +493,10 @@ private:
 	uint_table<uint32_t, block_index_t> block_index;							// [height => index]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
 
-	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer_key => contract]
-	hash_multi_table<bls_pubkey_t, uint32_t> farmer_block_map;					// [farmer_key => height]
+	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
+	hash_multi_table<bls_pubkey_t, farmed_block_info_t> farmer_block_map;		// TODO: [farmer key => info]
+
+	hash_table<addr_t, farmer_info_t> farmer_info_map;							// TODO: [reward address => info]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
