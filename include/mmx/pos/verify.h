@@ -27,7 +27,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out,
 		const uint8_t* id, const int ksize, const int xbits);
 
 hash_t verify(	const std::vector<uint32_t>& X_values, const hash_t& challenge,
-				const uint8_t* id, const int ksize, const int ycount);
+				const uint8_t* id, const uint32_t Y_count, const int ksize);
 
 
 } // pos

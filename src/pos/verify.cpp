@@ -230,11 +230,8 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	return out;
 }
 
-hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const int ksize, const int ycount)
+hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const uint32_t Y_count, const int ksize)
 {
-	if(ycount < 0) {
-		throw std::logic_error("invalid ycount");
-	}
 	std::vector<uint32_t> X_out;
 	const auto entries = compute(X_values, &X_out, id, ksize, 0);
 	if(entries.empty()) {
@@ -244,15 +241,19 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	const auto& Y = result.first;
 
 	const uint64_t ymask = ((uint64_t(1) << (ksize + Y_EXTRABITS)) - 1);
+	const uint64_t extra_mask = ((uint64_t(1) << (Y_EXTRABITS)) - 1);
 
 	uint64_t Y_0 = 0;
 	::memcpy(&Y_0, challenge.data(), 8);
 	Y_0 &= ymask;
 
-	const uint64_t Y_end = Y_0 + ycount;
+	const uint64_t Y_end = Y_0 + (Y_count << Y_EXTRABITS);
 
-	if(Y < Y_0 || Y >= Y_end) {
-		throw std::logic_error("invalid Y output");
+	if((Y < Y_0) || (Y >= Y_end)) {
+		throw std::logic_error("Y value out of range");
+	}
+	if((Y & extra_mask) != (Y_0 & extra_mask)) {
+		throw std::logic_error("invalid Y value");
 	}
 	if(X_out != X_values) {
 		throw std::logic_error("invalid proof order");
