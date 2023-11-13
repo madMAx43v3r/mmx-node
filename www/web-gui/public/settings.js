@@ -7,6 +7,7 @@ Vue.component('node-settings', {
 			loading: true,
 			timelord: null,
 			open_port: null,
+			verify_vdf_multiple: null,
 			opencl_device: null,
 			opencl_platform: null,
 			opencl_device_list: null,
@@ -30,6 +31,7 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
+					this.verify_vdf_multiple = data["Node.verify_vdf_multiple"] != null ? true : false;
 					this.opencl_platform = data["opencl.platform"] != null ? data["opencl.platform"] : "";
 					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] : 0;
 					this.opencl_device_list = [{name: "None", value: -1}];
@@ -157,6 +159,11 @@ Vue.component('node-settings', {
 				this.set_config("Router.open_port", value, true);
 			}
 		},
+		verify_vdf_multiple(value, prev) {
+			if(prev != null) {
+				this.set_config("Node.verify_vdf_multiple", value, true);
+			}
+		},
 		opencl_platform(value, prev) {
 			if(prev != null) {
 				this.set_config("opencl.platform", value, true);
@@ -258,6 +265,11 @@ Vue.component('node-settings', {
 					<v-checkbox
 						v-model="open_port"
 						:label="$t('node_settings.open_port')"
+						class="my-0"
+					></v-checkbox>
+					<v-checkbox
+						v-model="verify_vdf_multiple"
+						:label="$t('node_settings.verify_vdf_multiple')"
 						class="my-0"
 					></v-checkbox>
 					

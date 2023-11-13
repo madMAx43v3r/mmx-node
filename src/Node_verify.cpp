@@ -354,6 +354,212 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	}
 }
 
+// comment: compute and verify all VDF streams, load balanced on cpu/opencl
+void Node::verify_vdf_cpuocl(std::shared_ptr<const ProofOfTime> proof) const
+{
+	// TODO: Check edge/limit cases on all areas below, 0/small input amounts
+
+	static bool have_sha_ni = sha256_ni_available();
+	static bool have_avx2 = avx2_available();
+	bool have_ocl = false;
+	if(auto engine = opencl_vdf[0]) {
+		have_ocl = true;
+	}
+	if(!(have_ocl && (have_sha_ni || have_avx2))) {
+		throw std::logic_error("verify_vdf_cpuocl missing hardware requirements");
+	}
+
+	// TODO: bad/temporary solution with 'static', find better/correct location between blocks
+	static uint64_t prev_time_cpu = 0;
+	static uint64_t prev_time_ocl = 0;
+	static int prev_num_cpu = 0;
+	static int prev_num_ocl = 0;
+
+	const auto& segments = proof->segments;
+	bool is_valid = !segments.empty();
+	size_t invalid_segment = -1;
+	size_t num_invalid_segment = 0;
+
+	const int num_chain = (verify_vdf_rewards && proof->reward_addr) ? 3 : 2;
+	const int num_point = segments.size() * num_chain;
+	if(!num_point) {
+		throw std::logic_error("no segments");
+	}
+
+	std::vector<hash_t> point;
+	std::vector<hash_t> point_verify;
+	std::vector<uint32_t> num_iters;
+	uint32_t max_iters = 0;
+
+	point.resize(num_point);
+	point_verify.resize(num_point);
+	num_iters.resize(num_point);
+
+	// comment: copy/infuse points to be hashed, points to verify against, number of iters, 3x vectors
+	for(int chain = 0; chain < num_chain; ++chain)
+	{
+		for(size_t i = 0, j = chain * segments.size(); i < segments.size(); ++i, ++j)
+		{
+			if(i > 0) {
+				point[j] = chain < 2 ? segments[i-1].output[chain] : proof->reward_segments[i-1];
+			} else {
+				point[j] = proof->input[chain % 2];
+				if(chain < 2) {
+					if(auto infuse = proof->infuse[chain]) {
+						point[j] = hash_t(point[j] + (*infuse));
+					}
+				} else if(proof->reward_addr) {
+					point[j] = hash_t(point[j] + (*proof->reward_addr));
+				}
+			}
+			point_verify[j] = chain < 2 ? segments[i].output[chain] : proof->reward_segments[i];
+			num_iters[j] = segments[i].num_iters;
+			max_iters = std::max(max_iters, num_iters[j]);
+		}
+	}
+
+	// comment: find load balance between cpu/opencl, based on last block, or 50/50 if none
+	// comment: calc time per point for cpu/opencl, estimate point balance to get equal total time
+	// comment: limit minimum usage to 10% of points to either cpu/opencl
+	int num_point_cpu = num_point / 2;
+	int num_point_ocl = num_point - num_point_cpu;
+	if(prev_time_cpu > 0 && prev_time_ocl > 0 && prev_num_cpu > 0 && prev_num_ocl > 0) {
+		const int prev_num_point = prev_num_cpu + prev_num_ocl;
+		const uint64_t cpu_micro_pt = prev_time_cpu / prev_num_cpu;
+		const uint64_t ocl_micro_pt = prev_time_ocl / prev_num_ocl;
+		uint64_t balance_pct = (((prev_num_point * ocl_micro_pt) / (cpu_micro_pt + ocl_micro_pt)) * 100) / prev_num_point;
+
+		// TODO: find out real practical lower limit on each side of cpu/openCL, percent or points
+		balance_pct = std::clamp(balance_pct, (uint64_t)10, (uint64_t)90);
+
+		num_point_cpu = (num_point * balance_pct) / 100;
+		num_point_ocl = num_point - num_point_cpu;
+	}
+
+	// comment: find balanced thread number based on recommended hardware concurrency
+	// comment: - too few threads will choke cpu calc potential
+	// comment: - too many threads will choke opencl thread potential
+	// comment: - hardware_concurrency() looks to give logical cpu units, not physical
+	// comment: balance found, good middleground: 'logic cpu units' + 50%
+	// comment: limit minimum to 8, maximum to 72
+	const uint32_t async_num = std::clamp((std::thread::hardware_concurrency() * 15) / 10, (uint32_t)8, (uint32_t)72);
+
+	// comment: find batch size of points for each cpu thread, and how many full batches
+	const uint32_t batch_size = (num_point_cpu + async_num - 1) / async_num;
+	const uint32_t batch_full = (num_point_cpu % async_num) ? (num_point_cpu % async_num) : async_num;
+	// TODO: check/fix logic if num_point_cpu less than async_num
+
+	// comment: store start/stop timestamp for all cpu threads, 1x opencl thread
+	std::vector<uint64_t> time_cpu_start;
+	std::vector<uint64_t> time_cpu_stop;
+	uint64_t time_ocl;
+	time_cpu_start.resize(async_num);
+	time_cpu_stop.resize(async_num);
+
+	// comment: hash all points, load balanced on cpu/opencl
+#pragma omp parallel for
+	for(uint32_t chunk = 0; chunk < async_num + 1; ++chunk)
+	{
+		if(chunk < async_num) {
+			// comment: cpu, async_num threads
+			time_cpu_start[chunk] = vnx::get_time_micros();
+			const uint32_t batch_real = (chunk < batch_full) ? batch_size : batch_size - 1;
+			const uint32_t batch_startp = (chunk < batch_full) ? (chunk * batch_size) : (batch_full * batch_size) + ((chunk - batch_full) * (batch_size - 1));
+
+			if(have_sha_ni) {
+				// comment: cpu, sha-ni
+				for(uint32_t j = 0; j < batch_real; ++j)
+				{
+					const uint32_t i = batch_startp + j;
+					recursive_sha256_ni(point[i].data(),num_iters[i]);
+				}
+			} else {
+				// comment: cpu, avx2
+				constexpr uint32_t avx_batch_size = 8;
+				const uint32_t avx_num_chunks = (batch_real + avx_batch_size - 1) / avx_batch_size;
+				const uint32_t avx_batch_lastsize = (batch_real % avx_batch_size) ? batch_real % avx_batch_size : avx_batch_size;
+				// TODO: check/fix logic if batch_real less than avx_batch_size
+
+				for(uint32_t avx_chunk = 0; avx_chunk < avx_num_chunks; ++avx_chunk)
+				{
+					const uint32_t avx_batch_real = (avx_chunk < avx_num_chunks - 1) ? avx_batch_size : avx_batch_lastsize;
+					uint32_t max_iters = 0;
+					uint8_t hash[avx_batch_size][32];
+					uint8_t input[avx_batch_size][64];
+
+					for(uint32_t j = 0; j < avx_batch_real; ++j)
+					{
+						const uint32_t i = (batch_startp) + (avx_chunk * avx_batch_size) + j;
+						max_iters = std::max(max_iters, num_iters[i]);
+					}
+
+					for(uint32_t k = 0; k < max_iters; ++k)
+					{
+						for(uint32_t j = 0; j < avx_batch_real; ++j)
+						{
+							const uint32_t i = (batch_startp) + (avx_chunk * avx_batch_size) + j;
+							max_iters = std::max(max_iters, num_iters[i]);
+							::memcpy(input[j], point[i].data(), 32);
+						}
+						// comment: if testing avx2, call direct sha256_avx2_64_x8(), or else sha-ni
+						sha256_64_x8(hash[0],input[0],32);
+
+						for(uint32_t j = 0; j < avx_batch_real; ++j)
+						{
+							const uint32_t i = (batch_startp) + (avx_chunk * avx_batch_size) + j;
+							if(k < num_iters[i]) {
+								::memcpy(point[i].data(), hash[j], 32);
+							}
+						}
+					}
+				}
+			}
+
+			time_cpu_stop[chunk] = vnx::get_time_micros();
+		} else {
+			// comment: opencl, 1x thread
+			time_ocl = vnx::get_time_micros();
+			auto engine = opencl_vdf[0];
+			engine->compute_point(&point, &num_iters, num_point_cpu, num_point_ocl);
+			time_ocl = vnx::get_time_micros() - time_ocl;
+		}
+	}
+
+	// comment: store total cpu and opencl time, cpu is earliest/latest timestamp on cpu threads
+	for(uint32_t chunk = 0; chunk < async_num; ++chunk)
+	{
+		time_cpu_start[0] = std::min(time_cpu_start[0], time_cpu_start[chunk]);
+		time_cpu_stop[0] = std::max(time_cpu_stop[0], time_cpu_stop[chunk]);
+	}
+	prev_time_cpu = time_cpu_stop[0] - time_cpu_start[0];
+	prev_time_ocl = time_ocl;
+
+	prev_num_cpu = num_point_cpu;
+	prev_num_ocl = num_point_ocl;
+
+	log(INFO) << "CPU/OpenCL verify VDF stats for height " << proof->height << ", " << (prev_time_cpu / 1000) << "ms/" << (prev_time_ocl / 1000) << "ms (" << prev_num_cpu << "pts/" << prev_num_ocl << "pts), " << num_chain << "/" << segments.size() << " (segments/size), " << std::thread::hardware_concurrency() << "t/" << async_num << "t (hint/used)";
+	// TODO: switch back to (DEBUG) before final version
+
+	// comment: verify all hashed points
+	for(int chain = 0; chain < num_chain; ++chain)
+	{
+		for(size_t i = 0, j = chain * segments.size(); i < segments.size(); ++i, ++j)
+		{
+			if(point[j] != point_verify[j]) {
+				if(is_valid) {
+					invalid_segment = j;
+				}
+				is_valid = false;
+				++num_invalid_segment;
+			}
+		}
+	}
+
+	if(!is_valid) {
+		throw std::logic_error("invalid output on chain " + std::to_string(invalid_segment / segments.size()) + ", segment " + std::to_string(invalid_segment % segments.size()) + ", total of " + std::to_string(num_invalid_segment) + " invalid segments on chains");
+	}
+}
+
 void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<vdf_point_t> point)
 {
 	if(is_synced && proof->height > get_height()) {
@@ -410,31 +616,45 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 
 	const auto time_begin = vnx::get_wall_time_micros();
 	try {
-		for(int i = 0; i < 3; ++i) {
-			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
-				if(auto engine = opencl_vdf[i]) {
-					engine->compute(proof, i);
+		auto point = std::make_shared<vdf_point_t>();
+		bool ocl_available = false;
+		if(auto engine = opencl_vdf[0]) {
+			ocl_available = true;
+		}
+		// TODO: remove temporary create/set 'verify_vdf_multiple' variable when generated vnx ready
+		bool verify_vdf_multiple = true;
+		// comment: only verify on cpu/opencl if hardware available, and enabled in settings
+		if(verify_vdf_multiple && ocl_available && (sha256_ni_available() || avx2_available())) {
+			verify_vdf_cpuocl(proof);
+			if(verify_vdf_rewards && proof->reward_addr) {
+				point->vdf_reward_valid = true;
+			}
+		} else {
+			for(int i = 0; i < 3; ++i) {
+				if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
+					if(auto engine = opencl_vdf[i]) {
+						engine->compute(proof, i);
+					}
 				}
 			}
-		}
-		auto point = std::make_shared<vdf_point_t>();
 
-		for(int i = 0; i < 3; ++i) {
-			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
-				try {
-					if(auto engine = opencl_vdf[i]) {
-						engine->verify(proof, i);
-					} else {
-						verify_vdf(proof, i);
-					}
-					if(i == 2) {
-						point->vdf_reward_valid = true;
-					}
-				} catch(const std::exception& ex) {
-					if(i < 2) {
-						throw;
-					} else {
-						log(WARN) << "Invalid VDF reward proof for height " << proof->height << ": " << ex.what();
+			for(int i = 0; i < 3; ++i) {
+				if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
+					try {
+						if(auto engine = opencl_vdf[i]) {
+							engine->verify(proof, i);
+						} else {
+							verify_vdf(proof, i);
+						}
+						if(i == 2) {
+							point->vdf_reward_valid = true;
+						}
+					} catch(const std::exception& ex) {
+						if(i < 2) {
+							throw;
+						} else {
+							log(WARN) << "Invalid VDF reward proof for height " << proof->height << ": " << ex.what();
+						}
 					}
 				}
 			}

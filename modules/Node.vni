@@ -47,6 +47,7 @@ module Node implements vnx.addons.HttpComponent {
 	bool db_replay = false;
 	bool show_warnings = false;
 	bool verify_vdf_rewards = true;
+	bool verify_vdf_multiple = false;			// verify VDF streams on cpu and opencl, if possible
 	
 	string storage_path;
 	string database_path = "db/";

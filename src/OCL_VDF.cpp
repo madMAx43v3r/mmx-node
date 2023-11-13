@@ -117,6 +117,48 @@ void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t ch
 	}
 }
 
+// comment: computes, no verify, iterations on points, until finished, then returns
+void OCL_VDF::compute_point(std::vector<hash_t>* point_p, std::vector<uint32_t>* num_iters_p, const size_t start_p, const size_t num_p)
+{
+	const size_t local = 64;
+	const size_t width = num_p + (local - (num_p % local)) % local;
+	if(!width) {
+		throw std::logic_error("no segments");
+	}
+	hash.resize(width * 32);
+	for(size_t i = 0; i < num_p; ++i) {
+		::memcpy(hash.data() + i * 32, (*point_p)[start_p + i].data(), (*point_p)[start_p + i].size());
+	}
+
+	num_iters.resize(width);
+	uint32_t max_num_iters = 0;
+	for(size_t i = 0; i < num_p; ++i)
+	{
+		num_iters[i] = (*num_iters_p)[start_p + i];
+		max_num_iters = std::max(max_num_iters, (*num_iters_p)[start_p + i]);
+	}
+
+	hash_buf.alloc_min(context, width * 32);
+	num_iters_buf.alloc_min(context, width);
+
+	hash_buf.upload(queue, hash, false);
+	num_iters_buf.upload(queue, num_iters, false);
+
+	kernel->set("hash", hash_buf);
+	kernel->set("num_iters", num_iters_buf);
+
+	for(uint32_t k = 0; k < max_num_iters; k += 4096) {
+		kernel->enqueue(queue, width, local);
+	}
+	queue->flush();
+
+	hash_buf.download(queue, hash.data(), true);
+
+	for(size_t i = 0; i < num_p; ++i) {
+		::memcpy((*point_p)[start_p + i].data(), hash.data() + i * 32, 32);
+	}
+}
+
 void OCL_VDF::release()
 {
 	std::lock_guard<std::mutex> lock(g_mutex);
@@ -130,6 +172,8 @@ OCL_VDF::OCL_VDF(cl_context context, cl_device_id device) {}
 void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 
 void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
+
+void OCL_VDF::compute_point(std::vector<hash_t>* point_p, std::vector<uint32_t>* num_iters_p, const size_t start_p, const size_t num_p) {}
 
 void OCL_VDF::release() {}
 

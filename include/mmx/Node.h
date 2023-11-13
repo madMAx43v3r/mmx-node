@@ -382,6 +382,8 @@ private:
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) const;
 
+	void verify_vdf_cpuocl(std::shared_ptr<const ProofOfTime> proof) const;
+
 	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<vdf_point_t> point);
 
 	void verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof);

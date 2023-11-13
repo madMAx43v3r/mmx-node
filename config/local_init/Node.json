@@ -1,4 +1,5 @@
 {
 	"opencl_device": 0,
+	"verify_vdf_multiple": false,
 	"verify_vdf_rewards": true
 }

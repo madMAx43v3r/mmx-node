@@ -20,6 +20,8 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 #include <mmx/Router.h>
+#include <sha256_ni.h>
+#include <sha256_avx2.h>
 
 #include <vnx/vnx.h>
 
@@ -111,6 +113,15 @@ void Node::main()
 		log(WARN) << "Failed to create OpenCL GPU context: " << ex.what();
 	}
 #endif
+
+	// TODO: remove temporary create/set 'verify_vdf_multiple' variable when generated vnx ready
+	bool verify_vdf_multiple = true;
+
+	if(auto engine = opencl_vdf[0]) {
+        	log(INFO) << "Verify on CPU and OpenCL " << ((sha256_ni_available() || avx2_available()) ? "possible" : "not possible") << " (setting: " << ((verify_vdf_multiple) ? "enabled" : "disabled") << ")";
+	} else {
+		log(INFO) << "Verify on CPU and OpenCL not possible (setting: " << (verify_vdf_multiple ? "enabled" : "disabled") << ")";
+	}
 
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
 	vdf_threads = std::make_shared<vnx::ThreadPool>(num_vdf_threads);

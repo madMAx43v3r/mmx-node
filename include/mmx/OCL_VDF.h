@@ -31,6 +31,8 @@ public:
 
 	void verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain);
 
+	void compute_point(std::vector<hash_t>* point_p, std::vector<uint32_t>* num_iters_p, const size_t start_p, const size_t num_p);
+
 	static void release();
 
 private:
