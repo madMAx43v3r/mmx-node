@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 		uint8_t key[32] = {};
 		::memcpy(key, &iter, sizeof(iter));
 
-		gen_mem_array(mem, key, mem_size);
+		gen_mem_array(mem, key, 32, mem_size);
 
 		if(iter == 0) {
 			std::map<uint32_t, uint32_t> init_count;

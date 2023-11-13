@@ -16,25 +16,31 @@
 namespace mmx {
 namespace pos {
 
-static const uint32_t MEM_HASH_INIT[8] = {
-	0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+static const uint32_t MEM_HASH_INIT[16] = {
+	0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+	0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174
 };
 
-void gen_mem_array(uint32_t* mem, const uint8_t* key, const uint64_t mem_size)
+void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const uint32_t mem_size)
 {
+	if(key_size > 16) {
+		throw std::logic_error("key_size > 16");
+	}
 	if(mem_size % 16) {
 		throw std::logic_error("mem_size % 16 != 0");
 	}
 	uint32_t state[16];
 
-	for(int i = 0; i < 8; ++i) {
+	for(int i = 0; i < 16; ++i) {
 		state[i] = MEM_HASH_INIT[i];
 	}
-	for(int i = 0; i < 8; ++i) {
-		::memcpy(state + 8 + i, key + i * 4, 4);
+	for(int i = 0; i < key_size; ++i) {
+		uint32_t tmp = 0;
+		::memcpy(&tmp, key + i * 4, 4);
+		state[i] ^= tmp;
 	}
 
-	for(uint64_t i = 0; i < mem_size; i += 16)
+	for(uint32_t i = 0; i < mem_size; i += 16)
 	{
 		for(int k = 0; k < 16; ++k) {
 			MMXPOS_QUARTERROUND(state[0], state[4], state[8], state[12]);
