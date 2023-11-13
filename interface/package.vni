@@ -4,6 +4,7 @@ extern uint128 = {11, 16, 1};
 extern fixed128 = {11, 16, 1};
 
 extern hash_t = {11, 32, 1};
+extern hash_512_t = {11, 64, 1};
 extern addr_t = {11, 32, 1};
 extern memo_t = {11, 20, 1};
 

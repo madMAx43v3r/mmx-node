@@ -6,7 +6,6 @@
  */
 
 #include <mmx/hash_t.hpp>
-#include <mmx/vm/var_t.h>
 
 #include <bls.hpp>
 #include <sodium.h>

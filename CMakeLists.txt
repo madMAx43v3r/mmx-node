@@ -133,6 +133,7 @@ add_library(mmx_iface SHARED
 	src/fixed128.cpp
 	src/skey_t.cpp
 	src/hash_t.cpp
+	src/hash_512_t.cpp
 	src/addr_t.cpp
 	src/pubkey_t.cpp
 	src/signature_t.cpp
