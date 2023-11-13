@@ -198,6 +198,7 @@ void Node::main()
 
 		if(is_replay) {
 			log(INFO) << "Creating DB (this may take a while) ...";
+			int64_t last_time = vnx::get_wall_time_millis();
 			int64_t block_offset = 0;
 			std::vector<int64_t> tx_offsets;
 			std::list<std::shared_ptr<const Block>> history;
@@ -239,8 +240,12 @@ void Node::main()
 							commit(history.front());
 							history.pop_front();
 						}
-						if(block->height % 1000 == 0) {
-							log(INFO) << "Height " << block->height << " ...";
+						{
+							const auto now = vnx::get_wall_time_millis();
+							if(now - last_time >= 1000) {
+								log(INFO) << "DB replay height " << block->height << " ...";
+							}
+							last_time = now;
 						}
 						vnx_process(false);
 					}
