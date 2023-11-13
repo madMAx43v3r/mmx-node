@@ -23,8 +23,11 @@ static const uint32_t MEM_HASH_INIT[16] = {
 
 void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const uint32_t mem_size)
 {
-	if(key_size > 16) {
-		throw std::logic_error("key_size > 16");
+	if(key_size > 64) {
+		throw std::logic_error("key_size > 64");
+	}
+	if(key_size % 4) {
+		throw std::logic_error("key_size % 4 != 0");
 	}
 	if(mem_size % 16) {
 		throw std::logic_error("mem_size % 16 != 0");
@@ -34,7 +37,9 @@ void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const 
 	for(int i = 0; i < 16; ++i) {
 		state[i] = MEM_HASH_INIT[i];
 	}
-	for(int i = 0; i < key_size; ++i) {
+
+	for(int i = 0; i < key_size / 4; ++i)
+	{
 		uint32_t tmp = 0;
 		::memcpy(&tmp, key + i * 4, 4);
 		state[i] ^= tmp;

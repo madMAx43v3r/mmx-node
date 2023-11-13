@@ -7,7 +7,7 @@
 
 #include <mmx/pos/verify.h>
 #include <mmx/pos/mem_hash.h>
-#include <mmx/hash_t.hpp>
+#include <mmx/hash_512_t.hpp>
 
 #include <algorithm>
 #include <vnx/vnx.h>
@@ -46,19 +46,18 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 		msg[0] = X_i;
 		::memcpy(msg + 1, id, 32);
 
-		const hash_t key(&msg, 36);
-		gen_mem_array(mem_buf.data(), key.data(), MEM_SIZE);
+		const hash_512_t key(&msg, 36);
+		gen_mem_array(mem_buf.data(), key.data(), key.size(), MEM_SIZE);
 
-		uint8_t mem_hash[128 + 36] = {};
+		uint8_t mem_hash[128 + 64] = {};
 		calc_mem_hash(mem_buf.data(), mem_hash, MEM_HASH_M, MEM_HASH_B);
 
-		::memcpy(mem_hash + 128, msg, 36);
+		::memcpy(mem_hash + 128, key.data(), key.size());
 
-		const hash_t mem_hash_hash(mem_hash, sizeof(mem_hash));
+		const hash_512_t mem_hash_hash(mem_hash, sizeof(mem_hash));
 
 		uint32_t hash[16] = {};
-		::memcpy(hash, hash_t(mem_hash_hash.data(), 32).data(), 32);
-		::memcpy(hash + 8, hash_t(hash, 32).data(), 32);
+		::memcpy(hash, mem_hash_hash.data(), mem_hash_hash.size());
 
 		std::array<uint32_t, N_META> meta = {};
 		for(int i = 0; i < N_META; ++i) {
@@ -171,10 +170,9 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 						for(int i = 0; i < N_META; ++i) {
 							msg[2 + N_META + i] = R_meta[i];
 						}
-						const hash_t first(&msg, sizeof(msg));
+						const hash_512_t tmp(&msg, sizeof(msg));
 
-						::memcpy(hash, hash_t(first.data(), 32).data(), 32);
-						::memcpy(hash + 8, hash_t(hash, 32).data(), 32);
+						::memcpy(hash, tmp.data(), tmp.size());
 					}
 					std::array<uint32_t, N_META> meta = {};
 					for(int i = 0; i < N_META; ++i) {
