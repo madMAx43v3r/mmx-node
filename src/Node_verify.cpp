@@ -458,13 +458,13 @@ void Node::verify_vdf_cpuocl(std::shared_ptr<const ProofOfTime> proof) const
 
 	// comment: hash all points, load balanced on cpu/opencl
 #pragma omp parallel for
-	for(uint32_t chunk = 0; chunk < async_num + 1; ++chunk)
+	for(int chunk = 0; chunk < (int)async_num + 1; ++chunk)
 	{
-		if(chunk < async_num) {
+		if(chunk < (int)async_num) {
 			// comment: cpu, async_num threads
 			time_cpu_start[chunk] = vnx::get_time_micros();
-			const uint32_t batch_real = (chunk < batch_full) ? batch_size : batch_size - 1;
-			const uint32_t batch_startp = (chunk < batch_full) ? (chunk * batch_size) : (batch_full * batch_size) + ((chunk - batch_full) * (batch_size - 1));
+			const uint32_t batch_real = (chunk < (int)batch_full) ? batch_size : batch_size - 1;
+			const uint32_t batch_startp = (chunk < (int)batch_full) ? (chunk * batch_size) : (batch_full * batch_size) + ((chunk - batch_full) * (batch_size - 1));
 
 			if(have_sha_ni) {
 				// comment: cpu, sha-ni
