@@ -28,7 +28,10 @@ hash_t hash_t::random()
 {
 	std::vector<uint8_t> seed(4096);
 	::randombytes_buf(seed.data(), seed.size());
-	return hash_t(seed);
+
+	const hash_t out(seed);
+	::memset(seed.data(), 0, seed.size());		// clear memory
+	return out;
 }
 
 
