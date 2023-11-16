@@ -17,17 +17,16 @@ namespace pos {
 
 static constexpr int N_META = 12;
 static constexpr int N_TABLE = 9;
-static constexpr int Y_EXTRABITS = 6;
 
 static constexpr int META_BYTES = N_META * 4;
 
 
-std::vector<std::pair<uint64_t, bytes_t<META_BYTES>>>
+std::vector<std::pair<uint32_t, bytes_t<META_BYTES>>>
 compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out,
 		const uint8_t* id, const int ksize, const int xbits);
 
 hash_t verify(	const std::vector<uint32_t>& X_values, const hash_t& challenge,
-				const uint8_t* id, const uint32_t Y_count, const int ksize);
+				const uint8_t* id, const int plot_filter, const int ksize);
 
 
 } // pos

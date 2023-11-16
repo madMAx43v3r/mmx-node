@@ -29,7 +29,7 @@ static std::shared_ptr<vnx::ThreadPool> g_threads;
 
 void compute_f1(std::vector<uint32_t>* X_tmp,
 				std::vector<std::array<uint32_t, N_META>>& M_tmp,
-				std::vector<std::pair<uint64_t, uint32_t>>& entries,
+				std::vector<std::pair<uint32_t, uint32_t>>& entries,
 				std::mutex& mutex,
 				const uint32_t X,
 				const uint8_t* id, const int ksize, const int xbits)
@@ -74,7 +74,7 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 	}
 }
 
-std::vector<std::pair<uint64_t, bytes_t<META_BYTES>>>
+std::vector<std::pair<uint32_t, bytes_t<META_BYTES>>>
 compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, const uint8_t* id, const int ksize, const int xbits)
 {
 	if(ksize < 8 || ksize > 32) {
@@ -95,7 +95,6 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		}
 	}
 	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
-	const uint64_t ymask = ((uint64_t(1) << (ksize + Y_EXTRABITS)) - 1);
 	const uint32_t num_entries_1 = X_values.size() << xbits;
 
 	std::mutex mutex;
@@ -103,8 +102,8 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	std::vector<uint32_t> X_tmp;
 	std::vector<uint32_t> mem_buf(MEM_SIZE);
 	std::vector<std::array<uint32_t, N_META>> M_tmp;
-	std::vector<std::pair<uint64_t, uint32_t>> entries;
-	std::vector<std::vector<std::pair<uint32_t, uint32_t>>> LR_tmp(N_TABLE - 1);
+	std::vector<std::pair<uint32_t, uint32_t>> entries;
+	std::vector<std::vector<std::pair<uint32_t, uint32_t>>> LR_tmp(N_TABLE + 1);
 
 //	const auto t1_begin = vnx::get_time_millis();
 
@@ -138,7 +137,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 //		const auto time_begin = vnx::get_time_millis();
 
 		std::vector<std::array<uint32_t, N_META>> M_next;
-		std::vector<std::pair<uint64_t, uint32_t>> matches;
+		std::vector<std::pair<uint32_t, uint32_t>> matches;
 
 		std::sort(entries.begin(), entries.end());
 
@@ -178,12 +177,12 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 					for(int i = 0; i < N_META; ++i) {
 						meta[i] = hash[i] & kmask;
 					}
-					const uint64_t Y_i = ((uint64_t(hash[N_META + 1]) << 32) | hash[N_META]) & (t < N_TABLE ? kmask : ymask);
+					const uint32_t Y_i = hash[N_META] & kmask;
 
 					matches.emplace_back(Y_i, M_next.size());
 
 					if(X_out) {
-						LR_tmp[t-2].emplace_back(PL, PR);
+						LR_tmp[t].emplace_back(PL, PR);
 					}
 					M_next.push_back(meta);
 				}
@@ -204,19 +203,19 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 	std::sort(entries.begin(), entries.end());
 
-	std::vector<std::pair<uint64_t, bytes_t<META_BYTES>>> out;
+	std::vector<std::pair<uint32_t, bytes_t<META_BYTES>>> out;
 	for(const auto& entry : entries)
 	{
 		if(X_out) {
 			std::vector<uint32_t> I_tmp;
 			I_tmp.push_back(std::get<1>(entry));
 
-			for(int k = N_TABLE - 2; k >= 0; --k)
+			for(int t = N_TABLE; t >= 2; --t)
 			{
 				std::vector<uint32_t> I_next;
 				for(const auto i : I_tmp) {
-					I_next.push_back(LR_tmp[k][i].first);
-					I_next.push_back(LR_tmp[k][i].second);
+					I_next.push_back(LR_tmp[t][i].first);
+					I_next.push_back(LR_tmp[t][i].second);
 				}
 				I_tmp = std::move(I_next);
 			}
@@ -230,7 +229,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	return out;
 }
 
-hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const uint32_t Y_count, const int ksize)
+hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const int plot_filter, const int ksize)
 {
 	std::vector<uint32_t> X_out;
 	const auto entries = compute(X_values, &X_out, id, ksize, 0);
@@ -240,19 +239,15 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	const auto& result = entries[0];
 	const auto& Y = result.first;
 
-	const uint64_t ymask = ((uint64_t(1) << (ksize + Y_EXTRABITS)) - 1);
-	const uint64_t extra_mask = ((uint64_t(1) << (Y_EXTRABITS)) - 1);
+	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
 
-	uint64_t Y_0 = 0;
-	::memcpy(&Y_0, challenge.data(), 8);
-	Y_0 &= ymask;
+	uint32_t Y_0 = 0;
+	::memcpy(&Y_0, challenge.data(), sizeof(Y_0));
+	Y_0 &= kmask;
 
-	const uint64_t Y_end = Y_0 + (Y_count << Y_EXTRABITS);
+	const uint64_t Y_end = uint64_t(Y_0) + (1 << plot_filter);
 
 	if((Y < Y_0) || (Y >= Y_end)) {
-		throw std::logic_error("Y value out of range");
-	}
-	if((Y & extra_mask) != (Y_0 & extra_mask)) {
 		throw std::logic_error("invalid Y value");
 	}
 	if(X_out != X_values) {
