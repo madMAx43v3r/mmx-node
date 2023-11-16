@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 
 	const bool full_mode = (xbits == ksize);
 
-	uint8_t id[32] = {};
+	const hash_t id;
 
 	std::mt19937_64 generator(1337);
 	std::uniform_int_distribution<uint64_t> dist(0, (uint64_t(1) << (ksize - xbits)) - 1);

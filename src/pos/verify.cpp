@@ -32,7 +32,7 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 				std::vector<std::pair<uint32_t, uint32_t>>& entries,
 				std::mutex& mutex,
 				const uint32_t X,
-				const uint8_t* id, const int ksize, const int xbits)
+				const hash_t& id, const int ksize, const int xbits)
 {
 	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
 
@@ -44,7 +44,7 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 
 		uint32_t msg[9] = {};
 		msg[0] = X_i;
-		::memcpy(msg + 1, id, 32);
+		::memcpy(msg + 1, id.data(), 32);
 
 		const hash_512_t key(&msg, 36);
 		gen_mem_array(mem_buf.data(), key.data(), key.size(), MEM_SIZE);
@@ -75,7 +75,7 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 }
 
 std::vector<std::pair<uint32_t, bytes_t<META_BYTES>>>
-compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, const uint8_t* id, const int ksize, const int xbits)
+compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, const hash_t& id, const int ksize, const int xbits)
 {
 	if(ksize < 8 || ksize > 32) {
 		throw std::logic_error("invalid ksize");
@@ -229,7 +229,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	return out;
 }
 
-hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const uint8_t* id, const int plot_filter, const int ksize)
+hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const hash_t& id, const int plot_filter, const int ksize)
 {
 	std::vector<uint32_t> X_out;
 	const auto entries = compute(X_values, &X_out, id, ksize, 0);
@@ -253,7 +253,7 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	if(X_out != X_values) {
 		throw std::logic_error("invalid proof order");
 	}
-	return hash_t(result.second + challenge);
+	return hash_t(challenge + result.second);
 }
 
 
