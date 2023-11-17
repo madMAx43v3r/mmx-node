@@ -405,7 +405,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 		for(int i = 0; i < 3; ++i) {
 			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
 				if(auto engine = opencl_vdf[i]) {
-					if(!(verify_vdf_cpuopencl && i < 1)) {
+					if(i > 0 || !verify_vdf_cpuopencl) {
 						engine->compute(proof, i);
 					}
 				}
@@ -416,12 +416,9 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 		for(int i = 0; i < 3; ++i) {
 			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
 				try {
-					if(auto engine = opencl_vdf[i]) {
-						if(!(verify_vdf_cpuopencl && i < 1)) {
-							engine->verify(proof, i);
-						} else {
-							verify_vdf(proof, i);
-						}
+					auto engine = opencl_vdf[i];
+					if(engine && (i > 0 || !verify_vdf_cpuopencl)) {
+						engine->verify(proof, i);
 					} else {
 						verify_vdf(proof, i);
 					}
