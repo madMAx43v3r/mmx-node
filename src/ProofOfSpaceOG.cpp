@@ -54,6 +54,7 @@ void ProofOfSpaceOG::validate() const
 	if(plot_key_ != plot_key) {
 		throw std::logic_error("invalid plot_key");
 	}
+	// TODO: include ksize in hash
 	if(hash_t(hash_t(pool_key + plot_key_) + bytes_t<4>().from_uint(11337u)) != plot_id) {
 		throw std::logic_error("invalid proof keys or port");
 	}
