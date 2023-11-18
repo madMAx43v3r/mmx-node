@@ -253,7 +253,7 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	if(X_out != X_values) {
 		throw std::logic_error("invalid proof order");
 	}
-	return hash_t(challenge + result.second);
+	return hash_t(std::string("proof_quality") + challenge + result.second);
 }
 
 
