@@ -78,6 +78,7 @@ public:
 	vnx::bool_t do_sync = true;
 	vnx::bool_t db_replay = false;
 	vnx::bool_t show_warnings = false;
+	vnx::bool_t verify_vdf_cpuopencl = false;
 	vnx::bool_t verify_vdf_rewards = true;
 	std::string storage_path;
 	std::string database_path = "db/";
@@ -205,7 +206,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(40);
+	_visitor.template type_begin<NodeBase>(41);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -241,12 +242,13 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("do_sync", 32); _visitor.accept(do_sync);
 	_visitor.type_field("db_replay", 33); _visitor.accept(db_replay);
 	_visitor.type_field("show_warnings", 34); _visitor.accept(show_warnings);
-	_visitor.type_field("verify_vdf_rewards", 35); _visitor.accept(verify_vdf_rewards);
-	_visitor.type_field("storage_path", 36); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 37); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 38); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 39); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(40);
+	_visitor.type_field("verify_vdf_cpuopencl", 35); _visitor.accept(verify_vdf_cpuopencl);
+	_visitor.type_field("verify_vdf_rewards", 36); _visitor.accept(verify_vdf_rewards);
+	_visitor.type_field("storage_path", 37); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 38); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 39); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 40); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(41);
 }
 
 
