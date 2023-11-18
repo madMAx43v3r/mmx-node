@@ -6,6 +6,7 @@
  */
 
 #include <mmx/hash_t.hpp>
+#include <vnx/SHA256.h>
 
 #include <bls.hpp>
 #include <sodium.h>
@@ -20,7 +21,9 @@ hash_t::hash_t(const void* data, const size_t num_bytes)
 	if(have_sha_ni) {
 		sha256_ni(bytes.data(), (const uint8_t*)data, num_bytes);
 	} else {
-		bls::Util::Hash256(bytes.data(), (const uint8_t*)data, num_bytes);
+		vnx::SHA256 ctx;
+		ctx.update((const uint8_t*)data, num_bytes);
+		ctx.finalize(bytes.data());
 	}
 }
 
