@@ -397,12 +397,17 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 {
 	std::lock_guard lock(vdf_mutex);
 
+	// TODO: remove temporary create/set 'verify_vdf_cpuopencl' variable when generated VNX ready
+	bool verify_vdf_cpuopencl = true;
+
 	const auto time_begin = vnx::get_wall_time_micros();
 	try {
 		for(int i = 0; i < 3; ++i) {
 			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
 				if(auto engine = opencl_vdf[i]) {
-					engine->compute(proof, i);
+					if(i > 0 || !verify_vdf_cpuopencl) {
+						engine->compute(proof, i);
+					}
 				}
 			}
 		}
@@ -411,7 +416,8 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 		for(int i = 0; i < 3; ++i) {
 			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
 				try {
-					if(auto engine = opencl_vdf[i]) {
+					auto engine = opencl_vdf[i];
+					if(engine && (i > 0 || !verify_vdf_cpuopencl)) {
 						engine->verify(proof, i);
 					} else {
 						verify_vdf(proof, i);
