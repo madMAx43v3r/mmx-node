@@ -347,14 +347,14 @@ void Node::update()
 	}
 
 	// try to make a block
-	for(uint32_t i = 0; i <= std::max(params->infuse_delay, 1u) && i <= peak->height; ++i)
+	for(uint32_t depth = 0; depth <= std::max(params->infuse_delay, 1u) && depth <= peak->height; ++depth)
 	{
-		const auto height = peak->height - i;
+		const auto height = peak->height - depth;
 		// find best peak at this height
 		std::shared_ptr<const BlockHeader> prev;
 		if(height < root->height) {
 			break;
-		} else if(i == 0) {
+		} else if(depth == 0) {
 			prev = peak;
 		} else if(height == root->height) {
 			prev = root;
@@ -368,9 +368,9 @@ void Node::update()
 				const auto proof_list = find_proof(challenge);
 
 				// Note: proof_list already limited to max_blocks_per_height
-				for(size_t k = 0; k < proof_list.size(); ++k)
+				for(size_t proof_index = 0; proof_index < proof_list.size(); ++proof_index)
 				{
-					const auto& proof = proof_list[k];
+					const auto& proof = proof_list[proof_index];
 					// check if it's our proof and farmer is still alive
 					if(vnx::get_pipe(proof.farmer_mac))
 					{
@@ -389,7 +389,7 @@ void Node::update()
 													// do not create another block if previous block was already signed more than a block interval ago
 													// otherwise it would allow arbitrary re-orgs !!!
 													do_create = true;
-													log(WARN) << "Creating second block for a signed previous at height " << key.first << ", " << delay << " sec delay";
+													log(WARN) << "Creating second block for a signed previous at height " << key.first << ", delay " << delay << " sec";
 												}
 											}
 										} else {
@@ -406,8 +406,8 @@ void Node::update()
 						if(do_create) {
 							try {
 								// make a full block only if (we extend peak or replace a dummy peak or replace a weaker peak) and (we got best score)
-								const bool is_better = (i == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
-								const bool full_block = (i == 0 || is_better) && k == 0;
+								const bool is_better = (depth == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
+								const bool full_block = (depth == 0 || is_better) && proof_index == 0;
 								if(auto block = make_block(prev, proof, full_block)) {
 									created_blocks[key] = block->hash;
 									add_block(block);
