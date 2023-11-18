@@ -397,9 +397,6 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 {
 	std::lock_guard lock(vdf_mutex);
 
-	// TODO: remove temporary create/set 'verify_vdf_cpuopencl' variable when generated VNX ready
-	bool verify_vdf_cpuopencl = true;
-
 	const auto time_begin = vnx::get_wall_time_micros();
 	try {
 		for(int i = 0; i < 3; ++i) {
