@@ -231,6 +231,9 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const hash_t& id, const int plot_filter, const int ksize)
 {
+	if(X_values.size() != (1 << (N_TABLE - 1))) {
+		throw std::logic_error("invalid proof size");
+	}
 	std::vector<uint32_t> X_out;
 	const auto entries = compute(X_values, &X_out, id, ksize, 0);
 	if(entries.empty()) {
