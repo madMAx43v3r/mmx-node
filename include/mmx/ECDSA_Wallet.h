@@ -309,6 +309,7 @@ public:
 			}
 		}
 		try {
+			tx->network = params->network;
 			tx->finalize();
 
 			std::unordered_map<addr_t, uint32_t> solution_map;
