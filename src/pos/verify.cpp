@@ -256,6 +256,7 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	if(X_out != X_values) {
 		throw std::logic_error("invalid proof order");
 	}
+	// proof output needs to be hashed after challenge, otherwise compression to 256-bit is possible
 	return hash_t(std::string("proof_quality") + challenge + result.second);
 }
 
