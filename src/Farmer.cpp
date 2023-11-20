@@ -12,8 +12,6 @@
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/utils.h>
 
-#include <bls.hpp>
-
 
 namespace mmx {
 
@@ -58,9 +56,9 @@ vnx::Hash64 Farmer::get_mac_addr() const
 	return vnx_get_id();
 }
 
-std::vector<bls_pubkey_t> Farmer::get_farmer_keys() const
+std::vector<pubkey_t> Farmer::get_farmer_keys() const
 {
-	std::vector<bls_pubkey_t> out;
+	std::vector<pubkey_t> out;
 	for(const auto& entry : key_map) {
 		out.push_back(entry.first);
 	}
@@ -150,36 +148,27 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 	}
 }
 
-skey_t Farmer::get_skey(const bls_pubkey_t& pubkey) const
+skey_t Farmer::get_skey(const pubkey_t& pubkey) const
 {
 	auto iter = key_map.find(pubkey);
 	if(iter == key_map.end()) {
-		throw std::logic_error("unknown farmer / plot key: " + pubkey.to_string());
+		throw std::logic_error("unknown farmer key: " + pubkey.to_string());
 	}
 	return iter->second;
 }
 
-bls_signature_t Farmer::sign_proof(
-		std::shared_ptr<const ProofResponse> value, const vnx::optional<skey_t>& local_sk) const
+signature_t Farmer::sign_proof(std::shared_ptr<const ProofResponse> value) const
 {
 	if(!value || !value->is_valid()) {
 		throw std::logic_error("invalid argument");
 	}
-	skey_t plot_sk = get_skey(value->proof->farmer_key);
+	const skey_t farmer_sk = get_skey(value->proof->farmer_key);
 
-	if(local_sk) {
-		plot_sk = bls::PrivateKey::Aggregate({
-			// inlined calls to skey_t::to_bls() to avoid MSVC bug
-			bls::PrivateKey::FromBytes(bls::Bytes(local_sk->data(), local_sk->size())),
-			bls::PrivateKey::FromBytes(bls::Bytes(plot_sk.data(), plot_sk.size()))
-		});
-		key_map[value->proof->plot_key] = plot_sk;
-	}
-	return bls_signature_t::sign(plot_sk, value->hash);
+	return signature_t::sign(farmer_sk, value->hash);
 }
 
-std::shared_ptr<const BlockHeader> Farmer::sign_block(
-		std::shared_ptr<const BlockHeader> block) const
+std::shared_ptr<const BlockHeader>
+Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 {
 	if(!block) {
 		throw std::logic_error("!block");
@@ -187,7 +176,7 @@ std::shared_ptr<const BlockHeader> Farmer::sign_block(
 	if(!block->proof) {
 		throw std::logic_error("!proof");
 	}
-	const auto plot_sk = get_skey(block->proof->plot_key);
+	const auto farmer_sk = get_skey(block->proof->farmer_key);
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
@@ -202,7 +191,7 @@ std::shared_ptr<const BlockHeader> Farmer::sign_block(
 		out->reward_addr = reward_addr;
 	}
 	out->hash = out->calc_hash().first;
-	out->farmer_sig = bls_signature_t::sign(plot_sk, out->hash);
+	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
 	out->content_hash = out->calc_hash().second;
 	return out;
 }

@@ -267,15 +267,7 @@ public:
 		set(value.to_string());
 	}
 
-	void accept(const bls_pubkey_t& value) {
-		set(value.to_string());
-	}
-
 	void accept(const signature_t& value) {
-		set(value.to_string());
-	}
-
-	void accept(const bls_signature_t& value) {
 		set(value.to_string());
 	}
 
@@ -1540,10 +1532,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		node->get_farmed_block_count(since,
-			[this, request_id, limit](const std::map<bls_pubkey_t, uint32_t>& result) {
-				std::vector<std::pair<bls_pubkey_t, uint32_t>> data(result.begin(), result.end());
+			[this, request_id, limit](const std::map<pubkey_t, uint32_t>& result) {
+				std::vector<std::pair<pubkey_t, uint32_t>> data(result.begin(), result.end());
 				std::sort(data.begin(), data.end(),
-					[](const std::pair<bls_pubkey_t, uint32_t>& L, std::pair<bls_pubkey_t, uint32_t>& R) -> bool {
+					[](const std::pair<pubkey_t, uint32_t>& L, std::pair<pubkey_t, uint32_t>& R) -> bool {
 						return L.second > R.second;
 					});
 				if(data.size() > limit) {
@@ -1563,7 +1555,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/farmer") {
 		const auto iter = query.find("id");
 		if(iter != query.end()) {
-			const auto farmer_key = vnx::from_string<bls_pubkey_t>(iter->second);
+			const auto farmer_key = vnx::from_string<pubkey_t>(iter->second);
 			const auto iter_limit = query.find("limit");
 			const auto iter_since = query.find("since");
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
@@ -1658,7 +1650,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					vnx::Object out;
 					if(keys) {
 						out["farmer_public_key"] = keys->farmer_public_key.to_string();
-						out["pool_public_key"] = keys->pool_public_key.to_string();
 					}
 					respond(request_id, out);
 				},
@@ -2311,7 +2302,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		farmer->get_farmer_keys(
-				[this, request_id, limit, since](const std::vector<bls_pubkey_t>& farmer_keys) {
+				[this, request_id, limit, since](const std::vector<pubkey_t>& farmer_keys) {
 					node->get_farmed_blocks(farmer_keys, false, since, limit,
 						[this, request_id, limit](const std::vector<std::shared_ptr<const BlockHeader>> blocks) {
 							respond(request_id, render_value(blocks, get_context()));

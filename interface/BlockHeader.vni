@@ -40,7 +40,7 @@ class BlockHeader {
 	
 	hash_t tx_hash;
 	
-	optional<bls_signature_t> farmer_sig;
+	optional<signature_t> farmer_sig;
 	
 	hash_t content_hash;
 	

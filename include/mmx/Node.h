@@ -144,7 +144,7 @@ protected:
 
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
 
-	std::vector<virtual_plot_info_t> get_virtual_plots_for(const bls_pubkey_t& farmer_key) const override;
+	std::vector<virtual_plot_info_t> get_virtual_plots_for(const pubkey_t& farmer_key) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<addr_t>& addresses) const override;
 
@@ -185,11 +185,11 @@ protected:
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity_by(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
-			const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0, const int32_t& limit = -1) const override;
+			const std::vector<pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0, const int32_t& limit = -1) const override;
 
-	std::map<bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const override;
+	std::map<pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const override;
 
-	uint32_t get_farmed_block_count_for(const std::vector<bls_pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
+	uint32_t get_farmed_block_count_for(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
 
 	void on_stuck_timeout();
 
@@ -491,8 +491,8 @@ private:
 	uint_table<uint32_t, block_index_t> block_index;							// [height => index]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
 
-	hash_multi_table<bls_pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
-	hash_multi_table<bls_pubkey_t, farmed_block_info_t> farmer_block_map;		// TODO: [farmer key => info]
+	hash_multi_table<pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
+	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;		// TODO: [farmer key => info]
 
 	hash_table<addr_t, farmer_info_t> farmer_info_map;							// TODO: [reward address => info]
 

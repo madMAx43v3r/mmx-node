@@ -1082,7 +1082,7 @@ std::vector<virtual_plot_info_t> Node::get_virtual_plots(const std::vector<addr_
 	return result;
 }
 
-std::vector<virtual_plot_info_t> Node::get_virtual_plots_for(const bls_pubkey_t& farmer_key) const
+std::vector<virtual_plot_info_t> Node::get_virtual_plots_for(const pubkey_t& farmer_key) const
 {
 	std::vector<addr_t> addresses;
 	vplot_map.find(farmer_key, addresses);
@@ -1552,7 +1552,7 @@ std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Node::get_swap_liqui
 }
 
 std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
-		const std::vector<bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const
+		const std::vector<pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const
 {
 	std::vector<uint32_t> entries;
 //	TODO:
@@ -1576,11 +1576,11 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 	return out;
 }
 
-std::map<bls_pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& since) const
+std::map<pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& since) const
 {
-	std::map<bls_pubkey_t, uint32_t> out;
+	std::map<pubkey_t, uint32_t> out;
 //	TODO:
-//	farmer_block_map.scan([&out, since](const bls_pubkey_t& key, const uint32_t& height) {
+//	farmer_block_map.scan([&out, since](const pubkey_t& key, const uint32_t& height) {
 //		if(height >= since) {
 //			out[key]++;
 //		}
@@ -1588,7 +1588,7 @@ std::map<bls_pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& si
 	return out;
 }
 
-uint32_t Node::get_farmed_block_count_for(const std::vector<bls_pubkey_t>& farmer_keys, const uint32_t& since) const
+uint32_t Node::get_farmed_block_count_for(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since) const
 {
 	size_t total = 0;
 //	TODO:

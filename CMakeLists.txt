@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.13)
 project(mmx-node C CXX ASM)
 
+include(FetchContent)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
@@ -37,7 +39,7 @@ else()
 	set(CMAKE_CXX_STANDARD 17)
 	include(cmake/commit_hash_json.cmake)
 	
-	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs)
+	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs -Wno-unknown-pragmas)
 	
 	if(WITH_COVERAGE)
 		message(STATUS "Enabling -O0 -coverage")
@@ -45,8 +47,7 @@ else()
 		add_link_options(-lgcov --coverage)
 	endif()
 	
-	set_source_files_properties(src/vm/Compiler.cpp
-		PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
+	set_source_files_properties(src/vm/Compiler.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
 
 	if(WITH_SECP256K1)
 		message(STATUS "Using secp256k1")
@@ -67,10 +68,15 @@ else()
 	endif()
 endif()
 
-set(ARITH "easy" CACHE STRING "BLS ARITH")
-set(BUILD_BLS_TESTS OFF CACHE BOOL "BUILD_BLS_TESTS")
-set(BUILD_BLS_BENCHMARKS OFF CACHE BOOL "BUILD_BLS_BENCHMARKS")
-set(BUILD_BLS_PYTHON_BINDINGS OFF CACHE BOOL "BUILD_BLS_PYTHON_BINDINGS")
+FetchContent_Declare(Sodium
+  GIT_REPOSITORY https://github.com/madMAx43v3r/libsodium-cmake.git
+  GIT_TAG f73a3fe1afdc4e37ac5fe0ddd401bf521f6bba65
+)
+set(SODIUM_PCH "on" CACHE STRING "")
+set(SODIUM_DISABLE_TESTS "on" CACHE STRING "")
+set(SODIUM_CHIA_MINIMAL "on" CACHE STRING "")
+FetchContent_MakeAvailable(Sodium)
+
 set(LIBBECH32_BUILD_TESTS OFF CACHE BOOL "LIBBECH32_BUILD_TESTS")
 set(LIBBECH32_BUILD_EXAMPLES OFF CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
 set(DIRENT_BUILD_TESTS OFF CACHE STRING "DIRENT_BUILD_TESTS")
@@ -79,7 +85,6 @@ set(VNX_BUILD_TOOLS ON CACHE STRING "VNX_BUILD_TOOLS")
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
 add_subdirectory(lib/libbech32)
-add_subdirectory(lib/bls-signatures)
 add_subdirectory(tools)
 add_subdirectory(test)
 
@@ -131,13 +136,11 @@ add_library(mmx_iface SHARED
 	src/secp256k1.cpp
 	src/uint128.cpp
 	src/fixed128.cpp
-	src/skey_t.cpp
 	src/hash_t.cpp
 	src/hash_512_t.cpp
 	src/addr_t.cpp
 	src/pubkey_t.cpp
 	src/signature_t.cpp
-	src/bls_signature_t.cpp
 	src/exec_result_t.cpp
 	src/exec_error_t.cpp
 	src/vm/var_t.cpp
@@ -153,7 +156,6 @@ add_library(mmx_iface SHARED
 	src/contract/method_t.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
-	src/solution/BLS_PubKey.cpp
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp
 	src/sha256_avx2.cpp
@@ -165,7 +167,6 @@ add_library(mmx_iface SHARED
 	src/mnemonic.cpp
 	src/offer_data_t.cpp
 	src/memo_t.cpp
-	src/bls_pubkey_t.cpp
 )
 
 add_library(mmx_vm SHARED
@@ -196,7 +197,6 @@ add_library(mmx_modules SHARED
 	src/Node_verify.cpp
 	src/Node_validate.cpp
 	src/Wallet.cpp
-	src/BLS_Wallet.cpp
 	src/Farmer.cpp
 	src/Harvester.cpp
 	src/Router.cpp
@@ -210,6 +210,10 @@ add_library(uint256_t STATIC
 	uint256_t/uint256_t.cpp
 )
 
+target_include_directories(mmx_vm
+	PUBLIC lib/lexy/include
+)
+
 target_include_directories(mmx_pos
 	PUBLIC include
 )
@@ -217,7 +221,6 @@ target_include_directories(mmx_pos
 target_include_directories(mmx_iface
 	PUBLIC
 		include
-		lib/lexy/include
 		generated/include
 		generated/vm/include
 		generated/contract/include
@@ -236,7 +239,7 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
-target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons)
+target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t secp256k1 bech32 sodium)
 
 target_link_libraries(mmx_db mmx_iface)
 target_link_libraries(mmx_pos mmx_iface)

@@ -11,23 +11,10 @@
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/utils.h>
-
-#include <bls.hpp>
 #include <vnx/vnx.h>
 
 
 namespace mmx {
-
-static bls::PrivateKey derive_local_key(const std::vector<uint8_t>& master_sk)
-{
-	bls::AugSchemeMPL MPL;
-	auto local_sk = bls::PrivateKey::FromBytes(bls::Bytes(master_sk.data(), master_sk.size()));
-
-	for(uint32_t i : {12381, 11337, 3, 0}) {
-		local_sk = MPL.DeriveChildSk(local_sk, i);
-	}
-	return local_sk;
-}
 
 Harvester::Harvester(const std::string& _vnx_name)
 	:	HarvesterBase(_vnx_name)
@@ -95,32 +82,30 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 	auto out = ProofResponse::create();
 	out->request = request;
 	out->farmer_addr = farmer_addr;
-	out->harvester = host_name;
+	out->harvester = host_name.substr(0, 256);
 	out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin_ms;
 
 	const auto delay_sec = out->lookup_time_ms / 1e3;
 	log(INFO) << "Found proof with score " << score << " for height " << request->height << ", delay " << delay_sec << " sec";
 
-	vnx::optional<skey_t> local_sk;
-
 	if(chia_proof) {
-		const auto local_sk_bls = derive_local_key(chia_proof->master_sk);
-		const auto local_key_bls = local_sk_bls.GetG1Element();
-		local_sk = skey_t(local_sk_bls);
-
-		const auto farmer_key = bls_pubkey_t(chia_proof->farmer_key);
-		bls::G1Element farmer_key_bls;
-		farmer_key.to(farmer_key_bls);
+//		const auto local_sk_bls = derive_local_key(chia_proof->master_sk);
+//		const auto local_key_bls = local_sk_bls.GetG1Element();
+//		local_sk = skey_t(local_sk_bls);
+//
+//		const auto farmer_key = bls_pubkey_t(chia_proof->farmer_key);
+//		bls::G1Element farmer_key_bls;
+//		farmer_key.to(farmer_key_bls);
 
 		auto proof = ProofOfSpaceOG::create();
 		proof->ksize = chia_proof->k;
 		proof->score = score;
 		proof->plot_id = plot_id;
-		proof->proof_bytes = chia_proof->proof;
-		proof->farmer_key = farmer_key;
-		proof->plot_key = local_key_bls + farmer_key_bls;
-		proof->pool_key = bls_pubkey_t(chia_proof->pool_key);
-		proof->local_key = local_key_bls;
+//		proof->proof_bytes = chia_proof->proof;
+//		proof->farmer_key = farmer_key;
+//		proof->plot_key = local_key_bls + farmer_key_bls;
+//		proof->pool_key = bls_pubkey_t(chia_proof->pool_key);
+//		proof->local_key = local_key_bls;
 		out->proof = proof;
 	}
 	else if(virtual_plot) {
@@ -129,7 +114,6 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 		proof->plot_id = plot_id;
 		proof->contract = plot_id;
 		proof->farmer_key = virtual_plot->farmer_key;
-		proof->plot_key = virtual_plot->farmer_key;
 		out->proof = proof;
 	}
 	else {
@@ -142,7 +126,7 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 		{
 			std::lock_guard<std::mutex> lock(mutex);
 			// TODO: have node sign it after verify
-			out->farmer_sig = farmer->sign_proof(out, local_sk);
+			out->farmer_sig = farmer->sign_proof(out);
 		}
 		out->content_hash = out->calc_hash(true);
 		publish(out, output_proofs);
@@ -388,7 +372,7 @@ void Harvester::reload()
 		log(INFO) << "[" << host_name << "] Found " << plots.size() << " new plots";
 	}
 
-	std::set<bls_pubkey_t> farmer_keys;
+	std::set<pubkey_t> farmer_keys;
 	for(const auto& key : farmer->get_farmer_keys()) {
 		farmer_keys.insert(key);
 	}
@@ -400,26 +384,26 @@ void Harvester::reload()
 		{
 			const auto& plot = entry.second;
 			try {
-				const bls_pubkey_t farmer_key(plot->get_farmer_key());
-				if(!farmer_keys.count(farmer_key)) {
-					throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
-				}
-				if(validate_plots) {
-					const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
-					const auto local_sk = derive_local_key(plot->get_master_skey());
-					const auto pool_key = plot->get_pool_key();
-
-					bls::G1Element farmer_key_bls;
-					farmer_key.to(farmer_key_bls);
-					const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key_bls;
-					if(!pool_key.empty()) {
-						if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>().from_uint(11337u)) != plot_id) {
-							throw std::logic_error("invalid keys or port");
-						}
-					} else {
-						throw std::logic_error("invalid plot type");
-					}
-				}
+//				const pubkey_t farmer_key(plot->get_farmer_key());
+//				if(!farmer_keys.count(farmer_key)) {
+//					throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
+//				}
+//				if(validate_plots) {
+//					const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
+//					const auto local_sk = derive_local_key(plot->get_master_skey());
+//					const auto pool_key = plot->get_pool_key();
+//
+//					bls::G1Element farmer_key_bls;
+//					farmer_key.to(farmer_key_bls);
+//					const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key_bls;
+//					if(!pool_key.empty()) {
+//						if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>().from_uint(11337u)) != plot_id) {
+//							throw std::logic_error("invalid keys or port");
+//						}
+//					} else {
+//						throw std::logic_error("invalid plot type");
+//					}
+//				}
 				{
 					std::lock_guard<std::mutex> lock(mutex);
 					plot_map.insert(entry);

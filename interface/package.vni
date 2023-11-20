@@ -11,6 +11,3 @@ extern memo_t = {11, 20, 1};
 extern skey_t = {11, 32, 1};
 extern pubkey_t = {11, 33, 1};
 extern signature_t = {11, 64, 1};
-
-extern bls_pubkey_t = {11, 48, 1};
-extern bls_signature_t = {11, 96, 1};

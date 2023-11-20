@@ -8,15 +8,17 @@ class ProofResponse {
 	
 	ProofOfSpace* proof;
 	
-	bls_signature_t farmer_sig;
+	signature_t farmer_sig;
+	
+	hash_t content_hash;
+	
+	// --- below fields are not hashed (for local use only) ---
 	
 	vnx.Hash64 farmer_addr;
 	
 	string harvester;
 	
 	long lookup_time_ms;
-	
-	hash_t content_hash;
 	
 	
 	bool is_valid() const;

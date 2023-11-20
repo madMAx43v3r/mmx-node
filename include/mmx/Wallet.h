@@ -11,7 +11,6 @@
 #include <mmx/WalletBase.hxx>
 #include <mmx/NodeClient.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/BLS_Wallet.h>
 #include <mmx/ECDSA_Wallet.h>
 #include <mmx/multi_table.h>
 
@@ -182,7 +181,6 @@ private:
 	std::shared_ptr<NodeClient> node;
 
 	std::vector<std::shared_ptr<ECDSA_Wallet>> wallets;
-	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 
 	mutable mmx::hash_multi_table<addr_t, tx_log_entry_t> tx_log;
 

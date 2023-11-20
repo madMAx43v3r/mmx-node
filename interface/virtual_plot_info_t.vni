@@ -6,7 +6,7 @@ struct virtual_plot_info_t {
 	
 	addr_t owner;
 	
-	bls_pubkey_t farmer_key;
+	pubkey_t farmer_key;
 	
 	optional<addr_t> reward_address;
 	

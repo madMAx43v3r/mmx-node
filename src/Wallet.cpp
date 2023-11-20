@@ -755,20 +755,22 @@ std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) 
 
 std::shared_ptr<const FarmerKeys> Wallet::get_farmer_keys(const uint32_t& index) const
 {
-	if(auto wallet = bls_wallets.at(index)) {
-		return wallet->get_farmer_keys();
-	}
+	// TODO
+//	if(auto wallet = bls_wallets.at(index)) {
+//		return wallet->get_farmer_keys();
+//	}
 	return nullptr;
 }
 
 std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() const
 {
 	std::vector<std::shared_ptr<const FarmerKeys>> res;
-	for(const auto& wallet : bls_wallets) {
-		if(wallet) {
-			res.push_back(wallet->get_farmer_keys());
-		}
-	}
+	// TODO
+//	for(const auto& wallet : bls_wallets) {
+//		if(wallet) {
+//			res.push_back(wallet->get_farmer_keys());
+//		}
+//	}
 	return res;
 }
 
@@ -814,16 +816,12 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 {
 	if(index >= wallets.size()) {
 		wallets.resize(index + 1);
-		bls_wallets.resize(index + 1);
 	} else if(wallets[index]) {
 		throw std::logic_error("account already exists: " + std::to_string(index));
 	}
 	const auto key_path = storage_path + config.key_file;
 
 	if(auto key_file = vnx::read_from_file<KeyFile>(key_path)) {
-		if(enable_bls) {
-			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
-		}
 		std::shared_ptr<ECDSA_Wallet> wallet;
 		if(config.with_passphrase && !passphrase) {
 			const auto info_path = database_path + "info_" + config.finger_print + ".dat";

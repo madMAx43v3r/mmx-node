@@ -193,7 +193,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<virtual_plot_info_t> get_virtual_plots_for(bls_pubkey_t farmer_key) const;
+	vector<virtual_plot_info_t> get_virtual_plots_for(pubkey_t farmer_key) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots_owned_by(vector<addr_t> addresses) const;
@@ -253,13 +253,13 @@ module Node implements vnx.addons.HttpComponent {
 	uint128 get_total_supply(addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<BlockHeader*> get_farmed_blocks(vector<bls_pubkey_t> farmer_keys, bool full_blocks, uint since, int limit = 100) const;
+	vector<BlockHeader*> get_farmed_blocks(vector<pubkey_t> farmer_keys, bool full_blocks, uint since, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<bls_pubkey_t, uint> get_farmed_block_count(uint since) const;
+	map<pubkey_t, uint> get_farmed_block_count(uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint get_farmed_block_count_for(vector<bls_pubkey_t> farmer_keys, uint since) const;
+	uint get_farmed_block_count_for(vector<pubkey_t> farmer_keys, uint since) const;
 	
 	void start_sync(bool force);
 	

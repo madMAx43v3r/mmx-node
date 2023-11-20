@@ -13,7 +13,7 @@ namespace mmx {
 
 vnx::bool_t ProofOfSpace::is_valid() const
 {
-	return version == 0;
+	return true;
 }
 
 mmx::hash_t ProofOfSpace::calc_hash(const vnx::bool_t& full_hash) const

@@ -31,7 +31,8 @@ mmx::hash_t ProofResponse::calc_hash(const vnx::bool_t& full_hash) const
 	write_bytes(out, get_type_hash());
 	write_field(out, "request",		request ? request->calc_hash() : hash_t());
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
-	write_field(out, "farmer_addr",		farmer_addr);
+
+	// farmer_addr, harvester and lookup_time_ms are not hashed (local info only)
 
 	if(full_hash) {
 		write_field(out, "farmer_sig", farmer_sig);
@@ -46,7 +47,7 @@ void ProofResponse::validate() const
 	if(proof) {
 		proof->validate();
 
-		if(!farmer_sig.verify(proof->plot_key, hash)) {
+		if(!farmer_sig.verify(proof->farmer_key, hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}
 	}

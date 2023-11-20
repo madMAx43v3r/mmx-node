@@ -163,8 +163,10 @@ uint256_t Node::verify_proof_impl(	std::shared_ptr<const T> proof, const hash_t&
 		throw std::logic_error("ksize too big");
 	}
 	const auto plot_challenge = get_plot_challenge(challenge, proof->plot_id);
-	const auto quality = hash_t::from_bytes(chiapos::verify(
-			proof->ksize, proof->plot_id.bytes, plot_challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
+	// TODO:
+	hash_t quality;
+//	const auto quality = hash_t::from_bytes(chiapos::verify(
+//			proof->ksize, proof->plot_id.bytes, plot_challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
 
 	return calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
 }

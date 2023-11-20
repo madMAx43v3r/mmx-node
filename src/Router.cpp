@@ -386,15 +386,11 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 	}
 }
 
-void Router::handle(std::shared_ptr<const ProofResponse> value_)
+void Router::handle(std::shared_ptr<const ProofResponse> value)
 {
-	if(!value_->proof || !value_->request) {
+	if(!value->proof || !value->request) {
 		return;
 	}
-	auto value = vnx::clone(value_);
-	value->harvester.clear();
-	value->content_hash = value->calc_hash(true);
-
 	const auto& hash = value->content_hash;
 	if(relay_msg_hash(hash, proof_credits)) {
 		bool is_ours = false;
@@ -402,7 +398,10 @@ void Router::handle(std::shared_ptr<const ProofResponse> value_)
 			is_ours = true;
 			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->proof->score;
 		}
-		broadcast(value, hash, {node_type_e::FULL_NODE}, is_ours);
+		auto copy = vnx::clone(value);
+		copy->harvester.clear();			// clear local information
+		copy->farmer_addr = vnx::Hash64();	// clear local information
+		broadcast(copy, hash, {node_type_e::FULL_NODE}, is_ours);
 		proof_counter++;
 	}
 	const auto farmer_id = hash_t(value->proof->farmer_key);

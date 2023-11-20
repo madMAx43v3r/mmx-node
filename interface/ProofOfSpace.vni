@@ -2,14 +2,11 @@ package mmx;
 
 class ProofOfSpace {
 	
-	uint version;
-	
 	uint score;
 	
 	hash_t plot_id;
 	
-	bls_pubkey_t plot_key;
-	bls_pubkey_t farmer_key;
+	pubkey_t farmer_key;
 	
 	
 	bool is_valid() const;
