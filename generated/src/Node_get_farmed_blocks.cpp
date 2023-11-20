@@ -4,7 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Node_get_farmed_blocks.hxx>
 #include <mmx/Node_get_farmed_blocks_return.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_farmed_blocks::VNX_TYPE_HASH(0xfc412d06ff25542eull);
-const vnx::Hash64 Node_get_farmed_blocks::VNX_CODE_HASH(0x137a63ae1f66bbf0ull);
+const vnx::Hash64 Node_get_farmed_blocks::VNX_CODE_HASH(0x892cc978e87809c9ull);
 
 vnx::Hash64 Node_get_farmed_blocks::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -145,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_farmed_blocks::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_farmed_blocks";
 	type_code->type_hash = vnx::Hash64(0xfc412d06ff25542eull);
-	type_code->code_hash = vnx::Hash64(0x137a63ae1f66bbf0ull);
+	type_code->code_hash = vnx::Hash64(0x892cc978e87809c9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -158,7 +158,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_farmed_blocks::static_create_type_code()
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "farmer_keys";
-		field.code = {12, 11, 48, 1};
+		field.code = {12, 11, 33, 1};
 	}
 	{
 		auto& field = type_code->fields[1];

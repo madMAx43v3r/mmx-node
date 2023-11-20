@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Node_get_virtual_plots_for_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Node_get_virtual_plots_for : public ::vnx::Value {
 public:
 	
-	::mmx::bls_pubkey_t farmer_key;
+	::mmx::pubkey_t farmer_key;
 	
 	typedef ::vnx::Value Super;
 	

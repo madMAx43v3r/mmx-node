@@ -7,9 +7,9 @@
 #include <mmx/contract/package.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Variant.hpp>
 
 
@@ -19,7 +19,7 @@ namespace contract {
 class MMX_CONTRACT_EXPORT VirtualPlot : public ::mmx::contract::Executable {
 public:
 	
-	::mmx::bls_pubkey_t farmer_key;
+	::mmx::pubkey_t farmer_key;
 	vnx::optional<::mmx::addr_t> reward_address;
 	
 	typedef ::mmx::contract::Executable Super;

@@ -6,7 +6,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ProofResponse.hxx>
-#include <mmx/skey_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -16,7 +15,6 @@ class MMX_EXPORT Farmer_sign_proof : public ::vnx::Value {
 public:
 	
 	std::shared_ptr<const ::mmx::ProofResponse> value;
-	vnx::optional<::mmx::skey_t> local_sk;
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,10 +58,9 @@ public:
 
 template<typename T>
 void Farmer_sign_proof::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Farmer_sign_proof>(2);
+	_visitor.template type_begin<Farmer_sign_proof>(1);
 	_visitor.type_field("value", 0); _visitor.accept(value);
-	_visitor.type_field("local_sk", 1); _visitor.accept(local_sk);
-	_visitor.template type_end<Farmer_sign_proof>(2);
+	_visitor.template type_end<Farmer_sign_proof>(1);
 }
 
 

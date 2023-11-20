@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Farmer_get_farmer_keys_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Farmer_get_farmer_keys_return : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::bls_pubkey_t> _ret_0;
+	std::vector<::mmx::pubkey_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

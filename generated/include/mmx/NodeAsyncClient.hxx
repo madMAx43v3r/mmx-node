@@ -16,11 +16,11 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -226,7 +226,7 @@ public:
 			const std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key = ::mmx::bls_pubkey_t(), 
+	uint64_t get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key = ::mmx::pubkey_t(), 
 			const std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -306,15 +306,15 @@ public:
 			const std::function<void(const ::mmx::uint128&)>& _callback = std::function<void(const ::mmx::uint128&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0, const int32_t& limit = 100, 
+	uint64_t get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0, const int32_t& limit = 100, 
 			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_farmed_block_count(const uint32_t& since = 0, 
-			const std::function<void(const std::map<::mmx::bls_pubkey_t, uint32_t>&)>& _callback = std::function<void(const std::map<::mmx::bls_pubkey_t, uint32_t>&)>(),
+			const std::function<void(const std::map<::mmx::pubkey_t, uint32_t>&)>& _callback = std::function<void(const std::map<::mmx::pubkey_t, uint32_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_farmed_block_count_for(const std::vector<::mmx::bls_pubkey_t>& farmer_keys = {}, const uint32_t& since = 0, 
+	uint64_t get_farmed_block_count_for(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const uint32_t& since = 0, 
 			const std::function<void(const uint32_t&)>& _callback = std::function<void(const uint32_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -442,7 +442,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_swap_liquidity_by;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::uint128&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_total_supply;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmed_blocks;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::bls_pubkey_t, uint32_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmed_block_count;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::pubkey_t, uint32_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmed_block_count;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const uint32_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmed_block_count_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_start_sync;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_revert_sync;

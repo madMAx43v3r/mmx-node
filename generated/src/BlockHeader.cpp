@@ -16,8 +16,8 @@
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/block_index_t.hxx>
-#include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
@@ -28,7 +28,7 @@ namespace mmx {
 
 
 const vnx::Hash64 BlockHeader::VNX_TYPE_HASH(0xcaae941a2fc712a6ull);
-const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xdc9bb792209be0a5ull);
+const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0x7b5403b370585742ull);
 
 vnx::Hash64 BlockHeader::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -359,7 +359,7 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.BlockHeader";
 	type_code->type_hash = vnx::Hash64(0xcaae941a2fc712a6ull);
-	type_code->code_hash = vnx::Hash64(0xdc9bb792209be0a5ull);
+	type_code->code_hash = vnx::Hash64(0x7b5403b370585742ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
@@ -507,7 +507,7 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 		auto& field = type_code->fields[22];
 		field.is_extended = true;
 		field.name = "farmer_sig";
-		field.code = {33, 11, 96, 1};
+		field.code = {33, 11, 64, 1};
 	}
 	{
 		auto& field = type_code->fields[23];

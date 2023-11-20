@@ -154,11 +154,11 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -819,7 +819,7 @@ uint64_t NodeAsyncClient::get_virtual_plots(const std::vector<::mmx::addr_t>& ad
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key, const std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key, const std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_virtual_plots_for::create();
 	_method->farmer_key = farmer_key;
 	const auto _request_id = ++vnx_next_id;
@@ -1101,7 +1101,7 @@ uint64_t NodeAsyncClient::get_total_supply(const ::mmx::addr_t& currency, const 
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit, const std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit, const std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_farmed_blocks::create();
 	_method->farmer_keys = farmer_keys;
 	_method->full_blocks = full_blocks;
@@ -1117,7 +1117,7 @@ uint64_t NodeAsyncClient::get_farmed_blocks(const std::vector<::mmx::bls_pubkey_
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_farmed_block_count(const uint32_t& since, const std::function<void(const std::map<::mmx::bls_pubkey_t, uint32_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_farmed_block_count(const uint32_t& since, const std::function<void(const std::map<::mmx::pubkey_t, uint32_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_farmed_block_count::create();
 	_method->since = since;
 	const auto _request_id = ++vnx_next_id;
@@ -1130,7 +1130,7 @@ uint64_t NodeAsyncClient::get_farmed_block_count(const uint32_t& since, const st
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_farmed_block_count_for(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const uint32_t& since, const std::function<void(const uint32_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_farmed_block_count_for(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since, const std::function<void(const uint32_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_farmed_block_count_for::create();
 	_method->farmer_keys = farmer_keys;
 	_method->since = since;
@@ -3560,7 +3560,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_farmed_block_count_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::map<::mmx::bls_pubkey_t, uint32_t>>());
+					_callback(_value->get_field_by_index(0).to<std::map<::mmx::pubkey_t, uint32_t>>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}

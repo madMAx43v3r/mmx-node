@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_virtual_plots_return::VNX_TYPE_HASH(0xa96dbac13ea12597ull);
-const vnx::Hash64 Node_get_virtual_plots_return::VNX_CODE_HASH(0x86de3f09d5d1c18dull);
+const vnx::Hash64 Node_get_virtual_plots_return::VNX_CODE_HASH(0x10fc82e263997d36ull);
 
 vnx::Hash64 Node_get_virtual_plots_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_virtual_plots_return::static_create_type
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_virtual_plots.return";
 	type_code->type_hash = vnx::Hash64(0xa96dbac13ea12597ull);
-	type_code->code_hash = vnx::Hash64(0x86de3f09d5d1c18dull);
+	type_code->code_hash = vnx::Hash64(0x10fc82e263997d36ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

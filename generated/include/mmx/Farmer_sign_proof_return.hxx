@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Farmer_sign_proof_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/bls_signature_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Farmer_sign_proof_return : public ::vnx::Value {
 public:
 	
-	::mmx::bls_signature_t _ret_0;
+	::mmx::signature_t _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

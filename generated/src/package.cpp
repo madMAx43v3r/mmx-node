@@ -502,8 +502,6 @@
 #include <mmx/ulong_fraction_t.hxx>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
-#include <mmx/bls_signature_t.hpp>
 #include <mmx/fixed128.hpp>
 #include <mmx/hash_512_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -6051,30 +6049,6 @@ void type<::mmx::block_index_t>::create_dynamic_code(std::vector<uint16_t>& code
 void type<::mmx::block_index_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::block_index_t& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
-
-const TypeCode* type<::mmx::bls_pubkey_t>::get_type_code() {
-	return nullptr;
-}
-
-void type<::mmx::bls_pubkey_t>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::bls_pubkey_t());
-}
-
-void type<::mmx::bls_pubkey_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::bls_pubkey_t& value, bool special) {
-	const std::vector<int> tmp = {11, 48, 1};
-	code.insert(code.end(), tmp.begin(), tmp.end());}
-
-const TypeCode* type<::mmx::bls_signature_t>::get_type_code() {
-	return nullptr;
-}
-
-void type<::mmx::bls_signature_t>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::bls_signature_t());
-}
-
-void type<::mmx::bls_signature_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::bls_signature_t& value, bool special) {
-	const std::vector<int> tmp = {11, 96, 1};
-	code.insert(code.end(), tmp.begin(), tmp.end());}
 
 const TypeCode* type<::mmx::compile_flags_t>::get_type_code() {
 	return mmx::vnx_native_type_code_compile_flags_t;

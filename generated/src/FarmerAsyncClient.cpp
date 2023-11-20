@@ -17,9 +17,8 @@
 #include <mmx/Farmer_sign_proof_return.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
-#include <mmx/bls_signature_t.hpp>
-#include <mmx/skey_t.hpp>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -70,7 +69,7 @@ uint64_t FarmerAsyncClient::get_mac_addr(const std::function<void(const ::vnx::H
 	return _request_id;
 }
 
-uint64_t FarmerAsyncClient::get_farmer_keys(const std::function<void(const std::vector<::mmx::bls_pubkey_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t FarmerAsyncClient::get_farmer_keys(const std::function<void(const std::vector<::mmx::pubkey_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Farmer_get_farmer_keys::create();
 	const auto _request_id = ++vnx_next_id;
 	{
@@ -94,10 +93,9 @@ uint64_t FarmerAsyncClient::get_farm_info(const std::function<void(std::shared_p
 	return _request_id;
 }
 
-uint64_t FarmerAsyncClient::sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value, const vnx::optional<::mmx::skey_t>& local_sk, const std::function<void(const ::mmx::bls_signature_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t FarmerAsyncClient::sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value, const std::function<void(const ::mmx::signature_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Farmer_sign_proof::create();
 	_method->value = value;
-	_method->local_sk = local_sk;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -454,7 +452,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_farmer_keys_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::bls_pubkey_t>>());
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::pubkey_t>>());
 				} else {
 					throw std::logic_error("FarmerAsyncClient: invalid return value");
 				}
@@ -492,7 +490,7 @@ int32_t FarmerAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_sign_proof_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<::mmx::bls_signature_t>());
+					_callback(_value->get_field_by_index(0).to<::mmx::signature_t>());
 				} else {
 					throw std::logic_error("FarmerAsyncClient: invalid return value");
 				}

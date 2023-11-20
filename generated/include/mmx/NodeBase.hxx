@@ -16,11 +16,11 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -165,7 +165,7 @@ protected:
 	virtual ::mmx::address_info_t get_address_info(const ::mmx::addr_t& address) const = 0;
 	virtual std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses) const = 0;
-	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) const = 0;
+	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
 	virtual ::mmx::offer_data_t get_offer(const ::mmx::addr_t& address) const = 0;
@@ -185,9 +185,9 @@ protected:
 	virtual std::array<::mmx::uint128, 2> get_swap_equivalent_liquidity(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
 	virtual std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual ::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency) const = 0;
-	virtual std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const = 0;
-	virtual std::map<::mmx::bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const = 0;
-	virtual uint32_t get_farmed_block_count_for(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const uint32_t& since) const = 0;
+	virtual std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const = 0;
+	virtual std::map<::mmx::pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const = 0;
+	virtual uint32_t get_farmed_block_count_for(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
 	virtual void revert_sync(const uint32_t& height) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}

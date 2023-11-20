@@ -5,7 +5,6 @@
 #include <mmx/Farmer_sign_proof.hxx>
 #include <mmx/Farmer_sign_proof_return.hxx>
 #include <mmx/ProofResponse.hxx>
-#include <mmx/skey_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Farmer_sign_proof::VNX_TYPE_HASH(0x7c59d2761514b455ull);
-const vnx::Hash64 Farmer_sign_proof::VNX_CODE_HASH(0xec33b28b96d31183ull);
+const vnx::Hash64 Farmer_sign_proof::VNX_CODE_HASH(0x3bece297362e7bbaull);
 
 vnx::Hash64 Farmer_sign_proof::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,14 +48,12 @@ void Farmer_sign_proof::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Farmer_sign_proof;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, value);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, local_sk);
 	_visitor.type_end(*_type_code);
 }
 
 void Farmer_sign_proof::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Farmer.sign_proof\"";
 	_out << ", \"value\": "; vnx::write(_out, value);
-	_out << ", \"local_sk\": "; vnx::write(_out, local_sk);
 	_out << "}";
 }
 
@@ -70,15 +67,12 @@ vnx::Object Farmer_sign_proof::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Farmer.sign_proof";
 	_object["value"] = value;
-	_object["local_sk"] = local_sk;
 	return _object;
 }
 
 void Farmer_sign_proof::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "local_sk") {
-			_entry.second.to(local_sk);
-		} else if(_entry.first == "value") {
+		if(_entry.first == "value") {
 			_entry.second.to(value);
 		}
 	}
@@ -88,17 +82,12 @@ vnx::Variant Farmer_sign_proof::get_field(const std::string& _name) const {
 	if(_name == "value") {
 		return vnx::Variant(value);
 	}
-	if(_name == "local_sk") {
-		return vnx::Variant(local_sk);
-	}
 	return vnx::Variant();
 }
 
 void Farmer_sign_proof::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "value") {
 		_value.to(value);
-	} else if(_name == "local_sk") {
-		_value.to(local_sk);
 	}
 }
 
@@ -126,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_sign_proof::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Farmer.sign_proof";
 	type_code->type_hash = vnx::Hash64(0x7c59d2761514b455ull);
-	type_code->code_hash = vnx::Hash64(0xec33b28b96d31183ull);
+	type_code->code_hash = vnx::Hash64(0x3bece297362e7bbaull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -134,18 +123,12 @@ std::shared_ptr<vnx::TypeCode> Farmer_sign_proof::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Farmer_sign_proof>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Farmer_sign_proof_return::static_get_type_code();
-	type_code->fields.resize(2);
+	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "value";
 		field.code = {16};
-	}
-	{
-		auto& field = type_code->fields[1];
-		field.is_extended = true;
-		field.name = "local_sk";
-		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -193,7 +176,6 @@ void read(TypeInput& in, ::mmx::Farmer_sign_proof& value, const TypeCode* type_c
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.value, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.local_sk, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -213,7 +195,6 @@ void write(TypeOutput& out, const ::mmx::Farmer_sign_proof& value, const TypeCod
 		type_code = type_code->depends[code[1]];
 	}
 	vnx::write(out, value.value, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.local_sk, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Farmer_sign_proof& value) {

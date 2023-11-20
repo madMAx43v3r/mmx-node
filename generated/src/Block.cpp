@@ -40,7 +40,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Block::VNX_TYPE_HASH(0x94965d816d328467ull);
-const vnx::Hash64 Block::VNX_CODE_HASH(0x7e26c31210d26207ull);
+const vnx::Hash64 Block::VNX_CODE_HASH(0x691b44ba938d72dfull);
 
 vnx::Hash64 Block::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -381,7 +381,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Block";
 	type_code->type_hash = vnx::Hash64(0x94965d816d328467ull);
-	type_code->code_hash = vnx::Hash64(0x7e26c31210d26207ull);
+	type_code->code_hash = vnx::Hash64(0x691b44ba938d72dfull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Block);
@@ -538,7 +538,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 		auto& field = type_code->fields[22];
 		field.is_extended = true;
 		field.name = "farmer_sig";
-		field.code = {33, 11, 96, 1};
+		field.code = {33, 11, 64, 1};
 	}
 	{
 		auto& field = type_code->fields[23];

@@ -17,9 +17,8 @@
 #include <mmx/Farmer_sign_proof_return.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
-#include <mmx/bls_signature_t.hpp>
-#include <mmx/skey_t.hpp>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -70,13 +69,13 @@ FarmerClient::FarmerClient(vnx::Hash64 service_addr)
 	}
 }
 
-std::vector<::mmx::bls_pubkey_t> FarmerClient::get_farmer_keys() {
+std::vector<::mmx::pubkey_t> FarmerClient::get_farmer_keys() {
 	auto _method = ::mmx::Farmer_get_farmer_keys::create();
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_farmer_keys_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::bls_pubkey_t>>();
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::pubkey_t>>();
 	} else {
 		throw std::logic_error("FarmerClient: invalid return value");
 	}
@@ -94,15 +93,14 @@ std::shared_ptr<const ::mmx::FarmInfo> FarmerClient::get_farm_info() {
 	}
 }
 
-::mmx::bls_signature_t FarmerClient::sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value, const vnx::optional<::mmx::skey_t>& local_sk) {
+::mmx::signature_t FarmerClient::sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value) {
 	auto _method = ::mmx::Farmer_sign_proof::create();
 	_method->value = value;
-	_method->local_sk = local_sk;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_sign_proof_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::mmx::bls_signature_t>();
+		return _return_value->get_field_by_index(0).to<::mmx::signature_t>();
 	} else {
 		throw std::logic_error("FarmerClient: invalid return value");
 	}

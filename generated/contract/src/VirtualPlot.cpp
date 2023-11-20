@@ -21,7 +21,6 @@
 #include <mmx/Contract_validate.hxx>
 #include <mmx/Contract_validate_return.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/Executable_calc_cost.hxx>
 #include <mmx/contract/Executable_calc_cost_return.hxx>
@@ -54,6 +53,7 @@
 #include <mmx/contract/VirtualPlot_read_field.hxx>
 #include <mmx/contract/VirtualPlot_read_field_return.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
@@ -64,7 +64,7 @@ namespace contract {
 
 
 const vnx::Hash64 VirtualPlot::VNX_TYPE_HASH(0xab02561c615511e8ull);
-const vnx::Hash64 VirtualPlot::VNX_CODE_HASH(0x4ac895e98862de35ull);
+const vnx::Hash64 VirtualPlot::VNX_CODE_HASH(0xeefc4a54220d2868ull);
 
 vnx::Hash64 VirtualPlot::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -265,7 +265,7 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.VirtualPlot";
 	type_code->type_hash = vnx::Hash64(0xab02561c615511e8ull);
-	type_code->code_hash = vnx::Hash64(0x4ac895e98862de35ull);
+	type_code->code_hash = vnx::Hash64(0xeefc4a54220d2868ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::VirtualPlot);
@@ -359,7 +359,7 @@ std::shared_ptr<vnx::TypeCode> VirtualPlot::static_create_type_code() {
 		auto& field = type_code->fields[9];
 		field.is_extended = true;
 		field.name = "farmer_key";
-		field.code = {11, 48, 1};
+		field.code = {11, 33, 1};
 	}
 	{
 		auto& field = type_code->fields[10];

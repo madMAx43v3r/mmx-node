@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Node_get_farmed_blocks_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Node_get_farmed_blocks : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::bls_pubkey_t> farmer_keys;
+	std::vector<::mmx::pubkey_t> farmer_keys;
 	vnx::bool_t full_blocks = 0;
 	uint32_t since = 0;
 	int32_t limit = 100;

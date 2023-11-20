@@ -65,14 +65,12 @@ protected:
 
 template<typename T>
 void ProofOfStake::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfStake>(6);
-	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("score", 1); _visitor.accept(score);
-	_visitor.type_field("plot_id", 2); _visitor.accept(plot_id);
-	_visitor.type_field("plot_key", 3); _visitor.accept(plot_key);
-	_visitor.type_field("farmer_key", 4); _visitor.accept(farmer_key);
-	_visitor.type_field("contract", 5); _visitor.accept(contract);
-	_visitor.template type_end<ProofOfStake>(6);
+	_visitor.template type_begin<ProofOfStake>(4);
+	_visitor.type_field("score", 0); _visitor.accept(score);
+	_visitor.type_field("plot_id", 1); _visitor.accept(plot_id);
+	_visitor.type_field("farmer_key", 2); _visitor.accept(farmer_key);
+	_visitor.type_field("contract", 3); _visitor.accept(contract);
+	_visitor.template type_end<ProofOfStake>(4);
 }
 
 

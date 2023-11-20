@@ -16,7 +16,6 @@
 #include <mmx/ProofOfSpaceOG_is_valid_return.hxx>
 #include <mmx/ProofOfSpaceOG_validate.hxx>
 #include <mmx/ProofOfSpaceOG_validate_return.hxx>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/hash_t.hpp>
 
 #include <vnx/vnx.h>
@@ -26,7 +25,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofOfSpaceOG::VNX_TYPE_HASH(0x6def5518efc37b4ull);
-const vnx::Hash64 ProofOfSpaceOG::VNX_CODE_HASH(0xeb3620a86b5dadull);
+const vnx::Hash64 ProofOfSpaceOG::VNX_CODE_HASH(0x50fde7bfd2cc99e6ull);
 
 vnx::Hash64 ProofOfSpaceOG::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -59,29 +58,23 @@ void ProofOfSpaceOG::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_cod
 void ProofOfSpaceOG::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_ProofOfSpaceOG;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, version);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, score);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, plot_id);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, plot_key);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, farmer_key);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, ksize);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, proof_bytes);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, pool_key);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, local_key);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, score);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, plot_id);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, farmer_key);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, ksize);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, seed);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, proof_xs);
 	_visitor.type_end(*_type_code);
 }
 
 void ProofOfSpaceOG::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.ProofOfSpaceOG\"";
-	_out << ", \"version\": "; vnx::write(_out, version);
 	_out << ", \"score\": "; vnx::write(_out, score);
 	_out << ", \"plot_id\": "; vnx::write(_out, plot_id);
-	_out << ", \"plot_key\": "; vnx::write(_out, plot_key);
 	_out << ", \"farmer_key\": "; vnx::write(_out, farmer_key);
 	_out << ", \"ksize\": "; vnx::write(_out, ksize);
-	_out << ", \"proof_bytes\": "; vnx::write(_out, proof_bytes);
-	_out << ", \"pool_key\": "; vnx::write(_out, pool_key);
-	_out << ", \"local_key\": "; vnx::write(_out, local_key);
+	_out << ", \"seed\": "; vnx::write(_out, seed);
+	_out << ", \"proof_xs\": "; vnx::write(_out, proof_xs);
 	_out << "}";
 }
 
@@ -94,15 +87,12 @@ void ProofOfSpaceOG::read(std::istream& _in) {
 vnx::Object ProofOfSpaceOG::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.ProofOfSpaceOG";
-	_object["version"] = version;
 	_object["score"] = score;
 	_object["plot_id"] = plot_id;
-	_object["plot_key"] = plot_key;
 	_object["farmer_key"] = farmer_key;
 	_object["ksize"] = ksize;
-	_object["proof_bytes"] = proof_bytes;
-	_object["pool_key"] = pool_key;
-	_object["local_key"] = local_key;
+	_object["seed"] = seed;
+	_object["proof_xs"] = proof_xs;
 	return _object;
 }
 
@@ -112,36 +102,24 @@ void ProofOfSpaceOG::from_object(const vnx::Object& _object) {
 			_entry.second.to(farmer_key);
 		} else if(_entry.first == "ksize") {
 			_entry.second.to(ksize);
-		} else if(_entry.first == "local_key") {
-			_entry.second.to(local_key);
 		} else if(_entry.first == "plot_id") {
 			_entry.second.to(plot_id);
-		} else if(_entry.first == "plot_key") {
-			_entry.second.to(plot_key);
-		} else if(_entry.first == "pool_key") {
-			_entry.second.to(pool_key);
-		} else if(_entry.first == "proof_bytes") {
-			_entry.second.to(proof_bytes);
+		} else if(_entry.first == "proof_xs") {
+			_entry.second.to(proof_xs);
 		} else if(_entry.first == "score") {
 			_entry.second.to(score);
-		} else if(_entry.first == "version") {
-			_entry.second.to(version);
+		} else if(_entry.first == "seed") {
+			_entry.second.to(seed);
 		}
 	}
 }
 
 vnx::Variant ProofOfSpaceOG::get_field(const std::string& _name) const {
-	if(_name == "version") {
-		return vnx::Variant(version);
-	}
 	if(_name == "score") {
 		return vnx::Variant(score);
 	}
 	if(_name == "plot_id") {
 		return vnx::Variant(plot_id);
-	}
-	if(_name == "plot_key") {
-		return vnx::Variant(plot_key);
 	}
 	if(_name == "farmer_key") {
 		return vnx::Variant(farmer_key);
@@ -149,37 +127,28 @@ vnx::Variant ProofOfSpaceOG::get_field(const std::string& _name) const {
 	if(_name == "ksize") {
 		return vnx::Variant(ksize);
 	}
-	if(_name == "proof_bytes") {
-		return vnx::Variant(proof_bytes);
+	if(_name == "seed") {
+		return vnx::Variant(seed);
 	}
-	if(_name == "pool_key") {
-		return vnx::Variant(pool_key);
-	}
-	if(_name == "local_key") {
-		return vnx::Variant(local_key);
+	if(_name == "proof_xs") {
+		return vnx::Variant(proof_xs);
 	}
 	return vnx::Variant();
 }
 
 void ProofOfSpaceOG::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "version") {
-		_value.to(version);
-	} else if(_name == "score") {
+	if(_name == "score") {
 		_value.to(score);
 	} else if(_name == "plot_id") {
 		_value.to(plot_id);
-	} else if(_name == "plot_key") {
-		_value.to(plot_key);
 	} else if(_name == "farmer_key") {
 		_value.to(farmer_key);
 	} else if(_name == "ksize") {
 		_value.to(ksize);
-	} else if(_name == "proof_bytes") {
-		_value.to(proof_bytes);
-	} else if(_name == "pool_key") {
-		_value.to(pool_key);
-	} else if(_name == "local_key") {
-		_value.to(local_key);
+	} else if(_name == "seed") {
+		_value.to(seed);
+	} else if(_name == "proof_xs") {
+		_value.to(proof_xs);
 	}
 }
 
@@ -207,7 +176,7 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpaceOG::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofOfSpaceOG";
 	type_code->type_hash = vnx::Hash64(0x6def5518efc37b4ull);
-	type_code->code_hash = vnx::Hash64(0xeb3620a86b5dadull);
+	type_code->code_hash = vnx::Hash64(0x50fde7bfd2cc99e6ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfSpaceOG);
@@ -221,60 +190,42 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpaceOG::static_create_type_code() {
 	type_code->methods[3] = ::mmx::ProofOfSpaceOG_calc_hash::static_get_type_code();
 	type_code->methods[4] = ::mmx::ProofOfSpaceOG_is_valid::static_get_type_code();
 	type_code->methods[5] = ::mmx::ProofOfSpaceOG_validate::static_get_type_code();
-	type_code->fields.resize(9);
+	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
-		field.data_size = 4;
-		field.name = "version";
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "score";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[2];
+		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "plot_id";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[3];
-		field.is_extended = true;
-		field.name = "plot_key";
-		field.code = {11, 48, 1};
-	}
-	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "farmer_key";
-		field.code = {11, 48, 1};
+		field.code = {11, 33, 1};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[3];
 		field.data_size = 1;
 		field.name = "ksize";
 		field.code = {1};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
-		field.name = "proof_bytes";
-		field.code = {12, 1};
+		field.name = "seed";
+		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[5];
 		field.is_extended = true;
-		field.name = "pool_key";
-		field.code = {11, 48, 1};
-	}
-	{
-		auto& field = type_code->fields[8];
-		field.is_extended = true;
-		field.name = "local_key";
-		field.code = {11, 48, 1};
+		field.name = "proof_xs";
+		field.code = {12, 3};
 	}
 	type_code->build();
 	return type_code;
@@ -361,23 +312,18 @@ void read(TypeInput& in, ::mmx::ProofOfSpaceOG& value, const TypeCode* type_code
 	const char* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.score, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[5]) {
+		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.ksize, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 2: vnx::read(in, value.plot_id, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.plot_key, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.proof_bytes, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.pool_key, type_code, _field->code.data()); break;
-			case 8: vnx::read(in, value.local_key, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.plot_id, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.seed, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.proof_xs, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -396,16 +342,13 @@ void write(TypeOutput& out, const ::mmx::ProofOfSpaceOG& value, const TypeCode* 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(9);
-	vnx::write_value(_buf + 0, value.version);
-	vnx::write_value(_buf + 4, value.score);
-	vnx::write_value(_buf + 8, value.ksize);
-	vnx::write(out, value.plot_id, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.plot_key, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.farmer_key, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.proof_bytes, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.pool_key, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.local_key, type_code, type_code->fields[8].code.data());
+	char* const _buf = out.write(5);
+	vnx::write_value(_buf + 0, value.score);
+	vnx::write_value(_buf + 4, value.ksize);
+	vnx::write(out, value.plot_id, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.farmer_key, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.seed, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.proof_xs, type_code, type_code->fields[5].code.data());
 }
 
 void read(std::istream& in, ::mmx::ProofOfSpaceOG& value) {

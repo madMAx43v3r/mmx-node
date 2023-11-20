@@ -7,7 +7,7 @@
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 
 
 namespace mmx {
@@ -17,7 +17,7 @@ struct MMX_EXPORT virtual_plot_info_t {
 	
 	::mmx::addr_t address;
 	::mmx::addr_t owner;
-	::mmx::bls_pubkey_t farmer_key;
+	::mmx::pubkey_t farmer_key;
 	vnx::optional<::mmx::addr_t> reward_address;
 	uint64_t balance = 0;
 	uint64_t size_bytes = 0;

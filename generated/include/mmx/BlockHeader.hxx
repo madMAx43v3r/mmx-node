@@ -8,8 +8,8 @@
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/block_index_t.hxx>
-#include <mmx/bls_signature_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
@@ -41,7 +41,7 @@ public:
 	uint32_t tx_count = 0;
 	uint32_t tx_fees = 0;
 	::mmx::hash_t tx_hash;
-	vnx::optional<::mmx::bls_signature_t> farmer_sig;
+	vnx::optional<::mmx::signature_t> farmer_sig;
 	::mmx::hash_t content_hash;
 	
 	typedef ::vnx::Value Super;

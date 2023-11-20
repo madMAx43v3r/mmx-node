@@ -3,7 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Farmer_sign_proof_return.hxx>
-#include <mmx/bls_signature_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Farmer_sign_proof_return::VNX_TYPE_HASH(0xfc55b496d43f06fbull);
-const vnx::Hash64 Farmer_sign_proof_return::VNX_CODE_HASH(0xca4434b80a71ea7cull);
+const vnx::Hash64 Farmer_sign_proof_return::VNX_CODE_HASH(0x44eba812b6aeac6bull);
 
 vnx::Hash64 Farmer_sign_proof_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_sign_proof_return::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Farmer.sign_proof.return";
 	type_code->type_hash = vnx::Hash64(0xfc55b496d43f06fbull);
-	type_code->code_hash = vnx::Hash64(0xca4434b80a71ea7cull);
+	type_code->code_hash = vnx::Hash64(0x44eba812b6aeac6bull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_sign_proof_return::static_create_type_code
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {11, 96, 1};
+		field.code = {11, 64, 1};
 	}
 	type_code->build();
 	return type_code;

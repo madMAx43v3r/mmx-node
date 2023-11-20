@@ -154,11 +154,11 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -818,7 +818,7 @@ std::vector<::mmx::virtual_plot_info_t> NodeClient::get_virtual_plots(const std:
 	}
 }
 
-std::vector<::mmx::virtual_plot_info_t> NodeClient::get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) {
+std::vector<::mmx::virtual_plot_info_t> NodeClient::get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key) {
 	auto _method = ::mmx::Node_get_virtual_plots_for::create();
 	_method->farmer_key = farmer_key;
 	auto _return_value = vnx_request(_method, false);
@@ -1100,7 +1100,7 @@ std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>
 	}
 }
 
-std::vector<std::shared_ptr<const ::mmx::BlockHeader>> NodeClient::get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) {
+std::vector<std::shared_ptr<const ::mmx::BlockHeader>> NodeClient::get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_farmed_blocks::create();
 	_method->farmer_keys = farmer_keys;
 	_method->full_blocks = full_blocks;
@@ -1116,20 +1116,20 @@ std::vector<std::shared_ptr<const ::mmx::BlockHeader>> NodeClient::get_farmed_bl
 	}
 }
 
-std::map<::mmx::bls_pubkey_t, uint32_t> NodeClient::get_farmed_block_count(const uint32_t& since) {
+std::map<::mmx::pubkey_t, uint32_t> NodeClient::get_farmed_block_count(const uint32_t& since) {
 	auto _method = ::mmx::Node_get_farmed_block_count::create();
 	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_farmed_block_count_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::map<::mmx::bls_pubkey_t, uint32_t>>();
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::pubkey_t, uint32_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
 }
 
-uint32_t NodeClient::get_farmed_block_count_for(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const uint32_t& since) {
+uint32_t NodeClient::get_farmed_block_count_for(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_farmed_block_count_for::create();
 	_method->farmer_keys = farmer_keys;
 	_method->since = since;

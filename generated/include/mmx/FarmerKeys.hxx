@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_FarmerKeys_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/skey_t.hpp>
 #include <vnx/Value.h>
 
@@ -15,10 +15,8 @@ namespace mmx {
 class MMX_EXPORT FarmerKeys : public ::vnx::Value {
 public:
 	
-	::mmx::skey_t pool_private_key;
 	::mmx::skey_t farmer_private_key;
-	::mmx::bls_pubkey_t pool_public_key;
-	::mmx::bls_pubkey_t farmer_public_key;
+	::mmx::pubkey_t farmer_public_key;
 	
 	typedef ::vnx::Value Super;
 	
@@ -65,12 +63,10 @@ protected:
 
 template<typename T>
 void FarmerKeys::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmerKeys>(4);
-	_visitor.type_field("pool_private_key", 0); _visitor.accept(pool_private_key);
-	_visitor.type_field("farmer_private_key", 1); _visitor.accept(farmer_private_key);
-	_visitor.type_field("pool_public_key", 2); _visitor.accept(pool_public_key);
-	_visitor.type_field("farmer_public_key", 3); _visitor.accept(farmer_public_key);
-	_visitor.template type_end<FarmerKeys>(4);
+	_visitor.template type_begin<FarmerKeys>(2);
+	_visitor.type_field("farmer_private_key", 0); _visitor.accept(farmer_private_key);
+	_visitor.type_field("farmer_public_key", 1); _visitor.accept(farmer_public_key);
+	_visitor.template type_end<FarmerKeys>(2);
 }
 
 

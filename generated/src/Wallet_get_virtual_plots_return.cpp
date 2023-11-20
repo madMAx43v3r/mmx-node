@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_virtual_plots_return::VNX_TYPE_HASH(0x44921a16936ac259ull);
-const vnx::Hash64 Wallet_get_virtual_plots_return::VNX_CODE_HASH(0x25bff664134b13dcull);
+const vnx::Hash64 Wallet_get_virtual_plots_return::VNX_CODE_HASH(0xb39d4b8fa503af67ull);
 
 vnx::Hash64 Wallet_get_virtual_plots_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_virtual_plots_return::static_create_ty
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_virtual_plots.return";
 	type_code->type_hash = vnx::Hash64(0x44921a16936ac259ull);
-	type_code->code_hash = vnx::Hash64(0x25bff664134b13dcull);
+	type_code->code_hash = vnx::Hash64(0xb39d4b8fa503af67ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
