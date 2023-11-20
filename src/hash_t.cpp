@@ -8,7 +8,6 @@
 #include <mmx/hash_t.hpp>
 #include <vnx/SHA256.h>
 
-#include <bls.hpp>
 #include <sodium.h>
 #include <sha256_ni.h>
 
