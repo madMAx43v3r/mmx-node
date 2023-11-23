@@ -1,0 +1,18 @@
+package mmx;
+
+class PlotHeader {
+	
+	int version;
+	
+	int ksize;
+	int xbits;			// 0 = uncompressed
+	
+	hash_t seed;
+	
+	pubkey_t farmer_key;
+	
+	optional<addr_t> contract;
+	
+	vector<ulong> table_pointers;
+	
+}
