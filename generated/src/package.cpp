@@ -224,6 +224,7 @@
 #include <mmx/Operation_is_valid.hxx>
 #include <mmx/Operation_is_valid_return.hxx>
 #include <mmx/PeerInfo.hxx>
+#include <mmx/PlotHeader.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/ProofOfSpace_calc_hash.hxx>
 #include <mmx/ProofOfSpace_calc_hash_return.hxx>
@@ -3155,6 +3156,18 @@ void type<::mmx::PeerInfo>::create_dynamic_code(std::vector<uint16_t>& code) {
 }
 
 void type<::mmx::PeerInfo>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::PeerInfo& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::PlotHeader>::get_type_code() {
+	return mmx::vnx_native_type_code_PlotHeader;
+}
+
+void type<::mmx::PlotHeader>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::PlotHeader());
+}
+
+void type<::mmx::PlotHeader>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::PlotHeader& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -6793,6 +6806,7 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Operation_is_valid::static_create_type_code());
 	vnx::register_type_code(::mmx::Operation_is_valid_return::static_create_type_code());
 	vnx::register_type_code(::mmx::PeerInfo::static_create_type_code());
+	vnx::register_type_code(::mmx::PlotHeader::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfSpace::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfSpace_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfSpace_calc_hash_return::static_create_type_code());
@@ -7301,6 +7315,7 @@ const vnx::TypeCode* const vnx_native_type_code_Operation_calc_hash_return = vnx
 const vnx::TypeCode* const vnx_native_type_code_Operation_is_valid = vnx::get_type_code(vnx::Hash64(0x3b2ec6e0a968cf51ull));
 const vnx::TypeCode* const vnx_native_type_code_Operation_is_valid_return = vnx::get_type_code(vnx::Hash64(0x1324d5d2902c32f9ull));
 const vnx::TypeCode* const vnx_native_type_code_PeerInfo = vnx::get_type_code(vnx::Hash64(0xf7a37f624c94a121ull));
+const vnx::TypeCode* const vnx_native_type_code_PlotHeader = vnx::get_type_code(vnx::Hash64(0x299c5790983c47b6ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace = vnx::get_type_code(vnx::Hash64(0x9269760ad5fd0058ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace_calc_hash = vnx::get_type_code(vnx::Hash64(0x4056d25a9096f144ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace_calc_hash_return = vnx::get_type_code(vnx::Hash64(0x83ae337b27aae652ull));

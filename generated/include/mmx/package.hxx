@@ -245,6 +245,7 @@ class Operation_calc_hash_return;
 class Operation_is_valid;
 class Operation_is_valid_return;
 class PeerInfo;
+class PlotHeader;
 class ProofOfSpace;
 class ProofOfSpace_calc_hash;
 class ProofOfSpace_calc_hash_return;
@@ -755,6 +756,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation_calc
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation_is_valid; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation_is_valid_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PeerInfo; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotHeader; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace_calc_hash; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace_calc_hash_return; ///< \private
@@ -1261,6 +1263,7 @@ void read(TypeInput& in, ::mmx::Operation_calc_hash_return& value, const TypeCod
 void read(TypeInput& in, ::mmx::Operation_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Operation_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::PeerInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::PlotHeader& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfSpace& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfSpace_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfSpace_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1771,6 +1774,7 @@ void write(TypeOutput& out, const ::mmx::Operation_calc_hash_return& value, cons
 void write(TypeOutput& out, const ::mmx::Operation_is_valid& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Operation_is_valid_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::PeerInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::PlotHeader& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfSpace& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfSpace_calc_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfSpace_calc_hash_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2281,6 +2285,7 @@ void read(std::istream& in, ::mmx::Operation_calc_hash_return& value); ///< \pri
 void read(std::istream& in, ::mmx::Operation_is_valid& value); ///< \private
 void read(std::istream& in, ::mmx::Operation_is_valid_return& value); ///< \private
 void read(std::istream& in, ::mmx::PeerInfo& value); ///< \private
+void read(std::istream& in, ::mmx::PlotHeader& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpace& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpace_calc_hash& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpace_calc_hash_return& value); ///< \private
@@ -2791,6 +2796,7 @@ void write(std::ostream& out, const ::mmx::Operation_calc_hash_return& value); /
 void write(std::ostream& out, const ::mmx::Operation_is_valid& value); ///< \private
 void write(std::ostream& out, const ::mmx::Operation_is_valid_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::PeerInfo& value); ///< \private
+void write(std::ostream& out, const ::mmx::PlotHeader& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfSpace& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfSpace_calc_hash& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfSpace_calc_hash_return& value); ///< \private
@@ -3301,6 +3307,7 @@ void accept(Visitor& visitor, const ::mmx::Operation_calc_hash_return& value); /
 void accept(Visitor& visitor, const ::mmx::Operation_is_valid& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Operation_is_valid_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::PeerInfo& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::PlotHeader& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfSpace& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfSpace_calc_hash& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfSpace_calc_hash_return& value); ///< \private
@@ -8706,6 +8713,29 @@ struct type<::mmx::PeerInfo> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::PeerInfo& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::PlotHeader> {
+	void read(TypeInput& in, ::mmx::PlotHeader& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::PlotHeader& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::PlotHeader& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::PlotHeader& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::PlotHeader& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::PlotHeader& value, bool special = false);
 };
 
 /// \private
