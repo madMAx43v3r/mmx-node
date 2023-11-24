@@ -20,7 +20,7 @@ class ChainParams {
 	uint max_vdf_segments = 1024;
 
 	uint score_bits = 16;
-	uint score_target = 8192;				// defines how many competing blocks are created (must be less than score_threshold)
+	uint score_target = 8192;				// defines how many proofs are found per block (must be less than score_threshold)
 	uint score_threshold = 65536;			// should be <= 2^score_bits
 	
 	ulong vdf_reward = 2000;				// per block
