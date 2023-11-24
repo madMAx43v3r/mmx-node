@@ -229,8 +229,6 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 		weight += 1;
 	}
 	weight *= diff_block->time_diff;
-	// TODO: weight *= std::max(diff_block->netspace_ratio, 1u);
-	// TODO: weight >>= 2 * params->max_diff_adjust;
 
 	if(weight.upper()) {
 		throw std::logic_error("block weight overflow");
