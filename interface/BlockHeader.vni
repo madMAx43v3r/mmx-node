@@ -36,7 +36,7 @@ class BlockHeader {
 	uint total_cost;
 	
 	uint tx_count;
-	uint tx_fees;
+	ulong tx_fees;
 	
 	hash_t tx_hash;
 	
