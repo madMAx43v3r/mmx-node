@@ -7,6 +7,11 @@ class PlotHeader {
 	int ksize;
 	int xbits;			// 0 = uncompressed
 	
+	int park_size_x;
+	int park_size_y;
+	int park_size_pd;
+	int park_size_meta;
+	
 	hash_t seed;
 	
 	pubkey_t farmer_key;
