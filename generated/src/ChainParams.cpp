@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xd423d2f859e76c80ull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x6e9dd72d8a479259ull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -70,33 +70,32 @@ void ChainParams::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, time_diff_constant);
 	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, space_diff_constant);
 	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, virtual_space_constant);
-	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, min_time_diff);
-	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, initial_time_diff);
-	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, initial_space_diff);
-	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, min_txfee);
-	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, min_txfee_io);
-	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, min_txfee_sign);
-	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, min_txfee_memo);
-	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, min_txfee_exec);
-	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, min_txfee_deploy);
-	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, min_txfee_byte);
-	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, min_txfee_read);
-	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, min_txfee_read_kbyte);
-	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, min_txfee_activate);
-	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, max_block_size);
-	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, max_block_cost);
-	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, max_tx_cost);
-	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, block_time);
-	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, network);
-	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, nft_binary);
-	_visitor.type_field(_type_code->fields[42], 42); vnx::accept(_visitor, plot_binary);
-	_visitor.type_field(_type_code->fields[43], 43); vnx::accept(_visitor, swap_binary);
-	_visitor.type_field(_type_code->fields[44], 44); vnx::accept(_visitor, offer_binary);
-	_visitor.type_field(_type_code->fields[45], 45); vnx::accept(_visitor, token_binary);
-	_visitor.type_field(_type_code->fields[46], 46); vnx::accept(_visitor, plot_nft_binary);
-	_visitor.type_field(_type_code->fields[47], 47); vnx::accept(_visitor, project_addr);
-	_visitor.type_field(_type_code->fields[48], 48); vnx::accept(_visitor, fixed_project_reward);
-	_visitor.type_field(_type_code->fields[49], 49); vnx::accept(_visitor, project_ratio);
+	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, initial_time_diff);
+	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, initial_space_diff);
+	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, min_txfee);
+	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, min_txfee_io);
+	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, min_txfee_sign);
+	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, min_txfee_memo);
+	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, min_txfee_exec);
+	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, min_txfee_deploy);
+	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, min_txfee_byte);
+	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, min_txfee_read);
+	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, min_txfee_read_kbyte);
+	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, min_txfee_activate);
+	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, max_block_size);
+	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, max_block_cost);
+	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, max_tx_cost);
+	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, block_time);
+	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, network);
+	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, nft_binary);
+	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, plot_binary);
+	_visitor.type_field(_type_code->fields[42], 42); vnx::accept(_visitor, swap_binary);
+	_visitor.type_field(_type_code->fields[43], 43); vnx::accept(_visitor, offer_binary);
+	_visitor.type_field(_type_code->fields[44], 44); vnx::accept(_visitor, token_binary);
+	_visitor.type_field(_type_code->fields[45], 45); vnx::accept(_visitor, plot_nft_binary);
+	_visitor.type_field(_type_code->fields[46], 46); vnx::accept(_visitor, project_addr);
+	_visitor.type_field(_type_code->fields[47], 47); vnx::accept(_visitor, fixed_project_reward);
+	_visitor.type_field(_type_code->fields[48], 48); vnx::accept(_visitor, project_ratio);
 	_visitor.type_end(*_type_code);
 }
 
@@ -125,7 +124,6 @@ void ChainParams::write(std::ostream& _out) const {
 	_out << ", \"time_diff_constant\": "; vnx::write(_out, time_diff_constant);
 	_out << ", \"space_diff_constant\": "; vnx::write(_out, space_diff_constant);
 	_out << ", \"virtual_space_constant\": "; vnx::write(_out, virtual_space_constant);
-	_out << ", \"min_time_diff\": "; vnx::write(_out, min_time_diff);
 	_out << ", \"initial_time_diff\": "; vnx::write(_out, initial_time_diff);
 	_out << ", \"initial_space_diff\": "; vnx::write(_out, initial_space_diff);
 	_out << ", \"min_txfee\": "; vnx::write(_out, min_txfee);
@@ -187,7 +185,6 @@ vnx::Object ChainParams::to_object() const {
 	_object["time_diff_constant"] = time_diff_constant;
 	_object["space_diff_constant"] = space_diff_constant;
 	_object["virtual_space_constant"] = virtual_space_constant;
-	_object["min_time_diff"] = min_time_diff;
 	_object["initial_time_diff"] = initial_time_diff;
 	_object["initial_space_diff"] = initial_space_diff;
 	_object["min_txfee"] = min_txfee;
@@ -255,8 +252,6 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(min_ksize);
 		} else if(_entry.first == "min_reward") {
 			_entry.second.to(min_reward);
-		} else if(_entry.first == "min_time_diff") {
-			_entry.second.to(min_time_diff);
 		} else if(_entry.first == "min_txfee") {
 			_entry.second.to(min_txfee);
 		} else if(_entry.first == "min_txfee_activate") {
@@ -393,9 +388,6 @@ vnx::Variant ChainParams::get_field(const std::string& _name) const {
 	if(_name == "virtual_space_constant") {
 		return vnx::Variant(virtual_space_constant);
 	}
-	if(_name == "min_time_diff") {
-		return vnx::Variant(min_time_diff);
-	}
 	if(_name == "initial_time_diff") {
 		return vnx::Variant(initial_time_diff);
 	}
@@ -524,8 +516,6 @@ void ChainParams::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(space_diff_constant);
 	} else if(_name == "virtual_space_constant") {
 		_value.to(virtual_space_constant);
-	} else if(_name == "min_time_diff") {
-		_value.to(min_time_diff);
 	} else if(_name == "initial_time_diff") {
 		_value.to(initial_time_diff);
 	} else if(_name == "initial_space_diff") {
@@ -605,14 +595,14 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0xd423d2f859e76c80ull);
+	type_code->code_hash = vnx::Hash64(0x6e9dd72d8a479259ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ChainParams>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::ulong_fraction_t::static_get_type_code();
-	type_code->fields.resize(50);
+	type_code->fields.resize(49);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -775,179 +765,172 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	{
 		auto& field = type_code->fields[23];
 		field.data_size = 8;
-		field.name = "min_time_diff";
-		field.value = vnx::to_string(10000);
-		field.code = {4};
-	}
-	{
-		auto& field = type_code->fields[24];
-		field.data_size = 8;
 		field.name = "initial_time_diff";
 		field.value = vnx::to_string(50000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[25];
+		auto& field = type_code->fields[24];
 		field.data_size = 8;
 		field.name = "initial_space_diff";
 		field.value = vnx::to_string(10);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[26];
+		auto& field = type_code->fields[25];
 		field.data_size = 8;
 		field.name = "min_txfee";
 		field.value = vnx::to_string(100);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[27];
+		auto& field = type_code->fields[26];
 		field.data_size = 8;
 		field.name = "min_txfee_io";
 		field.value = vnx::to_string(100);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[28];
+		auto& field = type_code->fields[27];
 		field.data_size = 8;
 		field.name = "min_txfee_sign";
 		field.value = vnx::to_string(1000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[29];
+		auto& field = type_code->fields[28];
 		field.data_size = 8;
 		field.name = "min_txfee_memo";
 		field.value = vnx::to_string(50);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[30];
+		auto& field = type_code->fields[29];
 		field.data_size = 8;
 		field.name = "min_txfee_exec";
 		field.value = vnx::to_string(10000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[31];
+		auto& field = type_code->fields[30];
 		field.data_size = 8;
 		field.name = "min_txfee_deploy";
 		field.value = vnx::to_string(100000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[32];
+		auto& field = type_code->fields[31];
 		field.data_size = 8;
 		field.name = "min_txfee_byte";
 		field.value = vnx::to_string(10);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[33];
+		auto& field = type_code->fields[32];
 		field.data_size = 8;
 		field.name = "min_txfee_read";
 		field.value = vnx::to_string(1000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[34];
+		auto& field = type_code->fields[33];
 		field.data_size = 8;
 		field.name = "min_txfee_read_kbyte";
 		field.value = vnx::to_string(1000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[35];
+		auto& field = type_code->fields[34];
 		field.data_size = 8;
 		field.name = "min_txfee_activate";
 		field.value = vnx::to_string(100000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[36];
+		auto& field = type_code->fields[35];
 		field.data_size = 8;
 		field.name = "max_block_size";
 		field.value = vnx::to_string(10000000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[37];
+		auto& field = type_code->fields[36];
 		field.data_size = 8;
 		field.name = "max_block_cost";
 		field.value = vnx::to_string(100000000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[38];
+		auto& field = type_code->fields[37];
 		field.data_size = 8;
 		field.name = "max_tx_cost";
 		field.value = vnx::to_string(1000000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[39];
+		auto& field = type_code->fields[38];
 		field.data_size = 8;
 		field.name = "block_time";
 		field.value = vnx::to_string(10);
 		field.code = {10};
 	}
 	{
-		auto& field = type_code->fields[40];
+		auto& field = type_code->fields[39];
 		field.is_extended = true;
 		field.name = "network";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[41];
+		auto& field = type_code->fields[40];
 		field.is_extended = true;
 		field.name = "nft_binary";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[42];
+		auto& field = type_code->fields[41];
 		field.is_extended = true;
 		field.name = "plot_binary";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[43];
+		auto& field = type_code->fields[42];
 		field.is_extended = true;
 		field.name = "swap_binary";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[44];
+		auto& field = type_code->fields[43];
 		field.is_extended = true;
 		field.name = "offer_binary";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[45];
+		auto& field = type_code->fields[44];
 		field.is_extended = true;
 		field.name = "token_binary";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[46];
+		auto& field = type_code->fields[45];
 		field.is_extended = true;
 		field.name = "plot_nft_binary";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[47];
+		auto& field = type_code->fields[46];
 		field.is_extended = true;
 		field.name = "project_addr";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[48];
+		auto& field = type_code->fields[47];
 		field.data_size = 8;
 		field.name = "fixed_project_reward";
 		field.value = vnx::to_string(50000);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[49];
+		auto& field = type_code->fields[48];
 		field.is_extended = true;
 		field.name = "project_ratio";
 		field.code = {19, 0};
@@ -1067,72 +1050,69 @@ void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, c
 			vnx::read_value(_buf + _field->offset, value.virtual_space_constant, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[23]) {
-			vnx::read_value(_buf + _field->offset, value.min_time_diff, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[24]) {
 			vnx::read_value(_buf + _field->offset, value.initial_time_diff, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[25]) {
+		if(const auto* const _field = type_code->field_map[24]) {
 			vnx::read_value(_buf + _field->offset, value.initial_space_diff, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[26]) {
+		if(const auto* const _field = type_code->field_map[25]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[27]) {
+		if(const auto* const _field = type_code->field_map[26]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_io, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[28]) {
+		if(const auto* const _field = type_code->field_map[27]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_sign, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[29]) {
+		if(const auto* const _field = type_code->field_map[28]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_memo, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[30]) {
+		if(const auto* const _field = type_code->field_map[29]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_exec, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[31]) {
+		if(const auto* const _field = type_code->field_map[30]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_deploy, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[32]) {
+		if(const auto* const _field = type_code->field_map[31]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_byte, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[33]) {
+		if(const auto* const _field = type_code->field_map[32]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_read, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[34]) {
+		if(const auto* const _field = type_code->field_map[33]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_read_kbyte, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[35]) {
+		if(const auto* const _field = type_code->field_map[34]) {
 			vnx::read_value(_buf + _field->offset, value.min_txfee_activate, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[36]) {
+		if(const auto* const _field = type_code->field_map[35]) {
 			vnx::read_value(_buf + _field->offset, value.max_block_size, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[37]) {
+		if(const auto* const _field = type_code->field_map[36]) {
 			vnx::read_value(_buf + _field->offset, value.max_block_cost, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[38]) {
+		if(const auto* const _field = type_code->field_map[37]) {
 			vnx::read_value(_buf + _field->offset, value.max_tx_cost, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[39]) {
+		if(const auto* const _field = type_code->field_map[38]) {
 			vnx::read_value(_buf + _field->offset, value.block_time, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[48]) {
+		if(const auto* const _field = type_code->field_map[47]) {
 			vnx::read_value(_buf + _field->offset, value.fixed_project_reward, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 19: vnx::read(in, value.reward_factor, type_code, _field->code.data()); break;
-			case 40: vnx::read(in, value.network, type_code, _field->code.data()); break;
-			case 41: vnx::read(in, value.nft_binary, type_code, _field->code.data()); break;
-			case 42: vnx::read(in, value.plot_binary, type_code, _field->code.data()); break;
-			case 43: vnx::read(in, value.swap_binary, type_code, _field->code.data()); break;
-			case 44: vnx::read(in, value.offer_binary, type_code, _field->code.data()); break;
-			case 45: vnx::read(in, value.token_binary, type_code, _field->code.data()); break;
-			case 46: vnx::read(in, value.plot_nft_binary, type_code, _field->code.data()); break;
-			case 47: vnx::read(in, value.project_addr, type_code, _field->code.data()); break;
-			case 49: vnx::read(in, value.project_ratio, type_code, _field->code.data()); break;
+			case 39: vnx::read(in, value.network, type_code, _field->code.data()); break;
+			case 40: vnx::read(in, value.nft_binary, type_code, _field->code.data()); break;
+			case 41: vnx::read(in, value.plot_binary, type_code, _field->code.data()); break;
+			case 42: vnx::read(in, value.swap_binary, type_code, _field->code.data()); break;
+			case 43: vnx::read(in, value.offer_binary, type_code, _field->code.data()); break;
+			case 44: vnx::read(in, value.token_binary, type_code, _field->code.data()); break;
+			case 45: vnx::read(in, value.plot_nft_binary, type_code, _field->code.data()); break;
+			case 46: vnx::read(in, value.project_addr, type_code, _field->code.data()); break;
+			case 48: vnx::read(in, value.project_ratio, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -1151,7 +1131,7 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(252);
+	char* const _buf = out.write(244);
 	vnx::write_value(_buf + 0, value.port);
 	vnx::write_value(_buf + 4, value.decimals);
 	vnx::write_value(_buf + 8, value.min_ksize);
@@ -1174,34 +1154,33 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	vnx::write_value(_buf + 84, value.time_diff_constant);
 	vnx::write_value(_buf + 92, value.space_diff_constant);
 	vnx::write_value(_buf + 100, value.virtual_space_constant);
-	vnx::write_value(_buf + 108, value.min_time_diff);
-	vnx::write_value(_buf + 116, value.initial_time_diff);
-	vnx::write_value(_buf + 124, value.initial_space_diff);
-	vnx::write_value(_buf + 132, value.min_txfee);
-	vnx::write_value(_buf + 140, value.min_txfee_io);
-	vnx::write_value(_buf + 148, value.min_txfee_sign);
-	vnx::write_value(_buf + 156, value.min_txfee_memo);
-	vnx::write_value(_buf + 164, value.min_txfee_exec);
-	vnx::write_value(_buf + 172, value.min_txfee_deploy);
-	vnx::write_value(_buf + 180, value.min_txfee_byte);
-	vnx::write_value(_buf + 188, value.min_txfee_read);
-	vnx::write_value(_buf + 196, value.min_txfee_read_kbyte);
-	vnx::write_value(_buf + 204, value.min_txfee_activate);
-	vnx::write_value(_buf + 212, value.max_block_size);
-	vnx::write_value(_buf + 220, value.max_block_cost);
-	vnx::write_value(_buf + 228, value.max_tx_cost);
-	vnx::write_value(_buf + 236, value.block_time);
-	vnx::write_value(_buf + 244, value.fixed_project_reward);
+	vnx::write_value(_buf + 108, value.initial_time_diff);
+	vnx::write_value(_buf + 116, value.initial_space_diff);
+	vnx::write_value(_buf + 124, value.min_txfee);
+	vnx::write_value(_buf + 132, value.min_txfee_io);
+	vnx::write_value(_buf + 140, value.min_txfee_sign);
+	vnx::write_value(_buf + 148, value.min_txfee_memo);
+	vnx::write_value(_buf + 156, value.min_txfee_exec);
+	vnx::write_value(_buf + 164, value.min_txfee_deploy);
+	vnx::write_value(_buf + 172, value.min_txfee_byte);
+	vnx::write_value(_buf + 180, value.min_txfee_read);
+	vnx::write_value(_buf + 188, value.min_txfee_read_kbyte);
+	vnx::write_value(_buf + 196, value.min_txfee_activate);
+	vnx::write_value(_buf + 204, value.max_block_size);
+	vnx::write_value(_buf + 212, value.max_block_cost);
+	vnx::write_value(_buf + 220, value.max_tx_cost);
+	vnx::write_value(_buf + 228, value.block_time);
+	vnx::write_value(_buf + 236, value.fixed_project_reward);
 	vnx::write(out, value.reward_factor, type_code, type_code->fields[19].code.data());
-	vnx::write(out, value.network, type_code, type_code->fields[40].code.data());
-	vnx::write(out, value.nft_binary, type_code, type_code->fields[41].code.data());
-	vnx::write(out, value.plot_binary, type_code, type_code->fields[42].code.data());
-	vnx::write(out, value.swap_binary, type_code, type_code->fields[43].code.data());
-	vnx::write(out, value.offer_binary, type_code, type_code->fields[44].code.data());
-	vnx::write(out, value.token_binary, type_code, type_code->fields[45].code.data());
-	vnx::write(out, value.plot_nft_binary, type_code, type_code->fields[46].code.data());
-	vnx::write(out, value.project_addr, type_code, type_code->fields[47].code.data());
-	vnx::write(out, value.project_ratio, type_code, type_code->fields[49].code.data());
+	vnx::write(out, value.network, type_code, type_code->fields[39].code.data());
+	vnx::write(out, value.nft_binary, type_code, type_code->fields[40].code.data());
+	vnx::write(out, value.plot_binary, type_code, type_code->fields[41].code.data());
+	vnx::write(out, value.swap_binary, type_code, type_code->fields[42].code.data());
+	vnx::write(out, value.offer_binary, type_code, type_code->fields[43].code.data());
+	vnx::write(out, value.token_binary, type_code, type_code->fields[44].code.data());
+	vnx::write(out, value.plot_nft_binary, type_code, type_code->fields[45].code.data());
+	vnx::write(out, value.project_addr, type_code, type_code->fields[46].code.data());
+	vnx::write(out, value.project_ratio, type_code, type_code->fields[48].code.data());
 }
 
 void read(std::istream& in, ::mmx::ChainParams& value) {

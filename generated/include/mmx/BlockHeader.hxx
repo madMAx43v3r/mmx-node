@@ -39,7 +39,7 @@ public:
 	uint32_t static_cost = 0;
 	uint32_t total_cost = 0;
 	uint32_t tx_count = 0;
-	uint32_t tx_fees = 0;
+	uint64_t tx_fees = 0;
 	::mmx::hash_t tx_hash;
 	vnx::optional<::mmx::signature_t> farmer_sig;
 	::mmx::hash_t content_hash;

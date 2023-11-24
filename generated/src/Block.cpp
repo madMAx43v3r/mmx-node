@@ -40,7 +40,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Block::VNX_TYPE_HASH(0x94965d816d328467ull);
-const vnx::Hash64 Block::VNX_CODE_HASH(0x691b44ba938d72dfull);
+const vnx::Hash64 Block::VNX_CODE_HASH(0x13284762d45fc09full);
 
 vnx::Hash64 Block::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -381,7 +381,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Block";
 	type_code->type_hash = vnx::Hash64(0x94965d816d328467ull);
-	type_code->code_hash = vnx::Hash64(0x691b44ba938d72dfull);
+	type_code->code_hash = vnx::Hash64(0x13284762d45fc09full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Block);
@@ -524,9 +524,9 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[20];
-		field.data_size = 4;
+		field.data_size = 8;
 		field.name = "tx_fees";
-		field.code = {3};
+		field.code = {4};
 	}
 	{
 		auto& field = type_code->fields[21];
@@ -744,7 +744,7 @@ void write(TypeOutput& out, const ::mmx::Block& value, const TypeCode* type_code
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(72);
+	char* const _buf = out.write(76);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.height);
 	vnx::write_value(_buf + 8, value.nonce);
