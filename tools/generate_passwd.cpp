@@ -12,7 +12,7 @@
 
 int main()
 {
-	std::cout << mmx::hash_t::random().to_string() << std::endl;
+	std::cout << mmx::hash_t::secure_random().to_string() << std::endl;
 	return 0;
 }
 

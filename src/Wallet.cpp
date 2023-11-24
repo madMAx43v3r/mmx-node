@@ -873,7 +873,7 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::st
 	if(words) {
 		key_file.seed_value = mnemonic::words_to_seed(mnemonic::string_to_words(*words));
 	} else {
-		key_file.seed_value = hash_t::random();
+		key_file.seed_value = hash_t::secure_random();
 	}
 	auto config = config_;
 	config.with_passphrase = passphrase;

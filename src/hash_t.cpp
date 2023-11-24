@@ -28,6 +28,13 @@ hash_t::hash_t(const void* data, const size_t num_bytes)
 
 hash_t hash_t::random()
 {
+	hash_t out;
+	::randombytes_buf(out.data(), out.size());
+	return out;
+}
+
+hash_t hash_t::secure_random()
+{
 	std::vector<uint8_t> seed(4096);
 	::randombytes_buf(seed.data(), seed.size());
 

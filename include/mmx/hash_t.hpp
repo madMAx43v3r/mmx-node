@@ -43,6 +43,8 @@ public:
 
 	static hash_t random();
 
+	static hash_t secure_random();
+
 	static hash_t from_bytes(const std::vector<uint8_t>& bytes);
 
 	static hash_t from_bytes(const std::array<uint8_t, 32>& bytes);

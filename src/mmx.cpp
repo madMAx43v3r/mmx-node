@@ -898,7 +898,7 @@ int main(int argc, char** argv)
 				mmx::KeyFile wallet;
 				if(seed_str.empty()) {
 					if(seed_words.empty()) {
-						wallet.seed_value = mmx::hash_t::random();
+						wallet.seed_value = mmx::hash_t::secure_random();
 					} else {
 						wallet.seed_value = mmx::mnemonic::words_to_seed(seed_words);
 					}
