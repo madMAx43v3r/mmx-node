@@ -49,36 +49,38 @@ inline uint64_t rotl_64(const uint64_t v, int bits) {
 }
 
 inline
-uint64_t write_bits(uint64_t* dst, const uint64_t value, const uint64_t bit_offset, const int num_bits)
+uint64_t write_bits(uint64_t* dst, uint64_t value, const uint64_t bit_offset, const uint32_t num_bits)
 {
-	const int free_bits = 64 - (bit_offset % 64);
-	if(free_bits >= num_bits) {
-		dst[bit_offset / 64]     |= bswap_64(value << (free_bits - num_bits));
-	} else {
-		const int suffix_size = num_bits - free_bits;
-		const uint64_t suffix = value & ((uint64_t(1) << suffix_size) - 1);
-		dst[bit_offset / 64]     |= bswap_64(value >> suffix_size);			// prefix (high bits)
-		dst[bit_offset / 64 + 1] |= bswap_64(suffix << (64 - suffix_size));	// suffix (low bits)
+	if(num_bits < 64) {
+		value &= ((uint64_t(1) << num_bits) - 1);
+	}
+	const uint32_t shift = bit_offset % 64;
+	const uint32_t free_bits = 64 - shift;
+
+	dst[bit_offset / 64]         |= (value << shift);
+
+	if(free_bits < num_bits) {
+		dst[bit_offset / 64 + 1] |= (value >> free_bits);
 	}
 	return bit_offset + num_bits;
 }
 
 inline
-uint64_t read_bits(const uint64_t* src, const uint64_t bit_offset, const int num_bits)
+uint64_t read_bits(const uint64_t* src, const uint64_t bit_offset, const uint32_t num_bits)
 {
-	int count = 0;
+	uint32_t count = 0;
 	uint64_t offset = bit_offset;
 	uint64_t result = 0;
 	while(count < num_bits) {
-		const int shift = offset % 64;
-		const int bits = std::min(num_bits - count, 64 - shift);
-		uint64_t value = bswap_64(src[offset / 64]) << shift;
-		if(bits < 64) {
-			value >>= (64 - bits);
-		}
-		result |= value << (num_bits - count - bits);
+		const uint32_t shift = offset % 64;
+		const uint32_t bits = std::min<uint32_t>(num_bits - count, 64 - shift);
+		const uint64_t value = src[offset / 64] >> shift;
+		result |= value << count;
 		count += bits;
 		offset += bits;
+	}
+	if(num_bits < 64) {
+		result &= ((uint64_t(1) << num_bits) - 1);
 	}
 	return result;
 }
