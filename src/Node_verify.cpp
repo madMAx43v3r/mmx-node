@@ -317,10 +317,25 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 			max_iters = std::max(max_iters, segments[i].num_iters);
 		}
 		if(have_sha_ni) {
-			for(uint32_t j = 0; j < num_lanes; ++j)
+			for(uint32_t j = 0; j < num_lanes; j += 2)
 			{
 				const uint32_t i = chunk * batch_size + j;
-				recursive_sha256_ni(point[j].data(), segments[i].num_iters);
+				uint8_t hashx2[32 * 2];
+
+				if(j + 1 >= num_lanes) {
+					recursive_sha256_ni(point[j].data(), segments[i].num_iters);
+				}
+				else if(segments[i].num_iters != segments[i + 1].num_iters) {
+					recursive_sha256_ni(point[j].data(), segments[i].num_iters);
+					recursive_sha256_ni(point[j + 1].data(), segments[i + 1].num_iters);
+				}
+				else {
+					::memcpy(hashx2, point[j].data(), 32);
+					::memcpy(hashx2 + 32, point[j + 1].data(), 32);
+					recursive_sha256_ni_x2(hashx2, segments[i].num_iters);
+					::memcpy(point[j].data(), hashx2, 32);
+					::memcpy(point[j + 1].data(), hashx2 + 32, 32);
+				}
 			}
 		} else {
 			for(uint32_t k = 0; k < max_iters; ++k)
