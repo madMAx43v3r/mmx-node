@@ -2006,16 +2006,17 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	return did_fork ? forked_at : nullptr;
 }
 
-std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t max_height) const
+std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t at_height) const
 {
 	const auto root = get_root();
-	if(max_height <= root->height) {
+	if(at_height <= root->height) {
 		return nullptr;
 	}
+	uint32_t max_height = 0;
 	uint128_t max_weight = 0;
 	std::shared_ptr<fork_t> best_fork;
 	const auto begin = fork_index.upper_bound(root->height);
-	const auto end = fork_index.upper_bound(max_height);
+	const auto end = fork_index.upper_bound(at_height);
 	for(auto iter = begin; iter != end; ++iter)
 	{
 		const auto& fork = iter->second;
@@ -2027,12 +2028,16 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t max_height) co
 		if((prev && prev->is_all_proof_verified) || (block->prev == root->hash)) {
 			fork->is_all_proof_verified = fork->is_proof_verified;
 		}
-		if(fork->is_all_proof_verified && !fork->is_invalid) {
-			if(!best_fork
-				|| block->total_weight > max_weight
-				|| (block->total_weight == max_weight && block->hash < best_fork->block->hash))
+		if(fork->is_all_proof_verified && !fork->is_invalid)
+		{
+			const int cond_a = block->total_weight > max_weight ? 1 : (block->total_weight == max_weight ? 0 : -1);
+			const int cond_b = block->height > max_height ? 1 : (block->height == max_height ? 0 : -1);
+			const int cond_c = (!best_fork || block->hash < best_fork->block->hash) ? 1 : 0;
+
+			if(cond_a > 0 || (cond_a == 0 && cond_b > 0) || (cond_a == 0 && cond_b == 0 && cond_c > 0))
 			{
 				best_fork = fork;
+				max_height = block->height;
 				max_weight = block->total_weight;
 			}
 		}

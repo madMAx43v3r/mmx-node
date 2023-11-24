@@ -801,7 +801,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 				if(auto diff_block = fork->diff_block) {
 					double new_diff = params->block_time * diff_block->time_diff / (time_delta * 1e-6);
 					new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
-					block->time_diff = std::max<uint64_t>(std::max<int64_t>(new_diff + 0.5, 1), params->min_time_diff);
+					block->time_diff = std::max<int64_t>(new_diff + 0.5, 1);
 				}
 			}
 		}

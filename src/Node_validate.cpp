@@ -131,9 +131,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_diff == 0 || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}
-	if(block->time_diff < params->min_time_diff) {
-		throw std::logic_error("time_diff < min_time_diff");
-	}
 	if(block->static_cost > params->max_block_size) {
 		throw std::logic_error("block size too high: " + std::to_string(block->static_cost));
 	}

@@ -225,11 +225,8 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 	if(block->proof) {
 		weight += params->score_threshold + (params->score_threshold - block->proof->score);
 		weight *= diff_block->space_diff;
-	} else {
-		weight += 1;
+		weight *= diff_block->time_diff;
 	}
-	weight *= diff_block->time_diff;
-
 	if(weight.upper()) {
 		throw std::logic_error("block weight overflow");
 	}
