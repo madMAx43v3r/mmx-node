@@ -295,7 +295,6 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 		const auto num_lanes = std::min<uint32_t>(batch_size, segments.size() - chunk * batch_size);
 
 		uint32_t max_iters = 0;
-		uint32_t min_iters = 0;
 		hash_t point[batch_size];
 		uint8_t hash[batch_size][32];
 		uint8_t input[batch_size][64];
@@ -322,15 +321,17 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 			{
 				const uint32_t i = chunk * batch_size + j;
 				const uint32_t k = (j + 1 < num_lanes) ? 1 : 0;
+				const auto num_iters_0 = segments[i].num_iters;
+				const auto num_iters_1 = segments[i + k].num_iters;
+				const auto max_iters = std::max(num_iters_0, num_iters_1);
+				const auto min_iters = std::min(num_iters_0, num_iters_1);
 				uint8_t hashx2[32 * 2];
-				max_iters = std::max(segments[i].num_iters, segments[i + k].num_iters);
-				min_iters = std::min(segments[i].num_iters, segments[i + k].num_iters);
 
 				::memcpy(hashx2, point[j].data(), 32);
 				::memcpy(hashx2 + 32, point[j + k].data(), 32);
 				recursive_sha256_ni_x2(hashx2, min_iters);
-				if(max_iters != min_iters) {
-					recursive_sha256_ni(hashx2 + ((segments[i].num_iters > segments[i + k].num_iters) ? 0 : 32), max_iters - min_iters);
+				if(num_iters_0 != num_iters_1) {
+					recursive_sha256_ni(hashx2 + ((num_iters_0 > num_iters_1) ? 0 : 32), max_iters - min_iters);
 				}
 				::memcpy(point[j].data(), hashx2, 32);
 				::memcpy(point[j + k].data(), hashx2 + 32, 32);
