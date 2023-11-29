@@ -91,6 +91,9 @@ void Router::main()
 	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 
+	node_sk = hash_t::random();
+	node_key = pubkey_t::from_skey(node_sk);
+	node_id = node_key.get_addr();
 	{
 		vnx::File file(storage_path + "known_peers.dat");
 		if(file.exists()) {
@@ -105,35 +108,9 @@ void Router::main()
 			}
 			peer_set.insert(peers.begin(), peers.end());
 		}
-		log(INFO) << "Loaded " << peer_set.size() << " known peers";
 	}
-	{
-		vnx::File file(storage_path + "node_sk.dat");
-		if(file.exists()) {
-			try {
-				file.open("rb");
-				vnx::read_generic(file.in, node_sk);
-				file.close();
-			}
-			catch(const std::exception& ex) {
-				log(WARN) << "Failed to read node key from file: " << ex.what();
-			}
-		}
-		if(node_sk == skey_t()) {
-			node_sk = hash_t::random();
-			try {
-				file.open("wb");
-				vnx::write_generic(file.out, node_sk);
-				file.close();
-			}
-			catch(const std::exception& ex) {
-				log(WARN) << "Failed to write node key to file: " << ex.what();
-			}
-		}
-		node_key = pubkey_t::from_skey(node_sk);
-		node_id = node_key.get_addr();
-		log(INFO) << "Our Node ID: " << node_id;
-	}
+	log(INFO) << "Node ID: " << node_id;
+	log(INFO) << "Loaded " << peer_set.size() << " known peers";
 
 	node = std::make_shared<NodeAsyncClient>(node_server);
 	node->vnx_set_non_blocking(true);
