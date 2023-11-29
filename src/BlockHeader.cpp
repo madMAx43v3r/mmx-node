@@ -76,6 +76,7 @@ void BlockHeader::validate() const
 		if(!farmer_sig->verify(proof->farmer_key, hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}
+		// TODO: validate PoW proof
 	}
 }
 

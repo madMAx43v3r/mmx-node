@@ -50,8 +50,6 @@ protected:
 
 	void kick_peer(const std::string& address) override;
 
-	std::vector<std::pair<std::string, uint32_t>> get_farmer_credits() const override;
-
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
 
 	void fetch_block_async(const hash_t& hash, const vnx::optional<std::string>& address, const vnx::request_id_t& request_id) const override;
@@ -242,7 +240,6 @@ private:
 	double tx_upload_credits = 0;
 	double tx_upload_bandwidth = 0;
 	double max_pending_cost_value = 0;
-	std::map<hash_t, uint32_t> farmer_credits;
 
 	mutable std::unordered_map<vnx::request_id_t, std::shared_ptr<sync_job_t>> sync_jobs;
 	mutable std::unordered_map<vnx::request_id_t, std::shared_ptr<fetch_job_t>> fetch_jobs;
