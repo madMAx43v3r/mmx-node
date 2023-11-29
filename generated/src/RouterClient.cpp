@@ -17,8 +17,6 @@
 #include <mmx/Router_get_blocks_at_return.hxx>
 #include <mmx/Router_get_connected_peers.hxx>
 #include <mmx/Router_get_connected_peers_return.hxx>
-#include <mmx/Router_get_farmer_credits.hxx>
-#include <mmx/Router_get_farmer_credits_return.hxx>
 #include <mmx/Router_get_id.hxx>
 #include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_info.hxx>
@@ -172,18 +170,6 @@ void RouterClient::kick_peer_async(const std::string& address) {
 	auto _method = ::mmx::Router_kick_peer::create();
 	_method->address = address;
 	vnx_request(_method, true);
-}
-
-std::vector<std::pair<std::string, uint32_t>> RouterClient::get_farmer_credits() {
-	auto _method = ::mmx::Router_get_farmer_credits::create();
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Router_get_farmer_credits_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<std::pair<std::string, uint32_t>>>();
-	} else {
-		throw std::logic_error("RouterClient: invalid return value");
-	}
 }
 
 std::vector<std::shared_ptr<const ::mmx::Block>> RouterClient::get_blocks_at(const uint32_t& height) {

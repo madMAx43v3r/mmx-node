@@ -60,10 +60,6 @@ public:
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_farmer_credits(
-			const std::function<void(const std::vector<std::pair<std::string, uint32_t>>&)>& _callback = std::function<void(const std::vector<std::pair<std::string, uint32_t>>&)>(),
-			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
-	
 	uint64_t get_blocks_at(const uint32_t& height = 0, 
 			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -134,7 +130,6 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_connected_peers;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::PeerInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_peer_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_kick_peer;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::pair<std::string, uint32_t>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_credits;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::Block>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_blocks_at;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Block>)>, std::function<void(const vnx::exception&)>>> vnx_queue_fetch_block;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Block>)>, std::function<void(const vnx::exception&)>>> vnx_queue_fetch_block_at;

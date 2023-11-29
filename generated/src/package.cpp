@@ -285,8 +285,6 @@
 #include <mmx/Router_get_blocks_at_return.hxx>
 #include <mmx/Router_get_connected_peers.hxx>
 #include <mmx/Router_get_connected_peers_return.hxx>
-#include <mmx/Router_get_farmer_credits.hxx>
-#include <mmx/Router_get_farmer_credits_return.hxx>
 #include <mmx/Router_get_id.hxx>
 #include <mmx/Router_get_id_return.hxx>
 #include <mmx/Router_get_info.hxx>
@@ -3879,30 +3877,6 @@ void type<::mmx::Router_get_connected_peers_return>::create_dynamic_code(std::ve
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::Router_get_farmer_credits>::get_type_code() {
-	return mmx::vnx_native_type_code_Router_get_farmer_credits;
-}
-
-void type<::mmx::Router_get_farmer_credits>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Router_get_farmer_credits());
-}
-
-void type<::mmx::Router_get_farmer_credits>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Router_get_farmer_credits_return>::get_type_code() {
-	return mmx::vnx_native_type_code_Router_get_farmer_credits_return;
-}
-
-void type<::mmx::Router_get_farmer_credits_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Router_get_farmer_credits_return());
-}
-
-void type<::mmx::Router_get_farmer_credits_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_get_farmer_credits_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::Router_get_id>::get_type_code() {
 	return mmx::vnx_native_type_code_Router_get_id;
 }
@@ -6867,8 +6841,6 @@ static void register_all_types() {
 	vnx::register_type_code(::mmx::Router_get_blocks_at_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_connected_peers::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_connected_peers_return::static_create_type_code());
-	vnx::register_type_code(::mmx::Router_get_farmer_credits::static_create_type_code());
-	vnx::register_type_code(::mmx::Router_get_farmer_credits_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_id::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_id_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Router_get_info::static_create_type_code());
@@ -7376,8 +7348,6 @@ const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at = vnx::get_
 const vnx::TypeCode* const vnx_native_type_code_Router_get_blocks_at_return = vnx::get_type_code(vnx::Hash64(0x70f0e9e7aa72b810ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers = vnx::get_type_code(vnx::Hash64(0x8682feb65fbb77feull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_connected_peers_return = vnx::get_type_code(vnx::Hash64(0x5c96b95e03d32e32ull));
-const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits = vnx::get_type_code(vnx::Hash64(0xb9a99acad3a2c7cbull));
-const vnx::TypeCode* const vnx_native_type_code_Router_get_farmer_credits_return = vnx::get_type_code(vnx::Hash64(0xbfe97d9411127cd3ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_id = vnx::get_type_code(vnx::Hash64(0xb9f7168b5ae94cd9ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_id_return = vnx::get_type_code(vnx::Hash64(0x3924146b7a803806ull));
 const vnx::TypeCode* const vnx_native_type_code_Router_get_info = vnx::get_type_code(vnx::Hash64(0x364ea887c149a265ull));

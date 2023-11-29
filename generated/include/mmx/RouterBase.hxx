@@ -52,15 +52,12 @@ public:
 	uint32_t max_peer_set = 100;
 	uint32_t max_sent_cache = 20000;
 	uint32_t max_hash_cache = 100000;
-	uint32_t vdf_credits = 1024;
-	uint32_t block_credits = 256;
+	uint32_t vdf_credits = 100;
+	uint32_t block_credits = 50;
 	uint32_t proof_credits = 10;
-	uint32_t vdf_relay_cost = 256;
-	uint32_t proof_relay_cost = 2;
-	uint32_t dummy_relay_cost = 2;
-	uint32_t block_relay_cost = 16;
-	uint32_t max_node_credits = 1024;
-	uint32_t max_farmer_credits = 64;
+	uint32_t max_node_credits = 100;
+	uint32_t vdf_relay_cost = 50;
+	uint32_t block_relay_cost = 10;
 	uint32_t node_version = 102;
 	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;
 	vnx::bool_t do_relay = true;
@@ -117,7 +114,6 @@ protected:
 	virtual std::vector<std::string> get_connected_peers() const = 0;
 	virtual std::shared_ptr<const ::mmx::PeerInfo> get_peer_info() const = 0;
 	virtual void kick_peer(const std::string& address) = 0;
-	virtual std::vector<std::pair<std::string, uint32_t>> get_farmer_credits() const = 0;
 	virtual void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& _request_id) const = 0;
 	void get_blocks_at_async_return(const vnx::request_id_t& _request_id, const std::vector<std::shared_ptr<const ::mmx::Block>>& _ret_0) const;
 	virtual void fetch_block_async(const ::mmx::hash_t& hash, const vnx::optional<std::string>& address, const vnx::request_id_t& _request_id) const = 0;
@@ -140,7 +136,7 @@ protected:
 
 template<typename T>
 void RouterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<RouterBase>(62);
+	_visitor.template type_begin<RouterBase>(59);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("host", 1); _visitor.accept(host);
 	_visitor.type_field("max_connections", 2); _visitor.accept(max_connections);
@@ -185,25 +181,22 @@ void RouterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("vdf_credits", 41); _visitor.accept(vdf_credits);
 	_visitor.type_field("block_credits", 42); _visitor.accept(block_credits);
 	_visitor.type_field("proof_credits", 43); _visitor.accept(proof_credits);
-	_visitor.type_field("vdf_relay_cost", 44); _visitor.accept(vdf_relay_cost);
-	_visitor.type_field("proof_relay_cost", 45); _visitor.accept(proof_relay_cost);
-	_visitor.type_field("dummy_relay_cost", 46); _visitor.accept(dummy_relay_cost);
-	_visitor.type_field("block_relay_cost", 47); _visitor.accept(block_relay_cost);
-	_visitor.type_field("max_node_credits", 48); _visitor.accept(max_node_credits);
-	_visitor.type_field("max_farmer_credits", 49); _visitor.accept(max_farmer_credits);
-	_visitor.type_field("node_version", 50); _visitor.accept(node_version);
-	_visitor.type_field("mode", 51); _visitor.accept(mode);
-	_visitor.type_field("do_relay", 52); _visitor.accept(do_relay);
-	_visitor.type_field("open_port", 53); _visitor.accept(open_port);
-	_visitor.type_field("max_tx_upload", 54); _visitor.accept(max_tx_upload);
-	_visitor.type_field("max_pending_cost", 55); _visitor.accept(max_pending_cost);
-	_visitor.type_field("priority_queue_size", 56); _visitor.accept(priority_queue_size);
-	_visitor.type_field("seed_peers", 57); _visitor.accept(seed_peers);
-	_visitor.type_field("fixed_peers", 58); _visitor.accept(fixed_peers);
-	_visitor.type_field("block_peers", 59); _visitor.accept(block_peers);
-	_visitor.type_field("storage_path", 60); _visitor.accept(storage_path);
-	_visitor.type_field("node_server", 61); _visitor.accept(node_server);
-	_visitor.template type_end<RouterBase>(62);
+	_visitor.type_field("max_node_credits", 44); _visitor.accept(max_node_credits);
+	_visitor.type_field("vdf_relay_cost", 45); _visitor.accept(vdf_relay_cost);
+	_visitor.type_field("block_relay_cost", 46); _visitor.accept(block_relay_cost);
+	_visitor.type_field("node_version", 47); _visitor.accept(node_version);
+	_visitor.type_field("mode", 48); _visitor.accept(mode);
+	_visitor.type_field("do_relay", 49); _visitor.accept(do_relay);
+	_visitor.type_field("open_port", 50); _visitor.accept(open_port);
+	_visitor.type_field("max_tx_upload", 51); _visitor.accept(max_tx_upload);
+	_visitor.type_field("max_pending_cost", 52); _visitor.accept(max_pending_cost);
+	_visitor.type_field("priority_queue_size", 53); _visitor.accept(priority_queue_size);
+	_visitor.type_field("seed_peers", 54); _visitor.accept(seed_peers);
+	_visitor.type_field("fixed_peers", 55); _visitor.accept(fixed_peers);
+	_visitor.type_field("block_peers", 56); _visitor.accept(block_peers);
+	_visitor.type_field("storage_path", 57); _visitor.accept(storage_path);
+	_visitor.type_field("node_server", 58); _visitor.accept(node_server);
+	_visitor.template type_end<RouterBase>(59);
 }
 
 

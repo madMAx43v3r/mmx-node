@@ -48,8 +48,6 @@ public:
 	
 	void kick_peer_async(const std::string& address = "");
 	
-	std::vector<std::pair<std::string, uint32_t>> get_farmer_credits();
-	
 	std::vector<std::shared_ptr<const ::mmx::Block>> get_blocks_at(const uint32_t& height = 0);
 	
 	std::shared_ptr<const ::mmx::Block> fetch_block(const ::mmx::hash_t& hash = ::mmx::hash_t(), const vnx::optional<std::string>& address = nullptr);
