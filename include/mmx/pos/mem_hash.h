@@ -21,11 +21,10 @@ namespace pos {
 void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const uint32_t mem_size);
 
 /*
- * M = log2 number of iterations
- * mem = array of size (32 << B)
+ * mem = array of size 1024
  * hash = array of size 128
  */
-void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int M, const int B);
+void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter);
 
 
 } // pos

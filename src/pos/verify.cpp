@@ -17,11 +17,9 @@
 namespace mmx {
 namespace pos {
 
-static constexpr int MEM_HASH_N = 32;
-static constexpr int MEM_HASH_M = 8;
-static constexpr int MEM_HASH_B = 5;
+static constexpr int MEM_HASH_ITER = 256;
 
-static constexpr uint64_t MEM_SIZE = uint64_t(MEM_HASH_N) << MEM_HASH_B;
+static constexpr uint64_t MEM_SIZE = 32 * 32;
 
 static std::mutex g_mutex;
 static std::shared_ptr<vnx::ThreadPool> g_threads;
@@ -50,7 +48,7 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 		gen_mem_array(mem_buf.data(), key.data(), key.size(), MEM_SIZE);
 
 		uint8_t mem_hash[128 + 64] = {};
-		calc_mem_hash(mem_buf.data(), mem_hash, MEM_HASH_M, MEM_HASH_B);
+		calc_mem_hash(mem_buf.data(), mem_hash, MEM_HASH_ITER);
 
 		::memcpy(mem_hash + 128, key.data(), key.size());
 

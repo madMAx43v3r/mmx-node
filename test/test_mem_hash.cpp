@@ -18,21 +18,23 @@ using namespace mmx::pos;
 int main(int argc, char** argv)
 {
 	const int N = 32;
-	const int M = 8;
-	const int B = 5;
 
-	const int num_iter = argc > 1 ? std::atoi(argv[1]) : 1;
+	const int count = argc > 1 ? std::atoi(argv[1]) : 1;
+	const int num_iter = argc > 2 ? std::atoi(argv[2]) : 256;
 
-	const uint64_t mem_size = uint64_t(N) << B;
+	const uint64_t mem_size = uint64_t(N) * N;
 
-	std::cout << "N = " << N << std::endl;
-	std::cout << "M = " << M << std::endl;
-	std::cout << "B = " << B << std::endl;
+	std::cout << "count = " << count << std::endl;
+	std::cout << "num_iter = " << num_iter << std::endl;
 	std::cout << "mem_size = " << mem_size << " (" << mem_size * 4 / 1024 << " KiB)" << std::endl;
+
+	size_t pop_sum = 0;
+	size_t num_pass = 0;
+	size_t min_pop_count = 1024;
 
 	uint32_t* mem = new uint32_t[mem_size];
 
-	for(int iter = 0; iter < num_iter; ++iter)
+	for(int iter = 0; iter < count; ++iter)
 	{
 		uint8_t key[32] = {};
 		::memcpy(key, &iter, sizeof(iter));
@@ -42,7 +44,7 @@ int main(int argc, char** argv)
 		if(iter == 0) {
 			std::map<uint32_t, uint32_t> init_count;
 
-			for(int k = 0; k < (1 << B); ++k) {
+			for(int k = 0; k < 32; ++k) {
 				std::cout << "[" << k << "] " << std::hex;
 				for(int i = 0; i < N; ++i) {
 					init_count[mem[k * N + i]]++;
@@ -59,10 +61,26 @@ int main(int argc, char** argv)
 		}
 		mmx::bytes_t<128> hash;
 
-		calc_mem_hash(mem, hash.data(), M, B);
+		calc_mem_hash(mem, hash.data(), num_iter);
 
-		std::cout << "[" << iter << "] " << hash << std::endl;
+		size_t pop = 0;
+		for(int i = 0; i < 1024; ++i) {
+			pop += (hash[i / 8] >> (i % 8)) & 1;
+		}
+		pop_sum += pop;
+
+		min_pop_count = std::min(min_pop_count, pop);
+
+		if(pop <= 469) {
+			num_pass++;
+		}
+
+		std::cout << "[" << iter << "] " << hash << " (" << pop << ")" << std::endl;
 	}
+
+	std::cout << "num_pass = " << num_pass << " (" << num_pass / double(count) << ")" << std::endl;
+	std::cout << "min_pop_count = " << min_pop_count << std::endl;
+	std::cout << "avg_pop_count = " << pop_sum / double(count) << std::endl;
 
 	delete [] mem;
 

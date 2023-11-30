@@ -65,36 +65,33 @@ void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const 
 	}
 }
 
-void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int M, const int B)
+void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter)
 {
 	static constexpr int N = 32;
 
-	const int num_iter = (1 << M);
-	const uint32_t index_mask = ((1 << B) - 1);
+	const uint32_t offset_mask = 31u << 5;
 
 	uint32_t state[N];
 	for(int i = 0; i < N; ++i) {
-		state[i] = mem[index_mask * N + i];
+		state[i] = mem[31 * N + i];
 	}
 
 	for(int k = 0; k < num_iter; ++k)
 	{
-		uint32_t tmp = 0;
+		uint32_t sum = 0;
 		for(int i = 0; i < N; ++i) {
-			tmp += rotl_32(state[i] ^ 0x55555555, (k + i) % N);
+			sum += rotl_32(state[i], (k + i) % 32);
 		}
-		tmp ^= 0x55555555;
+		const uint32_t dir = sum % 1193u;		// mod by prime
 
-		const auto bits = tmp % 32;
-//		const auto offset = ((tmp >> 5) & index_mask) * N;
-		const auto offset = tmp & (index_mask << 5);
+		const uint32_t bits = dir % 32u;
+		const uint32_t offset = dir & offset_mask;
 
-		for(int i = 0; i < N; ++i) {
-			const int shift = (k + i) % N;
-			state[i] += rotl_32(mem[offset + shift] ^ state[i], bits);
-		}
-		for(int i = 0; i < N; ++i) {
-			mem[offset + i] = state[i];
+		for(int i = 0; i < N; ++i)
+		{
+			state[i] += rotl_32(mem[offset + (k + i) % N], bits) ^ sum;
+
+			mem[offset + i] ^= state[i];
 		}
 	}
 
