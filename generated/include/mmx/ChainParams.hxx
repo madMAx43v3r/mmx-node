@@ -30,7 +30,7 @@ public:
 	uint32_t num_vdf_segments = 760;
 	uint32_t max_vdf_segments = 1024;
 	uint32_t score_bits = 16;
-	uint32_t score_target = 8192;
+	uint32_t score_target = 16384;
 	uint32_t score_threshold = 65536;
 	uint64_t vdf_reward = 2000;
 	uint64_t min_reward = 200000;

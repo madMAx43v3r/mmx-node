@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x6e9dd72d8a479259ull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xf444031944a2e1eaull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -595,7 +595,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0x6e9dd72d8a479259ull);
+	type_code->code_hash = vnx::Hash64(0xf444031944a2e1eaull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
@@ -711,7 +711,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 		auto& field = type_code->fields[15];
 		field.data_size = 4;
 		field.name = "score_target";
-		field.value = vnx::to_string(8192);
+		field.value = vnx::to_string(16384);
 		field.code = {3};
 	}
 	{
