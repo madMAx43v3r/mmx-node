@@ -45,18 +45,20 @@ void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const 
 		state[i] ^= tmp;
 	}
 
+	uint32_t b = state[7];
+	uint32_t c = state[15];
+
 	for(uint32_t i = 0; i < mem_size; i += 16)
 	{
-		for(int k = 0; k < 16; ++k) {
-			MMXPOS_QUARTERROUND(state[0], state[4], state[8], state[12]);
-			MMXPOS_QUARTERROUND(state[1], state[5], state[9], state[13]);
-			MMXPOS_QUARTERROUND(state[2], state[6], state[10], state[14]);
-			MMXPOS_QUARTERROUND(state[3], state[7], state[11], state[15]);
-
-			MMXPOS_QUARTERROUND(state[0], state[5], state[10], state[15]);
-			MMXPOS_QUARTERROUND(state[1], state[6], state[11], state[12]);
-			MMXPOS_QUARTERROUND(state[2], state[7], state[8], state[13]);
-			MMXPOS_QUARTERROUND(state[3], state[4], state[9], state[14]);
+		for(int k = 0; k < 4; ++k) {
+			MMXPOS_QUARTERROUND(state[0], b, c, state[8]);
+			MMXPOS_QUARTERROUND(state[1], b, c, state[9]);
+			MMXPOS_QUARTERROUND(state[2], b, c, state[10]);
+			MMXPOS_QUARTERROUND(state[3], b, c, state[11]);
+			MMXPOS_QUARTERROUND(state[4], b, c, state[12]);
+			MMXPOS_QUARTERROUND(state[5], b, c, state[13]);
+			MMXPOS_QUARTERROUND(state[6], b, c, state[14]);
+			MMXPOS_QUARTERROUND(state[7], b, c, state[15]);
 		}
 
 		for(int k = 0; k < 16; ++k) {
@@ -69,8 +71,6 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter)
 {
 	static constexpr int N = 32;
 
-	const uint32_t offset_mask = 31u << 5;
-
 	uint32_t state[N];
 	for(int i = 0; i < N; ++i) {
 		state[i] = mem[31 * N + i];
@@ -80,12 +80,12 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter)
 	{
 		uint32_t sum = 0;
 		for(int i = 0; i < N; ++i) {
-			sum += rotl_32(state[i], (k + i) % 32);
+			sum += rotl_32(state[i], i % 32);
 		}
-		const uint32_t dir = sum % 1193u;		// mod by prime
+		const uint32_t dir = sum + rotl_32(sum, 11) + rotl_32(sum, 22);
 
-		const uint32_t bits = dir % 32u;
-		const uint32_t offset = dir & offset_mask;
+		const uint32_t bits = (dir >> 22) % 32u;
+		const uint32_t offset = (dir >> 27);
 
 		for(int i = 0; i < N; ++i)
 		{
@@ -95,11 +95,7 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter)
 		}
 	}
 
-	for(int i = 0; i < N; ++i) {
-		for(int k = 0; k < 4; ++k) {
-			hash[i * 4 + k] = state[i] >> (24 - k * 8);
-		}
-	}
+	::memcpy(hash, state, N * 4);
 }
 
 

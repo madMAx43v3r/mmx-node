@@ -9,6 +9,7 @@
 #include <mmx/pos/mem_hash.h>
 
 #include <map>
+#include <cmath>
 #include <cstring>
 #include <iostream>
 
@@ -29,8 +30,8 @@ int main(int argc, char** argv)
 	std::cout << "mem_size = " << mem_size << " (" << mem_size * 4 / 1024 << " KiB)" << std::endl;
 
 	size_t pop_sum = 0;
-	size_t num_pass = 0;
 	size_t min_pop_count = 1024;
+	size_t bit_sum[1024] = {};
 
 	uint32_t* mem = new uint32_t[mem_size];
 
@@ -65,20 +66,30 @@ int main(int argc, char** argv)
 
 		size_t pop = 0;
 		for(int i = 0; i < 1024; ++i) {
-			pop += (hash[i / 8] >> (i % 8)) & 1;
+			const auto bit = (hash[i / 8] >> (i % 8)) & 1;
+			pop += bit;
+			bit_sum[i] += bit;
 		}
 		pop_sum += pop;
 
 		min_pop_count = std::min(min_pop_count, pop);
 
-		if(pop <= 469) {
-			num_pass++;
-		}
-
 		std::cout << "[" << iter << "] " << hash << " (" << pop << ")" << std::endl;
 	}
 
-	std::cout << "num_pass = " << num_pass << " (" << num_pass / double(count) << ")" << std::endl;
+	for(int i = 0; i < 1024; ++i) {
+		const auto val = bit_sum[i] / double(count);
+		if(std::fabs(val - 0.5) > std::fmax(1000 / double(count), 0.01)) {
+			std::cout << "WARN: bit[" << i << "] " << val << std::endl;
+		}
+	}
+//	for(int i = 0; i < 1024; ++i) {
+//		const auto val = ((dir_counter[i] * 1024) / num_iter) / double(count);
+//		if(std::fabs(val - 1) > std::fmax(1000 / double(count), 0.02)) {
+//			std::cout << "WARN: dir_counter[" << i << "] " << val << std::endl;
+//		}
+//	}
+
 	std::cout << "min_pop_count = " << min_pop_count << std::endl;
 	std::cout << "avg_pop_count = " << pop_sum / double(count) << std::endl;
 
