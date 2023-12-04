@@ -35,13 +35,12 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	uint max_sent_cache = 20000;
 	uint max_hash_cache = 100000;
 	
-	uint vdf_credits = 100;					// reward for valid vdf
-	uint block_credits = 50;				// reward for valid block
-	uint proof_credits = 10;				// reward for valid proof
-	uint max_node_credits = 100;
+	uint max_credits = 100;
+	uint vdf_credits = 55;					// reward for valid vdf
+	uint proof_credits = 20;				// reward for valid proof
 	
 	uint vdf_relay_cost = 50;
-	uint block_relay_cost = 10;
+	uint block_relay_cost = 20;
 	
 	uint node_version = 102;
 	node_type_e mode = FULL_NODE;

@@ -8,8 +8,6 @@ struct peer_info_t {
 	
 	node_type_e type;
 	
-	uint credits;
-	
 	int ping_ms;
 	
 	uint height;

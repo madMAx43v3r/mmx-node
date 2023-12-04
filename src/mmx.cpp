@@ -1011,7 +1011,6 @@ int main(int argc, char** argv)
 					std::cout << ", " << peer.bytes_send / 1024 / 1024 << " MB sent";
 					std::cout << ", since " << (peer.connect_time_ms / 60000) << " min";
 					std::cout << ", " << peer.ping_ms << " ms ping";
-					std::cout << ", " << peer.credits << " credits";
 					std::cout << ", " << int64_t(1e3 * peer.pending_cost) / 1e3 << " pending";
 					std::cout << ", " << (peer.recv_timeout_ms / 100) / 10. << " sec timeout";
 					if(peer.is_outbound) {

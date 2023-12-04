@@ -83,7 +83,6 @@ private:
 		bool is_blocked = false;
 		bool is_outbound = false;
 		uint32_t height = 0;
-		uint32_t credits = 0;
 		int32_t ping_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
@@ -96,14 +95,6 @@ private:
 		std::unordered_set<hash_t> sent_hashes;
 		std::map<int64_t, send_item_t> send_queue;
 		std::unordered_map<hash_t, double> pending_map;
-	};
-
-	struct hash_info_t {
-		bool is_valid = false;
-		bool is_rewarded = false;
-		bool did_relay = false;
-		bool did_notify = false;
-		uint64_t received_from = -1;
 	};
 
 	struct sync_job_t {
@@ -214,7 +205,7 @@ private:
 
 	std::vector<std::shared_ptr<peer_t>> find_peers(const std::string& address) const;
 
-	bool relay_msg_hash(const hash_t& hash, uint32_t credits = 0);
+	bool relay_msg_hash(const hash_t& hash);
 
 	bool receive_msg_hash(const hash_t& hash, uint64_t client);
 
@@ -235,7 +226,10 @@ private:
 	std::multimap<std::string, std::shared_ptr<peer_t>> peer_addr_map;
 
 	std::queue<hash_t> hash_queue;
-	std::unordered_map<hash_t, hash_info_t> hash_info;
+	std::unordered_map<hash_t, bool> hash_info;
+
+	std::unordered_map<pubkey_t, uint32_t> farmer_credits;
+	std::unordered_map<pubkey_t, uint32_t> timelord_credits;
 
 	double tx_upload_credits = 0;
 	double tx_upload_bandwidth = 0;
