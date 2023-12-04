@@ -31,7 +31,7 @@ Roadmap
 | testnet8 | Oct 2022 | Finished. Incentivized testnet, height 25k-425k. <sup>[2]</sup> |
 | testnet9 | Dec 2022 | Finished. Incentivized testnet, height 25k-1220k. <sup>[2]</sup> |
 | testnet10 | Apr 2023 | Active. Incentivized testnet, height 40k-_tbd_. <sup>[2]</sup> |
-| testnet11 | _tbd_ | Planned Q3 2023. <sup>[2]</sup> |
+| testnet11 | _tbd_ | Planned Q4 2023. <sup>[2]</sup> |
 | testnetX | _tbd_ | As needed. <sup>[2]</sup> |
 | mainnet | _tbd_ | |
 
