@@ -347,7 +347,7 @@ void Node::update()
 	}
 
 	// try to make a block
-	for(uint32_t depth = 0; depth <= std::max(params->infuse_delay, 1u) && depth <= peak->height; ++depth)
+	for(uint32_t depth = 0; depth <= 1u && depth <= peak->height; ++depth)
 	{
 		const auto height = peak->height - depth;
 		// find best peak at this height
@@ -374,36 +374,8 @@ void Node::update()
 					// check if it's our proof and farmer is still alive
 					if(vnx::get_pipe(proof.farmer_mac))
 					{
-						bool do_create = false;
 						const auto key = std::make_pair(prev->height + 1, proof.hash);
-						const auto iter = created_blocks.find(key);
-						if(iter != created_blocks.end()) {
-							if(auto block = get_header(iter->second)) {
-								if(auto fork = find_fork(block->prev)) {
-									// check if different previous block
-									if(prev->hash != fork->block->hash) {
-										if(fork->block->farmer_sig) {
-											if(auto point = fork->vdf_point) {
-												const auto delay = (time_begin - (point->recv_time / 1000)) / 1e3;
-												if(delay < params->block_time) {
-													// do not create another block if previous block was already signed more than a block interval ago
-													// otherwise it would allow arbitrary re-orgs !!!
-													do_create = true;
-													log(WARN) << "Creating second block for a signed previous at height " << key.first << ", delay " << delay << " sec";
-												}
-											}
-										} else {
-											// previous block was a dummy, we create a second block to mitigate faster timelord attack
-											do_create = true;
-											log(INFO) << "Creating second block for a dummy previous at height " << key.first;
-										}
-									}
-								}
-							}
-						} else {
-							do_create = true;
-						}
-						if(do_create) {
+						if(!created_blocks.count(key)) {
 							try {
 								// make a full block only if (we extend peak or replace a dummy peak or replace a weaker peak) and (we got best score)
 								const bool is_better = (depth == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
