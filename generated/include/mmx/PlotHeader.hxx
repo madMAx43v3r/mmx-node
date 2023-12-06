@@ -23,6 +23,10 @@ public:
 	int32_t park_size_y = 0;
 	int32_t park_size_pd = 0;
 	int32_t park_size_meta = 0;
+	int32_t park_bytes_x = 0;
+	int32_t park_bytes_y = 0;
+	int32_t park_bytes_pd = 0;
+	int32_t park_bytes_meta = 0;
 	::mmx::hash_t seed;
 	::mmx::pubkey_t farmer_key;
 	vnx::optional<::mmx::addr_t> contract;
@@ -73,7 +77,7 @@ protected:
 
 template<typename T>
 void PlotHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<PlotHeader>(11);
+	_visitor.template type_begin<PlotHeader>(15);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("ksize", 1); _visitor.accept(ksize);
 	_visitor.type_field("xbits", 2); _visitor.accept(xbits);
@@ -81,11 +85,15 @@ void PlotHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("park_size_y", 4); _visitor.accept(park_size_y);
 	_visitor.type_field("park_size_pd", 5); _visitor.accept(park_size_pd);
 	_visitor.type_field("park_size_meta", 6); _visitor.accept(park_size_meta);
-	_visitor.type_field("seed", 7); _visitor.accept(seed);
-	_visitor.type_field("farmer_key", 8); _visitor.accept(farmer_key);
-	_visitor.type_field("contract", 9); _visitor.accept(contract);
-	_visitor.type_field("table_pointers", 10); _visitor.accept(table_pointers);
-	_visitor.template type_end<PlotHeader>(11);
+	_visitor.type_field("park_bytes_x", 7); _visitor.accept(park_bytes_x);
+	_visitor.type_field("park_bytes_y", 8); _visitor.accept(park_bytes_y);
+	_visitor.type_field("park_bytes_pd", 9); _visitor.accept(park_bytes_pd);
+	_visitor.type_field("park_bytes_meta", 10); _visitor.accept(park_bytes_meta);
+	_visitor.type_field("seed", 11); _visitor.accept(seed);
+	_visitor.type_field("farmer_key", 12); _visitor.accept(farmer_key);
+	_visitor.type_field("contract", 13); _visitor.accept(contract);
+	_visitor.type_field("table_pointers", 14); _visitor.accept(table_pointers);
+	_visitor.template type_end<PlotHeader>(15);
 }
 
 
