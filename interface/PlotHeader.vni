@@ -12,6 +12,11 @@ class PlotHeader {
 	int park_size_pd;
 	int park_size_meta;
 	
+	int park_bytes_x;
+	int park_bytes_y;
+	int park_bytes_pd;
+	int park_bytes_meta;
+	
 	hash_t seed;
 	
 	pubkey_t farmer_key;
