@@ -1,0 +1,10 @@
+package mmx;
+
+struct hash_proof_t {
+	
+	uint nonce;
+	uint ext_nonce;
+	
+	addr_t reward_addr;
+	
+}

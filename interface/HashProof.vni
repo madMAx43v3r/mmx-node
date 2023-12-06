@@ -1,0 +1,11 @@
+package mmx;
+
+class HashProof {
+	
+	uint height;
+	
+	hash_t block_hash;
+	
+	hash_proof_t proof;
+	
+}

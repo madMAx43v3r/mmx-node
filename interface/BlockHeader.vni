@@ -29,6 +29,8 @@ class BlockHeader {
 	
 	ProofOfSpace* proof;
 	
+	vector<hash_proof_t> hash_proof;
+	
 	ulong reward_amount;
 	optional<addr_t> reward_addr;
 	
