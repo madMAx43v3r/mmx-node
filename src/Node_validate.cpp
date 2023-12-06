@@ -205,6 +205,8 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		 * <100% => 20x
 		 */
 
+		// TODO: enforce tx ordering by fee_ratio, tx hash
+
 		for(const auto& tx : block->tx_list) {
 			if(!tx) {
 				throw std::logic_error("null tx");
