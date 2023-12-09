@@ -27,10 +27,15 @@ public:
 	int32_t park_bytes_y = 0;
 	int32_t park_bytes_pd = 0;
 	int32_t park_bytes_meta = 0;
+	vnx::bool_t has_meta = 0;
 	::mmx::hash_t seed;
 	::mmx::pubkey_t farmer_key;
 	vnx::optional<::mmx::addr_t> contract;
-	std::vector<uint64_t> table_pointers;
+	uint64_t plot_size = 0;
+	uint64_t table_offset_x = -1;
+	uint64_t table_offset_y = -1;
+	uint64_t table_offset_meta = -1;
+	std::vector<uint64_t> table_offset_pd;
 	
 	typedef ::vnx::Value Super;
 	
@@ -77,7 +82,7 @@ protected:
 
 template<typename T>
 void PlotHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<PlotHeader>(15);
+	_visitor.template type_begin<PlotHeader>(20);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("ksize", 1); _visitor.accept(ksize);
 	_visitor.type_field("xbits", 2); _visitor.accept(xbits);
@@ -89,11 +94,16 @@ void PlotHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("park_bytes_y", 8); _visitor.accept(park_bytes_y);
 	_visitor.type_field("park_bytes_pd", 9); _visitor.accept(park_bytes_pd);
 	_visitor.type_field("park_bytes_meta", 10); _visitor.accept(park_bytes_meta);
-	_visitor.type_field("seed", 11); _visitor.accept(seed);
-	_visitor.type_field("farmer_key", 12); _visitor.accept(farmer_key);
-	_visitor.type_field("contract", 13); _visitor.accept(contract);
-	_visitor.type_field("table_pointers", 14); _visitor.accept(table_pointers);
-	_visitor.template type_end<PlotHeader>(15);
+	_visitor.type_field("has_meta", 11); _visitor.accept(has_meta);
+	_visitor.type_field("seed", 12); _visitor.accept(seed);
+	_visitor.type_field("farmer_key", 13); _visitor.accept(farmer_key);
+	_visitor.type_field("contract", 14); _visitor.accept(contract);
+	_visitor.type_field("plot_size", 15); _visitor.accept(plot_size);
+	_visitor.type_field("table_offset_x", 16); _visitor.accept(table_offset_x);
+	_visitor.type_field("table_offset_y", 17); _visitor.accept(table_offset_y);
+	_visitor.type_field("table_offset_meta", 18); _visitor.accept(table_offset_meta);
+	_visitor.type_field("table_offset_pd", 19); _visitor.accept(table_offset_pd);
+	_visitor.template type_end<PlotHeader>(20);
 }
 
 
