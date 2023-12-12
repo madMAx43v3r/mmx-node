@@ -205,6 +205,11 @@ Vue.component('node-peers', {
 			disable-pagination
 			class="elevation-2"
 		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+
 			<template v-slot:item.height="{ item }">
 				{{item.is_synced ? "" : "!"}}{{item.height}}
 			</template>
