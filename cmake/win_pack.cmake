@@ -47,7 +47,6 @@ if(NOT MMX_VERSION MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
 endif()
 
 message(STATUS "MMX_VERSION=${MMX_VERSION}")
-message(STATUS "MMX_GIGAHORSE=${MMX_GIGAHORSE}")
 
 #file(STRINGS "include/mmx/version.h" MMX_VERSION_H REGEX "^#define MMX_VERSION \"[^\"]*\"$")
 string(REGEX REPLACE "^v([0-9]+).*$" "\\1" MMX_VERSION_MAJOR "${MMX_VERSION}")
@@ -65,11 +64,7 @@ set(CPACK_PACKAGE_VERSION_PATCH ${MMX_VERSION_PATCH})
 include(cmake/product_version/generate_product_version.cmake)
 set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/cmake/mmx.ico")
 
-if ("${MMX_GIGAHORSE}" STREQUAL "TRUE")
-	set(MMX_BUNDLE "MMX Node (Gigahorse)")
-else()
-	set(MMX_BUNDLE "MMX Node (Classic)")
-endif()
+set(MMX_BUNDLE "MMX Node")
 
 list(APPEND APP_FILES
 	mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester
@@ -175,31 +170,6 @@ set (PLOTTER_BLADEBIT_PATH ${plotter_bladebit_SOURCE_DIR}/bladebit.exe)
 install(FILES ${MMX_PLOTTER_K32_PATH} DESTINATION ./ RENAME mmx_plot.exe COMPONENT plotters)
 install(FILES ${MMX_PLOTTER_K34_PATH} DESTINATION ./ RENAME mmx_plot_k34.exe COMPONENT plotters)
 install(FILES ${PLOTTER_BLADEBIT_PATH} DESTINATION ./ RENAME mmx_bladebit.exe COMPONENT plotters)
-
-if ("${MMX_GIGAHORSE}" STREQUAL "TRUE")
-
-	FetchContent_Declare(
-		chia_gigahorse
-		GIT_REPOSITORY https://github.com/madMAx43v3r/chia-gigahorse.git
-		GIT_TAG a91714d475d6e30b52a61106edee4d2a0669f720
-	)
-	FetchContent_MakeAvailable(chia_gigahorse)
-
-	set (GH_DESTINATION ./gigahorse/)
-
-	set(GH_CPU_PLOTTER_PATH ${chia_gigahorse_SOURCE_DIR}/cpu-plotter/windows)
-	install(DIRECTORY ${GH_CPU_PLOTTER_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
-
-	set(GH_CUDA_PLOTTER_PATH ${chia_gigahorse_SOURCE_DIR}/cuda-plotter/windows)
-	install(DIRECTORY ${GH_CUDA_PLOTTER_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
-
-	set(GH_PLOT_SINK_PATH ${chia_gigahorse_SOURCE_DIR}/plot-sink/windows)
-	install(DIRECTORY ${GH_PLOT_SINK_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
-
-	set(GH_CHIAPOS_PATH ${chia_gigahorse_SOURCE_DIR}/chiapos/windows)
-	install(DIRECTORY ${GH_CHIAPOS_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
-
-endif()
 
 set(CPACK_PACKAGE_NAME "MMX Node")
 set(CPACK_PACKAGE_VENDOR "madMAx43v3r")
