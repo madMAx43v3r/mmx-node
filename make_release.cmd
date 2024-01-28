@@ -6,8 +6,8 @@ IF "%VCPKG_ROOT%"=="" (
 )
 
 IF "%CMAKE_BUILD_PRESET%"=="" (
-	SET CMAKE_BUILD_PRESET=windows-release
+	SET CMAKE_BUILD_PRESET=windows-default
 )
 
 cmake --preset %CMAKE_BUILD_PRESET% && ^
-cmake --build --preset %CMAKE_BUILD_PRESET%
+cmake --build --preset %CMAKE_BUILD_PRESET% --config Release

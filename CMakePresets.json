@@ -30,8 +30,8 @@
         },
 
         {
-            "name": "windows-release",
-            "displayName": "Windows x64 Release",
+            "name": "windows-default",
+            "displayName": "Windows x64",
             "description": "Sets Visual Studio generator, build directory",
             "inherits": "windows-base",
             "cacheVariables": {
@@ -46,19 +46,9 @@
             "name": "gha-windows-release",
             "displayName": "GHA Windows x64 Release",
             "description": "Sets Visual Studio generator, build directory",
-            "inherits": "windows-release",
+            "inherits": "windows-default",
             "environment": {
                 "VCPKG_ROOT": "./vcpkg"
-            }
-        },        
-
-        {
-            "name": "windows-debug",
-            "displayName": "Windows x64 Debug",
-            "description": "Sets Visual Studio generator, build directory",
-            "inherits": "windows-base",
-            "cacheVariables": {
-                "MMX_VERSION": "$env{MMX_VERSION}"
             }
         }
 
@@ -71,14 +61,9 @@
             "configuration": "Release"
         },
         {
-            "name": "windows-release",
-            "configurePreset": "windows-release",
+            "name": "windows-default",
+            "configurePreset": "windows-default",
             "configuration": "Release"
-        },
-        {
-            "name": "windows-debug",
-            "configurePreset": "windows-release",
-            "configuration": "Debug"
         }
     ]
 

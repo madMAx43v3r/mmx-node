@@ -12,7 +12,7 @@ REM SET MMX_VERSION=v0.0.0
 REM SET MMX_GIGAHORSE=FALSE
 
 SET MMX_WIN_PACK=TRUE
-SET CMAKE_BUILD_PRESET=windows-release
+SET CMAKE_BUILD_PRESET=windows-default
 
 CALL .\make_release.cmd && ^
 IF "%MMX_WIN_PACK%"=="TRUE" cpack -C Release --config ./build/%CMAKE_BUILD_PRESET%/CPackConfig.cmake -B ./build/%CMAKE_BUILD_PRESET%/!package
