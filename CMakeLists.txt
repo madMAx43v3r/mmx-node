@@ -5,8 +5,6 @@ include(FetchContent)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
-
 if(MSVC)
 	set(CMAKE_CXX_STANDARD 20)
 	include(GenerateExportHeader)
@@ -36,6 +34,8 @@ if(MSVC)
   		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
 	)
 else()
+	message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+	
 	set(CMAKE_CXX_STANDARD 17)
 	include(cmake/commit_hash_json.cmake)
 	
