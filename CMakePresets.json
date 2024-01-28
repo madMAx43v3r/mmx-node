@@ -24,15 +24,13 @@
                 "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/!bin",
                 "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/!bin",
 
-                "MMX_WIN_PACK": "$env{MMX_WIN_PACK}",
-                "MMX_GIGAHORSE": "$env{MMX_GIGAHORSE}"
+                "MMX_WIN_PACK": "$env{MMX_WIN_PACK}"
             }
         },
 
         {
             "name": "windows-default",
             "displayName": "Windows x64",
-            "description": "Sets Visual Studio generator, build directory",
             "inherits": "windows-base",
             "cacheVariables": {
                 "MMX_VERSION": "$env{MMX_VERSION}"
@@ -45,7 +43,6 @@
         {
             "name": "gha-windows-release",
             "displayName": "GHA Windows x64 Release",
-            "description": "Sets Visual Studio generator, build directory",
             "inherits": "windows-default",
             "environment": {
                 "VCPKG_ROOT": "./vcpkg"
