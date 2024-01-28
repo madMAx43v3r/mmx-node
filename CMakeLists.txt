@@ -13,7 +13,7 @@ if(MSVC)
 	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
 	add_compile_options(/openmp /EHsc /MP)
 
-	set(MSVC_DEBUG_OPTIONS /Od)
+	set(MSVC_DEBUG_OPTIONS /Od /FS)
 	set(MSVC_RELEASE_OPTIONS /W1 /O2)
 
 	add_compile_options( 
