@@ -18,7 +18,6 @@ env:
   CMAKE_BUILD_PRESET: "gha-windows-release"
   MMX_VERSION: ${{ github.ref_name }}
   MMX_WIN_PACK: "TRUE"
-  MMX_GIGAHORSE: "FALSE"
   
   MMX_TELEGRAM_TOKEN: ${{ secrets.MMX_TELEGRAM_TOKEN }} 
   MMX_TELEGRAM_TO_1: ${{ secrets.MMX_TELEGRAM_TO_1 }}

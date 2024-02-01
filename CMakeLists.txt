@@ -5,8 +5,6 @@ include(FetchContent)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
-
 if(MSVC)
 	set(CMAKE_CXX_STANDARD 20)
 	include(GenerateExportHeader)
@@ -15,7 +13,7 @@ if(MSVC)
 	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
 	add_compile_options(/openmp /EHsc /MP)
 
-	set(MSVC_DEBUG_OPTIONS /Od)
+	set(MSVC_DEBUG_OPTIONS /Od /FS)
 	set(MSVC_RELEASE_OPTIONS /W1 /O2)
 
 	add_compile_options( 
@@ -36,6 +34,8 @@ if(MSVC)
   		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
 	)
 else()
+	message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+	
 	set(CMAKE_CXX_STANDARD 17)
 	include(cmake/commit_hash_json.cmake)
 	
