@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VCPKG_COMMIT_ID: "9edb1b8e590cc086563301d735cae4b6e732d2d2"
+  VCPKG_COMMIT_ID: "53bef8994c541b6561884a8395ea35715ece75db"
   CMAKE_BUILD_PRESET: "gha-windows-release"
   MMX_VERSION: ${{ github.ref_name }}
   MMX_WIN_PACK: "TRUE"
