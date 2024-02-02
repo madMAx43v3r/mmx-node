@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VCPKG_COMMIT_ID: "9edb1b8e590cc086563301d735cae4b6e732d2d2"
+  VCPKG_COMMIT_ID: "53bef8994c541b6561884a8395ea35715ece75db"
   CMAKE_BUILD_PRESET: "gha-windows-release"
   MMX_VERSION: ${{ github.ref_name }}
   MMX_WIN_PACK: "TRUE"
@@ -29,7 +29,7 @@ jobs:
   msvc:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: "recursive"
           
@@ -47,7 +47,7 @@ jobs:
           buildPreset: ${{ env.CMAKE_BUILD_PRESET }}
    
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "build"
           path: ./build/${{ env.CMAKE_BUILD_PRESET }}/!bin/Release/
@@ -59,7 +59,7 @@ jobs:
         run: Get-ChildItem "./build/${{ env.CMAKE_BUILD_PRESET }}/!package" -Filter *.exe | Foreach-Object { 7z a ( (Convert-Path $_.PSParentPath) + "\"  + $_.BaseName + ".zip") $_.FullName }
 
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "package"
           path: ./build/${{ env.CMAKE_BUILD_PRESET }}/!package/*.exe
