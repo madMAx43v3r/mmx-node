@@ -51,14 +51,14 @@ void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const 
 	for(uint32_t i = 0; i < mem_size; i += 16)
 	{
 		for(int k = 0; k < 4; ++k) {
-			MMXPOS_QUARTERROUND(state[0], b, c, state[8]);
-			MMXPOS_QUARTERROUND(state[1], b, c, state[9]);
-			MMXPOS_QUARTERROUND(state[2], b, c, state[10]);
-			MMXPOS_QUARTERROUND(state[3], b, c, state[11]);
-			MMXPOS_QUARTERROUND(state[4], b, c, state[12]);
-			MMXPOS_QUARTERROUND(state[5], b, c, state[13]);
-			MMXPOS_QUARTERROUND(state[6], b, c, state[14]);
-			MMXPOS_QUARTERROUND(state[7], b, c, state[15]);
+			MMXPOS_HASHROUND(state[0], b, c, state[8]);
+			MMXPOS_HASHROUND(state[1], b, c, state[9]);
+			MMXPOS_HASHROUND(state[2], b, c, state[10]);
+			MMXPOS_HASHROUND(state[3], b, c, state[11]);
+			MMXPOS_HASHROUND(state[4], b, c, state[12]);
+			MMXPOS_HASHROUND(state[5], b, c, state[13]);
+			MMXPOS_HASHROUND(state[6], b, c, state[14]);
+			MMXPOS_HASHROUND(state[7], b, c, state[15]);
 		}
 
 		for(int k = 0; k < 16; ++k) {

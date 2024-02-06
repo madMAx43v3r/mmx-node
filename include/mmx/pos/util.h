@@ -26,7 +26,7 @@
 #error "unknown compiler, don't know how to swap bytes"
 #endif
 
-#define MMXPOS_QUARTERROUND(a, b, c, d) \
+#define MMXPOS_HASHROUND(a, b, c, d) \
 	a = a + b;              \
 	d = rotl_32(d ^ a, 16); \
 	c = c + d;              \
