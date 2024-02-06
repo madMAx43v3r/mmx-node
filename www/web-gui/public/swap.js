@@ -534,7 +534,7 @@ Vue.component('swap-trade', {
 			sell_tx_fee: null,
 			result: null,
 			error: null,
-			num_iter_items: [1, 5, 10, 20, 50, 200],
+			num_iter_items: [1, 5, 20, 50, 200],
 			slippage_items: [
 				{text: "0.5 %", value: 0.995},
 				{text: "1 %", value: 0.99},
