@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 PlotHeader::VNX_TYPE_HASH(0x299c5790983c47b6ull);
-const vnx::Hash64 PlotHeader::VNX_CODE_HASH(0xeff5de6543aac09dull);
+const vnx::Hash64 PlotHeader::VNX_CODE_HASH(0x6592ad71f75faac1ull);
 
 vnx::Hash64 PlotHeader::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -61,13 +61,14 @@ void PlotHeader::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, park_bytes_meta);
 	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, has_meta);
 	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, seed);
-	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, farmer_key);
-	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, contract);
-	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, plot_size);
-	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, table_offset_x);
-	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, table_offset_y);
-	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, table_offset_meta);
-	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, table_offset_pd);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, plot_id);
+	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, farmer_key);
+	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, contract);
+	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, plot_size);
+	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, table_offset_x);
+	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, table_offset_y);
+	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, table_offset_meta);
+	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, table_offset_pd);
 	_visitor.type_end(*_type_code);
 }
 
@@ -86,6 +87,7 @@ void PlotHeader::write(std::ostream& _out) const {
 	_out << ", \"park_bytes_meta\": "; vnx::write(_out, park_bytes_meta);
 	_out << ", \"has_meta\": "; vnx::write(_out, has_meta);
 	_out << ", \"seed\": "; vnx::write(_out, seed);
+	_out << ", \"plot_id\": "; vnx::write(_out, plot_id);
 	_out << ", \"farmer_key\": "; vnx::write(_out, farmer_key);
 	_out << ", \"contract\": "; vnx::write(_out, contract);
 	_out << ", \"plot_size\": "; vnx::write(_out, plot_size);
@@ -118,6 +120,7 @@ vnx::Object PlotHeader::to_object() const {
 	_object["park_bytes_meta"] = park_bytes_meta;
 	_object["has_meta"] = has_meta;
 	_object["seed"] = seed;
+	_object["plot_id"] = plot_id;
 	_object["farmer_key"] = farmer_key;
 	_object["contract"] = contract;
 	_object["plot_size"] = plot_size;
@@ -154,6 +157,8 @@ void PlotHeader::from_object(const vnx::Object& _object) {
 			_entry.second.to(park_size_x);
 		} else if(_entry.first == "park_size_y") {
 			_entry.second.to(park_size_y);
+		} else if(_entry.first == "plot_id") {
+			_entry.second.to(plot_id);
 		} else if(_entry.first == "plot_size") {
 			_entry.second.to(plot_size);
 		} else if(_entry.first == "seed") {
@@ -214,6 +219,9 @@ vnx::Variant PlotHeader::get_field(const std::string& _name) const {
 	if(_name == "seed") {
 		return vnx::Variant(seed);
 	}
+	if(_name == "plot_id") {
+		return vnx::Variant(plot_id);
+	}
 	if(_name == "farmer_key") {
 		return vnx::Variant(farmer_key);
 	}
@@ -265,6 +273,8 @@ void PlotHeader::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(has_meta);
 	} else if(_name == "seed") {
 		_value.to(seed);
+	} else if(_name == "plot_id") {
+		_value.to(plot_id);
 	} else if(_name == "farmer_key") {
 		_value.to(farmer_key);
 	} else if(_name == "contract") {
@@ -306,12 +316,12 @@ std::shared_ptr<vnx::TypeCode> PlotHeader::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.PlotHeader";
 	type_code->type_hash = vnx::Hash64(0x299c5790983c47b6ull);
-	type_code->code_hash = vnx::Hash64(0xeff5de6543aac09dull);
+	type_code->code_hash = vnx::Hash64(0x6592ad71f75faac1ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::PlotHeader);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<PlotHeader>(); };
-	type_code->fields.resize(20);
+	type_code->fields.resize(21);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -393,44 +403,50 @@ std::shared_ptr<vnx::TypeCode> PlotHeader::static_create_type_code() {
 	{
 		auto& field = type_code->fields[13];
 		field.is_extended = true;
+		field.name = "plot_id";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[14];
+		field.is_extended = true;
 		field.name = "farmer_key";
 		field.code = {11, 33, 1};
 	}
 	{
-		auto& field = type_code->fields[14];
+		auto& field = type_code->fields[15];
 		field.is_extended = true;
 		field.name = "contract";
 		field.code = {33, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[15];
+		auto& field = type_code->fields[16];
 		field.data_size = 8;
 		field.name = "plot_size";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[16];
+		auto& field = type_code->fields[17];
 		field.data_size = 8;
 		field.name = "table_offset_x";
 		field.value = vnx::to_string(-1);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[17];
+		auto& field = type_code->fields[18];
 		field.data_size = 8;
 		field.name = "table_offset_y";
 		field.value = vnx::to_string(-1);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[18];
+		auto& field = type_code->fields[19];
 		field.data_size = 8;
 		field.name = "table_offset_meta";
 		field.value = vnx::to_string(-1);
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[19];
+		auto& field = type_code->fields[20];
 		field.is_extended = true;
 		field.name = "table_offset_pd";
 		field.code = {12, 4};
@@ -519,25 +535,26 @@ void read(TypeInput& in, ::mmx::PlotHeader& value, const TypeCode* type_code, co
 		if(const auto* const _field = type_code->field_map[11]) {
 			vnx::read_value(_buf + _field->offset, value.has_meta, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[15]) {
+		if(const auto* const _field = type_code->field_map[16]) {
 			vnx::read_value(_buf + _field->offset, value.plot_size, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[16]) {
+		if(const auto* const _field = type_code->field_map[17]) {
 			vnx::read_value(_buf + _field->offset, value.table_offset_x, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[17]) {
+		if(const auto* const _field = type_code->field_map[18]) {
 			vnx::read_value(_buf + _field->offset, value.table_offset_y, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[18]) {
+		if(const auto* const _field = type_code->field_map[19]) {
 			vnx::read_value(_buf + _field->offset, value.table_offset_meta, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 12: vnx::read(in, value.seed, type_code, _field->code.data()); break;
-			case 13: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
-			case 14: vnx::read(in, value.contract, type_code, _field->code.data()); break;
-			case 19: vnx::read(in, value.table_offset_pd, type_code, _field->code.data()); break;
+			case 13: vnx::read(in, value.plot_id, type_code, _field->code.data()); break;
+			case 14: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
+			case 15: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 20: vnx::read(in, value.table_offset_pd, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -574,9 +591,10 @@ void write(TypeOutput& out, const ::mmx::PlotHeader& value, const TypeCode* type
 	vnx::write_value(_buf + 61, value.table_offset_y);
 	vnx::write_value(_buf + 69, value.table_offset_meta);
 	vnx::write(out, value.seed, type_code, type_code->fields[12].code.data());
-	vnx::write(out, value.farmer_key, type_code, type_code->fields[13].code.data());
-	vnx::write(out, value.contract, type_code, type_code->fields[14].code.data());
-	vnx::write(out, value.table_offset_pd, type_code, type_code->fields[19].code.data());
+	vnx::write(out, value.plot_id, type_code, type_code->fields[13].code.data());
+	vnx::write(out, value.farmer_key, type_code, type_code->fields[14].code.data());
+	vnx::write(out, value.contract, type_code, type_code->fields[15].code.data());
+	vnx::write(out, value.table_offset_pd, type_code, type_code->fields[20].code.data());
 }
 
 void read(std::istream& in, ::mmx::PlotHeader& value) {

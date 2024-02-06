@@ -20,6 +20,7 @@ class PlotHeader {
 	bool has_meta;
 	
 	hash_t seed;
+	hash_t plot_id;
 	
 	pubkey_t farmer_key;
 	
