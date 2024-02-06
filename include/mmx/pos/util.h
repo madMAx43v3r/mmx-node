@@ -40,6 +40,11 @@
 namespace mmx {
 namespace pos {
 
+template<typename Int, typename Int2>
+constexpr inline Int cdiv(const Int& a, const Int2& b) {
+	return (a + b - 1) / b;
+}
+
 inline uint32_t rotl_32(const uint32_t v, int bits) {
 	return (v << bits) | (v >> (32 - bits));
 }

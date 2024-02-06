@@ -242,9 +242,7 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 
 	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
 
-	uint32_t Y_0 = 0;
-	::memcpy(&Y_0, challenge.data(), sizeof(Y_0));
-	Y_0 &= kmask;
+	const uint32_t Y_0 = bytes_t<4>(challenge.data(), 4).to_uint<uint32_t>() & kmask;
 
 	const uint64_t Y_end = uint64_t(Y_0) + (1 << plot_filter);
 
