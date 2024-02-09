@@ -28,6 +28,8 @@ class PlotHeader {
 	int park_bytes_pd;
 	int park_bytes_meta;
 	
+	int entry_bits_x;
+
 	ulong num_entries_y;
 	
 	ulong table_offset_x = -1;
