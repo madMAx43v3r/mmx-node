@@ -15,13 +15,15 @@
 namespace mmx {
 namespace pos {
 
-static constexpr int N_META = 12;
+static constexpr int N_META = 16;
+static constexpr int N_META_OUT = 8;
 static constexpr int N_TABLE = 9;
 
 static constexpr int META_BYTES = N_META * 4;
+static constexpr int META_BYTES_OUT = N_META_OUT * 4;
 
 
-std::vector<std::pair<uint32_t, bytes_t<META_BYTES>>>
+std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>>
 compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out,
 		const hash_t& id, const int ksize, const int xbits);
 

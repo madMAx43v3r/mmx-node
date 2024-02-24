@@ -47,21 +47,23 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 		const hash_512_t key(&msg, 36);
 		gen_mem_array(mem_buf.data(), key.data(), key.size(), MEM_SIZE);
 
-		uint8_t mem_hash[128 + 64] = {};
-		calc_mem_hash(mem_buf.data(), mem_hash, MEM_HASH_ITER);
+		uint8_t mem_hash[64 + 128] = {};
+		::memcpy(mem_hash, key.data(), key.size());
 
-		::memcpy(mem_hash + 128, key.data(), key.size());
+		calc_mem_hash(mem_buf.data(), mem_hash + 64, MEM_HASH_ITER);
 
 		const hash_512_t mem_hash_hash(mem_hash, sizeof(mem_hash));
 
 		uint32_t hash[16] = {};
 		::memcpy(hash, mem_hash_hash.data(), mem_hash_hash.size());
 
+		uint32_t Y_i = 0;
 		std::array<uint32_t, N_META> meta = {};
 		for(int i = 0; i < N_META; ++i) {
+			Y_i = Y_i ^ hash[i];
 			meta[i] = hash[i] & kmask;
 		}
-		const uint32_t Y_i = hash[N_META] & kmask;
+		Y_i &= kmask;
 
 		std::lock_guard<std::mutex> lock(mutex);
 		if(X_tmp) {
@@ -72,7 +74,7 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 	}
 }
 
-std::vector<std::pair<uint32_t, bytes_t<META_BYTES>>>
+std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>>
 compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, const hash_t& id, const int ksize, const int xbits)
 {
 	if(ksize < 8 || ksize > 32) {
@@ -157,25 +159,22 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 					uint32_t hash[16] = {};
 					{
-						uint32_t msg[2 + 2 * N_META] = {};
-						msg[0] = t;
-						msg[1] = YL;
-
+						uint32_t msg[N_META * 2] = {};
 						for(int i = 0; i < N_META; ++i) {
-							msg[2 + i] = L_meta[i];
-						}
-						for(int i = 0; i < N_META; ++i) {
-							msg[2 + N_META + i] = R_meta[i];
+							msg[i] = L_meta[i];
+							msg[N_META + i] = R_meta[i];
 						}
 						const hash_512_t tmp(&msg, sizeof(msg));
 
 						::memcpy(hash, tmp.data(), tmp.size());
 					}
+					uint32_t Y_i = 0;
 					std::array<uint32_t, N_META> meta = {};
 					for(int i = 0; i < N_META; ++i) {
+						Y_i = Y_i ^ hash[i];
 						meta[i] = hash[i] & kmask;
 					}
-					const uint32_t Y_i = hash[N_META] & kmask;
+					Y_i &= kmask;
 
 					matches.emplace_back(Y_i, M_next.size());
 
@@ -201,7 +200,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 	std::sort(entries.begin(), entries.end());
 
-	std::vector<std::pair<uint32_t, bytes_t<META_BYTES>>> out;
+	std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>> out;
 	for(const auto& entry : entries)
 	{
 		if(X_out) {
@@ -222,7 +221,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 			}
 		}
 		const auto& meta = M_tmp[entry.second];
-		out.emplace_back(entry.first, bytes_t<META_BYTES>(meta.data(), sizeof(meta)));
+		out.emplace_back(entry.first, bytes_t<META_BYTES_OUT>(meta.data(), META_BYTES_OUT));
 	}
 	return out;
 }
