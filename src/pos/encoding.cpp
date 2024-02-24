@@ -81,23 +81,24 @@ std::vector<uint64_t> encode(const std::vector<uint8_t>& symbols, uint64_t& tota
 	return out;
 }
 
-std::vector<uint8_t> decode(const std::vector<uint64_t>& bit_stream, const uint64_t num_symbols)
+std::vector<uint8_t> decode(const std::vector<uint64_t>& bit_stream, const uint64_t num_symbols, const uint64_t bit_offset)
 {
 	std::vector<uint8_t> out;
 	out.reserve(num_symbols);
 
 	uint32_t bits = 0;
-	uint64_t offset = 0;
+	uint64_t offset = bit_offset;
 	uint64_t buffer = 0;
 
 	while(out.size() < num_symbols)
 	{
-		if(bits <= 32) {
+		if(bits < 32) {
 			const auto index = offset / 64;
 			if(index < bit_stream.size()) {
-				buffer |= uint64_t((bit_stream[index] >> (offset % 64)) & 0xFFFFFFFF) << bits;
-				offset += 32;
-				bits += 32;
+				const uint32_t count = std::min<uint32_t>(64 - (offset % 64), 64 - bits);
+				buffer |= (bit_stream[index] >> (offset % 64)) << bits;
+				offset += count;
+				bits += count;
 			} else if(bits == 0) {
 				throw std::logic_error("bit stream underflow");
 			}

@@ -33,6 +33,7 @@ public:
 	int32_t park_bytes_y = 0;
 	int32_t park_bytes_pd = 0;
 	int32_t park_bytes_meta = 0;
+	int32_t entry_bits_x = 0;
 	uint64_t num_entries_y = 0;
 	uint64_t table_offset_x = -1;
 	uint64_t table_offset_y = -1;
@@ -84,7 +85,7 @@ protected:
 
 template<typename T>
 void PlotHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<PlotHeader>(22);
+	_visitor.template type_begin<PlotHeader>(23);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("ksize", 1); _visitor.accept(ksize);
 	_visitor.type_field("xbits", 2); _visitor.accept(xbits);
@@ -102,12 +103,13 @@ void PlotHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("park_bytes_y", 14); _visitor.accept(park_bytes_y);
 	_visitor.type_field("park_bytes_pd", 15); _visitor.accept(park_bytes_pd);
 	_visitor.type_field("park_bytes_meta", 16); _visitor.accept(park_bytes_meta);
-	_visitor.type_field("num_entries_y", 17); _visitor.accept(num_entries_y);
-	_visitor.type_field("table_offset_x", 18); _visitor.accept(table_offset_x);
-	_visitor.type_field("table_offset_y", 19); _visitor.accept(table_offset_y);
-	_visitor.type_field("table_offset_meta", 20); _visitor.accept(table_offset_meta);
-	_visitor.type_field("table_offset_pd", 21); _visitor.accept(table_offset_pd);
-	_visitor.template type_end<PlotHeader>(22);
+	_visitor.type_field("entry_bits_x", 17); _visitor.accept(entry_bits_x);
+	_visitor.type_field("num_entries_y", 18); _visitor.accept(num_entries_y);
+	_visitor.type_field("table_offset_x", 19); _visitor.accept(table_offset_x);
+	_visitor.type_field("table_offset_y", 20); _visitor.accept(table_offset_y);
+	_visitor.type_field("table_offset_meta", 21); _visitor.accept(table_offset_meta);
+	_visitor.type_field("table_offset_pd", 22); _visitor.accept(table_offset_pd);
+	_visitor.template type_end<PlotHeader>(23);
 }
 
 

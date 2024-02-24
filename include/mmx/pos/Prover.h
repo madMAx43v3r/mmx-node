@@ -15,7 +15,7 @@
 namespace mmx {
 namespace pos {
 
-struct quality_t {
+struct proof_data_t {
 	hash_t hash;
 	uint64_t index = 0;					// final entry index
 	std::vector<uint32_t> proof;		// SSD plots will return full proof as well
@@ -28,9 +28,9 @@ public:
 
 	Prover(const std::string& file_path);
 
-	std::vector<quality_t> get_qualities(const hash_t& challenge, const int plot_filter) const;
+	std::vector<proof_data_t> get_qualities(const hash_t& challenge, const int plot_filter) const;
 
-	std::vector<uint32_t> get_full_proof(const hash_t& challenge, const int plot_filter, const uint64_t index) const;
+	proof_data_t get_full_proof(const hash_t& challenge, const uint64_t final_index) const;
 
 	std::shared_ptr<const PlotHeader> get_header() const {
 		return header;
