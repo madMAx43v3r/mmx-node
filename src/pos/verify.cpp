@@ -9,6 +9,7 @@
 #include <mmx/pos/mem_hash.h>
 #include <mmx/hash_512_t.hpp>
 
+#include <set>
 #include <algorithm>
 #include <vnx/vnx.h>
 #include <vnx/ThreadPool.h>
@@ -80,9 +81,11 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	if(ksize < 8 || ksize > 32) {
 		throw std::logic_error("invalid ksize");
 	}
-	if(xbits > ksize - 8 && xbits != ksize) {
+	if(xbits > ksize) {
 		throw std::logic_error("invalid xbits");
 	}
+	const auto X_set = std::set<uint32_t>(X_values.begin(), X_values.end());
+
 	const bool use_threads = (xbits > 6);
 
 	if(use_threads) {
@@ -95,7 +98,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		}
 	}
 	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
-	const uint32_t num_entries_1 = X_values.size() << xbits;
+	const uint32_t num_entries_1 = X_set.size() << xbits;
 
 	std::mutex mutex;
 	std::vector<int64_t> jobs;
@@ -113,7 +116,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	M_tmp.reserve(num_entries_1);
 	entries.reserve(num_entries_1);
 
-	for(const auto X : X_values)
+	for(const auto X : std::set<uint32_t>(X_set.begin(), X_set.end()))
 	{
 		if(use_threads) {
 			const auto job = g_threads->add_task(
