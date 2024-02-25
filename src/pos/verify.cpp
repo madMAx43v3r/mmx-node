@@ -43,9 +43,9 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 
 		uint32_t msg[9] = {};
 		msg[0] = X_i;
-		::memcpy(msg + 1, id.data(), 32);
+		::memcpy(msg + 1, id.data(), id.size());
 
-		const hash_512_t key(&msg, 36);
+		const hash_512_t key(&msg, sizeof(msg));
 		gen_mem_array(mem_buf.data(), key.data(), key.size(), MEM_SIZE);
 
 		uint8_t mem_hash[64 + 128] = {};
@@ -162,10 +162,11 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 					uint32_t hash[16] = {};
 					{
-						uint32_t msg[N_META * 2] = {};
+						uint32_t msg[8 + N_META * 2] = {};
+						::memcpy(msg, id.data(), id.size());
 						for(int i = 0; i < N_META; ++i) {
-							msg[i] = L_meta[i];
-							msg[N_META + i] = R_meta[i];
+							msg[8 + i] = L_meta[i];
+							msg[8 + N_META + i] = R_meta[i];
 						}
 						const hash_512_t tmp(&msg, sizeof(msg));
 
