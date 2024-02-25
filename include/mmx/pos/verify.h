@@ -15,7 +15,7 @@
 namespace mmx {
 namespace pos {
 
-static constexpr int N_META = 16;
+static constexpr int N_META = 15;
 static constexpr int N_META_OUT = 10;
 static constexpr int N_TABLE = 9;
 
