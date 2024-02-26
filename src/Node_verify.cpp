@@ -16,6 +16,7 @@
 #include <vnx/vnx.h>
 #include <sha256_avx2.h>
 #include <sha256_ni.h>
+#include <sha256_arm.h>
 
 
 namespace mmx {
@@ -278,6 +279,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) const
 {
 	static bool have_sha_ni = sha256_ni_available();
+	static bool have_sha_arm = sha256_arm_available();
 
 	const auto& segments = proof->segments;
 	bool is_valid = !segments.empty();
@@ -316,7 +318,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 			}
 			max_iters = std::max(max_iters, segments[i].num_iters);
 		}
-		if(have_sha_ni) {
+		if(have_sha_ni || have_sha_arm) {
 			for(uint32_t j = 0; j < num_lanes; j += 2)
 			{
 				const uint32_t i = chunk * batch_size + j;
@@ -329,9 +331,18 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 
 				::memcpy(hashx2, point[j].data(), 32);
 				::memcpy(hashx2 + 32, point[j + k].data(), 32);
-				recursive_sha256_ni_x2(hashx2, min_iters);
-				if(num_iters_0 != num_iters_1) {
-					recursive_sha256_ni(hashx2 + ((num_iters_0 > num_iters_1) ? 0 : 32), max_iters - min_iters);
+				if(have_sha_ni) {
+					recursive_sha256_ni_x2(hashx2, min_iters);
+					if(num_iters_0 != num_iters_1) {
+						recursive_sha256_ni(hashx2 + ((num_iters_0 > num_iters_1) ? 0 : 32), max_iters - min_iters);
+					}
+				} else if(have_sha_arm) {
+					recursive_sha256_arm_x2(hashx2, min_iters);
+					if(num_iters_0 != num_iters_1) {
+						recursive_sha256_arm(hashx2 + ((num_iters_0 > num_iters_1) ? 0 : 32), max_iters - min_iters);
+					}
+				} else {
+					throw std::logic_error("invalid feature state");
 				}
 				::memcpy(point[j].data(), hashx2, 32);
 				::memcpy(point[j + k].data(), hashx2 + 32, 32);

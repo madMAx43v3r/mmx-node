@@ -7,6 +7,7 @@
 
 #include <sha256_avx2.h>
 #include <sha256_ni.h>
+#include <sha256_arm.h>
 #include <mmx/hash_t.hpp>
 
 #include <cstring>

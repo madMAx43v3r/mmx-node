@@ -7,6 +7,7 @@
 
 #include <mmx/TimeLord.h>
 #include <sha256_ni.h>
+#include <sha256_arm.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
@@ -43,6 +44,7 @@ int main(int argc, char** argv)
 	vnx::read_config("endpoint", endpoint);
 
 	vnx::log_info() << "SHA-NI support: " << (sha256_ni_available() ? "yes" : "no");
+	vnx::log_info() << "ARM-SHA2 support: " << (sha256_arm_available() ? "yes" : "no");
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 	proxy->forward_list = {"Node", "Wallet"};
