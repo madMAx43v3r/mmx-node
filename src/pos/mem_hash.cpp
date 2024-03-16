@@ -82,7 +82,7 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter)
 		for(int i = 0; i < N; ++i) {
 			sum += rotl_32(state[i], i % 32);
 		}
-		const uint32_t dir = sum + rotl_32(sum, 11) + rotl_32(sum, 22);
+		const uint32_t dir = sum + (sum << 11) + (sum << 22);
 
 		const uint32_t bits = (dir >> 22) % 32u;
 		const uint32_t offset = (dir >> 27);
