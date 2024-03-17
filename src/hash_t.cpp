@@ -11,6 +11,7 @@
 #include <bls.hpp>
 #include <sodium.h>
 #include <sha256_ni.h>
+#include <sha256_arm.h>
 
 
 namespace mmx {
@@ -18,8 +19,11 @@ namespace mmx {
 hash_t::hash_t(const void* data, const size_t num_bytes)
 {
 	static bool have_sha_ni = sha256_ni_available();
+	static bool have_sha_arm = sha256_arm_available();
 	if(have_sha_ni) {
 		sha256_ni(bytes.data(), (const uint8_t*)data, num_bytes);
+	} else if(have_sha_arm) {
+		sha256_arm(bytes.data(), (const uint8_t*)data, num_bytes);
 	} else {
 		bls::Util::Hash256(bytes.data(), (const uint8_t*)data, num_bytes);
 	}

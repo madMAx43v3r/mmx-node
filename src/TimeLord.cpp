@@ -12,6 +12,7 @@
 #include <vnx/vnx.h>
 
 #include <sha256_ni.h>
+#include <sha256_arm.h>
 
 
 namespace mmx {
@@ -387,10 +388,13 @@ void TimeLord::vdf_loop(vdf_point_t point)
 hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
 {
 	static bool have_sha_ni = sha256_ni_available();
+	static bool have_sha_arm = sha256_arm_available();
 
 	hash_t hash = input;
 	if(have_sha_ni) {
 		recursive_sha256_ni(hash.data(), num_iters);
+	} else if(have_sha_arm) {
+		recursive_sha256_arm(hash.data(), num_iters);
 	} else {
 		for(uint64_t i = 0; i < num_iters; ++i) {
 			hash = hash_t(hash.bytes);

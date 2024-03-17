@@ -16,6 +16,7 @@
 #include <mmx/secp256k1.hpp>
 #include <mmx/utils.h>
 #include <sha256_ni.h>
+#include <sha256_arm.h>
 #include <sha256_avx2.h>
 
 #include <vnx/vnx.h>
@@ -71,6 +72,9 @@ int main(int argc, char** argv)
 
 	vnx::log_info() << "AVX2 support:   " << (avx2_available() ? "yes" : "no");
 	vnx::log_info() << "SHA-NI support: " << (sha256_ni_available() ? "yes" : "no");
+#ifdef __aarch64__
+	vnx::log_info() << "ARM-SHA2 support: " << (sha256_arm_available() ? "yes" : "no");
+#endif // __aarch64__
 
 	if(with_farmer) {
 		with_wallet = true;
