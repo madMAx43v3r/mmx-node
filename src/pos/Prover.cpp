@@ -7,6 +7,7 @@
 
 #include <mmx/pos/Prover.h>
 #include <mmx/pos/encoding.h>
+#include <mmx/pos/verify.h>
 #include <mmx/pos/util.h>
 
 
@@ -136,7 +137,7 @@ std::vector<proof_data_t> Prover::get_qualities(const hash_t& challenge, const i
 			for(int i = 0; i < N_META; ++i) {
 				meta[i] = read_bits(meta_park.data(), park_offset * header->ksize, header->ksize);
 			}
-			out.hash = hast_t(std::string("proof_quality") + challenge + bytes_t<META_BYTES>(meta, sizeof(meta)));
+			out.hash = hash_t(std::string("proof_quality") + challenge + bytes_t<META_BYTES>(meta, sizeof(meta)));
 		} else {
 			out = get_full_proof(challenge, final_index);
 		}

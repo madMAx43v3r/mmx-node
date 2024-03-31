@@ -189,6 +189,7 @@ add_library(mmx_pos SHARED
 	src/pos/mem_hash.cpp
 	src/pos/verify.cpp
 	src/pos/encoding.cpp
+	src/pos/Prover.cpp
 )
 
 add_library(mmx_modules SHARED
