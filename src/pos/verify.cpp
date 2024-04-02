@@ -162,11 +162,11 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 					uint32_t hash[16] = {};
 					{
-						uint32_t msg[8 + N_META * 2] = {};
+						uint32_t msg[N_META * 2] = {};
 						::memcpy(msg, id.data(), id.size());
 						for(int i = 0; i < N_META; ++i) {
-							msg[8 + i] = L_meta[i];
-							msg[8 + N_META + i] = R_meta[i];
+							msg[i] = L_meta[i];
+							msg[N_META + i] = R_meta[i];
 						}
 						const hash_512_t tmp(&msg, sizeof(msg));
 
