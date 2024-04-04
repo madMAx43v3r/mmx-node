@@ -6,7 +6,7 @@
 	url = https://github.com/Chia-Network/chiapos.git
 [submodule "uint256_t"]
 	path = uint256_t
-	url = https://github.com/calccrypto/uint256_t.git
+	url = https://github.com/madMAx43v3r/uint256_t.git
 [submodule "libbech32"]
 	path = lib/libbech32
 	url = https://github.com/dcdpr/libbech32.git
