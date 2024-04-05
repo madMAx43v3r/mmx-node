@@ -16,7 +16,7 @@ namespace mmx {
 namespace pos {
 
 struct proof_data_t {
-	hash_t hash;
+	hash_t hash;						// quality hash
 	uint64_t index = 0;					// final entry index
 	std::vector<uint32_t> proof;		// SSD plots will return full proof as well
 };
@@ -46,7 +46,6 @@ private:
 	std::shared_ptr<const PlotHeader> header;
 
 };
-
 
 
 } // pos

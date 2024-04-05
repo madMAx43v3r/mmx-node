@@ -133,11 +133,11 @@ std::vector<proof_data_t> Prover::get_qualities(const hash_t& challenge, const i
 			if(!file.good()) {
 				throw std::runtime_error("failed to read meta park " + std::to_string(park_index));
 			}
-			uint32_t meta[N_META] = {};
-			for(int i = 0; i < N_META; ++i) {
-				meta[i] = read_bits(meta_park.data(), park_offset * header->ksize, header->ksize);
+			uint32_t meta[N_META_OUT] = {};
+			for(int i = 0; i < N_META_OUT; ++i) {
+				meta[i] = read_bits(meta_park.data(), (park_offset * N_META_OUT + i) * header->ksize, header->ksize);
 			}
-			out.hash = hash_t(std::string("proof_quality") + challenge + bytes_t<META_BYTES>(meta, sizeof(meta)));
+			out.hash = calc_quality(challenge, bytes_t<META_BYTES_OUT>(meta, META_BYTES_OUT));
 		} else {
 			out = get_full_proof(challenge, final_index);
 		}
@@ -189,39 +189,33 @@ proof_data_t Prover::get_full_proof(const hash_t& challenge, const uint64_t fina
 		const uint64_t park_index =  index / header->park_size_x;
 		const uint32_t park_offset = index % header->park_size_x;
 		file.seekg(header->table_offset_x + park_index * header->park_bytes_x);
-		file.read((char*)x_park.data(), header->park_size_x);
+		file.read((char*)x_park.data(), header->park_bytes_x);
 		if(!file.good()) {
                 	throw std::runtime_error("failed to read X park " + std::to_string(park_index));
                 }
 		const uint64_t line_point = read_bits(x_park.data(), park_offset * header->entry_bits_x, header->entry_bits_x);
 
 		if(table == 2) {
-			if(header->xbits < header->ksize) {
-				const auto pair = LinePointToSquare2(line_point);
-                                X_values.push_back(pair.first);
-                                X_values.push_back(pair.second);
-			} else {
-				const auto pair = LinePointToSquare(line_point);
-				X_values.push_back(pair.first);
-				X_values.push_back(pair.second);
-			}
+			const auto pair = (header->xbits < header->ksize) ? LinePointToSquare2(line_point) : LinePointToSquare(line_point);
+			X_values.push_back(pair.first);
+			X_values.push_back(pair.second);
 		} else {
 			throw std::logic_error("X table " + std::to_string(table) + " not supported");
 		}
 	}
-	if(header->xbits < header->ksize) {
-		// TODO: recompute
-	} else {
-		out.proof = X_values;
+
+	std::vector<uint32_t> X_out;
+	const auto res = compute(X_values, &X_out, header->plot_id, header->ksize, header->ksize - header->xbits);
+	if(res.empty()) {
+		throw std::logic_error("found no valid proof");
 	}
+	if(res.size() > 1) {
+		throw std::logic_error("got more than one proof");
+	}
+	out.proof = X_out;
+	out.hash = calc_quality(challenge, res[0].second);
 	return out;
 }
-
-
-
-
-
-
 
 
 } // pos

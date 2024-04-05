@@ -230,6 +230,12 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	return out;
 }
 
+hash_t calc_quality(const hash_t& challenge, const bytes_t<META_BYTES_OUT>& meta)
+{
+	// proof output needs to be hashed after challenge, otherwise compression to 256-bit is possible
+	return hash_t(std::string("proof_quality") + challenge + meta);
+}
+
 hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const hash_t& id, const int plot_filter, const int ksize)
 {
 	if(X_values.size() != (1 << (N_TABLE - 1))) {
@@ -239,6 +245,9 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	const auto entries = compute(X_values, &X_out, id, ksize, 0);
 	if(entries.empty()) {
 		throw std::logic_error("invalid proof");
+	}
+	if(entries.size() > 1) {
+		throw std::logic_error("more than one proof");
 	}
 	const auto& result = entries[0];
 	const auto& Y = result.first;
@@ -255,8 +264,7 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	if(X_out != X_values) {
 		throw std::logic_error("invalid proof order");
 	}
-	// proof output needs to be hashed after challenge, otherwise compression to 256-bit is possible
-	return hash_t(std::string("proof_quality") + challenge + result.second);
+	return calc_quality(challenge, result.second);
 }
 
 
