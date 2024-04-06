@@ -6582,7 +6582,7 @@ void type<::mmx::virtual_plot_info_t>::create_dynamic_code(std::vector<uint16_t>
 namespace mmx {
 
 
-static void register_all_types() {
+void register_all_types() {
 	vnx::register_type_code(::mmx::Block::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_calc_tx_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::Block_calc_tx_hash_return::static_create_type_code());

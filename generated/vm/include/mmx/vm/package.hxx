@@ -19,6 +19,8 @@
 namespace mmx {
 namespace vm {
 
+void register_all_types();
+
 
 class varptr_t;
 

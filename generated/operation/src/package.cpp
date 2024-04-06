@@ -173,7 +173,7 @@ namespace mmx {
 namespace operation {
 
 
-static void register_all_types() {
+void register_all_types() {
 	vnx::register_type_code(::mmx::operation::Deposit::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Deposit_calc_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::operation::Deposit_calc_hash_return::static_create_type_code());

@@ -173,7 +173,7 @@ namespace mmx {
 namespace solution {
 
 
-static void register_all_types() {
+void register_all_types() {
 	vnx::register_type_code(::mmx::solution::MultiSig::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::MultiSig_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::solution::MultiSig_calc_cost_return::static_create_type_code());

@@ -21,6 +21,8 @@
 namespace mmx {
 namespace operation {
 
+void register_all_types();
+
 
 class Deposit;
 class Deposit_calc_hash;

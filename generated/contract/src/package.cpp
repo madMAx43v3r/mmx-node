@@ -1239,7 +1239,7 @@ namespace mmx {
 namespace contract {
 
 
-static void register_all_types() {
+void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Binary::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Binary_calc_cost::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Binary_calc_cost_return::static_create_type_code());

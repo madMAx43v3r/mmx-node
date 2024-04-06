@@ -21,6 +21,8 @@
 
 namespace mmx {
 
+void register_all_types();
+
 
 class Block;
 class Block_calc_tx_hash;

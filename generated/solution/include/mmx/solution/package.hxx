@@ -21,6 +21,8 @@
 namespace mmx {
 namespace solution {
 
+void register_all_types();
+
 
 class MultiSig;
 class MultiSig_calc_cost;

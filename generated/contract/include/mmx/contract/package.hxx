@@ -21,6 +21,8 @@
 namespace mmx {
 namespace contract {
 
+void register_all_types();
+
 
 class Binary;
 class Binary_calc_cost;
