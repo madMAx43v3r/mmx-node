@@ -37,10 +37,10 @@ int main(int argc, char** argv)
 
 	for(int iter = 0; iter < count; ++iter)
 	{
-		uint8_t key[32] = {};
+		uint8_t key[64] = {};
 		::memcpy(key, &iter, sizeof(iter));
 
-		gen_mem_array(mem, key, 32, mem_size);
+		gen_mem_array(mem, key, mem_size);
 
 		if(iter == 0) {
 			std::map<uint32_t, uint32_t> init_count;

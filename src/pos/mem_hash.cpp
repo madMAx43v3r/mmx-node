@@ -21,47 +21,31 @@ static const uint32_t MEM_HASH_INIT[16] = {
 	0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174
 };
 
-void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const uint32_t mem_size)
+void gen_mem_array(uint32_t* mem, const uint8_t* key, const uint32_t mem_size)
 {
-	if(key_size > 64) {
-		throw std::logic_error("key_size > 64");
+	if(mem_size % 32) {
+		throw std::logic_error("mem_size % 32 != 0");
 	}
-	if(key_size % 4) {
-		throw std::logic_error("key_size % 4 != 0");
-	}
-	if(mem_size % 16) {
-		throw std::logic_error("mem_size % 16 != 0");
-	}
-	uint32_t state[16];
+	uint32_t state[32] = {};
 
 	for(int i = 0; i < 16; ++i) {
-		state[i] = MEM_HASH_INIT[i];
+		::memcpy(&state[i], key + i * 4, 4);
+	}
+	for(int i = 0; i < 16; ++i) {
+		state[16 + i] = MEM_HASH_INIT[i];
 	}
 
-	for(int i = 0; i < key_size / 4; ++i)
-	{
-		uint32_t tmp = 0;
-		::memcpy(&tmp, key + i * 4, 4);
-		state[i] ^= tmp;
-	}
+	uint32_t b = 0;
+	uint32_t c = 0;
 
-	uint32_t b = state[7];
-	uint32_t c = state[15];
-
-	for(uint32_t i = 0; i < mem_size; i += 16)
+	for(uint32_t i = 0; i < mem_size; i += 32)
 	{
-		for(int k = 0; k < 4; ++k) {
-			MMXPOS_HASHROUND(state[0], b, c, state[8]);
-			MMXPOS_HASHROUND(state[1], b, c, state[9]);
-			MMXPOS_HASHROUND(state[2], b, c, state[10]);
-			MMXPOS_HASHROUND(state[3], b, c, state[11]);
-			MMXPOS_HASHROUND(state[4], b, c, state[12]);
-			MMXPOS_HASHROUND(state[5], b, c, state[13]);
-			MMXPOS_HASHROUND(state[6], b, c, state[14]);
-			MMXPOS_HASHROUND(state[7], b, c, state[15]);
+		for(int j = 0; j < 4; ++j) {
+			for(int k = 0; k < 16; ++k) {
+				MMXPOS_HASHROUND(state[k], b, c, state[16 + k]);
+			}
 		}
-
-		for(int k = 0; k < 16; ++k) {
+		for(int k = 0; k < 32; ++k) {
 			mem[i + k] = state[k];
 		}
 	}
@@ -73,10 +57,10 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter)
 
 	uint32_t state[N];
 	for(int i = 0; i < N; ++i) {
-		state[i] = mem[31 * N + i];
+		state[i] = mem[(N - 1) * N + i];
 	}
 
-	for(int k = 0; k < num_iter; ++k)
+	for(int iter = 0; iter < num_iter; ++iter)
 	{
 		uint32_t sum = 0;
 		for(int i = 0; i < N; ++i) {
@@ -89,7 +73,7 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter)
 
 		for(int i = 0; i < N; ++i)
 		{
-			state[i] += rotl_32(mem[offset * N + (k + i) % N], bits) ^ sum;
+			state[i] += rotl_32(mem[offset * N + (iter + i) % N], bits) ^ sum;
 
 			mem[offset * N + i] ^= state[i];
 		}

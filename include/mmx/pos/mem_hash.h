@@ -16,9 +16,9 @@ namespace pos {
 
 /*
  * mem = array of size mem_size
- * key = array of size key_size
+ * key = 64 bytes
  */
-void gen_mem_array(uint32_t* mem, const uint8_t* key, const int key_size, const uint32_t mem_size);
+void gen_mem_array(uint32_t* mem, const uint8_t* key, const uint32_t mem_size);
 
 /*
  * mem = array of size 1024
