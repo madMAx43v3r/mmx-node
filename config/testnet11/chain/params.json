@@ -1,7 +1,7 @@
 {
 	"port": 12341,
 	"block_time": 10,
-	"plot_filter": 3,
+	"plot_filter": 4,
 	"min_ksize": 26,
 	"infuse_delay": 3,
 	"challenge_delay": 6,
