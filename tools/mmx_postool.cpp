@@ -23,6 +23,7 @@ int main(int argc, char** argv)
 	options["n"] = "iter";
 	options["r"] = "threads";
 	options["v"] = "verbose";
+	options["D"] = "verbose-debug";
 	options["file"] = "plot files";
 	options["iter"] = "number of iterations";
 	options["threads"] = "number of threads";
@@ -31,17 +32,22 @@ int main(int argc, char** argv)
 
 	vnx::init("mmx_postool", argc, argv, options);
 
+	bool debug = false;
 	bool verbose = false;
 	int num_iter = 100;
 	int num_threads = 16;
 	int plot_filter = 4;
 	std::vector<std::string> file_names;
 
+	vnx::read_config("verbose-debug", debug);
 	vnx::read_config("verbose", verbose);
 	vnx::read_config("file", file_names);
 	vnx::read_config("iter", num_iter);
 	vnx::read_config("threads", num_threads);
 
+	if(debug) {
+		verbose = true;
+	}
 	if(verbose) {
 		std::cout << "Threads: " << num_threads << std::endl;
 		std::cout << "Iterations: " << num_iter << std::endl;
@@ -63,7 +69,8 @@ int main(int argc, char** argv)
 		out->file = file_name;
 		try {
 			auto prover = std::make_shared<pos::Prover>(file_name);
-			prover->debug = true;
+			prover->debug = debug;
+
 			auto header = prover->get_header();
 			if(verbose) {
 				std::cout << "[" << file_name << "]" << std::endl;
@@ -127,15 +134,32 @@ int main(int argc, char** argv)
 		result.push_back(out);
 	}
 
+	std::vector<std::string> bad_plots;
 	for(auto entry : result)
 	{
+		std::cout << "--------------------------------------------------------------------------------" << std::endl;
 		std::cout << "[" << entry->file << "]" << std::endl;
 		const auto expected = uint64_t(num_iter) << plot_filter;
 		std::cout << "Pass: " << entry->num_pass << " / " << expected << std::endl;
 		std::cout << "Fail: " << entry->num_fail << " / " << expected << std::endl;
-	}
-	vnx::close();
 
+		if(entry->num_fail > 1) {
+			bad_plots.push_back(entry->file);
+		}
+	}
+
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+	std::cout << "Bad plots: ";
+	if(bad_plots.empty()) {
+		std::cout << "None" << std::endl;
+	} else {
+		std::cout << bad_plots.size() << std::endl;
+		for(auto file : bad_plots) {
+			std::cout << file << std::endl;
+		}
+	}
+
+	vnx::close();
 	mmx::secp256k1_free();
 	return 0;
 }
