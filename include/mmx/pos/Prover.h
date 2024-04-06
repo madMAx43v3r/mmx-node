@@ -15,8 +15,9 @@
 namespace mmx {
 namespace pos {
 
-struct proof_data_t {
-	hash_t hash;						// quality hash
+struct proof_data_t
+{
+	hash_t quality;						// quality hash
 	uint64_t index = 0;					// final entry index
 	std::vector<uint32_t> proof;		// SSD plots will return full proof as well
 };
@@ -24,7 +25,7 @@ struct proof_data_t {
 class Prover {
 public:
 	bool debug = false;
-	int32_t initial_park_index_shift = 2;
+	int32_t initial_y_shift = -256;
 
 	Prover(const std::string& file_path);
 
@@ -38,6 +39,10 @@ public:
 
 	const hash_t& get_plot_id() const {
 		return header->plot_id;
+	}
+
+	int get_clevel() const {
+		return header->ksize - header->xbits;
 	}
 
 private:

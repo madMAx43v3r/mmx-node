@@ -17,6 +17,9 @@ namespace pos {
 Prover::Prover(const std::string& file_path)
 	:	file_path(file_path)
 {
+	if(!vnx::File(file_path).exists()) {
+		throw std::logic_error("no such file");
+	}
 	header = vnx::read_from_file<const PlotHeader>(file_path);
 	if(!header) {
 		throw std::logic_error("invalid plot header");
@@ -41,13 +44,14 @@ std::vector<proof_data_t> Prover::get_qualities(const hash_t& challenge, const i
 	}
 	std::vector<uint64_t> final_entries;
 	{
-		int32_t park_index = ((uint64_t(Y_begin >> 1) * header->num_entries_y) >> 31) / header->park_size_y;
+		const int32_t num_parks_y = cdiv<uint64_t>(header->num_entries_y, header->park_size_y);
 
-		park_index = std::max<int32_t>(park_index - initial_park_index_shift, 0);
+		const uint32_t Y_try_first = std::max<int64_t>(int64_t(Y_begin) + initial_y_shift, 0);
+		int32_t park_index = ((uint64_t(Y_try_first >> 1) * header->num_entries_y) >> (header->ksize - 1)) / header->park_size_y;
+
+		park_index = std::min<int32_t>(park_index, num_parks_y - 1);
 
 		std::vector<uint64_t> bit_stream(cdiv(header->park_bytes_y - 4, 8));
-
-		const int32_t num_parks_y = cdiv<uint64_t>(header->num_entries_y, header->park_size_y);
 
 		bool have_begin = false;
 		for(size_t i = 0; park_index >= 0 && park_index < num_parks_y; i++)
@@ -55,20 +59,26 @@ std::vector<proof_data_t> Prover::get_qualities(const hash_t& challenge, const i
 			if(i > 100) {
 				throw std::runtime_error("failed to find Y park");
 			}
-			if(debug) {
-				std::cout << "park_index = " << park_index << std::endl;
-			}
 			file.seekg(header->table_offset_y + uint64_t(park_index) * header->park_bytes_y);
 
 			uint32_t Y_i = 0;
 			{
 				uint64_t tmp = 0;
-				file.read((char*)tmp, 4);
+				file.read((char*)&tmp, 4);
 				Y_i = read_bits(&tmp, 0, header->ksize);
+			}
+			if(!file.good()) {
+				throw std::runtime_error("failed to read Y park header " + std::to_string(park_index));
+			}
+			if(debug) {
+				std::cout << "park_index = " << park_index << ", Y = " << Y_i << std::endl;
 			}
 			if(Y_i >= Y_end) {
 				if(have_begin || park_index == 0) {
 					break;
+				}
+				if(debug) {
+					std::cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 				}
 				park_index = std::max<int32_t>(park_index - cdiv(Y_i - Y_begin, header->park_size_y) - 1, 0);
 				continue;
@@ -137,7 +147,8 @@ std::vector<proof_data_t> Prover::get_qualities(const hash_t& challenge, const i
 			for(int i = 0; i < N_META_OUT; ++i) {
 				meta[i] = read_bits(meta_park.data(), (park_offset * N_META_OUT + i) * header->ksize, header->ksize);
 			}
-			out.hash = calc_quality(challenge, bytes_t<META_BYTES_OUT>(meta, META_BYTES_OUT));
+			out.index = final_index;
+			out.quality = calc_quality(challenge, bytes_t<META_BYTES_OUT>(meta, META_BYTES_OUT));
 		} else {
 			out = get_full_proof(challenge, final_index);
 		}
@@ -149,9 +160,9 @@ std::vector<proof_data_t> Prover::get_qualities(const hash_t& challenge, const i
 proof_data_t Prover::get_full_proof(const hash_t& challenge, const uint64_t final_index) const
 {
 	std::ifstream file(file_path, std::ios_base::binary);
-        if(!file.good()) {
-                throw std::runtime_error("failed to open file");
-        }
+	if(!file.good()) {
+		throw std::runtime_error("failed to open file");
+	}
 	std::vector<uint32_t> X_values;
 	std::vector<uint64_t> pointers;
 	pointers.push_back(final_index);
@@ -177,10 +188,18 @@ proof_data_t Prover::get_full_proof(const hash_t& challenge, const uint64_t fina
 			const auto offsets = decode(pd_park, park_offset + 1, header->park_size_pd * header->ksize);
 			new_pointers.push_back(position + offsets.back());
 		}
+		if(debug) {
+			std::cout << "T" << (table - 1) << " pointers: ";
+			for(auto ptr : new_pointers) {
+				std::cout << ptr << " ";
+			}
+			std::cout << std::endl;
+		}
 		pointers = new_pointers;
 		table--;
 	}
 	proof_data_t out;
+	out.index = final_index;
 
 	std::vector<uint64_t> x_park(cdiv(header->park_bytes_x, 8));
 
@@ -191,8 +210,8 @@ proof_data_t Prover::get_full_proof(const hash_t& challenge, const uint64_t fina
 		file.seekg(header->table_offset_x + park_index * header->park_bytes_x);
 		file.read((char*)x_park.data(), header->park_bytes_x);
 		if(!file.good()) {
-                	throw std::runtime_error("failed to read X park " + std::to_string(park_index));
-                }
+			throw std::runtime_error("failed to read X park " + std::to_string(park_index));
+		}
 		const uint64_t line_point = read_bits(x_park.data(), park_offset * header->entry_bits_x, header->entry_bits_x);
 
 		if(table == 2) {
@@ -204,6 +223,13 @@ proof_data_t Prover::get_full_proof(const hash_t& challenge, const uint64_t fina
 		}
 	}
 
+	if(debug) {
+		std::cout << "X_values = ";
+		for(auto X : X_values) {
+			std::cout << X << " ";
+		}
+		std::cout << std::endl;
+	}
 	std::vector<uint32_t> X_out;
 	const auto res = compute(X_values, &X_out, header->plot_id, header->ksize, header->ksize - header->xbits);
 	if(res.empty()) {
@@ -213,7 +239,7 @@ proof_data_t Prover::get_full_proof(const hash_t& challenge, const uint64_t fina
 		throw std::logic_error("got more than one proof");
 	}
 	out.proof = X_out;
-	out.hash = calc_quality(challenge, res[0].second);
+	out.quality = calc_quality(challenge, res[0].second);
 	return out;
 }
 
