@@ -147,10 +147,15 @@ std::vector<proof_data_t> Prover::get_qualities(const hash_t& challenge, const i
 			for(int i = 0; i < N_META_OUT; ++i) {
 				meta[i] = read_bits(meta_park.data(), (park_offset * N_META_OUT + i) * header->ksize, header->ksize);
 			}
+			out.valid = true;
 			out.index = final_index;
 			out.quality = calc_quality(challenge, bytes_t<META_BYTES_OUT>(meta, META_BYTES_OUT));
 		} else {
-			out = get_full_proof(challenge, final_index);
+			try {
+				out = get_full_proof(challenge, final_index);
+			} catch(const std::exception& ex) {
+				out.error_msg = ex.what();
+			}
 		}
 		result.push_back(out);
 	}
@@ -238,6 +243,7 @@ proof_data_t Prover::get_full_proof(const hash_t& challenge, const uint64_t fina
 	if(res.size() > 1) {
 		throw std::logic_error("got more than one proof");
 	}
+	out.valid = true;
 	out.proof = X_out;
 	out.quality = calc_quality(challenge, res[0].second);
 	return out;

@@ -17,8 +17,10 @@ namespace pos {
 
 struct proof_data_t
 {
+	bool valid = false;
 	hash_t quality;						// quality hash
 	uint64_t index = 0;					// final entry index
+	std::string error_msg;				// in case valid == false
 	std::vector<uint32_t> proof;		// SSD plots will return full proof as well
 };
 

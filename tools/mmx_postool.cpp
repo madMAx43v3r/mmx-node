@@ -89,17 +89,23 @@ int main(int argc, char** argv)
 
 					for(const auto& entry : qualities)
 					{
+						if(!entry.valid) {
+							std::lock_guard<std::mutex> lock(mutex);
+							std::cerr << "Threw: " << entry.error_msg << std::endl;
+							out->num_fail++;
+							continue;
+						}
 						if(verbose) {
 							std::lock_guard<std::mutex> lock(mutex);
 							std::cout << "[" << iter << "] index = " << entry.index << ", quality = " << entry.quality.to_string() << std::endl;
 						}
-						std::vector<uint32_t> proof;
-						if(entry.proof.size()) {
-							proof = entry.proof;
-						} else {
-							proof = prover->get_full_proof(challenge, entry.index).proof;
-						}
 						try {
+							std::vector<uint32_t> proof;
+							if(entry.proof.size()) {
+								proof = entry.proof;
+							} else {
+								proof = prover->get_full_proof(challenge, entry.index).proof;
+							}
 							const auto quality = pos::verify(proof, challenge, header->plot_id, plot_filter, header->ksize);
 							if(quality != entry.quality) {
 								throw std::logic_error("invalid quality");
@@ -161,7 +167,8 @@ int main(int argc, char** argv)
 
 	vnx::close();
 	mmx::secp256k1_free();
-	return 0;
+
+	return bad_plots.size() ? -1 : 0;
 }
 
 
