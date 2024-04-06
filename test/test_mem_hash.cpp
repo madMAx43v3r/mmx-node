@@ -6,7 +6,10 @@
  */
 
 #include <mmx/bytes_t.hpp>
+#include <mmx/hash_512_t.hpp>
 #include <mmx/pos/mem_hash.h>
+
+#include <vnx/vnx.h>
 
 #include <map>
 #include <cmath>
@@ -37,21 +40,23 @@ int main(int argc, char** argv)
 
 	for(int iter = 0; iter < count; ++iter)
 	{
-		uint8_t key[64] = {};
-		::memcpy(key, &iter, sizeof(iter));
+		uint32_t msg[9] = {};
+		msg[0] = iter;
 
-		gen_mem_array(mem, key, mem_size);
+		const mmx::hash_512_t key(&msg, sizeof(msg));
+
+		gen_mem_array(mem, key.data(), mem_size);
 
 		if(iter == 0) {
 			std::map<uint32_t, uint32_t> init_count;
 
 			for(int k = 0; k < 32; ++k) {
-				std::cout << "[" << k << "] " << std::hex;
+				std::cout << "[" << k << "] ";
 				for(int i = 0; i < N; ++i) {
 					init_count[mem[k * N + i]]++;
-					std::cout << mem[k * N + i] << " ";
+					std::cout << vnx::to_hex_string(&mem[k * N + i], 4, true, true) << " ";
 				}
-				std::cout << std::dec << std::endl;
+				std::cout << std::endl;
 			}
 
 			for(const auto& entry : init_count) {
@@ -59,6 +64,7 @@ int main(int argc, char** argv)
 					std::cout << "WARN [" << std::hex << entry.first << std::dec << "] " << entry.second << std::endl;
 				}
 			}
+			std::cout << "key[0] = " << key.to_string() << std::endl;
 		}
 		mmx::bytes_t<128> hash;
 
