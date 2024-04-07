@@ -49,8 +49,9 @@ else()
 	
 	set_source_files_properties(src/vm/Compiler.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
 
+	find_library(secp256k1_LIBRARY NAMES secp256k1 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/lib/secp256k1/.libs" NO_DEFAULT_PATH)
+
 	include_directories(lib/secp256k1/include)
-	link_directories(lib/secp256k1/.libs)
 	
 	if(ENABLE_MEM_SANITIZE)
 		message(STATUS "Compiling with -fsanitize=address")
@@ -229,7 +230,7 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
-target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t secp256k1 bech32)
+target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t bech32 ${secp256k1_LIBRARY})
 
 target_link_libraries(mmx_db mmx_iface)
 target_link_libraries(mmx_pos mmx_iface)
@@ -310,6 +311,7 @@ install(TARGETS mmx_db DESTINATION lib)
 install(TARGETS mmx_vm DESTINATION lib)
 install(TARGETS mmx_iface DESTINATION lib)
 install(TARGETS mmx_modules DESTINATION lib)
+install(FILES ${secp256k1_LIBRARY} DESTINATION lib)
 
 install(TARGETS mmx DESTINATION bin)
 install(TARGETS mmx_node DESTINATION bin)
