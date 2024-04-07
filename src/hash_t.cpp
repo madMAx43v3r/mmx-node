@@ -41,7 +41,7 @@ hash_t hash_t::random()
 hash_t hash_t::secure_random()
 {
 	uint256_t entropy = 0;
-	static constexpr int BITS_PER_ITER = 8;
+	static constexpr int BITS_PER_ITER = 4;
 	for(int i = 0; i < 256 / BITS_PER_ITER; ++i)
 	{
 		entropy <<= BITS_PER_ITER;
@@ -58,7 +58,7 @@ hash_t hash_t::secure_random()
 	}
 	const bytes_t<32> entropy_bytes(&entropy, sizeof(entropy));
 
-	std::vector<uint8_t> rand_bytes(4096);
+	bytes_t<128> rand_bytes;
 	vnx::secure_random_bytes(rand_bytes.data(), rand_bytes.size());
 
 	return hash_t(entropy_bytes + rand_bytes);
