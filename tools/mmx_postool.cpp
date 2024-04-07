@@ -34,7 +34,7 @@ int main(int argc, char** argv)
 
 	bool debug = false;
 	bool verbose = false;
-	int num_iter = 100;
+	int num_iter = 10;
 	int num_threads = 16;
 	int plot_filter = 4;
 	std::vector<std::string> file_names;
@@ -52,6 +52,7 @@ int main(int argc, char** argv)
 		std::cout << "Threads: " << num_threads << std::endl;
 		std::cout << "Iterations: " << num_iter << std::endl;
 	}
+	vnx::ThreadPool threads(num_threads, 10);
 
 	struct summary_t {
 		std::string file;
@@ -71,9 +72,11 @@ int main(int argc, char** argv)
 			auto prover = std::make_shared<pos::Prover>(file_name);
 			prover->debug = debug;
 
+			std::cout << "--------------------------------------------------------------------------------" << std::endl;
+			std::cout << "Checking '" << file_name << "'" << std::endl;
+
 			auto header = prover->get_header();
 			if(verbose) {
-				std::cout << "[" << file_name << "]" << std::endl;
 				std::cout << "Size: " << (header->has_meta ? "HDD" : "SSD") << " K" << header->ksize << " C" << prover->get_clevel()
 						<< " (" << header->plot_size / pow(1024, 3) << " GiB)" << std::endl;
 				std::cout << "Plot ID: " << prover->get_plot_id().to_string() << std::endl;
@@ -83,56 +86,63 @@ int main(int argc, char** argv)
 
 			for(int iter = 0; iter < num_iter && vnx::do_run(); ++iter)
 			{
-				const hash_t challenge(std::to_string(iter));
-				try {
-					const auto qualities = prover->get_qualities(challenge, plot_filter);
+				threads.add_task([iter, prover, header, out, plot_filter, verbose, debug, &mutex]() {
+					const hash_t challenge(std::to_string(iter));
+					try {
+						const auto qualities = prover->get_qualities(challenge, plot_filter);
 
-					for(const auto& entry : qualities)
-					{
-						if(!entry.valid) {
-							std::lock_guard<std::mutex> lock(mutex);
-							std::cerr << "Threw: " << entry.error_msg << std::endl;
-							out->num_fail++;
-							continue;
-						}
-						if(verbose) {
-							std::lock_guard<std::mutex> lock(mutex);
-							std::cout << "[" << iter << "] index = " << entry.index << ", quality = " << entry.quality.to_string() << std::endl;
-						}
-						try {
-							std::vector<uint32_t> proof;
-							if(entry.proof.size()) {
-								proof = entry.proof;
-							} else {
-								proof = prover->get_full_proof(challenge, entry.index).proof;
-							}
-							const auto quality = pos::verify(proof, challenge, header->plot_id, plot_filter, header->ksize);
-							if(quality != entry.quality) {
-								throw std::logic_error("invalid quality");
-							}
-							if(verbose) {
+						for(const auto& entry : qualities)
+						{
+							if(!entry.valid) {
 								std::lock_guard<std::mutex> lock(mutex);
-								std::cout << "Proof " << entry.index << " passed: ";
-								for(const auto X : proof) {
-									std::cout << X << " ";
-								}
-								std::cout << std::endl;
+								std::cerr << "Threw: " << entry.error_msg << std::endl;
+								out->num_fail++;
+								continue;
 							}
-							out->num_pass++;
-						}
-						catch(const std::exception& ex) {
-							std::lock_guard<std::mutex> lock(mutex);
-							std::cerr << "Threw: " << ex.what() << std::endl;
-							out->num_fail++;
+							if(debug) {
+								std::lock_guard<std::mutex> lock(mutex);
+								std::cout << "[" << iter << "] index = " << entry.index << ", quality = " << entry.quality.to_string() << std::endl;
+							}
+							try {
+								std::vector<uint32_t> proof;
+								if(entry.proof.size()) {
+									proof = entry.proof;
+								} else {
+									proof = prover->get_full_proof(challenge, entry.index).proof;
+								}
+								const auto quality = pos::verify(proof, challenge, header->plot_id, plot_filter, header->ksize);
+								if(quality != entry.quality) {
+									throw std::logic_error("invalid quality");
+								}
+								if(debug) {
+									std::lock_guard<std::mutex> lock(mutex);
+									std::cout << "Proof " << entry.index << " passed: ";
+									for(const auto X : proof) {
+										std::cout << X << " ";
+									}
+									std::cout << std::endl;
+								}
+								out->num_pass++;
+							}
+							catch(const std::exception& ex) {
+								std::lock_guard<std::mutex> lock(mutex);
+								std::cerr << "Threw: " << ex.what() << std::endl;
+								out->num_fail++;
+							}
 						}
 					}
-				}
-				catch(const std::exception& ex) {
-					std::lock_guard<std::mutex> lock(mutex);
-					std::cerr << "Threw: " << ex.what() << std::endl;
-					out->num_fail++;
-				}
+					catch(const std::exception& ex) {
+						std::lock_guard<std::mutex> lock(mutex);
+						std::cerr << "Threw: " << ex.what() << std::endl;
+						out->num_fail++;
+					}
+				});
 			}
+			threads.sync();
+
+			const auto expected = uint64_t(num_iter) << plot_filter;
+			std::cout << "Pass: " << out->num_pass << " / " << expected << ", " << float(100 * out->num_pass) / expected << " %" << std::endl;
+			std::cout << "Fail: " << out->num_fail << " / " << expected << ", " << float(100 * out->num_fail) / expected << " %" << std::endl;
 		}
 		catch(const std::exception& ex) {
 			std::cerr << "Failed to open plot " << file_name << ": " << ex.what() << std::endl;
@@ -141,14 +151,7 @@ int main(int argc, char** argv)
 	}
 
 	std::vector<std::string> bad_plots;
-	for(auto entry : result)
-	{
-		std::cout << "--------------------------------------------------------------------------------" << std::endl;
-		std::cout << "[" << entry->file << "]" << std::endl;
-		const auto expected = uint64_t(num_iter) << plot_filter;
-		std::cout << "Pass: " << entry->num_pass << " / " << expected << std::endl;
-		std::cout << "Fail: " << entry->num_fail << " / " << expected << std::endl;
-
+	for(auto entry : result) {
 		if(entry->num_fail > 1) {
 			bad_plots.push_back(entry->file);
 		}
@@ -165,6 +168,7 @@ int main(int argc, char** argv)
 		}
 	}
 
+	threads.close();
 	vnx::close();
 	mmx::secp256k1_free();
 
