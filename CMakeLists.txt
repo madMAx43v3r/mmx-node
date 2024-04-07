@@ -49,11 +49,8 @@ else()
 	
 	set_source_files_properties(src/vm/Compiler.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
 
-	if(WITH_SECP256K1)
-		message(STATUS "Using secp256k1")
-		include_directories(lib/secp256k1/include)
-		link_directories(lib/secp256k1/.libs)
-	endif()
+	include_directories(lib/secp256k1/include)
+	link_directories(lib/secp256k1/.libs)
 	
 	if(ENABLE_MEM_SANITIZE)
 		message(STATUS "Compiling with -fsanitize=address")
