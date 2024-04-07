@@ -7,9 +7,14 @@
 
 #include <mmx/hash_t.hpp>
 #include <vnx/SHA256.h>
+#include <vnx/Util.h>
 
-#include <sodium.h>
+#include <uint256_t.h>
 #include <sha256_ni.h>
+
+#include <atomic>
+#include <thread>
+#include <chrono>
 
 
 namespace mmx {
@@ -29,18 +34,34 @@ hash_t::hash_t(const void* data, const size_t num_bytes)
 hash_t hash_t::random()
 {
 	hash_t out;
-	::randombytes_buf(out.data(), out.size());
+	vnx::secure_random_bytes(out.data(), out.size());
 	return out;
 }
 
 hash_t hash_t::secure_random()
 {
-	std::vector<uint8_t> seed(4096);
-	::randombytes_buf(seed.data(), seed.size());
+	uint256_t entropy = 0;
+	static constexpr int BITS_PER_ITER = 8;
+	for(int i = 0; i < 256 / BITS_PER_ITER; ++i)
+	{
+		entropy <<= BITS_PER_ITER;
+		std::atomic_bool trigger {false};
 
-	const hash_t out(seed);
-	::memset(seed.data(), 0, seed.size());		// clear memory
-	return out;
+		std::thread timer([&trigger]() {
+			std::this_thread::sleep_for(std::chrono::microseconds(10));
+			trigger = true;
+		});
+		while(!trigger) {
+			entropy++;
+		}
+		timer.join();
+	}
+	const bytes_t<32> entropy_bytes(&entropy, sizeof(entropy));
+
+	std::vector<uint8_t> rand_bytes(4096);
+	vnx::secure_random_bytes(rand_bytes.data(), rand_bytes.size());
+
+	return hash_t(entropy_bytes + rand_bytes);
 }
 
 
