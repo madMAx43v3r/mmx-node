@@ -5,10 +5,9 @@ RUN apt-get update && apt-get -y upgrade \
 			apt-utils \
 			git \
 			cmake \
+			automake \
+			libtool \
 			build-essential \
-			libsecp256k1-dev \
-			librocksdb-dev \
-			libsodium-dev \
 			libminiupnpc-dev \
 			libjemalloc-dev \
 			zlib1g-dev \
@@ -26,13 +25,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get -y upgrade \
 		&& apt-get install -y \
 			apt-utils \
-			libsecp256k1-0 \
-			librocksdb6.11 \
-			libsodium23 \
 			libminiupnpc17 \
 			libjemalloc2 \
 			zlib1g \
-			libgmp10 \
 			libgomp1 \
 			ocl-icd-libopencl1 \
 			curl \
@@ -46,7 +41,7 @@ ENV MMX_HOME="/data/"
 VOLUME /data
 
 # node p2p port
-EXPOSE 12339/tcp
+EXPOSE 12341/tcp
 # http api port
 EXPOSE 11380/tcp
 
