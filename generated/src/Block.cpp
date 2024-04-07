@@ -3,31 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Block.hxx>
-#include <mmx/Block_calc_tx_hash.hxx>
-#include <mmx/Block_calc_tx_hash_return.hxx>
-#include <mmx/Block_finalize.hxx>
-#include <mmx/Block_finalize_return.hxx>
-#include <mmx/Block_get_header.hxx>
-#include <mmx/Block_get_header_return.hxx>
-#include <mmx/Block_get_inputs.hxx>
-#include <mmx/Block_get_inputs_return.hxx>
-#include <mmx/Block_get_outputs.hxx>
-#include <mmx/Block_get_outputs_return.hxx>
-#include <mmx/Block_get_transactions.hxx>
-#include <mmx/Block_get_transactions_return.hxx>
-#include <mmx/Block_is_valid.hxx>
-#include <mmx/Block_is_valid_return.hxx>
 #include <mmx/BlockHeader.hxx>
-#include <mmx/BlockHeader_calc_hash.hxx>
-#include <mmx/BlockHeader_calc_hash_return.hxx>
-#include <mmx/BlockHeader_get_block_index.hxx>
-#include <mmx/BlockHeader_get_block_index_return.hxx>
-#include <mmx/BlockHeader_get_header.hxx>
-#include <mmx/BlockHeader_get_header_return.hxx>
-#include <mmx/BlockHeader_is_valid.hxx>
-#include <mmx/BlockHeader_is_valid_return.hxx>
-#include <mmx/BlockHeader_validate.hxx>
-#include <mmx/BlockHeader_validate_return.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/hash_t.hpp>
@@ -400,19 +376,6 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Block>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::hash_proof_t::static_get_type_code();
-	type_code->methods.resize(12);
-	type_code->methods[0] = ::mmx::Block_calc_tx_hash::static_get_type_code();
-	type_code->methods[1] = ::mmx::Block_finalize::static_get_type_code();
-	type_code->methods[2] = ::mmx::Block_get_header::static_get_type_code();
-	type_code->methods[3] = ::mmx::Block_get_inputs::static_get_type_code();
-	type_code->methods[4] = ::mmx::Block_get_outputs::static_get_type_code();
-	type_code->methods[5] = ::mmx::Block_get_transactions::static_get_type_code();
-	type_code->methods[6] = ::mmx::Block_is_valid::static_get_type_code();
-	type_code->methods[7] = ::mmx::BlockHeader_calc_hash::static_get_type_code();
-	type_code->methods[8] = ::mmx::BlockHeader_get_block_index::static_get_type_code();
-	type_code->methods[9] = ::mmx::BlockHeader_get_header::static_get_type_code();
-	type_code->methods[10] = ::mmx::BlockHeader_is_valid::static_get_type_code();
-	type_code->methods[11] = ::mmx::BlockHeader_validate::static_get_type_code();
 	type_code->fields.resize(26);
 	{
 		auto& field = type_code->fields[0];
@@ -576,78 +539,6 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> Block::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0x4116f49822c328bcull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Block_calc_tx_hash>(_method);
-			auto _return_value = ::mmx::Block_calc_tx_hash_return::create();
-			_return_value->_ret_0 = calc_tx_hash();
-			return _return_value;
-		}
-		case 0xc19dfeaa6a6a3814ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Block_finalize>(_method);
-			auto _return_value = ::mmx::Block_finalize_return::create();
-			finalize();
-			return _return_value;
-		}
-		case 0xb94157aaa956f7d7ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Block_get_header>(_method);
-			auto _return_value = ::mmx::Block_get_header_return::create();
-			_return_value->_ret_0 = get_header();
-			return _return_value;
-		}
-		case 0x16e934fbe65f06c8ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Block_get_inputs>(_method);
-			auto _return_value = ::mmx::Block_get_inputs_return::create();
-			_return_value->_ret_0 = get_inputs(_args->params);
-			return _return_value;
-		}
-		case 0x7d53bfabf2cc6cc4ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Block_get_outputs>(_method);
-			auto _return_value = ::mmx::Block_get_outputs_return::create();
-			_return_value->_ret_0 = get_outputs(_args->params);
-			return _return_value;
-		}
-		case 0xc0ecab9ec5e9015dull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Block_get_transactions>(_method);
-			auto _return_value = ::mmx::Block_get_transactions_return::create();
-			_return_value->_ret_0 = get_transactions();
-			return _return_value;
-		}
-		case 0xa203b4d10b9ca39bull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Block_is_valid>(_method);
-			auto _return_value = ::mmx::Block_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xc525b15a3f7ee317ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_calc_hash>(_method);
-			auto _return_value = ::mmx::BlockHeader_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
-			return _return_value;
-		}
-		case 0x94b88dfa2f7fdcacull: {
-			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_get_block_index>(_method);
-			auto _return_value = ::mmx::BlockHeader_get_block_index_return::create();
-			_return_value->_ret_0 = get_block_index(_args->file_offset);
-			return _return_value;
-		}
-		case 0xd7c88d66a260d84aull: {
-			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_get_header>(_method);
-			auto _return_value = ::mmx::BlockHeader_get_header_return::create();
-			_return_value->_ret_0 = get_header();
-			return _return_value;
-		}
-		case 0xee0825f87d03a5ebull: {
-			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_is_valid>(_method);
-			auto _return_value = ::mmx::BlockHeader_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xcfb7b60e776d1aaeull: {
-			auto _args = std::static_pointer_cast<const ::mmx::BlockHeader_validate>(_method);
-			auto _return_value = ::mmx::BlockHeader_validate_return::create();
-			validate();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }

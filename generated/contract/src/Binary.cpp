@@ -5,36 +5,8 @@
 #include <mmx/contract/Binary.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/Contract_calc_cost.hxx>
-#include <mmx/Contract_calc_cost_return.hxx>
-#include <mmx/Contract_calc_hash.hxx>
-#include <mmx/Contract_calc_hash_return.hxx>
-#include <mmx/Contract_get_owner.hxx>
-#include <mmx/Contract_get_owner_return.hxx>
-#include <mmx/Contract_is_locked.hxx>
-#include <mmx/Contract_is_locked_return.hxx>
-#include <mmx/Contract_is_valid.hxx>
-#include <mmx/Contract_is_valid_return.hxx>
-#include <mmx/Contract_num_bytes.hxx>
-#include <mmx/Contract_num_bytes_return.hxx>
-#include <mmx/Contract_read_field.hxx>
-#include <mmx/Contract_read_field_return.hxx>
-#include <mmx/Contract_validate.hxx>
-#include <mmx/Contract_validate_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/compile_flags_t.hxx>
-#include <mmx/contract/Binary_calc_cost.hxx>
-#include <mmx/contract/Binary_calc_cost_return.hxx>
-#include <mmx/contract/Binary_calc_hash.hxx>
-#include <mmx/contract/Binary_calc_hash_return.hxx>
-#include <mmx/contract/Binary_find_field.hxx>
-#include <mmx/contract/Binary_find_field_return.hxx>
-#include <mmx/contract/Binary_find_method.hxx>
-#include <mmx/contract/Binary_find_method_return.hxx>
-#include <mmx/contract/Binary_is_valid.hxx>
-#include <mmx/contract/Binary_is_valid_return.hxx>
-#include <mmx/contract/Binary_num_bytes.hxx>
-#include <mmx/contract/Binary_num_bytes_return.hxx>
 #include <mmx/contract/method_t.hxx>
 #include <mmx/hash_t.hpp>
 
@@ -257,21 +229,6 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::contract::method_t::static_get_type_code();
 	type_code->depends[1] = ::mmx::compile_flags_t::static_get_type_code();
-	type_code->methods.resize(14);
-	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
-	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
-	type_code->methods[2] = ::mmx::Contract_get_owner::static_get_type_code();
-	type_code->methods[3] = ::mmx::Contract_is_locked::static_get_type_code();
-	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_num_bytes::static_get_type_code();
-	type_code->methods[6] = ::mmx::Contract_read_field::static_get_type_code();
-	type_code->methods[7] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::Binary_calc_cost::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::Binary_calc_hash::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::Binary_find_field::static_get_type_code();
-	type_code->methods[11] = ::mmx::contract::Binary_find_method::static_get_type_code();
-	type_code->methods[12] = ::mmx::contract::Binary_is_valid::static_get_type_code();
-	type_code->methods[13] = ::mmx::contract::Binary_num_bytes::static_get_type_code();
 	type_code->fields.resize(11);
 	{
 		auto& field = type_code->fields[0];
@@ -345,90 +302,6 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> Binary::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0xb23d047adf8b2612ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_cost>(_method);
-			auto _return_value = ::mmx::Contract_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x622fcf1cba1952edull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_hash>(_method);
-			auto _return_value = ::mmx::Contract_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x8fe2c64fdc8f0680ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_owner>(_method);
-			auto _return_value = ::mmx::Contract_get_owner_return::create();
-			_return_value->_ret_0 = get_owner();
-			return _return_value;
-		}
-		case 0x9b7981d03b3aeab6ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_locked>(_method);
-			auto _return_value = ::mmx::Contract_is_locked_return::create();
-			_return_value->_ret_0 = is_locked(_args->height);
-			return _return_value;
-		}
-		case 0xe3adf9b29a723217ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_valid>(_method);
-			auto _return_value = ::mmx::Contract_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0x4599864a67f75305ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_num_bytes>(_method);
-			auto _return_value = ::mmx::Contract_num_bytes_return::create();
-			_return_value->_ret_0 = num_bytes(_args->total);
-			return _return_value;
-		}
-		case 0xeff036bd3bb1c0ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_read_field>(_method);
-			auto _return_value = ::mmx::Contract_read_field_return::create();
-			_return_value->_ret_0 = read_field(_args->name);
-			return _return_value;
-		}
-		case 0xc2126a44901c8d52ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
-			auto _return_value = ::mmx::Contract_validate_return::create();
-			validate(_args->solution, _args->txid);
-			return _return_value;
-		}
-		case 0x4c3fe58fddf47afull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_calc_cost>(_method);
-			auto _return_value = ::mmx::contract::Binary_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0xd4d1353e984d3350ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_calc_hash>(_method);
-			auto _return_value = ::mmx::contract::Binary_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0xd452e90b79266ffdull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_find_field>(_method);
-			auto _return_value = ::mmx::contract::Binary_find_field_return::create();
-			_return_value->_ret_0 = find_field(_args->name);
-			return _return_value;
-		}
-		case 0x909ccffe5a222b83ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_find_method>(_method);
-			auto _return_value = ::mmx::contract::Binary_find_method_return::create();
-			_return_value->_ret_0 = find_method(_args->name);
-			return _return_value;
-		}
-		case 0x5dc8876a8b68a708ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_is_valid>(_method);
-			auto _return_value = ::mmx::contract::Binary_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xf3677c6845a332b8ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_num_bytes>(_method);
-			auto _return_value = ::mmx::contract::Binary_num_bytes_return::create();
-			_return_value->_ret_0 = num_bytes(_args->total);
-			return _return_value;
-		}
 	}
 	return nullptr;
 }

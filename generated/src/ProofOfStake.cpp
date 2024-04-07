@@ -4,16 +4,6 @@
 #include <mmx/package.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/ProofOfSpace.hxx>
-#include <mmx/ProofOfSpace_calc_hash.hxx>
-#include <mmx/ProofOfSpace_calc_hash_return.hxx>
-#include <mmx/ProofOfSpace_is_valid.hxx>
-#include <mmx/ProofOfSpace_is_valid_return.hxx>
-#include <mmx/ProofOfSpace_validate.hxx>
-#include <mmx/ProofOfSpace_validate_return.hxx>
-#include <mmx/ProofOfStake_calc_hash.hxx>
-#include <mmx/ProofOfStake_calc_hash_return.hxx>
-#include <mmx/ProofOfStake_validate.hxx>
-#include <mmx/ProofOfStake_validate_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 
@@ -162,12 +152,6 @@ std::shared_ptr<vnx::TypeCode> ProofOfStake::static_create_type_code() {
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::ProofOfSpace::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ProofOfStake>(); };
-	type_code->methods.resize(5);
-	type_code->methods[0] = ::mmx::ProofOfSpace_calc_hash::static_get_type_code();
-	type_code->methods[1] = ::mmx::ProofOfSpace_is_valid::static_get_type_code();
-	type_code->methods[2] = ::mmx::ProofOfSpace_validate::static_get_type_code();
-	type_code->methods[3] = ::mmx::ProofOfStake_calc_hash::static_get_type_code();
-	type_code->methods[4] = ::mmx::ProofOfStake_validate::static_get_type_code();
 	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
@@ -199,36 +183,6 @@ std::shared_ptr<vnx::TypeCode> ProofOfStake::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> ProofOfStake::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0x4056d25a9096f144ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_calc_hash>(_method);
-			auto _return_value = ::mmx::ProofOfSpace_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x143933f39ea710d1ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_is_valid>(_method);
-			auto _return_value = ::mmx::ProofOfSpace_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0x3586a00594c9af94ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_validate>(_method);
-			auto _return_value = ::mmx::ProofOfSpace_validate_return::create();
-			validate();
-			return _return_value;
-		}
-		case 0xcf1c6e96bc600859ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofOfStake_calc_hash>(_method);
-			auto _return_value = ::mmx::ProofOfStake_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x2bcfbf7eadceda92ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofOfStake_validate>(_method);
-			auto _return_value = ::mmx::ProofOfStake_validate_return::create();
-			validate();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }

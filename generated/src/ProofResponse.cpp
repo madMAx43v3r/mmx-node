@@ -5,12 +5,6 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Challenge.hxx>
 #include <mmx/ProofOfSpace.hxx>
-#include <mmx/ProofResponse_calc_hash.hxx>
-#include <mmx/ProofResponse_calc_hash_return.hxx>
-#include <mmx/ProofResponse_is_valid.hxx>
-#include <mmx/ProofResponse_is_valid_return.hxx>
-#include <mmx/ProofResponse_validate.hxx>
-#include <mmx/ProofResponse_validate_return.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
@@ -199,10 +193,6 @@ std::shared_ptr<vnx::TypeCode> ProofResponse::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofResponse);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ProofResponse>(); };
-	type_code->methods.resize(3);
-	type_code->methods[0] = ::mmx::ProofResponse_calc_hash::static_get_type_code();
-	type_code->methods[1] = ::mmx::ProofResponse_is_valid::static_get_type_code();
-	type_code->methods[2] = ::mmx::ProofResponse_validate::static_get_type_code();
 	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
@@ -258,24 +248,6 @@ std::shared_ptr<vnx::TypeCode> ProofResponse::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> ProofResponse::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0x4f34bfc7bf487289ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofResponse_calc_hash>(_method);
-			auto _return_value = ::mmx::ProofResponse_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0xc52089d6664814f3ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofResponse_is_valid>(_method);
-			auto _return_value = ::mmx::ProofResponse_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xe49f1a206c26abb6ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofResponse_validate>(_method);
-			auto _return_value = ::mmx::ProofResponse_validate_return::create();
-			validate();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }

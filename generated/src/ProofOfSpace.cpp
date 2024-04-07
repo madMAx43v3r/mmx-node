@@ -3,12 +3,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
-#include <mmx/ProofOfSpace_calc_hash.hxx>
-#include <mmx/ProofOfSpace_calc_hash_return.hxx>
-#include <mmx/ProofOfSpace_is_valid.hxx>
-#include <mmx/ProofOfSpace_is_valid_return.hxx>
-#include <mmx/ProofOfSpace_validate.hxx>
-#include <mmx/ProofOfSpace_validate_return.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
@@ -146,10 +140,6 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfSpace);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ProofOfSpace>(); };
-	type_code->methods.resize(3);
-	type_code->methods[0] = ::mmx::ProofOfSpace_calc_hash::static_get_type_code();
-	type_code->methods[1] = ::mmx::ProofOfSpace_is_valid::static_get_type_code();
-	type_code->methods[2] = ::mmx::ProofOfSpace_validate::static_get_type_code();
 	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
@@ -175,24 +165,6 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> ProofOfSpace::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0x4056d25a9096f144ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_calc_hash>(_method);
-			auto _return_value = ::mmx::ProofOfSpace_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x143933f39ea710d1ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_is_valid>(_method);
-			auto _return_value = ::mmx::ProofOfSpace_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0x3586a00594c9af94ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::ProofOfSpace_validate>(_method);
-			auto _return_value = ::mmx::ProofOfSpace_validate_return::create();
-			validate();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }

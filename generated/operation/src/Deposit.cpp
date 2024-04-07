@@ -3,25 +3,9 @@
 
 #include <mmx/operation/package.hxx>
 #include <mmx/operation/Deposit.hxx>
-#include <mmx/Operation_calc_cost.hxx>
-#include <mmx/Operation_calc_cost_return.hxx>
-#include <mmx/Operation_calc_hash.hxx>
-#include <mmx/Operation_calc_hash_return.hxx>
-#include <mmx/Operation_is_valid.hxx>
-#include <mmx/Operation_is_valid_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/operation/Deposit_calc_hash.hxx>
-#include <mmx/operation/Deposit_calc_hash_return.hxx>
-#include <mmx/operation/Deposit_is_valid.hxx>
-#include <mmx/operation/Deposit_is_valid_return.hxx>
 #include <mmx/operation/Execute.hxx>
-#include <mmx/operation/Execute_calc_cost.hxx>
-#include <mmx/operation/Execute_calc_cost_return.hxx>
-#include <mmx/operation/Execute_calc_hash.hxx>
-#include <mmx/operation/Execute_calc_hash_return.hxx>
-#include <mmx/operation/Execute_is_valid.hxx>
-#include <mmx/operation/Execute_is_valid_return.hxx>
 
 #include <vnx/vnx.h>
 
@@ -210,15 +194,6 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 	type_code->parents[0] = ::mmx::operation::Execute::static_get_type_code();
 	type_code->parents[1] = ::mmx::Operation::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Deposit>(); };
-	type_code->methods.resize(8);
-	type_code->methods[0] = ::mmx::Operation_calc_cost::static_get_type_code();
-	type_code->methods[1] = ::mmx::Operation_calc_hash::static_get_type_code();
-	type_code->methods[2] = ::mmx::Operation_is_valid::static_get_type_code();
-	type_code->methods[3] = ::mmx::operation::Deposit_calc_hash::static_get_type_code();
-	type_code->methods[4] = ::mmx::operation::Deposit_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::operation::Execute_calc_cost::static_get_type_code();
-	type_code->methods[6] = ::mmx::operation::Execute_calc_hash::static_get_type_code();
-	type_code->methods[7] = ::mmx::operation::Execute_is_valid::static_get_type_code();
 	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
@@ -275,54 +250,6 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> Deposit::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0x5907595c31b44526ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Operation_calc_cost>(_method);
-			auto _return_value = ::mmx::Operation_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x8915923a542631d9ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Operation_calc_hash>(_method);
-			auto _return_value = ::mmx::Operation_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x3b2ec6e0a968cf51ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Operation_is_valid>(_method);
-			auto _return_value = ::mmx::Operation_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xf3578512360fc2f4ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Deposit_calc_hash>(_method);
-			auto _return_value = ::mmx::operation::Deposit_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x3b22c556a0cbcfd0ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Deposit_is_valid>(_method);
-			auto _return_value = ::mmx::operation::Deposit_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0x86d9fdad63fe7567ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Execute_calc_cost>(_method);
-			auto _return_value = ::mmx::operation::Execute_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x56cb36cb066c0198ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Execute_calc_hash>(_method);
-			auto _return_value = ::mmx::operation::Execute_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x172377d5b2daeda3ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Execute_is_valid>(_method);
-			auto _return_value = ::mmx::operation::Execute_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }
