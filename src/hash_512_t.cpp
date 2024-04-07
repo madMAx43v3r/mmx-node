@@ -6,9 +6,9 @@
  */
 
 #include <mmx/hash_512_t.hpp>
+#include <vnx/Util.h>
 
 #include <sha512.h>
-#include <sodium.h>
 
 
 namespace mmx {
@@ -23,7 +23,7 @@ hash_512_t::hash_512_t(const void* data, const size_t num_bytes)
 hash_512_t hash_512_t::random()
 {
 	std::vector<uint8_t> seed(4096);
-	::randombytes_buf(seed.data(), seed.size());
+	vnx::secure_random_bytes(seed.data(), seed.size());
 	return hash_512_t(seed);
 }
 

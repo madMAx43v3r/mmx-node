@@ -65,15 +65,6 @@ else()
 	endif()
 endif()
 
-FetchContent_Declare(Sodium
-  GIT_REPOSITORY https://github.com/madMAx43v3r/libsodium-cmake.git
-  GIT_TAG f73a3fe1afdc4e37ac5fe0ddd401bf521f6bba65
-)
-set(SODIUM_PCH "on" CACHE STRING "")
-set(SODIUM_DISABLE_TESTS "on" CACHE STRING "")
-set(SODIUM_CHIA_MINIMAL "on" CACHE STRING "")
-FetchContent_MakeAvailable(Sodium)
-
 set(LIBBECH32_BUILD_TESTS OFF CACHE BOOL "LIBBECH32_BUILD_TESTS")
 set(LIBBECH32_BUILD_EXAMPLES OFF CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
 set(DIRENT_BUILD_TESTS OFF CACHE STRING "DIRENT_BUILD_TESTS")
@@ -238,7 +229,7 @@ target_include_directories(mmx_chiapos
 	PRIVATE chiapos/src chiapos/lib/include
 )
 
-target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t secp256k1 bech32 sodium)
+target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t secp256k1 bech32)
 
 target_link_libraries(mmx_db mmx_iface)
 target_link_libraries(mmx_pos mmx_iface)
