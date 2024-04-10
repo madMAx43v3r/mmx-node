@@ -94,7 +94,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 			const auto cpu_threads = std::thread::hardware_concurrency();
 			const auto num_threads = cpu_threads > 0 ? cpu_threads : 16;
 			g_threads = std::make_shared<vnx::ThreadPool>(num_threads, 1024);
-			vnx::log_info() << "Using " << num_threads << " CPU threads for proof compute";
+			vnx::log_info() << "Using " << num_threads << " CPU threads for proof recompute";
 		}
 	}
 	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
