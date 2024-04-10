@@ -80,6 +80,7 @@ int main(int argc, char** argv)
 				std::cout << "Size: " << (header->has_meta ? "HDD" : "SSD") << " K" << header->ksize << " C" << prover->get_clevel()
 						<< " (" << header->plot_size / pow(1024, 3) << " GiB)" << std::endl;
 				std::cout << "Plot ID: " << prover->get_plot_id().to_string() << std::endl;
+				std::cout << "Farmer Key: " << header->farmer_key.to_string() << std::endl;
 				std::cout << "Contract: " << (header->contract ? header->contract->to_string() : std::string("N/A")) << std::endl;
 			}
 			out->valid = true;
