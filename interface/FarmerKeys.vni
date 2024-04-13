@@ -2,8 +2,8 @@ package mmx;
 
 class FarmerKeys {
 	
-	skey_t farmer_private_key;
+	skey_t private_key;
 	
-	pubkey_t farmer_public_key;
+	pubkey_t public_key;
 	
 }

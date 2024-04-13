@@ -168,7 +168,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			}
 		}
 		if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-			if(auto plot = get_contract_as<contract::VirtualPlot>(proof->contract)) {
+			if(auto plot = get_contract_as<contract::VirtualPlot>(proof->plot_id)) {
 				if(plot->reward_address) {
 					if(*block->reward_addr != *plot->reward_address) {
 						throw std::logic_error("invalid reward_addr for stake proof");

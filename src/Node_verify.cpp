@@ -10,7 +10,7 @@
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/chiapos.h>
+#include <mmx/pos/verify.h>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -163,10 +163,8 @@ uint256_t Node::verify_proof_impl(	std::shared_ptr<const T> proof, const hash_t&
 		throw std::logic_error("ksize too big");
 	}
 	const auto plot_challenge = get_plot_challenge(challenge, proof->plot_id);
-	// TODO:
-	hash_t quality;
-//	const auto quality = hash_t::from_bytes(chiapos::verify(
-//			proof->ksize, proof->plot_id.bytes, plot_challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
+
+	const auto quality = pos::verify(proof->proof_xs, plot_challenge, proof->plot_id, params->plot_filter, proof->ksize);
 
 	return calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
 }
@@ -194,18 +192,18 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 	}
 	else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof))
 	{
-		const auto plot = get_contract_as<contract::VirtualPlot>(stake->contract);
+		const auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id);
 		if(!plot) {
-			throw std::logic_error("no such virtual plot: " + stake->contract.to_string());
+			throw std::logic_error("no such virtual plot: " + stake->plot_id.to_string());
 		}
 		if(stake->farmer_key != plot->farmer_key) {
 			throw std::logic_error("invalid farmer key for virtual plot: " + stake->farmer_key.to_string());
 		}
-		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
+		const auto balance = get_virtual_plot_balance(stake->plot_id, diff_block->hash);
 		if(balance == 0) {
-			throw std::logic_error("virtual plot has zero balance: " + stake->contract.to_string());
+			throw std::logic_error("virtual plot has zero balance: " + stake->plot_id.to_string());
 		}
-		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
+		score = calc_virtual_score(params, challenge, stake->plot_id, balance, diff_block->space_diff);
 	}
 	else {
 		throw std::logic_error("invalid proof type: " + proof->get_type_name());

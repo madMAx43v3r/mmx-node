@@ -2,9 +2,6 @@ package mmx;
 
 class ProofOfStake extends ProofOfSpace {
 	
-	addr_t contract;
-	
-	
 	hash_t calc_hash(bool full_hash = false) const;
 	
 	void validate() const;

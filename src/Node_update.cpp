@@ -745,7 +745,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		}
 	}
 	if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->contract)) {
+		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
 			block->reward_addr = plot->reward_address;
 		}
 	}

@@ -144,8 +144,13 @@ int main(int argc, char** argv)
 			const auto expected = uint64_t(num_iter) << plot_filter;
 			std::cout << "Pass: " << out->num_pass << " / " << expected << ", " << float(100 * out->num_pass) / expected << " %" << std::endl;
 			std::cout << "Fail: " << out->num_fail << " / " << expected << ", " << float(100 * out->num_fail) / expected << " %" << std::endl;
+
+			if(!vnx::do_run()) {
+				break;
+			}
 		}
 		catch(const std::exception& ex) {
+			std::cerr << "--------------------------------------------------------------------------------" << std::endl;
 			std::cerr << "Failed to open plot " << file_name << ": " << ex.what() << std::endl;
 		}
 		result.push_back(out);

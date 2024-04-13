@@ -93,8 +93,8 @@ void Farmer::update()
 	wallet->get_all_farmer_keys(
 		[this](const std::vector<std::shared_ptr<const FarmerKeys>>& list) {
 			for(auto keys : list) {
-				if(key_map.emplace(keys->farmer_public_key, keys->farmer_private_key).second) {
-					log(INFO) << "Got Farmer Key: " << keys->farmer_public_key;
+				if(key_map.emplace(keys->public_key, keys->private_key).second) {
+					log(INFO) << "Got Farmer Key: " << keys->public_key;
 				}
 			}
 			pipe->resume();

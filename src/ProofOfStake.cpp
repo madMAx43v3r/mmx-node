@@ -23,7 +23,6 @@ mmx::hash_t ProofOfStake::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "score", 		score);
 	write_field(out, "plot_id", 	plot_id);
 	write_field(out, "farmer_key", 	farmer_key);
-	write_field(out, "contract", 	contract);
 	out.flush();
 
 	return hash_t(buffer);

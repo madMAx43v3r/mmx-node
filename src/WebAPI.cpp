@@ -1649,7 +1649,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id](std::shared_ptr<const FarmerKeys> keys) {
 					vnx::Object out;
 					if(keys) {
-						out["farmer_public_key"] = keys->farmer_public_key.to_string();
+						out["farmer_public_key"] = keys->public_key.to_string();
 					}
 					respond(request_id, out);
 				},

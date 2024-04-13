@@ -9,6 +9,7 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/utils.h>
 #include <vnx/vnx.h>
@@ -76,10 +77,11 @@ void Harvester::main()
 	threads->close();
 }
 
-void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const mmx::chiapos::Proof> chia_proof,
-								const virtual_plot_info_t* virtual_plot, const hash_t& plot_id, const uint32_t score, const int64_t time_begin_ms) const
+void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const ProofOfSpace> proof,
+								const uint32_t score, const int64_t time_begin_ms) const
 {
 	auto out = ProofResponse::create();
+	out->proof = proof;
 	out->request = request;
 	out->farmer_addr = farmer_addr;
 	out->harvester = host_name.substr(0, 256);
@@ -87,38 +89,6 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 
 	const auto delay_sec = out->lookup_time_ms / 1e3;
 	log(INFO) << "Found proof with score " << score << " for height " << request->height << ", delay " << delay_sec << " sec";
-
-	if(chia_proof) {
-//		const auto local_sk_bls = derive_local_key(chia_proof->master_sk);
-//		const auto local_key_bls = local_sk_bls.GetG1Element();
-//		local_sk = skey_t(local_sk_bls);
-//
-//		const auto farmer_key = bls_pubkey_t(chia_proof->farmer_key);
-//		bls::G1Element farmer_key_bls;
-//		farmer_key.to(farmer_key_bls);
-
-		auto proof = ProofOfSpaceOG::create();
-		proof->ksize = chia_proof->k;
-		proof->score = score;
-		proof->plot_id = plot_id;
-//		proof->proof_bytes = chia_proof->proof;
-//		proof->farmer_key = farmer_key;
-//		proof->plot_key = local_key_bls + farmer_key_bls;
-//		proof->pool_key = bls_pubkey_t(chia_proof->pool_key);
-//		proof->local_key = local_key_bls;
-		out->proof = proof;
-	}
-	else if(virtual_plot) {
-		auto proof = ProofOfStake::create();
-		proof->score = score;
-		proof->plot_id = plot_id;
-		proof->contract = plot_id;
-		proof->farmer_key = virtual_plot->farmer_key;
-		out->proof = proof;
-	}
-	else {
-		return;
-	}
 
 	try {
 		out->hash = out->calc_hash();
@@ -197,21 +167,52 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 					const auto& prover = iter->second;
 					try {
 						const auto challenge = get_plot_challenge(value->challenge, entry.first);
-						const auto qualities = prover->get_qualities(challenge.bytes);
+						const auto qualities = prover->get_qualities(challenge, params->plot_filter);
 
-						for(size_t k = 0; k < qualities.size(); ++k) {
-							const auto score = calc_proof_score(params, prover->get_ksize(), hash_t::from_bytes(qualities[k]), value->space_diff);
-							if(score < params->score_threshold) {
-								try {
-									const auto proof = prover->get_full_proof(challenge.bytes, k);
-									send_response(value, proof, nullptr, entry.first, score, recv_time_ms);
-								} catch(const std::exception& ex) {
-									log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
+						for(const auto& res : qualities)
+						{
+							if(!res.valid) {
+								log(WARN) << "[" << host_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
+								continue;
+							}
+							const auto score = calc_proof_score(params, prover->get_ksize(), res.quality, value->space_diff);
+							if(score < params->score_threshold)
+							{
+								auto proof_xs = res.proof;
+								if(proof_xs.empty()) {
+									const auto data = prover->get_full_proof(challenge, res.index);
+									if(!data.valid) {
+										log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << data.error_msg << " (" << prover->get_file_path() << ")";
+										continue;
+									}
+									proof_xs = data.proof;
 								}
+								std::shared_ptr<ProofOfSpace> proof;
+
+								const auto header = prover->get_header();
+								if(header->contract) {
+									auto out = std::make_shared<ProofOfSpaceNFT>();
+									out->seed = header->seed;
+									out->ksize = header->ksize;
+									out->contract = *header->contract;
+									out->proof_xs = proof_xs;
+									proof = out;
+								} else {
+									auto out = std::make_shared<ProofOfSpaceOG>();
+									out->seed = header->seed;
+									out->ksize = header->ksize;
+									out->proof_xs = proof_xs;
+									proof = out;
+								}
+								proof->score = score;
+								proof->plot_id = header->plot_id;
+								proof->farmer_key = header->farmer_key;
+
+								send_response(value, proof, score, recv_time_ms);
 							}
 						}
 					} catch(const std::exception& ex) {
-						log(WARN) << "[" << host_name << "] Failed to fetch qualities: " << ex.what() << " (" << prover->get_file_path() << ")";
+						log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
 					}
 				}
 				job->num_passed++;
@@ -236,7 +237,10 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				if(balance) {
 					const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
 					if(score < params->score_threshold) {
-						send_response(value, nullptr, &entry.second, entry.first, score, recv_time_ms);
+						auto proof = std::make_shared<ProofOfStake>();
+						proof->farmer_key = entry.second.farmer_key;
+						proof->plot_id = entry.first;
+						send_response(value, proof, score, recv_time_ms);
 					}
 				}
 			} catch(const std::exception& ex) {
@@ -322,7 +326,7 @@ void Harvester::reload()
 	for(const auto& entry : plot_map) {
 		missing.insert(entry.first);
 	}
-	std::vector<std::pair<std::string, std::shared_ptr<chiapos::DiskProver>>> plots;
+	std::vector<std::pair<std::string, std::shared_ptr<pos::Prover>>> plots;
 
 	for(const auto& dir_path : dir_list)
 	{
@@ -340,7 +344,7 @@ void Harvester::reload()
 					}
 					if(!plot_map.count(file_name) && file->get_extension() == ".plot") {
 						try {
-							auto prover = std::make_shared<chiapos::DiskProver>(file_name);
+							auto prover = std::make_shared<pos::Prover>(file_name);
 							{
 								std::lock_guard<std::mutex> lock(mutex);
 								plots.emplace_back(file_name, prover);
@@ -380,53 +384,28 @@ void Harvester::reload()
 	// validate and add new plots
 	for(const auto& entry : plots)
 	{
-		threads->add_task([this, entry, &farmer_keys, &mutex]()
-		{
-			const auto& plot = entry.second;
-			try {
-//				const pubkey_t farmer_key(plot->get_farmer_key());
-//				if(!farmer_keys.count(farmer_key)) {
-//					throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
-//				}
-//				if(validate_plots) {
-//					const auto plot_id = hash_t::from_bytes(plot->get_plot_id());
-//					const auto local_sk = derive_local_key(plot->get_master_skey());
-//					const auto pool_key = plot->get_pool_key();
-//
-//					bls::G1Element farmer_key_bls;
-//					farmer_key.to(farmer_key_bls);
-//					const bls_pubkey_t plot_key = local_sk.GetG1Element() + farmer_key_bls;
-//					if(!pool_key.empty()) {
-//						if(hash_t(hash_t(bls_pubkey_t(pool_key) + plot_key) + bytes_t<4>().from_uint(11337u)) != plot_id) {
-//							throw std::logic_error("invalid keys or port");
-//						}
-//					} else {
-//						throw std::logic_error("invalid plot type");
-//					}
-//				}
-				{
-					std::lock_guard<std::mutex> lock(mutex);
-					plot_map.insert(entry);
-				}
+		const auto& plot = entry.second;
+		try {
+			const auto& farmer_key = plot->get_farmer_key();
+			if(!farmer_keys.count(farmer_key)) {
+				throw std::logic_error("unknown farmer key: " + farmer_key.to_string());
 			}
-			catch(const std::exception& ex) {
-				log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first << " (" << ex.what() << ")";
-			} catch(...) {
-				log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first;
-			}
-		});
+			plot_map.insert(entry);
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first << " (" << ex.what() << ")";
+		}
 	}
-	threads->sync();
 
 	id_map.clear();
 	total_bytes = 0;
 	for(const auto& entry : plot_map) {
 		const auto& prover = entry.second;
 		const auto& file_name = entry.first;
-		const auto plot_id = hash_t::from_bytes(prover->get_plot_id());
+		const auto& plot_id = prover->get_plot_id();
 
 		if(!id_map.emplace(plot_id, file_name).second) {
-			log(WARN) << "[" << host_name << "] Duplicate plot: " << entry.first << " (" << id_map[plot_id] << ")";
+			log(WARN) << "[" << host_name << "] Duplicate plot: " << entry.first << " (already have: " << id_map[plot_id] << ")";
 		}
 		total_bytes += vnx::File(file_name).file_size();
 	}

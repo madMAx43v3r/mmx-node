@@ -97,8 +97,6 @@ if(OpenCL_FOUND)
 	)
 endif()
 
-include(cmake/chiapos.cmake)
-
 file(GLOB GENERATED_SOURCE_FILES
 	generated/src/*.cpp
 	generated/vm/src/*.cpp
@@ -225,18 +223,13 @@ target_include_directories(uint256_t
 
 target_compile_definitions(uint256_t PUBLIC _UINT256_T_STATIC _UINT128_T_STATIC)
 
-target_include_directories(mmx_chiapos
-	PUBLIC src/chiapos
-	PRIVATE chiapos/src chiapos/lib/include
-)
-
 target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t bech32 ${secp256k1_LIBRARY})
 
 target_link_libraries(mmx_db mmx_iface)
 target_link_libraries(mmx_pos mmx_iface)
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 
-target_link_libraries(mmx_modules mmx_chiapos mmx_pos mmx_vm mmx_db mmx_iface)
+target_link_libraries(mmx_modules mmx_pos mmx_vm mmx_db mmx_iface)
 
 if(MSVC)
 	GENERATE_EXPORT_HEADER(mmx_iface)

@@ -39,8 +39,20 @@ public:
 		return header;
 	}
 
+	std::string get_file_path() const {
+		return file_path;
+	}
+
 	const hash_t& get_plot_id() const {
 		return header->plot_id;
+	}
+
+	const pubkey_t& get_farmer_key() const {
+		return header->farmer_key;
+	}
+
+	int get_ksize() const {
+		return header->ksize;
 	}
 
 	int get_clevel() const {

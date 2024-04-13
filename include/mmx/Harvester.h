@@ -13,7 +13,7 @@
 #include <mmx/NodeClient.hxx>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/chiapos.h>
+#include <mmx/pos/Prover.h>
 
 #include <vnx/ThreadPool.h>
 #include <vnx/addons/HttpInterface.h>
@@ -58,8 +58,8 @@ private:
 	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const;
 
 	// thread safe
-	void send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const mmx::chiapos::Proof> chia_proof,
-						const virtual_plot_info_t* virtual_plot, const hash_t& plot_id, const uint32_t score, const int64_t time_begin_ms) const;
+	void send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const ProofOfSpace> proof,
+						const uint32_t score, const int64_t time_begin_ms) const;
 
 private:
 	hash_t harvester_id;
@@ -75,7 +75,7 @@ private:
 
 	std::unordered_set<hash_t> already_checked;
 	std::unordered_map<hash_t, std::string> id_map;
-	std::unordered_map<std::string, std::shared_ptr<chiapos::DiskProver>> plot_map;
+	std::unordered_map<std::string, std::shared_ptr<pos::Prover>> plot_map;
 	std::unordered_map<addr_t, virtual_plot_info_t> virtual_map;
 
 	struct lookup_t {
