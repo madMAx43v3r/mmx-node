@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmerKeys::VNX_TYPE_HASH(0x9942f861520098b3ull);
-const vnx::Hash64 FarmerKeys::VNX_CODE_HASH(0x10be6c428993bfc2ull);
+const vnx::Hash64 FarmerKeys::VNX_CODE_HASH(0xa66b815b99be3a8eull);
 
 vnx::Hash64 FarmerKeys::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,15 +47,15 @@ void FarmerKeys::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, c
 void FarmerKeys::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_FarmerKeys;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, farmer_private_key);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, farmer_public_key);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, private_key);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, public_key);
 	_visitor.type_end(*_type_code);
 }
 
 void FarmerKeys::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.FarmerKeys\"";
-	_out << ", \"farmer_private_key\": "; vnx::write(_out, farmer_private_key);
-	_out << ", \"farmer_public_key\": "; vnx::write(_out, farmer_public_key);
+	_out << ", \"private_key\": "; vnx::write(_out, private_key);
+	_out << ", \"public_key\": "; vnx::write(_out, public_key);
 	_out << "}";
 }
 
@@ -68,36 +68,36 @@ void FarmerKeys::read(std::istream& _in) {
 vnx::Object FarmerKeys::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.FarmerKeys";
-	_object["farmer_private_key"] = farmer_private_key;
-	_object["farmer_public_key"] = farmer_public_key;
+	_object["private_key"] = private_key;
+	_object["public_key"] = public_key;
 	return _object;
 }
 
 void FarmerKeys::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "farmer_private_key") {
-			_entry.second.to(farmer_private_key);
-		} else if(_entry.first == "farmer_public_key") {
-			_entry.second.to(farmer_public_key);
+		if(_entry.first == "private_key") {
+			_entry.second.to(private_key);
+		} else if(_entry.first == "public_key") {
+			_entry.second.to(public_key);
 		}
 	}
 }
 
 vnx::Variant FarmerKeys::get_field(const std::string& _name) const {
-	if(_name == "farmer_private_key") {
-		return vnx::Variant(farmer_private_key);
+	if(_name == "private_key") {
+		return vnx::Variant(private_key);
 	}
-	if(_name == "farmer_public_key") {
-		return vnx::Variant(farmer_public_key);
+	if(_name == "public_key") {
+		return vnx::Variant(public_key);
 	}
 	return vnx::Variant();
 }
 
 void FarmerKeys::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "farmer_private_key") {
-		_value.to(farmer_private_key);
-	} else if(_name == "farmer_public_key") {
-		_value.to(farmer_public_key);
+	if(_name == "private_key") {
+		_value.to(private_key);
+	} else if(_name == "public_key") {
+		_value.to(public_key);
 	}
 }
 
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> FarmerKeys::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.FarmerKeys";
 	type_code->type_hash = vnx::Hash64(0x9942f861520098b3ull);
-	type_code->code_hash = vnx::Hash64(0x10be6c428993bfc2ull);
+	type_code->code_hash = vnx::Hash64(0xa66b815b99be3a8eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::FarmerKeys);
@@ -134,13 +134,13 @@ std::shared_ptr<vnx::TypeCode> FarmerKeys::static_create_type_code() {
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
-		field.name = "farmer_private_key";
+		field.name = "private_key";
 		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "farmer_public_key";
+		field.name = "public_key";
 		field.code = {11, 33, 1};
 	}
 	type_code->build();
@@ -194,8 +194,8 @@ void read(TypeInput& in, ::mmx::FarmerKeys& value, const TypeCode* type_code, co
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.farmer_private_key, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.farmer_public_key, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.private_key, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.public_key, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -214,8 +214,8 @@ void write(TypeOutput& out, const ::mmx::FarmerKeys& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	vnx::write(out, value.farmer_private_key, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.farmer_public_key, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.private_key, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.public_key, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::FarmerKeys& value) {

@@ -32,7 +32,6 @@ public:
 	uint32_t num_threads = 32;
 	vnx::bool_t recursive_search = true;
 	vnx::bool_t farm_virtual_plots = true;
-	vnx::bool_t validate_plots = true;
 	
 	typedef ::vnx::Module Super;
 	
@@ -87,7 +86,7 @@ protected:
 
 template<typename T>
 void HarvesterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<HarvesterBase>(14);
+	_visitor.template type_begin<HarvesterBase>(13);
 	_visitor.type_field("input_challenges", 0); _visitor.accept(input_challenges);
 	_visitor.type_field("output_info", 1); _visitor.accept(output_info);
 	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
@@ -101,8 +100,7 @@ void HarvesterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("num_threads", 10); _visitor.accept(num_threads);
 	_visitor.type_field("recursive_search", 11); _visitor.accept(recursive_search);
 	_visitor.type_field("farm_virtual_plots", 12); _visitor.accept(farm_virtual_plots);
-	_visitor.type_field("validate_plots", 13); _visitor.accept(validate_plots);
-	_visitor.template type_end<HarvesterBase>(14);
+	_visitor.template type_end<HarvesterBase>(13);
 }
 
 

@@ -15,8 +15,8 @@ namespace mmx {
 class MMX_EXPORT FarmerKeys : public ::vnx::Value {
 public:
 	
-	::mmx::skey_t farmer_private_key;
-	::mmx::pubkey_t farmer_public_key;
+	::mmx::skey_t private_key;
+	::mmx::pubkey_t public_key;
 	
 	typedef ::vnx::Value Super;
 	
@@ -64,8 +64,8 @@ protected:
 template<typename T>
 void FarmerKeys::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<FarmerKeys>(2);
-	_visitor.type_field("farmer_private_key", 0); _visitor.accept(farmer_private_key);
-	_visitor.type_field("farmer_public_key", 1); _visitor.accept(farmer_public_key);
+	_visitor.type_field("private_key", 0); _visitor.accept(private_key);
+	_visitor.type_field("public_key", 1); _visitor.accept(public_key);
 	_visitor.template type_end<FarmerKeys>(2);
 }
 
