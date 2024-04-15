@@ -61,7 +61,8 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 		return false;
 	}
 	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
-	const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
+
+	const auto challenge = vdf_block->vdf_output[1];
 	if(request->challenge != challenge) {
 		throw std::logic_error("invalid challenge");
 	}
