@@ -27,6 +27,7 @@ int main(int argc, char** argv)
 	options["t"] = "txmode";
 	options["v"] = "verbose";
 	options["e"] = "execute";
+	options["n"] = "network";
 	options["w"] = "commit";
 	options["g"] = "gas";
 	options["O"] = "opt-level";
@@ -48,6 +49,7 @@ int main(int argc, char** argv)
 	bool commit = false;
 	bool assert_fail = false;
 	uint64_t gas_limit = -1;
+	std::string network = "main";
 	std::string output = "binary.dat";
 	std::vector<std::string> file_names;
 	vnx::read_config("verbose", verbose);
@@ -55,6 +57,7 @@ int main(int argc, char** argv)
 	vnx::read_config("txmode", txmode);
 	vnx::read_config("execute", execute);
 	vnx::read_config("commit", commit);
+	vnx::read_config("network", network);
 	vnx::read_config("output", output);
 	vnx::read_config("files", file_names);
 	vnx::read_config("gas", gas_limit);
@@ -78,6 +81,7 @@ int main(int argc, char** argv)
 	if(txmode) {
 		auto tx = Transaction::create();
 		tx->deploy = bin;
+		tx->network = network;
 		tx->id = tx->calc_hash(false);
 		tx->content_hash = tx->calc_hash(true);
 		vnx::write_to_file(output, tx);
