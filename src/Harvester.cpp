@@ -329,11 +329,11 @@ void Harvester::reload()
 	for(const auto& entry : plot_map) {
 		missing.insert(entry.first);
 	}
-	std::vector<std::pair<std::string, std::shared_ptr<pos::Prover>>> plots;
+	std::vector<std::string> plot_files;
 
 	for(const auto& dir_path : dir_list)
 	{
-		threads->add_task([this, dir_path, &plots, &missing, &mutex]()
+		threads->add_task([this, dir_path, &plot_files, &missing, &mutex]()
 		{
 			try {
 				vnx::Directory dir(dir_path);
@@ -348,7 +348,7 @@ void Harvester::reload()
 					if(!plot_map.count(file_name) && file->get_extension() == ".plot")
 					{
 						std::lock_guard<std::mutex> lock(mutex);
-						plots.emplace_back(file_name, nullptr);
+						plot_files.push_back(file_name);
 					}
 				}
 			} catch(const std::exception& ex) {
@@ -358,16 +358,22 @@ void Harvester::reload()
 	}
 	threads->sync();
 
-	for(auto& entry : plots)
+	std::vector<std::pair<std::string, std::shared_ptr<pos::Prover>>> plots;
+
+	for(const auto& file_path : plot_files)
 	{
-		threads->add_task([this, &entry]()
+		threads->add_task([this, file_path, &plots, &mutex]()
 		{
 			try {
-				entry.second = std::make_shared<pos::Prover>(entry.first);
+				auto prover = std::make_shared<pos::Prover>(file_path);
+				{
+					std::lock_guard<std::mutex> lock(mutex);
+					plots.emplace_back(file_path, prover);
+				}
 			} catch(const std::exception& ex) {
-				log(WARN) << "[" << host_name << "] Failed to load plot '" << entry.first << "' due to: " << ex.what();
+				log(WARN) << "[" << host_name << "] Failed to load plot '" << file_path << "' due to: " << ex.what();
 			} catch(...) {
-				log(WARN) << "[" << host_name << "] Failed to load plot '" << entry.first << "'";
+				log(WARN) << "[" << host_name << "] Failed to load plot '" << file_path << "'";
 			}
 		});
 	}
