@@ -4,7 +4,6 @@
 #include <mmx/package.hxx>
 #include <mmx/WalletAsyncClient.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/FarmerKeys.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
@@ -125,6 +124,8 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
@@ -962,7 +963,7 @@ uint64_t WalletAsyncClient::get_mnemonic_seed(const uint32_t& index, const std::
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_farmer_keys(const uint32_t& index, const std::function<void(std::shared_ptr<const ::mmx::FarmerKeys>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_farmer_keys(const uint32_t& index, const std::function<void(const std::pair<::mmx::skey_t, ::mmx::pubkey_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_farmer_keys::create();
 	_method->index = index;
 	const auto _request_id = ++vnx_next_id;
@@ -975,7 +976,7 @@ uint64_t WalletAsyncClient::get_farmer_keys(const uint32_t& index, const std::fu
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_all_farmer_keys(const std::function<void(const std::vector<std::shared_ptr<const ::mmx::FarmerKeys>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_all_farmer_keys(const std::function<void(const std::vector<std::pair<::mmx::skey_t, ::mmx::pubkey_t>>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_all_farmer_keys::create();
 	const auto _request_id = ++vnx_next_id;
 	{
@@ -2909,7 +2910,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_farmer_keys_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmerKeys>>());
+					_callback(_value->get_field_by_index(0).to<std::pair<::mmx::skey_t, ::mmx::pubkey_t>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
@@ -2928,7 +2929,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_all_farmer_keys_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::FarmerKeys>>>());
+					_callback(_value->get_field_by_index(0).to<std::vector<std::pair<::mmx::skey_t, ::mmx::pubkey_t>>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}

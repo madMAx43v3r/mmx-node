@@ -4,7 +4,6 @@
 #include <mmx/package.hxx>
 #include <mmx/WalletClient.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/FarmerKeys.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
@@ -125,6 +124,8 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
@@ -957,26 +958,26 @@ std::vector<std::string> WalletClient::get_mnemonic_seed(const uint32_t& index) 
 	}
 }
 
-std::shared_ptr<const ::mmx::FarmerKeys> WalletClient::get_farmer_keys(const uint32_t& index) {
+std::pair<::mmx::skey_t, ::mmx::pubkey_t> WalletClient::get_farmer_keys(const uint32_t& index) {
 	auto _method = ::mmx::Wallet_get_farmer_keys::create();
 	_method->index = index;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_farmer_keys_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmerKeys>>();
+		return _return_value->get_field_by_index(0).to<std::pair<::mmx::skey_t, ::mmx::pubkey_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
 }
 
-std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> WalletClient::get_all_farmer_keys() {
+std::vector<std::pair<::mmx::skey_t, ::mmx::pubkey_t>> WalletClient::get_all_farmer_keys() {
 	auto _method = ::mmx::Wallet_get_all_farmer_keys::create();
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_all_farmer_keys_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::FarmerKeys>>>();
+		return _return_value->get_field_by_index(0).to<std::vector<std::pair<::mmx::skey_t, ::mmx::pubkey_t>>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

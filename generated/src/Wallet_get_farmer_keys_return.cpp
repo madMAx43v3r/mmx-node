@@ -3,7 +3,8 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Wallet_get_farmer_keys_return.hxx>
-#include <mmx/FarmerKeys.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_farmer_keys_return::VNX_TYPE_HASH(0x25479f868269fbb0ull);
-const vnx::Hash64 Wallet_get_farmer_keys_return::VNX_CODE_HASH(0xfdd0d293918481c7ull);
+const vnx::Hash64 Wallet_get_farmer_keys_return::VNX_CODE_HASH(0x32127c3a3afe8b14ull);
 
 vnx::Hash64 Wallet_get_farmer_keys_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_farmer_keys_return::static_create_type
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_farmer_keys.return";
 	type_code->type_hash = vnx::Hash64(0x25479f868269fbb0ull);
-	type_code->code_hash = vnx::Hash64(0xfdd0d293918481c7ull);
+	type_code->code_hash = vnx::Hash64(0x32127c3a3afe8b14ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -125,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_farmer_keys_return::static_create_type
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {16};
+		field.code = {23, 2, 4, 7, 11, 32, 1, 11, 33, 1};
 	}
 	type_code->build();
 	return type_code;

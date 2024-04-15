@@ -5,7 +5,8 @@
 #define INCLUDE_mmx_Wallet_get_farmer_keys_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/FarmerKeys.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -14,7 +15,7 @@ namespace mmx {
 class MMX_EXPORT Wallet_get_farmer_keys_return : public ::vnx::Value {
 public:
 	
-	std::shared_ptr<const ::mmx::FarmerKeys> _ret_0;
+	std::pair<::mmx::skey_t, ::mmx::pubkey_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	
