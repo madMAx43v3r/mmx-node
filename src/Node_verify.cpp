@@ -374,7 +374,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	if(verify_vdf_rewards && proof->reward_addr) {
 		ss_reward << " (with reward)";
 	}
-	log(INFO) << "Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec" << ss_reward.str();
+	log(INFO) << "\u23f2\ufe0f\u0020 Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec" << ss_reward.str();
 
 	// add dummy blocks
 	const auto root = get_root();
