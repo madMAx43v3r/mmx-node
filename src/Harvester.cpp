@@ -88,7 +88,7 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 	out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin_ms;
 
 	const auto delay_sec = out->lookup_time_ms / 1e3;
-	log(INFO) << "Found proof with score " << score << " for height " << request->height << ", delay " << delay_sec << " sec";
+	log(INFO) << "[" << host_name << "] Found proof with score " << score << " for height " << request->height << ", delay " << delay_sec << " sec";
 
 	try {
 		out->hash = out->calc_hash();
