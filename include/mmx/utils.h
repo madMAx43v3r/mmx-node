@@ -123,14 +123,13 @@ hash_t get_plot_challenge(const hash_t& challenge, const hash_t& plot_id)
 inline
 uint64_t to_effective_space(const uint64_t& num_bytes)
 {
-	return (762 * uint128_t(num_bytes)) / 1000;
+	return (2404 * uint128_t(num_bytes)) / 1000;
 }
 
 inline
 uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	const auto plot_filter = params->plot_filter;
-	return ((uint256_t(space_diff) * params->space_diff_constant) << (plot_filter + params->score_bits)) / params->score_target;
+	return ((uint256_t(space_diff) * params->space_diff_constant) << params->score_bits) / params->score_target;
 }
 
 inline
