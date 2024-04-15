@@ -1554,23 +1554,20 @@ std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> Node::get_swap_liqui
 std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 		const std::vector<pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const
 {
-	std::vector<uint32_t> entries;
-//	TODO:
-//	for(const auto& key : farmer_keys) {
-//		std::vector<uint32_t> tmp;
-//		farmer_block_map.find(key, tmp);
-//		entries.insert(entries.end(), tmp.begin(), tmp.end());
-//	}
+	std::vector<farmed_block_info_t> entries;
+	for(const auto& key : farmer_keys) {
+		std::vector<farmed_block_info_t> tmp;
+		farmer_block_map.find(key, tmp);
+		entries.insert(entries.end(), tmp.begin(), tmp.end());
+	}
 	if(limit >= 0) {
-		std::sort(entries.begin(), entries.end(), std::greater<uint32_t>());
+		std::reverse(entries.begin(), entries.end());
 		entries.resize(limit);
-	} else {
-		std::sort(entries.begin(), entries.end());
 	}
 	std::vector<std::shared_ptr<const BlockHeader>> out;
-	for(auto height : entries) {
-		if(height >= since) {
-			out.push_back(get_block_at_ex(height, full_blocks));
+	for(const auto& entry : entries) {
+		if(entry.height >= since) {
+			out.push_back(get_block_at_ex(entry.height, full_blocks));
 		}
 	}
 	return out;
@@ -1579,28 +1576,26 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 std::map<pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& since) const
 {
 	std::map<pubkey_t, uint32_t> out;
-//	TODO:
-//	farmer_block_map.scan([&out, since](const pubkey_t& key, const uint32_t& height) {
-//		if(height >= since) {
-//			out[key]++;
-//		}
-//	});
+	farmer_block_map.scan([&out, since](const pubkey_t& key, const farmed_block_info_t& info) {
+		if(info.height >= since) {
+			out[key]++;
+		}
+	});
 	return out;
 }
 
 uint32_t Node::get_farmed_block_count_for(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since) const
 {
 	size_t total = 0;
-//	TODO:
-//	for(const auto& key : farmer_keys) {
-//		std::vector<uint32_t> tmp;
-//		farmer_block_map.find(key, tmp);
-//		for(auto height : tmp) {
-//			if(height >= since) {
-//				total++;
-//			}
-//		}
-//	}
+	for(const auto& key : farmer_keys) {
+		std::vector<farmed_block_info_t> tmp;
+		farmer_block_map.find(key, tmp);
+		for(const auto& entry : tmp) {
+			if(entry.height >= since) {
+				total++;
+			}
+		}
+	}
 	return total;
 }
 
@@ -2200,7 +2195,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		context->storage->commit();
 	}
 	if(auto proof = block->proof) {
-//		TODO: farmer_block_map.insert(proof->farmer_key, block->height);
+		farmed_block_info_t info;
+		info.height = block->height;
+		info.reward = block->reward_amount;
+		info.reward_addr = (block->reward_addr ? *block->reward_addr : addr_t());
+		farmer_block_map.insert(proof->farmer_key, info);
 	}
 	hash_index.insert(block->hash, block->height);
 
