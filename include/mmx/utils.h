@@ -123,7 +123,7 @@ hash_t get_plot_challenge(const hash_t& challenge, const hash_t& plot_id)
 inline
 uint64_t to_effective_space(const uint64_t& num_bytes)
 {
-	return (2404 * uint128_t(num_bytes)) / 1000;
+	return (2467 * uint128_t(num_bytes)) / 1000;
 }
 
 inline
