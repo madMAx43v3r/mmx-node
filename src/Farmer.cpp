@@ -71,7 +71,9 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 	for(const auto& entry : info_map) {
 		if(auto value = std::dynamic_pointer_cast<const FarmInfo>(entry.second->value)) {
 			if(value->harvester) {
-				info->harvester_bytes[*value->harvester] += value->total_bytes;
+				auto& entry = info->harvester_bytes[*value->harvester];
+				entry.first += value->total_bytes;
+				entry.second += value->total_bytes_effective;
 			}
 			for(const auto& entry : value->plot_count) {
 				info->plot_count[entry.first] += entry.second;

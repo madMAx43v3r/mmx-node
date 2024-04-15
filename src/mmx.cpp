@@ -1466,7 +1466,7 @@ int main(int argc, char** argv)
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
 				}
 				for(const auto& entry : info->harvester_bytes) {
-					std::cout << "[" << entry.first << "] " << entry.second / pow(1000, 4) << " TB" << std::endl;
+					std::cout << "[" << entry.first << "] " << entry.second.first / pow(1000, 4) << " TB, " << entry.second.second / pow(1000, 4) << " TBe" << std::endl;
 				}
 			}
 			else if(command == "reload")

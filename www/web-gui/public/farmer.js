@@ -105,6 +105,7 @@ Vue.component('farmer-plots', {
 			return [
 				{ text: this.$t('common.harvester'), value: 'name' },
 				{ text: this.$t('farmer_info.physical_size'), value: 'bytes' },
+				{ text: "Effective Size", value: 'effective' },
 			]
 		}
 	},
@@ -119,7 +120,7 @@ Vue.component('farmer-plots', {
 					}
 					this.harvester_bytes = [];
 					for(const entry of data.harvester_bytes) {
-						this.harvester_bytes.push({name: entry[0], bytes: entry[1]});
+						this.harvester_bytes.push({name: entry[0], bytes: entry[1][0], effective: entry[1][1]});
 					}
 					this.loaded = true;
 				});
@@ -166,6 +167,9 @@ Vue.component('farmer-plots', {
 			>
 				<template v-slot:item.bytes="{ item }">
 					<b>{{(item.bytes / Math.pow(1000, 4)).toFixed(3)}}</b> TB
+				</template>
+				<template v-slot:item.effective="{ item }">
+					<b>{{(item.effective / Math.pow(1000, 4)).toFixed(3)}}</b> TBe
 				</template>
 			</v-data-table>
 

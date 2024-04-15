@@ -16,7 +16,7 @@ public:
 	
 	std::vector<std::string> plot_dirs;
 	std::map<uint8_t, uint32_t> plot_count;
-	std::map<std::string, uint64_t> harvester_bytes;
+	std::map<std::string, std::pair<uint64_t, uint64_t>> harvester_bytes;
 	uint64_t total_bytes = 0;
 	uint64_t total_bytes_effective = 0;
 	uint64_t total_balance = 0;

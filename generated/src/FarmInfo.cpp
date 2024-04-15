@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmInfo::VNX_TYPE_HASH(0xa2701372b9137f0eull);
-const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0xb6ef52a9a8831968ull);
+const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0x6064790a0d1e894full);
 
 vnx::Hash64 FarmInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -184,7 +184,7 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.FarmInfo";
 	type_code->type_hash = vnx::Hash64(0xa2701372b9137f0eull);
-	type_code->code_hash = vnx::Hash64(0xb6ef52a9a8831968ull);
+	type_code->code_hash = vnx::Hash64(0x6064790a0d1e894full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::FarmInfo);
@@ -206,7 +206,7 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "harvester_bytes";
-		field.code = {13, 3, 32, 4};
+		field.code = {13, 3, 32, 23, 2, 4, 5, 4, 4};
 	}
 	{
 		auto& field = type_code->fields[3];
