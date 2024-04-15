@@ -1460,8 +1460,8 @@ int main(int argc, char** argv)
 				std::cout << "Effective size: " << info->total_bytes_effective / pow(1000, 4) << " TBe" << std::endl;
 				const auto virtual_bytes = mmx::calc_virtual_plot_size(params, info->total_balance);
 				std::cout << "Virtual size:   " << info->total_balance / pow(10, params->decimals) << " MMX ("
-						<< virtual_bytes / pow(1000, 4) << " TB)" << std::endl;
-				std::cout << "Total size:     " << (info->total_bytes + virtual_bytes) / pow(1000, 4) << " TB" << std::endl;
+						<< virtual_bytes / pow(1000, 4) << " TBe)" << std::endl;
+				std::cout << "Total size:     " << (info->total_bytes_effective + virtual_bytes) / pow(1000, 4) << " TBe" << std::endl;
 				for(const auto& entry : info->plot_count) {
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
 				}

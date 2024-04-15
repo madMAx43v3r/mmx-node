@@ -46,6 +46,16 @@ Vue.component('farmer-info', {
 										 {{ $t('farmer_info.physical_size') }}
 									</v-row>
 								</v-col>
+								
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
+									<v-row align="center" justify="space-around">
+										<div v-if="data">{{ (data.total_bytes_effective / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										 Effective Size
+									</v-row>
+								</v-col>
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
@@ -59,7 +69,7 @@ Vue.component('farmer-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<div v-if="data">{{ (data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -69,7 +79,7 @@ Vue.component('farmer-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ ((data.total_bytes + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<div v-if="data">{{ ((data.total_bytes_effective + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
