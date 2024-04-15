@@ -37,6 +37,7 @@ public:
 		if(seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
 		}
+		create_farmer_key();
 	}
 
 	ECDSA_Wallet(	const hash_t& seed_value, const std::vector<addr_t>& addresses,
@@ -46,6 +47,8 @@ public:
 		if(seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
 		}
+		create_farmer_key();
+
 		size_t i = 0;
 		for(const auto& addr : addresses) {
 			index_map[addr] = i++;
@@ -125,6 +128,11 @@ public:
 	pubkey_t get_pubkey(const uint32_t index) const
 	{
 		return keypairs.at(index).second;
+	}
+
+	std::pair<skey_t, pubkey_t> get_farmer_key() const
+	{
+		return farmer_key;
 	}
 
 	addr_t get_address(const uint32_t index) const
@@ -507,11 +515,21 @@ public:
 	std::unordered_map<hash_t, std::map<std::pair<addr_t, addr_t>, uint128_t>> pending_map;		// [txid => [[address, currency] => balance]]
 
 private:
+	void create_farmer_key()
+	{
+		const auto master = pbkdf2_hmac_sha512(seed_value, hash_t("MMX/farmer_keys"), PBKDF2_ITERS);
+		const auto tmp = hmac_sha512_n(master.first, master.second, 0);
+		farmer_key.first = tmp.first;
+		farmer_key.second = pubkey_t::from_skey(tmp.first);
+	}
+
+private:
 	const hash_t seed_value;
 	std::vector<addr_t> addresses;
 	std::unordered_map<addr_t, size_t> index_map;
 	std::vector<std::pair<skey_t, pubkey_t>> keypairs;
 	std::unordered_map<addr_t, size_t> keypair_map;
+	std::pair<skey_t, pubkey_t> farmer_key;
 
 	const std::shared_ptr<const ChainParams> params;
 

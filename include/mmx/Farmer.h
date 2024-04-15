@@ -9,7 +9,6 @@
 #define INCLUDE_MMX_FARMER_H_
 
 #include <mmx/FarmerBase.hxx>
-#include <mmx/FarmerKeys.hxx>
 #include <mmx/WalletAsyncClient.hxx>
 
 

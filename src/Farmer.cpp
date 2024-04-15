@@ -91,10 +91,10 @@ void Farmer::update()
 	vnx::open_flow(vnx::get_pipe(node_server), vnx::get_pipe(vnx_get_id()));
 
 	wallet->get_all_farmer_keys(
-		[this](const std::vector<std::shared_ptr<const FarmerKeys>>& list) {
-			for(auto keys : list) {
-				if(key_map.emplace(keys->public_key, keys->private_key).second) {
-					log(INFO) << "Got Farmer Key: " << keys->public_key;
+		[this](const std::vector<std::pair<skey_t, pubkey_t>>& list) {
+			for(const auto& keys : list) {
+				if(key_map.emplace(keys.second, keys.first).second) {
+					log(INFO) << "Got Farmer Key: " << keys.second;
 				}
 			}
 			pipe->resume();

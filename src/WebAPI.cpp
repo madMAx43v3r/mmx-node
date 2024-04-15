@@ -1646,11 +1646,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
 			wallet->get_farmer_keys(index,
-				[this, request_id](std::shared_ptr<const FarmerKeys> keys) {
+				[this, request_id](const std::pair<skey_t, pubkey_t>& keys) {
 					vnx::Object out;
-					if(keys) {
-						out["farmer_public_key"] = keys->public_key.to_string();
-					}
+					out["farmer_public_key"] = keys.second.to_string();
 					respond(request_id, out);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));

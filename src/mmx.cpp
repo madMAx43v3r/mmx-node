@@ -378,11 +378,8 @@ int main(int argc, char** argv)
 			}
 			else if(command == "keys")
 			{
-				if(auto keys = wallet.get_farmer_keys(index)) {
-					std::cout << "Farmer Public Key: " << keys->public_key << std::endl;
-				} else {
-					vnx::log_error() << "Got no wallet!";
-				}
+				const auto keys = wallet.get_farmer_keys(index);
+				std::cout << "Farmer Public Key: " << keys.second << std::endl;
 			}
 			else if(command == "get")
 			{

@@ -136,9 +136,9 @@ protected:
 
 	std::vector<address_info_t> get_all_address_infos(const int32_t& index) const;
 
-	std::shared_ptr<const FarmerKeys> get_farmer_keys(const uint32_t& index) const override;
+	std::pair<skey_t, pubkey_t> get_farmer_keys(const uint32_t& index) const override;
 
-	std::vector<std::shared_ptr<const FarmerKeys>> get_all_farmer_keys() const override;
+	std::vector<std::pair<skey_t, pubkey_t>> get_all_farmer_keys() const override;
 
 	account_t get_account(const uint32_t& index) const override;
 

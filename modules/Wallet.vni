@@ -152,8 +152,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	vector<string> get_mnemonic_seed(uint index) const;
 	
 	
-	FarmerKeys* get_farmer_keys(uint index) const;
+	pair<skey_t, pubkey_t> get_farmer_keys(uint index) const;
 	
-	vector<FarmerKeys*> get_all_farmer_keys() const;
+	vector<pair<skey_t, pubkey_t>> get_all_farmer_keys() const;
 	
 }

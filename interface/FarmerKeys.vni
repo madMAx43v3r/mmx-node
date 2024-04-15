@@ -1,9 +1,0 @@
-package mmx;
-
-class FarmerKeys {
-	
-	skey_t private_key;
-	
-	pubkey_t public_key;
-	
-}

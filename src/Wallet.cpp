@@ -753,24 +753,22 @@ std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) 
 	return node->get_address_infos(get_all_addresses(index));
 }
 
-std::shared_ptr<const FarmerKeys> Wallet::get_farmer_keys(const uint32_t& index) const
+std::pair<skey_t, pubkey_t> Wallet::get_farmer_keys(const uint32_t& index) const
 {
-	// TODO
-//	if(auto wallet = bls_wallets.at(index)) {
-//		return wallet->get_farmer_keys();
-//	}
-	return nullptr;
+	if(auto wallet = wallets.at(index)) {
+		return wallet->get_farmer_key();
+	}
+	throw std::logic_error("invalid wallet");
 }
 
-std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() const
+std::vector<std::pair<skey_t, pubkey_t>> Wallet::get_all_farmer_keys() const
 {
-	std::vector<std::shared_ptr<const FarmerKeys>> res;
-	// TODO
-//	for(const auto& wallet : bls_wallets) {
-//		if(wallet) {
-//			res.push_back(wallet->get_farmer_keys());
-//		}
-//	}
+	std::vector<std::pair<skey_t, pubkey_t>> res;
+	for(auto wallet : wallets) {
+		if(wallet) {
+			res.push_back(wallet->get_farmer_key());
+		}
+	}
 	return res;
 }
 
