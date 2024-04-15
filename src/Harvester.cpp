@@ -146,6 +146,8 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const
 {
 	struct lookup_job_t {
+		std::mutex mutex;
+		std::condition_variable signal;
 		size_t total_plots = 0;
 		std::atomic<uint64_t> num_left {0};
 		std::atomic<uint64_t> num_passed {0};
@@ -160,13 +162,16 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	{
 		const auto iter = plot_map.find(entry.second);
 		if(iter == plot_map.end()) {
+			job->num_left--;
+			log(WARN) << "Cannot find plot " << entry.first.to_string();
 			continue;
 		}
 		const auto& plot_id = entry.first;
 		const auto& prover = iter->second;
 
-		threads->add_task([this, plot_id, prover, value, job, max_delay_sec, recv_time_ms]()
+		threads->add_task([this, plot_id, prover, value, job, recv_time_ms]()
 		{
+			bool passed = false;
 			if(check_plot_filter(params, value->challenge, plot_id)) {
 				try {
 					const auto challenge = get_plot_challenge(value->challenge, plot_id);
@@ -217,19 +222,33 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				} catch(const std::exception& ex) {
 					log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
 				}
-				job->num_passed++;
+				passed = true;
 			}
-			if(job->num_left-- == 1) {
-				const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
-				if(delay_sec > max_delay_sec) {
-					log(WARN) << "[" << host_name << "] Lookup for height "
-							<< value->height << " took longer than allowable delay: " << delay_sec << " sec";
+			{
+				std::lock_guard<std::mutex> lock(job->mutex);
+				if(passed) {
+					job->num_passed++;
 				}
-				log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
-						<< " plots were eligible for height " << value->height << ", delay " << delay_sec << " sec";
+				job->num_left--;
 			}
+			job->signal.notify_all();
 		});
 	}
+
+	threads->add_task([this, value, job, max_delay_sec, recv_time_ms]()
+	{
+		std::unique_lock<std::mutex> lock(job->mutex);
+		while(job->num_left) {
+			job->signal.wait(lock);
+		}
+		const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
+		if(delay_sec > max_delay_sec) {
+			log(WARN) << "[" << host_name << "] Lookup for height "
+					<< value->height << " took longer than allowable delay: " << delay_sec << " sec";
+		}
+		log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
+				<< " plots were eligible for height " << value->height << ", delay " << delay_sec << " sec";
+	});
 
 	for(const auto& entry : virtual_map)
 	{
