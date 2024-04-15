@@ -8,6 +8,10 @@ var map = {};
 // 	string = concat(string, string);
 // }
 
+// for(var i = 0; i < 100000; ++i) {
+// 	map[i] = i;
+// }
+
 for(var i = 0; i < 100000; ++i)
 {
 // 	value = 1;
@@ -43,6 +47,8 @@ for(var i = 0; i < 100000; ++i)
 // 	push(array, null);
 // 	push(array, string);
 // 	map[i] = i;
+// 	value = map[i % 10000];
+// 	erase(map, i);
 }
 
 // while(true) {}
