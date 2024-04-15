@@ -158,62 +158,64 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 
 	for(const auto& entry : id_map)
 	{
-		threads->add_task([this, entry, value, job, max_delay_sec, recv_time_ms]()
+		const auto iter = plot_map.find(entry.second);
+		if(iter == plot_map.end()) {
+			continue;
+		}
+		const auto& plot_id = entry.first;
+		const auto& prover = iter->second;
+
+		threads->add_task([this, plot_id, prover, value, job, max_delay_sec, recv_time_ms]()
 		{
-			if(check_plot_filter(params, value->challenge, entry.first))
-			{
-				const auto iter = plot_map.find(entry.second);
-				if(iter != plot_map.end()) {
-					const auto& prover = iter->second;
-					try {
-						const auto challenge = get_plot_challenge(value->challenge, entry.first);
-						const auto qualities = prover->get_qualities(challenge, params->plot_filter);
+			if(check_plot_filter(params, value->challenge, plot_id)) {
+				try {
+					const auto challenge = get_plot_challenge(value->challenge, plot_id);
+					const auto qualities = prover->get_qualities(challenge, params->plot_filter);
 
-						for(const auto& res : qualities)
-						{
-							if(!res.valid) {
-								log(WARN) << "[" << host_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
-								continue;
-							}
-							const auto score = calc_proof_score(params, prover->get_ksize(), res.quality, value->space_diff);
-							if(score < params->score_threshold)
-							{
-								auto proof_xs = res.proof;
-								if(proof_xs.empty()) {
-									const auto data = prover->get_full_proof(challenge, res.index);
-									if(!data.valid) {
-										log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << data.error_msg << " (" << prover->get_file_path() << ")";
-										continue;
-									}
-									proof_xs = data.proof;
-								}
-								std::shared_ptr<ProofOfSpace> proof;
-
-								const auto header = prover->get_header();
-								if(header->contract) {
-									auto out = std::make_shared<ProofOfSpaceNFT>();
-									out->seed = header->seed;
-									out->ksize = header->ksize;
-									out->contract = *header->contract;
-									out->proof_xs = proof_xs;
-									proof = out;
-								} else {
-									auto out = std::make_shared<ProofOfSpaceOG>();
-									out->seed = header->seed;
-									out->ksize = header->ksize;
-									out->proof_xs = proof_xs;
-									proof = out;
-								}
-								proof->score = score;
-								proof->plot_id = header->plot_id;
-								proof->farmer_key = header->farmer_key;
-
-								send_response(value, proof, score, recv_time_ms);
-							}
+					for(const auto& res : qualities)
+					{
+						if(!res.valid) {
+							log(WARN) << "[" << host_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
+							continue;
 						}
-					} catch(const std::exception& ex) {
-						log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
+						const auto score = calc_proof_score(params, prover->get_ksize(), res.quality, value->space_diff);
+						if(score < params->score_threshold)
+						{
+							auto proof_xs = res.proof;
+							if(proof_xs.empty()) {
+								const auto data = prover->get_full_proof(challenge, res.index);
+								if(!data.valid) {
+									log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << data.error_msg << " (" << prover->get_file_path() << ")";
+									continue;
+								}
+								proof_xs = data.proof;
+							}
+							std::shared_ptr<ProofOfSpace> proof;
+
+							const auto header = prover->get_header();
+							if(header->contract) {
+								auto out = std::make_shared<ProofOfSpaceNFT>();
+								out->seed = header->seed;
+								out->ksize = header->ksize;
+								out->contract = *header->contract;
+								out->proof_xs = proof_xs;
+								proof = out;
+							} else {
+								auto out = std::make_shared<ProofOfSpaceOG>();
+								out->seed = header->seed;
+								out->ksize = header->ksize;
+								out->proof_xs = proof_xs;
+								proof = out;
+							}
+							proof->score = score;
+							proof->plot_id = header->plot_id;
+							proof->farmer_key = header->farmer_key;
+
+							send_response(value, proof, score, recv_time_ms);
+						}
 					}
+				} catch(const std::exception& ex) {
+					log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
 				}
 				job->num_passed++;
 			}
