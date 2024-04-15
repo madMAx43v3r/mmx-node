@@ -31,9 +31,9 @@
 	"max_block_cost": 500000000,
 	"max_tx_cost":     10000000,
 	"initial_time_diff":  20000,
-	"initial_space_diff": 10,
+	"initial_space_diff": 1000,
 	"time_diff_constant": 10000,
-	"space_diff_constant": 100000000000,
+	"space_diff_constant": 1000000000,
 	"virtual_space_constant": 1524,
 	"fixed_project_reward": 50000,
 	"project_ratio": {
