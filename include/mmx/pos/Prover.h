@@ -27,7 +27,8 @@ struct proof_data_t
 class Prover {
 public:
 	bool debug = false;
-	int32_t initial_y_shift = -256;
+
+	int32_t initial_y_shift = -1024 * 24;
 
 	Prover(const std::string& file_path);
 
