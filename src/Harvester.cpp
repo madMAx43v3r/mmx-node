@@ -345,23 +345,29 @@ void Harvester::reload()
 						std::lock_guard<std::mutex> lock(mutex);
 						missing.erase(file_name);
 					}
-					if(!plot_map.count(file_name) && file->get_extension() == ".plot") {
-						try {
-							auto prover = std::make_shared<pos::Prover>(file_name);
-							{
-								std::lock_guard<std::mutex> lock(mutex);
-								plots.emplace_back(file_name, prover);
-							}
-						}
-						catch(const std::exception& ex) {
-							log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "' due to: " << ex.what();
-						} catch(...) {
-							log(WARN) << "[" << host_name << "] Failed to load plot '" << file_name << "'";
-						}
+					if(!plot_map.count(file_name) && file->get_extension() == ".plot")
+					{
+						std::lock_guard<std::mutex> lock(mutex);
+						plots.emplace_back(file_name, nullptr);
 					}
 				}
 			} catch(const std::exception& ex) {
 				log(WARN) << "[" << host_name << "] " << ex.what();
+			}
+		});
+	}
+	threads->sync();
+
+	for(auto& entry : plots)
+	{
+		threads->add_task([this, &entry]()
+		{
+			try {
+				entry.second = std::make_shared<pos::Prover>(entry.first);
+			} catch(const std::exception& ex) {
+				log(WARN) << "[" << host_name << "] Failed to load plot '" << entry.first << "' due to: " << ex.what();
+			} catch(...) {
+				log(WARN) << "[" << host_name << "] Failed to load plot '" << entry.first << "'";
 			}
 		});
 	}
