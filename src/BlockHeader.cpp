@@ -49,7 +49,6 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "vdf_output", 	vdf_output);
 	write_field(out, "vdf_reward_addr", vdf_reward_addr);
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
-	// TODO: hash_proof
 	write_field(out, "reward_amount", reward_amount);
 	write_field(out, "reward_addr", reward_addr);
 	write_field(out, "static_cost", static_cost);
@@ -77,7 +76,6 @@ void BlockHeader::validate() const
 		if(!farmer_sig->verify(proof->farmer_key, hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}
-		// TODO: validate PoW proof
 	}
 }
 
