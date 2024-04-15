@@ -9,7 +9,7 @@ class BlockHeader {
 	
 	uint height;
 	
-	// TODO: uint time_hour;				// hours since chain start
+	// TODO: uint time_hour;			// hours since chain start
 	// TODO: uint time_counter;			// blocks since last hour increment
 	
 	ulong nonce;
@@ -28,8 +28,6 @@ class BlockHeader {
 	optional<addr_t> vdf_reward_addr;
 	
 	ProofOfSpace* proof;
-	
-	vector<hash_proof_t> hash_proof;
 	
 	ulong reward_amount;
 	optional<addr_t> reward_addr;
