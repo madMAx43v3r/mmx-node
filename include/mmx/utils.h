@@ -127,6 +127,12 @@ uint64_t to_effective_space(const uint64_t& num_bytes)
 }
 
 inline
+uint64_t get_effective_plot_size(const int ksize)
+{
+	return to_effective_space(((2 * ksize) + 1) * (uint64_t(1) << (ksize - 1)));
+}
+
+inline
 uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
 	return ((uint256_t(space_diff) * params->space_diff_constant) << params->score_bits) / params->score_target;

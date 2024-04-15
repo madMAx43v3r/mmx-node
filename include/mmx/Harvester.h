@@ -65,6 +65,7 @@ private:
 	hash_t harvester_id;
 	std::string host_name;
 	uint64_t total_bytes = 0;
+	uint64_t total_bytes_effective = 0;
 	uint64_t total_balance = 0;
 
 	vnx::Hash64 farmer_addr;

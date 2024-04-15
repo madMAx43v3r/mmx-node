@@ -39,6 +39,10 @@ public:
 		return header;
 	}
 
+	bool has_meta() const {
+		return header->has_meta;
+	}
+
 	std::string get_file_path() const {
 		return file_path;
 	}

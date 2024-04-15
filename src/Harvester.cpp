@@ -268,6 +268,7 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 	info->harvester_id = harvester_id;
 	info->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
 	info->total_bytes = total_bytes;
+	info->total_bytes_effective = total_bytes_effective;
 	for(const auto& entry : plot_map) {
 		if(auto prover = entry.second) {
 			info->plot_count[prover->get_ksize()]++;
@@ -399,6 +400,7 @@ void Harvester::reload()
 
 	id_map.clear();
 	total_bytes = 0;
+	total_bytes_effective = 0;
 	for(const auto& entry : plot_map) {
 		const auto& prover = entry.second;
 		const auto& file_name = entry.first;
@@ -408,6 +410,7 @@ void Harvester::reload()
 			log(WARN) << "[" << host_name << "] Duplicate plot: " << entry.first << " (already have: " << id_map[plot_id] << ")";
 		}
 		total_bytes += vnx::File(file_name).file_size();
+		total_bytes_effective += get_effective_plot_size(prover->get_ksize());
 	}
 
 	// gather virtual plots
@@ -428,8 +431,9 @@ void Harvester::reload()
 	if(plots.size()) {
 		already_checked.clear();
 	}
-	log(INFO) << "[" << host_name << "] Loaded " << plot_map.size() << " plots, " << virtual_map.size() << " virtual plots, "
-			<< total_bytes / pow(1000, 4) << " TB total, " << total_balance / pow(10, params->decimals) << " MMX total, took "
+	log(INFO) << "[" << host_name << "] Loaded " << plot_map.size() << " plots, "
+			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe, "
+			<< virtual_map.size() << " virtual plots, " << total_balance / pow(10, params->decimals) << " MMX total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 }
 

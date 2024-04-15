@@ -80,6 +80,7 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 				info->plot_dirs.push_back((value->harvester ? *value->harvester + ":" : "") + dir);
 			}
 			info->total_bytes += value->total_bytes;
+			info->total_bytes_effective += value->total_bytes_effective;
 			info->total_balance += value->total_balance;
 		}
 	}
