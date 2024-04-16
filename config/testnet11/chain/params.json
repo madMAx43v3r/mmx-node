@@ -8,7 +8,7 @@
 	"challenge_interval": 64,
 	"commit_delay": 24,
 	"min_vdf_segments": 1000,
-	"num_vdf_segments": 1140,
+	"num_vdf_segments": 1500,
 	"max_vdf_segments": 2048,
 	"network": "testnet11",
 	"reward_factor": {
