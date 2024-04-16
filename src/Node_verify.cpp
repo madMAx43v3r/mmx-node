@@ -15,6 +15,8 @@
 
 #include <vnx/vnx.h>
 #include <sha256_avx2.h>
+#include <sha256_ni.h>
+#include <sha256_arm.h>
 
 
 namespace mmx {
@@ -277,6 +279,9 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof) const
 
 void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) const
 {
+	static bool have_sha_ni = sha256_ni_available();
+	static bool have_sha_arm = sha256_arm_available();
+
 	const auto& segments = proof->segments;
 	bool is_valid = !segments.empty();
 	size_t invalid_segment = -1;
@@ -314,18 +319,49 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 			}
 			max_iters = std::max(max_iters, segments[i].num_iters);
 		}
-		for(uint32_t k = 0; k < max_iters; ++k)
-		{
-			for(uint32_t j = 0; j < num_lanes; ++j) {
-				::memcpy(input[j], point[j].data(), 32);
-			}
-			sha256_64_x8(hash[0], input[0], 32);
-			sha256_64_x8(hash[8], input[8], 32);
-
-			for(uint32_t j = 0; j < num_lanes; ++j) {
+		if(have_sha_ni || have_sha_arm) {
+			for(uint32_t j = 0; j < num_lanes; j += 2)
+			{
 				const uint32_t i = chunk * batch_size + j;
-				if(k < segments[i].num_iters) {
-					::memcpy(point[j].data(), hash[j], 32);
+				const uint32_t k = (j + 1 < num_lanes) ? 1 : 0;
+				const auto num_iters_0 = segments[i].num_iters;
+				const auto num_iters_1 = segments[i + k].num_iters;
+				const auto max_iters = std::max(num_iters_0, num_iters_1);
+				const auto min_iters = std::min(num_iters_0, num_iters_1);
+				uint8_t hashx2[32 * 2];
+
+				::memcpy(hashx2, point[j].data(), 32);
+				::memcpy(hashx2 + 32, point[j + k].data(), 32);
+				if(have_sha_ni) {
+					recursive_sha256_ni_x2(hashx2, min_iters);
+					if(num_iters_0 != num_iters_1) {
+						recursive_sha256_ni(hashx2 + ((num_iters_0 > num_iters_1) ? 0 : 32), max_iters - min_iters);
+					}
+				} else if(have_sha_arm) {
+					recursive_sha256_arm_x2(hashx2, min_iters);
+					if(num_iters_0 != num_iters_1) {
+						recursive_sha256_arm(hashx2 + ((num_iters_0 > num_iters_1) ? 0 : 32), max_iters - min_iters);
+					}
+				} else {
+					throw std::logic_error("invalid feature state");
+				}
+				::memcpy(point[j].data(), hashx2, 32);
+				::memcpy(point[j + k].data(), hashx2 + 32, 32);
+			}
+		} else {
+			for(uint32_t k = 0; k < max_iters; ++k)
+			{
+				for(uint32_t j = 0; j < num_lanes; ++j) {
+					::memcpy(input[j], point[j].data(), 32);
+				}
+				sha256_64_x8(hash[0], input[0], 32);
+				sha256_64_x8(hash[8], input[8], 32);
+
+				for(uint32_t j = 0; j < num_lanes; ++j) {
+					const uint32_t i = chunk * batch_size + j;
+					if(k < segments[i].num_iters) {
+						::memcpy(point[j].data(), hash[j], 32);
+					}
 				}
 			}
 		}

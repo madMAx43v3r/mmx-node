@@ -42,7 +42,7 @@ Vue.component('node-info', {
 							<v-row align="center" justify="space-around">
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
-									<v-row align="center" justify="space-around">										
+									<v-row align="center" justify="space-around">
 										<div v-if="data">{{ data.is_synced ? $t('common.yes') : $t('common.no') }}</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
 									</v-row>
@@ -61,7 +61,7 @@ Vue.component('node-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="data">{{ (data.total_space / Math.pow(1000, 5)).toFixed(3) }} PB</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
@@ -71,7 +71,7 @@ Vue.component('node-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="data">{{ data.vdf_speed.toFixed(3) }} MH/s</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
@@ -88,8 +88,8 @@ Vue.component('node-info', {
 			</v-row>
 			
 			<v-row class="my-2 py-0">
-				<v-col cols="12" class="my-0 py-0">			
-					<v-card min-height="90">					
+				<v-col cols="12" class="my-0 py-0">
+					<v-card min-height="90">
 						<v-card-title>
 							<v-row align="center" justify="space-around">
 
@@ -103,7 +103,7 @@ Vue.component('node-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="data">{{ (data.block_size * 100).toFixed(2) }} %</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
@@ -113,7 +113,7 @@ Vue.component('node-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="data">{{ data.average_txfee.value > 1 ? data.average_txfee.value.toPrecision(6) : data.average_txfee.value }} MMX</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
@@ -123,7 +123,7 @@ Vue.component('node-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="data">{{ (data.block_reward.value).toFixed(3) }} MMX</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"/>
@@ -131,7 +131,7 @@ Vue.component('node-info', {
 									<v-row align="center" justify="space-around" class="subtitle-1">
 										{{ $t('node_info.block_reward') }}
 									</v-row>
-								</v-col>															
+								</v-col>
 
 							</v-row>
 						</v-card-title>
@@ -205,6 +205,11 @@ Vue.component('node-peers', {
 			disable-pagination
 			class="elevation-2"
 		>
+			<template v-slot:progress>
+				<v-progress-linear indeterminate absolute top></v-progress-linear>
+				<v-skeleton-loader type="table-row-divider@6" />
+			</template>
+
 			<template v-slot:item.height="{ item }">
 				{{item.is_synced ? "" : "!"}}{{item.height}}
 			</template>
@@ -288,7 +293,7 @@ Vue.component('netspace-graph', {
 		<div>
 			<v-card>
 				<v-skeleton-loader type="image@3" height="482" v-if="!data && loading"/>
-				<v-fade-transition>					
+				<v-fade-transition>
 					<v-card-text v-if="data">
 						<vue-plotly :data="data" :layout="layout" :display-mode-bar="false"></vue-plotly>
 					</v-card-text>

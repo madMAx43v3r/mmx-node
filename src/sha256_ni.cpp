@@ -295,13 +295,3 @@ bool sha256_ni_available() {
 
 #endif // __SHA__
 
-void recursive_sha256_ni(uint8_t* hash, const uint64_t num_iters)
-{
-	uint8_t tmp[32];
-	::memcpy(tmp, hash, 32);
-	for(uint64_t i = 0; i < num_iters; ++i) {
-		sha256_ni(tmp, tmp, 32);
-	}
-	::memcpy(hash, tmp, 32);
-}
-

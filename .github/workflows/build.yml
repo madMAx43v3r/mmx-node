@@ -28,7 +28,7 @@ jobs:
   msvc:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: "recursive"
           
@@ -46,7 +46,7 @@ jobs:
           buildPreset: ${{ env.CMAKE_BUILD_PRESET }}
    
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "build"
           path: ./build/${{ env.CMAKE_BUILD_PRESET }}/!bin/Release/
@@ -58,7 +58,7 @@ jobs:
         run: Get-ChildItem "./build/${{ env.CMAKE_BUILD_PRESET }}/!package" -Filter *.exe | Foreach-Object { 7z a ( (Convert-Path $_.PSParentPath) + "\"  + $_.BaseName + ".zip") $_.FullName }
 
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "package"
           path: ./build/${{ env.CMAKE_BUILD_PRESET }}/!package/*.exe
