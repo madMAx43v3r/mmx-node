@@ -86,7 +86,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	}
 	const auto X_set = std::set<uint32_t>(X_values.begin(), X_values.end());
 
-	const bool use_threads = (xbits >= 6);
+	const bool use_threads = (xbits >= 5);
 
 	if(use_threads) {
 		std::lock_guard<std::mutex> lock(g_mutex);
