@@ -38,41 +38,11 @@
             "warnings": {
                 "dev": false
             }
-        },
-
-        {
-            "name": "gha-windows-release",
-            "displayName": "GHA Windows x64 Release",
-            "description": "Sets Visual Studio generator, build directory",
-            "inherits": "windows-release",
-            "environment": {
-                "VCPKG_ROOT": "./vcpkg"
-            }
-        },        
-
-        {
-            "name": "windows-debug",
-            "displayName": "Windows x64 Debug",
-            "description": "Sets Visual Studio generator, build directory",
-            "inherits": "windows-base",
-            "cacheVariables": {
-                "MMX_VERSION": "$env{MMX_VERSION}"
-            }
         }
 
     ],
 
     "buildPresets": [
-        {
-            "name": "gha-windows-release",
-            "configurePreset": "gha-windows-release",
-            "configuration": "Release"
-        },
-        {
-            "name": "windows-release",
-            "configurePreset": "windows-release",
-            "configuration": "Release"
-        },
         {
             "name": "windows-default",
             "configurePreset": "windows-default",
