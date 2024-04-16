@@ -12,7 +12,7 @@ namespace mmx {
 
 uint64_t txio_t::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return params->min_txfee + (memo ? params->min_txfee_memo : 0);
+	return params->min_txfee_io + (memo ? params->min_txfee_memo : 0);
 }
 
 
