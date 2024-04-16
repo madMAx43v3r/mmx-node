@@ -38,25 +38,11 @@
             "warnings": {
                 "dev": false
             }
-        },
-
-        {
-            "name": "gha-windows-release",
-            "displayName": "GHA Windows x64 Release",
-            "inherits": "windows-default",
-            "environment": {
-                "VCPKG_ROOT": "./vcpkg"
-            }
         }
 
     ],
 
     "buildPresets": [
-        {
-            "name": "gha-windows-release",
-            "configurePreset": "gha-windows-release",
-            "configuration": "Release"
-        },
         {
             "name": "windows-default",
             "configurePreset": "windows-default",
