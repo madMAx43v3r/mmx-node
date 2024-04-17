@@ -91,9 +91,7 @@ void Router::main()
 	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 
-	node_sk = hash_t::random();
-	node_key = pubkey_t::from_skey(node_sk);
-	node_id = node_key.get_addr();
+	node_id = hash_t::random();
 	{
 		vnx::File file(storage_path + "known_peers.dat");
 		if(file.exists()) {
@@ -1442,7 +1440,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 				}
 				if(value->_ret_0 == get_id()) {
 					if(peer) {
-						log(INFO) << "Discovered our own address (or duplicate node ID?): " << peer->address;
+						log(INFO) << "Discovered our own address: " << peer->address;
 						self_addrs.insert(peer->address);
 						block_peers.insert(peer->address);
 					}

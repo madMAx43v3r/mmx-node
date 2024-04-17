@@ -214,8 +214,6 @@ private:
 	bool is_connected = false;
 
 	hash_t node_id;
-	skey_t node_sk;
-	pubkey_t node_key;
 	std::set<std::string> peer_set;
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
