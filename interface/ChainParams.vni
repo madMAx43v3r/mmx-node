@@ -62,6 +62,6 @@ class ChainParams {
 	
 	addr_t project_addr;
 	ulong fixed_project_reward = 50000;
-	ulong_fraction_t project_ratio;
+	uint_fraction_t project_ratio;
 	
 }

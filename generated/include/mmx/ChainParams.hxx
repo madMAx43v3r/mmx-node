@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint_fraction_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 #include <vnx/Value.h>
 
@@ -63,7 +64,7 @@ public:
 	::mmx::addr_t plot_nft_binary;
 	::mmx::addr_t project_addr;
 	uint64_t fixed_project_reward = 50000;
-	::mmx::ulong_fraction_t project_ratio;
+	::mmx::uint_fraction_t project_ratio;
 	
 	typedef ::vnx::Value Super;
 	

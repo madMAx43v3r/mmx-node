@@ -177,7 +177,7 @@ inline
 uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const uint64_t tx_fees)
 {
 	return std::min(params->fixed_project_reward, tx_fees / 4)
-			+ (params->project_ratio.value * uint128_t(tx_fees)) / params->project_ratio.inverse;
+			+ (params->project_ratio.value * uint64_t(tx_fees)) / params->project_ratio.inverse;
 }
 
 inline

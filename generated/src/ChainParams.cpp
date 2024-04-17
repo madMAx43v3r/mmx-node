@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint_fraction_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
 #include <vnx/Value.h>
 
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xf444031944a2e1eaull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xd5ca5f7a6585da20ull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -595,13 +596,14 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0xf444031944a2e1eaull);
+	type_code->code_hash = vnx::Hash64(0xd5ca5f7a6585da20ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ChainParams>(); };
-	type_code->depends.resize(1);
+	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::ulong_fraction_t::static_get_type_code();
+	type_code->depends[1] = ::mmx::uint_fraction_t::static_get_type_code();
 	type_code->fields.resize(49);
 	{
 		auto& field = type_code->fields[0];
@@ -933,7 +935,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 		auto& field = type_code->fields[48];
 		field.is_extended = true;
 		field.name = "project_ratio";
-		field.code = {19, 0};
+		field.code = {19, 1};
 	}
 	type_code->build();
 	return type_code;
