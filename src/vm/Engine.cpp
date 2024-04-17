@@ -589,7 +589,7 @@ void Engine::init()
 	// Note: address 0 is not a valid key (used to denote "key not found")
 	for(auto iter = memory.lower_bound(1); iter != memory.lower_bound(MEM_EXTERN); ++iter) {
 		const auto* key = iter->second.get();
-		if(num_bytes(key) < MAX_KEY_BYTES) {
+		if(num_bytes(key) <= MAX_KEY_BYTES) {
 			key_map.emplace(key, iter->first);
 		}
 	}
