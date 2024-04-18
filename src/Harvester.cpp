@@ -148,7 +148,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	job->total_plots = id_map.size();
 	job->num_left = job->total_plots;
 
-	const auto max_delay_sec = params->block_time * value->max_delay;
+	const auto max_delay_sec = params->block_time * (double(value->max_delay) - 0.5);
 	const auto deadline_ms = recv_time_ms + int64_t(max_delay_sec * 1000);
 
 	for(const auto& entry : id_map)
@@ -194,7 +194,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
 			}
 			if(passed && expired) {
-				log(WARN) << "Skipping quality lookup for height " << value->height << " due to deadline overshoot (likely CPU / HDD overload)";
+				log(DEBUG) << "Skipping quality lookup for height " << value->height << " due to deadline overshoot";
 			}
 			{
 				std::lock_guard<std::mutex> lock(job->mutex);
@@ -207,11 +207,15 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		});
 	}
 
-	threads->add_task([this, value, job, max_delay_sec, recv_time_ms]()
+	threads->add_task([this, value, job, max_delay_sec, recv_time_ms, deadline_ms]()
 	{
 		std::unique_lock<std::mutex> lock(job->mutex);
 		while(job->num_left) {
-			job->signal.wait(lock);
+			const int64_t timeout_ms = deadline_ms - vnx::get_wall_time_millis();
+			if(job->signal.wait_for(lock, std::chrono::milliseconds(timeout_ms)) == std::cv_status::timeout) {
+				log(WARN) << "[" << host_name << "] Lookup for height " << value->height << " took longer than allowable delay of " << max_delay_sec << " sec";
+				break;
+			}
 		}
 		if(auto prover = job->best_plot)
 		{
@@ -252,11 +256,6 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
 		log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
 				<< " plots were eligible for height " << value->height << ", delay " << delay_sec << " sec";
-
-		if(delay_sec > max_delay_sec) {
-			log(WARN) << "[" << host_name << "] Lookup for height "
-					<< value->height << " took longer than allowable delay: " << delay_sec << " sec";
-		}
 	});
 
 	for(const auto& entry : virtual_map)
