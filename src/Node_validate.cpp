@@ -215,20 +215,20 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 				throw std::logic_error("invalid tx inclusion");
 			}
 			if(!tx->sender) {
-				throw std::logic_error("tx missing sender");
+				throw std::logic_error("transaction missing sender");
 			}
 			if(!tx->exec_result) {
-				throw std::logic_error("tx missing exec_result");
+				throw std::logic_error("transaction missing exec_result");
 			}
 			if(!tx_set.insert(tx->id).second) {
-				throw std::logic_error("duplicate tx in same block");
+				throw std::logic_error("duplicate transaction in same block");
 			}
 			{
 				// subtract tx fee
 				const auto balance = balance_cache.find(*tx->sender, addr_t());
 				const auto total_fee = tx->exec_result->total_fee;
 				if(!balance || total_fee > *balance) {
-					throw std::logic_error("insufficient funds to cover tx fee");
+					throw std::logic_error("insufficient funds to cover transaction fee");
 				}
 				*balance -= total_fee;
 			}
@@ -490,11 +490,11 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	exec_error_t error;
 
 	if(static_fee > tx->max_fee_amount) {
-		throw mmx::static_failure("static tx fee > max_fee_amount: "
+		throw mmx::static_failure("static transaction fee > max_fee_amount: "
 				+ std::to_string(static_fee) + " > " + std::to_string(tx->max_fee_amount));
 	}
 	if(!tx->sender) {
-		throw mmx::static_failure("missing tx sender");
+		throw mmx::static_failure("missing transaction sender");
 	}
 	if(tx->solutions.empty()) {
 		throw mmx::static_failure("missing sender signature");
@@ -509,7 +509,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	const auto balance = balance_cache.find(*tx->sender, addr_t());
 	if(!balance || static_fee > *balance) {
 		error.code = error_code_e::INSUFFICIENT_FUNDS_TXFEE;
-		throw mmx::static_failure("insufficient funds for tx fee: "
+		throw mmx::static_failure("insufficient funds for transaction fee: "
 				+ std::to_string(static_fee) + " > " + (balance ? balance->str(10) : "0"));
 	}
 	*balance -= static_fee;
@@ -517,7 +517,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	try {
 		if(tx->expires < context->height) {
 			error.code = error_code_e::TX_EXPIRED;
-			throw std::logic_error("tx expired at height " + std::to_string(tx->expires));
+			throw std::logic_error("transaction expired at height " + std::to_string(tx->expires));
 		}
 		error.address = 0;
 
@@ -559,7 +559,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 			auto& value = amounts[out.contract];
 			if(out.amount > value) {
-				throw std::logic_error("tx over-spend");
+				throw std::logic_error("transaction over-spend");
 			}
 			value -= out.amount;
 			error.address++;
@@ -685,7 +685,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 		}
 		if(tx_cost > params->max_tx_cost) {
-			throw mmx::static_failure("tx cost > max_tx_cost");
+			throw mmx::static_failure("transaction cost > max_tx_cost");
 		}
 	} catch(const mmx::static_failure& ex) {
 		throw;
@@ -703,14 +703,14 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		const auto balance = balance_cache.find(*tx->sender, addr_t());
 		if(!balance || dynamic_fee > *balance) {
 			error.code = error_code_e::INSUFFICIENT_FUNDS_TXFEE;
-			throw mmx::static_failure("insufficient funds for tx fee: "
+			throw mmx::static_failure("insufficient funds for transaction fee: "
 					+ std::to_string(dynamic_fee) + " > " + (balance ? balance->str(10) : "0"));
 		}
 		*balance -= dynamic_fee;
 
 		if(total_fee > tx->max_fee_amount && !failed_ex) {
 			error.code = error_code_e::TXFEE_OVERRUN;
-			throw std::logic_error("tx fee > max_fee_amount: " + std::to_string(total_fee) + " > " + std::to_string(tx->max_fee_amount));
+			throw std::logic_error("transaction fee > max_fee_amount: " + std::to_string(total_fee) + " > " + std::to_string(tx->max_fee_amount));
 		}
 	} catch(const mmx::static_failure& ex) {
 		throw;
@@ -737,16 +737,16 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 		}
 		if(result->total_cost != tx_cost) {
-			throw std::logic_error("tx cost mismatch: "
+			throw std::logic_error("transaction cost mismatch: "
 					+ std::to_string(result->total_cost) + " != " + std::to_string(tx_cost));
 		}
 		if(result->total_fee != tx_fee) {
-			throw std::logic_error("tx fee mismatch: "
+			throw std::logic_error("transaction fee mismatch: "
 					+ std::to_string(result->total_fee) + " != " + std::to_string(tx_fee));
 		}
 		if(result->did_fail) {
 			if(result->inputs.size() || result->outputs.size()) {
-				throw std::logic_error("failed tx cannot have execution inputs / outputs");
+				throw std::logic_error("failed transaction cannot have execution inputs / outputs");
 			}
 		} else {
 			if(result->inputs.size() != exec_inputs.size()) {
