@@ -11,10 +11,6 @@
 	"num_vdf_segments": 1500,
 	"max_vdf_segments": 2048,
 	"network": "testnet11",
-	"reward_factor": {
-		"value": 1524,
-		"inverse": 1000000000000000
-	},
 	"vdf_reward": 5000,
 	"min_reward": 500000,
 	"min_txfee": 20000,
