@@ -489,10 +489,11 @@ int main(int argc, char** argv)
 				if(!spend_options.user) {
 					spend_options.user = to_addr(node.read_storage_field(contract, "owner").first);
 				}
+				// TODO: memo
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo)}, nullptr, spend_options);
+				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo), vnx::Variant()}, nullptr, spend_options);
 				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
