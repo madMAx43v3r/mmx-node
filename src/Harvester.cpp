@@ -261,6 +261,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						auto proof = std::make_shared<ProofOfStake>();
 						proof->farmer_key = entry.second.farmer_key;
 						proof->plot_id = entry.first;
+						proof->score = score;
 						send_response(value, proof, score, recv_time_ms);
 					}
 				}
