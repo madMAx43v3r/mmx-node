@@ -404,6 +404,20 @@ std::string to_string_value(const var_t* var)
 	}
 }
 
+std::string to_string_value_hex(const var_t* var)
+{
+	if(!var) {
+		return "nullptr";
+	}
+	switch(var->type) {
+		case TYPE_STRING:
+		case TYPE_BINARY:
+			return ((const binary_t*)var)->to_hex_string();
+		default:
+			return to_string(var);
+	}
+}
+
 uint64_t to_ref(const var_t* var)
 {
 	if(!var) {

@@ -112,6 +112,10 @@ inline std::string to_string_value(const varptr_t& var) {
 	return to_string_value(var.get());
 }
 
+inline std::string to_string_value_hex(const varptr_t& var) {
+	return to_string_value_hex(var.get());
+}
+
 inline uint64_t to_ref(const varptr_t& var) {
 	return to_ref(var.get());
 }
