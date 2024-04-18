@@ -138,6 +138,9 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		std::mutex mutex;
 		std::condition_variable signal;
 		size_t total_plots = 0;
+		uint32_t best_score = -1;
+		pos::proof_data_t best_proof;
+		std::shared_ptr<pos::Prover> best_plot;
 		std::atomic<uint64_t> num_left {0};
 		std::atomic<uint64_t> num_passed {0};
 	};
@@ -174,44 +177,17 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						log(WARN) << "[" << host_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
 						continue;
 					}
-					if(vnx::get_wall_time_millis() > deadline_ms) {
-						log(WARN) << "Skipping full proof lookup for height " << value->height << " due to deadline overshoot (likely CPU / HDD overload)";
-						break;
-					}
 					const auto score = calc_proof_score(params, prover->get_ksize(), res.quality, value->space_diff);
 					if(score < params->score_threshold)
 					{
-						auto proof_xs = res.proof;
-						if(proof_xs.empty()) {
-							const auto data = prover->get_full_proof(challenge, res.index);
-							if(!data.valid) {
-								log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << data.error_msg << " (" << prover->get_file_path() << ")";
-								continue;
-							}
-							proof_xs = data.proof;
-						}
-						std::shared_ptr<ProofOfSpace> proof;
+						std::lock_guard<std::mutex> lock(job->mutex);
 
-						const auto header = prover->get_header();
-						if(header->contract) {
-							auto out = std::make_shared<ProofOfSpaceNFT>();
-							out->seed = header->seed;
-							out->ksize = header->ksize;
-							out->contract = *header->contract;
-							out->proof_xs = proof_xs;
-							proof = out;
-						} else {
-							auto out = std::make_shared<ProofOfSpaceOG>();
-							out->seed = header->seed;
-							out->ksize = header->ksize;
-							out->proof_xs = proof_xs;
-							proof = out;
+						if(score < job->best_score || !job->best_plot)
+						{
+							job->best_score = score;
+							job->best_plot = prover;
+							job->best_proof = res;
 						}
-						proof->score = score;
-						proof->plot_id = header->plot_id;
-						proof->farmer_key = header->farmer_key;
-
-						send_response(value, proof, score, recv_time_ms);
 					}
 				}
 			} catch(const std::exception& ex) {
@@ -237,13 +213,50 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		while(job->num_left) {
 			job->signal.wait(lock);
 		}
+		if(auto prover = job->best_plot)
+		{
+			auto proof_xs = job->best_proof.proof;
+			if(proof_xs.empty()) {
+				const auto data = prover->get_full_proof(value->challenge, job->best_proof.index);
+				if(data.valid) {
+					proof_xs = data.proof;
+				} else {
+					log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << data.error_msg << " (" << prover->get_file_path() << ")";
+				}
+			}
+			if(!proof_xs.empty()) {
+				std::shared_ptr<ProofOfSpace> proof;
+
+				const auto header = prover->get_header();
+				if(header->contract) {
+					auto out = std::make_shared<ProofOfSpaceNFT>();
+					out->seed = header->seed;
+					out->ksize = header->ksize;
+					out->contract = *header->contract;
+					out->proof_xs = proof_xs;
+					proof = out;
+				} else {
+					auto out = std::make_shared<ProofOfSpaceOG>();
+					out->seed = header->seed;
+					out->ksize = header->ksize;
+					out->proof_xs = proof_xs;
+					proof = out;
+				}
+				proof->score = job->best_score;
+				proof->plot_id = header->plot_id;
+				proof->farmer_key = header->farmer_key;
+
+				send_response(value, proof, job->best_score, recv_time_ms);
+			}
+		}
 		const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
+		log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
+				<< " plots were eligible for height " << value->height << ", delay " << delay_sec << " sec";
+
 		if(delay_sec > max_delay_sec) {
 			log(WARN) << "[" << host_name << "] Lookup for height "
 					<< value->height << " took longer than allowable delay: " << delay_sec << " sec";
 		}
-		log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
-				<< " plots were eligible for height " << value->height << ", delay " << delay_sec << " sec";
 	});
 
 	for(const auto& entry : virtual_map)
