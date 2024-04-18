@@ -43,6 +43,14 @@ public:
 	std::vector<varptr_t> read_array(
 			const addr_t& contract, const uint64_t address, const uint32_t height = -1) const;
 
+	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const override {
+		return nullptr;
+	}
+
+	std::map<addr_t, uint128> get_balances(const addr_t& contract) const override {
+		return {};
+	}
+
 private:
 	std::shared_ptr<Table> table;
 	std::shared_ptr<Table> table_entries;
