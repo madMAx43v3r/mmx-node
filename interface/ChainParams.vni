@@ -42,7 +42,6 @@ class ChainParams {
 	ulong min_txfee_byte = 10;				// per byte of data
 	ulong min_txfee_read = 1000;			// per lookup
 	ulong min_txfee_read_kbyte = 1000;		// per 1000 bytes of data
-	ulong min_txfee_activate = 100000;		// sending to a new address
 	
 	ulong max_block_size = 10000000;		// max static size
 	ulong max_block_cost = 100000000;		// includes dynamic cost

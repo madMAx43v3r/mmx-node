@@ -666,16 +666,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			}
 		}
 
-		// check for activation fee
-		auto all_outputs = tx->outputs;
-		all_outputs.insert(all_outputs.end(), exec_outputs.begin(), exec_outputs.end());
-		for(const auto& out : all_outputs) {
-			if(!balance_cache.find(out.address, out.contract)) {
-				balance_cache.get(out.address, out.contract);
-				tx_cost += params->min_txfee_activate;
-			}
-		}
-
 		if(!tx->exec_result) {
 			for(const auto& in: exec_inputs) {
 				tx_cost += in.calc_cost(params);
