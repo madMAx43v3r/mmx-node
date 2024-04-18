@@ -168,6 +168,8 @@ Table::Table(const std::string& root_path, const options_t& options)
 			prev = block;
 		}
 	}
+	last_flush = curr_version;
+
 	write_log.open(root_path + "/write_log.dat", "ab");
 	write_log.open("rb+");
 	write_log.lock_exclusive();
@@ -394,6 +396,9 @@ void Table::commit(const uint32_t new_version)
 	}
 	write_log.flush();
 
+	if(new_version - last_flush >= options.force_flush_threshold) {
+		flush();
+	}
 	if(mem_block_size + mem_block.size() * entry_overhead >= options.max_block_size) {
 		flush();
 	}
@@ -533,8 +538,10 @@ void Table::flush()
 
 	mem_index.clear();
 	mem_block.clear();
-	mem_block_size = 0;
 	blocks.push_back(block);
+
+	mem_block_size = 0;
+	last_flush = curr_version;
 
 	// clear log after writing index
 	write_log.open("wb");

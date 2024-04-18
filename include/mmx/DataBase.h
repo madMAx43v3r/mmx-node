@@ -121,6 +121,7 @@ public:
 	struct options_t {
 		size_t level_factor = 4;
 		size_t max_block_size = 4 * 1024 * 1024;
+		size_t force_flush_threshold = 100000;
 		std::function<int(const db_val_t&, const db_val_t&)> comparator = default_comparator;
 	};
 
@@ -221,6 +222,7 @@ private:
 	void rename(std::shared_ptr<block_t> block, const std::string& new_name) const;
 
 private:
+	uint32_t last_flush = 0;
 	uint32_t curr_version = 0;
 	uint64_t next_block_id = 0;
 
