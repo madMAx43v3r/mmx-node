@@ -157,6 +157,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	job->num_left = job->total_plots;
 
 	const auto max_delay_sec = params->block_time * value->max_delay;
+	const auto deadline_ms = recv_time_ms + int64_t(max_delay_sec * 1000);
 
 	for(const auto& entry : id_map)
 	{
@@ -169,60 +170,62 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		const auto& plot_id = entry.first;
 		const auto& prover = iter->second;
 
-		threads->add_task([this, plot_id, prover, value, job, recv_time_ms]()
+		threads->add_task([this, plot_id, prover, value, job, recv_time_ms, deadline_ms]()
 		{
-			bool passed = false;
-			if(check_plot_filter(params, value->challenge, plot_id)) {
-				try {
-					const auto challenge = get_plot_challenge(value->challenge, plot_id);
-					const auto qualities = prover->get_qualities(challenge, params->plot_filter);
+			const bool passed = check_plot_filter(params, value->challenge, plot_id);
+			const bool expired = vnx::get_wall_time_millis() > deadline_ms;
 
-					for(const auto& res : qualities)
-					{
-						if(!res.valid) {
-							log(WARN) << "[" << host_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
-							continue;
-						}
-						const auto score = calc_proof_score(params, prover->get_ksize(), res.quality, value->space_diff);
-						if(score < params->score_threshold)
-						{
-							auto proof_xs = res.proof;
-							if(proof_xs.empty()) {
-								const auto data = prover->get_full_proof(challenge, res.index);
-								if(!data.valid) {
-									log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << data.error_msg << " (" << prover->get_file_path() << ")";
-									continue;
-								}
-								proof_xs = data.proof;
-							}
-							std::shared_ptr<ProofOfSpace> proof;
+			if(passed && !expired) try {
+				const auto challenge = get_plot_challenge(value->challenge, plot_id);
+				const auto qualities = prover->get_qualities(challenge, params->plot_filter);
 
-							const auto header = prover->get_header();
-							if(header->contract) {
-								auto out = std::make_shared<ProofOfSpaceNFT>();
-								out->seed = header->seed;
-								out->ksize = header->ksize;
-								out->contract = *header->contract;
-								out->proof_xs = proof_xs;
-								proof = out;
-							} else {
-								auto out = std::make_shared<ProofOfSpaceOG>();
-								out->seed = header->seed;
-								out->ksize = header->ksize;
-								out->proof_xs = proof_xs;
-								proof = out;
-							}
-							proof->score = score;
-							proof->plot_id = header->plot_id;
-							proof->farmer_key = header->farmer_key;
-
-							send_response(value, proof, score, recv_time_ms);
-						}
+				for(const auto& res : qualities)
+				{
+					if(!res.valid) {
+						log(WARN) << "[" << host_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
+						continue;
 					}
-				} catch(const std::exception& ex) {
-					log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
+					const auto score = calc_proof_score(params, prover->get_ksize(), res.quality, value->space_diff);
+					if(score < params->score_threshold)
+					{
+						auto proof_xs = res.proof;
+						if(proof_xs.empty()) {
+							const auto data = prover->get_full_proof(challenge, res.index);
+							if(!data.valid) {
+								log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << data.error_msg << " (" << prover->get_file_path() << ")";
+								continue;
+							}
+							proof_xs = data.proof;
+						}
+						std::shared_ptr<ProofOfSpace> proof;
+
+						const auto header = prover->get_header();
+						if(header->contract) {
+							auto out = std::make_shared<ProofOfSpaceNFT>();
+							out->seed = header->seed;
+							out->ksize = header->ksize;
+							out->contract = *header->contract;
+							out->proof_xs = proof_xs;
+							proof = out;
+						} else {
+							auto out = std::make_shared<ProofOfSpaceOG>();
+							out->seed = header->seed;
+							out->ksize = header->ksize;
+							out->proof_xs = proof_xs;
+							proof = out;
+						}
+						proof->score = score;
+						proof->plot_id = header->plot_id;
+						proof->farmer_key = header->farmer_key;
+
+						send_response(value, proof, score, recv_time_ms);
+					}
 				}
-				passed = true;
+			} catch(const std::exception& ex) {
+				log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
+			}
+			if(passed && expired) {
+				log(WARN) << "Skipping plot lookup due to deadline overshoot (likely CPU / HDD overload)";
 			}
 			{
 				std::lock_guard<std::mutex> lock(job->mutex);
