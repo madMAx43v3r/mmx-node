@@ -34,6 +34,10 @@ public:
 
 	uint128(const uint256_t& value) : uint128_t(value.lower()) {}
 
+	std::string to_string() const {
+		return str(10);
+	}
+
 	double to_double() const {
 		return double(upper()) * pow(2, 64) + double(lower());
 	}

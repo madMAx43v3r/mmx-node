@@ -77,6 +77,9 @@ private:
 	void get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
 						const std::function<void(std::shared_ptr<RenderContext>)>& callback) const;
 
+	void resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
+							const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const;
+
 	void respond(const vnx::request_id_t& request_id, const vnx::Variant& value) const;
 
 	void respond(const vnx::request_id_t& request_id, const vnx::Object& value) const;
