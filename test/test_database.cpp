@@ -213,6 +213,19 @@ int main(int argc, char** argv)
 			std::cout << key << " => " << value << std::endl;
 		});
 	}
+	{
+		mmx::Table::options_t options;
+		options.force_flush_threshold = 10;
+		auto table = std::make_shared<mmx::Table>("tmp/test_table_1", options);
+
+		std::cout << "test_table_1: version = " << table->current_version() << std::endl;
+
+		table->revert(0);
+
+		for(uint32_t i = 1; i <= 10000; ++i) {
+			table->commit(i);
+		}
+	}
 	vnx::close();
 	return 0;
 }
