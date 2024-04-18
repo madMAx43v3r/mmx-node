@@ -185,6 +185,10 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						log(WARN) << "[" << host_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
 						continue;
 					}
+					if(vnx::get_wall_time_millis() > deadline_ms) {
+						log(WARN) << "Skipping full proof lookup for height " << value->height << " due to deadline overshoot (likely CPU / HDD overload)";
+						break;
+					}
 					const auto score = calc_proof_score(params, prover->get_ksize(), res.quality, value->space_diff);
 					if(score < params->score_threshold)
 					{
@@ -225,7 +229,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
 			}
 			if(passed && expired) {
-				log(WARN) << "Skipping plot lookup due to deadline overshoot (likely CPU / HDD overload)";
+				log(WARN) << "Skipping quality lookup for height " << value->height << " due to deadline overshoot (likely CPU / HDD overload)";
 			}
 			{
 				std::lock_guard<std::mutex> lock(job->mutex);
