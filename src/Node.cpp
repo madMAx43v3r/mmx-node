@@ -2173,7 +2173,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	}
 	for(const auto& tx : block->get_transactions()) {
 		if(tx) {
-			if(tx->exec_result && !tx->exec_result->did_fail) {
+			if(!tx->exec_result || !tx->exec_result->did_fail) {
 				apply(block, tx, counter);
 			}
 			tx_pool_erase(tx->id);
