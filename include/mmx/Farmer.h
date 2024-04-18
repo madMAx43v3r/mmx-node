@@ -29,11 +29,11 @@ protected:
 
 	std::shared_ptr<const FarmInfo> get_farm_info() const override;
 
-	signature_t sign_proof(std::shared_ptr<const ProofResponse> proof) const override;
-
 	std::shared_ptr<const BlockHeader> sign_block(std::shared_ptr<const BlockHeader> block) const override;
 
 	void handle(std::shared_ptr<const FarmInfo> value) override;
+
+	void handle(std::shared_ptr<const ProofResponse> value) override;
 
 private:
 	void update();

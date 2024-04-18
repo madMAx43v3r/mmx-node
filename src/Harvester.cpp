@@ -90,20 +90,9 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 	const auto delay_sec = out->lookup_time_ms / 1e3;
 	log(INFO) << "[" << host_name << "] Found proof with score " << score << " for height " << request->height << ", delay " << delay_sec << " sec";
 
-	try {
-		out->hash = out->calc_hash();
-		out->content_hash = out->calc_hash(true);
-		{
-			std::lock_guard<std::mutex> lock(mutex);
-			// TODO: have node sign it after verify
-			out->farmer_sig = farmer->sign_proof(out);
-		}
-		out->content_hash = out->calc_hash(true);
-		publish(out, output_proofs);
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Failed to sign proof: " << ex.what();
-	}
+	out->hash = out->calc_hash();
+	out->content_hash = out->calc_hash(true);
+	publish(out, output_proofs);
 }
 
 void Harvester::check_queue()

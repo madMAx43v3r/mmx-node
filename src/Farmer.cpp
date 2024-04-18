@@ -28,6 +28,7 @@ void Farmer::init()
 	vnx::open_pipe(vnx_get_id(), this, 1000);
 
 	subscribe(input_info, 1000);
+	subscribe(input_proofs, 1000);
 }
 
 void Farmer::main()
@@ -151,6 +152,24 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 	}
 }
 
+void Farmer::handle(std::shared_ptr<const ProofResponse> value)
+{
+	try {
+		if(!value->is_valid()) {
+			throw std::logic_error("invalid proof");
+		}
+		const skey_t farmer_sk = get_skey(value->proof->farmer_key);
+
+		auto out = vnx::clone(value);
+		out->farmer_sig = signature_t::sign(farmer_sk, value->hash);
+		out->content_hash = out->calc_hash(true);
+		publish(out, output_proofs);
+	}
+	catch(const std::exception& ex) {
+		log(ERROR) << "Failed to sign proof from harvester '" << value->harvester << "' due to: " << ex.what();
+	}
+}
+
 skey_t Farmer::get_skey(const pubkey_t& pubkey) const
 {
 	auto iter = key_map.find(pubkey);
@@ -158,16 +177,6 @@ skey_t Farmer::get_skey(const pubkey_t& pubkey) const
 		throw std::logic_error("unknown farmer key: " + pubkey.to_string());
 	}
 	return iter->second;
-}
-
-signature_t Farmer::sign_proof(std::shared_ptr<const ProofResponse> value) const
-{
-	if(!value || !value->is_valid()) {
-		throw std::logic_error("invalid argument");
-	}
-	const skey_t farmer_sk = get_skey(value->proof->farmer_key);
-
-	return signature_t::sign(farmer_sk, value->hash);
 }
 
 std::shared_ptr<const BlockHeader>

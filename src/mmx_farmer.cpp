@@ -77,6 +77,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<mmx::Farmer> module = new mmx::Farmer("Farmer");
+		proxy->export_list.push_back(module->output_proofs);
 		module.start_detached();
 	}
 	if(with_harvester) {
@@ -84,7 +85,6 @@ int main(int argc, char** argv)
 		module->config_path = mmx_home + module->config_path;
 		module->storage_path = mmx_network + module->storage_path;
 		proxy->import_list.push_back(module->input_challenges);
-		proxy->export_list.push_back(module->output_proofs);
 		module.start_detached();
 	} else {
 		proxy->import_list.push_back("harvester.challenges");
