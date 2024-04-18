@@ -2157,7 +2157,7 @@ Vue.component('create-virtual-plot-contract', {
 	methods: {
 		check_valid() {
 			this.valid = validate_address(this.owner)
-						&& (this.farmer_key && this.farmer_key.length == 96)
+						&& (this.farmer_key && this.farmer_key.length == 66)
 						&& (!this.reward_address || validate_address(this.reward_address));
 			if(!this.valid) {
 				this.confirmed = false;
