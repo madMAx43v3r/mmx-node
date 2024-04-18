@@ -555,10 +555,10 @@ Vue.component('transaction-view', {
 						<tr>
 							<td class="key-cell">{{ $t('transaction_view.height') }}</td>
 							<td>
-								<template v-if="data.height">
+								<template v-if="data.height != null">
 									<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
 								</template>
-								<template v-if="!data.height"><i>{{ $t('common.pending') }}</i></template>
+								<template v-if="data.height == null"><i>{{ $t('common.pending') }}</i></template>
 							</td>
 						</tr>
 						<tr v-if="data.did_fail" class="red--text">
