@@ -388,7 +388,6 @@ void Table::commit(const uint32_t new_version)
 		throw std::logic_error("commit(): new version <= current version");
 	}
 	{
-		// TODO: these can accumulate to form large write_log.dat files
 		const std::string cmd = "commit";
 		write_entry_sum(write_log.out, -1,
 				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
@@ -396,13 +395,14 @@ void Table::commit(const uint32_t new_version)
 	}
 	write_log.flush();
 
-	if(new_version - last_flush >= options.force_flush_threshold) {
+	curr_version = new_version;
+
+	if(curr_version - last_flush >= options.force_flush_threshold) {
 		flush();
 	}
 	if(mem_block_size + mem_block.size() * entry_overhead >= options.max_block_size) {
 		flush();
 	}
-	curr_version = new_version;
 }
 
 void Table::revert(const uint32_t new_version)
@@ -414,7 +414,7 @@ void Table::revert(const uint32_t new_version)
 	if(new_version > curr_version) {
 		throw std::logic_error("revert(): new version > current version");
 	}
-	{
+	if(new_version < curr_version) {
 		const std::string cmd = "revert";
 		write_entry_sum(write_log.out, -1,
 				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
@@ -507,7 +507,19 @@ void Table::flush()
 	if(write_lock) {
 		throw std::logic_error("table is write locked");
 	}
-	if(mem_block.empty()) {
+	last_flush = curr_version;
+
+	if(mem_block.empty())
+	{
+		write_log.open("wb");
+		write_log.lock_exclusive();
+		{
+			const std::string cmd = "commit";
+			write_entry_sum(write_log.out, -1,
+					std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
+					std::make_shared<db_val_t>(&curr_version, sizeof(curr_version)));
+		}
+		debug_log << "Force flushed at version " << curr_version << std::endl;
 		return;
 	}
 	const auto time_begin = vnx::get_wall_time_millis();
@@ -541,9 +553,8 @@ void Table::flush()
 	blocks.push_back(block);
 
 	mem_block_size = 0;
-	last_flush = curr_version;
 
-	// clear log after writing index
+	// clear log after writing block
 	write_log.open("wb");
 	write_log.lock_exclusive();
 
