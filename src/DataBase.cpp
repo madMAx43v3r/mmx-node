@@ -189,6 +189,10 @@ Table::Table(const std::string& root_path, const options_t& options)
 					if(cmd == "commit") {
 						curr_version = value->to<uint32_t>();
 					}
+					else if(cmd == "reset") {
+						curr_version = value->to<uint32_t>();
+						last_flush = curr_version;
+					}
 					else if(cmd == "revert") {
 						const auto height = value->to<uint32_t>();
 						curr_version = height;
@@ -397,7 +401,7 @@ void Table::commit(const uint32_t new_version)
 
 	curr_version = new_version;
 
-	if(curr_version - last_flush >= options.force_flush_threshold) {
+	if(curr_version > last_flush && curr_version - last_flush >= options.force_flush_threshold) {
 		flush();
 	}
 	if(mem_block_size + mem_block.size() * entry_overhead >= options.max_block_size) {
@@ -499,6 +503,7 @@ void Table::revert(const uint32_t new_version)
 		}
 	}
 	curr_version = new_version;
+	last_flush = std::min(last_flush, new_version);
 }
 
 void Table::flush()
@@ -514,7 +519,7 @@ void Table::flush()
 		write_log.open("wb");
 		write_log.lock_exclusive();
 		{
-			const std::string cmd = "commit";
+			const std::string cmd = "reset";
 			write_entry_sum(write_log.out, -1,
 					std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
 					std::make_shared<db_val_t>(&curr_version, sizeof(curr_version)));
