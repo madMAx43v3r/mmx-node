@@ -13,12 +13,9 @@
 #include <mmx/Farmer_get_mac_addr_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
 #include <mmx/Farmer_sign_block_return.hxx>
-#include <mmx/Farmer_sign_proof.hxx>
-#include <mmx/Farmer_sign_proof_return.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
-#include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -88,19 +85,6 @@ std::shared_ptr<const ::mmx::FarmInfo> FarmerClient::get_farm_info() {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmInfo>>();
-	} else {
-		throw std::logic_error("FarmerClient: invalid return value");
-	}
-}
-
-::mmx::signature_t FarmerClient::sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value) {
-	auto _method = ::mmx::Farmer_sign_proof::create();
-	_method->value = value;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_sign_proof_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::mmx::signature_t>();
 	} else {
 		throw std::logic_error("FarmerClient: invalid return value");
 	}

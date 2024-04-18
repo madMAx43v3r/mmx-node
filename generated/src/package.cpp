@@ -16,8 +16,6 @@
 #include <mmx/Farmer_get_mac_addr_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
 #include <mmx/Farmer_sign_block_return.hxx>
-#include <mmx/Farmer_sign_proof.hxx>
-#include <mmx/Farmer_sign_proof_return.hxx>
 #include <mmx/HarvesterBase.hxx>
 #include <mmx/Harvester_add_plot_dir.hxx>
 #include <mmx/Harvester_add_plot_dir_return.hxx>
@@ -551,30 +549,6 @@ void type<::mmx::Farmer_sign_block_return>::create_dynamic_code(std::vector<uint
 }
 
 void type<::mmx::Farmer_sign_block_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_block_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Farmer_sign_proof>::get_type_code() {
-	return mmx::vnx_native_type_code_Farmer_sign_proof;
-}
-
-void type<::mmx::Farmer_sign_proof>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Farmer_sign_proof());
-}
-
-void type<::mmx::Farmer_sign_proof>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_proof& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Farmer_sign_proof_return>::get_type_code() {
-	return mmx::vnx_native_type_code_Farmer_sign_proof_return;
-}
-
-void type<::mmx::Farmer_sign_proof_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Farmer_sign_proof_return());
-}
-
-void type<::mmx::Farmer_sign_proof_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_proof_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -4869,8 +4843,6 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Farmer_get_mac_addr_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_sign_block::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_sign_block_return::static_create_type_code());
-	vnx::register_type_code(::mmx::Farmer_sign_proof::static_create_type_code());
-	vnx::register_type_code(::mmx::Farmer_sign_proof_return::static_create_type_code());
 	vnx::register_type_code(::mmx::HarvesterBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_add_plot_dir::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_add_plot_dir_return::static_create_type_code());
@@ -5245,8 +5217,6 @@ const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr = vnx::get_t
 const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr_return = vnx::get_type_code(vnx::Hash64(0x9e4caad2ffaba990ull));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block = vnx::get_type_code(vnx::Hash64(0x6924b10f345eb316ull));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block_return = vnx::get_type_code(vnx::Hash64(0xb8acce9269f91310ull));
-const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_proof = vnx::get_type_code(vnx::Hash64(0x7c59d2761514b455ull));
-const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_proof_return = vnx::get_type_code(vnx::Hash64(0xfc55b496d43f06fbull));
 const vnx::TypeCode* const vnx_native_type_code_HarvesterBase = vnx::get_type_code(vnx::Hash64(0xc17118896cde1555ull));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_add_plot_dir = vnx::get_type_code(vnx::Hash64(0x61714d1c7ecaffddull));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_add_plot_dir_return = vnx::get_type_code(vnx::Hash64(0x8b5f7bc4f34fb5d5ull));

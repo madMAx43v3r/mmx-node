@@ -10,7 +10,6 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
-#include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -22,6 +21,8 @@ class MMX_EXPORT FarmerBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_info = "harvester.info";
+	::vnx::TopicPtr input_proofs = "harvester.proof";
+	::vnx::TopicPtr output_proofs = "farmer.proof";
 	uint32_t harvester_timeout = 60;
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
@@ -65,9 +66,9 @@ protected:
 	virtual ::vnx::Hash64 get_mac_addr() const = 0;
 	virtual std::vector<::mmx::pubkey_t> get_farmer_keys() const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
-	virtual ::mmx::signature_t sign_proof(std::shared_ptr<const ::mmx::ProofResponse> value) const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block) const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::FarmInfo> _value) {}
+	virtual void handle(std::shared_ptr<const ::mmx::ProofResponse> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
@@ -76,13 +77,15 @@ protected:
 
 template<typename T>
 void FarmerBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmerBase>(5);
+	_visitor.template type_begin<FarmerBase>(7);
 	_visitor.type_field("input_info", 0); _visitor.accept(input_info);
-	_visitor.type_field("harvester_timeout", 1); _visitor.accept(harvester_timeout);
-	_visitor.type_field("node_server", 2); _visitor.accept(node_server);
-	_visitor.type_field("wallet_server", 3); _visitor.accept(wallet_server);
-	_visitor.type_field("reward_addr", 4); _visitor.accept(reward_addr);
-	_visitor.template type_end<FarmerBase>(5);
+	_visitor.type_field("input_proofs", 1); _visitor.accept(input_proofs);
+	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
+	_visitor.type_field("harvester_timeout", 3); _visitor.accept(harvester_timeout);
+	_visitor.type_field("node_server", 4); _visitor.accept(node_server);
+	_visitor.type_field("wallet_server", 5); _visitor.accept(wallet_server);
+	_visitor.type_field("reward_addr", 6); _visitor.accept(reward_addr);
+	_visitor.template type_end<FarmerBase>(7);
 }
 
 

@@ -25,7 +25,7 @@ namespace mmx {
 class MMX_EXPORT RouterBase : public ::vnx::addons::MsgServer {
 public:
 	
-	::vnx::TopicPtr input_vdfs = "timelord.proofs";
+	::vnx::TopicPtr input_vdfs = "timelord.proof";
 	::vnx::TopicPtr input_verified_vdfs = "node.verified_vdfs";
 	::vnx::TopicPtr input_verified_proof = "node.verified_proof";
 	::vnx::TopicPtr input_verified_blocks = "node.verified_blocks";

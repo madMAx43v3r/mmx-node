@@ -205,7 +205,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x551754ad211b0780ull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x54a676fc4dc6e4d9ull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -736,7 +736,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0x551754ad211b0780ull);
+	type_code->code_hash = vnx::Hash64(0x54a676fc4dc6e4d9ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
 	type_code->methods.resize(81);
@@ -854,14 +854,14 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "input_timelord_vdfs";
-		field.value = vnx::to_string("timelord.proofs");
+		field.value = vnx::to_string("timelord.proof");
 		field.code = {12, 5};
 	}
 	{
 		auto& field = type_code->fields[5];
 		field.is_extended = true;
 		field.name = "input_harvester_proof";
-		field.value = vnx::to_string("harvester.proof");
+		field.value = vnx::to_string("farmer.proof");
 		field.code = {12, 5};
 	}
 	{

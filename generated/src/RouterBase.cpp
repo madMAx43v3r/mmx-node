@@ -69,7 +69,7 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x648f725bf7f3ff2full);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0xe15c848ce6b5af26ull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
@@ -773,7 +773,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0x648f725bf7f3ff2full);
+	type_code->code_hash = vnx::Hash64(0xe15c848ce6b5af26ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(2);
@@ -905,7 +905,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 		auto& field = type_code->fields[14];
 		field.is_extended = true;
 		field.name = "input_vdfs";
-		field.value = vnx::to_string("timelord.proofs");
+		field.value = vnx::to_string("timelord.proof");
 		field.code = {12, 5};
 	}
 	{
