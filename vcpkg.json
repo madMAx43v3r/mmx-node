@@ -2,6 +2,7 @@
     "name": "mmx-node",
     "dependencies": [
         "zlib",
+        "zstd",
         "opencl",
         "secp256k1",
         "miniupnpc"
