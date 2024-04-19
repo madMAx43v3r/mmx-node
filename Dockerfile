@@ -11,7 +11,6 @@ RUN apt-get update && apt-get -y upgrade \
 			libminiupnpc-dev \
 			libjemalloc-dev \
 			zlib1g-dev \
-			libgmp-dev \
 			ocl-icd-opencl-dev \
 			ccache \
 			&& rm -rf /var/lib/apt/lists/*
