@@ -176,6 +176,7 @@ Table::Table(const std::string& root_path, const options_t& options)
 	{
 		auto& in = write_log.in;
 		auto offset = in.get_input_pos();
+		bool first_commit = true;
 		const auto min_version = curr_version;
 		std::multimap<uint32_t, std::pair<std::shared_ptr<db_val_t>, std::shared_ptr<db_val_t>>> entries;
 		while(true) {
@@ -186,12 +187,12 @@ Table::Table(const std::string& root_path, const options_t& options)
 				read_entry_sum(write_log.in, version, key, value);
 				if(version == uint32_t(-1)) {
 					const auto cmd = key->to_string();
-					if(cmd == "commit") {
+					if(cmd == "commit" || cmd == "reset") {
 						curr_version = value->to<uint32_t>();
-					}
-					else if(cmd == "reset") {
-						curr_version = value->to<uint32_t>();
-						last_flush = curr_version;
+						if(first_commit) {
+							last_flush = curr_version;
+							first_commit = false;
+						}
 					}
 					else if(cmd == "revert") {
 						const auto height = value->to<uint32_t>();
