@@ -122,6 +122,9 @@ void Harvester::check_queue()
 
 void Harvester::handle(std::shared_ptr<const Challenge> value)
 {
+	if(value->max_delay < 2) {
+		return;
+	}
 	if(!already_checked.insert(value->challenge).second) {
 		return;
 	}
