@@ -443,6 +443,9 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 				error.line = iter->second;
 			}
 		}
+		if(debug_exec_fails) {
+			engine->dump_memory();
+		}
 		throw;
 	}
 
