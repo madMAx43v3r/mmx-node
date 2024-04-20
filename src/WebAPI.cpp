@@ -1844,7 +1844,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_tx_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/history?index|limit|offset|since");
+			respond_status(request_id, 404, "wallet/tx_history?index|limit|offset|since");
 		}
 	}
 	else if(sub_path == "/wallet/offers") {
