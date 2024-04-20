@@ -962,8 +962,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 								throw std::runtime_error("hex string length not multiple of 2");
 							}
 							const size_t prefix = (value.substr(0, 2) == "0x" ? 2 : 0);
-							gas_used += (value.size() - prefix) * CONV_STRING_HEX_BINARY_BYTE_COST;
-							check_gas();
 							for(size_t i = prefix; i < value.size(); ++i) {
 								const auto c = value[i];
 								if(!('0' <= c && c <= '9') && !('a' <= c && c <= 'f') && !('A' <= c && c <= 'F')) {

@@ -34,7 +34,7 @@ static constexpr uint64_t INSTR_MUL_128_COST = 50;
 static constexpr uint64_t INSTR_MUL_256_COST = 200;
 static constexpr uint64_t INSTR_DIV_64_COST = 50;
 static constexpr uint64_t INSTR_DIV_128_COST = 1000;
-static constexpr uint64_t INSTR_DIV_256_COST = 10000;
+static constexpr uint64_t INSTR_DIV_256_COST = 5000;
 
 static constexpr uint64_t WRITE_COST = 50;
 static constexpr uint64_t WRITE_32_BYTE_COST = 30;
@@ -47,8 +47,7 @@ static constexpr uint64_t CONV_STRING_UINT_CHAR_COST = 200;
 static constexpr uint64_t CONV_UINT_32_STRING_COST = 500;
 static constexpr uint64_t CONV_UINT_64_STRING_COST = 1000;
 static constexpr uint64_t CONV_UINT_128_STRING_COST = 25000;
-static constexpr uint64_t CONV_UINT_256_STRING_COST = 300000;
-static constexpr uint64_t CONV_STRING_HEX_BINARY_BYTE_COST = 10;
+static constexpr uint64_t CONV_UINT_256_STRING_COST = 250000;
 static constexpr uint64_t CONV_STRING_BECH32_COST = 1000;
 static constexpr uint64_t CONV_BECH32_STRING_COST = 1000;
 
