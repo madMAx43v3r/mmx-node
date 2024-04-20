@@ -2151,65 +2151,75 @@ void Node::apply(	std::shared_ptr<const Block> block,
 	if(block->prev != state_hash) {
 		throw std::logic_error("apply(): block->prev != state_hash");
 	}
-	if(!is_replay) {
-		write_block(block);
-	}
-	uint32_t counter = 0;
-	std::vector<hash_t> tx_ids;
-	std::unordered_set<hash_t> tx_set;
-	balance_cache_t balance_cache(&balance_table);
-
-	for(const auto& out : block->get_outputs(params))
-	{
-		recv_log.insert(std::make_tuple(out.address, block->height, counter++), out);
-		balance_cache.get(out.address, out.contract) += out.amount;
-	}
-	for(const auto& in : block->get_inputs(params))
-	{
-		if(auto balance = balance_cache.find(in.address, in.contract)) {
-			clamped_sub_assign(*balance, in.amount);
+	try {
+		if(!is_replay) {
+			write_block(block);
 		}
-		spend_log.insert(std::make_tuple(in.address, block->height, counter++), in);
-	}
-	for(const auto& tx : block->get_transactions()) {
-		if(tx) {
-			if(!tx->exec_result || !tx->exec_result->did_fail) {
-				apply(block, tx, counter);
+		uint32_t counter = 0;
+		std::vector<hash_t> tx_ids;
+		std::unordered_set<hash_t> tx_set;
+		balance_cache_t balance_cache(&balance_table);
+
+		for(const auto& out : block->get_outputs(params))
+		{
+			recv_log.insert(std::make_tuple(out.address, block->height, counter++), out);
+			balance_cache.get(out.address, out.contract) += out.amount;
+		}
+		for(const auto& in : block->get_inputs(params))
+		{
+			if(auto balance = balance_cache.find(in.address, in.contract)) {
+				clamped_sub_assign(*balance, in.amount);
 			}
-			tx_pool_erase(tx->id);
-			tx_set.insert(tx->id);
-			tx_ids.push_back(tx->id);
+			spend_log.insert(std::make_tuple(in.address, block->height, counter++), in);
 		}
-	}
-	tx_log.insert(block->height, tx_ids);
-
-	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
-		if(tx_set.count(iter->second->id)) {
-			iter = pending_transactions.erase(iter);
-		} else {
-			iter++;
+		for(const auto& tx : block->get_transactions()) {
+			if(tx) {
+				if(!tx->exec_result || !tx->exec_result->did_fail) {
+					apply(block, tx, counter);
+				}
+				tx_pool_erase(tx->id);
+				tx_set.insert(tx->id);
+				tx_ids.push_back(tx->id);
+			}
 		}
-	}
+		tx_log.insert(block->height, tx_ids);
 
-	for(const auto& entry : balance_cache.balance) {
-		balance_table.insert(entry.first, entry.second);
-	}
-	if(context) {
-		context->storage->commit();
-	}
-	if(auto proof = block->proof) {
-		farmed_block_info_t info;
-		info.height = block->height;
-		info.reward = block->reward_amount;
-		info.reward_addr = (block->reward_addr ? *block->reward_addr : addr_t());
-		farmer_block_map.insert(proof->farmer_key, info);
-	}
-	hash_index.insert(block->hash, block->height);
+		for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
+			if(tx_set.count(iter->second->id)) {
+				iter = pending_transactions.erase(iter);
+			} else {
+				iter++;
+			}
+		}
 
-	state_hash = block->hash;
-	contract_cache.clear();
+		for(const auto& entry : balance_cache.balance) {
+			balance_table.insert(entry.first, entry.second);
+		}
+		if(context) {
+			context->storage->commit();
+		}
+		if(auto proof = block->proof) {
+			farmed_block_info_t info;
+			info.height = block->height;
+			info.reward = block->reward_amount;
+			info.reward_addr = (block->reward_addr ? *block->reward_addr : addr_t());
+			farmer_block_map.insert(proof->farmer_key, info);
+		}
+		hash_index.insert(block->hash, block->height);
 
-	db.commit(block->height + 1);
+		state_hash = block->hash;
+		contract_cache.clear();
+
+		db.commit(block->height + 1);
+	}
+	catch(const std::exception& ex) {
+		try {
+			revert(block->height);
+		} catch(const std::exception& ex) {
+			log(ERROR) << "revert() failed with: " << ex.what();
+		}
+		throw std::runtime_error("apply() failed with: " + std::string(ex.what()));
+	}
 }
 
 void Node::apply(	std::shared_ptr<const Block> block,
