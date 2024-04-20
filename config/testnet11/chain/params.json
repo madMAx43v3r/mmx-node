@@ -24,7 +24,7 @@
 	"min_txfee_read_kbyte": 2000,
 	"max_block_size": 250000000,
 	"max_block_cost": 500000000,
-	"max_tx_cost":     10000000,
+	"max_tx_cost":     50000000,
 	"initial_time_diff":  20000,
 	"initial_space_diff": 1000,
 	"time_diff_constant": 10000,
