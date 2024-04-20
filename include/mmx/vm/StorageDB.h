@@ -43,6 +43,8 @@ public:
 	std::vector<varptr_t> read_array(
 			const addr_t& contract, const uint64_t address, const uint32_t height = -1) const;
 
+	void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) override {}
+
 	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const override {
 		return nullptr;
 	}
