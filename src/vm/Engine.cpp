@@ -822,6 +822,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			switch(dflags & 0xFF) {
 				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
+				case CONVTYPE_ADDRESS: write(dst, vm::to_binary(addr_t())); break;
 				default: throw std::logic_error("invalid conversion: NIL to " + to_hex(dflags));
 			}
 			break;
