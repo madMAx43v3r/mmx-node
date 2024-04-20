@@ -368,9 +368,6 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(is_public && !method->is_public) {
 		throw std::logic_error("method is not public: " + method_name);
 	}
-	if(!is_public && method->is_public) {
-		throw std::logic_error("method is public: " + method_name);
-	}
 	vm::load(engine, binary);
 
 	std::map<addr_t, std::shared_ptr<const Contract>> contract_cache;
