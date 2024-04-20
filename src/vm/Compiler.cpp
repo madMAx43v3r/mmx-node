@@ -407,6 +407,8 @@ protected:
 
 	uint32_t get_const_address(const uint256_t& value);
 
+	uint32_t get_const_address(const addr_t& value);
+
 	uint32_t get_const_address(const std::string& value);
 
 	int get_node_rank(const node_t& node) const;
@@ -1386,7 +1388,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(key == "currency") {
 					out.key = get_const_address(uint256_t(0));
 				} else if(key == "amount") {
-					out.key = get_const_address(1);
+					out.key = get_const_address(uint256_t(1));
 				} else {
 					throw std::logic_error("no such variable: this.deposit." + key);
 				}
@@ -1579,7 +1581,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					throw std::logic_error("expected 2 to 4 arguments for send(address, amount, [currency], [memo])");
 				}
 				code.emplace_back(OP_SEND, 0, get(recurse(args[0])), get(recurse(args[1])),
-						args.size() > 2 ? get(recurse(args[2])) : get_const_address(uint256_t()),
+						args.size() > 2 ? get(recurse(args[2])) : get_const_address(addr_t()),
 						args.size() > 3 ? get(recurse(args[3])) : 0);
 				out.address = 0;
 			}
@@ -1621,11 +1623,15 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_CREAD, 0, out.address, get(recurse(args[0])), get(recurse(args[1])));
 			}
 			else if(name == "bech32") {
-				if(args.size() != 1) {
-					throw std::logic_error("expected 1 argument for bech32()");
+				if(args.size() == 0) {
+					out.address = stack.new_addr();
+					code.emplace_back(OP_COPY, 0, out.address, get_const_address(addr_t()));
+				} else if(args.size() == 1) {
+					out.address = stack.new_addr();
+					code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_ADDRESS, CONVTYPE_DEFAULT);
+				} else {
+					throw std::logic_error("expected 0 or 1 argument for bech32([input])");
 				}
-				out.address = stack.new_addr();
-				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_ADDRESS, CONVTYPE_DEFAULT);
 			}
 			else if(name == "binary") {
 				if(args.size() != 1) {
@@ -1925,9 +1931,14 @@ uint32_t Compiler::get_const_address(const uint256_t& value)
 	return get_const_address(std::make_unique<uint_t>(value));
 }
 
+uint32_t Compiler::get_const_address(const addr_t& value)
+{
+	return get_const_address(vm::to_binary(value));
+}
+
 uint32_t Compiler::get_const_address(const std::string& value)
 {
-	return get_const_address(binary_t::alloc(value));
+	return get_const_address(vm::to_binary(value));
 }
 
 
