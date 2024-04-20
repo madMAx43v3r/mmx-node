@@ -968,7 +968,7 @@ vnx::Variant Node::call_contract(
 			}
 			auto cache = std::make_shared<vm::StorageCache>(storage);
 			auto engine = std::make_shared<vm::Engine>(address, cache, func->is_const);
-			engine->gas_limit = params->max_block_cost;
+			engine->gas_limit = params->max_tx_cost;
 			vm::load(engine, bin);
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(get_height()));
