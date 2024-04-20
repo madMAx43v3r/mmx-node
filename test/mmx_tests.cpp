@@ -10,6 +10,7 @@
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
 #include <mmx/memo_t.hpp>
+#include <mmx/tree_hash.h>
 
 #include <vnx/vnx.h>
 #include <vnx/test/Test.h>
@@ -99,6 +100,21 @@ int main(int argc, char** argv)
 			const std::string text = "0x" + hash.to_string();
 			vnx::test::expect(memo_t(hash).to_string(), text);
 			vnx::test::expect(memo_t(text).to_string(), text);
+		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("calc_tree_hash()")
+	{
+		std::vector<hash_t> list;
+		auto hash = mmx::calc_btree_hash(list);
+		vnx::test::expect(hash, hash_t());
+
+		for(int i = 0; i < 1000; ++i) {
+			list.push_back(hash_t(std::to_string(i)));
+			auto next = mmx::calc_btree_hash(list);
+			vnx::test::expect(next != hash, true);
+			hash = next;
 		}
 	}
 	VNX_TEST_END()
