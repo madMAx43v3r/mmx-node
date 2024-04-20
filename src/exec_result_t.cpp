@@ -37,7 +37,14 @@ hash_t exec_result_t::calc_hash() const
 
 uint64_t exec_result_t::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return (inputs.size() + outputs.size()) * params->min_txfee_io;
+	uint64_t cost = 0;
+	for(const auto& in : inputs) {
+		cost += in.calc_cost(params);
+	}
+	for(const auto& out : outputs) {
+		cost += out.calc_cost(params);
+	}
+	return cost;
 }
 
 std::string exec_result_t::get_error_msg() const
