@@ -1112,9 +1112,12 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	if(value >> 64) {
 		throw std::runtime_error("send(): amount too large: " + value.str());
 	}
+	if(currency == 0) {
+		throw std::runtime_error("send(): currency == null");
+	}
 	auto balance = read_key<uint_t>(MEM_EXTERN + EXTERN_BALANCE, currency, TYPE_UINT);
 	if(!balance || balance->value < value) {
-		throw std::runtime_error("insufficient funds");
+		throw std::runtime_error("send(): insufficient funds");
 	}
 	balance->value -= value;
 
