@@ -201,6 +201,9 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 			cost += sol->calc_cost(params);
 		}
 	}
+	if(memo) {
+		cost += params->min_txfee_memo;
+	}
 	if(deploy) {
 		cost += params->min_txfee_deploy + deploy->calc_cost(params);
 	}
