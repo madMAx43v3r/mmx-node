@@ -9,13 +9,18 @@ function init(owner_) {
 
 function deposit() public {}
 
-function withdraw(amount) public
+function withdraw(amount, currency) public
 {
 	if(this.user != owner) {
 		fail("user != owner", 1);
 	}
-	const ret_amount = (amount * WITHDRAW_FACTOR) / 100;
+	currency = bech32(currency);
 	
-	send(owner, ret_amount);
-	send(0, amount - ret_amount);
+	var ret_amount = amount;
+	
+	if(currency == bech32()) {
+		ret_amount = (amount * WITHDRAW_FACTOR) / 100;
+	}
+	send(owner, ret_amount, currency);
+	send(bech32(), amount - ret_amount, currency);
 }

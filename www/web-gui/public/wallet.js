@@ -860,7 +860,7 @@ Vue.component('account-plots', {
 				url = "/wapi/wallet/execute";
 				req.address = this.dialog_address;
 				req.method = "withdraw";
-				req.args = [this.dialog_amount * 1e6];
+				req.args = [this.dialog_amount * 1e6, null];
 				req.user = 0;
 			}
 			fetch(url, {body: JSON.stringify(req), method: "post"})
