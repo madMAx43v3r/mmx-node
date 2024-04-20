@@ -419,7 +419,7 @@ void Table::revert(const uint32_t new_version)
 	if(new_version > curr_version) {
 		throw std::logic_error("revert(): new version > current version");
 	}
-	if(new_version < curr_version) {
+	{
 		const std::string cmd = "revert";
 		write_entry_sum(write_log.out, -1,
 				std::make_shared<db_val_t>(cmd.c_str(), cmd.size()),
