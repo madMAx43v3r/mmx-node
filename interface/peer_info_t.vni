@@ -20,6 +20,7 @@ struct peer_info_t {
 	ulong bytes_recv;
 	
 	double pending_cost;
+	double compression_ratio;		// for send only
 	
 	bool is_synced;
 	bool is_paused;

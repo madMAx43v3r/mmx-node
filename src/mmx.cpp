@@ -1006,7 +1006,7 @@ int main(int argc, char** argv)
 					std::cout << height;
 					std::cout << ", " << vnx::to_string_value(peer.type) << " (" << peer.version / 100 << "." << peer.version % 100 << ")";
 					std::cout << ", " << peer.bytes_recv / 1024 / 1024 << " MB recv";
-					std::cout << ", " << peer.bytes_send / 1024 / 1024 << " MB sent";
+					std::cout << ", " << peer.bytes_send / 1024 / 1024 << " MB sent (" << float(peer.compression_ratio) << ")";
 					std::cout << ", since " << (peer.connect_time_ms / 60000) << " min";
 					std::cout << ", " << peer.ping_ms << " ms ping";
 					std::cout << ", " << int64_t(1e3 * peer.pending_cost) / 1e3 << " pending";

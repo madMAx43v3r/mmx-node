@@ -239,6 +239,7 @@ std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 		peer.bytes_send = state->bytes_send;
 		peer.bytes_recv = state->bytes_recv;
 		peer.pending_cost = state->pending_cost;
+		peer.compression_ratio = state->bytes_send_raw / double(state->bytes_send);
 		peer.is_synced = state->is_synced;
 		peer.is_paused = state->is_paused;
 		peer.is_blocked = state->is_blocked;
