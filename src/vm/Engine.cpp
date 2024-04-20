@@ -816,10 +816,15 @@ void Engine::verify(const uint64_t dst, const uint64_t msg, const uint64_t pubke
 
 void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags, const uint64_t sflags)
 {
+	const uint8_t dflags_0 = dflags;
+	const uint8_t dflags_1 = (dflags >> 8);
+	const uint8_t sflags_0 = sflags;
+//	const uint8_t sflags_1 = (sflags >> 8);
+
 	const auto& svar = read_fail(src);
 	switch(svar.type) {
 		case TYPE_NIL:
-			switch(dflags & 0xFF) {
+			switch(dflags_0) {
 				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
 				case CONVTYPE_ADDRESS: write(dst, vm::to_binary(addr_t())); break;
@@ -827,14 +832,14 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			}
 			break;
 		case TYPE_TRUE:
-			switch(dflags & 0xFF) {
+			switch(dflags_0) {
 				case CONVTYPE_BOOL: write(dst, var_t(TYPE_TRUE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t(1)); break;
 				default: throw std::logic_error("invalid conversion: TRUE to " + to_hex(dflags));
 			}
 			break;
 		case TYPE_FALSE:
-			switch(dflags & 0xFF) {
+			switch(dflags_0) {
 				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
 				default: throw std::logic_error("invalid conversion: FALSE to " + to_hex(dflags));
@@ -842,7 +847,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			break;
 		case TYPE_UINT: {
 			const auto& value = ((const uint_t&)svar).value;
-			switch(dflags & 0xFF) {
+			switch(dflags_0) {
 				case CONVTYPE_BOOL:
 					write(dst, var_t(value != uint256_0));
 					break;
@@ -851,13 +856,13 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					break;
 				case CONVTYPE_STRING: {
 					int base = 10;
-					switch((dflags >> 8) & 0xFF) {
+					switch(dflags_1) {
 						case CONVTYPE_DEFAULT: break;
 						case CONVTYPE_BASE_2: base = 2; break;
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
-						default: throw std::logic_error("invalid conversion: UINT to STRING with flags " + to_hex(dflags));
+						default: throw std::logic_error("invalid conversion: UINT to STRING with dst flags " + to_hex(dflags));
 					}
 					if(value >> 128) {
 						switch(base) {
@@ -880,11 +885,11 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 				}
 				case CONVTYPE_BINARY: {
 					bool big_endian = true;
-					switch((dflags >> 8) & 0xFF) {
+					switch(dflags_1) {
 						case CONVTYPE_DEFAULT:
 						case CONVTYPE_BIG_ENDIAN: break;
 						case CONVTYPE_LITTLE_ENDIAN: big_endian = false; break;
-						default: throw std::logic_error("invalid conversion: UINT to BINARY with flags " + to_hex(dflags));
+						default: throw std::logic_error("invalid conversion: UINT to BINARY with dst flags " + to_hex(dflags));
 					}
 					bytes_t<32> tmp;
 					tmp.from_uint(value, big_endian);
@@ -898,7 +903,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		}
 		case TYPE_STRING: {
 			const auto& sstr = (const binary_t&)svar;
-			switch(dflags & 0xFF) {
+			switch(dflags_0) {
 				case CONVTYPE_BOOL:
 					write(dst, var_t(bool(sstr.size)));
 					break;
@@ -907,7 +912,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					const auto prefix_2 = value.substr(0, 2);
 
 					int base = 10;
-					switch(sflags & 0xFF) {
+					switch(sflags_0) {
 						case CONVTYPE_DEFAULT:
 							if(prefix_2 == "0x") {
 								base = 16;
@@ -919,7 +924,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						case CONVTYPE_BASE_8: base = 8; break;
 						case CONVTYPE_BASE_10: base = 10; break;
 						case CONVTYPE_BASE_16: base = 16; break;
-						default: throw std::logic_error("invalid conversion: STRING to UINT with base " + to_hex(sflags & 0xFF));
+						default: throw std::logic_error("invalid conversion: STRING to UINT with src flags " + to_hex(sflags));
 					}
 					if(prefix_2 == "0x" || prefix_2 == "0b") {
 						value = value.substr(2);
@@ -947,10 +952,10 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					break;
 				case CONVTYPE_BINARY: {
 					int base = 0;
-					switch(sflags & 0xFF) {
+					switch(sflags_0) {
 						case CONVTYPE_DEFAULT: break;
 						case CONVTYPE_BASE_16: base = 16; break;
-						default: throw std::logic_error("invalid conversion: STRING to BINARY with base " + to_hex(sflags & 0xFF));
+						default: throw std::logic_error("invalid conversion: STRING to BINARY with src flags " + to_hex(sflags));
 					}
 					switch(base) {
 						case 0:
@@ -959,9 +964,9 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						case 16: {
 							const auto value = sstr.to_string();
 							if(value.size() % 2) {
-								throw std::runtime_error("hex string length not multiple of 2");
+								throw std::runtime_error("invalid conversion: STRING to BINARY with source length " + std::to_string(value.size()) + " % 2 != 0");
 							}
-							const size_t prefix = (value.substr(0, 2) == "0x" ? 2 : 0);
+							const auto prefix = (value.substr(0, 2) == "0x" ? 2 : 0);
 							for(size_t i = prefix; i < value.size(); ++i) {
 								const auto c = value[i];
 								if(!('0' <= c && c <= '9') && !('a' <= c && c <= 'f') && !('A' <= c && c <= 'F')) {
@@ -992,7 +997,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		}
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
-			switch(dflags & 0xFF) {
+			switch(dflags_0) {
 				case CONVTYPE_BOOL:
 					write(dst, var_t(bool(sbin.size)));
 					break;
@@ -1001,11 +1006,11 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 						throw std::runtime_error("invalid conversion: BINARY to UINT: size != 32");
 					}
 					bool big_endian = true;
-					switch(sflags & 0xFF) {
+					switch(sflags_0) {
 						case CONVTYPE_DEFAULT:
 						case CONVTYPE_BIG_ENDIAN: break;
 						case CONVTYPE_LITTLE_ENDIAN: big_endian = false; break;
-						default: throw std::logic_error("invalid conversion: BINARY to UINT with flags " + to_hex(sflags));
+						default: throw std::logic_error("invalid conversion: BINARY to UINT with src flags " + to_hex(sflags));
 					}
 					bytes_t<32> tmp;
 					::memcpy(tmp.data(), sbin.data(), sbin.size);
@@ -1014,11 +1019,11 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 				}
 				case CONVTYPE_STRING: {
 					int base = 0;
-					switch((dflags >> 8) & 0xFF) {
+					switch(dflags_1) {
 						case CONVTYPE_DEFAULT: break;
 						case CONVTYPE_BASE_16: base = 16; break;
 						case CONVTYPE_ADDRESS: base = 32; break;
-						default: throw std::logic_error("invalid conversion: BINARY to STRING with flags " + to_hex(dflags));
+						default: throw std::logic_error("invalid conversion: BINARY to STRING with dst flags " + to_hex(dflags));
 					}
 					switch(base) {
 						case 32:
@@ -1042,7 +1047,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					break;
 				case CONVTYPE_ADDRESS:
 					if(sbin.size != 32) {
-						throw std::runtime_error("invalid conversion: BINARY to ADDRESS: size != 32");
+						throw std::runtime_error("invalid conversion: BINARY to ADDRESS with source length " + std::to_string(sbin.size) + " != 32");
 					}
 					write(dst, svar);
 					break;
@@ -1052,7 +1057,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			break;
 		}
 		default:
-			switch(dflags & 0xFF) {
+			switch(dflags_0) {
 				case CONVTYPE_BOOL:
 					write(dst, var_t(TYPE_TRUE));
 					break;
