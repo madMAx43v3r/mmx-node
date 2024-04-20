@@ -10,6 +10,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/txio_entry_t.hpp>
 #include <mmx/utils.h>
+#include <mmx/tree_hash.h>
 
 
 namespace mmx {
@@ -41,20 +42,11 @@ vnx::bool_t Block::is_valid() const
 
 hash_t Block::calc_tx_hash() const
 {
-	std::vector<uint8_t> buffer;
-	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
-
-	buffer.reserve(1024 * 32);
-
-	// TODO: binary tree hash
-
+	std::vector<hash_t> tmp;
 	for(const auto& tx : tx_list) {
-		write_bytes(out, tx->content_hash);
+		tmp.push_back(tx->content_hash);
 	}
-	out.flush();
-
-	return hash_t(buffer);
+	return calc_btree_hash(tmp);
 }
 
 void Block::finalize()
