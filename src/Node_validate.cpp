@@ -627,7 +627,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				txin_t in;
 				in.address = entry.first.first;
 				in.contract = entry.first.second;
-				in.amount = amount_left >> 64 ? uint64_t(-1) : amount_left.lower();
+				in.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
 				exec_inputs.push_back(in);
 				amount_left -= in.amount;
 			}
@@ -640,8 +640,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				txout_t out;
 				out.address = entry.first.first;
 				out.contract = entry.first.second;
-				out.amount = amount_left >> 64 ? uint64_t(-1) : amount_left.lower();
-				out.memo = memo_t("mmx.deposit");
+				out.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
 				exec_outputs.push_back(out);
 				amount_left -= out.amount;
 			}
@@ -658,8 +657,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 					txout_t out;
 					out.address = tx->id;
 					out.contract = entry.first;
-					out.amount = amount_left >> 64 ? uint64_t(-1) : amount_left.lower();
-					out.memo = memo_t("mmx.deposit");
+					out.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
 					exec_outputs.push_back(out);
 					amount_left -= out.amount;
 				}
