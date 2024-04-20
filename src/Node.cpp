@@ -717,7 +717,7 @@ std::shared_ptr<const Contract> Node::get_contract_ex(const addr_t& address, uin
 		tx_index_t index;
 		tx_index.find(address, index);
 
-		const auto cost = 2 * params->min_txfee_read + index.contract_read_cost;
+		const auto cost = params->min_txfee_read + index.contract_read_cost;
 		if(*read_cost + cost > gas_limit) {
 			throw std::runtime_error("not enough gas to read contract");
 		}
