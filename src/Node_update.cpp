@@ -736,6 +736,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 			out.push_back(*iter);
 		}
 	}
+	std::reverse(out.begin(), out.end());
 	return out;
 }
 
