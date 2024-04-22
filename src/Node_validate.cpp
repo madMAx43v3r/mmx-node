@@ -205,7 +205,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		 * <100% => 20x
 		 */
 
-		// TODO: enforce tx ordering by fee_ratio, tx hash
+		std::shared_ptr<const Transaction> prev;
 
 		for(const auto& tx : block->tx_list) {
 			if(!tx) {
@@ -222,6 +222,11 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			}
 			if(!tx_set.insert(tx->id).second) {
 				throw std::logic_error("duplicate transaction in same block");
+			}
+			if(prev) {
+				if(tx->fee_ratio > prev->fee_ratio) {
+					throw std::logic_error("invalid tx order (fee_ratio)");
+				}
 			}
 			{
 				// subtract tx fee
@@ -243,6 +248,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 				}
 			}
 			prepare_context(context, tx);
+			prev = tx;
 		}
 	}
 	hash_t failed_tx;
