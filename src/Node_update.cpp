@@ -416,30 +416,31 @@ void Node::update()
 bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
 {
 	if(const auto& tx = entry.tx) {
-		const auto iter = tx_pool.find(tx->id);
-		if(const auto& sender = tx->sender) {
-			const auto fees = tx_pool_fees.find(*sender);
-			auto new_total = fees != tx_pool_fees.end() ? fees->second : 0;
+		if(tx->sender) {
+			const auto& sender = *tx->sender;
+			const auto iter = tx_pool.find(tx->id);
+			const auto fees = tx_pool_fees.find(sender);
+			auto new_total = (fees != tx_pool_fees.end()) ? fees->second : 0;
 			if(iter != tx_pool.end()) {
 				new_total -= iter->second.fee;
 			}
 			new_total += entry.fee;
 
-			if(!force_add && new_total > get_balance(*sender, addr_t())) {
+			if(!force_add && new_total > get_balance(sender, addr_t())) {
 				return false;
 			}
 			if(fees != tx_pool_fees.end()) {
 				fees->second = new_total;
 			} else {
-				tx_pool_fees[*sender] = new_total;
+				tx_pool_fees[sender] = new_total;
 			}
+			if(iter != tx_pool.end()) {
+				iter->second = entry;
+			} else {
+				tx_pool[tx->id] = entry;
+			}
+			return true;
 		}
-		if(iter != tx_pool.end()) {
-			iter->second = entry;
-		} else {
-			tx_pool[tx->id] = entry;
-		}
-		return true;
 	}
 	return false;
 }
