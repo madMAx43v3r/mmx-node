@@ -713,7 +713,30 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 		static_cost += tx->static_cost;
 		result.push_back(entry);
 	}
-	return result;
+	std::vector<tx_pool_t> out;
+
+	// purge based on min fee_ratio
+	uint64_t total_size = 0;
+	for(auto iter = result.rbegin(); iter != result.rend(); ++iter)
+	{
+		const auto& tx = iter->tx;
+		total_size += tx->static_cost;
+
+		uint32_t min_ratio = 1024;
+		if(total_size > 4 * params->max_block_size / 5) {
+			min_ratio *= 20;
+		} else if(total_size > 3 * params->max_block_size / 5) {
+			min_ratio *= 10;
+		} else if(total_size > 2 * params->max_block_size / 5) {
+			min_ratio *= 5;
+		} else if(total_size > 1 * params->max_block_size / 5) {
+			min_ratio *= 3;
+		}
+		if(tx->fee_ratio >= min_ratio) {
+			out.push_back(*iter);
+		}
+	}
+	return out;
 }
 
 std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof, const bool full_block)

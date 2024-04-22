@@ -196,23 +196,14 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		std::unordered_set<addr_t> tx_set;
 		balance_cache_t balance_cache(&balance_table);
 
-		/* TODO: minimum fee_ratio depending on block size
-		 *
-		 * <20% => 1x
-		 * <40% => 3x
-		 * <60% => 5x
-		 * <80% => 10x
-		 * <100% => 20x
-		 */
-
 		std::shared_ptr<const Transaction> prev;
 
 		for(const auto& tx : block->tx_list) {
 			if(!tx) {
-				throw std::logic_error("null tx");
+				throw std::logic_error("null transaction");
 			}
 			if(!check_tx_inclusion(tx->id, context->height)) {
-				throw std::logic_error("invalid tx inclusion");
+				throw std::logic_error("invalid transaction inclusion");
 			}
 			if(!tx->sender) {
 				throw std::logic_error("transaction missing sender");
@@ -249,6 +240,35 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			}
 			prepare_context(context, tx);
 			prev = tx;
+		}
+	}
+	{
+		/* Minimum fee_ratio depending on block size:
+		 * 0 to 20%   => 1x
+		 * 20 to 40%  => 3x
+		 * 40 to 60%  => 5x
+		 * 60 to 80%  => 10x
+		 * 80 to 100% => 20x
+		 */
+		uint64_t total_size = 0;
+		for(auto iter = block->tx_list.rbegin(); iter != block->tx_list.rend(); ++iter)
+		{
+			const auto& tx = *iter;				// tx == nullptr already checked above
+			total_size += tx->static_cost;
+
+			uint32_t min_ratio = 1024;
+			if(total_size > 4 * params->max_block_size / 5) {
+				min_ratio *= 20;
+			} else if(total_size > 3 * params->max_block_size / 5) {
+				min_ratio *= 10;
+			} else if(total_size > 2 * params->max_block_size / 5) {
+				min_ratio *= 5;
+			} else if(total_size > 1 * params->max_block_size / 5) {
+				min_ratio *= 3;
+			}
+			if(tx->fee_ratio < min_ratio) {
+				throw std::logic_error("transaction fee_ratio too small");
+			}
 		}
 	}
 	hash_t failed_tx;
