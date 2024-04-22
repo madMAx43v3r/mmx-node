@@ -466,13 +466,11 @@ Vue.component('tx-fee-select', {
 			value: null,
 			items: [
 				{text: "1x (min fee)", value: 1024},
-				{text: "1.1x", value: 1126},
-				{text: "1.5x", value: 1536},
 				{text: "2x", value: 2048},
 				{text: "3x", value: 3072},
 				{text: "5x", value: 5120},
 				{text: "10x", value: 10240},
-				{text: "100x", value: 102400},
+				{text: "20x", value: 20480},
 			]
 		}
 	},
