@@ -618,7 +618,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	auto context = new_exec_context(peak->height + 1);
 
 	std::vector<tx_pool_t> tx_list;
-	uint128_t total_verify_cost = 0;
+	uint64_t total_verify_cost = 0;
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
