@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 	mmx::fixed128 amount;
 	mmx::fixed128 ask_amount;
 	double fee_ratio = 1;
-	double gas_limit = 1;
+	double gas_limit = 5;
 	double min_amount = 0.95;
 	bool pre_accept = false;
 	vnx::read_config("$1", module);
