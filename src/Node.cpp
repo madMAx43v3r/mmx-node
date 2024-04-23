@@ -972,9 +972,9 @@ vnx::Variant Node::call_contract(
 			vm::load(engine, bin);
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(get_height()));
-			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::uint_t(address.to_uint256()));
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
 			if(user) {
-				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::uint_t(user->to_uint256()));
+				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(*user));
 			} else {
 				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 			}
@@ -1426,7 +1426,7 @@ swap_info_t Node::get_swap_info(const addr_t& address) const
 swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& user) const
 {
 	swap_user_info_t out;
-	const auto key = storage->lookup(address, vm::uint_t(user.to_uint256()));
+	const auto key = storage->lookup(address, vm::to_binary(user));
 	const auto users = read_storage_field(address, "users");
 	const auto user_ref = storage->read(address, to_ref(users.first), key);
 	if(!user_ref) {
