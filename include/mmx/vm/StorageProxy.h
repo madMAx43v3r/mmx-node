@@ -34,6 +34,9 @@ public:
 
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
 
+	using Storage::write;
+	using Storage::lookup;
+
 private:
 	std::unique_ptr<var_t> read_ex(std::unique_ptr<var_t> var) const;
 

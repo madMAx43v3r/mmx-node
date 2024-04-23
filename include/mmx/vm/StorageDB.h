@@ -53,6 +53,9 @@ public:
 		return {};
 	}
 
+	using Storage::write;
+	using Storage::lookup;
+
 private:
 	std::shared_ptr<Table> table;
 	std::shared_ptr<Table> table_entries;

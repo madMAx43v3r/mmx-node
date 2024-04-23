@@ -57,6 +57,9 @@ public:
 
 	void dump_memory(std::ostream& out) const;
 
+	using Storage::write;
+	using Storage::lookup;
+
 protected:
 	mutable std::mutex mutex;
 	std::map<std::pair<addr_t, uint64_t>, std::unique_ptr<var_t>> memory;
