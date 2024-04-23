@@ -480,7 +480,7 @@ void Node::purge_tx_pool()
 		});
 
 	size_t num_purged = 0;
-	uint128_t total_pool_size = 0;
+	uint64_t total_pool_size = 0;
 	std::unordered_map<addr_t, std::pair<uint64_t, uint64_t>> sender_map;	// [sender => [balance, total fee]]
 
 	const auto max_pool_size = uint128_t(tx_pool_limit) * params->max_block_size;
