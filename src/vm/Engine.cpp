@@ -123,9 +123,6 @@ uint64_t Engine::lookup(const var_t& var, const bool read_only)
 	}
 	if(auto key = storage->lookup(contract, var)) {
 		const auto& value = read_fail(key);
-		if(value.ref_count == 0) {
-			throw std::logic_error("lookup(): key with ref_count == 0");
-		}
 		if(!(value.flags & FLAG_CONST) || !(value.flags & FLAG_KEY)) {
 			throw std::logic_error("lookup(): key missing flag CONST / KEY");
 		}

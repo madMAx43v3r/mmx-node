@@ -38,7 +38,7 @@ std::tuple<addr_t, uint64_t> read_key(std::shared_ptr<const db_val_t> key)
 	return out;
 }
 
-std::shared_ptr<db_val_t> get_entry_key(const addr_t& contract, uint64_t dst, uint64_t key)
+std::shared_ptr<db_val_t> write_entry_key(const addr_t& contract, uint64_t dst, uint64_t key)
 {
 	auto out = std::make_shared<db_val_t>(HASH_KEY_SIZE + 16);
 	::memcpy(out->data, contract.data(), HASH_KEY_SIZE);
@@ -63,11 +63,12 @@ std::tuple<addr_t, uint64_t, uint64_t> read_entry_key(std::shared_ptr<const db_v
 	return out;
 }
 
-std::shared_ptr<db_val_t> write_index_key(const addr_t& contract, const std::pair<const uint8_t*, size_t>& value)
+std::shared_ptr<db_val_t> write_index_key(const addr_t& contract, const var_t& value)
 {
-	auto out = std::make_shared<db_val_t>(contract.size() + value.second);
+	auto data = serialize(value, false, false);
+	auto out = std::make_shared<db_val_t>(contract.size() + data.second);
 	::memcpy(out->data, contract.data(), contract.size());
-	::memcpy(out->data + contract.size(), value.first, value.second);
+	::memcpy(out->data + contract.size(), data.first.get(), data.second);
 	return out;
 }
 
@@ -103,7 +104,7 @@ std::unique_ptr<var_t> StorageDB::read_ex(const addr_t& contract, const uint64_t
 
 std::unique_ptr<var_t> StorageDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
 {
-	const auto entry_key = get_entry_key(contract, src, key);
+	const auto entry_key = write_entry_key(contract, src, key);
 	if(auto value = table_entries->find(entry_key)) {
 		std::unique_ptr<var_t> var;
 		deserialize(var, value->data, value->size, false);
@@ -118,7 +119,7 @@ void StorageDB::write(const addr_t& contract, const uint64_t dst, const var_t& v
 	auto data = serialize(value, false);
 
 	if(value.flags & FLAG_KEY) {
-		const auto key = write_index_key(contract, std::make_pair(data.first.get() + 5, data.second - 5));
+		const auto key = write_index_key(contract, value);
 		table_index->insert(key, std::make_shared<db_val_t>(&dst, sizeof(dst)));
 	}
 	table->insert(key, std::make_shared<db_val_t>(data.first.release(), data.second, false));
@@ -126,15 +127,14 @@ void StorageDB::write(const addr_t& contract, const uint64_t dst, const var_t& v
 
 void StorageDB::write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value)
 {
-	const auto entry_key = get_entry_key(contract, dst, key);
+	const auto entry_key = write_entry_key(contract, dst, key);
 	auto data = serialize(value, false);
 	table_entries->insert(entry_key, std::make_shared<db_val_t>(data.first.release(), data.second, false));
 }
 
 uint64_t StorageDB::lookup(const addr_t& contract, const var_t& value) const
 {
-	const auto data = serialize(value, false, false);
-	const auto key = write_index_key(contract, std::make_pair(data.first.get(), data.second));
+	const auto key = write_index_key(contract, value);
 
 	uint64_t out = 0;
 	if(auto value = table_index->find(key)) {
@@ -166,7 +166,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_range(
 	for(const auto& entry : keys) {
 		if(auto value = table->find(entry.first, height)) {
 			std::unique_ptr<var_t> var;
-			deserialize(var, value->data, value->size);
+			deserialize(var, value->data, value->size, false);
 			out.emplace_back(entry.second, std::move(var));
 		}
 	}
@@ -180,7 +180,7 @@ std::vector<std::pair<uint64_t, varptr_t>> StorageDB::find_entries(
 	std::vector<std::pair<std::shared_ptr<db_val_t>, uint64_t>> keys;
 
 	Table::Iterator iter(table_entries);
-	iter.seek(get_entry_key(contract, address, 0));
+	iter.seek(write_entry_key(contract, address, 0));
 	while(iter.is_valid()) {
 		const auto key = read_entry_key(iter.key());
 		if(::memcmp(std::get<0>(key).data(), contract.data(), HASH_KEY_SIZE) || std::get<1>(key) != address) {
