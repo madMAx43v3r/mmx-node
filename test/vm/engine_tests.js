@@ -610,6 +610,14 @@ __nop();
 		fail("test[4] != test");
 	}
 }
+{
+	var map = {};
+	const key = bech32("mmx1cxn9nan8xyw3zflxheaf2c2mrzgexzp33j9rwqmxw7ed3ut09wqsr06jmq");
+	map[key] = 1337;
+	if(map[key] != 1337) {
+		fail("map[key] != 1337 (key = bech32())");
+	}
+}
 
 
 
