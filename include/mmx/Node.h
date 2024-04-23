@@ -506,7 +506,7 @@ private:
 
 	std::vector<std::shared_ptr<fork_t>> pending_forks;
 	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
-	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> pending_transactions;
+	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_queue;
 
 	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<vnx::Timer> stuck_timer;

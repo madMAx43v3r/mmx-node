@@ -587,7 +587,7 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 		if(iter != tx_pool.end()) {
 			return iter->second.tx;
 		}
-		for(const auto& entry : pending_transactions) {
+		for(const auto& entry : tx_queue) {
 			if(const auto& tx = entry.second) {
 				if(tx->id == id) {
 					return tx;
@@ -1672,7 +1672,7 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 		}
 	}
 	// Note: tx->is_valid() already checked by Router
-	pending_transactions[tx->content_hash] = tx;
+	tx_queue[tx->content_hash] = tx;
 
 	if(!vnx_sample) {
 		publish(tx, output_transactions);
@@ -2184,9 +2184,9 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 		tx_log.insert(block->height, tx_ids);
 
-		for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
+		for(auto iter = tx_queue.begin(); iter != tx_queue.end();) {
 			if(tx_set.count(iter->second->id)) {
-				iter = pending_transactions.erase(iter);
+				iter = tx_queue.erase(iter);
 			} else {
 				iter++;
 			}

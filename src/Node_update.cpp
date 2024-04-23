@@ -528,13 +528,13 @@ void Node::validate_new()
 	}
 
 	// drop anything with too low fee ratio
-	for(auto iter = pending_transactions.begin(); iter != pending_transactions.end();) {
+	for(auto iter = tx_queue.begin(); iter != tx_queue.end();) {
 		const auto& tx = iter->second;
 		if(tx->fee_ratio <= min_pool_fee_ratio) {
 			if(show_warnings) {
 				log(WARN) << "TX too low fee_ratio for mempool: " << tx->fee_ratio << " (" << tx->id << ")";
 			}
-			iter = pending_transactions.erase(iter);
+			iter = tx_queue.erase(iter);
 		} else {
 			iter++;
 		}
@@ -543,7 +543,7 @@ void Node::validate_new()
 	// select non-overlapping set
 	std::vector<tx_pool_t> tx_list;
 	std::unordered_set<hash_t> tx_set;
-	for(const auto& entry : pending_transactions) {
+	for(const auto& entry : tx_queue) {
 		if(const auto& tx = entry.second) {
 			if(tx_set.insert(tx->id).second) {
 				tx_pool_t tmp;
@@ -593,7 +593,7 @@ void Node::validate_new()
 				publish(tx, output_verified_transactions);
 			}
 		}
-		pending_transactions.erase(tx->content_hash);
+		tx_queue.erase(tx->content_hash);
 	}
 }
 
