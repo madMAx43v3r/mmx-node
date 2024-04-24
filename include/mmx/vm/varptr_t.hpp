@@ -27,9 +27,7 @@ public:
 	explicit varptr_t(var_t* var)
 	{
 		ptr = var;
-		if(ptr) {
-			ptr->addref();
-		}
+		addref();
 	}
 
 	template<typename T>
@@ -37,25 +35,15 @@ public:
 
 	varptr_t(const varptr_t& other) : varptr_t(other.ptr) {}
 
-	~varptr_t()
-	{
-		if(ptr) {
-			if(ptr->unref()) {
-				delete ptr;
-			}
-			ptr = nullptr;
-		}
+	~varptr_t() {
+		unref();
 	}
 
 	varptr_t& operator=(const varptr_t& other)
 	{
-		if(ptr && ptr->unref()) {
-			delete ptr;
-		}
+		unref();
 		ptr = other.ptr;
-		if(ptr) {
-			ptr->addref();
-		}
+		addref();
 		return *this;
 	}
 
@@ -81,6 +69,22 @@ public:
 
 	const var_t* operator->() const {
 		return ptr;
+	}
+
+private:
+	void addref() {
+		if(ptr) {
+			ptr->ref_count++;
+		}
+	}
+
+	void unref() {
+		if(ptr) {
+			if(ptr->ref_count-- == 1) {
+				delete ptr;
+			}
+			ptr = nullptr;
+		}
 	}
 
 private:
