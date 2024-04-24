@@ -7,6 +7,9 @@ set -e
 echo "Unit tests [mmx_tests]"
 ./build/test/mmx_tests
 
+echo "Unit tests [test_database]"
+./build/test/test_database
+
 echo "Unit tests [vm_engine_tests]"
 ./build/test/vm_engine_tests
 

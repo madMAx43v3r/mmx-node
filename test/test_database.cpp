@@ -38,7 +38,9 @@ T db_read(std::shared_ptr<mmx::db_val_t> value)
 
 int main(int argc, char** argv)
 {
-	vnx::init("test_database", argc, argv);
+	vnx::test::init("mmx.database");
+
+	VNX_TEST_BEGIN("test_table")
 	{
 		const uint32_t num_entries = 100;
 
@@ -140,6 +142,9 @@ int main(int argc, char** argv)
 			vnx::test::expect(db_read<uint64_t>(table->find(db_write(uint32_t(i * 2)))), i);
 		}
 	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("uint_table")
 	{
 		mmx::uint_table<uint32_t, std::string> table("tmp/uint_table");
 		table.revert(0);
@@ -171,10 +176,13 @@ int main(int argc, char** argv)
 			vnx::test::expect(res, true);
 			vnx::test::expect(value, "dfhgdfgdfgdfg");
 		}
-		table.scan([](const uint32_t& key, const std::string& value) {
-			std::cout << key << " => " << value << std::endl;
-		});
+//		table.scan([](const uint32_t& key, const std::string& value) {
+//			std::cout << key << " => " << value << std::endl;
+//		});
 	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("uint_multi_table")
 	{
 		mmx::uint_multi_table<uint32_t, std::string> table("tmp/uint_multi_table");
 		table.revert(0);
@@ -209,24 +217,49 @@ int main(int argc, char** argv)
 			vnx::test::expect(res, size_t(1));
 			vnx::test::expect(value[0], "dfhgdfgdfgdfg");
 		}
-		table.scan([](const uint32_t& key, const std::string& value) {
-			std::cout << key << " => " << value << std::endl;
-		});
+//		table.scan([](const uint32_t& key, const std::string& value) {
+//			std::cout << key << " => " << value << std::endl;
+//		});
 	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("test_table_1")
 	{
 		mmx::Table::options_t options;
 		options.force_flush_threshold = 10;
 		auto table = std::make_shared<mmx::Table>("tmp/test_table_1", options);
 
-		std::cout << "test_table_1: version = " << table->current_version() << std::endl;
-
 		table->revert(0);
 
-		for(uint32_t i = 1; i <= 10000; ++i) {
-			table->commit(i);
+		const auto key = db_write(uint64_t(1337));
+
+		for(uint32_t i = 0; i < 1000; ++i)
+		{
+			table->insert(key, db_write(i));
+			table->commit(i + 1);
+		}
+
+		for(int32_t i = 999; i >= 0; --i)
+		{
+			auto value = table->find(key, i);
+			vnx::test::expect(bool(value), true);
+			vnx::test::expect(db_read<uint32_t>(value), uint32_t(i));
+		}
+
+		for(int32_t i = 1000; i >= 0; --i)
+		{
+			table->revert(i);
+			auto value = table->find(key);
+			if(i) {
+				vnx::test::expect(bool(value), true);
+				vnx::test::expect(db_read<uint32_t>(value), uint32_t(i - 1));
+			} else {
+				vnx::test::expect(bool(value), false);
+			}
 		}
 	}
-	vnx::close();
-	return 0;
+	VNX_TEST_END()
+
+	return vnx::test::done();
 }
 
