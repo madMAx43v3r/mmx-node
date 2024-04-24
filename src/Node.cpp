@@ -1436,7 +1436,7 @@ swap_user_info_t Node::get_swap_user_info(const addr_t& address, const addr_t& u
 	if(!user_ref) {
 		return out;
 	}
-	auto data = read_storage_object(address, get_address(user_ref.get()));
+	auto data = read_storage_object(address, to_ref(user_ref.get()));
 
 	out.pool_idx = to_uint(data["pool_idx"]).lower().lower();
 	out.unlock_height = to_uint(data["unlock_height"]);

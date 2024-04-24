@@ -322,7 +322,7 @@ std::string to_string_value(const var_t* var);
 
 std::string to_string_value_hex(const var_t* var);
 
-uint64_t get_address(const var_t* var);
+uint64_t to_ref(const var_t* var);
 
 uint256_t to_uint(const var_t* var);
 
