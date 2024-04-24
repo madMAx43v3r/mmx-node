@@ -2,6 +2,8 @@
 
 set -e
 
+rm -rf tmp
+
 ./scripts/reset_coverage.sh
 
 echo "Unit tests [mmx_tests]"
