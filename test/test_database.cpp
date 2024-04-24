@@ -238,6 +238,8 @@ int main(int argc, char** argv)
 			table->insert(key, db_write(i));
 			table->commit(i + 1);
 		}
+		table = nullptr;
+		table = std::make_shared<mmx::Table>("tmp/test_table_1", options);
 
 		for(int32_t i = 999; i >= 0; --i)
 		{
