@@ -24,8 +24,11 @@ public:
 
 	varptr_t(const std::nullptr_t&) {}
 
-	explicit varptr_t(var_t* var)
+	explicit varptr_t(var_t* var, const bool aquire = true)
 	{
+		if(aquire && var && var->ref_count != 0) {
+			throw std::logic_error("varptr_t(): ref_count != 0");
+		}
 		ptr = var;
 		addref();
 	}
@@ -33,7 +36,7 @@ public:
 	template<typename T>
 	varptr_t(std::unique_ptr<T> var) : varptr_t(var.release()) {}
 
-	varptr_t(const varptr_t& other) : varptr_t(other.ptr) {}
+	varptr_t(const varptr_t& other) : varptr_t(other.ptr, false) {}
 
 	~varptr_t() {
 		unref();
