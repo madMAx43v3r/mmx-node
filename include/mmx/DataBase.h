@@ -257,8 +257,8 @@ public:
 
 	template<typename T>
 	void open_async(T& table, const std::string& path) {
-		threads.add_task([&table, path]() {
-			table.open(path);
+		threads.add_task([this, &table, path]() {
+			add(table.open(path));
 		});
 	}
 
@@ -267,6 +267,7 @@ public:
 	}
 
 private:
+	mutable std::mutex mutex;
 	vnx::ThreadPool threads;
 	std::vector<std::shared_ptr<Table>> tables;
 

@@ -1001,11 +1001,13 @@ DataBase::DataBase(const int num_threads)
 
 void DataBase::add(std::shared_ptr<Table> table)
 {
+	std::lock_guard<std::mutex> lock(mutex);
 	tables.push_back(table);
 }
 
 void DataBase::commit(const uint32_t new_version)
 {
+	std::lock_guard<std::mutex> lock(mutex);
 	for(const auto& table : tables) {
 		threads.add_task([table, new_version]() {
 			table->commit(new_version);
@@ -1016,6 +1018,7 @@ void DataBase::commit(const uint32_t new_version)
 
 void DataBase::revert(const uint32_t new_version)
 {
+	std::lock_guard<std::mutex> lock(mutex);
 	for(const auto& table : tables) {
 		threads.add_task([table, new_version]() {
 			table->revert(new_version);
@@ -1026,6 +1029,7 @@ void DataBase::revert(const uint32_t new_version)
 
 uint32_t DataBase::min_version() const
 {
+	std::lock_guard<std::mutex> lock(mutex);
 	if(tables.empty()) {
 		return 0;
 	}
