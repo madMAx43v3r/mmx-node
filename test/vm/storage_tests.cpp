@@ -336,7 +336,72 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
-	// TODO: more
+	VNX_TEST_BEGIN("delete_write")
+	{
+		db->revert(0);
+		{
+			auto engine = new_engine(storage, false);
+			engine->write(vm::MEM_STATIC, vm::uint_t(1337));
+			engine->commit();
+		}
+		db->commit(1);
+		{
+			auto engine = new_engine(storage, false);
+			expect(engine->read(vm::MEM_STATIC), vm::uint_t(1337));
+
+			engine->erase(vm::MEM_STATIC);
+			engine->commit();
+		}
+		db->commit(2);
+		{
+			auto engine = new_engine(storage, false);
+			expect(engine->read(vm::MEM_STATIC), nullptr);
+
+			engine->write(vm::MEM_STATIC, vm::uint_t(11337));
+			expect(engine->read(vm::MEM_STATIC), vm::uint_t(11337));
+			engine->commit();
+		}
+		db->commit(3);
+		{
+			auto engine = new_engine(storage, true);
+			expect(engine->read(vm::MEM_STATIC), vm::uint_t(11337));
+		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("delete_write_key")
+	{
+		db->revert(0);
+		{
+			auto engine = new_engine(storage, false);
+			engine->write(vm::MEM_STATIC, vm::map_t());
+			engine->write_key(vm::MEM_STATIC, vm::uint_t(1337), vm::uint_t(11));
+			engine->commit();
+		}
+		db->commit(1);
+		{
+			auto engine = new_engine(storage, false);
+			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1337)), vm::uint_t(11));
+
+			engine->erase_key(vm::MEM_STATIC, engine->lookup(vm::uint_t(1337), true));
+			engine->commit();
+		}
+		db->commit(2);
+		{
+			auto engine = new_engine(storage, false);
+			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1337)), nullptr);
+
+			engine->write_key(vm::MEM_STATIC, vm::uint_t(1337), vm::uint_t(111));
+			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1337)), vm::uint_t(111));
+			engine->commit();
+		}
+		db->commit(3);
+		{
+			auto engine = new_engine(storage, true);
+			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1337)), vm::uint_t(111));
+		}
+	}
+	VNX_TEST_END()
 
 	return vnx::test::done();
 }
