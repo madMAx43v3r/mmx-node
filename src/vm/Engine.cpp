@@ -431,7 +431,7 @@ void Engine::erase(std::unique_ptr<var_t>& var)
 		return;
 	}
 	if(var->ref_count) {
-		throw std::runtime_error("erase() with ref_count " + std::to_string(var->ref_count));
+		throw std::logic_error("erase() with ref_count " + std::to_string(var->ref_count));
 	}
 	if(++erase_call_depth > MAX_ERASE_RECURSION) {
 		throw std::runtime_error("erase() recursion overflow");
