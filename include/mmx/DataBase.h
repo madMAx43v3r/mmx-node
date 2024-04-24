@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_DB_DATABASE_H_
 
 #include <vnx/File.h>
+#include <vnx/ThreadPool.h>
 
 #include <fstream>
 #include <mutex>
@@ -242,6 +243,8 @@ private:
 
 class DataBase {
 public:
+	DataBase(const int num_threads = 0);
+
 	void add(std::shared_ptr<Table> table);
 
 	void commit(const uint32_t new_version);
@@ -252,7 +255,19 @@ public:
 
 	uint32_t recover();
 
+	template<typename T>
+	void open_async(T& table, const std::string& path) {
+		threads.add_task([&table, path]() {
+			table.open(path);
+		});
+	}
+
+	void sync() {
+		threads.sync();
+	}
+
 private:
+	vnx::ThreadPool threads;
 	std::vector<std::shared_ptr<Table>> tables;
 
 };

@@ -994,6 +994,11 @@ void Table::Iterator::seek_for_prev(std::shared_ptr<db_val_t> key_)
 }
 
 
+DataBase::DataBase(const int num_threads)
+	:	threads(num_threads > 0 ? num_threads : std::max(std::thread::hardware_concurrency(), 4u))
+{
+}
+
 void DataBase::add(std::shared_ptr<Table> table)
 {
 	tables.push_back(table);
@@ -1002,16 +1007,21 @@ void DataBase::add(std::shared_ptr<Table> table)
 void DataBase::commit(const uint32_t new_version)
 {
 	for(const auto& table : tables) {
-		table->commit(new_version);
+		threads.add_task([table, new_version]() {
+			table->commit(new_version);
+		});
 	}
+	threads.sync();
 }
 
 void DataBase::revert(const uint32_t new_version)
 {
-#pragma omp parallel for
-	for(int i = 0; i < int(tables.size()); ++i) {
-		tables[i]->revert(new_version);
+	for(const auto& table : tables) {
+		threads.add_task([table, new_version]() {
+			table->revert(new_version);
+		});
 	}
+	threads.sync();
 }
 
 uint32_t DataBase::min_version() const

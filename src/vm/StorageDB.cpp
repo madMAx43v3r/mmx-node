@@ -72,14 +72,14 @@ std::shared_ptr<db_val_t> write_index_key(const addr_t& contract, const var_t& v
 	return out;
 }
 
-StorageDB::StorageDB(const std::string& database_path, DataBase& db)
+StorageDB::StorageDB(const std::string& database_path, std::shared_ptr<DataBase> db)
 {
 	table = std::make_shared<Table>(database_path + "storage");
 	table_entries = std::make_shared<Table>(database_path + "storage_entries");
 	table_index = std::make_shared<Table>(database_path + "storage_index");
-	db.add(table);
-	db.add(table_entries);
-	db.add(table_index);
+	db->add(table);
+	db->add(table_entries);
+	db->add(table_index);
 }
 
 StorageDB::~StorageDB()

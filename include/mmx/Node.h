@@ -446,8 +446,8 @@ private:
 	std::shared_ptr<const Contract> get_contract_for_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
 
 private:
-	DataBase db;
 	hash_t state_hash;
+	std::shared_ptr<DataBase> db;
 
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> recv_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]

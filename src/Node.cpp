@@ -127,26 +127,30 @@ void Node::main()
 
 	const auto time_begin = vnx::get_wall_time_millis();
 	{
-		db.add(recv_log.open(database_path + "recv_log"));
-		db.add(spend_log.open(database_path + "spend_log"));
-		db.add(exec_log.open(database_path + "exec_log"));
+		db = std::make_shared<DataBase>(num_db_threads);
 
-		db.add(contract_map.open(database_path + "contract_map"));
-		db.add(contract_log.open(database_path + "contract_log"));
-		db.add(deploy_map.open(database_path + "deploy_map"));
-		db.add(vplot_map.open(database_path + "vplot_map"));
-		db.add(owner_map.open(database_path + "owner_map"));
-		db.add(offer_bid_map.open(database_path + "offer_bid_map"));
-		db.add(offer_ask_map.open(database_path + "offer_ask_map"));
-		db.add(trade_log.open(database_path + "trade_log"));
-		db.add(swap_liquid_map.open(database_path + "swap_liquid_map"));
+		db->open_async(recv_log, database_path + "recv_log");
+		db->open_async(spend_log, database_path + "spend_log");
+		db->open_async(exec_log, database_path + "exec_log");
 
-		db.add(tx_log.open(database_path + "tx_log"));
-		db.add(tx_index.open(database_path + "tx_index"));
-		db.add(hash_index.open(database_path + "hash_index"));
-		db.add(block_index.open(database_path + "block_index"));
-		db.add(balance_table.open(database_path + "balance_table"));
-		db.add(farmer_block_map.open(database_path + "farmer_block_map"));
+		db->open_async(contract_map, database_path + "contract_map");
+		db->open_async(contract_log, database_path + "contract_log");
+		db->open_async(deploy_map, database_path + "deploy_map");
+		db->open_async(vplot_map, database_path + "vplot_map");
+		db->open_async(owner_map, database_path + "owner_map");
+		db->open_async(offer_bid_map, database_path + "offer_bid_map");
+		db->open_async(offer_ask_map, database_path + "offer_ask_map");
+		db->open_async(trade_log, database_path + "trade_log");
+		db->open_async(swap_liquid_map, database_path + "swap_liquid_map");
+
+		db->open_async(tx_log, database_path + "tx_log");
+		db->open_async(tx_index, database_path + "tx_index");
+		db->open_async(hash_index, database_path + "hash_index");
+		db->open_async(block_index, database_path + "block_index");
+		db->open_async(balance_table, database_path + "balance_table");
+		db->open_async(farmer_block_map, database_path + "farmer_block_map");
+
+		db->sync();
 	}
 	storage = std::make_shared<vm::StorageDB>(database_path, db);
 
@@ -154,7 +158,7 @@ void Node::main()
 		replay_height = 0;
 	}
 	{
-		const auto height = std::min(db.min_version(), replay_height);
+		const auto height = std::min(db->min_version(), replay_height);
 		revert(height);
 		if(height) {
 			log(INFO) << "Loaded DB at height " << (height - 1)
@@ -2210,7 +2214,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		state_hash = block->hash;
 		contract_cache.clear();
 
-		db.commit(block->height + 1);
+		db->commit(block->height + 1);
 	}
 	catch(const std::exception& ex) {
 		try {
@@ -2321,7 +2325,7 @@ void Node::revert(const uint32_t height)
 			block_chain->seek_to(entry.file_offset);
 		}
 	}
-	db.revert(height);
+	db->revert(height);
 	contract_cache.clear();
 
 	block_index_t entry;

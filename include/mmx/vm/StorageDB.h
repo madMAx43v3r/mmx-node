@@ -18,7 +18,7 @@ namespace vm {
 
 class StorageDB : public Storage {
 public:
-	StorageDB(const std::string& database_path, DataBase& db);
+	StorageDB(const std::string& database_path, std::shared_ptr<DataBase> db);
 
 	~StorageDB();
 
