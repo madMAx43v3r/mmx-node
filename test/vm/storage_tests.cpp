@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 			auto engine = new_engine(storage, true);
 			const auto ref = engine->read(vm::MEM_STATIC);
 			vnx::test::expect(bool(ref), true);
-			const auto value = engine->read(vm::get_address(ref));
+			const auto value = engine->read(vm::to_ref(ref));
 			expect(value, vm::uint_t(1337));
 		}
 		{
@@ -171,7 +171,7 @@ int main(int argc, char** argv)
 			auto engine = new_engine(storage, false);
 			const auto key = engine->lookup(vm::to_binary("test"), false);
 			engine->write(vm::MEM_STATIC, vm::map_t());
-			vnx::test::expect(vm::get_address(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
+			vnx::test::expect(vm::to_ref(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
 			engine->write_key(vm::MEM_STATIC, key, vm::uint_t(1337));
 			engine->commit();
 		}
@@ -214,14 +214,14 @@ int main(int argc, char** argv)
 		{
 			auto engine = new_engine(storage, false);
 			engine->write(vm::MEM_STATIC, vm::array_t());
-			vnx::test::expect(vm::get_address(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
+			vnx::test::expect(vm::to_ref(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
 			engine->push_back(vm::MEM_STATIC, vm::uint_t(1));
 			engine->commit();
 		}
 		db->commit(1);
 		{
 			auto engine = new_engine(storage, false);
-			vnx::test::expect(vm::get_address(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
+			vnx::test::expect(vm::to_ref(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
 			engine->push_back(vm::MEM_STATIC, vm::uint_t(2));
 			engine->commit();
 		}
@@ -249,7 +249,7 @@ int main(int argc, char** argv)
 		}
 		{
 			auto engine = new_engine(storage, false);
-			vnx::test::expect(vm::get_address(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
+			vnx::test::expect(vm::to_ref(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
 			engine->pop_back(vm::MEM_STACK, vm::MEM_STATIC);
 			expect(engine->read(vm::MEM_STACK), vm::uint_t(2));
 			engine->commit();
@@ -276,7 +276,7 @@ int main(int argc, char** argv)
 			const auto value = engine->read(vm::MEM_STATIC);
 			vnx::test::expect(bool(value), true);
 			vnx::test::expect(value->type, vm::TYPE_MAP);
-			vnx::test::expect(vm::get_address(value), vm::MEM_STATIC);
+			vnx::test::expect(vm::to_ref(value), vm::MEM_STATIC);
 
 			engine->write_key(vm::MEM_STATIC, vm::uint_t(1), vm::var_t(vm::TYPE_TRUE));
 			engine->write_key(vm::MEM_STATIC, vm::to_binary(addr_t()), vm::to_binary(addr_t()));
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
 				const auto value = engine->read(vm::MEM_STACK);
 				vnx::test::expect(bool(value), true);
 				vnx::test::expect(value->type, vm::TYPE_MAP);
-				vnx::test::expect(vm::get_address(value), vm::MEM_STACK);
+				vnx::test::expect(vm::to_ref(value), vm::MEM_STACK);
 				expect(engine->read_key(vm::MEM_STACK, vm::uint_t(1)), vm::var_t(vm::TYPE_TRUE));
 				expect(engine->read_key(vm::MEM_STACK, vm::to_binary(addr_t())), vm::to_binary(addr_t()));
 			}
@@ -298,7 +298,7 @@ int main(int argc, char** argv)
 			const auto value = engine->read(vm::MEM_STATIC);
 			vnx::test::expect(bool(value), true);
 			vnx::test::expect(value->type, vm::TYPE_MAP);
-			vnx::test::expect(vm::get_address(value), vm::MEM_STATIC);
+			vnx::test::expect(vm::to_ref(value), vm::MEM_STATIC);
 
 			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1)), vm::var_t(vm::TYPE_TRUE));
 			expect(engine->read_key(vm::MEM_STATIC, vm::to_binary(addr_t())), vm::to_binary(addr_t()));
