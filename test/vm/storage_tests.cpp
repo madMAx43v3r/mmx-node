@@ -222,7 +222,7 @@ int main(int argc, char** argv)
 		{
 			auto engine = new_engine(storage, false);
 			vnx::test::expect(vm::to_ref(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
-			engine->push_back(vm::MEM_STATIC, vm::uint_t(2));
+			engine->push_back(vm::MEM_STATIC, vm::to_binary("test"));
 			engine->commit();
 		}
 		db->commit(2);
@@ -234,7 +234,7 @@ int main(int argc, char** argv)
 			auto array = (vm::array_t*)value;
 			vnx::test::expect(array->size, 2u);
 			expect(engine->read_entry(vm::MEM_STATIC, 0), vm::uint_t(1));
-			expect(engine->read_entry(vm::MEM_STATIC, 1), vm::uint_t(2));
+			expect(engine->read_entry(vm::MEM_STATIC, 1), vm::to_binary("test"));
 
 			engine->copy(vm::MEM_STACK, vm::MEM_STATIC);
 			{
@@ -244,14 +244,13 @@ int main(int argc, char** argv)
 				auto array = (vm::array_t*)value;
 				vnx::test::expect(array->size, 2u);
 				expect(engine->read_entry(vm::MEM_STACK, 0), vm::uint_t(1));
-				expect(engine->read_entry(vm::MEM_STACK, 1), vm::uint_t(2));
+				expect(engine->read_entry(vm::MEM_STACK, 1), vm::to_binary("test"));
 			}
 		}
 		{
 			auto engine = new_engine(storage, false);
-			vnx::test::expect(vm::to_ref(engine->read(vm::MEM_STATIC)), vm::MEM_STATIC);
 			engine->pop_back(vm::MEM_STACK, vm::MEM_STATIC);
-			expect(engine->read(vm::MEM_STACK), vm::uint_t(2));
+			expect(engine->read(vm::MEM_STACK), vm::to_binary("test"));
 			engine->commit();
 		}
 		db->commit(3);
@@ -309,10 +308,12 @@ int main(int argc, char** argv)
 		}
 		db->commit(2);
 		{
-			auto engine = new_engine(storage, false);
+			auto engine = new_engine(storage, true);
 			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1)), vm::uint_t(2));
 			expect(engine->read_key(vm::MEM_STATIC, vm::to_binary(addr_t())), vm::to_binary(hash_t("test")));
-
+		}
+		{
+			auto engine = new_engine(storage, false);
 			engine->erase_key(vm::MEM_STATIC, engine->lookup(vm::uint_t(1), true));
 			engine->erase_key(vm::MEM_STATIC, engine->lookup(vm::to_binary(addr_t()), true));
 			engine->commit();

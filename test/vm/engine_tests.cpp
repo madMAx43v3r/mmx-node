@@ -146,7 +146,8 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
-	auto storage = std::make_shared<vm::StorageRAM>();
+	auto backend = std::make_shared<vm::StorageRAM>();
+	auto storage = std::make_shared<vm::StorageCache>(backend);
 	auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
 	engine->gas_limit = 1000000;
 
@@ -303,10 +304,11 @@ int main(int argc, char** argv)
 	VNX_TEST_END()
 
 	engine->commit();
+	storage->commit();
 
 	VNX_TEST_BEGIN("assign")
 	{
-		auto engine = std::make_shared<vm::Engine>(addr_t(), storage, true);
+		auto engine = std::make_shared<vm::Engine>(addr_t(), backend, true);
 		engine->gas_limit = 1000000;
 		check_func_1(engine, vm::MEM_STATIC);
 	}
