@@ -71,6 +71,7 @@ public:
 	uint32_t num_sync_retries = 3;
 	uint32_t replay_height = -1;
 	uint32_t num_threads = 24;
+	uint32_t num_db_threads = 8;
 	uint32_t num_vdf_threads = 8;
 	uint32_t vdf_check_divider = 5000;
 	uint32_t vdf_verify_divider = 1;
@@ -207,7 +208,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(42);
+	_visitor.template type_begin<NodeBase>(43);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -236,21 +237,22 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("num_sync_retries", 25); _visitor.accept(num_sync_retries);
 	_visitor.type_field("replay_height", 26); _visitor.accept(replay_height);
 	_visitor.type_field("num_threads", 27); _visitor.accept(num_threads);
-	_visitor.type_field("num_vdf_threads", 28); _visitor.accept(num_vdf_threads);
-	_visitor.type_field("vdf_check_divider", 29); _visitor.accept(vdf_check_divider);
-	_visitor.type_field("vdf_verify_divider", 30); _visitor.accept(vdf_verify_divider);
-	_visitor.type_field("opencl_device", 31); _visitor.accept(opencl_device);
-	_visitor.type_field("do_sync", 32); _visitor.accept(do_sync);
-	_visitor.type_field("db_replay", 33); _visitor.accept(db_replay);
-	_visitor.type_field("show_warnings", 34); _visitor.accept(show_warnings);
-	_visitor.type_field("verify_vdf_cpuopencl", 35); _visitor.accept(verify_vdf_cpuopencl);
-	_visitor.type_field("verify_vdf_rewards", 36); _visitor.accept(verify_vdf_rewards);
-	_visitor.type_field("debug_exec_fails", 37); _visitor.accept(debug_exec_fails);
-	_visitor.type_field("storage_path", 38); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 39); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 40); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 41); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(42);
+	_visitor.type_field("num_db_threads", 28); _visitor.accept(num_db_threads);
+	_visitor.type_field("num_vdf_threads", 29); _visitor.accept(num_vdf_threads);
+	_visitor.type_field("vdf_check_divider", 30); _visitor.accept(vdf_check_divider);
+	_visitor.type_field("vdf_verify_divider", 31); _visitor.accept(vdf_verify_divider);
+	_visitor.type_field("opencl_device", 32); _visitor.accept(opencl_device);
+	_visitor.type_field("do_sync", 33); _visitor.accept(do_sync);
+	_visitor.type_field("db_replay", 34); _visitor.accept(db_replay);
+	_visitor.type_field("show_warnings", 35); _visitor.accept(show_warnings);
+	_visitor.type_field("verify_vdf_cpuopencl", 36); _visitor.accept(verify_vdf_cpuopencl);
+	_visitor.type_field("verify_vdf_rewards", 37); _visitor.accept(verify_vdf_rewards);
+	_visitor.type_field("debug_exec_fails", 38); _visitor.accept(debug_exec_fails);
+	_visitor.type_field("storage_path", 39); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 40); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 41); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 42); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(43);
 }
 
 

@@ -205,7 +205,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x583b89857df81d96ull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xc174ce65d09af998ull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -238,6 +238,7 @@ NodeBase::NodeBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".num_sync_retries", num_sync_retries);
 	vnx::read_config(vnx_name + ".replay_height", replay_height);
 	vnx::read_config(vnx_name + ".num_threads", num_threads);
+	vnx::read_config(vnx_name + ".num_db_threads", num_db_threads);
 	vnx::read_config(vnx_name + ".num_vdf_threads", num_vdf_threads);
 	vnx::read_config(vnx_name + ".vdf_check_divider", vdf_check_divider);
 	vnx::read_config(vnx_name + ".vdf_verify_divider", vdf_verify_divider);
@@ -297,20 +298,21 @@ void NodeBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, num_sync_retries);
 	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, replay_height);
 	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, num_threads);
-	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, num_vdf_threads);
-	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, vdf_check_divider);
-	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, vdf_verify_divider);
-	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, opencl_device);
-	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, do_sync);
-	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, db_replay);
-	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, show_warnings);
-	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, verify_vdf_cpuopencl);
-	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, verify_vdf_rewards);
-	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, debug_exec_fails);
-	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, storage_path);
-	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, database_path);
-	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, router_name);
-	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, timelord_name);
+	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, num_db_threads);
+	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, num_vdf_threads);
+	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, vdf_check_divider);
+	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, vdf_verify_divider);
+	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, opencl_device);
+	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, do_sync);
+	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, db_replay);
+	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, show_warnings);
+	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, verify_vdf_cpuopencl);
+	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, verify_vdf_rewards);
+	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, debug_exec_fails);
+	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, storage_path);
+	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, database_path);
+	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, router_name);
+	_visitor.type_field(_type_code->fields[42], 42); vnx::accept(_visitor, timelord_name);
 	_visitor.type_end(*_type_code);
 }
 
@@ -344,6 +346,7 @@ void NodeBase::write(std::ostream& _out) const {
 	_out << ", \"num_sync_retries\": "; vnx::write(_out, num_sync_retries);
 	_out << ", \"replay_height\": "; vnx::write(_out, replay_height);
 	_out << ", \"num_threads\": "; vnx::write(_out, num_threads);
+	_out << ", \"num_db_threads\": "; vnx::write(_out, num_db_threads);
 	_out << ", \"num_vdf_threads\": "; vnx::write(_out, num_vdf_threads);
 	_out << ", \"vdf_check_divider\": "; vnx::write(_out, vdf_check_divider);
 	_out << ", \"vdf_verify_divider\": "; vnx::write(_out, vdf_verify_divider);
@@ -398,6 +401,7 @@ vnx::Object NodeBase::to_object() const {
 	_object["num_sync_retries"] = num_sync_retries;
 	_object["replay_height"] = replay_height;
 	_object["num_threads"] = num_threads;
+	_object["num_db_threads"] = num_db_threads;
 	_object["num_vdf_threads"] = num_vdf_threads;
 	_object["vdf_check_divider"] = vdf_check_divider;
 	_object["vdf_verify_divider"] = vdf_verify_divider;
@@ -449,6 +453,8 @@ void NodeBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(max_sync_ahead);
 		} else if(_entry.first == "max_sync_jobs") {
 			_entry.second.to(max_sync_jobs);
+		} else if(_entry.first == "num_db_threads") {
+			_entry.second.to(num_db_threads);
 		} else if(_entry.first == "num_sync_retries") {
 			_entry.second.to(num_sync_retries);
 		} else if(_entry.first == "num_threads") {
@@ -590,6 +596,9 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	if(_name == "num_threads") {
 		return vnx::Variant(num_threads);
 	}
+	if(_name == "num_db_threads") {
+		return vnx::Variant(num_db_threads);
+	}
 	if(_name == "num_vdf_threads") {
 		return vnx::Variant(num_vdf_threads);
 	}
@@ -692,6 +701,8 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(replay_height);
 	} else if(_name == "num_threads") {
 		_value.to(num_threads);
+	} else if(_name == "num_db_threads") {
+		_value.to(num_db_threads);
 	} else if(_name == "num_vdf_threads") {
 		_value.to(num_vdf_threads);
 	} else if(_name == "vdf_check_divider") {
@@ -747,7 +758,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0x583b89857df81d96ull);
+	type_code->code_hash = vnx::Hash64(0xc174ce65d09af998ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
 	type_code->methods.resize(81);
@@ -832,7 +843,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[78] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[79] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[80] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(42);
+	type_code->fields.resize(43);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -1032,95 +1043,102 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[28];
 		field.data_size = 4;
-		field.name = "num_vdf_threads";
+		field.name = "num_db_threads";
 		field.value = vnx::to_string(8);
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[29];
 		field.data_size = 4;
+		field.name = "num_vdf_threads";
+		field.value = vnx::to_string(8);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[30];
+		field.data_size = 4;
 		field.name = "vdf_check_divider";
 		field.value = vnx::to_string(5000);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[30];
+		auto& field = type_code->fields[31];
 		field.data_size = 4;
 		field.name = "vdf_verify_divider";
 		field.value = vnx::to_string(1);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[31];
+		auto& field = type_code->fields[32];
 		field.data_size = 4;
 		field.name = "opencl_device";
 		field.value = vnx::to_string(0);
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[32];
+		auto& field = type_code->fields[33];
 		field.data_size = 1;
 		field.name = "do_sync";
 		field.value = vnx::to_string(true);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[33];
+		auto& field = type_code->fields[34];
 		field.data_size = 1;
 		field.name = "db_replay";
 		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[34];
+		auto& field = type_code->fields[35];
 		field.data_size = 1;
 		field.name = "show_warnings";
 		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[35];
+		auto& field = type_code->fields[36];
 		field.data_size = 1;
 		field.name = "verify_vdf_cpuopencl";
 		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[36];
+		auto& field = type_code->fields[37];
 		field.data_size = 1;
 		field.name = "verify_vdf_rewards";
 		field.value = vnx::to_string(true);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[37];
+		auto& field = type_code->fields[38];
 		field.data_size = 1;
 		field.name = "debug_exec_fails";
 		field.value = vnx::to_string(false);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[38];
+		auto& field = type_code->fields[39];
 		field.is_extended = true;
 		field.name = "storage_path";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[39];
+		auto& field = type_code->fields[40];
 		field.is_extended = true;
 		field.name = "database_path";
 		field.value = vnx::to_string("db/");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[40];
+		auto& field = type_code->fields[41];
 		field.is_extended = true;
 		field.name = "router_name";
 		field.value = vnx::to_string("Router");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[41];
+		auto& field = type_code->fields[42];
 		field.is_extended = true;
 		field.name = "timelord_name";
 		field.value = vnx::to_string("TimeLord");
@@ -1736,33 +1754,36 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			vnx::read_value(_buf + _field->offset, value.num_threads, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[28]) {
-			vnx::read_value(_buf + _field->offset, value.num_vdf_threads, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.num_db_threads, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[29]) {
-			vnx::read_value(_buf + _field->offset, value.vdf_check_divider, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.num_vdf_threads, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[30]) {
-			vnx::read_value(_buf + _field->offset, value.vdf_verify_divider, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.vdf_check_divider, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[31]) {
-			vnx::read_value(_buf + _field->offset, value.opencl_device, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.vdf_verify_divider, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[32]) {
-			vnx::read_value(_buf + _field->offset, value.do_sync, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.opencl_device, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[33]) {
-			vnx::read_value(_buf + _field->offset, value.db_replay, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.do_sync, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[34]) {
-			vnx::read_value(_buf + _field->offset, value.show_warnings, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.db_replay, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[35]) {
-			vnx::read_value(_buf + _field->offset, value.verify_vdf_cpuopencl, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.show_warnings, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[36]) {
-			vnx::read_value(_buf + _field->offset, value.verify_vdf_rewards, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.verify_vdf_cpuopencl, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[37]) {
+			vnx::read_value(_buf + _field->offset, value.verify_vdf_rewards, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[38]) {
 			vnx::read_value(_buf + _field->offset, value.debug_exec_fails, _field->code.data());
 		}
 	}
@@ -1783,10 +1804,10 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			case 12: vnx::read(in, value.output_interval_request, type_code, _field->code.data()); break;
 			case 13: vnx::read(in, value.output_timelord_infuse, type_code, _field->code.data()); break;
 			case 14: vnx::read(in, value.output_challenges, type_code, _field->code.data()); break;
-			case 38: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
-			case 39: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
-			case 40: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
-			case 41: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
+			case 39: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
+			case 40: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
+			case 41: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
+			case 42: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -1805,7 +1826,7 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(74);
+	char* const _buf = out.write(78);
 	vnx::write_value(_buf + 0, value.max_queue_ms);
 	vnx::write_value(_buf + 4, value.update_interval_ms);
 	vnx::write_value(_buf + 8, value.validate_interval_ms);
@@ -1819,16 +1840,17 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write_value(_buf + 40, value.num_sync_retries);
 	vnx::write_value(_buf + 44, value.replay_height);
 	vnx::write_value(_buf + 48, value.num_threads);
-	vnx::write_value(_buf + 52, value.num_vdf_threads);
-	vnx::write_value(_buf + 56, value.vdf_check_divider);
-	vnx::write_value(_buf + 60, value.vdf_verify_divider);
-	vnx::write_value(_buf + 64, value.opencl_device);
-	vnx::write_value(_buf + 68, value.do_sync);
-	vnx::write_value(_buf + 69, value.db_replay);
-	vnx::write_value(_buf + 70, value.show_warnings);
-	vnx::write_value(_buf + 71, value.verify_vdf_cpuopencl);
-	vnx::write_value(_buf + 72, value.verify_vdf_rewards);
-	vnx::write_value(_buf + 73, value.debug_exec_fails);
+	vnx::write_value(_buf + 52, value.num_db_threads);
+	vnx::write_value(_buf + 56, value.num_vdf_threads);
+	vnx::write_value(_buf + 60, value.vdf_check_divider);
+	vnx::write_value(_buf + 64, value.vdf_verify_divider);
+	vnx::write_value(_buf + 68, value.opencl_device);
+	vnx::write_value(_buf + 72, value.do_sync);
+	vnx::write_value(_buf + 73, value.db_replay);
+	vnx::write_value(_buf + 74, value.show_warnings);
+	vnx::write_value(_buf + 75, value.verify_vdf_cpuopencl);
+	vnx::write_value(_buf + 76, value.verify_vdf_rewards);
+	vnx::write_value(_buf + 77, value.debug_exec_fails);
 	vnx::write(out, value.input_vdfs, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_proof, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[2].code.data());
@@ -1844,10 +1866,10 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write(out, value.output_interval_request, type_code, type_code->fields[12].code.data());
 	vnx::write(out, value.output_timelord_infuse, type_code, type_code->fields[13].code.data());
 	vnx::write(out, value.output_challenges, type_code, type_code->fields[14].code.data());
-	vnx::write(out, value.storage_path, type_code, type_code->fields[38].code.data());
-	vnx::write(out, value.database_path, type_code, type_code->fields[39].code.data());
-	vnx::write(out, value.router_name, type_code, type_code->fields[40].code.data());
-	vnx::write(out, value.timelord_name, type_code, type_code->fields[41].code.data());
+	vnx::write(out, value.storage_path, type_code, type_code->fields[39].code.data());
+	vnx::write(out, value.database_path, type_code, type_code->fields[40].code.data());
+	vnx::write(out, value.router_name, type_code, type_code->fields[41].code.data());
+	vnx::write(out, value.timelord_name, type_code, type_code->fields[42].code.data());
 }
 
 void read(std::istream& in, ::mmx::NodeBase& value) {
