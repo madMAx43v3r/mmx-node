@@ -10,4 +10,7 @@ echo "Unit tests [mmx_tests]"
 echo "Unit tests [vm_engine_tests]"
 ./build/test/vm_engine_tests
 
+echo "Unit tests [vm_storage_tests]"
+./build/test/vm_storage_tests
+
 ./test/vm/engine_tests.sh
