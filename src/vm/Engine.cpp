@@ -1678,14 +1678,6 @@ void Engine::clear_stack(const uint64_t offset)
 	}
 }
 
-void Engine::reset()
-{
-	clear_stack();
-	call_stack.clear();
-	error_code = 0;
-	error_addr = -1;
-}
-
 void Engine::commit()
 {
 	clear_stack();	// clear references from stack

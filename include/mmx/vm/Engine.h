@@ -183,7 +183,6 @@ public:
 	bool ret();
 	void exec(const instr_t& instr);
 
-	void reset();
 	void commit();
 
 	void clear_stack(const uint64_t offset = 0);
