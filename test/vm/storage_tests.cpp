@@ -126,7 +126,40 @@ int main(int argc, char** argv)
 			expect(engine->read(vm::MEM_STATIC), nullptr);
 			expect(engine->read(addr), nullptr);
 			expect(engine->read(addr2), nullptr);
+		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("heap_recursive_erase")
+	{
+		db->revert(0);
+		uint64_t addr = 0;
+		uint64_t addr2 = 0;
+		{
+			auto engine = new_engine(storage, false);
+			addr = engine->alloc();
+			addr2 = engine->alloc();
+			engine->write(addr, vm::map_t());
+			engine->write(addr2, vm::map_t());
+			engine->write(vm::MEM_STATIC, vm::ref_t(addr));
+			engine->write_key(addr, vm::uint_t(1337), vm::ref_t(addr2));
+			engine->write_key(addr2, vm::uint_t(1337), vm::uint_t(1337));
+			expect(engine->read_key(addr2, vm::uint_t(1337)), vm::uint_t(1337));
+
+			engine->erase(vm::MEM_STATIC);
+			expect(engine->read(vm::MEM_STATIC), nullptr);
+			expect(engine->read(addr), nullptr);
+			expect(engine->read(addr2), nullptr);
+			expect(engine->read_key(addr2, vm::uint_t(1337)), nullptr);
 			engine->commit();
+		}
+		db->commit(1);
+		{
+			auto engine = new_engine(storage, true);
+			expect(engine->read(vm::MEM_STATIC), nullptr);
+			expect(engine->read(addr), nullptr);
+			expect(engine->read(addr2), nullptr);
+			expect(engine->read_key(addr2, vm::uint_t(1337)), nullptr);
 		}
 	}
 	VNX_TEST_END()
@@ -175,7 +208,7 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
-	VNX_TEST_BEGIN("push_pop_back")
+	VNX_TEST_BEGIN("array")
 	{
 		db->revert(0);
 		{
@@ -202,6 +235,17 @@ int main(int argc, char** argv)
 			vnx::test::expect(array->size, 2u);
 			expect(engine->read_entry(vm::MEM_STATIC, 0), vm::uint_t(1));
 			expect(engine->read_entry(vm::MEM_STATIC, 1), vm::uint_t(2));
+
+			engine->copy(vm::MEM_STACK, vm::MEM_STATIC);
+			{
+				const auto value = engine->read(vm::MEM_STACK);
+				vnx::test::expect(bool(value), true);
+				vnx::test::expect(value->type, vm::TYPE_ARRAY);
+				auto array = (vm::array_t*)value;
+				vnx::test::expect(array->size, 2u);
+				expect(engine->read_entry(vm::MEM_STACK, 0), vm::uint_t(1));
+				expect(engine->read_entry(vm::MEM_STACK, 1), vm::uint_t(2));
+			}
 		}
 		{
 			auto engine = new_engine(storage, false);
@@ -219,6 +263,75 @@ int main(int argc, char** argv)
 			auto array = (vm::array_t*)value;
 			vnx::test::expect(array->size, 1u);
 			expect(engine->read_entry(vm::MEM_STATIC, 0), vm::uint_t(1));
+		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("map")
+	{
+		db->revert(0);
+		{
+			auto engine = new_engine(storage, false);
+			engine->write(vm::MEM_STATIC, vm::map_t());
+			const auto value = engine->read(vm::MEM_STATIC);
+			vnx::test::expect(bool(value), true);
+			vnx::test::expect(value->type, vm::TYPE_MAP);
+			vnx::test::expect(vm::get_address(value), vm::MEM_STATIC);
+
+			engine->write_key(vm::MEM_STATIC, vm::uint_t(1), vm::var_t(vm::TYPE_TRUE));
+			engine->write_key(vm::MEM_STATIC, vm::to_binary(addr_t()), vm::to_binary(addr_t()));
+
+			engine->copy(vm::MEM_STACK, vm::MEM_STATIC);
+			{
+				const auto value = engine->read(vm::MEM_STACK);
+				vnx::test::expect(bool(value), true);
+				vnx::test::expect(value->type, vm::TYPE_MAP);
+				vnx::test::expect(vm::get_address(value), vm::MEM_STACK);
+				expect(engine->read_key(vm::MEM_STACK, vm::uint_t(1)), vm::var_t(vm::TYPE_TRUE));
+				expect(engine->read_key(vm::MEM_STACK, vm::to_binary(addr_t())), vm::to_binary(addr_t()));
+			}
+			engine->commit();
+		}
+		db->commit(1);
+		{
+			auto engine = new_engine(storage, false);
+			const auto value = engine->read(vm::MEM_STATIC);
+			vnx::test::expect(bool(value), true);
+			vnx::test::expect(value->type, vm::TYPE_MAP);
+			vnx::test::expect(vm::get_address(value), vm::MEM_STATIC);
+
+			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1)), vm::var_t(vm::TYPE_TRUE));
+			expect(engine->read_key(vm::MEM_STATIC, vm::to_binary(addr_t())), vm::to_binary(addr_t()));
+
+			engine->write_key(vm::MEM_STATIC, vm::uint_t(1), vm::uint_t(2));
+			engine->write_key(vm::MEM_STATIC, vm::to_binary(addr_t()), vm::to_binary(hash_t("test")));
+			engine->commit();
+		}
+		db->commit(2);
+		{
+			auto engine = new_engine(storage, false);
+			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1)), vm::uint_t(2));
+			expect(engine->read_key(vm::MEM_STATIC, vm::to_binary(addr_t())), vm::to_binary(hash_t("test")));
+
+			engine->erase_key(vm::MEM_STATIC, engine->lookup(vm::uint_t(1), true));
+			engine->erase_key(vm::MEM_STATIC, engine->lookup(vm::to_binary(addr_t()), true));
+			engine->commit();
+		}
+		db->commit(3);
+		{
+			auto engine = new_engine(storage, false);
+			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1)), nullptr);
+			expect(engine->read_key(vm::MEM_STATIC, vm::to_binary(addr_t())), nullptr);
+
+			engine->write_key(vm::MEM_STATIC, vm::uint_t(1), vm::uint_t(3));
+			engine->write_key(vm::MEM_STATIC, vm::to_binary(addr_t()), nullptr);
+			engine->commit();
+		}
+		db->commit(4);
+		{
+			auto engine = new_engine(storage, true);
+			expect(engine->read_key(vm::MEM_STATIC, vm::uint_t(1)), vm::uint_t(3));
+			expect(engine->read_key(vm::MEM_STATIC, vm::to_binary(addr_t())), vm::var_t());
 		}
 	}
 	VNX_TEST_END()
