@@ -121,7 +121,7 @@ inline std::string to_string_value_hex(const varptr_t& var) {
 }
 
 inline uint64_t to_ref(const varptr_t& var) {
-	return to_ref(var.get());
+	return get_address(var.get());
 }
 
 inline uint256_t to_uint(const varptr_t& var) {
