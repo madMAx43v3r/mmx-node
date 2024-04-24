@@ -312,7 +312,7 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
-	vnx::test::exit();
+	return vnx::test::done();
 }
 
 
