@@ -242,32 +242,27 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			prev = tx;
 		}
 	}
+	// minimum fee_ratio depending on block size
 	{
-		/* Minimum fee_ratio depending on block size:
-		 * 0 to 20%   => 1x
-		 * 20 to 40%  => 3x
-		 * 40 to 60%  => 5x
-		 * 60 to 80%  => 10x
-		 * 80 to 100% => 20x
-		 */
-		uint64_t total_size = 0;
-		for(auto iter = block->tx_list.rbegin(); iter != block->tx_list.rend(); ++iter)
-		{
-			const auto& tx = *iter;				// tx == nullptr already checked above
-			total_size += tx->static_cost;
+		const uint32_t N = params->min_fee_ratio.size();
+		if(N) {
+			uint64_t i = 0;
+			uint64_t total_size = 0;
+			for(auto iter = block->tx_list.rbegin(); iter != block->tx_list.rend(); ++iter)
+			{
+				const auto& tx = *iter;				// tx == nullptr already checked above
+				total_size += tx->static_cost;
 
-			uint32_t min_ratio = 1024;
-			if(total_size > 4 * params->max_block_size / 5) {
-				min_ratio *= 20;
-			} else if(total_size > 3 * params->max_block_size / 5) {
-				min_ratio *= 10;
-			} else if(total_size > 2 * params->max_block_size / 5) {
-				min_ratio *= 5;
-			} else if(total_size > 1 * params->max_block_size / 5) {
-				min_ratio *= 3;
-			}
-			if(tx->fee_ratio < min_ratio) {
-				throw std::logic_error("transaction fee_ratio too small: " + std::to_string(tx->fee_ratio) + " < " + std::to_string(min_ratio));
+				while(total_size > ((i + 1) * params->max_block_size) / N) {
+					i++;
+				}
+				if(i >= N) {
+					throw std::logic_error("block size overflow");
+				}
+				const auto min_ratio = params->min_fee_ratio[i] * 1024;
+				if(tx->fee_ratio < min_ratio) {
+					throw std::logic_error("transaction fee_ratio too small: " + std::to_string(tx->fee_ratio) + " < " + std::to_string(min_ratio));
+				}
 			}
 		}
 	}

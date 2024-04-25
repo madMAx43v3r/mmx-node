@@ -47,6 +47,8 @@ class ChainParams {
 	ulong max_block_cost = 100000000;		// includes dynamic cost
 	ulong max_tx_cost = 1000000;
 	
+	vector<uint> min_fee_ratio;				// for dynamic block size
+	
 	double block_time = 10;					// [sec]
 	
 	string network;

@@ -714,17 +714,19 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 		result.push_back(entry);
 	}
 
-	uint64_t band_avail[5] = {};
-	for(uint64_t i = 0; i < 5; ++i) {
-		band_avail[i] = ((i + 1) * params->max_block_size) / 5 - (i * params->max_block_size) / 5;
+	const uint32_t N = params->min_fee_ratio.size();
+	if(N == 0) {
+		return result;
 	}
-	constexpr uint32_t min_fee_ratio[] = {1024, 3 * 1024, 5 * 1024, 10 * 1024, 20 * 1024};
-
-	size_t i = 4;
+	std::vector<uint64_t> band_avail(N);
+	for(uint64_t i = 0; i < N; ++i) {
+		band_avail[i] = ((i + 1) * params->max_block_size) / N - (i * params->max_block_size) / N;
+	}
+	uint32_t i = N - 1;
 	std::vector<tx_pool_t> out;
 	for(const auto& entry : result) {
 		const auto& tx = entry.tx;
-		while(i && (!band_avail[i] || tx->fee_ratio < min_fee_ratio[i])) {
+		while(i && (!band_avail[i] || tx->fee_ratio < params->min_fee_ratio[i] * 1024)) {
 			i--;
 		}
 		if(tx->static_cost > band_avail[i]) {
