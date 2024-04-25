@@ -529,19 +529,6 @@ void Node::validate_new()
 	if(!peak || !is_synced) {
 		return;
 	}
-
-	// drop anything with too low fee ratio
-	for(auto iter = tx_queue.begin(); iter != tx_queue.end();) {
-		const auto& tx = iter->second;
-		if(tx->fee_ratio <= min_pool_fee_ratio) {
-			if(show_warnings) {
-				log(WARN) << "TX too low fee_ratio for mempool: " << tx->fee_ratio << " (" << tx->id << ")";
-			}
-			iter = tx_queue.erase(iter);
-		} else {
-			iter++;
-		}
-	}
 	std::default_random_engine luck_gen(vnx::rand64());
 
 	// select non-overlapping set
