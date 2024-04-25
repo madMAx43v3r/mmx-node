@@ -515,7 +515,7 @@ void Node::purge_tx_pool()
 	}
 	if(total_pool_size || num_purged) {
 		log(INFO) << uint64_t((total_pool_size * 10000) / max_pool_size) / 100. << " % mem pool, "
-				<< min_pool_fee_ratio / 1024. << " min free ratio, " << num_purged << " purged, took "
+				<< min_pool_fee_ratio / 1024. << " min fee ratio, " << num_purged << " purged, took "
 				<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 }
