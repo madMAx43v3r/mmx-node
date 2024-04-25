@@ -387,7 +387,7 @@ void Node::update()
 									add_block(block);
 								}
 							} catch(const std::exception& ex) {
-								log(WARN) << "Failed to create a block: " << ex.what();
+								log(WARN) << "Failed to create block at height " << key.first << ": " << ex.what();
 							}
 							// revert back to peak
 							fork_to(peak->hash);
