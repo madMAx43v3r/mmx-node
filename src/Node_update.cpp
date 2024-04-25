@@ -486,7 +486,7 @@ void Node::purge_tx_pool()
 	uint64_t total_pool_size = 0;
 	std::unordered_map<addr_t, std::pair<uint64_t, uint64_t>> sender_map;	// [sender => [balance, total fee]]
 
-	const auto max_pool_size = uint128_t(tx_pool_limit) * params->max_block_size;
+	const uint64_t max_pool_size = uint64_t(tx_pool_limit) * params->max_block_size;
 
 	// purge transactions from pool if overflowing
 	for(const auto& entry : all_tx) {
@@ -513,7 +513,7 @@ void Node::purge_tx_pool()
 			min_pool_fee_ratio = tx->fee_ratio;
 		}
 	}
-	if(total_pool_size < max_pool_size / 2) {
+	if(total_pool_size < 9 * max_pool_size / 10) {
 		min_pool_fee_ratio = 0;
 	}
 	if(total_pool_size || num_purged) {
