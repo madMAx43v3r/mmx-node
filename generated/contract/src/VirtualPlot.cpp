@@ -344,7 +344,7 @@ void read(TypeInput& in, ::mmx::contract::VirtualPlot& value, const TypeCode* ty
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
@@ -382,7 +382,7 @@ void write(TypeOutput& out, const ::mmx::contract::VirtualPlot& value, const Typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(8);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.decimals);
 	vnx::write(out, value.name, type_code, type_code->fields[1].code.data());

@@ -185,7 +185,7 @@ void read(TypeInput& in, ::mmx::Wallet_get_contracts_owned& value, const TypeCod
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
@@ -212,7 +212,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_contracts_owned& value, cons
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	auto* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write(out, value.type_name, type_code, type_code->fields[1].code.data());
 }

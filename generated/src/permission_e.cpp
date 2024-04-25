@@ -226,7 +226,7 @@ void read(TypeInput& in, ::mmx::permission_e& value, const TypeCode* type_code, 
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.value, _field->code.data());
@@ -256,7 +256,7 @@ void write(TypeOutput& out, const ::mmx::permission_e& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	auto* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.value);
 }
 

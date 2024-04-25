@@ -254,7 +254,7 @@ void read(TypeInput& in, ::mmx::ProofOfSpaceOG& value, const TypeCode* type_code
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.score, _field->code.data());
@@ -287,7 +287,7 @@ void write(TypeOutput& out, const ::mmx::ProofOfSpaceOG& value, const TypeCode* 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(5);
+	auto* const _buf = out.write(5);
 	vnx::write_value(_buf + 0, value.score);
 	vnx::write_value(_buf + 4, value.ksize);
 	vnx::write(out, value.plot_id, type_code, type_code->fields[1].code.data());

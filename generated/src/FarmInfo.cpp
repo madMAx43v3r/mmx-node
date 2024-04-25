@@ -284,7 +284,7 @@ void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, cons
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.total_bytes, _field->code.data());
@@ -321,7 +321,7 @@ void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_c
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(24);
+	auto* const _buf = out.write(24);
 	vnx::write_value(_buf + 0, value.total_bytes);
 	vnx::write_value(_buf + 8, value.total_bytes_effective);
 	vnx::write_value(_buf + 16, value.total_balance);

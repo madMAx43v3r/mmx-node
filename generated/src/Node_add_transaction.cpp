@@ -186,7 +186,7 @@ void read(TypeInput& in, ::mmx::Node_add_transaction& value, const TypeCode* typ
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.pre_validate, _field->code.data());
@@ -213,7 +213,7 @@ void write(TypeOutput& out, const ::mmx::Node_add_transaction& value, const Type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(1);
+	auto* const _buf = out.write(1);
 	vnx::write_value(_buf + 0, value.pre_validate);
 	vnx::write(out, value.tx, type_code, type_code->fields[0].code.data());
 }

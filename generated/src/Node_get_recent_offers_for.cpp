@@ -221,7 +221,7 @@ void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCod
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
@@ -252,7 +252,7 @@ void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for& value, cons
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(5);
+	auto* const _buf = out.write(5);
 	vnx::write_value(_buf + 0, value.limit);
 	vnx::write_value(_buf + 4, value.state);
 	vnx::write(out, value.bid, type_code, type_code->fields[0].code.data());

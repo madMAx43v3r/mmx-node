@@ -260,7 +260,7 @@ void read(TypeInput& in, ::mmx::plot_nft_info_t& value, const TypeCode* type_cod
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.is_locked, _field->code.data());
@@ -296,7 +296,7 @@ void write(TypeOutput& out, const ::mmx::plot_nft_info_t& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(9);
+	auto* const _buf = out.write(9);
 	vnx::write_value(_buf + 0, value.is_locked);
 	vnx::write_value(_buf + 1, value.unlock_height);
 	vnx::write_value(_buf + 5, value.unlock_delay);

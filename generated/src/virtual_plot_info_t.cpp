@@ -245,7 +245,7 @@ void read(TypeInput& in, ::mmx::virtual_plot_info_t& value, const TypeCode* type
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.balance, _field->code.data());
@@ -278,7 +278,7 @@ void write(TypeOutput& out, const ::mmx::virtual_plot_info_t& value, const TypeC
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(16);
+	auto* const _buf = out.write(16);
 	vnx::write_value(_buf + 0, value.balance);
 	vnx::write_value(_buf + 8, value.size_bytes);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
