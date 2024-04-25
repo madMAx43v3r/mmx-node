@@ -7,8 +7,8 @@ A blockchain written from scratch, doing most things differently.
 Design
 - Variable token supply governed by consensus voting (1 block = 1 vote)
 - High throughput L1 with consistent block interval (500 TPS, 10 sec)
+- Novel Smart Contract VM for ease of development + high performance
 - Energy efficient Proof of Space, with optional Proof of Stake (Tx fees only)
-- Similar feature richness to most smart contract blockchains
 - Block reward is adjusted to stabilize price, a key property of any currency
 - Minimum transaction fee to allow large block size without spam and DB bloat
 - Using only a few libraries to keep codebase clean (and secure)
@@ -21,6 +21,7 @@ Components
 - Custom high-level VM for Smart Contracts (similar to JavaScript)
   - Native support for variants, arrays, maps and objects
   - Unified memory (automatic persistence and state updates)
+  - Compiler for a restricted sub-set of JavaScript
   - Roughly two machine instructions per source line (on average)
 - Native token support (no "approvals" needed, NFT = 1 mojo)
 - Smart contract offer based trading (fixed price, OTC)
