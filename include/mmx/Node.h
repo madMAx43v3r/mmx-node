@@ -465,6 +465,7 @@ private:
 
 	balance_table_t<uint128> balance_table;										// [[address, currency] => balance]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
+	hash_table<addr_t, uint128> total_supply_map;								// [currency => supply]
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 	std::unordered_map<addr_t, uint64_t> tx_pool_fees;								// [address => total pending fees]
@@ -483,6 +484,7 @@ private:
 	bool is_synced = false;
 	bool update_pending = false;
 	uint32_t min_pool_fee_ratio = 0;
+	uint64_t mmx_address_count = 0;
 
 	std::shared_ptr<vnx::File> block_chain;
 	std::shared_ptr<vm::StorageDB> storage;

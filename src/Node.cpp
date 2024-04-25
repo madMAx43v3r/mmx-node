@@ -149,6 +149,7 @@ void Node::main()
 		db->open_async(block_index, database_path + "block_index");
 		db->open_async(balance_table, database_path + "balance_table");
 		db->open_async(farmer_block_map, database_path + "farmer_block_map");
+		db->open_async(total_supply_map, database_path + "total_supply_map");
 
 		db->sync();
 	}
@@ -160,8 +161,17 @@ void Node::main()
 	{
 		const auto height = std::min(db->min_version(), replay_height);
 		revert(height);
+
+		uint64_t balance_count = 0;
+		balance_table.scan([this, &balance_count](const std::pair<addr_t, addr_t>& key, const uint128& value) {
+			if(value >= 1000000 && key.second == addr_t()) {
+				mmx_address_count++;
+			}
+			balance_count++;
+		});
+
 		if(height) {
-			log(INFO) << "Loaded DB at height " << (height - 1)
+			log(INFO) << "Loaded DB at height " << (height - 1) << ", " << balance_count << " balances, " << mmx_address_count << " addresses"
 					<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	}
@@ -371,12 +381,6 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 		if(!network || peak->height != network->height || is_synced != network->height)
 		{
 			auto info = NetworkInfo::create();
-			// TODO: this won't scale
-			balance_table.scan([info](const std::pair<addr_t, addr_t>& key, const uint128& value) {
-				if(value) {
-					info->address_count++;
-				}
-			});
 			info->is_synced = is_synced;
 			info->height = peak->height;
 			info->time_diff = peak->time_diff;
@@ -385,6 +389,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->block_reward = mmx::calc_block_reward(params);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
+			info->address_count = mmx_address_count;
 			info->genesis_hash = get_genesis_hash();
 			info->average_txfee = peak->average_txfee;
 			info->netspace_ratio = double(peak->netspace_ratio) / (uint64_t(1) << (2 * params->max_diff_adjust));
@@ -998,11 +1003,7 @@ vnx::Variant Node::call_contract(
 uint128 Node::get_total_supply(const addr_t& currency) const
 {
 	uint128 total = 0;
-	balance_table.scan([&total, currency](const std::pair<addr_t, addr_t>& key, const uint128& value) {
-		if(key.first != addr_t() && key.second == currency) {
-			total += value;
-		}
-	});
+	total_supply_map.find(currency, total);
 	return total;
 }
 
@@ -2195,12 +2196,43 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				iter++;
 			}
 		}
+		std::unordered_map<addr_t, std::array<uint128_t, 2>> supply_delta;
 
 		for(const auto& entry : balance_cache.balance) {
-			balance_table.insert(entry.first, entry.second);
+			const auto& key = entry.first;
+			const auto& value = entry.second;
+			const auto& address = key.first;
+			const auto& currency = key.second;
+			uint128 prev = 0;
+			balance_table.find(key, prev);
+			if(value > prev) {
+				supply_delta[currency][address != addr_t() ? 1 : 0] += value - prev;
+			} else if(value < prev) {
+				supply_delta[currency][0] += prev - value;
+			}
+			balance_table.insert(key, value);
 		}
+		for(const auto& entry : supply_delta) {
+			const auto& currency = entry.first;
+			const auto& delta = entry.second;
+			if(delta[0] != delta[1]) {
+				uint128 value = 0;
+				total_supply_map.find(currency, value);
+				value += delta[1];
+				if(delta[0] > value) {
+					throw std::logic_error("negative supply for " + currency.to_string());
+				}
+				value -= delta[0];
+				total_supply_map.insert(currency, value);
+			}
+		}
+
 		if(context) {
-			context->storage->commit();
+			if(auto storage = context->storage) {
+				storage->commit();
+			} else {
+				throw std::logic_error("storage == nullptr");
+			}
 		}
 		if(auto proof = block->proof) {
 			farmed_block_info_t info;
