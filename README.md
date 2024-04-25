@@ -1,27 +1,34 @@
 # mmx-node
 
-_“ MMX &ndash; fast, low power, feature rich, compatible, decentralized &ndash; with tokenomics of an actual currency ”_
+_“ MMX &ndash; fast, low cost, feature rich, decentralized &ndash; with tokenomics of an actual currency ”_
 
-A base blockchain written from scratch, using proven logic from Chia's Proof of Space and improved SHA256 VDF similar to Solana.
+A blockchain written from scratch, doing most things differently.
 
 Design
-- High transaction capacity, with low and consistent block times
-- Energy efficient Proof of Space, with transition to virtual storage
-- Rich compatible feature set, built into base blockchain
-- Balanced hardware requirements, with nodes in home networks
-- Designed with the properties and usage of an actual currency
-- Variable supply stabilizes the price, a key property of any currency
-- Efficient implementation provides low transaction fees, at high throughput
+- Variable token supply governed by consensus voting (1 block = 1 vote)
+- High throughput L1 with consistent block interval (500 TPS, 10 sec)
+- Energy efficient Proof of Space, with optional Proof of Stake (Tx fees only)
+- Similar feature richness to most smart contract blockchains
+- Block reward is adjusted to stabilize price, a key property of any currency
+- Minimum transaction fee to allow large block size without spam and DB bloat
+- Using only a few libraries to keep codebase clean (and secure)
+- No pre-mine, no ICO, no investors
+- Account model based
 
-Features
-- High performance code (1000 transactions per second or more)
-- Custom high-level VM for smart contracts (similar to JavaScript)
-- Variable supply (reward scales with netspace, but capped by TX fees)
-- Consistent block times (every 10 seconds, governed by VDF)
-- Native token and NFT support (atomic swaps with standard transactions)
-- Smart contract offers for on-chain trading (bids locked into contract)
-- Energy efficient Proof of Space (same as Chia)
-- Standard ECDSA signatures for seamless integration (same as Bitcoin)
+Components
+- High performance code (C++, can handle over 1000 TPS easily)
+  - Parallel transaction execution when possible
+- Custom high-level VM for Smart Contracts (similar to JavaScript)
+  - Native support for variants, arrays, maps and objects
+  - Unified memory (automatic persistence and state updates)
+  - Roughly two machine instructions per source line (on average)
+- Native token support (no "approvals" needed, NFT = 1 mojo)
+- Smart contract offer based trading (fixed price, OTC)
+- Liquidity pool swap based trading (AMM, multi-fee tiers, similar to UniSwap v3)
+- ECDSA signatures for seamless integration (same as Bitcoin)
+- Custom database engine (much faster than RocksDB / LevelDB, blockchain specific)
+- Adaptive SHA256 VDF to govern block interval (no fake timers like Solana)
+- Fully featured Node with built-in Block Explorer, Wallet, Market, Swap as well as HTTP RPC endpoints
 
 Roadmap
 
@@ -30,13 +37,12 @@ Roadmap
 | testnet7 | Sep 2022 | Finished. <sup>[1]</sup> |
 | testnet8 | Oct 2022 | Finished. Incentivized testnet, height 25k-425k. <sup>[2]</sup> |
 | testnet9 | Dec 2022 | Finished. Incentivized testnet, height 25k-1220k. <sup>[2]</sup> |
-| testnet10 | Apr 2023 | Active. Incentivized testnet, height 40k-_tbd_. <sup>[2]</sup> |
-| testnet11 | _tbd_ | Planned Q4 2023. <sup>[2]</sup> |
-| testnetX | _tbd_ | As needed. <sup>[2]</sup> |
-| mainnet | _tbd_ | |
+| testnet10 | Apr 2023 | Active. Incentivized testnet, height 40k-3200k. <sup>[2]</sup> |
+| testnet11 | _tbd_ | Planned May 2024. <sup>[2]</sup> |
+| mainnet | Planned Q4 2024 |
 
 _<sup>[1]</sup> Coins farmed on testnets are not worth anything, now or later._\
-_<sup>[2]</sup> A fixed reward of 0.5 MMX per block win, in incentivized testnet, will be given on mainnet genesis._
+_<sup>[2]</sup> A fixed reward of 0.5 MMX per block win on incentivized testnets will be given on mainnet genesis._
 
 See `#mmx-news` and `#mmx-general` on Discord: https://discord.gg/BswFhNkMzY
 
@@ -78,3 +84,19 @@ Login password is auto-generated at first launch, located in `$MMX_HOME/PASSWD` 
 - New dev fee system, based only on TX fees, with a fixed amount plus 1% (but never more than 1/4 of TX fees)
 - Plot filter has been decreased to 256 now, as it is planned for mainnet
 - Many improvements to the code base
+
+### Testnet11
+
+- New plot format:
+  - k29 to k32 max
+  - 9 tables
+  - very low compression only
+  - CPU farming only
+  - SSD and HDD plot types
+  - Old format no longer valid
+- Transaction output memo support
+- Block reward voting support
+- Swap algorithm improved
+- Swap fee levels changed to: 0.05%, 0.25%, 1% and 5%
+- Using zstd compression for network traffic
+- NFT plot support (testing only)
