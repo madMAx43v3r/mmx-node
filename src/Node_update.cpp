@@ -362,26 +362,27 @@ void Node::update()
 		} else if(auto fork = find_best_fork(height)) {
 			prev = fork->block;
 		}
-		if(prev) {
-			hash_t challenge;
-			if(find_challenge(prev, challenge, 1))
-			{
-				const auto proof_list = find_proof(challenge);
+		hash_t challenge;
+		if(find_challenge(prev, challenge, 1))
+		{
+			const auto proof_list = find_proof(challenge);
 
-				// Note: proof_list already limited to max_blocks_per_height
-				for(size_t proof_index = 0; proof_index < proof_list.size(); ++proof_index)
+			// Note: proof_list already limited to max_blocks_per_height
+			for(size_t proof_index = 0; proof_index < proof_list.size(); ++proof_index)
+			{
+				const auto& proof = proof_list[proof_index];
+				// check if it's our proof and farmer is still alive
+				if(vnx::get_pipe(proof.farmer_mac))
 				{
-					const auto& proof = proof_list[proof_index];
-					// check if it's our proof and farmer is still alive
-					if(vnx::get_pipe(proof.farmer_mac))
+					const auto key = std::make_pair(prev->height + 1, proof.hash);
+					if(!created_blocks.count(key))
 					{
-						const auto key = std::make_pair(prev->height + 1, proof.hash);
-						if(!created_blocks.count(key)) {
+						if(auto vdf_point = find_next_vdf_point(prev)) {
 							try {
 								// make a full block only if (we extend peak or replace a dummy peak or replace a weaker peak) and (we got best score)
 								const bool is_better = (depth == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
 								const bool full_block = (depth == 0 || is_better) && proof_index == 0;
-								if(auto block = make_block(prev, proof, full_block)) {
+								if(auto block = make_block(prev, vdf_point, proof, full_block)) {
 									created_blocks[key] = block->hash;
 									add_block(block);
 								}
@@ -737,15 +738,9 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	return out;
 }
 
-std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, const proof_data_t& proof, const bool full_block)
+std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<vdf_point_t> vdf_point, const proof_data_t& proof, const bool full_block)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
-
-	// find VDF output
-	const auto vdf_point = find_next_vdf_point(prev);
-	if(!vdf_point) {
-		return nullptr;
-	}
 
 	// reset state to previous block
 	fork_to(prev->hash);
