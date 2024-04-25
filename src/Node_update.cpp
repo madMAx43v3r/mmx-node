@@ -713,30 +713,33 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 		static_cost += tx->static_cost;
 		result.push_back(entry);
 	}
-	std::vector<tx_pool_t> out;
 
-	// purge based on min fee_ratio
-	uint64_t total_size = 0;
-	for(auto iter = result.rbegin(); iter != result.rend(); ++iter)
-	{
-		const auto& tx = iter->tx;
-		total_size += tx->static_cost;
-
-		uint32_t min_ratio = 1024;
-		if(total_size > 4 * params->max_block_size / 5) {
-			min_ratio *= 20;
-		} else if(total_size > 3 * params->max_block_size / 5) {
-			min_ratio *= 10;
-		} else if(total_size > 2 * params->max_block_size / 5) {
-			min_ratio *= 5;
-		} else if(total_size > 1 * params->max_block_size / 5) {
-			min_ratio *= 3;
-		}
-		if(tx->fee_ratio >= min_ratio) {
-			out.push_back(*iter);
-		}
+	uint64_t band_avail[5] = {};
+	for(uint64_t i = 0; i < 5; ++i) {
+		band_avail[i] = ((i + 1) * params->max_block_size) / 5 - (i * params->max_block_size) / 5;
 	}
-	std::reverse(out.begin(), out.end());
+	constexpr uint32_t min_fee_ratio[] = {1024, 3 * 1024, 5 * 1024, 10 * 1024, 20 * 1024};
+
+	size_t i = 4;
+	std::vector<tx_pool_t> out;
+	for(const auto& entry : result) {
+		const auto& tx = entry.tx;
+		while(i && (!band_avail[i] || tx->fee_ratio < min_fee_ratio[i])) {
+			i--;
+		}
+		if(tx->static_cost > band_avail[i]) {
+			if(i) {
+				// we assume band size is always >= max_tx_cost (so band_avail never goes negative here)
+				band_avail[i - 1] -= tx->static_cost - band_avail[i];
+				band_avail[i] = 0;
+			} else {
+				continue;	// no room left for this tx
+			}
+		} else {
+			band_avail[i] -= tx->static_cost;
+		}
+		out.push_back(entry);
+	}
 	return out;
 }
 

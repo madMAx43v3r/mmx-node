@@ -267,7 +267,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 				min_ratio *= 3;
 			}
 			if(tx->fee_ratio < min_ratio) {
-				throw std::logic_error("transaction fee_ratio too small");
+				throw std::logic_error("transaction fee_ratio too small: " + std::to_string(tx->fee_ratio) + " < " + std::to_string(min_ratio));
 			}
 		}
 	}
