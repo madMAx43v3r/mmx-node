@@ -148,11 +148,11 @@ struct binary_t : var_t {
 	void* data(const size_t offset = 0) {
 		return ((char*)p_data) + offset;
 	}
-	const void* data(const size_t offset = 0) const {
-		return ((const char*)p_data) + offset;
+	const uint8_t* data(const size_t offset = 0) const {
+		return ((const uint8_t*)p_data) + offset;
 	}
 	const char* c_str() const {
-		return (const char*)data();
+		return (const char*)p_data;
 	}
 	std::string to_string() const {
 		return std::string(c_str(), size);

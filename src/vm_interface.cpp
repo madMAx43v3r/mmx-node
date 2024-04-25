@@ -158,8 +158,6 @@ public:
 	AssignTo(std::shared_ptr<vm::Engine> engine, const uint64_t dst)
 		:	engine(engine)
 	{
-		enable_binary = true;
-
 		frame_t frame;
 		frame.dst = dst;
 		stack.push_back(frame);
@@ -222,8 +220,8 @@ public:
 		handle(vm::binary_t::alloc(value));
 	}
 
-	void visit(const std::vector<uint8_t>& value) override {
-		handle(vm::binary_t::alloc(value.data(), value.size()));
+	void visit(const uint8_t* data, const size_t length) override {
+		handle(vm::binary_t::alloc(data, length));
 	}
 
 	void visit(const uint256_t& value) {

@@ -162,7 +162,7 @@ bytes_t<N>& bytes_t<N>::from_uint(T value, const bool big_endian)
 
 template<size_t N>
 std::string bytes_t<N>::to_string() const {
-	return vnx::to_hex_string(bytes.data(), N, false, false);
+	return vnx::to_hex_string(bytes.data(), bytes.size(), false, false);
 }
 
 template<size_t N>
@@ -291,11 +291,7 @@ void write(std::ostream& out, const mmx::bytes_t<N>& value) {
 
 template<size_t N>
 void accept(vnx::Visitor& visitor, const mmx::bytes_t<N>& value) {
-	if(visitor.enable_binary) {
-		vnx::accept(visitor, value.to_vector());
-	} else {
-		vnx::accept(visitor, value.to_string());
-	}
+	visitor.visit(value.data(), value.size());
 }
 
 } // vnx

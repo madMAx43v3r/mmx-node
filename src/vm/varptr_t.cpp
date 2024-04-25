@@ -109,11 +109,8 @@ void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
 			break;
 		}
 		case mmx::vm::TYPE_BINARY: {
-			if(visitor.enable_binary) {
-				visitor.visit(((const mmx::vm::binary_t*)var)->to_vector());
-			} else {
-				visitor.visit("0x" + ((const mmx::vm::binary_t*)var)->to_hex_string());
-			}
+			const auto* bin = ((const mmx::vm::binary_t*)var);
+			visitor.visit(bin->data(), bin->size);
 			break;
 		}
 		default:
