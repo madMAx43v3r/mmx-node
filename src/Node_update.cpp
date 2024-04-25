@@ -17,6 +17,7 @@
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
+#include <random>
 
 
 namespace mmx {
@@ -476,7 +477,9 @@ void Node::purge_tx_pool()
 	// sort transactions by fee ratio
 	std::sort(all_tx.begin(), all_tx.end(),
 		[](const tx_pool_t& lhs, const tx_pool_t& rhs) -> bool {
-			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
+			const auto L = lhs.tx->fee_ratio;
+			const auto R = rhs.tx->fee_ratio;
+			return (L == R) ? lhs.luck < rhs.luck : L > R;
 		});
 
 	size_t num_purged = 0;
@@ -539,6 +542,7 @@ void Node::validate_new()
 			iter++;
 		}
 	}
+	std::default_random_engine luck_gen(vnx::rand64());
 
 	// select non-overlapping set
 	std::vector<tx_pool_t> tx_list;
@@ -548,6 +552,7 @@ void Node::validate_new()
 			if(tx_set.insert(tx->id).second) {
 				tx_pool_t tmp;
 				tmp.tx = tx;
+				tmp.luck = luck_gen();
 				tx_list.push_back(tmp);
 			}
 		}

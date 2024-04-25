@@ -271,6 +271,7 @@ private:
 		bool is_valid = false;
 		uint32_t cost = 0;
 		uint32_t fee = 0;
+		uint32_t luck = 0;	// random value
 		std::shared_ptr<const Transaction> tx;
 	};
 
