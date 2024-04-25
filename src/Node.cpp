@@ -382,7 +382,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
 			info->vdf_speed = (peak->time_diff / params->block_time) * (params->time_diff_constant / 1e6);
-			info->block_reward = mmx::calc_block_reward(params, peak->space_diff);
+			info->block_reward = mmx::calc_block_reward(params);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
 			info->genesis_hash = get_genesis_hash();
@@ -2464,13 +2464,11 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	if(!block->proof) {
 		return 0;
 	}
-	const auto diff_block = get_diff_header(block);
-
-	auto base_reward = mmx::calc_block_reward(params, diff_block->space_diff);
+	auto base_reward = mmx::calc_block_reward(params);
 	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
 		base_reward = 0;
 	}
-	return mmx::calc_final_block_reward(params, diff_block, base_reward, total_fees);
+	return mmx::calc_final_block_reward(params, base_reward, total_fees);
 }
 
 std::shared_ptr<const BlockHeader> Node::read_block(

@@ -772,7 +772,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					}
 					out["reward"] = to_value(block->reward_amount, params->decimals);
 					out["tx_fees"] = block->tx_fees / pow(10, params->decimals);
-					out["base_reward"] = calc_block_reward(params, block->space_diff) / pow(10, params->decimals);
+					out["base_reward"] = calc_block_reward(params) / pow(10, params->decimals);
 				}
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));

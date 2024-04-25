@@ -168,7 +168,7 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 }
 
 inline
-uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
+uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params)
 {
 	return params->min_reward;
 }
@@ -181,9 +181,7 @@ uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
-uint64_t calc_final_block_reward(
-		std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
-		const uint64_t base_reward, const uint64_t tx_fees)
+uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const uint64_t tx_fees)
 {
 	const uint64_t fee_deduction = calc_project_reward(params, tx_fees);
 	return base_reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
