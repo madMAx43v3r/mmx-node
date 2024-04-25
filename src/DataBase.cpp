@@ -384,7 +384,7 @@ size_t Table::lower_bound(std::shared_ptr<const block_t> block, uint32_t& versio
 	return R;
 }
 
-void Table::commit(const uint32_t new_version)
+bool Table::commit(const uint32_t new_version, const bool auto_flush)
 {
 	if(new_version == uint32_t(-1)) {
 		throw std::logic_error("invalid version");
@@ -402,12 +402,19 @@ void Table::commit(const uint32_t new_version)
 
 	curr_version = new_version;
 
-	if(curr_version > last_flush && curr_version - last_flush >= options.force_flush_threshold) {
+	const bool flag = do_flush();
+	if(flag && auto_flush) {
 		flush();
+		return false;
 	}
-	if(mem_block_size + mem_block.size() * entry_overhead >= options.max_block_size) {
-		flush();
-	}
+	return flag;
+}
+
+bool Table::do_flush() const
+{
+	const bool normal_flush = (mem_block_size + mem_block.size() * entry_overhead >= options.max_block_size);
+	const bool force_flush = (curr_version > last_flush && curr_version - last_flush >= options.force_flush_threshold);
+	return normal_flush || force_flush;
 }
 
 void Table::revert(const uint32_t new_version)
@@ -1009,9 +1016,11 @@ void DataBase::commit(const uint32_t new_version)
 {
 	std::lock_guard<std::mutex> lock(mutex);
 	for(const auto& table : tables) {
-		threads.add_task([table, new_version]() {
-			table->commit(new_version);
-		});
+		if(table->commit(new_version, false)) {
+			threads.add_task([table]() {
+				table->flush();
+			});
+		}
 	}
 	threads.sync();
 }

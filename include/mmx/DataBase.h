@@ -135,9 +135,11 @@ public:
 
 	std::shared_ptr<db_val_t> find(std::shared_ptr<db_val_t> key, const uint32_t max_version = -1) const;
 
-	void commit(const uint32_t new_version);
+	bool commit(const uint32_t new_version, const bool auto_flush = true);
 
 	void revert(const uint32_t new_version);
+
+	bool do_flush() const;
 
 	void flush();
 
