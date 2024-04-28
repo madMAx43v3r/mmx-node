@@ -2,34 +2,34 @@
 
 _“ MMX &ndash; fast, low cost, feature rich, decentralized &ndash; with tokenomics of an actual currency ”_
 
-A blockchain written from scratch, doing most things differently.
+A blockchain written from scratch, designing new and proven logic in better ways.
 
 Design
-- Variable token supply governed by consensus voting (1 block = 1 vote)
+- Variable token supply governed by consensus (1 block, 1 vote)
 - High throughput L1 with consistent block interval (500 TPS, 10 sec)
-- Novel Smart Contract VM for ease of development + high performance
-- Energy efficient Proof of Space, with optional Proof of Stake (Tx fees only)
-- Block reward is adjusted to stabilize price, a key property of any currency
-- Minimum transaction fee to allow large block size without spam and DB bloat
-- Using only a few libraries to keep codebase clean (and secure)
-- No pre-mine, no ICO, no investors
-- Account model based
+- Novel Smart Contract VM for ease of development and high performance
+- Energy efficient Proof of Space, with optional Proof of Stake (only Tx fees)
+- Block reward adjusts to stabilize price, a key property of any currency
+- Minimum transaction fee enables large block size without garbage data
+- Clean codebase, with a few vetted libraries (for security)
+- No pre-mine, no ICO, no investors, a fair launch
+- Account based model, with efficient and rich L1 functionality
 
-Components
-- High performance code (C++, can handle over 1000 TPS easily)
-  - Parallel transaction execution when possible
+Elements
+- High performance C++ code (can easily handle over 1000 TPS)
+  - Transactions executed in parallel when possible
 - Custom high-level VM for Smart Contracts (similar to JavaScript)
-  - Native support for variants, arrays, maps and objects
+  - Native support for variants, arrays, maps, and objects
   - Unified memory (automatic persistence and state updates)
-  - Compiler for a restricted sub-set of JavaScript
-  - Roughly two machine instructions per source line (on average)
-- Native token support (no "approvals" needed, NFT = 1 mojo)
+  - Compiler for a restricted subset of JavaScript
+  - Average of two machine instructions per line of code
+- Native token support (no approvals needed, NFT equals 1 mojo)
 - Smart contract offer based trading (fixed price, OTC)
-- Liquidity pool swap based trading (AMM, multi-fee tiers, similar to UniSwap v3)
+- Liquidity pool swap based trading (AMM, multi-fee tiers, similar to Uniswap v3)
 - ECDSA signatures for seamless integration (same as Bitcoin)
-- Custom database engine (much faster than RocksDB / LevelDB, blockchain specific)
-- Adaptive SHA256 VDF to govern block interval (no fake timers like Solana)
-- Fully featured Node with built-in Block Explorer, Wallet, Market, Swap as well as HTTP RPC endpoints
+- Custom blockchain database engine (much faster than RocksDB and LevelDB)
+- Adaptive SHA256 VDF governing block interval (not limited timers like Solana)
+- Feature rich Node, with Block Explorer, Wallet, Market, Swap, and HTTP RPC
 
 Roadmap
 
