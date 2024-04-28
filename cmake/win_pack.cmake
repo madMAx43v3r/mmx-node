@@ -143,35 +143,6 @@ install(DIRECTORY scripts/win/ DESTINATION ./ COMPONENT applications)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT applications)
 
 
-include(FetchContent)
-FetchContent_Declare(plotter_k32
-URL https://github.com/MMX-World/mmx-plotter/releases/download/1.1.8/chia_plot-1.1.8.exe
-URL_HASH SHA256=EF00C99423CB9980CA0DC59CCE076E12BFE4DBA1ACC99E17FA9CFD163604FF77
-DOWNLOAD_NO_EXTRACT true
-)
-FetchContent_MakeAvailable(plotter_k32)
-set (MMX_PLOTTER_K32_PATH ${plotter_k32_SOURCE_DIR}/chia_plot-1.1.8.exe)
-
-FetchContent_Declare(plotter_k34
-URL https://github.com/MMX-World/mmx-plotter/releases/download/1.1.8/chia_plot_k34-1.1.8.exe
-URL_HASH SHA256=3329661BCE509A08638E99352A9607C3ADEAB11DD4B462895FCBEFDC4F22231F
-DOWNLOAD_NO_EXTRACT true
-)
-FetchContent_MakeAvailable(plotter_k34)
-set (MMX_PLOTTER_K34_PATH ${plotter_k34_SOURCE_DIR}/chia_plot_k34-1.1.8.exe)
-
-FetchContent_Declare(plotter_bladebit
-URL https://github.com/MMX-World/bladebit/releases/download/v2.0.1-mmx/bladebit.exe
-URL_HASH SHA256=6025F777709F52754690C262C9463DB17F8BA5C8757ACE7DB352C103252ACCA5
-DOWNLOAD_NO_EXTRACT true
-)
-FetchContent_MakeAvailable(plotter_bladebit)
-set (PLOTTER_BLADEBIT_PATH ${plotter_bladebit_SOURCE_DIR}/bladebit.exe)
-
-install(FILES ${MMX_PLOTTER_K32_PATH} DESTINATION ./ RENAME mmx_plot.exe COMPONENT plotters)
-install(FILES ${MMX_PLOTTER_K34_PATH} DESTINATION ./ RENAME mmx_plot_k34.exe COMPONENT plotters)
-install(FILES ${PLOTTER_BLADEBIT_PATH} DESTINATION ./ RENAME mmx_bladebit.exe COMPONENT plotters)
-
 set(CPACK_PACKAGE_NAME "MMX Node")
 set(CPACK_PACKAGE_VENDOR "madMAx43v3r")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MMX is a blockchain written from scratch using Chia's Proof Of Space and a SHA256 VDF similar to Solana")
@@ -181,7 +152,7 @@ set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/madMAx43v3r/mmx-node")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "MMX Node")
 
 # Define components and their display names
-set(CPACK_COMPONENTS_ALL applications libraries gui plotters tools)
+set(CPACK_COMPONENTS_ALL applications libraries gui tools)
 
 set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Node")
 set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries")
