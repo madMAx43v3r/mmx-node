@@ -224,11 +224,15 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		{
 			auto proof_xs = job->best_proof.proof;
 			if(proof_xs.empty()) {
-				const auto data = prover->get_full_proof(value->challenge, job->best_proof.index);
-				if(data.valid) {
-					proof_xs = data.proof;
-				} else {
-					log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << data.error_msg << " (" << prover->get_file_path() << ")";
+				try {
+					const auto data = prover->get_full_proof(value->challenge, job->best_proof.index);
+					if(data.valid) {
+						proof_xs = data.proof;
+					} else {
+						throw std::runtime_error(data.error_msg);
+					}
+				} catch(const std::exception& ex) {
+					log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
 				}
 			}
 			if(!proof_xs.empty()) {
