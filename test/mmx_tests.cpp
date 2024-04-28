@@ -100,7 +100,10 @@ int main(int argc, char** argv)
 			const std::string text = "0x" + hash.to_string();
 			vnx::test::expect(memo_t(hash).to_string(), text);
 			vnx::test::expect(memo_t(text).to_string(), text);
+			vnx::test::expect(memo_t::from_variant(vnx::Variant(hash)).to_string(), text);
 		}
+		vnx::test::expect(memo_t::from_variant(vnx::Variant(1337)).to_string(), "1337");
+		vnx::test::expect(memo_t::from_variant(vnx::Variant("sD1.-=&^%{]|+)$#@!<")).to_string(), "sD1.-=&^%{]|+)$#@!<");
 	}
 	VNX_TEST_END()
 

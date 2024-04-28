@@ -17,11 +17,7 @@ memo_t::memo_t(const hash_t& hash)
 
 memo_t::memo_t(const uint256_t& value)
 {
-	auto tmp = value;
-	for(size_t i = 0; i < size(); ++i) {
-		bytes[size() - i - 1] = tmp & 0xFF;
-		tmp >>= 8;
-	}
+	super_t::from_uint(value, true);
 }
 
 memo_t::memo_t(const std::string& str)
@@ -40,6 +36,16 @@ memo_t::memo_t(const std::string& str)
 	}
 }
 
+memo_t memo_t::from_variant(const vnx::Variant& value)
+{
+	if(value.is_long()) {
+		return memo_t(value.to<uint64_t>());
+	} else if(value.is_string()) {
+		return memo_t(value.to<std::string>());
+	}
+	return memo_t(value.to<hash_t>());
+}
+
 hash_t memo_t::to_hash() const
 {
 	return hash_t::from_bytes(bytes);
@@ -47,12 +53,7 @@ hash_t memo_t::to_hash() const
 
 uint256_t memo_t::to_uint() const
 {
-	uint256_t out = 0;
-	for(size_t i = 0; i < size(); ++i) {
-		out <<= 8;
-		out |= bytes[i];
-	}
-	return out;
+	return super_t::to_uint<uint256_t>(true);
 }
 
 std::string memo_t::to_string() const

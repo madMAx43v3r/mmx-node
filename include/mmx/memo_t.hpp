@@ -15,6 +15,7 @@
 #include <vnx/Input.hpp>
 #include <vnx/Output.hpp>
 #include <vnx/Visitor.h>
+#include <vnx/Variant.h>
 
 #include <uint256_t.h>
 
@@ -34,6 +35,8 @@ public:
 	memo_t(const std::string& str);
 
 	explicit memo_t(const char* str) : memo_t(std::string(str)) {}
+
+	static memo_t from_variant(const vnx::Variant& value);
 
 	hash_t to_hash() const;
 
