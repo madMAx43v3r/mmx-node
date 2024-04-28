@@ -858,7 +858,9 @@ std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& ad
 		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
 		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result);
 		for(const auto& entry : result) {
-			totals[entry.first.second] += entry.second;
+			if(entry.second) {
+				totals[entry.first.second] += entry.second;
+			}
 		}
 	}
 	return totals;
@@ -871,7 +873,9 @@ std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::v
 		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
 		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result);
 		for(const auto& entry : result) {
-			totals[entry.first] += entry.second;
+			if(entry.second) {
+				totals[entry.first] += entry.second;
+			}
 		}
 	}
 	return totals;
