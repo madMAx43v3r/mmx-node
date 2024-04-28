@@ -33,8 +33,6 @@ void Engine::addref(const uint64_t dst)
 {
 	if(auto var = read(dst, true)) {
 		var->addref();
-	} else {
-		throw std::logic_error("addref(): read fail at " + to_hex(dst));
 	}
 }
 
@@ -44,9 +42,6 @@ void Engine::unref(const uint64_t dst)
 		if(var->unref()) {
 			erase(dst);
 		}
-	} else {
-		// this is the case where dst is stored and not loaded
-		// we ignore it because stored values are not ref counted anymore
 	}
 }
 
