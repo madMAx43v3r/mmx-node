@@ -168,12 +168,6 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 }
 
 inline
-uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params)
-{
-	return params->min_reward;
-}
-
-inline
 uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const uint64_t tx_fees)
 {
 	const auto dynamic = (params->project_ratio.value * uint64_t(tx_fees)) / params->project_ratio.inverse;
@@ -185,6 +179,20 @@ uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, cons
 {
 	const uint64_t fee_deduction = calc_project_reward(params, tx_fees);
 	return base_reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
+}
+
+inline
+uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const int8_t vote)
+{
+	const auto step_size = std::max<uint64_t>(base_reward / params->reward_adjust_div, 1);
+
+	int64_t reward = base_reward;
+	if(vote > 0) {
+		reward += step_size;
+	} else if(vote < 0) {
+		reward -= step_size;
+	}
+	return std::max<int64_t>(std::min<int64_t>(reward, 4200000000000ll), params->min_reward);
 }
 
 inline

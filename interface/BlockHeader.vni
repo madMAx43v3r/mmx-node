@@ -32,6 +32,9 @@ class BlockHeader {
 	ulong reward_amount;
 	optional<addr_t> reward_addr;
 	
+	char reward_vote;					// 0 = unchanged, 1 = up, -1 = down
+	ulong next_base_reward;
+	
 	uint static_cost;
 	uint total_cost;
 	

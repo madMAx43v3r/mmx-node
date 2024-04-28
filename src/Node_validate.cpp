@@ -150,6 +150,13 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->average_txfee != average_txfee) {
 			throw std::logic_error("invalid average_txfee: " + std::to_string(block->average_txfee) + " != " + std::to_string(average_txfee));
 		}
+		const auto next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
+		if(block->next_base_reward != next_base_reward) {
+			throw std::logic_error("invalid next_base_reward: " + std::to_string(block->next_base_reward) + " != " + std::to_string(next_base_reward));
+		}
+		if(block->reward_vote > 1 || block->reward_vote < -1) {
+			throw std::logic_error("invalid reward_vote: " + std::to_string(block->reward_vote));
+		}
 	} else {
 		if(block->time_diff != prev->time_diff) {
 			throw std::logic_error("invalid time_diff adjust");
@@ -159,6 +166,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 		if(block->average_txfee != prev->average_txfee) {
 			throw std::logic_error("invalid average_txfee adjust");
+		}
+		if(block->next_base_reward != prev->next_base_reward) {
+			throw std::logic_error("invalid next_base_reward adjust");
+		}
+		if(block->reward_vote) {
+			throw std::logic_error("invalid reward_vote");
 		}
 	}
 	if(block->reward_addr) {
@@ -176,6 +189,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 				}
 			}
 		}
+	}
+	if(block->next_base_reward < params->min_reward) {
+		throw std::logic_error("invalid next_base_reward: smaller than min reward");
 	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
 	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
@@ -299,6 +315,10 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->reward_amount != amount) {
 			throw std::logic_error("invalid reward_amount: "
 					+ std::to_string(block->reward_amount) + " > " + std::to_string(amount));
+		}
+	} else {
+		if(block->reward_amount) {
+			throw std::logic_error("invalid reward_amount");
 		}
 	}
 	return context;

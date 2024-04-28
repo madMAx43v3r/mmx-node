@@ -166,6 +166,7 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->total_weight = prev->total_weight + block->weight;
 		block->netspace_ratio = prev->netspace_ratio;
 		block->average_txfee = prev->average_txfee;
+		block->next_base_reward = prev->next_base_reward;
 		block->finalize();
 		add_block(block);
 	}
@@ -801,14 +802,18 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
 		block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
 	}
+	block->space_diff = calc_new_space_diff(params, prev->space_diff, block->proof->score);
 	{
-		// set new space difficulty
-		block->space_diff = calc_new_space_diff(params, prev->space_diff, block->proof->score);
+		const auto diff_block = get_diff_header(prev, 1);
+		block->weight = calc_block_weight(params, diff_block, block);
+		block->total_weight = prev->total_weight + block->weight;
 	}
-	const auto diff_block = get_diff_header(prev, 1);
-	block->weight = calc_block_weight(params, diff_block, block);
-	block->total_weight = prev->total_weight + block->weight;
 	block->reward_amount = calc_block_reward(block, total_fees);
+	block->next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
+	{
+		// TODO: random voting for now to test
+		block->reward_vote = std::max(std::min(::rand() % 3 - 1, 1), -1);
+	}
 	block->finalize();
 
 	FarmerClient farmer(proof.farmer_mac);

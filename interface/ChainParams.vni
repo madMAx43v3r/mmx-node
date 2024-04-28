@@ -25,6 +25,7 @@ class ChainParams {
 	
 	ulong vdf_reward = 2000;				// per block
 	ulong min_reward = 200000;
+	ulong reward_adjust_div = 1000000;		// relative adjustment per block
 	
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 100000000;

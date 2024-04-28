@@ -312,6 +312,7 @@ void Node::main()
 		block->nonce = params->port;
 		block->time_diff = params->initial_time_diff;
 		block->space_diff = params->initial_space_diff;
+		block->next_base_reward = params->min_reward;
 		block->vdf_output[0] = hash_t(params->network);
 		block->vdf_output[1] = hash_t(params->network);
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
@@ -386,7 +387,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
 			info->vdf_speed = (peak->time_diff / params->block_time) * (params->time_diff_constant / 1e6);
-			info->block_reward = mmx::calc_block_reward(params);
+			info->block_reward = peak->next_base_reward;
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = mmx_address_count;
@@ -2500,7 +2501,10 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	if(!block->proof) {
 		return 0;
 	}
-	auto base_reward = mmx::calc_block_reward(params);
+	uint64_t base_reward = params->min_reward;
+	if(auto prev = find_prev_header(block, 1)) {
+		base_reward = prev->next_base_reward;
+	}
 	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
 		base_reward = 0;
 	}
