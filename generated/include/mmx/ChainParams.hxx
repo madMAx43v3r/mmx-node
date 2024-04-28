@@ -34,6 +34,7 @@ public:
 	uint32_t score_threshold = 65536;
 	uint64_t vdf_reward = 2000;
 	uint64_t min_reward = 200000;
+	uint64_t reward_adjust_div = 1000000;
 	uint64_t time_diff_constant = 1000;
 	uint64_t space_diff_constant = 100000000;
 	uint64_t virtual_space_constant = 500;
@@ -109,7 +110,7 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(48);
+	_visitor.template type_begin<ChainParams>(49);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
@@ -129,36 +130,37 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("score_threshold", 16); _visitor.accept(score_threshold);
 	_visitor.type_field("vdf_reward", 17); _visitor.accept(vdf_reward);
 	_visitor.type_field("min_reward", 18); _visitor.accept(min_reward);
-	_visitor.type_field("time_diff_constant", 19); _visitor.accept(time_diff_constant);
-	_visitor.type_field("space_diff_constant", 20); _visitor.accept(space_diff_constant);
-	_visitor.type_field("virtual_space_constant", 21); _visitor.accept(virtual_space_constant);
-	_visitor.type_field("initial_time_diff", 22); _visitor.accept(initial_time_diff);
-	_visitor.type_field("initial_space_diff", 23); _visitor.accept(initial_space_diff);
-	_visitor.type_field("min_txfee", 24); _visitor.accept(min_txfee);
-	_visitor.type_field("min_txfee_io", 25); _visitor.accept(min_txfee_io);
-	_visitor.type_field("min_txfee_sign", 26); _visitor.accept(min_txfee_sign);
-	_visitor.type_field("min_txfee_memo", 27); _visitor.accept(min_txfee_memo);
-	_visitor.type_field("min_txfee_exec", 28); _visitor.accept(min_txfee_exec);
-	_visitor.type_field("min_txfee_deploy", 29); _visitor.accept(min_txfee_deploy);
-	_visitor.type_field("min_txfee_byte", 30); _visitor.accept(min_txfee_byte);
-	_visitor.type_field("min_txfee_read", 31); _visitor.accept(min_txfee_read);
-	_visitor.type_field("min_txfee_read_kbyte", 32); _visitor.accept(min_txfee_read_kbyte);
-	_visitor.type_field("max_block_size", 33); _visitor.accept(max_block_size);
-	_visitor.type_field("max_block_cost", 34); _visitor.accept(max_block_cost);
-	_visitor.type_field("max_tx_cost", 35); _visitor.accept(max_tx_cost);
-	_visitor.type_field("min_fee_ratio", 36); _visitor.accept(min_fee_ratio);
-	_visitor.type_field("block_time", 37); _visitor.accept(block_time);
-	_visitor.type_field("network", 38); _visitor.accept(network);
-	_visitor.type_field("nft_binary", 39); _visitor.accept(nft_binary);
-	_visitor.type_field("plot_binary", 40); _visitor.accept(plot_binary);
-	_visitor.type_field("swap_binary", 41); _visitor.accept(swap_binary);
-	_visitor.type_field("offer_binary", 42); _visitor.accept(offer_binary);
-	_visitor.type_field("token_binary", 43); _visitor.accept(token_binary);
-	_visitor.type_field("plot_nft_binary", 44); _visitor.accept(plot_nft_binary);
-	_visitor.type_field("project_addr", 45); _visitor.accept(project_addr);
-	_visitor.type_field("fixed_project_reward", 46); _visitor.accept(fixed_project_reward);
-	_visitor.type_field("project_ratio", 47); _visitor.accept(project_ratio);
-	_visitor.template type_end<ChainParams>(48);
+	_visitor.type_field("reward_adjust_div", 19); _visitor.accept(reward_adjust_div);
+	_visitor.type_field("time_diff_constant", 20); _visitor.accept(time_diff_constant);
+	_visitor.type_field("space_diff_constant", 21); _visitor.accept(space_diff_constant);
+	_visitor.type_field("virtual_space_constant", 22); _visitor.accept(virtual_space_constant);
+	_visitor.type_field("initial_time_diff", 23); _visitor.accept(initial_time_diff);
+	_visitor.type_field("initial_space_diff", 24); _visitor.accept(initial_space_diff);
+	_visitor.type_field("min_txfee", 25); _visitor.accept(min_txfee);
+	_visitor.type_field("min_txfee_io", 26); _visitor.accept(min_txfee_io);
+	_visitor.type_field("min_txfee_sign", 27); _visitor.accept(min_txfee_sign);
+	_visitor.type_field("min_txfee_memo", 28); _visitor.accept(min_txfee_memo);
+	_visitor.type_field("min_txfee_exec", 29); _visitor.accept(min_txfee_exec);
+	_visitor.type_field("min_txfee_deploy", 30); _visitor.accept(min_txfee_deploy);
+	_visitor.type_field("min_txfee_byte", 31); _visitor.accept(min_txfee_byte);
+	_visitor.type_field("min_txfee_read", 32); _visitor.accept(min_txfee_read);
+	_visitor.type_field("min_txfee_read_kbyte", 33); _visitor.accept(min_txfee_read_kbyte);
+	_visitor.type_field("max_block_size", 34); _visitor.accept(max_block_size);
+	_visitor.type_field("max_block_cost", 35); _visitor.accept(max_block_cost);
+	_visitor.type_field("max_tx_cost", 36); _visitor.accept(max_tx_cost);
+	_visitor.type_field("min_fee_ratio", 37); _visitor.accept(min_fee_ratio);
+	_visitor.type_field("block_time", 38); _visitor.accept(block_time);
+	_visitor.type_field("network", 39); _visitor.accept(network);
+	_visitor.type_field("nft_binary", 40); _visitor.accept(nft_binary);
+	_visitor.type_field("plot_binary", 41); _visitor.accept(plot_binary);
+	_visitor.type_field("swap_binary", 42); _visitor.accept(swap_binary);
+	_visitor.type_field("offer_binary", 43); _visitor.accept(offer_binary);
+	_visitor.type_field("token_binary", 44); _visitor.accept(token_binary);
+	_visitor.type_field("plot_nft_binary", 45); _visitor.accept(plot_nft_binary);
+	_visitor.type_field("project_addr", 46); _visitor.accept(project_addr);
+	_visitor.type_field("fixed_project_reward", 47); _visitor.accept(fixed_project_reward);
+	_visitor.type_field("project_ratio", 48); _visitor.accept(project_ratio);
+	_visitor.template type_end<ChainParams>(49);
 }
 
 

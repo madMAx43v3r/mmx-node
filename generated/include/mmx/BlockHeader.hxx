@@ -37,7 +37,7 @@ public:
 	uint64_t reward_amount = 0;
 	vnx::optional<::mmx::addr_t> reward_addr;
 	int8_t reward_vote = 0;
-	uint64_t next_reward = 0;
+	uint64_t next_base_reward = 0;
 	uint32_t static_cost = 0;
 	uint32_t total_cost = 0;
 	uint32_t tx_count = 0;
@@ -116,7 +116,7 @@ void BlockHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("reward_amount", 15); _visitor.accept(reward_amount);
 	_visitor.type_field("reward_addr", 16); _visitor.accept(reward_addr);
 	_visitor.type_field("reward_vote", 17); _visitor.accept(reward_vote);
-	_visitor.type_field("next_reward", 18); _visitor.accept(next_reward);
+	_visitor.type_field("next_base_reward", 18); _visitor.accept(next_base_reward);
 	_visitor.type_field("static_cost", 19); _visitor.accept(static_cost);
 	_visitor.type_field("total_cost", 20); _visitor.accept(total_cost);
 	_visitor.type_field("tx_count", 21); _visitor.accept(tx_count);

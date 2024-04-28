@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Block::VNX_TYPE_HASH(0x94965d816d328467ull);
-const vnx::Hash64 Block::VNX_CODE_HASH(0xa5eba8eb9ea4aad0ull);
+const vnx::Hash64 Block::VNX_CODE_HASH(0xbf07ed2fdcc61d1dull);
 
 vnx::Hash64 Block::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -67,7 +67,7 @@ void Block::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, reward_amount);
 	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, reward_addr);
 	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, reward_vote);
-	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, next_reward);
+	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, next_base_reward);
 	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, static_cost);
 	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, total_cost);
 	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, tx_count);
@@ -99,7 +99,7 @@ void Block::write(std::ostream& _out) const {
 	_out << ", \"reward_amount\": "; vnx::write(_out, reward_amount);
 	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
 	_out << ", \"reward_vote\": "; vnx::write(_out, reward_vote);
-	_out << ", \"next_reward\": "; vnx::write(_out, next_reward);
+	_out << ", \"next_base_reward\": "; vnx::write(_out, next_base_reward);
 	_out << ", \"static_cost\": "; vnx::write(_out, static_cost);
 	_out << ", \"total_cost\": "; vnx::write(_out, total_cost);
 	_out << ", \"tx_count\": "; vnx::write(_out, tx_count);
@@ -138,7 +138,7 @@ vnx::Object Block::to_object() const {
 	_object["reward_amount"] = reward_amount;
 	_object["reward_addr"] = reward_addr;
 	_object["reward_vote"] = reward_vote;
-	_object["next_reward"] = next_reward;
+	_object["next_base_reward"] = next_base_reward;
 	_object["static_cost"] = static_cost;
 	_object["total_cost"] = total_cost;
 	_object["tx_count"] = tx_count;
@@ -164,8 +164,8 @@ void Block::from_object(const vnx::Object& _object) {
 			_entry.second.to(height);
 		} else if(_entry.first == "netspace_ratio") {
 			_entry.second.to(netspace_ratio);
-		} else if(_entry.first == "next_reward") {
-			_entry.second.to(next_reward);
+		} else if(_entry.first == "next_base_reward") {
+			_entry.second.to(next_base_reward);
 		} else if(_entry.first == "nonce") {
 			_entry.second.to(nonce);
 		} else if(_entry.first == "prev") {
@@ -265,8 +265,8 @@ vnx::Variant Block::get_field(const std::string& _name) const {
 	if(_name == "reward_vote") {
 		return vnx::Variant(reward_vote);
 	}
-	if(_name == "next_reward") {
-		return vnx::Variant(next_reward);
+	if(_name == "next_base_reward") {
+		return vnx::Variant(next_base_reward);
 	}
 	if(_name == "static_cost") {
 		return vnx::Variant(static_cost);
@@ -332,8 +332,8 @@ void Block::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(reward_addr);
 	} else if(_name == "reward_vote") {
 		_value.to(reward_vote);
-	} else if(_name == "next_reward") {
-		_value.to(next_reward);
+	} else if(_name == "next_base_reward") {
+		_value.to(next_base_reward);
 	} else if(_name == "static_cost") {
 		_value.to(static_cost);
 	} else if(_name == "total_cost") {
@@ -377,7 +377,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Block";
 	type_code->type_hash = vnx::Hash64(0x94965d816d328467ull);
-	type_code->code_hash = vnx::Hash64(0xa5eba8eb9ea4aad0ull);
+	type_code->code_hash = vnx::Hash64(0xbf07ed2fdcc61d1dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Block);
@@ -496,7 +496,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	{
 		auto& field = type_code->fields[18];
 		field.data_size = 8;
-		field.name = "next_reward";
+		field.name = "next_base_reward";
 		field.code = {4};
 	}
 	{
@@ -626,7 +626,7 @@ void read(TypeInput& in, ::mmx::Block& value, const TypeCode* type_code, const u
 			vnx::read_value(_buf + _field->offset, value.reward_vote, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[18]) {
-			vnx::read_value(_buf + _field->offset, value.next_reward, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.next_base_reward, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[19]) {
 			vnx::read_value(_buf + _field->offset, value.static_cost, _field->code.data());
@@ -684,7 +684,7 @@ void write(TypeOutput& out, const ::mmx::Block& value, const TypeCode* type_code
 	vnx::write_value(_buf + 40, value.vdf_iters);
 	vnx::write_value(_buf + 48, value.reward_amount);
 	vnx::write_value(_buf + 56, value.reward_vote);
-	vnx::write_value(_buf + 57, value.next_reward);
+	vnx::write_value(_buf + 57, value.next_base_reward);
 	vnx::write_value(_buf + 65, value.static_cost);
 	vnx::write_value(_buf + 69, value.total_cost);
 	vnx::write_value(_buf + 73, value.tx_count);
