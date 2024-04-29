@@ -28,8 +28,8 @@ Elements
 - Liquidity pool swap based trading (AMM, multi-fee tiers, similar to Uniswap v3)
 - ECDSA signatures for seamless integration (same as Bitcoin)
 - Custom blockchain database engine (much faster than RocksDB and LevelDB)
-- Adaptive SHA256 VDF governing block interval (not limited timers like Solana)
-- Feature rich Node, with Block Explorer, Wallet, Market, Swap, and HTTP RPC
+- Adaptive SHA256 VDF governing block interval (no limited timers like Solana)
+- Feature rich Node with Block Explorer, Wallet, Market, Swap, and HTTP RPC
 
 Roadmap
 
