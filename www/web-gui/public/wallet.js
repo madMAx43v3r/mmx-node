@@ -461,6 +461,10 @@ Vue.component('account-history', {
 				</template>
 			</template>
 
+			<template v-slot:item.memo="{ item }">
+				<span style="word-break: break-all;">{{ item.memo }}</span>
+			</template>
+
 			<template v-slot:item.address="{ item }">
 				<router-link :to="'/explore/address/' + item.address">{{get_short_addr(item.address)}}</router-link>
 			</template>
@@ -470,7 +474,7 @@ Vue.component('account-history', {
 			</template>
 
 			<template v-slot:item.time="{ item }">
-				{{new Date(item.time * 1000).toLocaleString()}}
+				<span class="text-no-wrap">{{new Date(item.time * 1000).toLocaleString()}}</span>
 			</template>
 
 		</v-data-table>
