@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_entry_t::VNX_TYPE_HASH(0x438cda5719015870ull);
-const vnx::Hash64 tx_entry_t::VNX_CODE_HASH(0x7869b199c41d6aeeull);
+const vnx::Hash64 tx_entry_t::VNX_CODE_HASH(0x6ba5e1310ddd3470ull);
 
 vnx::Hash64 tx_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -54,7 +54,8 @@ void tx_entry_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, contract);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, amount);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, is_validated);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, memo);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, is_validated);
 	_visitor.type_end(*_type_code);
 }
 
@@ -66,6 +67,7 @@ void tx_entry_t::write(std::ostream& _out) const {
 	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"contract\": "; vnx::write(_out, contract);
 	_out << ", \"amount\": "; vnx::write(_out, amount);
+	_out << ", \"memo\": "; vnx::write(_out, memo);
 	_out << ", \"is_validated\": "; vnx::write(_out, is_validated);
 	_out << "}";
 }
@@ -85,6 +87,7 @@ vnx::Object tx_entry_t::to_object() const {
 	_object["address"] = address;
 	_object["contract"] = contract;
 	_object["amount"] = amount;
+	_object["memo"] = memo;
 	_object["is_validated"] = is_validated;
 	return _object;
 }
@@ -101,6 +104,8 @@ void tx_entry_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(height);
 		} else if(_entry.first == "is_validated") {
 			_entry.second.to(is_validated);
+		} else if(_entry.first == "memo") {
+			_entry.second.to(memo);
 		} else if(_entry.first == "txid") {
 			_entry.second.to(txid);
 		} else if(_entry.first == "type") {
@@ -128,6 +133,9 @@ vnx::Variant tx_entry_t::get_field(const std::string& _name) const {
 	if(_name == "amount") {
 		return vnx::Variant(amount);
 	}
+	if(_name == "memo") {
+		return vnx::Variant(memo);
+	}
 	if(_name == "is_validated") {
 		return vnx::Variant(is_validated);
 	}
@@ -147,6 +155,8 @@ void tx_entry_t::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(contract);
 	} else if(_name == "amount") {
 		_value.to(amount);
+	} else if(_name == "memo") {
+		_value.to(memo);
 	} else if(_name == "is_validated") {
 		_value.to(is_validated);
 	}
@@ -176,13 +186,13 @@ std::shared_ptr<vnx::TypeCode> tx_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_entry_t";
 	type_code->type_hash = vnx::Hash64(0x438cda5719015870ull);
-	type_code->code_hash = vnx::Hash64(0x7869b199c41d6aeeull);
+	type_code->code_hash = vnx::Hash64(0x6ba5e1310ddd3470ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::tx_entry_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<tx_entry_t>>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::tx_type_e::static_get_type_code();
-	type_code->fields.resize(7);
+	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -221,6 +231,12 @@ std::shared_ptr<vnx::TypeCode> tx_entry_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[6];
+		field.is_extended = true;
+		field.name = "memo";
+		field.code = {33, 32};
+	}
+	{
+		auto& field = type_code->fields[7];
 		field.data_size = 1;
 		field.name = "is_validated";
 		field.code = {31};
@@ -270,7 +286,7 @@ void read(TypeInput& in, ::mmx::tx_entry_t& value, const TypeCode* type_code, co
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[6]) {
+		if(const auto* const _field = type_code->field_map[7]) {
 			vnx::read_value(_buf + _field->offset, value.is_validated, _field->code.data());
 		}
 	}
@@ -281,6 +297,7 @@ void read(TypeInput& in, ::mmx::tx_entry_t& value, const TypeCode* type_code, co
 			case 3: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.contract, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.amount, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.memo, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -307,6 +324,7 @@ void write(TypeOutput& out, const ::mmx::tx_entry_t& value, const TypeCode* type
 	vnx::write(out, value.address, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.contract, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.amount, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.memo, type_code, type_code->fields[6].code.data());
 }
 
 void read(std::istream& in, ::mmx::tx_entry_t& value) {

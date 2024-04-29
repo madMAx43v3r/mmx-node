@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_swap_rem_liquid::VNX_TYPE_HASH(0x6494b41c51e158eaull);
-const vnx::Hash64 Wallet_swap_rem_liquid::VNX_CODE_HASH(0x6a4ad80564d59c79ull);
+const vnx::Hash64 Wallet_swap_rem_liquid::VNX_CODE_HASH(0x42c54b6e911196a0ull);
 
 vnx::Hash64 Wallet_swap_rem_liquid::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -146,7 +146,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_rem_liquid::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.swap_rem_liquid";
 	type_code->type_hash = vnx::Hash64(0x6494b41c51e158eaull);
-	type_code->code_hash = vnx::Hash64(0x6a4ad80564d59c79ull);
+	type_code->code_hash = vnx::Hash64(0x42c54b6e911196a0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;

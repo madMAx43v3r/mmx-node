@@ -371,7 +371,6 @@
 #include <mmx/fixed128.hpp>
 #include <mmx/hash_512_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/memo_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <mmx/skey_t.hpp>
@@ -4430,18 +4429,6 @@ void type<::mmx::hash_t>::create_dynamic_code(std::vector<uint16_t>& code) {
 
 void type<::mmx::hash_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::hash_t& value, bool special) {
 	const std::vector<int> tmp = {11, 32, 1};
-	code.insert(code.end(), tmp.begin(), tmp.end());}
-
-const TypeCode* type<::mmx::memo_t>::get_type_code() {
-	return nullptr;
-}
-
-void type<::mmx::memo_t>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::memo_t());
-}
-
-void type<::mmx::memo_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::memo_t& value, bool special) {
-	const std::vector<int> tmp = {11, 20, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
 const TypeCode* type<::mmx::node_info_t>::get_type_code() {

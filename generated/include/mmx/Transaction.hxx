@@ -13,7 +13,6 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/memo_t.hpp>
 #include <mmx/tx_index_t.hxx>
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txin_t.hxx>
@@ -35,7 +34,6 @@ public:
 	::mmx::tx_note_e note;
 	uint64_t nonce = 0;
 	std::string network;
-	vnx::optional<::mmx::memo_t> memo;
 	vnx::optional<::mmx::addr_t> sender;
 	std::vector<::mmx::txin_t> inputs;
 	std::vector<::mmx::txout_t> outputs;
@@ -60,7 +58,7 @@ public:
 	
 	virtual void finalize();
 	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
-	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
+	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const vnx::optional<std::string>& memo = nullptr);
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual vnx::bool_t is_signed() const;
@@ -107,7 +105,7 @@ protected:
 
 template<typename T>
 void Transaction::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Transaction>(18);
+	_visitor.template type_begin<Transaction>(17);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("version", 1); _visitor.accept(version);
 	_visitor.type_field("expires", 2); _visitor.accept(expires);
@@ -117,16 +115,15 @@ void Transaction::accept_generic(T& _visitor) const {
 	_visitor.type_field("note", 6); _visitor.accept(note);
 	_visitor.type_field("nonce", 7); _visitor.accept(nonce);
 	_visitor.type_field("network", 8); _visitor.accept(network);
-	_visitor.type_field("memo", 9); _visitor.accept(memo);
-	_visitor.type_field("sender", 10); _visitor.accept(sender);
-	_visitor.type_field("inputs", 11); _visitor.accept(inputs);
-	_visitor.type_field("outputs", 12); _visitor.accept(outputs);
-	_visitor.type_field("execute", 13); _visitor.accept(execute);
-	_visitor.type_field("solutions", 14); _visitor.accept(solutions);
-	_visitor.type_field("deploy", 15); _visitor.accept(deploy);
-	_visitor.type_field("exec_result", 16); _visitor.accept(exec_result);
-	_visitor.type_field("content_hash", 17); _visitor.accept(content_hash);
-	_visitor.template type_end<Transaction>(18);
+	_visitor.type_field("sender", 9); _visitor.accept(sender);
+	_visitor.type_field("inputs", 10); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 11); _visitor.accept(outputs);
+	_visitor.type_field("execute", 12); _visitor.accept(execute);
+	_visitor.type_field("solutions", 13); _visitor.accept(solutions);
+	_visitor.type_field("deploy", 14); _visitor.accept(deploy);
+	_visitor.type_field("exec_result", 15); _visitor.accept(exec_result);
+	_visitor.type_field("content_hash", 16); _visitor.accept(content_hash);
+	_visitor.template type_end<Transaction>(17);
 }
 
 

@@ -11,7 +11,6 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
-#include <mmx/memo_t.hpp>
 #include <mmx/tx_index_t.hxx>
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txin_t.hxx>
@@ -26,7 +25,7 @@ namespace mmx {
 const uint32_t Transaction::MAX_SOLUTIONS;
 
 const vnx::Hash64 Transaction::VNX_TYPE_HASH(0xce0462acdceaa5bcull);
-const vnx::Hash64 Transaction::VNX_CODE_HASH(0x2d60b466e1d6dcb6ull);
+const vnx::Hash64 Transaction::VNX_CODE_HASH(0x8e4b410f47fa16dull);
 
 vnx::Hash64 Transaction::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -68,15 +67,14 @@ void Transaction::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, note);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, nonce);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, network);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, memo);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, sender);
-	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, inputs);
-	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, outputs);
-	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, execute);
-	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, solutions);
-	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, deploy);
-	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, exec_result);
-	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, content_hash);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, sender);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, inputs);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, outputs);
+	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, execute);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, solutions);
+	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, deploy);
+	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, exec_result);
+	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, content_hash);
 	_visitor.type_end(*_type_code);
 }
 
@@ -91,7 +89,6 @@ void Transaction::write(std::ostream& _out) const {
 	_out << ", \"note\": "; vnx::write(_out, note);
 	_out << ", \"nonce\": "; vnx::write(_out, nonce);
 	_out << ", \"network\": "; vnx::write(_out, network);
-	_out << ", \"memo\": "; vnx::write(_out, memo);
 	_out << ", \"sender\": "; vnx::write(_out, sender);
 	_out << ", \"inputs\": "; vnx::write(_out, inputs);
 	_out << ", \"outputs\": "; vnx::write(_out, outputs);
@@ -121,7 +118,6 @@ vnx::Object Transaction::to_object() const {
 	_object["note"] = note;
 	_object["nonce"] = nonce;
 	_object["network"] = network;
-	_object["memo"] = memo;
 	_object["sender"] = sender;
 	_object["inputs"] = inputs;
 	_object["outputs"] = outputs;
@@ -153,8 +149,6 @@ void Transaction::from_object(const vnx::Object& _object) {
 			_entry.second.to(inputs);
 		} else if(_entry.first == "max_fee_amount") {
 			_entry.second.to(max_fee_amount);
-		} else if(_entry.first == "memo") {
-			_entry.second.to(memo);
 		} else if(_entry.first == "network") {
 			_entry.second.to(network);
 		} else if(_entry.first == "nonce") {
@@ -203,9 +197,6 @@ vnx::Variant Transaction::get_field(const std::string& _name) const {
 	if(_name == "network") {
 		return vnx::Variant(network);
 	}
-	if(_name == "memo") {
-		return vnx::Variant(memo);
-	}
 	if(_name == "sender") {
 		return vnx::Variant(sender);
 	}
@@ -252,8 +243,6 @@ void Transaction::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(nonce);
 	} else if(_name == "network") {
 		_value.to(network);
-	} else if(_name == "memo") {
-		_value.to(memo);
 	} else if(_name == "sender") {
 		_value.to(sender);
 	} else if(_name == "inputs") {
@@ -297,7 +286,7 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Transaction";
 	type_code->type_hash = vnx::Hash64(0xce0462acdceaa5bcull);
-	type_code->code_hash = vnx::Hash64(0x2d60b466e1d6dcb6ull);
+	type_code->code_hash = vnx::Hash64(0x8e4b410f47fa16dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Transaction);
@@ -309,7 +298,7 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	type_code->depends[1] = ::mmx::txin_t::static_get_type_code();
 	type_code->depends[2] = ::mmx::txout_t::static_get_type_code();
 	type_code->depends[3] = ::mmx::exec_result_t::static_get_type_code();
-	type_code->fields.resize(18);
+	type_code->fields.resize(17);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -369,53 +358,47 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	{
 		auto& field = type_code->fields[9];
 		field.is_extended = true;
-		field.name = "memo";
-		field.code = {33, 11, 20, 1};
-	}
-	{
-		auto& field = type_code->fields[10];
-		field.is_extended = true;
 		field.name = "sender";
 		field.code = {33, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[11];
+		auto& field = type_code->fields[10];
 		field.is_extended = true;
 		field.name = "inputs";
 		field.code = {12, 19, 1};
 	}
 	{
-		auto& field = type_code->fields[12];
+		auto& field = type_code->fields[11];
 		field.is_extended = true;
 		field.name = "outputs";
 		field.code = {12, 19, 2};
 	}
 	{
-		auto& field = type_code->fields[13];
+		auto& field = type_code->fields[12];
 		field.is_extended = true;
 		field.name = "execute";
 		field.code = {12, 16};
 	}
 	{
-		auto& field = type_code->fields[14];
+		auto& field = type_code->fields[13];
 		field.is_extended = true;
 		field.name = "solutions";
 		field.code = {12, 16};
 	}
 	{
-		auto& field = type_code->fields[15];
+		auto& field = type_code->fields[14];
 		field.is_extended = true;
 		field.name = "deploy";
 		field.code = {16};
 	}
 	{
-		auto& field = type_code->fields[16];
+		auto& field = type_code->fields[15];
 		field.is_extended = true;
 		field.name = "exec_result";
 		field.code = {33, 19, 3};
 	}
 	{
-		auto& field = type_code->fields[17];
+		auto& field = type_code->fields[16];
 		field.is_extended = true;
 		field.name = "content_hash";
 		field.code = {11, 32, 1};
@@ -492,15 +475,14 @@ void read(TypeInput& in, ::mmx::Transaction& value, const TypeCode* type_code, c
 			case 0: vnx::read(in, value.id, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.note, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.network, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.memo, type_code, _field->code.data()); break;
-			case 10: vnx::read(in, value.sender, type_code, _field->code.data()); break;
-			case 11: vnx::read(in, value.inputs, type_code, _field->code.data()); break;
-			case 12: vnx::read(in, value.outputs, type_code, _field->code.data()); break;
-			case 13: vnx::read(in, value.execute, type_code, _field->code.data()); break;
-			case 14: vnx::read(in, value.solutions, type_code, _field->code.data()); break;
-			case 15: vnx::read(in, value.deploy, type_code, _field->code.data()); break;
-			case 16: vnx::read(in, value.exec_result, type_code, _field->code.data()); break;
-			case 17: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.sender, type_code, _field->code.data()); break;
+			case 10: vnx::read(in, value.inputs, type_code, _field->code.data()); break;
+			case 11: vnx::read(in, value.outputs, type_code, _field->code.data()); break;
+			case 12: vnx::read(in, value.execute, type_code, _field->code.data()); break;
+			case 13: vnx::read(in, value.solutions, type_code, _field->code.data()); break;
+			case 14: vnx::read(in, value.deploy, type_code, _field->code.data()); break;
+			case 15: vnx::read(in, value.exec_result, type_code, _field->code.data()); break;
+			case 16: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -529,15 +511,14 @@ void write(TypeOutput& out, const ::mmx::Transaction& value, const TypeCode* typ
 	vnx::write(out, value.id, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.note, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.network, type_code, type_code->fields[8].code.data());
-	vnx::write(out, value.memo, type_code, type_code->fields[9].code.data());
-	vnx::write(out, value.sender, type_code, type_code->fields[10].code.data());
-	vnx::write(out, value.inputs, type_code, type_code->fields[11].code.data());
-	vnx::write(out, value.outputs, type_code, type_code->fields[12].code.data());
-	vnx::write(out, value.execute, type_code, type_code->fields[13].code.data());
-	vnx::write(out, value.solutions, type_code, type_code->fields[14].code.data());
-	vnx::write(out, value.deploy, type_code, type_code->fields[15].code.data());
-	vnx::write(out, value.exec_result, type_code, type_code->fields[16].code.data());
-	vnx::write(out, value.content_hash, type_code, type_code->fields[17].code.data());
+	vnx::write(out, value.sender, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.inputs, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.outputs, type_code, type_code->fields[11].code.data());
+	vnx::write(out, value.execute, type_code, type_code->fields[12].code.data());
+	vnx::write(out, value.solutions, type_code, type_code->fields[13].code.data());
+	vnx::write(out, value.deploy, type_code, type_code->fields[14].code.data());
+	vnx::write(out, value.exec_result, type_code, type_code->fields[15].code.data());
+	vnx::write(out, value.content_hash, type_code, type_code->fields[16].code.data());
 }
 
 void read(std::istream& in, ::mmx::Transaction& value) {
