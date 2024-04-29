@@ -394,6 +394,7 @@ Vue.component('account-history', {
 				{ text: this.$t('account_history.amount'), value: 'value' },
 				{ text: this.$t('account_history.token'), value: 'token' },
 				{ text: this.$t('account_history.address'), value: 'address' },
+				{ text: "Memo", value: 'memo' },
 				{ text: this.$t('account_history.link'), value: 'link' },
 				{ text: this.$t('account_history.time'), value: 'time' },
 			]
@@ -461,7 +462,7 @@ Vue.component('account-history', {
 			</template>
 
 			<template v-slot:item.address="{ item }">
-				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+				<router-link :to="'/explore/address/' + item.address">{{get_short_addr(item.address)}}</router-link>
 			</template>
 			
 			<template v-slot:item.link="{ item }">
@@ -1444,6 +1445,7 @@ Vue.component('account-send-form', {
 			amount: null,
 			target: null,
 			source: null,
+			memo: null,
 			address: "",
 			currency: null,
 			fee_ratio: 1024,
@@ -1507,6 +1509,7 @@ Vue.component('account-send-form', {
 			}
 			req.dst_addr = this.target;
 			req.options = {};
+			req.options.memo = this.memo;
 			req.options.fee_ratio = this.fee_ratio;
 			req.options.passphrase = passphrase;
 			
@@ -1633,6 +1636,8 @@ Vue.component('account-send-form', {
 							</v-select>
 						</v-col>
 					</v-row>
+					
+					<v-text-field v-model="memo" label="Memo"></v-text-field>
 
 					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
 					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed || !target || !currency || !amount">{{ $t('account_send_form.send') }}</v-btn>

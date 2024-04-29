@@ -609,6 +609,7 @@ Vue.component('transaction-view', {
 							<th>{{ $t('transaction_view.amount') }}</th>
 							<th>{{ $t('transaction_view.token') }}</th>
 							<th>{{ $t('transaction_view.address') }}</th>
+							<th>Memo</th>
 						</tr>
 						</thead>
 						<tbody>
@@ -622,6 +623,7 @@ Vue.component('transaction-view', {
 								<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
 							</template>
 							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+							<td>{{item.memo}}</td>
 						</tr>
 						</tbody>
 					</v-simple-table>
@@ -635,6 +637,7 @@ Vue.component('transaction-view', {
 							<th>{{ $t('transaction_view.amount') }}</th>
 							<th>{{ $t('transaction_view.token') }}</th>
 							<th>{{ $t('transaction_view.address') }}</th>
+							<th>Memo</th>
 						</tr>
 						</thead>
 						<tbody>
@@ -648,6 +651,7 @@ Vue.component('transaction-view', {
 								<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
 							</template>
 							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+							<td>{{item.memo}}</td>
 						</tr>
 						</tbody>
 					</v-simple-table>
