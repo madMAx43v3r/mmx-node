@@ -147,7 +147,8 @@ int main(int argc, char** argv)
 		auto tx = Transaction::create();
 		tx->sender = wallet.get_address(0);
 		tx->add_input(addr_t(), wallet.get_address(0), 1);
-		tx->add_output(addr_t(), addr_t(), 1, std::string(txio_t::MAX_MEMO_SIZE + 1, 'M'));
+		tx->add_output(addr_t(), addr_t(), 1);
+		tx->outputs[0].memo = std::string(txio_t::MAX_MEMO_SIZE + 1, 'M');
 		tx->max_fee_amount = -1;
 		wallet.sign_off(tx);
 
