@@ -187,7 +187,7 @@ public:
 
 	void clear_stack(const uint64_t offset = 0);
 
-	vnx::optional<memo_t> parse_memo(const uint64_t addr);
+	vnx::optional<std::string> parse_memo(const uint64_t addr);
 
 	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;
 

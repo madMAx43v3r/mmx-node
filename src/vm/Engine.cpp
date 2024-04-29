@@ -1078,24 +1078,21 @@ void Engine::event(const uint64_t name, const uint64_t data)
 	}
 }
 
-vnx::optional<memo_t> Engine::parse_memo(const uint64_t addr)
+vnx::optional<std::string> Engine::parse_memo(const uint64_t addr)
 {
 	const auto& value = read_fail(addr);
 	switch(value.type) {
 		case TYPE_NIL:
 			return nullptr;
-		case TYPE_UINT:
-			return memo_t(((const uint_t&)value).value);
-		case TYPE_STRING:
-			return memo_t(((const binary_t&)value).to_string());
-		case TYPE_BINARY: {
-			const auto& bin = (const binary_t&)value;
-			memo_t memo;
-			if(bin.size > memo.size()) {
-				throw std::runtime_error("binary memo too large: " + std::to_string(bin.size));
+		case TYPE_STRING: {
+			const auto memo = ((const binary_t&)value).to_string();
+			if(memo.size() > txio_t::MAX_MEMO_SIZE) {
+				throw std::runtime_error("memo too large: " + memo);
 			}
-			::memcpy(memo.data(), bin.data(), bin.size);
-			return memo;
+			if(memo.size()) {
+				return memo;
+			}
+			return nullptr;
 		}
 		default:
 			throw std::runtime_error("invalid memo type: " + to_string(value.type));

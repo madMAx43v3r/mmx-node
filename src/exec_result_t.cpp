@@ -14,6 +14,16 @@ namespace mmx {
 
 vnx::bool_t exec_result_t::is_valid() const
 {
+	for(const auto& in : inputs) {
+		if(in.memo && in.memo->size() > txio_t::MAX_MEMO_SIZE) {
+			return false;
+		}
+	}
+	for(const auto& out : outputs) {
+		if(out.memo && out.memo->size() > txio_t::MAX_MEMO_SIZE) {
+			return false;
+		}
+	}
 	return !error || error->is_valid();
 }
 

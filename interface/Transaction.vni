@@ -18,8 +18,6 @@ class Transaction extends TransactionBase {
 	
 	string network;
 	
-	optional<memo_t> memo;
-	
 	optional<addr_t> sender;			// to pay for tx fee (first signature)
 	
 	vector<txin_t> inputs;
@@ -43,7 +41,7 @@ class Transaction extends TransactionBase {
 	
 	void add_input(addr_t currency, addr_t address, ulong amount);
 	
-	void add_output(addr_t currency, addr_t address, ulong amount);
+	void add_output(addr_t currency, addr_t address, ulong amount, optional<string> memo);
 	
 	void merge_sign(Transaction* tx);
 	

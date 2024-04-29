@@ -132,6 +132,7 @@ void Node::main()
 		db->open_async(recv_log, database_path + "recv_log");
 		db->open_async(spend_log, database_path + "spend_log");
 		db->open_async(exec_log, database_path + "exec_log");
+		db->open_async(memo_log, database_path + "memo_log");
 
 		db->open_async(contract_map, database_path + "contract_map");
 		db->open_async(contract_log, database_path + "contract_log");
@@ -644,8 +645,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		uint128_t recv = 0;
 		uint128_t spent = 0;
 	};
-	// TODO: memo
-	std::map<std::tuple<addr_t, hash_t, addr_t, tx_type_e>, entry_t> delta_map;
+	std::map<std::tuple<addr_t, hash_t, addr_t, tx_type_e, std::string>, entry_t> delta_map;
 
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		{
@@ -661,7 +661,8 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 						type = entry.type; break;
 					default: break;
 				}
-				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type)];
+				const std::string memo = entry.memo ? *entry.memo : std::string();
+				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type, memo)];
 				delta.height = entry.height;
 				delta.recv += entry.amount;
 			}
@@ -677,7 +678,8 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 						type = entry.type; break;
 					default: break;
 				}
-				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type)];
+				const std::string memo = entry.memo ? *entry.memo : std::string();
+				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type, memo)];
 				delta.height = entry.height;
 				delta.spent += entry.amount;
 			}
@@ -693,6 +695,10 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		out.address = std::get<0>(entry.first);
 		out.contract = std::get<2>(entry.first);
 		out.type = std::get<3>(entry.first);
+		const auto& memo = std::get<4>(entry.first);
+		if(memo.size()) {
+			out.memo = memo;
+		}
 		if(delta.recv > delta.spent) {
 			if(!out.type) {
 				out.type = tx_type_e::RECEIVE;
@@ -710,8 +716,8 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		}
 	}
 	std::sort(res.begin(), res.end(), [](const tx_entry_t& L, const tx_entry_t& R) -> bool {
-		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address) <
-			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address);
+		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo) <
+			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo);
 	});
 	return res;
 }
@@ -2172,6 +2178,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 
 		for(const auto& out : block->get_outputs(params))
 		{
+			if(out.memo) {
+				const auto key = hash_t(out.address + (*out.memo));
+				memo_log.insert(std::make_tuple(key, block->height, counter++), out);
+			}
 			recv_log.insert(std::make_tuple(out.address, block->height, counter++), out);
 			balance_cache.get(out.address, out.contract) += out.amount;
 		}

@@ -42,6 +42,16 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 	if(!params) {
 		throw std::logic_error("!params");
 	}
+	for(const auto& in : inputs) {
+		if(in.memo && in.memo->size() > txio_t::MAX_MEMO_SIZE) {
+			return false;
+		}
+	}
+	for(const auto& out : outputs) {
+		if(out.memo && out.memo->size() > txio_t::MAX_MEMO_SIZE) {
+			return false;
+		}
+	}
 	for(const auto& op : execute) {
 		if(!op || !op->is_valid()) {
 			return false;
@@ -86,7 +96,6 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "note", 	note);
 	write_field(out, "nonce", 	nonce);
 	write_field(out, "network", network);
-	write_field(out, "memo",	memo);
 	write_field(out, "sender",	sender);
 	write_field(out, "inputs",	inputs, full_hash);
 	write_field(out, "outputs", outputs);
@@ -120,12 +129,16 @@ void Transaction::add_input(const addr_t& currency, const addr_t& address, const
 	inputs.push_back(in);
 }
 
-void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount)
+void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const vnx::optional<std::string>& memo)
 {
+	if(memo && memo->size() > txio_t::MAX_MEMO_SIZE) {
+		throw std::logic_error("memo too long");
+	}
 	txout_t out;
 	out.address = address;
 	out.contract = currency;
 	out.amount = amount;
+	out.memo = memo;
 	outputs.push_back(out);
 }
 
@@ -200,9 +213,6 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 		if(sol) {
 			cost += sol->calc_cost(params);
 		}
-	}
-	if(memo) {
-		cost += params->min_txfee_memo;
 	}
 	if(deploy) {
 		cost += params->min_txfee_deploy + deploy->calc_cost(params);

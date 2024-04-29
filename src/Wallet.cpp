@@ -105,7 +105,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	}
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::TRANSFER;
-	tx->add_output(currency, dst_addr, amount);
+	tx->add_output(currency, dst_addr, amount, options.memo);
 
 	wallet->complete(tx, options);
 
@@ -133,7 +133,7 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 		if(entry.second == 0) {
 			throw std::logic_error("amount cannot be zero");
 		}
-		tx->add_output(currency, entry.first, entry.second);
+		tx->add_output(currency, entry.first, entry.second, options.memo);
 	}
 	wallet->complete(tx, options);
 
@@ -170,7 +170,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::WITHDRAW;
 	tx->add_input(currency, src_addr, amount);
-	tx->add_output(currency, dst_addr, amount);
+	tx->add_output(currency, dst_addr, amount, options.memo);
 
 	wallet->complete(tx, options_);
 

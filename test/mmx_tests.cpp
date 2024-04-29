@@ -9,7 +9,6 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
-#include <mmx/memo_t.hpp>
 #include <mmx/tree_hash.h>
 
 #include <vnx/vnx.h>
@@ -84,26 +83,6 @@ int main(int argc, char** argv)
 		vnx::test::expect(fixed128("1.200").to_string(), "1.2");
 		vnx::test::expect(fixed128("001.3").to_string(), "1.3");
 		vnx::test::expect(fixed128("1.4").to_value(), 1.4);
-	}
-	VNX_TEST_END()
-
-	VNX_TEST_BEGIN("memo_t")
-	{
-		vnx::test::expect(memo_t().to_string(), "");
-		vnx::test::expect(memo_t().to_uint().str(10), "0");
-		vnx::test::expect(memo_t(1337).to_string(), "1337");
-		vnx::test::expect(memo_t(1337).to_uint().str(10), "1337");
-		vnx::test::expect(memo_t(1337133713371337).to_uint().str(10), "1337133713371337");
-		vnx::test::expect(memo_t("sD1.-=&^%{]|+)$#@!<").to_string(), "sD1.-=&^%{]|+)$#@!<");
-		{
-			const hash_t hash("fjskdfjksdjf");
-			const std::string text = "0x" + hash.to_string();
-			vnx::test::expect(memo_t(hash).to_string(), text);
-			vnx::test::expect(memo_t(text).to_string(), text);
-			vnx::test::expect(memo_t::from_variant(vnx::Variant(hash)).to_string(), text);
-		}
-		vnx::test::expect(memo_t::from_variant(vnx::Variant(1337)).to_string(), "1337");
-		vnx::test::expect(memo_t::from_variant(vnx::Variant("sD1.-=&^%{]|+)$#@!<")).to_string(), "sD1.-=&^%{]|+)$#@!<");
 	}
 	VNX_TEST_END()
 

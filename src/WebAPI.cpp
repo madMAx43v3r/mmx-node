@@ -8,7 +8,6 @@
 #include <mmx/WebAPI.h>
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
-#include <mmx/memo_t.hpp>
 #include <mmx/mnemonic.h>
 #include <mmx/utils.h>
 
@@ -248,10 +247,6 @@ public:
 	}
 
 	void accept(const fixed128& value) {
-		set(value.to_string());
-	}
-
-	void accept(const memo_t& value) {
 		set(value.to_string());
 	}
 

@@ -75,7 +75,11 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 		const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 		const auto decimals = token ? token->decimals : params->decimals;
 		std::cout << to_value_128(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
-				<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+				<< " (" << entry.amount << ") " << arrow << " " << entry.address << " TX(" << entry.txid << ")";
+		if(entry.memo) {
+			std::cout << " M(" << *entry.memo << ")";
+		}
+		std::cout << std::endl;
 	}
 }
 
@@ -108,7 +112,7 @@ int main(int argc, char** argv)
 	options["k"] = "offset";
 	options["a"] = "amount";
 	options["b"] = "ask-amount";
-	options["m"] = "count";
+	options["m"] = "memo";
 	options["s"] = "source";
 	options["t"] = "target";
 	options["x"] = "contract";
@@ -145,9 +149,9 @@ int main(int argc, char** argv)
 	std::string ask_currency_addr;
 	std::string user = "mmx-admin";
 	std::string passwd;
+	vnx::optional<std::string> memo;
 	int64_t index = 0;
 	int64_t offset = 0;
-	int64_t num_count = 0;
 	mmx::fixed128 amount;
 	mmx::fixed128 ask_amount;
 	double fee_ratio = 1;
@@ -162,7 +166,6 @@ int main(int argc, char** argv)
 	vnx::read_config("offset", offset);
 	const auto have_amount = vnx::read_config("amount", amount);
 	const auto have_ask_amount = vnx::read_config("ask-amount", ask_amount);
-	vnx::read_config("count", num_count);
 	vnx::read_config("source", source_addr);
 	vnx::read_config("target", target_addr);
 	vnx::read_config("contract", contract_addr);
@@ -172,6 +175,7 @@ int main(int argc, char** argv)
 	vnx::read_config("min-amount", min_amount);
 	vnx::read_config("user", user);
 	vnx::read_config("passwd", passwd);
+	vnx::read_config("memo", memo);
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
@@ -189,6 +193,7 @@ int main(int argc, char** argv)
 	mmx::spend_options_t spend_options;
 	spend_options.fee_ratio = fee_ratio * 1024;
 	spend_options.max_extra_cost = mmx::to_amount(gas_limit / fee_ratio, params);
+	spend_options.memo = memo;
 
 	mmx::NodeClient node("Node");
 
@@ -489,11 +494,10 @@ int main(int argc, char** argv)
 				if(!spend_options.user) {
 					spend_options.user = to_addr(node.read_storage_field(contract, "owner").first);
 				}
-				// TODO: memo
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo), vnx::Variant()}, nullptr, spend_options);
+				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo), vnx::Variant(memo)}, nullptr, spend_options);
 				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
