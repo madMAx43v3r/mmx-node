@@ -13,7 +13,7 @@ struct exec_error_t {
 	string message;
 	
 	
-	static const uint MAX_MESSAGE_LENGTH = 160;
+	static const uint MAX_MESSAGE_LENGTH = 160;		// TODO: 120
 	
 	bool is_valid() const;
 	
