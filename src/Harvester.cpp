@@ -260,9 +260,11 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				send_response(value, proof, job->best_score, recv_time_ms);
 			}
 		}
-		const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
-		log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
-				<< " plots were eligible for height " << value->height << ", delay " << delay_sec << " sec";
+		if(job->total_plots) {
+			const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
+			log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
+					<< " plots were eligible for height " << value->height << ", delay " << delay_sec << " sec";
+		}
 	});
 
 	for(const auto& entry : virtual_map)
