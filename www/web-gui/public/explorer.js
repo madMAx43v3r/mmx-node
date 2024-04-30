@@ -822,8 +822,8 @@ Vue.component('address-history-table', {
 				{ text: this.$t('address_history_table.type'), value: 'type'},
 				{ text: this.$t('address_history_table.amount'), value: 'amount'},
 				{ text: this.$t('address_history_table.token'), value: 'token'},
-				{ text: this.$t('address_history_table.address'), value: 'address'},
-				{ text: this.$t('address_history_table.link'), value: 'link'},
+				{ text: "Transaction ID", value: 'txid'},
+				{ text: "Memo", value: 'memo'},
 				{ text: this.$t('address_history_table.time'), value: 'time'},
 			]
 		}
@@ -883,13 +883,12 @@ Vue.component('address-history-table', {
 				</template>
 			</template>
 
-
-			<template v-slot:item.address="{ item }">
-				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+			<template v-slot:item.memo="{ item }">
+				<span style="word-break: break-all;">{{ item.memo }}</span>
 			</template>
 
-			<template v-slot:item.link="{ item }">
-				<router-link :to="'/explore/transaction/' + item.txid">TX</router-link>
+			<template v-slot:item.txid="{ item }">
+				<router-link :to="'/explore/transaction/' + item.txid">{{get_short_hash(item.txid)}}</router-link>
 			</template>
 
 			<template v-slot:item.time="{ item }">
