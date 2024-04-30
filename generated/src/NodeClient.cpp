@@ -66,6 +66,8 @@
 #include <mmx/Node_get_height_return.hxx>
 #include <mmx/Node_get_history.hxx>
 #include <mmx/Node_get_history_return.hxx>
+#include <mmx/Node_get_history_memo.hxx>
+#include <mmx/Node_get_history_memo_return.hxx>
 #include <mmx/Node_get_network_info.hxx>
 #include <mmx/Node_get_network_info_return.hxx>
 #include <mmx/Node_get_offer.hxx>
@@ -549,12 +551,29 @@ std::vector<std::shared_ptr<const ::mmx::Transaction>> NodeClient::get_transacti
 	}
 }
 
-std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) {
+std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_history::create();
 	_method->addresses = addresses;
 	_method->since = since;
+	_method->until = until;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::tx_entry_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::tx_entry_t> NodeClient::get_history_memo(const std::vector<::mmx::addr_t>& addresses, const std::string& memo, const int32_t& limit) {
+	auto _method = ::mmx::Node_get_history_memo::create();
+	_method->addresses = addresses;
+	_method->memo = memo;
+	_method->limit = limit;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_history_memo_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::tx_entry_t>>();
@@ -791,10 +810,9 @@ std::map<std::string, ::mmx::vm::varptr_t> NodeClient::read_storage_object(const
 	}
 }
 
-std::vector<::mmx::address_info_t> NodeClient::get_address_infos(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) {
+std::vector<::mmx::address_info_t> NodeClient::get_address_infos(const std::vector<::mmx::addr_t>& addresses) {
 	auto _method = ::mmx::Node_get_address_infos::create();
 	_method->addresses = addresses;
-	_method->since = since;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_address_infos_return>(_return_value)) {
 		return _result->_ret_0;

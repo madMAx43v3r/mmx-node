@@ -15,7 +15,6 @@ class MMX_EXPORT Node_get_address_infos : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
-	int32_t since = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,10 +58,9 @@ public:
 
 template<typename T>
 void Node_get_address_infos::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_address_infos>(2);
+	_visitor.template type_begin<Node_get_address_infos>(1);
 	_visitor.type_field("addresses", 0); _visitor.accept(addresses);
-	_visitor.type_field("since", 1); _visitor.accept(since);
-	_visitor.template type_end<Node_get_address_infos>(2);
+	_visitor.template type_end<Node_get_address_infos>(1);
 }
 
 

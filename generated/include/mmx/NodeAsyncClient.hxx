@@ -150,7 +150,11 @@ public:
 			const std::function<void(const std::vector<std::shared_ptr<const ::mmx::Transaction>>&)>& _callback = std::function<void(const std::vector<std::shared_ptr<const ::mmx::Transaction>>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_history(const std::vector<::mmx::addr_t>& addresses = {}, const int32_t& since = 0, 
+	uint64_t get_history(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& since = 0, const uint32_t& until = -1, const int32_t& limit = -1, 
+			const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::tx_entry_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_history_memo(const std::vector<::mmx::addr_t>& addresses = {}, const std::string& memo = "", const int32_t& limit = -1, 
 			const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::tx_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -218,7 +222,7 @@ public:
 			const std::function<void(const ::mmx::address_info_t&)>& _callback = std::function<void(const ::mmx::address_info_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_address_infos(const std::vector<::mmx::addr_t>& addresses = {}, const int32_t& since = 0, 
+	uint64_t get_address_infos(const std::vector<::mmx::addr_t>& addresses = {}, 
 			const std::function<void(const std::vector<::mmx::address_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::address_info_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -403,6 +407,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::Transaction>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_transaction;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::Transaction>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_transactions;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::tx_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_history;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::tx_entry_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_history_memo;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::uint128&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_balance;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, ::mmx::uint128>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_balances;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_contract_balances;
