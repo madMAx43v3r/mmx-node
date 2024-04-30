@@ -892,7 +892,7 @@ Vue.component('address-history-table', {
 			</template>
 
 			<template v-slot:item.time="{ item }">
-				{{ new Date(item.time * 1000).toLocaleString() }}
+				<span class="text-no-wrap">{{ new Date(item.time * 1000).toLocaleString() }}</span>
 			</template>
 
 		</v-data-table>
