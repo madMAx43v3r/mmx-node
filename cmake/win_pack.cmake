@@ -143,6 +143,18 @@ install(DIRECTORY scripts/win/ DESTINATION ./ COMPONENT applications)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT applications)
 
 
+FetchContent_Declare(
+    mmx_cuda_plotter
+    GIT_REPOSITORY https://github.com/madMAx43v3r/mmx-binaries.git
+    GIT_TAG "origin/testnet11"
+)
+FetchContent_MakeAvailable(mmx_cuda_plotter)
+
+set (MMX_DESTINATION ./)
+set(MMX_CUDA_PLOTTER_PATH ${mmx_cuda_plotter_SOURCE_DIR}/mmx-cuda-plotter/windows)
+install(DIRECTORY ${MMX_CUDA_PLOTTER_PATH}/ DESTINATION ${MMX_DESTINATION} COMPONENT plotters)
+
+
 set(CPACK_PACKAGE_NAME "MMX Node")
 set(CPACK_PACKAGE_VENDOR "madMAx43v3r")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MMX is a blockchain written from scratch using Chia's Proof Of Space and a SHA256 VDF similar to Solana")
@@ -152,7 +164,7 @@ set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/madMAx43v3r/mmx-node")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "MMX Node")
 
 # Define components and their display names
-set(CPACK_COMPONENTS_ALL applications libraries gui tools)
+set(CPACK_COMPONENTS_ALL applications libraries gui plotters tools)
 
 set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Node")
 set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries")
