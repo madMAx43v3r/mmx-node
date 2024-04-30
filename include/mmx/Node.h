@@ -87,7 +87,9 @@ protected:
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
 
-	std::vector<tx_entry_t> get_history(const std::vector<addr_t>& addresses, const int32_t& since) const override;
+	std::vector<tx_entry_t> get_history(const std::vector<addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) const override;
+
+	std::vector<tx_entry_t> get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const int32_t& limit) const override;
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
@@ -138,7 +140,7 @@ protected:
 
 	address_info_t get_address_info(const addr_t& address) const override;
 
-	std::vector<address_info_t> get_address_infos(const std::vector<addr_t>& addresses, const int32_t& since) const override;
+	std::vector<address_info_t> get_address_infos(const std::vector<addr_t>& addresses) const override;
 
 	uint128 get_total_supply(const addr_t& currency) const override;
 

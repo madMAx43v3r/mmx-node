@@ -51,7 +51,7 @@ std::shared_ptr<const mmx::contract::TokenBase> get_token(mmx::NodeClient& node,
 	return token;
 }
 
-void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
+void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
 {
 	for(const auto& entry : history) {
 		std::cout << "[" << entry.height << "] ";
@@ -120,6 +120,7 @@ int main(int argc, char** argv)
 	options["y"] = "yes";
 	options["r"] = "fee-ratio";
 	options["l"] = "gas-limit";
+	options["N"] = "limit";
 	options["node"] = "address";
 	options["file"] = "path";
 	options["index"] = "0..?";
@@ -152,6 +153,7 @@ int main(int argc, char** argv)
 	vnx::optional<std::string> memo;
 	int64_t index = 0;
 	int64_t offset = 0;
+	int32_t limit = -1;
 	mmx::fixed128 amount;
 	mmx::fixed128 ask_amount;
 	double fee_ratio = 1;
@@ -176,6 +178,7 @@ int main(int argc, char** argv)
 	vnx::read_config("user", user);
 	vnx::read_config("passwd", passwd);
 	vnx::read_config("memo", memo);
+	vnx::read_config("limit", limit);
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
@@ -868,10 +871,10 @@ int main(int argc, char** argv)
 			}
 			else if(command == "log")
 			{
-				int64_t since = 0;
+				int32_t since = 0;
 				vnx::read_config("$3", since);
 
-				show_history(wallet.get_history(index, since), node, params);
+				show_history(wallet.get_history(index, since, -1, limit), node, params);
 			}
 			else if(command == "lock")
 			{

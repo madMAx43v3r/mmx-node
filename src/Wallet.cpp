@@ -564,14 +564,30 @@ std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint
 	return tx->inputs;
 }
 
-std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t& since,
+std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit,
 											const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const
 {
 	const auto wallet = get_wallet(index);
 
 	std::vector<tx_entry_t> result;
-	for(const auto& entry : node->get_history(wallet->get_all_addresses(), since)) {
+	for(const auto& entry : node->get_history(wallet->get_all_addresses(), since, until, (type || currency ? -1 : limit))) {
 		if((!type || entry.type == *type) && (!currency || entry.contract == *currency)) {
+			auto tmp = entry;
+			tmp.is_validated = token_whitelist.count(entry.contract);
+			result.push_back(tmp);
+		}
+	}
+	return result;
+}
+
+std::vector<tx_entry_t> Wallet::get_history_memo(
+		const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<addr_t>& currency) const
+{
+	const auto wallet = get_wallet(index);
+
+	std::vector<tx_entry_t> result;
+	for(const auto& entry : node->get_history_memo(wallet->get_all_addresses(), memo, limit)) {
+		if(!currency || entry.contract == *currency) {
 			auto tmp = entry;
 			tmp.is_validated = token_whitelist.count(entry.contract);
 			result.push_back(tmp);

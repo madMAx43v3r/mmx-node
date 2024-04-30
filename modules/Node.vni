@@ -114,7 +114,7 @@ module Node implements vnx.addons.HttpComponent {
 	@Permission(PUBLISH)
 	void add_transaction(Transaction* tx, bool pre_validate);
 	
-	// TOOD: void await_transactions(vector<hash_t> tx_ids, uint min_confirm = 1) const;
+	// TODO: void await_transactions(vector<hash_t> tx_ids, uint min_confirm = 1) const;
 	
 	@Permission(permission_e.PUBLIC)
 	Contract* get_contract(addr_t address) const;
@@ -138,7 +138,10 @@ module Node implements vnx.addons.HttpComponent {
 	vector<Transaction*> get_transactions(vector<hash_t> ids) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<tx_entry_t> get_history(vector<addr_t> addresses, int since) const;
+	vector<tx_entry_t> get_history(vector<addr_t> addresses, uint since, uint until = -1, int limit = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<tx_entry_t> get_history_memo(vector<addr_t> addresses, string memo, int limit = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_balance(addr_t address, addr_t currency) const;
@@ -189,7 +192,7 @@ module Node implements vnx.addons.HttpComponent {
 	address_info_t get_address_info(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<address_info_t> get_address_infos(vector<addr_t> addresses, int since) const;
+	vector<address_info_t> get_address_infos(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;

@@ -984,10 +984,9 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 		});
 }
 
-void WebAPI::render_history(const vnx::request_id_t& request_id, const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const
+void WebAPI::render_history(const vnx::request_id_t& request_id, std::vector<tx_entry_t> history) const
 {
 	std::reverse(history.begin(), history.end());
-	history = get_page(history, limit, offset);
 
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& entry : history) {
@@ -1598,15 +1597,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/address/history") {
 		const auto iter_id = query.find("id");
 		const auto iter_limit = query.find("limit");
-		const auto iter_offset = query.find("offset");
 		const auto iter_since = query.find("since");
+		const auto iter_until = query.find("until");
 		if(iter_id != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
-			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
-			node->get_history({address}, since,
-				std::bind(&WebAPI::render_history, this, request_id, limit, offset, std::placeholders::_1),
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1000;
+			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			const uint32_t until = iter_until != query.end() ? vnx::from_string<int64_t>(iter_until->second) : -1;
+			node->get_history({address}, since, until, limit,
+				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "address/history?id|limit|offset|since");
@@ -1803,15 +1802,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/wallet/history") {
 		const auto iter_index = query.find("index");
 		const auto iter_limit = query.find("limit");
-		const auto iter_offset = query.find("offset");
 		const auto iter_since = query.find("since");
+		const auto iter_until = query.find("until");
 		const auto iter_type = query.find("type");
 		const auto iter_currency = query.find("currency");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
-			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1000;
+			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			const uint32_t until = iter_until != query.end() ? vnx::from_string<int64_t>(iter_until->second) : -1;
 			vnx::optional<tx_type_e> type;
 			if(iter_type != query.end()) {
 				vnx::from_string_value(iter_type->second, type);
@@ -1820,11 +1819,31 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			if(iter_currency != query.end()) {
 				vnx::from_string_value(iter_currency->second, currency);
 			}
-			wallet->get_history(index, since, type, currency,
-				std::bind(&WebAPI::render_history, this, request_id, limit, offset, std::placeholders::_1),
+			wallet->get_history(index, since, until, limit, type, currency,
+				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/history?index|limit|offset|since|type|currency");
+			respond_status(request_id, 404, "wallet/history?index|limit|since|until|type|currency");
+		}
+	}
+	else if(sub_path == "/wallet/history/memo") {
+		const auto iter_index = query.find("index");
+		const auto iter_memo = query.find("memo");
+		const auto iter_limit = query.find("limit");
+		const auto iter_currency = query.find("currency");
+		if(iter_index != query.end() && iter_memo != query.end()) {
+			const auto memo = iter_memo->second;
+			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1000;
+			vnx::optional<addr_t> currency;
+			if(iter_currency != query.end()) {
+				vnx::from_string_value(iter_currency->second, currency);
+			}
+			wallet->get_history_memo(index, memo, limit, currency,
+				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/history/memo?index|memo|limit|currency");
 		}
 	}
 	else if(sub_path == "/wallet/tx_history") {
@@ -2481,7 +2500,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"config/get", "config/set", "farmer", "farmers",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/address_info", "wallet/coins",
-			"wallet/history", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
+			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",

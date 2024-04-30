@@ -370,6 +370,10 @@ Vue.component('account-history', {
 	props: {
 		index: Number,
 		limit: Number,
+		memo: {
+			default: null,
+			type: String
+		},
 		type: {
 			default: null,
 			type: String
@@ -406,12 +410,21 @@ Vue.component('account-history', {
 				this.data = [];
 				this.loading = true;
 			}
-			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
-				.then(response => response.json())
-				.then(data => {
-					this.loading = false;
-					this.data = data;
-				});
+			if(this.memo) {
+				fetch('/wapi/wallet/history/memo?limit=' + this.limit + '&index=' + this.index + '&memo=' + this.memo + '&currency=' + this.currency)
+					.then(response => response.json())
+					.then(data => {
+						this.loading = false;
+						this.data = data;
+					});
+			} else {
+				fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
+					.then(response => response.json())
+					.then(data => {
+						this.loading = false;
+						this.data = data;
+					});
+			}
 		}
 	},
 	watch: {
@@ -420,6 +433,9 @@ Vue.component('account-history', {
 		},
 		currency() {
 			this.update(true);
+		},
+		memo() {
+			this.update(false);
 		}
 	},
 	created() {
@@ -490,6 +506,7 @@ Vue.component('account-history-form', {
 		return {
 			type: null,
 			currency: null,
+			memo: null,
 			tokens: []
 		}
 	},
@@ -532,7 +549,7 @@ Vue.component('account-history-form', {
 					<v-row>
 						<v-col cols="3">
 							<v-select v-model="type" :label="$t('account_history.type')"
-								:items="select_types" item-text="text" item-value="value">
+								:items="select_types" item-text="text" item-value="value" :disabled="memo">
 							</v-select>
 						</v-col>
 						<v-col>
@@ -541,9 +558,10 @@ Vue.component('account-history-form', {
 							</v-select>
 						</v-col>
 					</v-row>
+					<v-text-field type="text" label="Memo" v-model="memo"/>
 				</v-card-text>
 			</v-card>
-			<account-history :index="index" :limit="limit" :type="type" :currency="currency"></account-history>
+			<account-history :index="index" :limit="limit" :type="type" :memo="memo" :currency="currency"></account-history>
 		</div>
 	`
 })

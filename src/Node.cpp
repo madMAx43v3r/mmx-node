@@ -634,12 +634,9 @@ std::vector<std::shared_ptr<const Transaction>> Node::get_transactions(const std
 	return list;
 }
 
-// TODO: add limit param
-std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, const int32_t& since) const
+std::vector<tx_entry_t> Node::get_history(
+		const std::vector<addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) const
 {
-	const uint32_t height = get_height();
-	const uint32_t min_height = since >= 0 ? since : std::max<int32_t>(height + since, 0);
-
 	struct entry_t {
 		uint32_t height = 0;
 		uint128_t recv = 0;
@@ -650,8 +647,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
 		{
 			std::vector<txio_entry_t> entries;
-			// TODO: use find_last_range()
-			recv_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
+			recv_log.find_last_range(std::make_tuple(address, since, 0), std::make_tuple(address, until, -1), entries, size_t(limit));
 			for(const auto& entry : entries) {
 				tx_type_e type;
 				switch(entry.type) {
@@ -669,8 +665,7 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		}
 		{
 			std::vector<txio_entry_t> entries;
-			// TODO: use find_last_range()
-			spend_log.find_range(std::make_tuple(address, min_height, 0), std::make_tuple(address, -1, -1), entries);
+			spend_log.find_last_range(std::make_tuple(address, since, 0), std::make_tuple(address, until, -1), entries, size_t(limit));
 			for(const auto& entry : entries) {
 				tx_type_e type;
 				switch(entry.type) {
@@ -712,6 +707,44 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 			out.amount = delta.spent - delta.recv;
 		}
 		if(out.amount) {
+			res.push_back(out);
+		}
+	}
+	std::sort(res.begin(), res.end(), [](const tx_entry_t& L, const tx_entry_t& R) -> bool {
+		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo) >
+			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo);
+	});
+	if(limit >= 0 && size_t(limit) < res.size()) {
+		res.resize(limit);
+	}
+	std::reverse(res.begin(), res.end());
+	return res;
+}
+
+std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const int32_t& limit) const
+{
+	std::vector<tx_entry_t> res;
+	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end()))
+	{
+		const hash_t key(address + memo);
+		std::vector<txio_entry_t> entries;
+		memo_log.find_last_range(std::make_tuple(key, 0, 0), std::make_tuple(key, -1, -1), entries, size_t(limit));
+		for(const auto& entry : entries) {
+			tx_type_e type = tx_type_e::RECEIVE;
+			switch(entry.type) {
+				case tx_type_e::REWARD:
+				case tx_type_e::VDF_REWARD:
+				case tx_type_e::PROJECT_REWARD:
+					type = entry.type; break;
+				default: break;
+			}
+			tx_entry_t out;
+			out.type = entry.type;
+			out.height = entry.height;
+			out.address = entry.address;
+			out.contract = entry.contract;
+			out.memo = entry.memo;
+			out.txid = entry.txid;
 			res.push_back(out);
 		}
 	}
@@ -1026,7 +1059,7 @@ address_info_t Node::get_address_info(const addr_t& address) const
 			info.num_active++;
 		}
 	}
-	for(const auto& entry : get_history({address}, 0)) {
+	for(const auto& entry : get_history({address}, 0, -1, 100000)) {
 		switch(entry.type) {
 			case tx_type_e::REWARD:
 			case tx_type_e::VDF_REWARD:
@@ -1046,7 +1079,7 @@ address_info_t Node::get_address_info(const addr_t& address) const
 	return info;
 }
 
-std::vector<address_info_t> Node::get_address_infos(const std::vector<addr_t>& addresses, const int32_t& since) const
+std::vector<address_info_t> Node::get_address_infos(const std::vector<addr_t>& addresses) const
 {
 	std::unordered_map<addr_t, size_t> index_map;
 	std::vector<address_info_t> result(addresses.size());
@@ -1060,7 +1093,7 @@ std::vector<address_info_t> Node::get_address_infos(const std::vector<addr_t>& a
 		}
 		index_map[addresses[i]] = i;
 	}
-	for(const auto& entry : get_history(addresses, since)) {
+	for(const auto& entry : get_history(addresses, 0, -1, 100000)) {
 		auto& info = result[index_map[entry.address]];
 		switch(entry.type) {
 			case tx_type_e::REWARD:
