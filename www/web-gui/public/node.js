@@ -162,7 +162,6 @@ Vue.component('node-peers', {
 				{ text: this.$t('node_peers.send'), value: 'send', width: "10%" },
 				{ text: this.$t('node_peers.ping'), value: 'ping', width: "10%" },
 				{ text: this.$t('node_peers.duration'), value: 'duration', width: "10%" },
-				{ text: this.$t('node_peers.credits'), value: 'credits', width: "10%" },
 				{ text: this.$t('node_peers.connection'), value: 'connection', width: "10%" },
 				{ text: "Action", value: 'action'},
 			]
