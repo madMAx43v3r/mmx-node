@@ -16,4 +16,4 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=dist $@ ..
 
 make -j $(nproc) install
 
-rm -r dist/config/local || true
+rm -rf dist/config/local

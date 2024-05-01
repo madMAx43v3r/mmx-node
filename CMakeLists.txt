@@ -25,19 +25,13 @@ if(MSVC)
     )
 	
 	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
-	add_library(secp256k1 INTERFACE IMPORTED)
-	set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
-
-	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_LIBRARY}" PATH)
-	get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_IMPORT_PREFIX}" PATH)
-
-	set_target_properties(secp256k1 PROPERTIES
-  		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
-	)
 else()
 	message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 	include(cmake/commit_hash_json.cmake)
+	
+	find_package(OpenMP REQUIRED)
+	find_library(JEMALLOC_LIB NAMES jemalloc)
 	
 	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs -Wno-unknown-pragmas)
 	
@@ -50,8 +44,6 @@ else()
 	set_source_files_properties(src/vm/Compiler.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
 
 	find_library(secp256k1_LIBRARY NAMES secp256k1 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/lib/secp256k1/.libs" NO_DEFAULT_PATH)
-
-	include_directories(lib/secp256k1/include)
 	
 	if(ENABLE_MEM_SANITIZE)
 		message(STATUS "Compiling with -fsanitize=address")
@@ -66,6 +58,18 @@ else()
 	endif()
 endif()
 
+add_library(secp256k1 INTERFACE IMPORTED)
+set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})
+
+get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_LIBRARY}" PATH)
+get_filename_component(secp256k1_IMPORT_PREFIX "${secp256k1_IMPORT_PREFIX}" PATH)
+
+set_target_properties(secp256k1 PROPERTIES
+		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
+)
+
+file(GLOB secp256k1_LIBRARY_FILES ${secp256k1_LIBRARY}*)
+
 set(LIBBECH32_BUILD_TESTS OFF CACHE BOOL "LIBBECH32_BUILD_TESTS")
 set(LIBBECH32_BUILD_EXAMPLES OFF CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
 set(DIRENT_BUILD_TESTS OFF CACHE STRING "DIRENT_BUILD_TESTS")
@@ -77,16 +81,11 @@ add_subdirectory(lib/libbech32)
 add_subdirectory(tools)
 add_subdirectory(test)
 
-if(NOT DISABLE_OPENCL)
-	find_package(OpenCL)
-endif()
-
 find_package(Threads REQUIRED)
 find_library(MINIUPNPC_LIB NAMES miniupnpc)
 
-if(NOT MSVC)
-	find_package(OpenMP REQUIRED)
-	find_library(JEMALLOC_LIB NAMES jemalloc)
+if(NOT DISABLE_OPENCL)
+	find_package(OpenCL)
 endif()
 
 if(OpenCL_FOUND)
@@ -225,7 +224,7 @@ target_include_directories(uint256_t
 
 target_compile_definitions(uint256_t PUBLIC _UINT256_T_STATIC _UINT128_T_STATIC)
 
-target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t bech32 ${secp256k1_LIBRARY})
+target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t bech32 secp256k1)
 
 target_link_libraries(mmx_db mmx_iface)
 target_link_libraries(mmx_pos mmx_iface)
@@ -315,7 +314,7 @@ install(TARGETS mmx_db DESTINATION lib)
 install(TARGETS mmx_vm DESTINATION lib)
 install(TARGETS mmx_iface DESTINATION lib)
 install(TARGETS mmx_modules DESTINATION lib)
-install(FILES ${secp256k1_LIBRARY} DESTINATION lib)
+install(FILES ${secp256k1_LIBRARY_FILES} DESTINATION lib)
 
 install(TARGETS mmx DESTINATION bin)
 install(TARGETS mmx_node DESTINATION bin)
