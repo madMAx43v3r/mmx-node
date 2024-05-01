@@ -1,13 +1,19 @@
 #!/bin/bash
 
+set -e
+
+cd lib
+./make_all.sh
+cd ..
+
 mkdir -p build
 
 cd build
 
-rm -r dist
+rm -rf dist
 
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=dist $@ ..
 
-make -j16 install
+make -j $(nproc) install
 
 rm -r dist/config/local || true

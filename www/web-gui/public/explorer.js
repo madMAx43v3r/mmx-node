@@ -555,10 +555,10 @@ Vue.component('transaction-view', {
 						<tr>
 							<td class="key-cell">{{ $t('transaction_view.height') }}</td>
 							<td>
-								<template v-if="data.height">
+								<template v-if="data.height != null">
 									<router-link :to="'/explore/block/height/' + data.height">{{data.height}}</router-link>
 								</template>
-								<template v-if="!data.height"><i>{{ $t('common.pending') }}</i></template>
+								<template v-if="data.height == null"><i>{{ $t('common.pending') }}</i></template>
 							</td>
 						</tr>
 						<tr v-if="data.did_fail" class="red--text">
@@ -609,6 +609,7 @@ Vue.component('transaction-view', {
 							<th>{{ $t('transaction_view.amount') }}</th>
 							<th>{{ $t('transaction_view.token') }}</th>
 							<th>{{ $t('transaction_view.address') }}</th>
+							<th>Memo</th>
 						</tr>
 						</thead>
 						<tbody>
@@ -622,6 +623,7 @@ Vue.component('transaction-view', {
 								<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
 							</template>
 							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+							<td>{{item.memo}}</td>
 						</tr>
 						</tbody>
 					</v-simple-table>
@@ -635,6 +637,7 @@ Vue.component('transaction-view', {
 							<th>{{ $t('transaction_view.amount') }}</th>
 							<th>{{ $t('transaction_view.token') }}</th>
 							<th>{{ $t('transaction_view.address') }}</th>
+							<th>Memo</th>
 						</tr>
 						</thead>
 						<tbody>
@@ -648,6 +651,7 @@ Vue.component('transaction-view', {
 								<td><router-link :to="'/explore/address/' + item.contract">{{item.is_nft ? "[NFT]" : item.symbol}}</router-link></td>
 							</template>
 							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+							<td>{{item.memo}}</td>
 						</tr>
 						</tbody>
 					</v-simple-table>
@@ -818,8 +822,8 @@ Vue.component('address-history-table', {
 				{ text: this.$t('address_history_table.type'), value: 'type'},
 				{ text: this.$t('address_history_table.amount'), value: 'amount'},
 				{ text: this.$t('address_history_table.token'), value: 'token'},
-				{ text: this.$t('address_history_table.address'), value: 'address'},
-				{ text: this.$t('address_history_table.link'), value: 'link'},
+				{ text: "Transaction ID", value: 'txid'},
+				{ text: "Memo", value: 'memo'},
 				{ text: this.$t('address_history_table.time'), value: 'time'},
 			]
 		}
@@ -879,17 +883,16 @@ Vue.component('address-history-table', {
 				</template>
 			</template>
 
-
-			<template v-slot:item.address="{ item }">
-				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+			<template v-slot:item.memo="{ item }">
+				<span style="word-break: break-all;">{{ item.memo }}</span>
 			</template>
 
-			<template v-slot:item.link="{ item }">
-				<router-link :to="'/explore/transaction/' + item.txid">TX</router-link>
+			<template v-slot:item.txid="{ item }">
+				<router-link :to="'/explore/transaction/' + item.txid">{{get_short_hash(item.txid)}}</router-link>
 			</template>
 
 			<template v-slot:item.time="{ item }">
-				{{ new Date(item.time * 1000).toLocaleString() }}
+				<span class="text-no-wrap">{{ new Date(item.time * 1000).toLocaleString() }}</span>
 			</template>
 
 		</v-data-table>

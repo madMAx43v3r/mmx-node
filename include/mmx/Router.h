@@ -40,8 +40,6 @@ protected:
 
 	node_info_t get_info() const override;
 
-	std::pair<pubkey_t, signature_t> sign_msg(const hash_t& msg) const override;
-
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
 
 	std::vector<std::string> get_known_peers() const override;
@@ -51,8 +49,6 @@ protected:
 	std::shared_ptr<const PeerInfo> get_peer_info() const override;
 
 	void kick_peer(const std::string& address) override;
-
-	std::vector<std::pair<std::string, uint32_t>> get_farmer_credits() const override;
 
 	void get_blocks_at_async(const uint32_t& height, const vnx::request_id_t& request_id) const override;
 
@@ -87,7 +83,6 @@ private:
 		bool is_blocked = false;
 		bool is_outbound = false;
 		uint32_t height = 0;
-		uint32_t credits = 0;
 		int32_t ping_ms = 0;
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
@@ -100,14 +95,6 @@ private:
 		std::unordered_set<hash_t> sent_hashes;
 		std::map<int64_t, send_item_t> send_queue;
 		std::unordered_map<hash_t, double> pending_map;
-	};
-
-	struct hash_info_t {
-		bool is_valid = false;
-		bool is_rewarded = false;
-		bool did_relay = false;
-		bool did_notify = false;
-		uint64_t received_from = -1;
 	};
 
 	struct sync_job_t {
@@ -218,7 +205,7 @@ private:
 
 	std::vector<std::shared_ptr<peer_t>> find_peers(const std::string& address) const;
 
-	bool relay_msg_hash(const hash_t& hash, uint32_t credits = 0);
+	bool relay_msg_hash(const hash_t& hash);
 
 	bool receive_msg_hash(const hash_t& hash, uint64_t client);
 
@@ -227,8 +214,6 @@ private:
 	bool is_connected = false;
 
 	hash_t node_id;
-	skey_t node_sk;
-	pubkey_t node_key;
 	std::set<std::string> peer_set;
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
@@ -239,12 +224,14 @@ private:
 	std::multimap<std::string, std::shared_ptr<peer_t>> peer_addr_map;
 
 	std::queue<hash_t> hash_queue;
-	std::unordered_map<hash_t, hash_info_t> hash_info;
+	std::unordered_map<hash_t, bool> hash_info;
+
+	std::unordered_map<pubkey_t, uint32_t> farmer_credits;
+	std::unordered_map<pubkey_t, uint32_t> timelord_credits;
 
 	double tx_upload_credits = 0;
 	double tx_upload_bandwidth = 0;
 	double max_pending_cost_value = 0;
-	std::map<hash_t, uint32_t> farmer_credits;
 
 	mutable std::unordered_map<vnx::request_id_t, std::shared_ptr<sync_job_t>> sync_jobs;
 	mutable std::unordered_map<vnx::request_id_t, std::shared_ptr<fetch_job_t>> fetch_jobs;

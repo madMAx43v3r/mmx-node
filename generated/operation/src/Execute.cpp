@@ -5,20 +5,8 @@
 #include <mmx/operation/Execute.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Operation.hxx>
-#include <mmx/Operation_calc_cost.hxx>
-#include <mmx/Operation_calc_cost_return.hxx>
-#include <mmx/Operation_calc_hash.hxx>
-#include <mmx/Operation_calc_hash_return.hxx>
-#include <mmx/Operation_is_valid.hxx>
-#include <mmx/Operation_is_valid_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/operation/Execute_calc_cost.hxx>
-#include <mmx/operation/Execute_calc_cost_return.hxx>
-#include <mmx/operation/Execute_calc_hash.hxx>
-#include <mmx/operation/Execute_calc_hash_return.hxx>
-#include <mmx/operation/Execute_is_valid.hxx>
-#include <mmx/operation/Execute_is_valid_return.hxx>
 #include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
@@ -29,7 +17,7 @@ namespace operation {
 
 
 const vnx::Hash64 Execute::VNX_TYPE_HASH(0x8cd9012d9098c1d1ull);
-const vnx::Hash64 Execute::VNX_CODE_HASH(0xf527e91c96bab6a1ull);
+const vnx::Hash64 Execute::VNX_CODE_HASH(0x493c06d4cf1f1792ull);
 
 vnx::Hash64 Execute::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -180,20 +168,13 @@ std::shared_ptr<vnx::TypeCode> Execute::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.operation.Execute";
 	type_code->type_hash = vnx::Hash64(0x8cd9012d9098c1d1ull);
-	type_code->code_hash = vnx::Hash64(0xf527e91c96bab6a1ull);
+	type_code->code_hash = vnx::Hash64(0x493c06d4cf1f1792ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::operation::Execute);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Operation::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Execute>(); };
-	type_code->methods.resize(6);
-	type_code->methods[0] = ::mmx::Operation_calc_cost::static_get_type_code();
-	type_code->methods[1] = ::mmx::Operation_calc_hash::static_get_type_code();
-	type_code->methods[2] = ::mmx::Operation_is_valid::static_get_type_code();
-	type_code->methods[3] = ::mmx::operation::Execute_calc_cost::static_get_type_code();
-	type_code->methods[4] = ::mmx::operation::Execute_calc_hash::static_get_type_code();
-	type_code->methods[5] = ::mmx::operation::Execute_is_valid::static_get_type_code();
 	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
@@ -209,9 +190,10 @@ std::shared_ptr<vnx::TypeCode> Execute::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.is_extended = true;
+		field.data_size = 2;
 		field.name = "solution";
-		field.code = {16};
+		field.value = vnx::to_string(-1);
+		field.code = {2};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -237,42 +219,6 @@ std::shared_ptr<vnx::TypeCode> Execute::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> Execute::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0x5907595c31b44526ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Operation_calc_cost>(_method);
-			auto _return_value = ::mmx::Operation_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x8915923a542631d9ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Operation_calc_hash>(_method);
-			auto _return_value = ::mmx::Operation_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x3b2ec6e0a968cf51ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Operation_is_valid>(_method);
-			auto _return_value = ::mmx::Operation_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0x86d9fdad63fe7567ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Execute_calc_cost>(_method);
-			auto _return_value = ::mmx::operation::Execute_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x56cb36cb066c0198ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Execute_calc_hash>(_method);
-			auto _return_value = ::mmx::operation::Execute_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x172377d5b2daeda3ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::operation::Execute_is_valid>(_method);
-			auto _return_value = ::mmx::operation::Execute_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }
@@ -314,16 +260,18 @@ void read(TypeInput& in, ::mmx::operation::Execute& value, const TypeCode* type_
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.solution, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.solution, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.method, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.args, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.user, type_code, _field->code.data()); break;
@@ -345,10 +293,10 @@ void write(TypeOutput& out, const ::mmx::operation::Execute& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	auto* const _buf = out.write(6);
 	vnx::write_value(_buf + 0, value.version);
+	vnx::write_value(_buf + 4, value.solution);
 	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.solution, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.method, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.args, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.user, type_code, type_code->fields[5].code.data());

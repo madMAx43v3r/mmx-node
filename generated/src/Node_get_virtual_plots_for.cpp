@@ -4,7 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Node_get_virtual_plots_for.hxx>
 #include <mmx/Node_get_virtual_plots_for_return.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_virtual_plots_for::VNX_TYPE_HASH(0x2dadcbd2c7c72b6eull);
-const vnx::Hash64 Node_get_virtual_plots_for::VNX_CODE_HASH(0x3bd8cfa3899592dbull);
+const vnx::Hash64 Node_get_virtual_plots_for::VNX_CODE_HASH(0x832cf780c1eecfdbull);
 
 vnx::Hash64 Node_get_virtual_plots_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -115,7 +115,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_virtual_plots_for::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_virtual_plots_for";
 	type_code->type_hash = vnx::Hash64(0x2dadcbd2c7c72b6eull);
-	type_code->code_hash = vnx::Hash64(0x3bd8cfa3899592dbull);
+	type_code->code_hash = vnx::Hash64(0x832cf780c1eecfdbull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -128,7 +128,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_virtual_plots_for::static_create_type_co
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "farmer_key";
-		field.code = {11, 48, 1};
+		field.code = {11, 33, 1};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();

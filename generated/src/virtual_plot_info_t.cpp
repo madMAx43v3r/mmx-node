@@ -4,7 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 
 #include <vnx/vnx.h>
 
@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 virtual_plot_info_t::VNX_TYPE_HASH(0xcbcd7c49be95180eull);
-const vnx::Hash64 virtual_plot_info_t::VNX_CODE_HASH(0x5b60a5fa4bbbfb49ull);
+const vnx::Hash64 virtual_plot_info_t::VNX_CODE_HASH(0xd4df0d56b713df9eull);
 
 vnx::Hash64 virtual_plot_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -164,7 +164,7 @@ std::shared_ptr<vnx::TypeCode> virtual_plot_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.virtual_plot_info_t";
 	type_code->type_hash = vnx::Hash64(0xcbcd7c49be95180eull);
-	type_code->code_hash = vnx::Hash64(0x5b60a5fa4bbbfb49ull);
+	type_code->code_hash = vnx::Hash64(0xd4df0d56b713df9eull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::virtual_plot_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<virtual_plot_info_t>>(); };
@@ -185,7 +185,7 @@ std::shared_ptr<vnx::TypeCode> virtual_plot_info_t::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "farmer_key";
-		field.code = {11, 48, 1};
+		field.code = {11, 33, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -245,7 +245,7 @@ void read(TypeInput& in, ::mmx::virtual_plot_info_t& value, const TypeCode* type
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.balance, _field->code.data());
@@ -278,7 +278,7 @@ void write(TypeOutput& out, const ::mmx::virtual_plot_info_t& value, const TypeC
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(16);
+	auto* const _buf = out.write(16);
 	vnx::write_value(_buf + 0, value.balance);
 	vnx::write_value(_buf + 8, value.size_bytes);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());

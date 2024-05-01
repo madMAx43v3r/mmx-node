@@ -19,7 +19,7 @@ public:
 	
 	::vnx::TopicPtr input_infuse = "timelord.infuse";
 	::vnx::TopicPtr input_request = "timelord.requests";
-	::vnx::TopicPtr output_proofs = "timelord.proofs";
+	::vnx::TopicPtr output_proofs = "timelord.proof";
 	uint32_t max_history = 65536;
 	uint32_t restart_holdoff = 60000;
 	std::string node_server = "Node";

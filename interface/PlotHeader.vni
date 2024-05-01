@@ -1,0 +1,41 @@
+package mmx;
+
+class PlotHeader {
+	
+	int version;
+	
+	int ksize;
+	int xbits;			// ksize = uncompressed
+	
+	bool has_meta;
+	
+	hash_t seed;
+	hash_t plot_id;
+	
+	pubkey_t farmer_key;
+	
+	optional<addr_t> contract;
+	
+	ulong plot_size;
+	
+	int park_size_x;
+	int park_size_y;
+	int park_size_pd;
+	int park_size_meta;
+	
+	int park_bytes_x;
+	int park_bytes_y;
+	int park_bytes_pd;
+	int park_bytes_meta;
+	
+	int entry_bits_x;
+
+	ulong num_entries_y;
+	
+	ulong table_offset_x = -1;
+	ulong table_offset_y = -1;
+	ulong table_offset_meta = -1;
+	
+	vector<ulong> table_offset_pd;
+	
+}

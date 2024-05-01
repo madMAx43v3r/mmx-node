@@ -13,11 +13,11 @@ function check_owner()
 	}
 }
 
-function mint_to(address, amount) public
+function mint_to(address, amount, memo) public
 {
 	check_owner();
 	
-	mint(bech32(address), amount);
+	mint(bech32(address), amount, memo);
 }
 
 function transfer(owner_) public

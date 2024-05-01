@@ -6,7 +6,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/hash_t.hpp>
 
 
@@ -16,9 +15,8 @@ class MMX_EXPORT ProofOfSpaceOG : public ::mmx::ProofOfSpace {
 public:
 	
 	uint8_t ksize = 0;
-	std::vector<uint8_t> proof_bytes;
-	::mmx::bls_pubkey_t pool_key;
-	::mmx::bls_pubkey_t local_key;
+	::mmx::hash_t seed;
+	std::vector<uint32_t> proof_xs;
 	
 	typedef ::mmx::ProofOfSpace Super;
 	
@@ -69,17 +67,14 @@ protected:
 
 template<typename T>
 void ProofOfSpaceOG::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfSpaceOG>(9);
-	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("score", 1); _visitor.accept(score);
-	_visitor.type_field("plot_id", 2); _visitor.accept(plot_id);
-	_visitor.type_field("plot_key", 3); _visitor.accept(plot_key);
-	_visitor.type_field("farmer_key", 4); _visitor.accept(farmer_key);
-	_visitor.type_field("ksize", 5); _visitor.accept(ksize);
-	_visitor.type_field("proof_bytes", 6); _visitor.accept(proof_bytes);
-	_visitor.type_field("pool_key", 7); _visitor.accept(pool_key);
-	_visitor.type_field("local_key", 8); _visitor.accept(local_key);
-	_visitor.template type_end<ProofOfSpaceOG>(9);
+	_visitor.template type_begin<ProofOfSpaceOG>(6);
+	_visitor.type_field("score", 0); _visitor.accept(score);
+	_visitor.type_field("plot_id", 1); _visitor.accept(plot_id);
+	_visitor.type_field("farmer_key", 2); _visitor.accept(farmer_key);
+	_visitor.type_field("ksize", 3); _visitor.accept(ksize);
+	_visitor.type_field("seed", 4); _visitor.accept(seed);
+	_visitor.type_field("proof_xs", 5); _visitor.accept(proof_xs);
+	_visitor.template type_end<ProofOfSpaceOG>(6);
 }
 
 

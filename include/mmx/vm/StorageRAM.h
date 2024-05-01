@@ -47,6 +47,19 @@ public:
 
 	std::map<addr_t, uint128> get_balances(const addr_t& contract) const override;
 
+	const std::map<std::pair<addr_t, uint64_t>, std::unique_ptr<var_t>>& get_memory() const {
+		return memory;
+	}
+
+	const std::map<std::tuple<addr_t, uint64_t, uint64_t>, std::unique_ptr<var_t>>& get_entries() const {
+		return entries;
+	}
+
+	void dump_memory(std::ostream& out) const;
+
+	using Storage::write;
+	using Storage::lookup;
+
 protected:
 	mutable std::mutex mutex;
 	std::map<std::pair<addr_t, uint64_t>, std::unique_ptr<var_t>> memory;

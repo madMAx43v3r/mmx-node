@@ -7,8 +7,9 @@
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_signature_t.hpp>
+#include <mmx/block_index_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
@@ -35,12 +36,14 @@ public:
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	uint64_t reward_amount = 0;
 	vnx::optional<::mmx::addr_t> reward_addr;
+	int8_t reward_vote = 0;
+	uint64_t next_base_reward = 0;
 	uint32_t static_cost = 0;
 	uint32_t total_cost = 0;
 	uint32_t tx_count = 0;
-	uint32_t tx_fees = 0;
+	uint64_t tx_fees = 0;
 	::mmx::hash_t tx_hash;
-	vnx::optional<::mmx::bls_signature_t> farmer_sig;
+	vnx::optional<::mmx::signature_t> farmer_sig;
 	::mmx::hash_t content_hash;
 	
 	typedef ::vnx::Value Super;
@@ -60,6 +63,7 @@ public:
 	virtual std::pair<::mmx::hash_t, ::mmx::hash_t> calc_hash() const;
 	virtual void validate() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;
+	virtual ::mmx::block_index_t get_block_index(const int64_t& file_offset = 0) const;
 	
 	static std::shared_ptr<BlockHeader> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -93,7 +97,7 @@ protected:
 
 template<typename T>
 void BlockHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<BlockHeader>(24);
+	_visitor.template type_begin<BlockHeader>(26);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
@@ -111,14 +115,16 @@ void BlockHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("proof", 14); _visitor.accept(proof);
 	_visitor.type_field("reward_amount", 15); _visitor.accept(reward_amount);
 	_visitor.type_field("reward_addr", 16); _visitor.accept(reward_addr);
-	_visitor.type_field("static_cost", 17); _visitor.accept(static_cost);
-	_visitor.type_field("total_cost", 18); _visitor.accept(total_cost);
-	_visitor.type_field("tx_count", 19); _visitor.accept(tx_count);
-	_visitor.type_field("tx_fees", 20); _visitor.accept(tx_fees);
-	_visitor.type_field("tx_hash", 21); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 22); _visitor.accept(farmer_sig);
-	_visitor.type_field("content_hash", 23); _visitor.accept(content_hash);
-	_visitor.template type_end<BlockHeader>(24);
+	_visitor.type_field("reward_vote", 17); _visitor.accept(reward_vote);
+	_visitor.type_field("next_base_reward", 18); _visitor.accept(next_base_reward);
+	_visitor.type_field("static_cost", 19); _visitor.accept(static_cost);
+	_visitor.type_field("total_cost", 20); _visitor.accept(total_cost);
+	_visitor.type_field("tx_count", 21); _visitor.accept(tx_count);
+	_visitor.type_field("tx_fees", 22); _visitor.accept(tx_fees);
+	_visitor.type_field("tx_hash", 23); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 24); _visitor.accept(farmer_sig);
+	_visitor.type_field("content_hash", 25); _visitor.accept(content_hash);
+	_visitor.template type_end<BlockHeader>(26);
 }
 
 

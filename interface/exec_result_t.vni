@@ -19,6 +19,8 @@ struct exec_result_t {
 	
 	hash_t calc_hash() const;
 	
+	ulong calc_cost(ChainParams* params) const;
+	
 	string get_error_msg() const;
 	
 }

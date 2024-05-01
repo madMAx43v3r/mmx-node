@@ -3,7 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Farmer_get_farmer_keys_return.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Farmer_get_farmer_keys_return::VNX_TYPE_HASH(0xdb382c476694095full);
-const vnx::Hash64 Farmer_get_farmer_keys_return::VNX_CODE_HASH(0x31f9d77d50ee685cull);
+const vnx::Hash64 Farmer_get_farmer_keys_return::VNX_CODE_HASH(0x1a7e307cac6ebf2eull);
 
 vnx::Hash64 Farmer_get_farmer_keys_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_get_farmer_keys_return::static_create_type
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Farmer.get_farmer_keys.return";
 	type_code->type_hash = vnx::Hash64(0xdb382c476694095full);
-	type_code->code_hash = vnx::Hash64(0x31f9d77d50ee685cull);
+	type_code->code_hash = vnx::Hash64(0x1a7e307cac6ebf2eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_get_farmer_keys_return::static_create_type
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "_ret_0";
-		field.code = {12, 11, 48, 1};
+		field.code = {12, 11, 33, 1};
 	}
 	type_code->build();
 	return type_code;

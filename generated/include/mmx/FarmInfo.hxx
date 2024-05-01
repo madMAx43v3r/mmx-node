@@ -16,8 +16,9 @@ public:
 	
 	std::vector<std::string> plot_dirs;
 	std::map<uint8_t, uint32_t> plot_count;
-	std::map<std::string, uint64_t> harvester_bytes;
+	std::map<std::string, std::pair<uint64_t, uint64_t>> harvester_bytes;
 	uint64_t total_bytes = 0;
+	uint64_t total_bytes_effective = 0;
 	uint64_t total_balance = 0;
 	vnx::optional<std::string> harvester;
 	vnx::optional<::mmx::hash_t> harvester_id;
@@ -67,15 +68,16 @@ protected:
 
 template<typename T>
 void FarmInfo::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmInfo>(7);
+	_visitor.template type_begin<FarmInfo>(8);
 	_visitor.type_field("plot_dirs", 0); _visitor.accept(plot_dirs);
 	_visitor.type_field("plot_count", 1); _visitor.accept(plot_count);
 	_visitor.type_field("harvester_bytes", 2); _visitor.accept(harvester_bytes);
 	_visitor.type_field("total_bytes", 3); _visitor.accept(total_bytes);
-	_visitor.type_field("total_balance", 4); _visitor.accept(total_balance);
-	_visitor.type_field("harvester", 5); _visitor.accept(harvester);
-	_visitor.type_field("harvester_id", 6); _visitor.accept(harvester_id);
-	_visitor.template type_end<FarmInfo>(7);
+	_visitor.type_field("total_bytes_effective", 4); _visitor.accept(total_bytes_effective);
+	_visitor.type_field("total_balance", 5); _visitor.accept(total_balance);
+	_visitor.type_field("harvester", 6); _visitor.accept(harvester);
+	_visitor.type_field("harvester_id", 7); _visitor.accept(harvester_id);
+	_visitor.template type_end<FarmInfo>(8);
 }
 
 

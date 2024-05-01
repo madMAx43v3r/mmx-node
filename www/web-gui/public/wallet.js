@@ -370,6 +370,10 @@ Vue.component('account-history', {
 	props: {
 		index: Number,
 		limit: Number,
+		memo: {
+			default: null,
+			type: String
+		},
 		type: {
 			default: null,
 			type: String
@@ -394,6 +398,7 @@ Vue.component('account-history', {
 				{ text: this.$t('account_history.amount'), value: 'value' },
 				{ text: this.$t('account_history.token'), value: 'token' },
 				{ text: this.$t('account_history.address'), value: 'address' },
+				{ text: "Memo", value: 'memo' },
 				{ text: this.$t('account_history.link'), value: 'link' },
 				{ text: this.$t('account_history.time'), value: 'time' },
 			]
@@ -405,12 +410,21 @@ Vue.component('account-history', {
 				this.data = [];
 				this.loading = true;
 			}
-			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
-				.then(response => response.json())
-				.then(data => {
-					this.loading = false;
-					this.data = data;
-				});
+			if(this.memo) {
+				fetch('/wapi/wallet/history/memo?limit=' + this.limit + '&index=' + this.index + '&memo=' + this.memo + '&currency=' + this.currency)
+					.then(response => response.json())
+					.then(data => {
+						this.loading = false;
+						this.data = data;
+					});
+			} else {
+				fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
+					.then(response => response.json())
+					.then(data => {
+						this.loading = false;
+						this.data = data;
+					});
+			}
 		}
 	},
 	watch: {
@@ -419,6 +433,9 @@ Vue.component('account-history', {
 		},
 		currency() {
 			this.update(true);
+		},
+		memo() {
+			this.update(false);
 		}
 	},
 	created() {
@@ -460,8 +477,12 @@ Vue.component('account-history', {
 				</template>
 			</template>
 
+			<template v-slot:item.memo="{ item }">
+				<span style="word-break: break-all;">{{ item.memo }}</span>
+			</template>
+
 			<template v-slot:item.address="{ item }">
-				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
+				<router-link :to="'/explore/address/' + item.address">{{get_short_addr(item.address)}}</router-link>
 			</template>
 			
 			<template v-slot:item.link="{ item }">
@@ -469,7 +490,7 @@ Vue.component('account-history', {
 			</template>
 
 			<template v-slot:item.time="{ item }">
-				{{new Date(item.time * 1000).toLocaleString()}}
+				<span class="text-no-wrap">{{new Date(item.time * 1000).toLocaleString()}}</span>
 			</template>
 
 		</v-data-table>
@@ -485,6 +506,7 @@ Vue.component('account-history-form', {
 		return {
 			type: null,
 			currency: null,
+			memo: null,
 			tokens: []
 		}
 	},
@@ -527,7 +549,7 @@ Vue.component('account-history-form', {
 					<v-row>
 						<v-col cols="3">
 							<v-select v-model="type" :label="$t('account_history.type')"
-								:items="select_types" item-text="text" item-value="value">
+								:items="select_types" item-text="text" item-value="value" :disabled="memo">
 							</v-select>
 						</v-col>
 						<v-col>
@@ -536,9 +558,10 @@ Vue.component('account-history-form', {
 							</v-select>
 						</v-col>
 					</v-row>
+					<v-text-field type="text" label="Memo" v-model="memo"/>
 				</v-card-text>
 			</v-card>
-			<account-history :index="index" :limit="limit" :type="type" :currency="currency"></account-history>
+			<account-history :index="index" :limit="limit" :type="type" :memo="memo" :currency="currency"></account-history>
 		</div>
 	`
 })
@@ -860,7 +883,7 @@ Vue.component('account-plots', {
 				url = "/wapi/wallet/execute";
 				req.address = this.dialog_address;
 				req.method = "withdraw";
-				req.args = [this.dialog_amount * 1e6];
+				req.args = [this.dialog_amount * 1e6, null];
 				req.user = 0;
 			}
 			fetch(url, {body: JSON.stringify(req), method: "post"})
@@ -1444,6 +1467,7 @@ Vue.component('account-send-form', {
 			amount: null,
 			target: null,
 			source: null,
+			memo: null,
 			address: "",
 			currency: null,
 			fee_ratio: 1024,
@@ -1507,6 +1531,7 @@ Vue.component('account-send-form', {
 			}
 			req.dst_addr = this.target;
 			req.options = {};
+			req.options.memo = this.memo;
 			req.options.fee_ratio = this.fee_ratio;
 			req.options.passphrase = passphrase;
 			
@@ -1633,6 +1658,8 @@ Vue.component('account-send-form', {
 							</v-select>
 						</v-col>
 					</v-row>
+					
+					<v-text-field v-model="memo" label="Memo"></v-text-field>
 
 					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
 					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed || !target || !currency || !amount">{{ $t('account_send_form.send') }}</v-btn>
@@ -2157,7 +2184,7 @@ Vue.component('create-virtual-plot-contract', {
 	methods: {
 		check_valid() {
 			this.valid = validate_address(this.owner)
-						&& (this.farmer_key && this.farmer_key.length == 96)
+						&& (this.farmer_key && this.farmer_key.length == 66)
 						&& (!this.reward_address || validate_address(this.reward_address));
 			if(!this.valid) {
 				this.confirmed = false;

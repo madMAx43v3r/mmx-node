@@ -28,6 +28,7 @@ void Farmer::init()
 	vnx::open_pipe(vnx_get_id(), this, 1000);
 
 	subscribe(input_info, 1000);
+	subscribe(input_proofs, 1000);
 }
 
 void Farmer::main()
@@ -56,9 +57,9 @@ vnx::Hash64 Farmer::get_mac_addr() const
 	return vnx_get_id();
 }
 
-std::vector<bls_pubkey_t> Farmer::get_farmer_keys() const
+std::vector<pubkey_t> Farmer::get_farmer_keys() const
 {
-	std::vector<bls_pubkey_t> out;
+	std::vector<pubkey_t> out;
 	for(const auto& entry : key_map) {
 		out.push_back(entry.first);
 	}
@@ -71,7 +72,9 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 	for(const auto& entry : info_map) {
 		if(auto value = std::dynamic_pointer_cast<const FarmInfo>(entry.second->value)) {
 			if(value->harvester) {
-				info->harvester_bytes[*value->harvester] += value->total_bytes;
+				auto& entry = info->harvester_bytes[*value->harvester];
+				entry.first += value->total_bytes;
+				entry.second += value->total_bytes_effective;
 			}
 			for(const auto& entry : value->plot_count) {
 				info->plot_count[entry.first] += entry.second;
@@ -80,6 +83,7 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 				info->plot_dirs.push_back((value->harvester ? *value->harvester + ":" : "") + dir);
 			}
 			info->total_bytes += value->total_bytes;
+			info->total_bytes_effective += value->total_bytes_effective;
 			info->total_balance += value->total_balance;
 		}
 	}
@@ -91,10 +95,10 @@ void Farmer::update()
 	vnx::open_flow(vnx::get_pipe(node_server), vnx::get_pipe(vnx_get_id()));
 
 	wallet->get_all_farmer_keys(
-		[this](const std::vector<std::shared_ptr<const FarmerKeys>>& list) {
-			for(auto keys : list) {
-				if(key_map.emplace(keys->farmer_public_key, keys->farmer_private_key).second) {
-					log(INFO) << "Got Farmer Key: " << keys->farmer_public_key;
+		[this](const std::vector<std::pair<skey_t, pubkey_t>>& list) {
+			for(const auto& keys : list) {
+				if(key_map.emplace(keys.second, keys.first).second) {
+					log(INFO) << "Got Farmer Key: " << keys.second;
 				}
 			}
 			pipe->resume();
@@ -148,38 +152,35 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 	}
 }
 
-skey_t Farmer::get_skey(const bls_pubkey_t& pubkey) const
+void Farmer::handle(std::shared_ptr<const ProofResponse> value)
+{
+	try {
+		if(!value->is_valid()) {
+			throw std::logic_error("invalid proof");
+		}
+		const skey_t farmer_sk = get_skey(value->proof->farmer_key);
+
+		auto out = vnx::clone(value);
+		out->farmer_sig = signature_t::sign(farmer_sk, value->hash);
+		out->content_hash = out->calc_hash(true);
+		publish(out, output_proofs);
+	}
+	catch(const std::exception& ex) {
+		log(ERROR) << "Failed to sign proof from harvester '" << value->harvester << "' due to: " << ex.what();
+	}
+}
+
+skey_t Farmer::get_skey(const pubkey_t& pubkey) const
 {
 	auto iter = key_map.find(pubkey);
 	if(iter == key_map.end()) {
-		throw std::logic_error("unknown farmer / plot key: " + pubkey.to_string());
+		throw std::logic_error("unknown farmer key: " + pubkey.to_string());
 	}
 	return iter->second;
 }
 
-bls_signature_t Farmer::sign_proof(
-		std::shared_ptr<const ProofResponse> value, const vnx::optional<skey_t>& local_sk) const
-{
-	if(!value || !value->is_valid()) {
-		throw std::logic_error("invalid argument");
-	}
-	skey_t plot_sk = get_skey(value->proof->farmer_key);
-
-	if(local_sk) {
-		plot_sk = bls::PrivateKey::Aggregate({
-			// inlined to calls to skey_t::to_bls() to avoid MSVC bug
-			bls::PrivateKey::FromBytes(bls::Bytes(local_sk->data(), local_sk->size())),
-			bls::PrivateKey::FromBytes(bls::Bytes(plot_sk.data(), plot_sk.size()))
-		});
-		key_map[value->proof->plot_key] = plot_sk;
-	}
-
-	// TODO: have node verify proof first
-	return bls_signature_t::sign(plot_sk, value->hash);
-}
-
-std::shared_ptr<const BlockHeader> Farmer::sign_block(
-		std::shared_ptr<const BlockHeader> block) const
+std::shared_ptr<const BlockHeader>
+Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 {
 	if(!block) {
 		throw std::logic_error("!block");
@@ -187,7 +188,7 @@ std::shared_ptr<const BlockHeader> Farmer::sign_block(
 	if(!block->proof) {
 		throw std::logic_error("!proof");
 	}
-	const auto plot_sk = get_skey(block->proof->plot_key);
+	const auto farmer_sk = get_skey(block->proof->farmer_key);
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
@@ -202,7 +203,7 @@ std::shared_ptr<const BlockHeader> Farmer::sign_block(
 		out->reward_addr = reward_addr;
 	}
 	out->hash = out->calc_hash().first;
-	out->farmer_sig = bls_signature_t::sign(plot_sk, out->hash);
+	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
 	out->content_hash = out->calc_hash().second;
 	return out;
 }

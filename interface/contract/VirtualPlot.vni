@@ -2,11 +2,11 @@ package mmx.contract;
 
 import mmx.hash_t;
 import mmx.addr_t;
-import mmx.bls_pubkey_t;
+import mmx.pubkey_t;
 
 class VirtualPlot extends mmx.contract.Executable {
 	
-	bls_pubkey_t farmer_key;
+	pubkey_t farmer_key;
 	
 	optional<addr_t> reward_address;
 	
@@ -14,5 +14,11 @@ class VirtualPlot extends mmx.contract.Executable {
 	bool is_valid() const;
 	
 	hash_t calc_hash(bool full_hash) const;
+	
+	ulong num_bytes(bool total = true) const;
+	
+	ulong calc_cost(mmx.ChainParams* params) const;
+	
+	vnx.Variant read_field(string name) const;
 	
 }

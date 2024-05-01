@@ -1,0 +1,11 @@
+package mmx;
+
+struct compile_flags_t {
+	
+	int verbose = 0;
+	
+	int opt_level = 3;
+	
+	bool catch_overflow = true;
+
+}

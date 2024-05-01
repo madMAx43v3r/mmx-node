@@ -16,11 +16,11 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -102,7 +102,9 @@ public:
 	
 	std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids = {});
 	
-	std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses = {}, const int32_t& since = 0);
+	std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& since = 0, const uint32_t& until = -1, const int32_t& limit = -1);
+	
+	std::vector<::mmx::tx_entry_t> get_history_memo(const std::vector<::mmx::addr_t>& addresses = {}, const std::string& memo = "", const int32_t& limit = -1);
 	
 	::mmx::uint128 get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
@@ -136,11 +138,11 @@ public:
 	
 	::mmx::address_info_t get_address_info(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses = {}, const int32_t& since = 0);
+	std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses = {});
 	
 	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses = {});
 	
-	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key = ::mmx::bls_pubkey_t());
+	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key = ::mmx::pubkey_t());
 	
 	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<::mmx::addr_t>& addresses = {});
 	
@@ -180,11 +182,11 @@ public:
 	
 	::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
-	std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0);
+	std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0, const int32_t& limit = 100);
 	
-	std::map<::mmx::bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since = 0);
+	std::map<::mmx::pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since = 0);
 	
-	uint32_t get_farmed_block_count_for(const std::vector<::mmx::bls_pubkey_t>& farmer_keys = {}, const uint32_t& since = 0);
+	uint32_t get_farmed_block_count_for(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const uint32_t& since = 0);
 	
 	void start_sync(const vnx::bool_t& force = 0);
 	

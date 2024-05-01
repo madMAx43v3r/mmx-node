@@ -16,7 +16,7 @@ class Transaction extends TransactionBase {
 	
 	ulong nonce;
 	
-	optional<hash_t> salt;
+	string network;
 	
 	optional<addr_t> sender;			// to pay for tx fee (first signature)
 	
@@ -41,7 +41,7 @@ class Transaction extends TransactionBase {
 	
 	void add_input(addr_t currency, addr_t address, ulong amount);
 	
-	void add_output(addr_t currency, addr_t address, ulong amount);
+	void add_output(addr_t currency, addr_t address, ulong amount, optional<string> memo);
 	
 	void merge_sign(Transaction* tx);
 	
@@ -66,5 +66,7 @@ class Transaction extends TransactionBase {
 	vector<Operation*> get_operations() const;
 	
 	map<addr_t, pair<uint128, uint128>> get_balance() const;
+	
+	tx_index_t get_tx_index(ChainParams* params, uint height, long file_offset) const;
 	
 }

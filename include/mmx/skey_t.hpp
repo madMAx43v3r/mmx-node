@@ -11,8 +11,6 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/bytes_t.hpp>
 
-#include <bls.hpp>
-
 
 namespace mmx {
 
@@ -22,20 +20,14 @@ public:
 
 	skey_t() = default;
 
-	skey_t(const hash_t& hash);
+	skey_t(const hash_t& hash) : super_t(hash) {}
 
-	skey_t(const bls::PrivateKey& key);
-
-	bls::PrivateKey to_bls() const;
+	~skey_t() {
+		::memset(data(), 0, size());
+	}
 
 };
 
-
-inline
-skey_t::skey_t(const hash_t& hash)
-	:	super_t(hash)
-{
-}
 
 } //mmx
 

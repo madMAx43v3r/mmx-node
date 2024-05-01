@@ -89,7 +89,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void update_cache(uint index) const;
 	
-	vector<tx_entry_t> get_history(uint index, int since, optional<tx_type_e> type, optional<addr_t> currency) const;
+	vector<tx_entry_t> get_history(uint index, uint since, uint until = -1, int limit = -1, optional<tx_type_e> type, optional<addr_t> currency) const;
+	
+	vector<tx_entry_t> get_history_memo(uint index, string memo, int limit = -1, optional<addr_t> currency) const;
 	
 	vector<tx_log_entry_t> get_tx_log(uint index, int limit = -1, uint offset) const;
 	
@@ -152,8 +154,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	vector<string> get_mnemonic_seed(uint index) const;
 	
 	
-	FarmerKeys* get_farmer_keys(uint index) const;
+	pair<skey_t, pubkey_t> get_farmer_keys(uint index) const;
 	
-	vector<FarmerKeys*> get_all_farmer_keys() const;
+	vector<pair<skey_t, pubkey_t>> get_all_farmer_keys() const;
 	
 }

@@ -8,4 +8,11 @@ struct txio_t {
 	
 	ulong amount;
 	
+	optional<string> memo;
+	
+	static const uint MAX_MEMO_SIZE = 64;
+	
+	
+	ulong calc_cost(ChainParams* params) const;
+	
 }

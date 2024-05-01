@@ -34,6 +34,9 @@ public:
 
 	std::map<addr_t, uint128> get_balances(const addr_t& contract) const override;
 
+	using Storage::write;
+	using Storage::lookup;
+
 private:
 	std::shared_ptr<Storage> backend;
 

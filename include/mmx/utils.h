@@ -103,18 +103,15 @@ uint64_t to_amount(const double value, std::shared_ptr<const ChainParams> params
 inline
 bool check_tx_inclusion(const hash_t& txid, const uint32_t height)
 {
-	return uint32_t(txid.to_uint256() & 0x1) == (height & 0x1);
+	return uint32_t(txid.bytes[31] & 0x1) == (height & 0x1);
 }
 
 inline
-bool check_plot_filter(	std::shared_ptr<const ChainParams> params,
-						const hash_t& challenge, const hash_t& plot_id)
+bool check_plot_filter(
+		std::shared_ptr<const ChainParams> params, const hash_t& challenge, const hash_t& plot_id)
 {
-	hash_t hash(std::string("plot_filter") + plot_id + challenge);
-	for(uint32_t i = 0; i < params->plot_filter_nhash; ++i) {
-		hash = hash_t(std::string("plot_filter") + hash);
-	}
-	return hash.to_uint256() >> (256 - params->plot_filter) == 0;
+	const hash_t hash(std::string("plot_filter") + plot_id + challenge);
+	return (hash.to_uint256() >> (256 - params->plot_filter)) == 0;
 }
 
 inline
@@ -126,13 +123,19 @@ hash_t get_plot_challenge(const hash_t& challenge, const hash_t& plot_id)
 inline
 uint64_t to_effective_space(const uint64_t& num_bytes)
 {
-	return (762 * uint128_t(num_bytes)) / 1000;
+	return (2467 * uint128_t(num_bytes)) / 1000;
+}
+
+inline
+uint64_t get_effective_plot_size(const int ksize)
+{
+	return to_effective_space(((2 * ksize) + 1) * (uint64_t(1) << (ksize - 1)));
 }
 
 inline
 uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	return ((uint256_t(space_diff) * params->space_diff_constant) << (params->plot_filter + params->score_bits)) / params->score_target;
+	return ((uint256_t(space_diff) * params->space_diff_constant) << params->score_bits) / params->score_target;
 }
 
 inline
@@ -165,27 +168,31 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 }
 
 inline
-uint64_t calc_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
-{
-	const uint64_t nominal = (uint128_t(calc_total_netspace_ideal(params, space_diff)) * params->reward_factor.value) / params->reward_factor.inverse;
-	return std::max(nominal, params->min_reward);
-}
-
-inline
 uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const uint64_t tx_fees)
 {
-	return std::min(params->fixed_project_reward, tx_fees / 4)
-			+ (params->project_ratio.value * uint128_t(tx_fees)) / params->project_ratio.inverse;
+	const auto dynamic = (params->project_ratio.value * uint64_t(tx_fees)) / params->project_ratio.inverse;
+	return std::min(params->fixed_project_reward + dynamic, tx_fees / 2);
 }
 
 inline
-uint64_t calc_final_block_reward(
-		std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
-		const uint64_t base_reward, const uint64_t tx_fees)
+uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const uint64_t tx_fees)
 {
-	const uint64_t fee_deduction = std::min(params->vdf_reward, tx_fees / 8) + calc_project_reward(params, tx_fees);
-	const uint64_t block_reward = (base_reward > diff_block->average_txfee ? base_reward - diff_block->average_txfee : 0);
-	return block_reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
+	const uint64_t fee_deduction = calc_project_reward(params, tx_fees);
+	return base_reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
+}
+
+inline
+uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const int8_t vote)
+{
+	const auto step_size = std::max<uint64_t>(base_reward / params->reward_adjust_div, 1);
+
+	int64_t reward = base_reward;
+	if(vote > 0) {
+		reward += step_size;
+	} else if(vote < 0) {
+		reward -= step_size;
+	}
+	return std::max<int64_t>(std::min<int64_t>(reward, 4200000000000ll), params->min_reward);
 }
 
 inline
@@ -216,7 +223,7 @@ uint64_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, cons
 inline
 uint64_t calc_new_average_txfee(std::shared_ptr<const ChainParams> params, const uint64_t prev_value, const uint64_t total_fees)
 {
-	return (prev_value * ((uint64_t(1) << params->max_diff_adjust) - 1) + total_fees) >> params->max_diff_adjust;
+	return (prev_value * ((uint64_t(1) << params->avg_txfee_adjust) - 1) + total_fees) >> params->avg_txfee_adjust;
 }
 
 inline
@@ -227,12 +234,8 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 	if(block->proof) {
 		weight += params->score_threshold + (params->score_threshold - block->proof->score);
 		weight *= diff_block->space_diff;
-	} else {
-		weight += 1;
+		weight *= diff_block->time_diff;
 	}
-	weight *= diff_block->time_diff;
-	// TODO: weight *= std::max(diff_block->netspace_ratio, 1u);
-	// TODO: weight >>= 2 * params->max_diff_adjust;
 	if(weight.upper()) {
 		throw std::logic_error("block weight overflow");
 	}
@@ -250,15 +253,35 @@ std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::
 	for(int i = 0; i < 16384; ++i) {
 		hash = hash_t(hash + seed_value + pass_hash);
 	}
-	return std::to_string(uint32_t(hash.to_uint256()));
+	return std::to_string(hash.to_uint<uint32_t>());
 }
 
-inline
+template<typename error_t>
+uint64_t cost_to_fee(const uint64_t cost, const uint32_t fee_ratio)
+{
+	const auto fee = (uint128_t(cost) * fee_ratio) / 1024;
+	if(fee.upper()) {
+		throw error_t("fee amount overflow");
+	}
+	return fee;
+}
+
+template<typename error_t>
+uint64_t fee_to_cost(const uint64_t fee, const uint32_t fee_ratio)
+{
+	const auto cost = (uint128_t(fee) * 1024) / fee_ratio;
+	if(cost.upper()) {
+		throw error_t("cost value overflow");
+	}
+	return cost;
+}
+
+template<typename error_t>
 void safe_acc(uint64_t& lhs, const uint64_t& rhs)
 {
 	const auto tmp = uint128_t(lhs) + rhs;
 	if(tmp.upper()) {
-		throw std::runtime_error("accumulate overflow");
+		throw error_t("accumulate overflow");
 	}
 	lhs = tmp.lower();
 }

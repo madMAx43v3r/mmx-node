@@ -4,22 +4,11 @@
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/Contract_calc_cost.hxx>
-#include <mmx/Contract_calc_cost_return.hxx>
-#include <mmx/Contract_calc_hash.hxx>
-#include <mmx/Contract_calc_hash_return.hxx>
-#include <mmx/Contract_get_owner.hxx>
-#include <mmx/Contract_get_owner_return.hxx>
-#include <mmx/Contract_is_locked.hxx>
-#include <mmx/Contract_is_locked_return.hxx>
-#include <mmx/Contract_is_valid.hxx>
-#include <mmx/Contract_is_valid_return.hxx>
-#include <mmx/Contract_validate.hxx>
-#include <mmx/Contract_validate_return.hxx>
-#include <mmx/Operation.hxx>
+#include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
+#include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
 
@@ -134,13 +123,6 @@ std::shared_ptr<vnx::TypeCode> Contract::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Contract);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Contract>(); };
-	type_code->methods.resize(6);
-	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
-	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
-	type_code->methods[2] = ::mmx::Contract_get_owner::static_get_type_code();
-	type_code->methods[3] = ::mmx::Contract_is_locked::static_get_type_code();
-	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_validate::static_get_type_code();
 	type_code->fields.resize(1);
 	{
 		auto& field = type_code->fields[0];
@@ -154,42 +136,6 @@ std::shared_ptr<vnx::TypeCode> Contract::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> Contract::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0xb23d047adf8b2612ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_cost>(_method);
-			auto _return_value = ::mmx::Contract_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x622fcf1cba1952edull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_hash>(_method);
-			auto _return_value = ::mmx::Contract_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x8fe2c64fdc8f0680ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_owner>(_method);
-			auto _return_value = ::mmx::Contract_get_owner_return::create();
-			_return_value->_ret_0 = get_owner();
-			return _return_value;
-		}
-		case 0x9b7981d03b3aeab6ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_locked>(_method);
-			auto _return_value = ::mmx::Contract_is_locked_return::create();
-			_return_value->_ret_0 = is_locked(_args->height);
-			return _return_value;
-		}
-		case 0xe3adf9b29a723217ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_valid>(_method);
-			auto _return_value = ::mmx::Contract_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xc2126a44901c8d52ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
-			auto _return_value = ::mmx::Contract_validate_return::create();
-			validate(_args->operation, _args->txid);
-			return _return_value;
-		}
 	}
 	return nullptr;
 }
@@ -230,7 +176,7 @@ void read(TypeInput& in, ::mmx::Contract& value, const TypeCode* type_code, cons
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
@@ -256,7 +202,7 @@ void write(TypeOutput& out, const ::mmx::Contract& value, const TypeCode* type_c
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	auto* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
 }
 

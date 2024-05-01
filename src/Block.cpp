@@ -10,6 +10,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/txio_entry_t.hpp>
 #include <mmx/utils.h>
+#include <mmx/tree_hash.h>
 
 
 namespace mmx {
@@ -20,6 +21,9 @@ vnx::bool_t Block::is_valid() const
 	uint64_t total_cost_sum = 0;
 	uint64_t tx_fees_sum = 0;
 	for(const auto& tx : tx_list) {
+		if(!tx || tx->content_hash != tx->calc_hash(true)) {
+			return false;
+		}
 		if(const auto& res = tx->exec_result) {
 			total_cost_sum += res->total_cost;
 			tx_fees_sum += res->total_fee;
@@ -38,18 +42,11 @@ vnx::bool_t Block::is_valid() const
 
 hash_t Block::calc_tx_hash() const
 {
-	std::vector<uint8_t> buffer;
-	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
-
-	buffer.reserve(1024 * 1024);
-
+	std::vector<hash_t> tmp;
 	for(const auto& tx : tx_list) {
-		write_bytes(out, tx ? tx->calc_hash(true) : hash_t());
+		tmp.push_back(tx->content_hash);
 	}
-	out.flush();
-
-	return hash_t(buffer);
+	return calc_btree_hash(tmp);
 }
 
 void Block::finalize()

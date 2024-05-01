@@ -14,12 +14,15 @@
 namespace mmx {
 namespace vm {
 
+class Engine;
+
 class StorageProxy : public Storage {
 public:
+	Engine* const engine;
 	const std::shared_ptr<Storage> backend;
 	const bool read_only;
 
-	StorageProxy(std::shared_ptr<Storage> backend, bool read_only);
+	StorageProxy(Engine* engine, std::shared_ptr<Storage> backend, bool read_only);
 
 	std::unique_ptr<var_t> read(const addr_t& contract, const uint64_t src) const override;
 
@@ -30,6 +33,9 @@ public:
 	void write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value) override;
 
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
+
+	using Storage::write;
+	using Storage::lookup;
 
 private:
 	std::unique_ptr<var_t> read_ex(std::unique_ptr<var_t> var) const;

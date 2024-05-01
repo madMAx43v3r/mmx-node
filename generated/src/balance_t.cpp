@@ -228,7 +228,7 @@ void read(TypeInput& in, ::mmx::balance_t& value, const TypeCode* type_code, con
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.is_validated, _field->code.data());
@@ -258,7 +258,7 @@ void write(TypeOutput& out, const ::mmx::balance_t& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(1);
+	auto* const _buf = out.write(1);
 	vnx::write_value(_buf + 0, value.is_validated);
 	vnx::write(out, value.spendable, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.reserved, type_code, type_code->fields[1].code.data());

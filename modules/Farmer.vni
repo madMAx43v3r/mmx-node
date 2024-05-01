@@ -3,6 +3,9 @@ package mmx;
 module Farmer {
 	
 	vnx.TopicPtr input_info = "harvester.info";
+	vnx.TopicPtr input_proofs = "harvester.proof";
+	
+	vnx.TopicPtr output_proofs = "farmer.proof";
 	
 	uint harvester_timeout = 60;					// [sec]
 	
@@ -14,15 +17,14 @@ module Farmer {
 	
 	vnx.Hash64 get_mac_addr() const;
 	
-	vector<bls_pubkey_t> get_farmer_keys() const;
+	vector<pubkey_t> get_farmer_keys() const;
 	
 	FarmInfo* get_farm_info() const;
-	
-	bls_signature_t sign_proof(ProofResponse* value, optional<skey_t> local_sk) const;
 	
 	BlockHeader* sign_block(BlockHeader* block) const;
 	
 	
 	void handle(FarmInfo sample);
+	void handle(ProofResponse sample);
 	
 }

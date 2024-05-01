@@ -23,6 +23,7 @@ struct MMX_EXPORT tx_entry_t {
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
 	::mmx::uint128 amount;
+	vnx::optional<std::string> memo;
 	vnx::bool_t is_validated = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -65,15 +66,16 @@ struct MMX_EXPORT tx_entry_t {
 
 template<typename T>
 void tx_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_entry_t>(7);
+	_visitor.template type_begin<tx_entry_t>(8);
 	_visitor.type_field("height", 0); _visitor.accept(height);
 	_visitor.type_field("txid", 1); _visitor.accept(txid);
 	_visitor.type_field("type", 2); _visitor.accept(type);
 	_visitor.type_field("address", 3); _visitor.accept(address);
 	_visitor.type_field("contract", 4); _visitor.accept(contract);
 	_visitor.type_field("amount", 5); _visitor.accept(amount);
-	_visitor.type_field("is_validated", 6); _visitor.accept(is_validated);
-	_visitor.template type_end<tx_entry_t>(7);
+	_visitor.type_field("memo", 6); _visitor.accept(memo);
+	_visitor.type_field("is_validated", 7); _visitor.accept(is_validated);
+	_visitor.template type_end<tx_entry_t>(8);
 }
 
 

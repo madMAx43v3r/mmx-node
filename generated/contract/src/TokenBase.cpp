@@ -5,26 +5,9 @@
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/Contract_calc_cost.hxx>
-#include <mmx/Contract_calc_cost_return.hxx>
-#include <mmx/Contract_calc_hash.hxx>
-#include <mmx/Contract_calc_hash_return.hxx>
-#include <mmx/Contract_get_owner.hxx>
-#include <mmx/Contract_get_owner_return.hxx>
-#include <mmx/Contract_is_locked.hxx>
-#include <mmx/Contract_is_locked_return.hxx>
-#include <mmx/Contract_is_valid.hxx>
-#include <mmx/Contract_is_valid_return.hxx>
-#include <mmx/Contract_validate.hxx>
-#include <mmx/Contract_validate_return.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/contract/TokenBase_calc_cost.hxx>
-#include <mmx/contract/TokenBase_calc_cost_return.hxx>
-#include <mmx/contract/TokenBase_calc_hash.hxx>
-#include <mmx/contract/TokenBase_calc_hash_return.hxx>
-#include <mmx/contract/TokenBase_is_valid.hxx>
-#include <mmx/contract/TokenBase_is_valid_return.hxx>
 #include <mmx/hash_t.hpp>
+#include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
 
@@ -34,7 +17,7 @@ namespace contract {
 
 
 const vnx::Hash64 TokenBase::VNX_TYPE_HASH(0x5aeed4c96d232b5eull);
-const vnx::Hash64 TokenBase::VNX_CODE_HASH(0xdbdbef14d95d19a4ull);
+const vnx::Hash64 TokenBase::VNX_CODE_HASH(0x8d6ff46e314f1840ull);
 
 vnx::Hash64 TokenBase::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -175,23 +158,13 @@ std::shared_ptr<vnx::TypeCode> TokenBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.TokenBase";
 	type_code->type_hash = vnx::Hash64(0x5aeed4c96d232b5eull);
-	type_code->code_hash = vnx::Hash64(0xdbdbef14d95d19a4ull);
+	type_code->code_hash = vnx::Hash64(0x8d6ff46e314f1840ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::TokenBase);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<TokenBase>(); };
-	type_code->methods.resize(9);
-	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
-	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
-	type_code->methods[2] = ::mmx::Contract_get_owner::static_get_type_code();
-	type_code->methods[3] = ::mmx::Contract_is_locked::static_get_type_code();
-	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[6] = ::mmx::contract::TokenBase_calc_cost::static_get_type_code();
-	type_code->methods[7] = ::mmx::contract::TokenBase_calc_hash::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::TokenBase_is_valid::static_get_type_code();
 	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
@@ -215,14 +188,14 @@ std::shared_ptr<vnx::TypeCode> TokenBase::static_create_type_code() {
 		auto& field = type_code->fields[3];
 		field.data_size = 4;
 		field.name = "decimals";
-		field.value = vnx::to_string(6);
+		field.value = vnx::to_string(0);
 		field.code = {7};
 	}
 	{
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "meta_data";
-		field.code = {33, 11, 32, 1};
+		field.code = {17};
 	}
 	type_code->build();
 	return type_code;
@@ -230,60 +203,6 @@ std::shared_ptr<vnx::TypeCode> TokenBase::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> TokenBase::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0xb23d047adf8b2612ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_cost>(_method);
-			auto _return_value = ::mmx::Contract_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x622fcf1cba1952edull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_hash>(_method);
-			auto _return_value = ::mmx::Contract_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x8fe2c64fdc8f0680ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_owner>(_method);
-			auto _return_value = ::mmx::Contract_get_owner_return::create();
-			_return_value->_ret_0 = get_owner();
-			return _return_value;
-		}
-		case 0x9b7981d03b3aeab6ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_locked>(_method);
-			auto _return_value = ::mmx::Contract_is_locked_return::create();
-			_return_value->_ret_0 = is_locked(_args->height);
-			return _return_value;
-		}
-		case 0xe3adf9b29a723217ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_valid>(_method);
-			auto _return_value = ::mmx::Contract_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xc2126a44901c8d52ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
-			auto _return_value = ::mmx::Contract_validate_return::create();
-			validate(_args->operation, _args->txid);
-			return _return_value;
-		}
-		case 0xc758d95e2799f160ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::TokenBase_calc_cost>(_method);
-			auto _return_value = ::mmx::contract::TokenBase_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x174a1238420b859full: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::TokenBase_calc_hash>(_method);
-			auto _return_value = ::mmx::contract::TokenBase_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x771fd1948e99a4b4ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::TokenBase_is_valid>(_method);
-			auto _return_value = ::mmx::contract::TokenBase_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }
@@ -325,7 +244,7 @@ void read(TypeInput& in, ::mmx::contract::TokenBase& value, const TypeCode* type
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
@@ -357,7 +276,7 @@ void write(TypeOutput& out, const ::mmx::contract::TokenBase& value, const TypeC
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(8);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.decimals);
 	vnx::write(out, value.name, type_code, type_code->fields[1].code.data());

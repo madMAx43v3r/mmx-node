@@ -11,7 +11,6 @@
 #include <mmx/WalletBase.hxx>
 #include <mmx/NodeClient.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/BLS_Wallet.h>
 #include <mmx/ECDSA_Wallet.h>
 #include <mmx/multi_table.h>
 
@@ -103,8 +102,11 @@ protected:
 	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
 											const addr_t& currency, const spend_options_t& options) const override;
 
-	std::vector<tx_entry_t> get_history(const uint32_t& index, const int32_t& since,
+	std::vector<tx_entry_t> get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit,
 										const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const override;
+
+	std::vector<tx_entry_t> get_history_memo(
+			const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<addr_t>& currency) const override;
 
 	std::vector<tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const override;
 
@@ -125,7 +127,7 @@ protected:
 
 	std::vector<virtual_plot_info_t> get_virtual_plots(const uint32_t& index) const override;
 
-	vector<offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const override;
+	std::vector<offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const override;
 
 	std::map<addr_t, std::array<std::pair<addr_t, uint128>, 2>> get_swap_liquidity(const uint32_t& index) const override;
 
@@ -137,9 +139,9 @@ protected:
 
 	std::vector<address_info_t> get_all_address_infos(const int32_t& index) const;
 
-	std::shared_ptr<const FarmerKeys> get_farmer_keys(const uint32_t& index) const override;
+	std::pair<skey_t, pubkey_t> get_farmer_keys(const uint32_t& index) const override;
 
-	std::vector<std::shared_ptr<const FarmerKeys>> get_all_farmer_keys() const override;
+	std::vector<std::pair<skey_t, pubkey_t>> get_all_farmer_keys() const override;
 
 	account_t get_account(const uint32_t& index) const override;
 
@@ -182,7 +184,6 @@ private:
 	std::shared_ptr<NodeClient> node;
 
 	std::vector<std::shared_ptr<ECDSA_Wallet>> wallets;
-	std::vector<std::shared_ptr<BLS_Wallet>> bls_wallets;
 
 	mutable mmx::hash_multi_table<addr_t, tx_log_entry_t> tx_log;
 

@@ -311,11 +311,9 @@ class Compiler {
 public:
 	static const std::string version;
 
-	uint8_t math_flags = OPFLAG_CATCH_OVERFLOW;
+	const compile_flags_t flags;
 
-	bool is_debug = false;
-
-	Compiler();
+	Compiler(const compile_flags_t& flags = compile_flags_t());
 
 	std::shared_ptr<const contract::Binary> compile(const std::string& source);
 
@@ -409,6 +407,8 @@ protected:
 
 	uint32_t get_const_address(const uint256_t& value);
 
+	uint32_t get_const_address(const addr_t& value);
+
 	uint32_t get_const_address(const std::string& value);
 
 	int get_node_rank(const node_t& node) const;
@@ -431,6 +431,9 @@ private:
 	int depth = 0;
 	int curr_pass = 0;
 	int curr_line = -1;
+	bool have_return = false;
+
+	uint8_t math_flags = 0;
 
 	size_t code_offset = 0;
 	vnx::optional<node_t> curr_node;
@@ -458,8 +461,13 @@ private:
 
 const std::string Compiler::version = "1.0.0";
 
-Compiler::Compiler()
+Compiler::Compiler(const compile_flags_t& flags)
+	:	flags(flags)
 {
+	if(flags.catch_overflow) {
+		math_flags |= OPFLAG_CATCH_OVERFLOW;
+	}
+
 	int rank = 0;
 	rank_map[lang::constant::name] = rank++;
 	rank_map[lang::identifier::name] = rank++;
@@ -525,6 +533,7 @@ Compiler::Compiler()
 	this_obj_map["address"] = MEM_EXTERN + EXTERN_ADDRESS;
 	this_obj_map["deposit"] = MEM_EXTERN + EXTERN_DEPOSIT;
 
+	function_map["__nop"].name = "__nop";
 	function_map["size"].name = "size";
 	function_map["push"].name = "push";
 	function_map["pop"].name = "pop";
@@ -534,14 +543,25 @@ Compiler::Compiler()
 	function_map["max"].name = "max";
 	function_map["clone"].name = "clone";
 	function_map["deref"].name = "deref";
+	function_map["erase"].name = "erase";
 	function_map["delete"].name = "delete";
 	function_map["typeof"].name = "typeof";
 	function_map["concat"].name = "concat";
+	function_map["memcpy"].name = "memcpy";
 	function_map["send"].name = "send";
 	function_map["mint"].name = "mint";
 	function_map["fail"].name = "fail";
+	function_map["log"].name = "log";
+	function_map["event"].name = "event";
+	function_map["cread"].name = "cread";
 	function_map["bech32"].name = "bech32";
+	function_map["binary"].name = "binary";
+	function_map["binary_le"].name = "binary_le";
+	function_map["binary_hex"].name = "binary_hex";
+	function_map["bool"].name = "bool";
 	function_map["uint"].name = "uint";
+	function_map["uint_le"].name = "uint_le";
+	function_map["uint_hex"].name = "uint_hex";
 	function_map["sha256"].name = "sha256";
 	function_map["ecdsa_verify"].name = "ecdsa_verify";
 	function_map["to_string"].name = "to_string";
@@ -565,6 +585,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 	binary = std::make_shared<contract::Binary>();
 	binary->source = source;
 	binary->compiler = std::string("mmx") + "-" + version;
+	binary->build_flags = flags;
 
 	parse_tree_t tree;
 	parse(tree, source);
@@ -633,10 +654,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 			binary->methods[method.name] = method;
 		}
 	}
-	{
-		const auto data = vm::serialize(code);
-		binary->binary = std::vector<uint8_t>(data.first.get(), data.first.get() + data.second);
-	}
+	binary->binary = vm::serialize(code);
 	binary->line_info = line_info;
 
 	debug() << std::endl;
@@ -731,7 +749,7 @@ varptr_t Compiler::parse_constant(const node_t& node)
 		if(list.size() != 1) {
 			throw std::logic_error("invalid address");
 		}
-		return std::make_unique<uint_t>(addr_t(get_literal(list[0])).to_uint256());
+		return to_binary(addr_t(get_literal(list[0])));
 	}
 	return nullptr;
 }
@@ -770,7 +788,7 @@ std::string Compiler::get_namespace(const bool concat) const
 
 std::ostream& Compiler::debug(bool ident) const
 {
-	auto& out = is_debug ? std::cerr : debug_out;
+	auto& out = flags.verbose ? std::cerr : debug_out;
 	for(int i = 0; ident && i < depth; ++i) {
 		out << "  ";
 	}
@@ -952,6 +970,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 				scope.add_variable(arg);
 			}
 			curr_function = func;
+			have_return = false;
 
 			if(func.is_init) {
 				code.emplace_back(OP_CALL, 0, 0, scope.new_addr() - MEM_STACK);
@@ -961,7 +980,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			recurse(list.back());
 			frame.pop_back();
 
-			if(code.size() <= func.address || code.back().code != OP_RET) {
+			if(!have_return) {
 				code.emplace_back(OP_RET);
 			}
 			curr_function = nullptr;
@@ -1262,31 +1281,67 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(expr_len < 1) {
 				throw std::logic_error("missing right operand");
 			}
-			int flags = 0;
-			const auto op_code = opcode_e(iter->second);
+			int op_flags = 0;
+			auto op_code = opcode_e(iter->second);
 			switch(op_code) {
 				case OP_ADD:
 				case OP_SUB:
 				case OP_MUL:
 				case OP_DIV:
 				case OP_MOD:
-					flags |= math_flags; break;
+					op_flags |= math_flags; break;
 				default: break;
 			}
-			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
+			auto rhs = get(recurse_expr(p_node, expr_len, nullptr, rank));
+
+			switch(op_code) {
+				case OP_DIV:
+				case OP_MOD:
+					if(rhs < const_vars.size() && flags.opt_level > 0) {
+						// optimize division by power of two
+						if(const auto& value = const_vars[rhs].value) {
+							if(value->type == TYPE_UINT) {
+								const auto& uint = ((const uint_t*)value.get())->value;
+								if(uint != 0 && (uint & (uint - 1)) == 0) {
+									int count = 0;
+									auto tmp = uint;
+									for(; count <= 256 && !(tmp & 1); ++count, tmp >>= 1);
+									if(count < 256) {
+										debug(false) << "Optimizing DIV / MOD by power of two: " << uint << " => " << count << std::endl;
+										switch(op_code) {
+											case OP_DIV:
+												op_code = OP_SHR;
+												rhs = count;
+												break;
+											case OP_MOD:
+												op_code = OP_AND;
+												rhs = get_const_address((uint256_1 << count) - 1);
+												break;
+											default:
+												break;
+										}
+									}
+								}
+							}
+						}
+					}
+					break;
+				default:
+					break;
+			}
 			if(is_assign) {
 				if(lhs->key) {
 					const auto tmp_addr = stack.new_addr();
-					code.emplace_back(op_code, flags, tmp_addr, get(*lhs), get(rhs));
+					code.emplace_back(op_code, op_flags, tmp_addr, get(*lhs), rhs);
 					copy(*lhs, tmp_addr);
 				} else {
 					lhs->check_value();
-					code.emplace_back(op_code, flags, lhs->address, lhs->address, get(rhs));
+					code.emplace_back(op_code, op_flags, lhs->address, lhs->address, rhs);
 				}
 				out = *lhs;
 			} else {
 				out.address = stack.new_addr();
-				code.emplace_back(op_code, flags, out.address, get(*lhs), get(rhs));
+				code.emplace_back(op_code, op_flags, out.address, get(*lhs), rhs);
 			}
 		}
 		else if(op == "=") {
@@ -1333,7 +1388,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(key == "currency") {
 					out.key = get_const_address(uint256_t(0));
 				} else if(key == "amount") {
-					out.key = get_const_address(1);
+					out.key = get_const_address(uint256_t(1));
 				} else {
 					throw std::logic_error("no such variable: this.deposit." + key);
 				}
@@ -1389,9 +1444,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(lhs) {
 				throw std::logic_error("unexpected left operand");
 			}
+			if(have_return) {
+				throw std::logic_error("multiple returns not allowed");
+			}
 			if(expr_len > 0) {
 				copy(MEM_STACK, recurse_expr(p_node, expr_len, nullptr, rank));
 			}
+			have_return = true;
 			code.emplace_back(OP_RET);
 		}
 		else {
@@ -1416,7 +1475,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					args.push_back(node);
 				}
 			}
-			if(name == "size") {
+			if(name == "__nop") {
+				if(args.size()) {
+					throw std::logic_error("expected 0 arguments for __nop()");
+				}
+				code.emplace_back(OP_NOP);
+			}
+			else if(name == "size") {
 				if(args.size() != 1) {
 					throw std::logic_error("expected 1 argument for size()");
 				}
@@ -1480,8 +1545,15 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_COPY, OPFLAG_REF_B, out.address, get(recurse(args[0])));
 			}
 			else if(name == "delete") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for delete()");
+				}
+				code.emplace_back(OP_CLR, 0, get(recurse(args[0])));
+				out.address = 0;
+			}
+			else if(name == "erase") {
 				if(args.size() != 2) {
-					throw std::logic_error("expected 2 arguments for delete(object, key)");
+					throw std::logic_error("expected 2 arguments for erase(object, key)");
 				}
 				out.address = 0;
 				code.emplace_back(OP_ERASE, OPFLAG_REF_A, get(recurse(args[0])), get(recurse(args[1])));
@@ -1500,23 +1572,25 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				auto lhs = get(recurse(args[0]));
 				for(size_t i = 1; i < args.size(); ++i) {
 					out.address = stack.new_addr();
-					code.emplace_back(OP_CONCAT, 0, out.address, lhs, get(recurse(args[i])));
+					code.emplace_back(OP_CONCAT, OPFLAG_REF_B | OPFLAG_REF_C, out.address, lhs, get(recurse(args[i])));
 					lhs = out.address;
 				}
 			}
 			else if(name == "send") {
-				if(args.size() != 2 && args.size() != 3) {
-					throw std::logic_error("expected 2 or 3 arguments for send(address, amount, [currency])");
+				if(args.size() < 2 || args.size() > 4) {
+					throw std::logic_error("expected 2 to 4 arguments for send(address, amount, [currency], [memo])");
 				}
 				code.emplace_back(OP_SEND, 0, get(recurse(args[0])), get(recurse(args[1])),
-						args.size() > 2 ? get(recurse(args[2])) : get_const_address(uint256_t()));
+						args.size() > 2 ? get(recurse(args[2])) : get_const_address(addr_t()),
+						args.size() > 3 ? get(recurse(args[3])) : 0);
 				out.address = 0;
 			}
 			else if(name == "mint") {
-				if(args.size() != 2) {
-					throw std::logic_error("expected 2 arguments for mint(address, amount)");
+				if(args.size() < 2 || args.size() > 3) {
+					throw std::logic_error("expected 2 to 3 arguments for mint(address, amount, [memo])");
 				}
-				code.emplace_back(OP_MINT, 0, get(recurse(args[0])), get(recurse(args[1])));
+				code.emplace_back(OP_MINT, 0, get(recurse(args[0])), get(recurse(args[1])),
+						args.size() > 2 ? get(recurse(args[2])) : 0);
 				out.address = 0;
 			}
 			else if(name == "fail") {
@@ -1527,12 +1601,65 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 						get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
 				out.address = 0;
 			}
-			else if(name == "bech32") {
-				if(args.size() != 1) {
-					throw std::logic_error("expected 1 argument for bech32()");
+			else if(name == "log") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for log(level, message)");
+				}
+				code.emplace_back(OP_LOG, OPFLAG_REF_A, get(recurse(args[0])), get(recurse(args[1])));
+				out.address = 0;
+			}
+			else if(name == "event") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for event(name, data)");
+				}
+				code.emplace_back(OP_EVENT, 0, get(recurse(args[0])), get(recurse(args[1])));
+				out.address = 0;
+			}
+			else if(name == "cread") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for cread(address, field)");
 				}
 				out.address = stack.new_addr();
-				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_ADDRESS);
+				code.emplace_back(OP_CREAD, 0, out.address, get(recurse(args[0])), get(recurse(args[1])));
+			}
+			else if(name == "bech32") {
+				if(args.size() == 0) {
+					out.address = stack.new_addr();
+					code.emplace_back(OP_COPY, 0, out.address, get_const_address(addr_t()));
+				} else if(args.size() == 1) {
+					out.address = stack.new_addr();
+					code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_ADDRESS, CONVTYPE_DEFAULT);
+				} else {
+					throw std::logic_error("expected 0 or 1 argument for bech32([input])");
+				}
+			}
+			else if(name == "binary") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for binary()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BINARY, CONVTYPE_DEFAULT);
+			}
+			else if(name == "binary_le") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for binary_le()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), (CONVTYPE_BINARY | (CONVTYPE_LITTLE_ENDIAN << 8)), CONVTYPE_DEFAULT);
+			}
+			else if(name == "binary_hex") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for binary_hex()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BINARY, CONVTYPE_BASE_16);
+			}
+			else if(name == "bool") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for bool()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BOOL, CONVTYPE_DEFAULT);
 			}
 			else if(name == "uint") {
 				if(args.size() != 1) {
@@ -1540,6 +1667,20 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_DEFAULT);
+			}
+			else if(name == "uint_le") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for uint_le()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_LITTLE_ENDIAN);
+			}
+			else if(name == "uint_hex") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for uint_hex()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_UINT, CONVTYPE_BASE_16);
 			}
 			else if(name == "sha256") {
 				if(args.size() != 1) {
@@ -1549,7 +1690,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_SHA256, 0, out.address, get(recurse(args[0])));
 			}
 			else if(name == "ecdsa_verify") {
-				if(args.size() != 1) {
+				if(args.size() != 3) {
 					throw std::logic_error("expected 3 arguments for ecdsa_verify(msg, pubkey, signature)");
 				}
 				out.address = stack.new_addr();
@@ -1574,7 +1715,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					throw std::logic_error("expected 1 argument for to_string_bech32()");
 				}
 				out.address = stack.new_addr();
-				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_ADDRESS, CONVTYPE_DEFAULT);
+				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING | (CONVTYPE_ADDRESS << 8), CONVTYPE_DEFAULT);
+			}
+			else if(name == "memcpy") {
+				if(args.size() < 2 || args.size() > 3) {
+					throw std::logic_error("expected 2 to 3 arguments for memcpy(src, count, [offset])");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_MEMCPY, OPFLAG_REF_C | OPFLAG_REF_D, out.address,
+						get(recurse(args[0])), get(recurse(args[1])),
+						(args.size() > 2 ? get(recurse(args[2])) : get_const_address(uint256_0)));
 			}
 			else if(name == "rcall") {
 				if(args.size() < 2) {
@@ -1781,9 +1931,14 @@ uint32_t Compiler::get_const_address(const uint256_t& value)
 	return get_const_address(std::make_unique<uint_t>(value));
 }
 
+uint32_t Compiler::get_const_address(const addr_t& value)
+{
+	return get_const_address(vm::to_binary(value));
+}
+
 uint32_t Compiler::get_const_address(const std::string& value)
 {
-	return get_const_address(binary_t::alloc(value));
+	return get_const_address(vm::to_binary(value));
 }
 
 
@@ -1801,8 +1956,7 @@ std::shared_ptr<const contract::Binary> compile(const std::string& source, const
 //			lexy::string_input<lexy::utf8_encoding>(source), {lexy::visualize_fancy});
 //#endif // _WIN32
 
-	Compiler compiler;
-	compiler.is_debug = flags.debug;
+	Compiler compiler(flags);
 	return compiler.compile(source);
 }
 

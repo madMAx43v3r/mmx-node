@@ -5,29 +5,8 @@
 #include <mmx/contract/Binary.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/Contract_calc_cost.hxx>
-#include <mmx/Contract_calc_cost_return.hxx>
-#include <mmx/Contract_calc_hash.hxx>
-#include <mmx/Contract_calc_hash_return.hxx>
-#include <mmx/Contract_get_owner.hxx>
-#include <mmx/Contract_get_owner_return.hxx>
-#include <mmx/Contract_is_locked.hxx>
-#include <mmx/Contract_is_locked_return.hxx>
-#include <mmx/Contract_is_valid.hxx>
-#include <mmx/Contract_is_valid_return.hxx>
-#include <mmx/Contract_validate.hxx>
-#include <mmx/Contract_validate_return.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/contract/Binary_calc_cost.hxx>
-#include <mmx/contract/Binary_calc_cost_return.hxx>
-#include <mmx/contract/Binary_calc_hash.hxx>
-#include <mmx/contract/Binary_calc_hash_return.hxx>
-#include <mmx/contract/Binary_find_field.hxx>
-#include <mmx/contract/Binary_find_field_return.hxx>
-#include <mmx/contract/Binary_find_method.hxx>
-#include <mmx/contract/Binary_find_method_return.hxx>
-#include <mmx/contract/Binary_is_valid.hxx>
-#include <mmx/contract/Binary_is_valid_return.hxx>
+#include <mmx/compile_flags_t.hxx>
 #include <mmx/contract/method_t.hxx>
 #include <mmx/hash_t.hpp>
 
@@ -39,7 +18,7 @@ namespace contract {
 
 
 const vnx::Hash64 Binary::VNX_TYPE_HASH(0xbbeba47fc8b740e5ull);
-const vnx::Hash64 Binary::VNX_CODE_HASH(0xefa96876ddce400full);
+const vnx::Hash64 Binary::VNX_CODE_HASH(0x4b86cbd0f6f2f411ull);
 
 vnx::Hash64 Binary::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -82,6 +61,7 @@ void Binary::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, source_info);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, source);
 	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, compiler);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, build_flags);
 	_visitor.type_end(*_type_code);
 }
 
@@ -97,6 +77,7 @@ void Binary::write(std::ostream& _out) const {
 	_out << ", \"source_info\": "; vnx::write(_out, source_info);
 	_out << ", \"source\": "; vnx::write(_out, source);
 	_out << ", \"compiler\": "; vnx::write(_out, compiler);
+	_out << ", \"build_flags\": "; vnx::write(_out, build_flags);
 	_out << "}";
 }
 
@@ -119,6 +100,7 @@ vnx::Object Binary::to_object() const {
 	_object["source_info"] = source_info;
 	_object["source"] = source;
 	_object["compiler"] = compiler;
+	_object["build_flags"] = build_flags;
 	return _object;
 }
 
@@ -126,6 +108,8 @@ void Binary::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "binary") {
 			_entry.second.to(binary);
+		} else if(_entry.first == "build_flags") {
+			_entry.second.to(build_flags);
 		} else if(_entry.first == "compiler") {
 			_entry.second.to(compiler);
 		} else if(_entry.first == "constant") {
@@ -179,6 +163,9 @@ vnx::Variant Binary::get_field(const std::string& _name) const {
 	if(_name == "compiler") {
 		return vnx::Variant(compiler);
 	}
+	if(_name == "build_flags") {
+		return vnx::Variant(build_flags);
+	}
 	return vnx::Variant();
 }
 
@@ -203,6 +190,8 @@ void Binary::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(source);
 	} else if(_name == "compiler") {
 		_value.to(compiler);
+	} else if(_name == "build_flags") {
+		_value.to(build_flags);
 	}
 }
 
@@ -230,28 +219,17 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Binary";
 	type_code->type_hash = vnx::Hash64(0xbbeba47fc8b740e5ull);
-	type_code->code_hash = vnx::Hash64(0xefa96876ddce400full);
+	type_code->code_hash = vnx::Hash64(0x4b86cbd0f6f2f411ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Binary);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::Contract::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Binary>(); };
-	type_code->depends.resize(1);
+	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::contract::method_t::static_get_type_code();
-	type_code->methods.resize(11);
-	type_code->methods[0] = ::mmx::Contract_calc_cost::static_get_type_code();
-	type_code->methods[1] = ::mmx::Contract_calc_hash::static_get_type_code();
-	type_code->methods[2] = ::mmx::Contract_get_owner::static_get_type_code();
-	type_code->methods[3] = ::mmx::Contract_is_locked::static_get_type_code();
-	type_code->methods[4] = ::mmx::Contract_is_valid::static_get_type_code();
-	type_code->methods[5] = ::mmx::Contract_validate::static_get_type_code();
-	type_code->methods[6] = ::mmx::contract::Binary_calc_cost::static_get_type_code();
-	type_code->methods[7] = ::mmx::contract::Binary_calc_hash::static_get_type_code();
-	type_code->methods[8] = ::mmx::contract::Binary_find_field::static_get_type_code();
-	type_code->methods[9] = ::mmx::contract::Binary_find_method::static_get_type_code();
-	type_code->methods[10] = ::mmx::contract::Binary_is_valid::static_get_type_code();
-	type_code->fields.resize(10);
+	type_code->depends[1] = ::mmx::compile_flags_t::static_get_type_code();
+	type_code->fields.resize(11);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -312,78 +290,18 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 		field.name = "compiler";
 		field.code = {32};
 	}
+	{
+		auto& field = type_code->fields[10];
+		field.is_extended = true;
+		field.name = "build_flags";
+		field.code = {19, 1};
+	}
 	type_code->build();
 	return type_code;
 }
 
 std::shared_ptr<vnx::Value> Binary::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0xb23d047adf8b2612ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_cost>(_method);
-			auto _return_value = ::mmx::Contract_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0x622fcf1cba1952edull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_calc_hash>(_method);
-			auto _return_value = ::mmx::Contract_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0x8fe2c64fdc8f0680ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_get_owner>(_method);
-			auto _return_value = ::mmx::Contract_get_owner_return::create();
-			_return_value->_ret_0 = get_owner();
-			return _return_value;
-		}
-		case 0x9b7981d03b3aeab6ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_locked>(_method);
-			auto _return_value = ::mmx::Contract_is_locked_return::create();
-			_return_value->_ret_0 = is_locked(_args->height);
-			return _return_value;
-		}
-		case 0xe3adf9b29a723217ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_is_valid>(_method);
-			auto _return_value = ::mmx::Contract_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
-		case 0xc2126a44901c8d52ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Contract_validate>(_method);
-			auto _return_value = ::mmx::Contract_validate_return::create();
-			validate(_args->operation, _args->txid);
-			return _return_value;
-		}
-		case 0x4c3fe58fddf47afull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_calc_cost>(_method);
-			auto _return_value = ::mmx::contract::Binary_calc_cost_return::create();
-			_return_value->_ret_0 = calc_cost(_args->params);
-			return _return_value;
-		}
-		case 0xd4d1353e984d3350ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_calc_hash>(_method);
-			auto _return_value = ::mmx::contract::Binary_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash(_args->full_hash);
-			return _return_value;
-		}
-		case 0xd452e90b79266ffdull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_find_field>(_method);
-			auto _return_value = ::mmx::contract::Binary_find_field_return::create();
-			_return_value->_ret_0 = find_field(_args->name);
-			return _return_value;
-		}
-		case 0x909ccffe5a222b83ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_find_method>(_method);
-			auto _return_value = ::mmx::contract::Binary_find_method_return::create();
-			_return_value->_ret_0 = find_method(_args->name);
-			return _return_value;
-		}
-		case 0x5dc8876a8b68a708ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::contract::Binary_is_valid>(_method);
-			auto _return_value = ::mmx::contract::Binary_is_valid_return::create();
-			_return_value->_ret_0 = is_valid();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }
@@ -425,7 +343,7 @@ void read(TypeInput& in, ::mmx::contract::Binary& value, const TypeCode* type_co
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.version, _field->code.data());
@@ -442,6 +360,7 @@ void read(TypeInput& in, ::mmx::contract::Binary& value, const TypeCode* type_co
 			case 7: vnx::read(in, value.source_info, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.source, type_code, _field->code.data()); break;
 			case 9: vnx::read(in, value.compiler, type_code, _field->code.data()); break;
+			case 10: vnx::read(in, value.build_flags, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -460,7 +379,7 @@ void write(TypeOutput& out, const ::mmx::contract::Binary& value, const TypeCode
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	auto* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write(out, value.name, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.fields, type_code, type_code->fields[2].code.data());
@@ -471,6 +390,7 @@ void write(TypeOutput& out, const ::mmx::contract::Binary& value, const TypeCode
 	vnx::write(out, value.source_info, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.source, type_code, type_code->fields[8].code.data());
 	vnx::write(out, value.compiler, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.build_flags, type_code, type_code->fields[10].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::Binary& value) {

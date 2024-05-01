@@ -30,7 +30,7 @@ namespace mmx {
 namespace vm {
 
 
-static void register_all_types() {
+void register_all_types() {
 }
 
 static struct vnx_static_init {

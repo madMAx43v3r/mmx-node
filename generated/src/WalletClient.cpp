@@ -4,7 +4,6 @@
 #include <mmx/package.hxx>
 #include <mmx/WalletClient.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/FarmerKeys.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
@@ -57,6 +56,8 @@
 #include <mmx/Wallet_get_farmer_keys_return.hxx>
 #include <mmx/Wallet_get_history.hxx>
 #include <mmx/Wallet_get_history_return.hxx>
+#include <mmx/Wallet_get_history_memo.hxx>
+#include <mmx/Wallet_get_history_memo_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
 #include <mmx/Wallet_get_mnemonic_seed.hxx>
@@ -125,6 +126,8 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
@@ -548,14 +551,32 @@ void WalletClient::update_cache_async(const uint32_t& index) {
 	vnx_request(_method, true);
 }
 
-std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const int32_t& since, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) {
+std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) {
 	auto _method = ::mmx::Wallet_get_history::create();
 	_method->index = index;
 	_method->since = since;
+	_method->until = until;
+	_method->limit = limit;
 	_method->type = type;
 	_method->currency = currency;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<::mmx::tx_entry_t>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
+}
+
+std::vector<::mmx::tx_entry_t> WalletClient::get_history_memo(const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<::mmx::addr_t>& currency) {
+	auto _method = ::mmx::Wallet_get_history_memo::create();
+	_method->index = index;
+	_method->memo = memo;
+	_method->limit = limit;
+	_method->currency = currency;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_memo_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::tx_entry_t>>();
@@ -957,26 +978,26 @@ std::vector<std::string> WalletClient::get_mnemonic_seed(const uint32_t& index) 
 	}
 }
 
-std::shared_ptr<const ::mmx::FarmerKeys> WalletClient::get_farmer_keys(const uint32_t& index) {
+std::pair<::mmx::skey_t, ::mmx::pubkey_t> WalletClient::get_farmer_keys(const uint32_t& index) {
 	auto _method = ::mmx::Wallet_get_farmer_keys::create();
 	_method->index = index;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_farmer_keys_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::FarmerKeys>>();
+		return _return_value->get_field_by_index(0).to<std::pair<::mmx::skey_t, ::mmx::pubkey_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
 }
 
-std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> WalletClient::get_all_farmer_keys() {
+std::vector<std::pair<::mmx::skey_t, ::mmx::pubkey_t>> WalletClient::get_all_farmer_keys() {
 	auto _method = ::mmx::Wallet_get_all_farmer_keys::create();
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_all_farmer_keys_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<std::shared_ptr<const ::mmx::FarmerKeys>>>();
+		return _return_value->get_field_by_index(0).to<std::vector<std::pair<::mmx::skey_t, ::mmx::pubkey_t>>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}

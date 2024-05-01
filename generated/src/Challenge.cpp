@@ -3,8 +3,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Challenge.hxx>
-#include <mmx/Challenge_calc_hash.hxx>
-#include <mmx/Challenge_calc_hash_return.hxx>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
@@ -161,8 +159,6 @@ std::shared_ptr<vnx::TypeCode> Challenge::static_create_type_code() {
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Challenge);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Challenge>(); };
-	type_code->methods.resize(1);
-	type_code->methods[0] = ::mmx::Challenge_calc_hash::static_get_type_code();
 	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
@@ -200,12 +196,6 @@ std::shared_ptr<vnx::TypeCode> Challenge::static_create_type_code() {
 
 std::shared_ptr<vnx::Value> Challenge::vnx_call_switch(std::shared_ptr<const vnx::Value> _method) {
 	switch(_method->get_type_hash()) {
-		case 0xfd336f4fe0150c72ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Challenge_calc_hash>(_method);
-			auto _return_value = ::mmx::Challenge_calc_hash_return::create();
-			_return_value->_ret_0 = calc_hash();
-			return _return_value;
-		}
 	}
 	return nullptr;
 }
@@ -246,7 +236,7 @@ void read(TypeInput& in, ::mmx::Challenge& value, const TypeCode* type_code, con
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
@@ -280,7 +270,7 @@ void write(TypeOutput& out, const ::mmx::Challenge& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(16);
+	auto* const _buf = out.write(16);
 	vnx::write_value(_buf + 0, value.height);
 	vnx::write_value(_buf + 4, value.space_diff);
 	vnx::write_value(_buf + 12, value.max_delay);

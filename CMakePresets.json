@@ -24,15 +24,13 @@
                 "CMAKE_LIBRARY_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/!bin",
                 "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/build/${presetName}/!bin",
 
-                "MMX_WIN_PACK": "$env{MMX_WIN_PACK}",
-                "MMX_GIGAHORSE": "$env{MMX_GIGAHORSE}"
+                "MMX_WIN_PACK": "$env{MMX_WIN_PACK}"
             }
         },
 
         {
-            "name": "windows-release",
-            "displayName": "Windows x64 Release",
-            "description": "Sets Visual Studio generator, build directory",
+            "name": "windows-default",
+            "displayName": "Windows x64",
             "inherits": "windows-base",
             "cacheVariables": {
                 "MMX_VERSION": "$env{MMX_VERSION}"
@@ -40,45 +38,15 @@
             "warnings": {
                 "dev": false
             }
-        },
-
-        {
-            "name": "gha-windows-release",
-            "displayName": "GHA Windows x64 Release",
-            "description": "Sets Visual Studio generator, build directory",
-            "inherits": "windows-release",
-            "environment": {
-                "VCPKG_ROOT": "./vcpkg"
-            }
-        },        
-
-        {
-            "name": "windows-debug",
-            "displayName": "Windows x64 Debug",
-            "description": "Sets Visual Studio generator, build directory",
-            "inherits": "windows-base",
-            "cacheVariables": {
-                "MMX_VERSION": "$env{MMX_VERSION}"
-            }
         }
 
     ],
 
     "buildPresets": [
         {
-            "name": "gha-windows-release",
-            "configurePreset": "gha-windows-release",
+            "name": "windows-default",
+            "configurePreset": "windows-default",
             "configuration": "Release"
-        },
-        {
-            "name": "windows-release",
-            "configurePreset": "windows-release",
-            "configuration": "Release"
-        },
-        {
-            "name": "windows-debug",
-            "configurePreset": "windows-release",
-            "configuration": "Debug"
         }
     ]
 

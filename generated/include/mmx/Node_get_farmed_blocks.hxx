@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Node_get_farmed_blocks_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -14,9 +14,10 @@ namespace mmx {
 class MMX_EXPORT Node_get_farmed_blocks : public ::vnx::Value {
 public:
 	
-	std::vector<::mmx::bls_pubkey_t> farmer_keys;
+	std::vector<::mmx::pubkey_t> farmer_keys;
 	vnx::bool_t full_blocks = 0;
 	uint32_t since = 0;
+	int32_t limit = 100;
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,11 +61,12 @@ public:
 
 template<typename T>
 void Node_get_farmed_blocks::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_farmed_blocks>(3);
+	_visitor.template type_begin<Node_get_farmed_blocks>(4);
 	_visitor.type_field("farmer_keys", 0); _visitor.accept(farmer_keys);
 	_visitor.type_field("full_blocks", 1); _visitor.accept(full_blocks);
 	_visitor.type_field("since", 2); _visitor.accept(since);
-	_visitor.template type_end<Node_get_farmed_blocks>(3);
+	_visitor.type_field("limit", 3); _visitor.accept(limit);
+	_visitor.template type_end<Node_get_farmed_blocks>(4);
 }
 
 

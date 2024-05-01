@@ -7,6 +7,7 @@
 
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -36,9 +37,15 @@ hash_t TokenBase::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
+uint64_t TokenBase::num_bytes(const vnx::bool_t& total) const
+{
+	return (total ? Super::num_bytes() : 0)
+			+ name.size() + symbol.size() + meta_data.size();
+}
+
 uint64_t TokenBase::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	return (name.size() + symbol.size()) * params->min_txfee_byte;
+	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
 }
 
 

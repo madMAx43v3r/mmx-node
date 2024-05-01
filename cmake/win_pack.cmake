@@ -15,7 +15,7 @@ macro(get_all_targets_recursive targets dir)
     list(APPEND ${targets} ${current_targets})
 endmacro()
 
-set(NETWORK "testnet10")
+set(NETWORK "testnet11")
 get_all_targets(all_targets)
 set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_ENVIRONMENT "MMX_HOME=$(USERPROFILE)\\.mmx\\\nMMX_DATA=$(USERPROFILE)\\.mmx\\\nNETWORK=${NETWORK}\nMMX_NETWORK=$(USERPROFILE)\\.mmx\\${NETWORK}\\\n")
@@ -47,7 +47,6 @@ if(NOT MMX_VERSION MATCHES "^v([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
 endif()
 
 message(STATUS "MMX_VERSION=${MMX_VERSION}")
-message(STATUS "MMX_GIGAHORSE=${MMX_GIGAHORSE}")
 
 #file(STRINGS "include/mmx/version.h" MMX_VERSION_H REGEX "^#define MMX_VERSION \"[^\"]*\"$")
 string(REGEX REPLACE "^v([0-9]+).*$" "\\1" MMX_VERSION_MAJOR "${MMX_VERSION}")
@@ -65,16 +64,12 @@ set(CPACK_PACKAGE_VERSION_PATCH ${MMX_VERSION_PATCH})
 include(cmake/product_version/generate_product_version.cmake)
 set(MMX_ICON "${CMAKE_CURRENT_SOURCE_DIR}/cmake/mmx.ico")
 
-if ("${MMX_GIGAHORSE}" STREQUAL "TRUE")
-	set(MMX_BUNDLE "MMX Node (Gigahorse)")
-else()
-	set(MMX_BUNDLE "MMX Node (Classic)")
-endif()
+set(MMX_BUNDLE "MMX Node")
 
 list(APPEND APP_FILES
 	mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester
-	mmx_compile
-	mmx_db mmx_vm mmx_iface mmx_modules
+	mmx_compile mmx_postool
+	mmx_db mmx_vm mmx_iface mmx_modules mmx_pos
 	vnx_base vnx_addons url_cpp llhttp
 	vnxpasswd generate_passwd
 	automy_basic_opencl
@@ -135,6 +130,7 @@ install(TARGETS ${TOOL_FILES} RUNTIME DESTINATION ./ COMPONENT tools)
 
 install(FILES 
 			$<TARGET_FILE_DIR:vnx_addons>/zlib1.dll
+			$<TARGET_FILE_DIR:vnx_addons>/zstd.dll
 			$<TARGET_FILE_DIR:automy_basic_opencl>/OpenCL.dll
 			$<TARGET_FILE_DIR:mmx_modules>/miniupnpc.dll
 		DESTINATION ./ COMPONENT applications)
@@ -147,59 +143,17 @@ install(DIRECTORY scripts/win/ DESTINATION ./ COMPONENT applications)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT applications)
 
 
-include(FetchContent)
-FetchContent_Declare(plotter_k32
-URL https://github.com/MMX-World/mmx-plotter/releases/download/1.1.8/chia_plot-1.1.8.exe
-URL_HASH SHA256=EF00C99423CB9980CA0DC59CCE076E12BFE4DBA1ACC99E17FA9CFD163604FF77
-DOWNLOAD_NO_EXTRACT true
+FetchContent_Declare(
+    mmx_cuda_plotter
+    GIT_REPOSITORY https://github.com/madMAx43v3r/mmx-binaries.git
+    GIT_TAG "origin/testnet11"
 )
-FetchContent_MakeAvailable(plotter_k32)
-set (MMX_PLOTTER_K32_PATH ${plotter_k32_SOURCE_DIR}/chia_plot-1.1.8.exe)
+FetchContent_MakeAvailable(mmx_cuda_plotter)
 
-FetchContent_Declare(plotter_k34
-URL https://github.com/MMX-World/mmx-plotter/releases/download/1.1.8/chia_plot_k34-1.1.8.exe
-URL_HASH SHA256=3329661BCE509A08638E99352A9607C3ADEAB11DD4B462895FCBEFDC4F22231F
-DOWNLOAD_NO_EXTRACT true
-)
-FetchContent_MakeAvailable(plotter_k34)
-set (MMX_PLOTTER_K34_PATH ${plotter_k34_SOURCE_DIR}/chia_plot_k34-1.1.8.exe)
+set (MMX_DESTINATION ./)
+set(MMX_CUDA_PLOTTER_PATH ${mmx_cuda_plotter_SOURCE_DIR}/mmx-cuda-plotter/windows)
+install(DIRECTORY ${MMX_CUDA_PLOTTER_PATH}/ DESTINATION ${MMX_DESTINATION} COMPONENT plotters)
 
-FetchContent_Declare(plotter_bladebit
-URL https://github.com/MMX-World/bladebit/releases/download/v2.0.1-mmx/bladebit.exe
-URL_HASH SHA256=6025F777709F52754690C262C9463DB17F8BA5C8757ACE7DB352C103252ACCA5
-DOWNLOAD_NO_EXTRACT true
-)
-FetchContent_MakeAvailable(plotter_bladebit)
-set (PLOTTER_BLADEBIT_PATH ${plotter_bladebit_SOURCE_DIR}/bladebit.exe)
-
-install(FILES ${MMX_PLOTTER_K32_PATH} DESTINATION ./ RENAME mmx_plot.exe COMPONENT plotters)
-install(FILES ${MMX_PLOTTER_K34_PATH} DESTINATION ./ RENAME mmx_plot_k34.exe COMPONENT plotters)
-install(FILES ${PLOTTER_BLADEBIT_PATH} DESTINATION ./ RENAME mmx_bladebit.exe COMPONENT plotters)
-
-if ("${MMX_GIGAHORSE}" STREQUAL "TRUE")
-
-	FetchContent_Declare(
-		chia_gigahorse
-		GIT_REPOSITORY https://github.com/madMAx43v3r/chia-gigahorse.git
-		GIT_TAG a91714d475d6e30b52a61106edee4d2a0669f720
-	)
-	FetchContent_MakeAvailable(chia_gigahorse)
-
-	set (GH_DESTINATION ./gigahorse/)
-
-	set(GH_CPU_PLOTTER_PATH ${chia_gigahorse_SOURCE_DIR}/cpu-plotter/windows)
-	install(DIRECTORY ${GH_CPU_PLOTTER_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
-
-	set(GH_CUDA_PLOTTER_PATH ${chia_gigahorse_SOURCE_DIR}/cuda-plotter/windows)
-	install(DIRECTORY ${GH_CUDA_PLOTTER_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
-
-	set(GH_PLOT_SINK_PATH ${chia_gigahorse_SOURCE_DIR}/plot-sink/windows)
-	install(DIRECTORY ${GH_PLOT_SINK_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
-
-	set(GH_CHIAPOS_PATH ${chia_gigahorse_SOURCE_DIR}/chiapos/windows)
-	install(DIRECTORY ${GH_CHIAPOS_PATH}/ DESTINATION ${GH_DESTINATION} COMPONENT plotters)
-
-endif()
 
 set(CPACK_PACKAGE_NAME "MMX Node")
 set(CPACK_PACKAGE_VENDOR "madMAx43v3r")
@@ -207,7 +161,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MMX is a blockchain written from scratch 
 set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE)
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/madMAx43v3r/mmx-node")
 
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "MMX")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "MMX Node")
 
 # Define components and their display names
 set(CPACK_COMPONENTS_ALL applications libraries gui plotters tools)

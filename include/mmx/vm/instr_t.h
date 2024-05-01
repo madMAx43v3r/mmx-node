@@ -50,7 +50,6 @@ enum opcode_e : uint8_t {
 	OP_MAX,			// dst, lhs, rhs
 	OP_SHL,			// dst, src, count
 	OP_SHR,			// dst, src, count
-	OP_SAR,			// dst, src, count
 
 	OP_CMP_EQ = 0x60,	// dst, lhs, rhs
 	OP_CMP_NEQ,			// dst, lhs, rhs
@@ -58,10 +57,6 @@ enum opcode_e : uint8_t {
 	OP_CMP_GT,			// dst, lhs, rhs
 	OP_CMP_LTE,			// dst, lhs, rhs
 	OP_CMP_GTE,			// dst, lhs, rhs
-	OP_CMP_SLT,			// dst, lhs, rhs
-	OP_CMP_SGT,			// dst, lhs, rhs
-	OP_CMP_SLTE,		// dst, lhs, rhs
-	OP_CMP_SGTE,		// dst, lhs, rhs
 
 	OP_TYPE = 0x80,	// dst, addr
 	OP_SIZE,		// dst, addr
@@ -78,12 +73,12 @@ enum opcode_e : uint8_t {
 	OP_VERIFY,		// dst, msg, pubkey, signature
 
 	OP_LOG = 0xC0,	// level, message
-	OP_SEND,		// address, amount, currency
-	OP_MINT,		// address, amount
+	OP_SEND,		// address, amount, currency, memo
+	OP_MINT,		// address, amount, memo
 	OP_EVENT,		// name, data
 	OP_FAIL,		// message, code
-	OP_RCALL,		// name, method, stack_ptr, nargs
-	OP_DEPOSIT,		// TODO: name, method, stack_ptr, nargs
+	OP_RCALL,		// name, method, stack_ptr, nargs (remote call)
+	OP_CREAD,		// dst, address, field (contract read)
 
 };
 
@@ -100,6 +95,8 @@ enum convtype_e : uint32_t {
 	CONVTYPE_BINARY,
 	CONVTYPE_ARRAY,
 	CONVTYPE_ADDRESS,
+	CONVTYPE_BIG_ENDIAN,
+	CONVTYPE_LITTLE_ENDIAN,
 
 };
 
@@ -131,7 +128,7 @@ struct opcode_info_t {
 
 const opcode_info_t& get_opcode_info(opcode_e code);
 
-std::pair<std::unique_ptr<uint8_t[]>, size_t> serialize(const std::vector<instr_t>& code);
+std::vector<uint8_t> serialize(const std::vector<instr_t>& code);
 
 size_t deserialize(std::vector<instr_t>& code, const void* data, const size_t length);
 

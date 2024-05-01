@@ -10,7 +10,6 @@
 
 #include <mmx/Transaction.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -38,6 +37,7 @@ public:
 		if(seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
 		}
+		create_farmer_key();
 	}
 
 	ECDSA_Wallet(	const hash_t& seed_value, const std::vector<addr_t>& addresses,
@@ -47,6 +47,8 @@ public:
 		if(seed_value == hash_t()) {
 			throw std::logic_error("seed == zero");
 		}
+		create_farmer_key();
+
 		size_t i = 0;
 		for(const auto& addr : addresses) {
 			index_map[addr] = i++;
@@ -87,7 +89,7 @@ public:
 			first_addr = addresses[0];
 		}
 		const auto master = pbkdf2_hmac_sha512(seed_value, passphrase, PBKDF2_ITERS);
-		const auto chain = hmac_sha512_n(master.first, master.second, 11337);	// TODO(mainnet): use params.port
+		const auto chain = hmac_sha512_n(master.first, master.second, 11337);
 		const auto account = hmac_sha512_n(chain.first, chain.second, config.index);
 
 		for(size_t i = 0; i < config.num_addresses; ++i)
@@ -126,6 +128,11 @@ public:
 	pubkey_t get_pubkey(const uint32_t index) const
 	{
 		return keypairs.at(index).second;
+	}
+
+	std::pair<skey_t, pubkey_t> get_farmer_key() const
+	{
+		return farmer_key;
 	}
 
 	addr_t get_address(const uint32_t index) const
@@ -199,7 +206,7 @@ public:
 	{
 		if(tx->sender) {
 			const auto key = std::make_pair(*tx->sender, addr_t());
-			const auto static_fee = uint64_t(tx->static_cost) * tx->fee_ratio / 1024;
+			const auto static_fee = cost_to_fee<std::logic_error>(tx->static_cost, tx->fee_ratio);
 			clamped_sub_assign(balance_map[key], static_fee);
 			pending_map[tx->id][key] += static_fee;
 		}
@@ -310,18 +317,31 @@ public:
 			}
 		}
 		try {
+			tx->network = params->network;
 			tx->finalize();
 
 			std::unordered_map<addr_t, uint32_t> solution_map;
 
+			auto sign_msg_ex = [this, tx, &options, &solution_map](const addr_t& owner) -> uint16_t
+			{
+				auto iter = solution_map.find(owner);
+				if(iter != solution_map.end()) {
+					return iter->second;
+				}
+				if(auto sol = sign_msg(owner, tx->id, options))
+				{
+					const auto index = tx->solutions.size();
+					solution_map[owner] = index;
+					tx->solutions.push_back(sol);
+					return index;
+				}
+				return -1;
+			};
+
 			// sign sender
 			if(tx->sender && tx->solutions.empty())
 			{
-				if(auto sol = sign_msg(*tx->sender, tx->id, options))
-				{
-					solution_map[*tx->sender] = tx->solutions.size();
-					tx->solutions.push_back(sol);
-				}
+				sign_msg_ex(*tx->sender);
 			}
 
 			// sign all inputs
@@ -338,26 +358,13 @@ public:
 						owner = iter->second;
 					}
 				}
-				{
-					auto iter = solution_map.find(owner);
-					if(iter != solution_map.end()) {
-						// re-use solution
-						in.solution = iter->second;
-						continue;
-					}
-				}
-				if(auto sol = sign_msg(owner, tx->id, options))
-				{
-					in.solution = tx->solutions.size();
-					solution_map[owner] = in.solution;
-					tx->solutions.push_back(sol);
-				}
+				in.solution = sign_msg_ex(owner);
 			}
 
 			// sign all operations
 			for(auto& op : tx->execute)
 			{
-				if(op->solution) {
+				if(op->solution != Operation::NO_SOLUTION) {
 					continue;
 				}
 				addr_t owner = op->address;
@@ -374,23 +381,9 @@ public:
 						owner = iter->second;
 					}
 				}
-				if(auto sol = sign_msg(owner, tx->id, options)) {
-					auto copy = vnx::clone(op);
-					copy->solution = sol;
-					op = copy;
-				}
-			}
-
-			// sign NFT mint
-			if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(tx->deploy))
-			{
-				if(!nft->solution) {
-					if(auto sol = sign_msg(nft->creator, tx->id, options)) {
-						auto copy = vnx::clone(nft);
-						copy->solution = sol;
-						tx->deploy = copy;
-					}
-				}
+				auto copy = vnx::clone(op);
+				copy->solution = sign_msg_ex(owner);
+				op = copy;
 			}
 
 			// compute final content hash
@@ -423,7 +416,10 @@ public:
 		return nullptr;
 	}
 
-	void complete(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
+	void complete(
+			std::shared_ptr<Transaction> tx,
+			const spend_options_t& options = {},
+			const std::vector<std::pair<addr_t, uint64_t>>& deposit = {})
 	{
 		if(is_locked()) {
 			throw std::logic_error("wallet is locked");
@@ -457,6 +453,9 @@ public:
 				amount = 0;
 			}
 		}
+		for(const auto& entry : deposit) {
+			missing[entry.first] += entry.second;
+		}
 		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
 		for(const auto& entry : missing) {
 			if(const auto& amount = entry.second) {
@@ -471,6 +470,7 @@ public:
 			if(options.sender) {
 				tx->sender = *options.sender;
 			} else {
+				// pick a sender address
 				addr_t max_address;
 				uint128_t max_amount = 0;
 				for(const auto& entry : balance_map) {
@@ -515,11 +515,21 @@ public:
 	std::unordered_map<hash_t, std::map<std::pair<addr_t, addr_t>, uint128_t>> pending_map;		// [txid => [[address, currency] => balance]]
 
 private:
+	void create_farmer_key()
+	{
+		const auto master = pbkdf2_hmac_sha512(seed_value, hash_t("MMX/farmer_keys"), PBKDF2_ITERS);
+		const auto tmp = hmac_sha512_n(master.first, master.second, 0);
+		farmer_key.first = tmp.first;
+		farmer_key.second = pubkey_t::from_skey(tmp.first);
+	}
+
+private:
 	const hash_t seed_value;
 	std::vector<addr_t> addresses;
 	std::unordered_map<addr_t, size_t> index_map;
 	std::vector<std::pair<skey_t, pubkey_t>> keypairs;
 	std::unordered_map<addr_t, size_t> keypair_map;
+	std::pair<skey_t, pubkey_t> farmer_key;
 
 	const std::shared_ptr<const ChainParams> params;
 

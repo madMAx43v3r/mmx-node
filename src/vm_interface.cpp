@@ -8,7 +8,8 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 #include <mmx/uint128.hpp>
-#include <mmx/addr_t.hpp>
+
+#include <vnx/vnx.h>
 
 
 namespace mmx {
@@ -28,7 +29,7 @@ void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
 	engine->assign(addr, std::make_unique<vm::map_t>());
 	for(const auto& entry : balance) {
-		engine->write_key(addr, vm::uint_t(entry.first.to_uint256()), vm::uint_t(entry.second));
+		engine->write_key(addr, to_binary(entry.first), std::make_unique<vm::uint_t>(entry.second));
 	}
 }
 
@@ -36,7 +37,7 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, con
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
 	engine->assign(addr, std::make_unique<vm::array_t>());
-	engine->push_back(addr, vm::uint_t(currency.to_uint256()));
+	engine->push_back(addr, to_binary(currency));
 	engine->push_back(addr, vm::uint_t(amount));
 }
 
@@ -75,57 +76,83 @@ void load(	std::shared_ptr<vm::Engine> engine,
 	engine->check_gas();
 }
 
+void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr, size_t call_depth);
+
 void copy(	std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src,
-			const uint64_t dst_addr, const uint64_t* dst_key, const vm::var_t* var)
+			const uint64_t dst_addr, const uint64_t* dst_key, const vm::var_t* var, size_t call_depth)
 {
-	std::unique_ptr<vm::var_t> out;
+	if(++call_depth > vm::MAX_COPY_RECURSION) {
+		throw std::runtime_error("copy recursion overflow");
+	}
+	const vm::var_t* out = nullptr;
+	std::unique_ptr<vm::var_t> tmp;
 	if(var) {
 		switch(var->type) {
 			case vm::TYPE_REF: {
 				const auto heap = dst->alloc();
-				copy(dst, src, heap, ((const vm::ref_t*)var)->address);
-				out = std::make_unique<vm::ref_t>(heap);
+				copy(dst, src, heap, ((const vm::ref_t*)var)->address, call_depth);
+				tmp = std::make_unique<vm::ref_t>(heap);
 				break;
 			}
 			case vm::TYPE_ARRAY: {
-				const auto array = (const vm::array_t*)var;
-				for(uint64_t i = 0; i < array->size; ++i) {
-					copy(dst, src, dst_addr, &i, src->read_entry(array->address, i));
+				if(dst_key) {
+					throw std::logic_error("cannot assign array here");
 				}
-				out = std::make_unique<vm::array_t>(array->size);
+				const auto array = (const vm::array_t*)var;
+				dst->assign(dst_addr, std::make_unique<vm::array_t>(array->size));
+
+				for(uint64_t i = 0; i < array->size; ++i) {
+					copy(dst, src, dst_addr, &i, src->read_entry(array->address, i), call_depth);
+				}
 				break;
 			}
 			case vm::TYPE_MAP: {
+				if(dst_key) {
+					throw std::logic_error("cannot assign map here");
+				}
 				const auto map = (const vm::map_t*)var;
+				if(map->flags & FLAG_STORED) {
+					throw std::logic_error("cannot copy map from storage at " + to_hex(map->address));
+				}
+				dst->assign(dst_addr, std::make_unique<vm::map_t>());
+
 				for(const auto& entry : src->find_entries(map->address)) {
 					const auto key = dst->lookup(src->read(entry.first), false);
-					copy(dst, src, dst_addr, &key, entry.second);
+					copy(dst, src, dst_addr, &key, entry.second, call_depth);
 				}
-				out = std::make_unique<vm::map_t>();
 				break;
 			}
 			default:
-				out = clone(var);
+				out = var;
 		}
 	}
 	if(!out) {
-		out = std::make_unique<vm::var_t>();
+		out = tmp.get();
 	}
-	if(dst_key) {
-		dst->assign_entry(dst_addr, *dst_key, std::move(out));
-	} else {
-		dst->assign(dst_addr, std::move(out));
+	if(out) {
+		if(dst_key) {
+			dst->write_entry(dst_addr, *dst_key, *out);
+		} else {
+			dst->write(dst_addr, *out);
+		}
 	}
 	dst->check_gas();
 }
 
+void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr, size_t call_depth)
+{
+	copy(dst, src, dst_addr, nullptr, src->read(src_addr), call_depth);
+}
+
 void copy(std::shared_ptr<vm::Engine> dst, std::shared_ptr<vm::Engine> src, const uint64_t dst_addr, const uint64_t src_addr)
 {
-	copy(dst, src, dst_addr, nullptr, src->read(src_addr));
+	copy(dst, src, dst_addr, src_addr, 0);
 }
 
 class AssignTo : public vnx::Visitor {
 public:
+	// Note: This class is consensus critical.
+
 	std::shared_ptr<vm::Engine> engine;
 
 	AssignTo(std::shared_ptr<vm::Engine> engine, const uint64_t dst)
@@ -137,26 +164,11 @@ public:
 	}
 
 	void visit_null() override {
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(vm::var_t(), false);
-		} else if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, vm::var_t());
-		} else {
-			engine->write(frame.dst, vm::var_t());
-		}
+		handle(std::make_unique<vm::var_t>());
 	}
 
 	void visit(const bool& value) override {
-		const auto var = vm::var_t(value ? vm::TYPE_TRUE : vm::TYPE_FALSE);
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(var, false);
-		} else if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, var);
-		} else {
-			engine->write(frame.dst, var);
-		}
+		handle(std::make_unique<vm::var_t>(value ? vm::TYPE_TRUE : vm::TYPE_FALSE));
 	}
 
 	void visit(const uint8_t& value) override {
@@ -173,47 +185,47 @@ public:
 	}
 
 	void visit(const int8_t& value) override {
-		visit(uint256_t(value));
+		if(value < 0) {
+			throw std::logic_error("negative values not supported");
+		}
+		visit(uint64_t(value));
 	}
 	void visit(const int16_t& value) override {
-		visit(uint256_t(value));
+		if(value < 0) {
+			throw std::logic_error("negative values not supported");
+		}
+		visit(uint64_t(value));
 	}
 	void visit(const int32_t& value) override {
-		visit(uint256_t(value));
+		if(value < 0) {
+			throw std::logic_error("negative values not supported");
+		}
+		visit(uint64_t(value));
 	}
 	void visit(const int64_t& value) override {
-		visit(uint256_t(value));
+		if(value < 0) {
+			throw std::logic_error("negative values not supported");
+		}
+		visit(uint64_t(value));
 	}
 
 	void visit(const vnx::float32_t& value) override {
-		visit(uint256_t(int64_t(value)));
+		throw std::logic_error("type float not supported");
 	}
 	void visit(const vnx::float64_t& value) override {
-		visit(uint256_t(int64_t(value)));
+		throw std::logic_error("type double not supported");
 	}
 
 	void visit(const std::string& value) override {
-		auto var = vm::binary_t::alloc(value);
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(var.get(), false);
-		} else if(frame.key) {
-			engine->assign_entry(frame.dst, *frame.key, std::move(var));
-		} else {
-			engine->assign(frame.dst, std::move(var));
-		}
+		handle(vm::binary_t::alloc(value));
+	}
+
+	void visit(const uint8_t* data, const size_t length) override {
+		handle(vm::binary_t::alloc(data, length));
 	}
 
 	void visit(const uint256_t& value) {
-		const auto var = vm::uint_t(value);
-		auto& frame = stack.back();
-		if(frame.lookup) {
-			frame.key = engine->lookup(var, false);
-		} else if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, var);
-		} else {
-			engine->write(frame.dst, var);
-		}
+		handle(std::make_unique<vm::uint_t>(value));
 	}
 
 	void list_begin(size_t size) override {
@@ -227,15 +239,7 @@ public:
 	void list_end(size_t size) override {
 		const auto addr = stack.back().dst;
 		stack.pop_back();
-		const auto& frame = stack.back();
-		if(frame.lookup) {
-			throw std::logic_error("key type not supported");
-		}
-		if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, vm::ref_t(addr));
-		} else {
-			engine->write(frame.dst, vm::ref_t(addr));
-		}
+		handle(std::make_unique<vm::ref_t>(addr));
 	}
 
 	void map_begin(size_t size) override {
@@ -252,14 +256,26 @@ public:
 	void map_end(size_t size) override {
 		const auto addr = stack.back().dst;
 		stack.pop_back();
-		const auto& frame = stack.back();
+		handle(std::make_unique<vm::ref_t>(addr));
+	}
+
+private:
+	void handle(std::unique_ptr<var_t> var) {
+		auto& frame = stack.back();
 		if(frame.lookup) {
-			throw std::logic_error("key type not supported");
-		}
-		if(frame.key) {
-			engine->write_entry(frame.dst, *frame.key, vm::ref_t(addr));
+			switch(var->type) {
+				case TYPE_UINT:
+				case TYPE_STRING:
+				case TYPE_BINARY:
+					break;
+				default:
+					throw std::logic_error("invalid key type: " + to_string(var->type));
+			}
+			frame.key = engine->lookup(*var, false);
+		} else if(frame.key) {
+			engine->write_entry(frame.dst, *frame.key, *var);
 		} else {
-			engine->write(frame.dst, vm::ref_t(addr));
+			engine->assign(frame.dst, std::move(var));
 		}
 	}
 
@@ -295,18 +311,15 @@ vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
 				return convert(engine, engine->read(((const vm::ref_t*)var)->address));
 			case vm::TYPE_UINT: {
 				const auto& value = ((const vm::uint_t*)var)->value;
-				if(!value.upper()) {
-					if(!value.lower().upper()) {
-						return vnx::Variant(value.lower().lower());
-					}
-					return vnx::Variant(mmx::uint128(value.lower()));
+				if(value >> 64 == 0) {
+					return vnx::Variant(value.lower().lower());
 				}
-				return vnx::Variant(hash_t::from_bytes(value));
+				return vnx::Variant("0x" + value.str(16));
 			}
 			case vm::TYPE_STRING:
 				return vnx::Variant(((const vm::binary_t*)var)->to_string());
 			case vm::TYPE_BINARY:
-				return vnx::Variant(((const vm::binary_t*)var)->to_hex_string());
+				return vnx::Variant(((const vm::binary_t*)var)->to_vector());
 			case vm::TYPE_ARRAY: {
 				const auto array = (const vm::array_t*)var;
 				std::vector<vnx::Variant> tmp;
@@ -317,9 +330,26 @@ vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
 			}
 			case vm::TYPE_MAP: {
 				const auto map = (const vm::map_t*)var;
+				if(map->flags & FLAG_STORED) {
+					throw std::logic_error("cannot read map from storage at " + to_hex(map->address));
+				}
 				std::map<vnx::Variant, vnx::Variant> tmp;
 				for(const auto& entry : engine->find_entries(map->address)) {
 					tmp[convert(engine, engine->read(entry.first))] = convert(engine, entry.second);
+				}
+				bool is_object = true;
+				for(const auto& entry : tmp) {
+					if(!entry.first.is_string()) {
+						is_object = false;
+						break;
+					}
+				}
+				if(is_object) {
+					vnx::Object obj;
+					for(const auto& entry : tmp) {
+						obj[entry.first.to_string_value()] = entry.second;
+					}
+					return vnx::Variant(obj);
 				}
 				return vnx::Variant(tmp);
 			}
@@ -355,140 +385,6 @@ void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& metho
 		engine->commit();
 	}
 	engine->check_gas();
-}
-
-std::string to_string(const var_t* var)
-{
-	if(!var) {
-		return "nullptr";
-	}
-	switch(var->type) {
-		case TYPE_NIL:
-			return "null";
-		case TYPE_TRUE:
-			return "true";
-		case TYPE_FALSE:
-			return "false";
-		case TYPE_REF:
-			return "<0x" + vnx::to_hex_string(((const ref_t*)var)->address) + ">";
-		case TYPE_UINT: {
-			const auto& value = ((const uint_t*)var)->value;
-			if(value >> 128 == 0) {
-				return value.str(10);
-			}
-			if(value >> 128 == uint128_t(-1)) {
-				return std::to_string(int64_t(uint64_t(value)));
-			}
-			return value.str(10) + " | " + hash_t::from_bytes(value).to_string() + " | " + addr_t(value).to_string();
-		}
-		case TYPE_STRING:
-			return "\"" + ((const binary_t*)var)->to_string() + "\"";
-		case TYPE_BINARY:
-			return "0x" + ((const binary_t*)var)->to_hex_string();
-		case TYPE_ARRAY: {
-			auto array = (const array_t*)var;
-			return "[0x" + vnx::to_hex_string(array->address) + "," + std::to_string(array->size) + "]";
-		}
-		case TYPE_MAP:
-			return "{0x" + vnx::to_hex_string(((const map_t*)var)->address) + "}";
-		default:
-			return "?";
-	}
-}
-
-std::string to_string(const varptr_t& var) {
-	return to_string(var.get());
-}
-
-std::string to_string_value(const var_t* var)
-{
-	if(!var) {
-		return "nullptr";
-	}
-	switch(var->type) {
-		case TYPE_STRING:
-			return ((const binary_t*)var)->to_string();
-		default:
-			return to_string(var);
-	}
-}
-
-std::string to_string_value(const varptr_t& var) {
-	return to_string_value(var.get());
-}
-
-uint64_t to_ref(const var_t* var)
-{
-	if(!var) {
-		return 0;
-	}
-	switch(var->type) {
-		case TYPE_REF:
-			return ((const ref_t*)var)->address;
-		case TYPE_ARRAY:
-			return ((const array_t*)var)->address;
-		case TYPE_MAP:
-			return ((const map_t*)var)->address;
-		default:
-			return 0;
-	}
-}
-
-uint64_t to_ref(const varptr_t& var) {
-	return to_ref(var.get());
-}
-
-uint256_t to_uint(const var_t* var)
-{
-	if(!var) {
-		return 0;
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return ((const uint_t*)var)->value;
-		default:
-			return 0;
-	}
-}
-
-uint256_t to_uint(const varptr_t& var) {
-	return to_uint(var.get());
-}
-
-hash_t to_hash(const var_t* var)
-{
-	if(!var) {
-		return hash_t();
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return hash_t::from_bytes(((const uint_t*)var)->value);
-		default:
-			return hash_t();
-	}
-}
-
-hash_t to_hash(const varptr_t& var) {
-	return to_hash(var.get());
-}
-
-addr_t to_addr(const var_t* var)
-{
-	if(!var) {
-		return addr_t();
-	}
-	switch(var->type) {
-		case TYPE_UINT:
-			return addr_t(((const uint_t*)var)->value);
-		case TYPE_STRING:
-			return addr_t(((const binary_t*)var)->to_string());
-		default:
-			return addr_t();
-	}
-}
-
-addr_t to_addr(const varptr_t& var) {
-	return to_addr(var.get());
 }
 
 void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, const vnx::optional<std::string>& method)

@@ -14,11 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VCPKG_COMMIT_ID: "53bef8994c541b6561884a8395ea35715ece75db"
-  CMAKE_BUILD_PRESET: "gha-windows-release"
+  CMAKE_BUILD_PRESET: "windows-default"
   MMX_VERSION: ${{ github.ref_name }}
   MMX_WIN_PACK: "TRUE"
-  MMX_GIGAHORSE: "FALSE"
   
   MMX_TELEGRAM_TOKEN: ${{ secrets.MMX_TELEGRAM_TOKEN }} 
   MMX_TELEGRAM_TO_1: ${{ secrets.MMX_TELEGRAM_TO_1 }}
@@ -37,8 +35,6 @@ jobs:
 
       - name: Restore artifacts, or setup vcpkg (do not install any package)
         uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT_ID }}
 
       - name: Run CMake consuming CMakePreset.json and vcpkg.json by mean of vcpkg.
         uses: lukka/run-cmake@v10

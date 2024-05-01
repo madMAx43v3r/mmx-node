@@ -5,6 +5,7 @@ struct method_t {
 	string name;
 	string info;
 	
+	// TODO: bool is_auto;	// tx fee paid by contract (user = farmer)
 	bool is_const;
 	bool is_public;
 	bool is_payable;

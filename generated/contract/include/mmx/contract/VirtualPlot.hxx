@@ -5,10 +5,12 @@
 #define INCLUDE_mmx_contract_VirtualPlot_HXX_
 
 #include <mmx/contract/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/pubkey_t.hpp>
+#include <vnx/Variant.hpp>
 
 
 namespace mmx {
@@ -17,7 +19,7 @@ namespace contract {
 class MMX_CONTRACT_EXPORT VirtualPlot : public ::mmx::contract::Executable {
 public:
 	
-	::mmx::bls_pubkey_t farmer_key;
+	::mmx::pubkey_t farmer_key;
 	vnx::optional<::mmx::addr_t> reward_address;
 	
 	typedef ::mmx::contract::Executable Super;
@@ -35,6 +37,9 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
+	virtual uint64_t num_bytes(const vnx::bool_t& total = true) const override;
+	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual ::vnx::Variant read_field(const std::string& name = "") const override;
 	
 	static std::shared_ptr<VirtualPlot> create();
 	std::shared_ptr<vnx::Value> clone() const override;

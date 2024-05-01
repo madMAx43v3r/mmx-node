@@ -6,7 +6,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/FarmerKeys.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/account_t.hxx>
@@ -15,6 +14,8 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
@@ -106,7 +107,8 @@ protected:
 	virtual void release_all() = 0;
 	virtual void reset_cache(const uint32_t& index) = 0;
 	virtual void update_cache(const uint32_t& index) const = 0;
-	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const int32_t& since, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history_memo(const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<::mmx::addr_t>& currency) const = 0;
 	virtual std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::balance_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
@@ -136,8 +138,8 @@ protected:
 	virtual void rem_token(const ::mmx::addr_t& address) = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;
 	virtual std::vector<std::string> get_mnemonic_seed(const uint32_t& index) const = 0;
-	virtual std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index) const = 0;
-	virtual std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> get_all_farmer_keys() const = 0;
+	virtual std::pair<::mmx::skey_t, ::mmx::pubkey_t> get_farmer_keys(const uint32_t& index) const = 0;
+	virtual std::vector<std::pair<::mmx::skey_t, ::mmx::pubkey_t>> get_all_farmer_keys() const = 0;
 	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;
 	void http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const;
 	virtual void http_request_chunk_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& _request_id) const = 0;

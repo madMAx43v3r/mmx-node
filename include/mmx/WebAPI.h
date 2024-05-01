@@ -68,7 +68,7 @@ private:
 
 	void render_balances(const vnx::request_id_t& request_id, const vnx::optional<addr_t>& currency, const std::map<addr_t, balance_t>& balances) const;
 
-	void render_history(const vnx::request_id_t& request_id, const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const;
+	void render_history(const vnx::request_id_t& request_id, std::vector<tx_entry_t> history) const;
 
 	void render_tx_history(const vnx::request_id_t& request_id, const std::vector<tx_log_entry_t>& history) const;
 
@@ -76,6 +76,9 @@ private:
 
 	void get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
 						const std::function<void(std::shared_ptr<RenderContext>)>& callback) const;
+
+	void resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
+							const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const;
 
 	void respond(const vnx::request_id_t& request_id, const vnx::Variant& value) const;
 

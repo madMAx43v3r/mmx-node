@@ -6,7 +6,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ChainParams.hxx>
-#include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
@@ -16,10 +15,11 @@ namespace mmx {
 
 class MMX_EXPORT Operation : public ::vnx::Value {
 public:
+	static const uint16_t NO_SOLUTION = -1;
 	
 	uint32_t version = 0;
 	::mmx::addr_t address;
-	std::shared_ptr<const ::mmx::Solution> solution;
+	uint16_t solution = -1;
 	
 	typedef ::vnx::Value Super;
 	

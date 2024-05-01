@@ -15,7 +15,9 @@ class MMX_EXPORT Node_get_history : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
-	int32_t since = 0;
+	uint32_t since = 0;
+	uint32_t until = -1;
+	int32_t limit = -1;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,10 +61,12 @@ public:
 
 template<typename T>
 void Node_get_history::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_history>(2);
+	_visitor.template type_begin<Node_get_history>(4);
 	_visitor.type_field("addresses", 0); _visitor.accept(addresses);
 	_visitor.type_field("since", 1); _visitor.accept(since);
-	_visitor.template type_end<Node_get_history>(2);
+	_visitor.type_field("until", 2); _visitor.accept(until);
+	_visitor.type_field("limit", 3); _visitor.accept(limit);
+	_visitor.template type_end<Node_get_history>(4);
 }
 
 

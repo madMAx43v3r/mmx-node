@@ -11,7 +11,6 @@
 #include <mmx/FarmerClient.hxx>
 #include <mmx/HarvesterClient.hxx>
 #include <mmx/Contract.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
@@ -52,7 +51,7 @@ std::shared_ptr<const mmx::contract::TokenBase> get_token(mmx::NodeClient& node,
 	return token;
 }
 
-void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
+void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
 {
 	for(const auto& entry : history) {
 		std::cout << "[" << entry.height << "] ";
@@ -67,14 +66,20 @@ void show_history(const std::vector<mmx::tx_entry_t>& history, mmx::NodeClient& 
 			default: std::cout << "????    "; break;
 		}
 		const auto contract = get_contract(node, entry.contract);
-		if(auto nft = std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-			std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
-		} else {
-			const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
-			const auto decimals = token ? token->decimals : params->decimals;
-			std::cout << to_value_128(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
-					<< " (" << entry.amount << ") " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+		if(auto exe = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+			if(exe->binary == params->nft_binary) {
+				std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+				continue;
+			}
 		}
+		const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
+		const auto decimals = token ? token->decimals : params->decimals;
+		std::cout << to_value_128(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
+				<< " (" << entry.amount << ") " << arrow << " " << entry.address << " TX(" << entry.txid << ")";
+		if(entry.memo) {
+			std::cout << " M(" << *entry.memo << ")";
+		}
+		std::cout << std::endl;
 	}
 }
 
@@ -107,7 +112,7 @@ int main(int argc, char** argv)
 	options["k"] = "offset";
 	options["a"] = "amount";
 	options["b"] = "ask-amount";
-	options["m"] = "count";
+	options["m"] = "memo";
 	options["s"] = "source";
 	options["t"] = "target";
 	options["x"] = "contract";
@@ -115,6 +120,7 @@ int main(int argc, char** argv)
 	options["y"] = "yes";
 	options["r"] = "fee-ratio";
 	options["l"] = "gas-limit";
+	options["N"] = "limit";
 	options["node"] = "address";
 	options["file"] = "path";
 	options["index"] = "0..?";
@@ -144,13 +150,14 @@ int main(int argc, char** argv)
 	std::string ask_currency_addr;
 	std::string user = "mmx-admin";
 	std::string passwd;
+	vnx::optional<std::string> memo;
 	int64_t index = 0;
 	int64_t offset = 0;
-	int64_t num_count = 0;
+	int32_t limit = -1;
 	mmx::fixed128 amount;
 	mmx::fixed128 ask_amount;
 	double fee_ratio = 1;
-	double gas_limit = 1;
+	double gas_limit = 5;
 	double min_amount = 0.95;
 	bool pre_accept = false;
 	vnx::read_config("$1", module);
@@ -161,7 +168,6 @@ int main(int argc, char** argv)
 	vnx::read_config("offset", offset);
 	const auto have_amount = vnx::read_config("amount", amount);
 	const auto have_ask_amount = vnx::read_config("ask-amount", ask_amount);
-	vnx::read_config("count", num_count);
 	vnx::read_config("source", source_addr);
 	vnx::read_config("target", target_addr);
 	vnx::read_config("contract", contract_addr);
@@ -171,6 +177,8 @@ int main(int argc, char** argv)
 	vnx::read_config("min-amount", min_amount);
 	vnx::read_config("user", user);
 	vnx::read_config("passwd", passwd);
+	vnx::read_config("memo", memo);
+	vnx::read_config("limit", limit);
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
@@ -188,6 +196,7 @@ int main(int argc, char** argv)
 	mmx::spend_options_t spend_options;
 	spend_options.fee_ratio = fee_ratio * 1024;
 	spend_options.max_extra_cost = mmx::to_amount(gas_limit / fee_ratio, params);
+	spend_options.memo = memo;
 
 	mmx::NodeClient node("Node");
 
@@ -268,6 +277,12 @@ int main(int argc, char** argv)
 					{
 						const auto& balance = entry.second;
 						const auto contract = get_contract(node, entry.first);
+						if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+							if(exec->binary == params->nft_binary) {
+								nfts.push_back(entry.first);
+								continue;
+							}
+						}
 						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
 							std::cout << "Balance: " << to_value_128(balance.total, token->decimals)
 									<< " " << token->symbol << (balance.is_validated ? "" : "?")
@@ -278,9 +293,6 @@ int main(int argc, char** argv)
 							}
 							std::cout << std::endl;
 							is_empty = false;
-						}
-						else if(std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
-							nfts.push_back(entry.first);
 						}
 					}
 					if(is_empty) {
@@ -374,12 +386,8 @@ int main(int argc, char** argv)
 			}
 			else if(command == "keys")
 			{
-				if(auto keys = wallet.get_farmer_keys(index)) {
-					std::cout << "Farmer Public Key: " << keys->farmer_public_key << std::endl;
-					std::cout << "Pool Public Key:   " << keys->pool_public_key << std::endl;
-				} else {
-					vnx::log_error() << "Got no wallet!";
-				}
+				const auto keys = wallet.get_farmer_keys(index);
+				std::cout << "Farmer Public Key: " << keys.second << std::endl;
 			}
 			else if(command == "get")
 			{
@@ -492,7 +500,7 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo)}, nullptr, spend_options);
+				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo), vnx::Variant(memo)}, nullptr, spend_options);
 				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
@@ -863,10 +871,10 @@ int main(int argc, char** argv)
 			}
 			else if(command == "log")
 			{
-				int64_t since = 0;
+				int32_t since = 0;
 				vnx::read_config("$3", since);
 
-				show_history(wallet.get_history(index, since), node, params);
+				show_history(wallet.get_history(index, since, -1, limit), node, params);
 			}
 			else if(command == "lock")
 			{
@@ -895,7 +903,7 @@ int main(int argc, char** argv)
 				mmx::KeyFile wallet;
 				if(seed_str.empty()) {
 					if(seed_words.empty()) {
-						wallet.seed_value = mmx::hash_t::random();
+						wallet.seed_value = mmx::hash_t::secure_random();
 					} else {
 						wallet.seed_value = mmx::mnemonic::words_to_seed(seed_words);
 					}
@@ -943,8 +951,9 @@ int main(int argc, char** argv)
 				}
 				for(const auto& entry : node.get_total_balances({address}))
 				{
-					const auto contract = get_contract(node, entry.first);
-					if(!std::dynamic_pointer_cast<const mmx::contract::NFT>(contract)) {
+					auto contract = get_contract(node, entry.first);
+					auto exe = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract);
+					if(!exe || exe->binary != params->nft_binary) {
 						const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 						const auto decimals = token ? token->decimals : params->decimals;
 						std::cout << "Balance: " << to_value_128(entry.second, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
@@ -1004,10 +1013,9 @@ int main(int argc, char** argv)
 					std::cout << height;
 					std::cout << ", " << vnx::to_string_value(peer.type) << " (" << peer.version / 100 << "." << peer.version % 100 << ")";
 					std::cout << ", " << peer.bytes_recv / 1024 / 1024 << " MB recv";
-					std::cout << ", " << peer.bytes_send / 1024 / 1024 << " MB sent";
+					std::cout << ", " << peer.bytes_send / 1024 / 1024 << " MB sent (" << float(peer.compression_ratio) << ")";
 					std::cout << ", since " << (peer.connect_time_ms / 60000) << " min";
 					std::cout << ", " << peer.ping_ms << " ms ping";
-					std::cout << ", " << peer.credits << " credits";
 					std::cout << ", " << int64_t(1e3 * peer.pending_cost) / 1e3 << " pending";
 					std::cout << ", " << (peer.recv_timeout_ms / 100) / 10. << " sec timeout";
 					if(peer.is_outbound) {
@@ -1456,16 +1464,17 @@ int main(int argc, char** argv)
 				if(info->harvester) {
 					std::cout << "[" << *info->harvester << "]" << std::endl;
 				}
-				std::cout << "Physical size: " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
+				std::cout << "Physical size:  " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
+				std::cout << "Effective size: " << info->total_bytes_effective / pow(1000, 4) << " TBe" << std::endl;
 				const auto virtual_bytes = mmx::calc_virtual_plot_size(params, info->total_balance);
-				std::cout << "Virtual size:  " << info->total_balance / pow(10, params->decimals) << " MMX ("
-						<< virtual_bytes / pow(1000, 4) << " TB)" << std::endl;
-				std::cout << "Total size:    " << (info->total_bytes + virtual_bytes) / pow(1000, 4) << " TB" << std::endl;
+				std::cout << "Virtual size:   " << info->total_balance / pow(10, params->decimals) << " MMX ("
+						<< virtual_bytes / pow(1000, 4) << " TBe)" << std::endl;
+				std::cout << "Total size:     " << (info->total_bytes_effective + virtual_bytes) / pow(1000, 4) << " TBe" << std::endl;
 				for(const auto& entry : info->plot_count) {
 					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
 				}
 				for(const auto& entry : info->harvester_bytes) {
-					std::cout << "[" << entry.first << "] " << entry.second / pow(1000, 4) << " TB" << std::endl;
+					std::cout << "[" << entry.first << "] " << entry.second.first / pow(1000, 4) << " TB, " << entry.second.second / pow(1000, 4) << " TBe" << std::endl;
 				}
 			}
 			else if(command == "reload")

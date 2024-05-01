@@ -22,6 +22,8 @@ namespace mmx {
 template<size_t N>
 class bytes_t {
 public:
+	static constexpr size_t size_ = N;
+
 	std::array<uint8_t, N> bytes = {};
 
 	bytes_t() = default;
@@ -49,6 +51,19 @@ public:
 	std::vector<uint8_t> to_vector() const;
 
 	void from_string(const std::string& str);
+
+	template<typename T>
+	T to_uint(const bool big_endian = false) const;
+
+	template<typename T>
+	bytes_t<N>& from_uint(T value, const bool big_endian = false);
+
+	uint8_t& operator[](size_t i) {
+		return bytes[i];
+	}
+	const uint8_t& operator[](size_t i) const {
+		return bytes[i];
+	}
 
 	bool operator==(const bytes_t& other) const {
 		return bytes == other.bytes;
@@ -115,8 +130,39 @@ bool bytes_t<N>::is_zero() const {
 }
 
 template<size_t N>
+template<typename T>
+T bytes_t<N>::to_uint(const bool big_endian) const
+{
+	T out = 0;
+	for(size_t i = 0; i < N; ++i) {
+		out <<= 8;
+		if(big_endian) {
+			out |= bytes[i];
+		} else {
+			out |= bytes[N - i - 1];
+		}
+	}
+	return out;
+}
+
+template<size_t N>
+template<typename T>
+bytes_t<N>& bytes_t<N>::from_uint(T value, const bool big_endian)
+{
+	for(size_t i = 0; i < N; ++i) {
+		if(big_endian) {
+			bytes[N - i - 1] = value & 0xFF;
+		} else {
+			bytes[i] = value & 0xFF;
+		}
+		value >>= 8;
+	}
+	return *this;
+}
+
+template<size_t N>
 std::string bytes_t<N>::to_string() const {
-	return vnx::to_hex_string(bytes.data(), N, false);
+	return vnx::to_hex_string(bytes.data(), bytes.size(), false, false);
 }
 
 template<size_t N>
@@ -245,7 +291,7 @@ void write(std::ostream& out, const mmx::bytes_t<N>& value) {
 
 template<size_t N>
 void accept(vnx::Visitor& visitor, const mmx::bytes_t<N>& value) {
-	vnx::accept(visitor, value.to_string());
+	visitor.visit(value.data(), value.size());
 }
 
 } // vnx

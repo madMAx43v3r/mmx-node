@@ -11,6 +11,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/vm/var_t.h>
+#include <mmx/vm/varptr_t.hpp>
 
 #include <memory>
 
@@ -33,14 +34,35 @@ public:
 	virtual uint64_t lookup(const addr_t& contract, const var_t& value) const = 0;
 
 
-	virtual void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) {}
+	void write(const addr_t& contract, const uint64_t dst, const varptr_t& value) {
+		if(value) {
+			write(contract, dst, *value);
+		}
+	}
+
+	void write(const addr_t& contract, const uint64_t dst, const uint64_t key, const varptr_t& value) {
+		if(value) {
+			write(contract, dst, key, *value);
+		}
+	}
+
+	uint64_t lookup(const addr_t& contract, const varptr_t& value) const {
+		if(value) {
+			return lookup(contract, *value);
+		}
+		return 0;
+	}
+
+	virtual void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) {
+		throw std::logic_error("not implemented");
+	}
 
 	virtual std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const {
-		return nullptr;
+		throw std::logic_error("not implemented");
 	}
 
 	virtual std::map<addr_t, uint128> get_balances(const addr_t& contract) const {
-		return std::map<addr_t, uint128>();
+		throw std::logic_error("not implemented");
 	}
 
 

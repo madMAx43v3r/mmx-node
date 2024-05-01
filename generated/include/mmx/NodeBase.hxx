@@ -16,11 +16,11 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
-#include <mmx/bls_pubkey_t.hpp>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -47,8 +47,8 @@ public:
 	::vnx::TopicPtr input_proof = "network.proof";
 	::vnx::TopicPtr input_blocks = "network.blocks";
 	::vnx::TopicPtr input_transactions = "network.transactions";
-	::vnx::TopicPtr input_timelord_vdfs = "timelord.proofs";
-	::vnx::TopicPtr input_harvester_proof = "harvester.proof";
+	::vnx::TopicPtr input_timelord_vdfs = "timelord.proof";
+	::vnx::TopicPtr input_harvester_proof = "farmer.proof";
 	::vnx::TopicPtr output_verified_vdfs = "node.verified_vdfs";
 	::vnx::TopicPtr output_verified_proof = "node.verified_proof";
 	::vnx::TopicPtr output_verified_blocks = "node.verified_blocks";
@@ -71,6 +71,7 @@ public:
 	uint32_t num_sync_retries = 3;
 	uint32_t replay_height = -1;
 	uint32_t num_threads = 24;
+	uint32_t num_db_threads = 8;
 	uint32_t num_vdf_threads = 8;
 	uint32_t vdf_check_divider = 5000;
 	uint32_t vdf_verify_divider = 1;
@@ -78,7 +79,9 @@ public:
 	vnx::bool_t do_sync = true;
 	vnx::bool_t db_replay = false;
 	vnx::bool_t show_warnings = false;
+	vnx::bool_t verify_vdf_cpuopencl = false;
 	vnx::bool_t verify_vdf_rewards = true;
+	vnx::bool_t debug_exec_fails = false;
 	std::string storage_path;
 	std::string database_path = "db/";
 	std::string router_name = "Router";
@@ -145,7 +148,8 @@ protected:
 	virtual std::vector<::mmx::addr_t> get_contracts_owned_by(const std::vector<::mmx::addr_t>& addresses, const vnx::optional<::mmx::hash_t>& type_hash) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending) const = 0;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids) const = 0;
-	virtual std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) const = 0;
+	virtual std::vector<::mmx::tx_entry_t> get_history_memo(const std::vector<::mmx::addr_t>& addresses, const std::string& memo, const int32_t& limit) const = 0;
 	virtual ::mmx::uint128 get_balance(const ::mmx::addr_t& address, const ::mmx::addr_t& currency) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::uint128> get_balances(const ::mmx::addr_t& address) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address) const = 0;
@@ -162,9 +166,9 @@ protected:
 	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage_object(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit) const = 0;
 	virtual ::mmx::address_info_t get_address_info(const ::mmx::addr_t& address) const = 0;
-	virtual std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses, const int32_t& since) const = 0;
+	virtual std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses) const = 0;
-	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::bls_pubkey_t& farmer_key) const = 0;
+	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id, const vnx::optional<::mmx::hash_t>& block_hash) const = 0;
 	virtual ::mmx::offer_data_t get_offer(const ::mmx::addr_t& address) const = 0;
@@ -184,9 +188,9 @@ protected:
 	virtual std::array<::mmx::uint128, 2> get_swap_equivalent_liquidity(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
 	virtual std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual ::mmx::uint128 get_total_supply(const ::mmx::addr_t& currency) const = 0;
-	virtual std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since) const = 0;
-	virtual std::map<::mmx::bls_pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const = 0;
-	virtual uint32_t get_farmed_block_count_for(const std::vector<::mmx::bls_pubkey_t>& farmer_keys, const uint32_t& since) const = 0;
+	virtual std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const = 0;
+	virtual std::map<::mmx::pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const = 0;
+	virtual uint32_t get_farmed_block_count_for(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
 	virtual void revert_sync(const uint32_t& height) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
@@ -205,7 +209,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(40);
+	_visitor.template type_begin<NodeBase>(43);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -234,19 +238,22 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("num_sync_retries", 25); _visitor.accept(num_sync_retries);
 	_visitor.type_field("replay_height", 26); _visitor.accept(replay_height);
 	_visitor.type_field("num_threads", 27); _visitor.accept(num_threads);
-	_visitor.type_field("num_vdf_threads", 28); _visitor.accept(num_vdf_threads);
-	_visitor.type_field("vdf_check_divider", 29); _visitor.accept(vdf_check_divider);
-	_visitor.type_field("vdf_verify_divider", 30); _visitor.accept(vdf_verify_divider);
-	_visitor.type_field("opencl_device", 31); _visitor.accept(opencl_device);
-	_visitor.type_field("do_sync", 32); _visitor.accept(do_sync);
-	_visitor.type_field("db_replay", 33); _visitor.accept(db_replay);
-	_visitor.type_field("show_warnings", 34); _visitor.accept(show_warnings);
-	_visitor.type_field("verify_vdf_rewards", 35); _visitor.accept(verify_vdf_rewards);
-	_visitor.type_field("storage_path", 36); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 37); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 38); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 39); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(40);
+	_visitor.type_field("num_db_threads", 28); _visitor.accept(num_db_threads);
+	_visitor.type_field("num_vdf_threads", 29); _visitor.accept(num_vdf_threads);
+	_visitor.type_field("vdf_check_divider", 30); _visitor.accept(vdf_check_divider);
+	_visitor.type_field("vdf_verify_divider", 31); _visitor.accept(vdf_verify_divider);
+	_visitor.type_field("opencl_device", 32); _visitor.accept(opencl_device);
+	_visitor.type_field("do_sync", 33); _visitor.accept(do_sync);
+	_visitor.type_field("db_replay", 34); _visitor.accept(db_replay);
+	_visitor.type_field("show_warnings", 35); _visitor.accept(show_warnings);
+	_visitor.type_field("verify_vdf_cpuopencl", 36); _visitor.accept(verify_vdf_cpuopencl);
+	_visitor.type_field("verify_vdf_rewards", 37); _visitor.accept(verify_vdf_rewards);
+	_visitor.type_field("debug_exec_fails", 38); _visitor.accept(debug_exec_fails);
+	_visitor.type_field("storage_path", 39); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 40); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 41); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 42); _visitor.accept(timelord_name);
+	_visitor.template type_end<NodeBase>(43);
 }
 
 

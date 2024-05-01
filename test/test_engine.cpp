@@ -17,10 +17,10 @@ using namespace mmx;
 
 int main(int arcv, char** argv)
 {
-	mmx::DataBase db;
+	auto db = std::make_shared<mmx::DataBase>(1);
 //	auto storage = std::make_shared<vm::StorageRAM>();
 	auto backend = std::make_shared<vm::StorageDB>("tmp/", db);
-	db.revert(0);
+	db->revert(0);
 	auto storage = std::make_shared<vm::StorageCache>(backend);
 	{
 		vm::Engine engine(addr_t(), storage, false);
@@ -49,16 +49,16 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_TYPE, 0, vm::MEM_STATIC + 9, vm::MEM_STATIC + 0);
 		code.emplace_back(vm::OP_RET);
 
-		engine.total_gas = 100000;
+		engine.gas_limit = 1000000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
 		engine.commit();
-		std::cout << "Cost: " << engine.total_cost << std::endl;
+		std::cout << "Cost: " << engine.gas_used << std::endl;
 	}
 	storage->commit();
-	db.commit(1);
+	db->commit(1);
 	{
 		vm::Engine engine(addr_t(), storage, false);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
@@ -74,16 +74,16 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_POP_BACK, 0, vm::MEM_STATIC + 18, vm::MEM_STATIC + 1);
 		code.emplace_back(vm::OP_RET);
 
-		engine.total_gas = 10000;
+		engine.gas_limit = 100000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
 		engine.commit();
-		std::cout << "Cost: " << engine.total_cost << std::endl;
+		std::cout << "Cost: " << engine.gas_used << std::endl;
 	}
 	storage->commit();
-	db.commit(2);
+	db->commit(2);
 	{
 		vm::Engine engine(addr_t(), storage, true);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
@@ -101,12 +101,12 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_CLONE, 0, vm::MEM_STATIC + 40, vm::MEM_STATIC + 32);
 		code.emplace_back(vm::OP_RET);
 
-		engine.total_gas = 10000;
+		engine.gas_limit = 100000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
-		std::cout << "Cost: " << engine.total_cost << std::endl;
+		std::cout << "Cost: " << engine.gas_used << std::endl;
 	}
 	{
 		vm::Engine engine(addr_t(), storage, true);
@@ -123,12 +123,12 @@ int main(int arcv, char** argv)
 		code.emplace_back(vm::OP_JUMP, 0, 1);
 		code.emplace_back(vm::OP_RET);
 
-		engine.total_gas = 1000000;
+		engine.gas_limit = 10000000;
 		engine.init();
 		engine.begin(0);
 		engine.run();
 		engine.dump_memory();
-		std::cout << "Cost: " << engine.total_cost << std::endl;
+		std::cout << "Cost: " << engine.gas_used << std::endl;
 	}
 	return 0;
 }

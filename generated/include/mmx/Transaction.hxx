@@ -13,6 +13,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/exec_result_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/tx_index_t.hxx>
 #include <mmx/tx_note_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/txout_t.hxx>
@@ -32,7 +33,7 @@ public:
 	uint32_t max_fee_amount = 0;
 	::mmx::tx_note_e note;
 	uint64_t nonce = 0;
-	vnx::optional<::mmx::hash_t> salt;
+	std::string network;
 	vnx::optional<::mmx::addr_t> sender;
 	std::vector<::mmx::txin_t> inputs;
 	std::vector<::mmx::txout_t> outputs;
@@ -57,7 +58,7 @@ public:
 	
 	virtual void finalize();
 	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
-	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
+	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const vnx::optional<std::string>& memo = nullptr);
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual vnx::bool_t is_signed() const;
@@ -70,6 +71,7 @@ public:
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
 	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_operations() const;
 	virtual std::map<::mmx::addr_t, std::pair<::mmx::uint128, ::mmx::uint128>> get_balance() const;
+	virtual ::mmx::tx_index_t get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, const uint32_t& height = 0, const int64_t& file_offset = 0) const;
 	
 	static std::shared_ptr<Transaction> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -112,7 +114,7 @@ void Transaction::accept_generic(T& _visitor) const {
 	_visitor.type_field("max_fee_amount", 5); _visitor.accept(max_fee_amount);
 	_visitor.type_field("note", 6); _visitor.accept(note);
 	_visitor.type_field("nonce", 7); _visitor.accept(nonce);
-	_visitor.type_field("salt", 8); _visitor.accept(salt);
+	_visitor.type_field("network", 8); _visitor.accept(network);
 	_visitor.type_field("sender", 9); _visitor.accept(sender);
 	_visitor.type_field("inputs", 10); _visitor.accept(inputs);
 	_visitor.type_field("outputs", 11); _visitor.accept(outputs);

@@ -13,11 +13,9 @@
 
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/MultiSig.hxx>
-#include <mmx/contract/NFT.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/operation/Spend.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -71,16 +69,18 @@ public:
 
 	void add_contract(const addr_t& address, std::shared_ptr<const Contract> contract)
 	{
-		if(auto nft = std::dynamic_pointer_cast<const contract::NFT>(contract)) {
-			auto& currency = currency_map[address];
-			currency.is_nft = true;
-			currency.symbol = "NFT";
-		}
-		else if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
+		if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
 			auto& currency = currency_map[address];
 			currency.decimals = token->decimals;
 			currency.symbol = token->symbol;
 			currency.name = token->name;
+		}
+		if(auto exe = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+			if(exe->binary == params->nft_binary) {
+				auto& currency = currency_map[address];
+				currency.is_nft = true;
+				currency.symbol = "NFT";
+			}
 		}
 	}
 
@@ -262,15 +262,7 @@ public:
 		set(value.to_string());
 	}
 
-	void accept(const bls_pubkey_t& value) {
-		set(value.to_string());
-	}
-
 	void accept(const signature_t& value) {
-		set(value.to_string());
-	}
-
-	void accept(const bls_signature_t& value) {
 		set(value.to_string());
 	}
 
@@ -578,9 +570,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Operation> base) {
-		if(auto value = std::dynamic_pointer_cast<const operation::Spend>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
+		if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const operation::Execute>(base)) {
 			set(render(value, context));
@@ -600,9 +590,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Contract> base) {
-		if(auto value = std::dynamic_pointer_cast<const contract::NFT>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
+		if(auto value = std::dynamic_pointer_cast<const contract::Data>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
@@ -779,7 +767,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					}
 					out["reward"] = to_value(block->reward_amount, params->decimals);
 					out["tx_fees"] = block->tx_fees / pow(10, params->decimals);
-					out["base_reward"] = calc_block_reward(params, block->space_diff) / pow(10, params->decimals);
+					out["base_reward"] = block->next_base_reward / pow(10, params->decimals);
 				}
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));
@@ -996,10 +984,9 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 		});
 }
 
-void WebAPI::render_history(const vnx::request_id_t& request_id, const size_t limit, const size_t offset, std::vector<tx_entry_t> history) const
+void WebAPI::render_history(const vnx::request_id_t& request_id, std::vector<tx_entry_t> history) const
 {
 	std::reverse(history.begin(), history.end());
-	history = get_page(history, limit, offset);
 
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& entry : history) {
@@ -1539,10 +1526,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		node->get_farmed_block_count(since,
-			[this, request_id, limit](const std::map<bls_pubkey_t, uint32_t>& result) {
-				std::vector<std::pair<bls_pubkey_t, uint32_t>> data(result.begin(), result.end());
+			[this, request_id, limit](const std::map<pubkey_t, uint32_t>& result) {
+				std::vector<std::pair<pubkey_t, uint32_t>> data(result.begin(), result.end());
 				std::sort(data.begin(), data.end(),
-					[](const std::pair<bls_pubkey_t, uint32_t>& L, std::pair<bls_pubkey_t, uint32_t>& R) -> bool {
+					[](const std::pair<pubkey_t, uint32_t>& L, std::pair<pubkey_t, uint32_t>& R) -> bool {
 						return L.second > R.second;
 					});
 				if(data.size() > limit) {
@@ -1562,12 +1549,12 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/farmer") {
 		const auto iter = query.find("id");
 		if(iter != query.end()) {
-			const auto farmer_key = vnx::from_string<bls_pubkey_t>(iter->second);
+			const auto farmer_key = vnx::from_string<pubkey_t>(iter->second);
 			const auto iter_limit = query.find("limit");
 			const auto iter_since = query.find("since");
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
-			node->get_farmed_blocks({farmer_key}, false, since,
+			node->get_farmed_blocks({farmer_key}, false, since, -1,
 				[this, request_id, farmer_key, limit](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
 					uint64_t total_reward = 0;
 					std::vector<std::shared_ptr<const BlockHeader>> recent;
@@ -1575,6 +1562,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
 						const auto& block = *iter;
 						if(block->reward_addr) {
+							// TODO: use Node::block_reward_map
 							total_reward += block->reward_amount;
 							reward_map[*block->reward_addr] += block->reward_amount;
 						}
@@ -1609,15 +1597,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/address/history") {
 		const auto iter_id = query.find("id");
 		const auto iter_limit = query.find("limit");
-		const auto iter_offset = query.find("offset");
 		const auto iter_since = query.find("since");
+		const auto iter_until = query.find("until");
 		if(iter_id != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
-			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
-			node->get_history({address}, since,
-				std::bind(&WebAPI::render_history, this, request_id, limit, offset, std::placeholders::_1),
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1000;
+			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			const uint32_t until = iter_until != query.end() ? vnx::from_string<int64_t>(iter_until->second) : -1;
+			node->get_history({address}, since, until, limit,
+				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 404, "address/history?id|limit|offset|since");
@@ -1652,12 +1640,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
 			wallet->get_farmer_keys(index,
-				[this, request_id](std::shared_ptr<const FarmerKeys> keys) {
+				[this, request_id](const std::pair<skey_t, pubkey_t>& keys) {
 					vnx::Object out;
-					if(keys) {
-						out["farmer_public_key"] = keys->farmer_public_key.to_string();
-						out["pool_public_key"] = keys->pool_public_key.to_string();
-					}
+					out["farmer_public_key"] = keys.second.to_string();
 					respond(request_id, out);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -1817,15 +1802,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/wallet/history") {
 		const auto iter_index = query.find("index");
 		const auto iter_limit = query.find("limit");
-		const auto iter_offset = query.find("offset");
 		const auto iter_since = query.find("since");
+		const auto iter_until = query.find("until");
 		const auto iter_type = query.find("type");
 		const auto iter_currency = query.find("currency");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
-			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-			const int32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1000;
+			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+			const uint32_t until = iter_until != query.end() ? vnx::from_string<int64_t>(iter_until->second) : -1;
 			vnx::optional<tx_type_e> type;
 			if(iter_type != query.end()) {
 				vnx::from_string_value(iter_type->second, type);
@@ -1834,11 +1819,31 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			if(iter_currency != query.end()) {
 				vnx::from_string_value(iter_currency->second, currency);
 			}
-			wallet->get_history(index, since, type, currency,
-				std::bind(&WebAPI::render_history, this, request_id, limit, offset, std::placeholders::_1),
+			wallet->get_history(index, since, until, limit, type, currency,
+				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/history?index|limit|offset|since|type|currency");
+			respond_status(request_id, 404, "wallet/history?index|limit|since|until|type|currency");
+		}
+	}
+	else if(sub_path == "/wallet/history/memo") {
+		const auto iter_index = query.find("index");
+		const auto iter_memo = query.find("memo");
+		const auto iter_limit = query.find("limit");
+		const auto iter_currency = query.find("currency");
+		if(iter_index != query.end() && iter_memo != query.end()) {
+			const auto memo = iter_memo->second;
+			const uint32_t index = vnx::from_string_value<int64_t>(iter_index->second);
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 1000;
+			vnx::optional<addr_t> currency;
+			if(iter_currency != query.end()) {
+				vnx::from_string_value(iter_currency->second, currency);
+			}
+			wallet->get_history_memo(index, memo, limit, currency,
+				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/history/memo?index|memo|limit|currency");
 		}
 	}
 	else if(sub_path == "/wallet/tx_history") {
@@ -1853,7 +1858,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_tx_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/history?index|limit|offset|since");
+			respond_status(request_id, 404, "wallet/tx_history?index|limit|offset|since");
 		}
 	}
 	else if(sub_path == "/wallet/offers") {
@@ -2306,18 +2311,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/farmer/blocks") {
 		const auto iter_limit = query.find("limit");
 		const auto iter_since = query.find("since");
-		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		farmer->get_farmer_keys(
-				[this, request_id, limit, since](const std::vector<bls_pubkey_t>& farmer_keys) {
-					node->get_farmed_blocks(farmer_keys, false, since,
+				[this, request_id, limit, since](const std::vector<pubkey_t>& farmer_keys) {
+					node->get_farmed_blocks(farmer_keys, false, since, limit,
 						[this, request_id, limit](const std::vector<std::shared_ptr<const BlockHeader>> blocks) {
-							auto data = blocks;
-							std::reverse(data.begin(), data.end());
-							if(data.size() > limit) {
-								data.resize(limit);
-							}
-							respond(request_id, render_value(data, get_context()));
+							respond(request_id, render_value(blocks, get_context()));
 						},
 						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 				},
@@ -2441,17 +2441,72 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
+	else if(sub_path == "/contract/storage") {
+		const auto iter_address = query.find("id");
+		if(iter_address != query.end()) {
+			const auto contract = vnx::from_string_value<addr_t>(iter_address->second);
+			node->read_storage(contract, -1,
+				[this, request_id, contract](const std::map<std::string, vm::varptr_t>& ret) {
+					struct job_t {
+						size_t k = 0;
+						vnx::Object out;
+					};
+					const auto count = ret.size();
+					auto job = std::make_shared<job_t>();
+
+					for(const auto& entry : ret) {
+						const auto key = entry.first;
+						resolve_vm_varptr(contract, entry.second, request_id,
+							[this, request_id, job, count, key](const vnx::Variant& value) {
+								job->out[key] = value;
+								if(++(job->k) == count) {
+									respond(request_id, job->out);
+								}
+							});
+					}
+					if(count == 0) {
+						respond(request_id, job->out);
+					}
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "contract/storage?id");
+		}
+	}
+	else if(sub_path == "/contract/storage/field") {
+		const auto iter_address = query.find("id");
+		const auto iter_name = query.find("name");
+		if(iter_address != query.end() && iter_name != query.end()) {
+			const auto contract = vnx::from_string_value<addr_t>(iter_address->second);
+			const auto name = vnx::from_string_value<std::string>(iter_name->second);
+			node->read_storage_field(contract, name, -1,
+				[this, request_id, contract](const std::pair<vm::varptr_t, uint64_t>& ret) {
+					const auto addr = ret.second;
+					resolve_vm_varptr(contract, ret.first, request_id,
+						[this, request_id, addr](const vnx::Variant& value) {
+							vnx::Object out;
+							out["address"] = addr;
+							out["value"] = value;
+							respond(request_id, out);
+						});
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "contract/storage/field?id|name");
+		}
+	}
 	else {
 		std::vector<std::string> options = {
 			"config/get", "config/set", "farmer", "farmers",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/address_info", "wallet/coins",
-			"wallet/history", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
+			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
 			"farmer/info", "farmer/blocks", "farmer/proofs",
-			"node/offers", "node/offer", "node/trade_history"
+			"node/offers", "node/offer", "node/trade_history",
+			"contract/storage", "contract/storage/field"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
@@ -2480,6 +2535,110 @@ void WebAPI::get_context(	const std::unordered_set<addr_t>& addr_set, const vnx:
 			}
 		},
 		std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+}
+
+void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
+								const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const
+{
+	if(!var) {
+		throw std::logic_error("!var");
+	}
+	switch(var->type) {
+		case vm::TYPE_REF: {
+			node->read_storage_var(contract, vm::to_ref(var), -1,
+					std::bind(&WebAPI::resolve_vm_varptr, this, contract, std::placeholders::_1, request_id, callback),
+					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			break;
+		}
+		case vm::TYPE_ARRAY:
+			node->read_storage_array(contract, vm::to_ref(var), -1,
+				[this, contract, request_id, callback](const std::vector<vm::varptr_t>& ret) {
+					struct job_t {
+						size_t k = 0;
+						std::vector<vnx::Variant> out;
+					};
+					const auto count = ret.size();
+					auto job = std::make_shared<job_t>();
+					job->out.resize(count);
+
+					for(size_t i = 0; i < count; ++i) {
+						resolve_vm_varptr(contract, ret[i], request_id,
+							[this, job, callback, count, i](const vnx::Variant& value) {
+								job->out[i] = value;
+								if(++(job->k) == count) {
+									callback(vnx::Variant(job->out));
+								}
+							});
+					}
+					if(count == 0) {
+						callback(vnx::Variant(job->out));
+					}
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			break;
+		case vm::TYPE_MAP:
+			node->read_storage_map(contract, vm::to_ref(var), -1,
+				[this, contract, request_id, callback](const std::map<vm::varptr_t, vm::varptr_t>& ret) {
+					struct job_t {
+						size_t k = 0;
+						vnx::Object out;
+					};
+					const auto count = ret.size();
+					auto job = std::make_shared<job_t>();
+
+					for(const auto& entry : ret) {
+						std::string key;
+						if(auto var = entry.first) {
+							switch(var->type) {
+								case vm::TYPE_UINT:		key = vm::to_uint(var).str(10); break;
+								case vm::TYPE_STRING:	key = vm::to_string_value(var); break;
+								case vm::TYPE_BINARY:	key = vm::to_string_value_hex(var); break;
+								case vm::TYPE_MAP:
+								case vm::TYPE_ARRAY:
+								case vm::TYPE_REF:		key = std::to_string(vm::to_ref(var)); break;
+								default:				key = vm::to_string(var);
+							}
+						}
+						resolve_vm_varptr(contract, entry.second, request_id,
+							[this, job, callback, count, key](const vnx::Variant& value) {
+								job->out[key] = value;
+								if(++(job->k) == count) {
+									callback(vnx::Variant(job->out));
+								}
+							});
+					}
+					if(count == 0) {
+						callback(vnx::Variant(job->out));
+					}
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			break;
+		case vm::TYPE_UINT: {
+			const auto value = vm::to_uint(var);
+			if(value >> 64) {
+				callback(vnx::Variant(value.str(10)));
+			} else {
+				callback(vnx::Variant(uint64_t(value)));
+			}
+			break;
+		}
+		case vm::TYPE_STRING:
+			callback(vnx::Variant(vm::to_string_value(var)));
+			break;
+		case vm::TYPE_BINARY: {
+			const auto hex = vm::to_string_value_hex(var);
+			vnx::Object out;
+			out["hex"] = hex;
+			if(hex.size() == 64) {
+				out["hash"] = vm::to_hash(var).to_string();
+				out["address"] = vm::to_addr(var).to_string();
+			}
+			callback(vnx::Variant(out));
+			break;
+		}
+		default:
+			callback(vnx::Variant(vm::to_string(var)));
+	}
 }
 
 void WebAPI::respond(const vnx::request_id_t& request_id, const vnx::Variant& value) const

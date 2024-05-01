@@ -51,6 +51,8 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
 	write_field(out, "reward_amount", reward_amount);
 	write_field(out, "reward_addr", reward_addr);
+	write_field(out, "reward_vote", reward_vote);
+	write_field(out, "next_base_reward", next_base_reward);
 	write_field(out, "static_cost", static_cost);
 	write_field(out, "total_cost", 	total_cost);
 	write_field(out, "tx_count", 	tx_count);
@@ -73,7 +75,7 @@ void BlockHeader::validate() const
 		if(!proof) {
 			throw std::logic_error("missing proof");
 		}
-		if(!farmer_sig->verify(proof->plot_key, hash)) {
+		if(!farmer_sig->verify(proof->farmer_key, hash)) {
 			throw std::logic_error("invalid farmer signature");
 		}
 	}
@@ -82,6 +84,17 @@ void BlockHeader::validate() const
 std::shared_ptr<const BlockHeader> BlockHeader::get_header() const
 {
 	return vnx::clone(*this);
+}
+
+block_index_t BlockHeader::get_block_index(const int64_t& file_offset) const
+{
+	block_index_t index;
+	index.hash = hash;
+	index.content_hash = content_hash;
+	index.static_cost = static_cost;
+	index.total_cost = total_cost;
+	index.file_offset = file_offset;
+	return index;
 }
 
 

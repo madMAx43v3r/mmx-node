@@ -46,20 +46,20 @@ Vue.component('farmer-info', {
 										 {{ $t('farmer_info.physical_size') }}
 									</v-row>
 								</v-col>
-
+								
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_balance / 1e6).toFixed(2) }} MMX</div>
+										<div v-if="data">{{ (data.total_bytes_effective / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										{{ $t('farmer_info.virtual_balance') }}
+										 Effective Size
 									</v-row>
 								</v-col>
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<div v-if="data">{{ (data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -69,7 +69,7 @@ Vue.component('farmer-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ ((data.total_bytes + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<div v-if="data">{{ ((data.total_bytes_effective + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
@@ -105,6 +105,7 @@ Vue.component('farmer-plots', {
 			return [
 				{ text: this.$t('common.harvester'), value: 'name' },
 				{ text: this.$t('farmer_info.physical_size'), value: 'bytes' },
+				{ text: "Effective Size", value: 'effective' },
 			]
 		}
 	},
@@ -119,7 +120,7 @@ Vue.component('farmer-plots', {
 					}
 					this.harvester_bytes = [];
 					for(const entry of data.harvester_bytes) {
-						this.harvester_bytes.push({name: entry[0], bytes: entry[1]});
+						this.harvester_bytes.push({name: entry[0], bytes: entry[1][0], effective: entry[1][1]});
 					}
 					this.loaded = true;
 				});
@@ -166,6 +167,9 @@ Vue.component('farmer-plots', {
 			>
 				<template v-slot:item.bytes="{ item }">
 					<b>{{(item.bytes / Math.pow(1000, 4)).toFixed(3)}}</b> TB
+				</template>
+				<template v-slot:item.effective="{ item }">
+					<b>{{(item.effective / Math.pow(1000, 4)).toFixed(3)}}</b> TBe
 				</template>
 			</v-data-table>
 

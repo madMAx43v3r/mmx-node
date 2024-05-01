@@ -6,6 +6,7 @@
 
 #include <vnx/Type.h>
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 
 
@@ -13,10 +14,12 @@ namespace mmx {
 
 struct MMX_EXPORT txio_t {
 	
+	static const uint32_t MAX_MEMO_SIZE = 64;
 	
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
 	uint64_t amount = 0;
+	vnx::optional<std::string> memo;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -28,6 +31,8 @@ struct MMX_EXPORT txio_t {
 	vnx::Hash64 get_type_hash() const;
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
+	
+	uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	
 	static std::shared_ptr<txio_t> create();
 	std::shared_ptr<txio_t> clone() const;
@@ -58,11 +63,12 @@ struct MMX_EXPORT txio_t {
 
 template<typename T>
 void txio_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<txio_t>(3);
+	_visitor.template type_begin<txio_t>(4);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
-	_visitor.template type_end<txio_t>(3);
+	_visitor.type_field("memo", 3); _visitor.accept(memo);
+	_visitor.template type_end<txio_t>(4);
 }
 
 

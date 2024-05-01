@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 account_t::VNX_TYPE_HASH(0xc0c163f453729a7ull);
-const vnx::Hash64 account_t::VNX_CODE_HASH(0x4c7e161830e543a3ull);
+const vnx::Hash64 account_t::VNX_CODE_HASH(0x819bd0784badd5acull);
 
 vnx::Hash64 account_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -162,7 +162,7 @@ std::shared_ptr<vnx::TypeCode> account_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.account_t";
 	type_code->type_hash = vnx::Hash64(0xc0c163f453729a7ull);
-	type_code->code_hash = vnx::Hash64(0x4c7e161830e543a3ull);
+	type_code->code_hash = vnx::Hash64(0x819bd0784badd5acull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::account_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<account_t>>(); };
@@ -177,7 +177,7 @@ std::shared_ptr<vnx::TypeCode> account_t::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "num_addresses";
-		field.value = vnx::to_string(100);
+		field.value = vnx::to_string(10);
 		field.code = {3};
 	}
 	{
@@ -244,7 +244,7 @@ void read(TypeInput& in, ::mmx::account_t& value, const TypeCode* type_code, con
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
@@ -279,7 +279,7 @@ void write(TypeOutput& out, const ::mmx::account_t& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(9);
+	auto* const _buf = out.write(9);
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write_value(_buf + 4, value.num_addresses);
 	vnx::write_value(_buf + 8, value.with_passphrase);

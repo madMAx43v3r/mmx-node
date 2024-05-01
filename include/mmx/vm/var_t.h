@@ -8,6 +8,9 @@
 #ifndef INCLUDE_MMX_VM_VAR_T_H_
 #define INCLUDE_MMX_VM_VAR_T_H_
 
+#include <mmx/hash_t.hpp>
+#include <mmx/addr_t.hpp>
+
 #include <vnx/Util.h>
 #include <uint256_t.h>
 
@@ -17,6 +20,7 @@
 #include <cstring>
 #include <memory>
 #include <atomic>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -81,10 +85,16 @@ struct var_t {
 	virtual ~var_t() {}
 
 	void addref() {
+		if(flags & FLAG_STORED) {
+			return;
+		}
 		flags |= FLAG_DIRTY;
 		ref_count++;
 	}
 	bool unref() {
+		if(flags & FLAG_STORED) {
+			return false;
+		}
 		if(!ref_count) {
 			throw std::logic_error("var_t::unref() underflow");
 		}
@@ -92,6 +102,9 @@ struct var_t {
 		return (ref_count--) == 1;
 	}
 	var_t* pin() {
+		if(flags & FLAG_STORED) {
+			return this;
+		}
 		if(!ref_count) {
 			ref_count = 1;
 			flags |= FLAG_DIRTY;
@@ -135,22 +148,34 @@ struct binary_t : var_t {
 	void* data(const size_t offset = 0) {
 		return ((char*)p_data) + offset;
 	}
-	const void* data(const size_t offset = 0) const {
-		return ((const char*)p_data) + offset;
+	const uint8_t* data(const size_t offset = 0) const {
+		return ((const uint8_t*)p_data) + offset;
 	}
 	const char* c_str() const {
-		return (const char*)data();
+		return (const char*)p_data;
 	}
 	std::string to_string() const {
 		return std::string(c_str(), size);
 	}
 	std::string to_hex_string() const {
-		return vnx::to_hex_string(c_str(), size, false);
+		return vnx::to_hex_string(data(), size, false, false);
 	}
 	std::vector<uint8_t> to_vector() const {
 		std::vector<uint8_t> out(size);
 		::memcpy(out.data(), p_data, size);
 		return out;
+	}
+	hash_t to_hash() const {
+		if(size != 32) {
+			throw std::logic_error("to_hash(): binary size != 32: " + std::to_string(size));
+		}
+		return hash_t::from_bytes(data());
+	}
+	addr_t to_addr() const {
+		if(size != 32) {
+			throw std::logic_error("to_addr(): binary size != 32: " + std::to_string(size));
+		}
+		return addr_t::from_bytes(data());
 	}
 
 	static std::unique_ptr<binary_t> clone(const binary_t& src) {
@@ -290,6 +315,52 @@ inline size_t num_bytes(const var_t* var) {
 }
 
 std::string to_string(const vartype_e& type);
+
+std::string to_string(const var_t* var);
+
+std::string to_string_value(const var_t* var);
+
+std::string to_string_value_hex(const var_t* var);
+
+uint64_t to_ref(const var_t* var);
+
+uint256_t to_uint(const var_t* var);
+
+hash_t to_hash(const var_t* var);
+
+addr_t to_addr(const var_t* var);
+
+template<size_t N>
+std::unique_ptr<binary_t> to_binary(const bytes_t<N>& value) {
+	return binary_t::alloc(value.data(), value.size());
+}
+
+inline
+std::unique_ptr<binary_t> to_binary(const std::string& value, const vartype_e& type = TYPE_STRING) {
+	return binary_t::alloc(value, type);
+}
+
+template<typename T>
+std::string to_hex(const T addr) {
+	std::stringstream ss;
+	ss << "0x" << std::uppercase << std::hex << addr;
+	return ss.str();
+}
+
+template<typename T>
+std::string to_bin(const T value) {
+	std::stringstream ss;
+	ss << "0b";
+	bool enable = false;
+	for(int i = sizeof(T) * 8 - 1; i >= 0; --i) {
+		const bool bit = (value >> i) & 1;
+		if(bit || enable || i == 0) {
+			ss << (bit ? '1' : '0');
+			enable = true;
+		}
+	}
+	return ss.str();
+}
 
 
 } // vm

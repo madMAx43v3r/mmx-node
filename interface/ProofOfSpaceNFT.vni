@@ -4,9 +4,9 @@ class ProofOfSpaceNFT extends ProofOfSpace {
 	
 	uchar ksize;
 	
-	vector<uchar> proof_bytes;
+	hash_t seed;
 	
-	bls_pubkey_t local_key;
+	vector<uint> proof_xs;
 	
 	addr_t contract;
 	

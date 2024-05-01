@@ -20,7 +20,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_info_t::VNX_TYPE_HASH(0x44e4a710953f4785ull);
-const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0xfd57fcd9a977150ull);
+const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0xe576efee29b89198ull);
 
 vnx::Hash64 tx_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -281,7 +281,7 @@ std::shared_ptr<vnx::TypeCode> tx_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_info_t";
 	type_code->type_hash = vnx::Hash64(0x44e4a710953f4785ull);
-	type_code->code_hash = vnx::Hash64(0xfd57fcd9a977150ull);
+	type_code->code_hash = vnx::Hash64(0xe576efee29b89198ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::tx_info_t);
@@ -439,7 +439,7 @@ void read(TypeInput& in, ::mmx::tx_info_t& value, const TypeCode* type_code, con
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.expires, _field->code.data());
@@ -487,7 +487,7 @@ void write(TypeOutput& out, const ::mmx::tx_info_t& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(21);
+	auto* const _buf = out.write(21);
 	vnx::write_value(_buf + 0, value.expires);
 	vnx::write_value(_buf + 4, value.did_fail);
 	vnx::write_value(_buf + 5, value.fee);

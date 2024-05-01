@@ -10,7 +10,7 @@
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
-#include <mmx/chiapos.h>
+#include <mmx/pos/verify.h>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -63,7 +63,8 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 		return false;
 	}
 	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
-	const auto challenge = hash_t(diff_block->hash + vdf_block->vdf_output[1]);
+
+	const auto challenge = vdf_block->vdf_output[1];
 	if(request->challenge != challenge) {
 		throw std::logic_error("invalid challenge");
 	}
@@ -165,8 +166,8 @@ uint256_t Node::verify_proof_impl(	std::shared_ptr<const T> proof, const hash_t&
 		throw std::logic_error("ksize too big");
 	}
 	const auto plot_challenge = get_plot_challenge(challenge, proof->plot_id);
-	const auto quality = hash_t::from_bytes(chiapos::verify(
-			proof->ksize, proof->plot_id.bytes, plot_challenge.bytes, proof->proof_bytes.data(), proof->proof_bytes.size()));
+
+	const auto quality = pos::verify(proof->proof_xs, plot_challenge, proof->plot_id, params->plot_filter, proof->ksize);
 
 	return calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
 }
@@ -194,18 +195,18 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 	}
 	else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof))
 	{
-		const auto plot = get_contract_as<contract::VirtualPlot>(stake->contract);
+		const auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id);
 		if(!plot) {
-			throw std::logic_error("no such virtual plot: " + stake->contract.to_string());
+			throw std::logic_error("no such virtual plot: " + stake->plot_id.to_string());
 		}
 		if(stake->farmer_key != plot->farmer_key) {
 			throw std::logic_error("invalid farmer key for virtual plot: " + stake->farmer_key.to_string());
 		}
-		const auto balance = get_virtual_plot_balance(stake->contract, diff_block->hash);
+		const auto balance = get_virtual_plot_balance(stake->plot_id, diff_block->hash);
 		if(balance == 0) {
-			throw std::logic_error("virtual plot has zero balance: " + stake->contract.to_string());
+			throw std::logic_error("virtual plot has zero balance: " + stake->plot_id.to_string());
 		}
-		score = calc_virtual_score(params, challenge, stake->contract, balance, diff_block->space_diff);
+		score = calc_virtual_score(params, challenge, stake->plot_id, balance, diff_block->space_diff);
 	}
 	else {
 		throw std::logic_error("invalid proof type: " + proof->get_type_name());
@@ -409,7 +410,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	if(verify_vdf_rewards && proof->reward_addr) {
 		ss_reward << " (with reward)";
 	}
-	log(INFO) << "Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec" << ss_reward.str();
+	log(INFO) << "\u23f2\ufe0f\u0020 Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec" << ss_reward.str();
 
 	// add dummy blocks
 	const auto root = get_root();
@@ -438,7 +439,9 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 		for(int i = 0; i < 3; ++i) {
 			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
 				if(auto engine = opencl_vdf[i]) {
-					engine->compute(proof, i);
+					if(i > 0 || !verify_vdf_cpuopencl) {
+						engine->compute(proof, i);
+					}
 				}
 			}
 		}
@@ -447,7 +450,8 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 		for(int i = 0; i < 3; ++i) {
 			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
 				try {
-					if(auto engine = opencl_vdf[i]) {
+					auto engine = opencl_vdf[i];
+					if(engine && (i > 0 || !verify_vdf_cpuopencl)) {
 						engine->verify(proof, i);
 					} else {
 						verify_vdf(proof, i);
@@ -505,6 +509,7 @@ void Node::check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const Bl
 
 	for(int chain = 0; chain < 2; ++chain) {
 		threads.add_task([&point, chain, num_iters]() {
+			// TODO: use recursive_sha256_ni() if available
 			for(uint64_t i = 0; i < num_iters; ++i) {
 				point[chain] = hash_t(point[chain].bytes);
 			}

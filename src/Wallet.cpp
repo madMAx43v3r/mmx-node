@@ -105,7 +105,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 	}
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::TRANSFER;
-	tx->add_output(currency, dst_addr, amount);
+	tx->add_output(currency, dst_addr, amount, options.memo);
 
 	wallet->complete(tx, options);
 
@@ -133,7 +133,7 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 		if(entry.second == 0) {
 			throw std::logic_error("amount cannot be zero");
 		}
-		tx->add_output(currency, entry.first, entry.second);
+		tx->add_output(currency, entry.first, entry.second, options.memo);
 	}
 	wallet->complete(tx, options);
 
@@ -157,6 +157,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 		if(auto owner = contract->get_owner()) {
 			options_.owner_map.emplace(src_addr, *owner);
 		} else {
+			// TODO: handle MultiSig
 			throw std::logic_error("contract has no owner");
 		}
 	}
@@ -169,7 +170,7 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::WITHDRAW;
 	tx->add_input(currency, src_addr, amount);
-	tx->add_output(currency, dst_addr, amount);
+	tx->add_output(currency, dst_addr, amount, options.memo);
 
 	wallet->complete(tx, options_);
 
@@ -277,21 +278,17 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	offer->init_args.emplace_back(owner_addr.to_string());
 	offer->init_args.emplace_back(bid_currency.to_string());
 	offer->init_args.emplace_back(ask_currency.to_string());
-	offer->init_args.emplace_back(((uint128_t(bid_amount) << 64) / ask_amount).str());
+	offer->init_args.emplace_back("0x" + ((uint128_t(bid_amount) << 64) / ask_amount).str(16));
 	offer->init_args.emplace_back();
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::OFFER;
 	tx->deploy = offer;
 
-	auto op = operation::Deposit::create();
-	op->method = "deposit";
-	op->amount = bid_amount;
-	op->currency = bid_currency;
-	op->user = owner_addr;
-	tx->execute.push_back(op);
+	std::vector<std::pair<addr_t, uint64_t>> deposit;
+	deposit.emplace_back(bid_currency, bid_amount);
 
-	wallet->complete(tx, options);
+	wallet->complete(tx, options, deposit);
 
 	if(tx->is_signed() && options.auto_send) {
 		send_off(index, tx);
@@ -567,14 +564,30 @@ std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint
 	return tx->inputs;
 }
 
-std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const int32_t& since,
+std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit,
 											const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const
 {
 	const auto wallet = get_wallet(index);
 
 	std::vector<tx_entry_t> result;
-	for(const auto& entry : node->get_history(wallet->get_all_addresses(), since)) {
+	for(const auto& entry : node->get_history(wallet->get_all_addresses(), since, until, (type || currency ? -1 : limit))) {
 		if((!type || entry.type == *type) && (!currency || entry.contract == *currency)) {
+			auto tmp = entry;
+			tmp.is_validated = token_whitelist.count(entry.contract);
+			result.push_back(tmp);
+		}
+	}
+	return result;
+}
+
+std::vector<tx_entry_t> Wallet::get_history_memo(
+		const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<addr_t>& currency) const
+{
+	const auto wallet = get_wallet(index);
+
+	std::vector<tx_entry_t> result;
+	for(const auto& entry : node->get_history_memo(wallet->get_all_addresses(), memo, limit)) {
+		if(!currency || entry.contract == *currency) {
 			auto tmp = entry;
 			tmp.is_validated = token_whitelist.count(entry.contract);
 			result.push_back(tmp);
@@ -713,7 +726,7 @@ std::vector<virtual_plot_info_t> Wallet::get_virtual_plots(const uint32_t& index
 	return node->get_virtual_plots_owned_by(wallet->get_all_addresses());
 }
 
-vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
+std::vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
 {
 	const auto wallet = get_wallet(index);
 	return node->get_offers_by(wallet->get_all_addresses(), state);
@@ -756,20 +769,20 @@ std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) 
 	return node->get_address_infos(get_all_addresses(index));
 }
 
-std::shared_ptr<const FarmerKeys> Wallet::get_farmer_keys(const uint32_t& index) const
+std::pair<skey_t, pubkey_t> Wallet::get_farmer_keys(const uint32_t& index) const
 {
-	if(auto wallet = bls_wallets.at(index)) {
-		return wallet->get_farmer_keys();
+	if(auto wallet = wallets.at(index)) {
+		return wallet->get_farmer_key();
 	}
-	return nullptr;
+	throw std::logic_error("invalid wallet");
 }
 
-std::vector<std::shared_ptr<const FarmerKeys>> Wallet::get_all_farmer_keys() const
+std::vector<std::pair<skey_t, pubkey_t>> Wallet::get_all_farmer_keys() const
 {
-	std::vector<std::shared_ptr<const FarmerKeys>> res;
-	for(const auto& wallet : bls_wallets) {
+	std::vector<std::pair<skey_t, pubkey_t>> res;
+	for(auto wallet : wallets) {
 		if(wallet) {
-			res.push_back(wallet->get_farmer_keys());
+			res.push_back(wallet->get_farmer_key());
 		}
 	}
 	return res;
@@ -817,16 +830,12 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 {
 	if(index >= wallets.size()) {
 		wallets.resize(index + 1);
-		bls_wallets.resize(index + 1);
 	} else if(wallets[index]) {
 		throw std::logic_error("account already exists: " + std::to_string(index));
 	}
 	const auto key_path = storage_path + config.key_file;
 
 	if(auto key_file = vnx::read_from_file<KeyFile>(key_path)) {
-		if(enable_bls) {
-			bls_wallets[index] = std::make_shared<BLS_Wallet>(key_file->seed_value, 11337);
-		}
 		std::shared_ptr<ECDSA_Wallet> wallet;
 		if(config.with_passphrase && !passphrase) {
 			const auto info_path = database_path + "info_" + config.finger_print + ".dat";
@@ -878,7 +887,7 @@ void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::st
 	if(words) {
 		key_file.seed_value = mnemonic::words_to_seed(mnemonic::string_to_words(*words));
 	} else {
-		key_file.seed_value = hash_t::random();
+		key_file.seed_value = hash_t::secure_random();
 	}
 	auto config = config_;
 	config.with_passphrase = passphrase;

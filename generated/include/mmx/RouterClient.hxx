@@ -13,8 +13,6 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>
-#include <mmx/pubkey_t.hpp>
-#include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
@@ -38,8 +36,6 @@ public:
 	
 	::mmx::node_info_t get_info();
 	
-	std::pair<::mmx::pubkey_t, ::mmx::signature_t> sign_msg(const ::mmx::hash_t& msg = ::mmx::hash_t());
-	
 	std::vector<std::string> get_peers(const uint32_t& max_count = 10);
 	
 	std::vector<std::string> get_known_peers();
@@ -51,8 +47,6 @@ public:
 	void kick_peer(const std::string& address = "");
 	
 	void kick_peer_async(const std::string& address = "");
-	
-	std::vector<std::pair<std::string, uint32_t>> get_farmer_credits();
 	
 	std::vector<std::shared_ptr<const ::mmx::Block>> get_blocks_at(const uint32_t& height = 0);
 	

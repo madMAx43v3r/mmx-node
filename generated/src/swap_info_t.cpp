@@ -392,7 +392,7 @@ void read(TypeInput& in, ::mmx::swap_info_t& value, const TypeCode* type_code, c
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[11]) {
 			vnx::read_value(_buf + _field->offset, value.avg_apy_1d, _field->code.data());
@@ -434,7 +434,7 @@ void write(TypeOutput& out, const ::mmx::swap_info_t& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(32);
+	auto* const _buf = out.write(32);
 	vnx::write_value(_buf + 0, value.avg_apy_1d);
 	vnx::write_value(_buf + 16, value.avg_apy_7d);
 	vnx::write(out, value.name, type_code, type_code->fields[0].code.data());

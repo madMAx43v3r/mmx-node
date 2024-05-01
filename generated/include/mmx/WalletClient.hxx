@@ -6,7 +6,6 @@
 
 #include <vnx/Client.h>
 #include <mmx/Contract.hxx>
-#include <mmx/FarmerKeys.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/account_t.hxx>
@@ -15,6 +14,8 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
@@ -99,7 +100,9 @@ public:
 	
 	void update_cache_async(const uint32_t& index = 0);
 	
-	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const int32_t& since = 0, const vnx::optional<::mmx::tx_type_e>& type = nullptr, const vnx::optional<::mmx::addr_t>& currency = nullptr);
+	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const uint32_t& since = 0, const uint32_t& until = -1, const int32_t& limit = -1, const vnx::optional<::mmx::tx_type_e>& type = nullptr, const vnx::optional<::mmx::addr_t>& currency = nullptr);
+	
+	std::vector<::mmx::tx_entry_t> get_history_memo(const uint32_t& index = 0, const std::string& memo = "", const int32_t& limit = -1, const vnx::optional<::mmx::addr_t>& currency = nullptr);
 	
 	std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index = 0, const int32_t& limit = -1, const uint32_t& offset = 0);
 	
@@ -173,9 +176,9 @@ public:
 	
 	std::vector<std::string> get_mnemonic_seed(const uint32_t& index = 0);
 	
-	std::shared_ptr<const ::mmx::FarmerKeys> get_farmer_keys(const uint32_t& index = 0);
+	std::pair<::mmx::skey_t, ::mmx::pubkey_t> get_farmer_keys(const uint32_t& index = 0);
 	
-	std::vector<std::shared_ptr<const ::mmx::FarmerKeys>> get_all_farmer_keys();
+	std::vector<std::pair<::mmx::skey_t, ::mmx::pubkey_t>> get_all_farmer_keys();
 	
 	std::shared_ptr<const ::vnx::addons::HttpResponse> http_request(std::shared_ptr<const ::vnx::addons::HttpRequest> request = nullptr, const std::string& sub_path = "");
 	

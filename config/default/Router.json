@@ -6,9 +6,8 @@
 	"max_peer_set": 100,
 	"max_connections": 100,
 	"max_queue_ms": 5000,
-	"max_msg_size": 4194304,
-	"max_list_size": 4194304,
-	"max_write_queue": 8388608,
+	"max_msg_size": 8388608,
+	"max_write_queue": 10485760,
 	"stats_interval_ms": 60000,
 	"connect_interval_ms": 10000,
 	"connection_timeout_ms": 180000,
@@ -17,6 +16,6 @@
 	"max_hash_cache": 200000,
 	"max_sent_cache": 20000,
 	"max_tx_upload" : 2,
-	"max_pending_cost": 0.2,
-	"compress_level": 1
+	"max_pending_cost": 0.1,
+	"compress_level": 0
 }

@@ -7,6 +7,7 @@
 
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -14,7 +15,7 @@ namespace contract {
 
 vnx::bool_t VirtualPlot::is_valid() const
 {
-	return Super::is_valid() && farmer_key != bls_pubkey_t() && (!reward_address || *reward_address != addr_t());
+	return Super::is_valid() && farmer_key != pubkey_t() && (!reward_address || *reward_address != addr_t());
 }
 
 hash_t VirtualPlot::calc_hash(const vnx::bool_t& full_hash) const
@@ -37,6 +38,27 @@ hash_t VirtualPlot::calc_hash(const vnx::bool_t& full_hash) const
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+uint64_t VirtualPlot::num_bytes(const vnx::bool_t& total) const
+{
+	return (total ? Super::num_bytes() : 0) + 48 + (reward_address ? 32 : 0);
+}
+
+uint64_t VirtualPlot::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
+}
+
+vnx::Variant VirtualPlot::read_field(const std::string& name) const
+{
+	if(name == "farmer_key") {
+		return vnx::Variant(farmer_key.to_string());
+	}
+	if(name == "reward_address") {
+		return reward_address ? vnx::Variant(reward_address->to_string()) : vnx::Variant(nullptr);
+	}
+	return Super::read_field(name);
 }
 
 

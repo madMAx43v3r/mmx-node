@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Node_get_farmed_block_count_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/bls_pubkey_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Node_get_farmed_block_count_return : public ::vnx::Value {
 public:
 	
-	std::map<::mmx::bls_pubkey_t, uint32_t> _ret_0;
+	std::map<::mmx::pubkey_t, uint32_t> _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

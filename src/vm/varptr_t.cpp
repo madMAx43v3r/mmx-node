@@ -97,14 +97,10 @@ void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
 			break;
 		case mmx::vm::TYPE_UINT: {
 			const auto& value = ((const mmx::vm::uint_t*)var)->value;
-			if(value >> 128 == 0) {
-				visitor.visit(value.str(10));
-			}
-			else if(value >> 128 == uint128_t(-1)) {
-				visitor.visit(int64_t(uint64_t(value)));
-			}
-			else {
-				visitor.visit(vnx::to_hex_string(&value, sizeof(value), false));
+			if(value >> 64) {
+				visitor.visit("0x" + value.str(16));
+			} else {
+				visitor.visit(value.lower().lower());
 			}
 			break;
 		}
@@ -113,7 +109,8 @@ void accept(vnx::Visitor& visitor, const mmx::vm::varptr_t& value)
 			break;
 		}
 		case mmx::vm::TYPE_BINARY: {
-			visitor.visit("0x" + ((const mmx::vm::binary_t*)var)->to_hex_string());
+			const auto* bin = ((const mmx::vm::binary_t*)var);
+			visitor.visit(bin->data(), bin->size);
 			break;
 		}
 		default:

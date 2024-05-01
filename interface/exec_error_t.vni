@@ -4,14 +4,16 @@ struct exec_error_t {
 	
 	uint code;
 	
-	uint address;				// -1 = unknown
+	uint address = -1;				// (-1 = unknown)
+	
+	uint operation = -1;			// index in execute array
 	
 	optional<uint> line;
 	
 	string message;
 	
 	
-	static const uint MAX_MESSAGE_LENGTH = 256;
+	static const uint MAX_MESSAGE_LENGTH = 160;		// TODO: 120
 	
 	bool is_valid() const;
 	

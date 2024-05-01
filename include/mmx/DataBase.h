@@ -9,6 +9,7 @@
 #define INCLUDE_MMX_DB_DATABASE_H_
 
 #include <vnx/File.h>
+#include <vnx/ThreadPool.h>
 
 #include <fstream>
 #include <mutex>
@@ -77,6 +78,9 @@ struct db_val_t {
 	std::string to_string() const {
 		return std::string((const char*)data, size);
 	}
+	std::string to_hex_string() const {
+		return vnx::to_hex_string(data, size, false, false);
+	}
 };
 
 class Table {
@@ -118,6 +122,7 @@ public:
 	struct options_t {
 		size_t level_factor = 4;
 		size_t max_block_size = 4 * 1024 * 1024;
+		size_t force_flush_threshold = 100000;
 		std::function<int(const db_val_t&, const db_val_t&)> comparator = default_comparator;
 	};
 
@@ -130,9 +135,11 @@ public:
 
 	std::shared_ptr<db_val_t> find(std::shared_ptr<db_val_t> key, const uint32_t max_version = -1) const;
 
-	void commit(const uint32_t new_version);
+	bool commit(const uint32_t new_version, const bool auto_flush = true);
 
 	void revert(const uint32_t new_version);
+
+	bool do_flush() const;
 
 	void flush();
 
@@ -218,6 +225,7 @@ private:
 	void rename(std::shared_ptr<block_t> block, const std::string& new_name) const;
 
 private:
+	uint32_t last_flush = 0;
 	uint32_t curr_version = 0;
 	uint64_t next_block_id = 0;
 
@@ -237,6 +245,8 @@ private:
 
 class DataBase {
 public:
+	DataBase(const int num_threads = 0);
+
 	void add(std::shared_ptr<Table> table);
 
 	void commit(const uint32_t new_version);
@@ -247,7 +257,20 @@ public:
 
 	uint32_t recover();
 
+	template<typename T>
+	void open_async(T& table, const std::string& path) {
+		threads.add_task([this, &table, path]() {
+			add(table.open(path));
+		});
+	}
+
+	void sync() {
+		threads.sync();
+	}
+
 private:
+	mutable std::mutex mutex;
+	vnx::ThreadPool threads;
 	std::vector<std::shared_ptr<Table>> tables;
 
 };

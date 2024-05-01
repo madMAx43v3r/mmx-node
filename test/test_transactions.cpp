@@ -15,6 +15,15 @@
 
 using namespace mmx;
 
+void expect_fail(NodeClient& node, std::shared_ptr<Transaction> tx)
+{
+	try {
+		node.add_transaction(tx, true);
+		std::cout << "Didn't fail!" << std::endl;
+		exit(-1);
+	} catch(...) {}
+}
+
 
 int main(int argc, char** argv)
 {
@@ -60,7 +69,7 @@ int main(int argc, char** argv)
 		wallet.sign_off(tx);
 
 		std::cout << tx->to_string() << std::endl;
-		node.add_transaction(tx);
+		expect_fail(node, tx);
 	}
 	{
 		auto tx = Transaction::create();
@@ -70,17 +79,17 @@ int main(int argc, char** argv)
 		wallet.sign_off(tx);
 
 		std::cout << tx->to_string() << std::endl;
-		node.add_transaction(tx);
+		expect_fail(node, tx);
 	}
 	{
 		auto tx = Transaction::create();
 		tx->sender = wallet.get_address(0);
-		tx->fee_ratio = 10 * 1024;
+		tx->fee_ratio = 100 * 1024;
 		tx->max_fee_amount = 100000;
 		wallet.sign_off(tx);
 
 		std::cout << tx->to_string() << std::endl;
-		node.add_transaction(tx);
+		expect_fail(node, tx);
 	}
 	{
 		auto tx = Transaction::create();
@@ -89,7 +98,7 @@ int main(int argc, char** argv)
 		wallet.sign_off(tx);
 
 		std::cout << tx->to_string() << std::endl;
-		node.add_transaction(tx);
+		expect_fail(node, tx);
 	}
 	{
 		auto tx = Transaction::create();
@@ -99,7 +108,7 @@ int main(int argc, char** argv)
 		wallet.sign_off(tx);
 
 		std::cout << tx->to_string() << std::endl;
-		node.add_transaction(tx);
+		expect_fail(node, tx);
 	}
 	{
 		auto tx = Transaction::create();
@@ -109,7 +118,7 @@ int main(int argc, char** argv)
 		wallet.sign_off(tx);
 
 		std::cout << tx->to_string() << std::endl;
-		node.add_transaction(tx);
+		expect_fail(node, tx);
 	}
 	{
 		auto tx = Transaction::create();
@@ -120,7 +129,7 @@ int main(int argc, char** argv)
 		wallet.sign_off(tx);
 
 		std::cout << tx->to_string() << std::endl;
-		node.add_transaction(tx);
+		expect_fail(node, tx);
 	}
 	{
 		auto tx = Transaction::create();
@@ -132,7 +141,19 @@ int main(int argc, char** argv)
 		tx->max_fee_amount = -1;
 		wallet.sign_off(tx);
 
-		node.add_transaction(tx);
+		expect_fail(node, tx);
+	}
+	{
+		auto tx = Transaction::create();
+		tx->sender = wallet.get_address(0);
+		tx->add_input(addr_t(), wallet.get_address(0), 1);
+		tx->add_output(addr_t(), addr_t(), 1);
+		tx->outputs[0].memo = std::string(txio_t::MAX_MEMO_SIZE + 1, 'M');
+		tx->max_fee_amount = -1;
+		wallet.sign_off(tx);
+
+		std::cout << tx->to_string() << std::endl;
+		expect_fail(node, tx);
 	}
 
 	vnx::close();

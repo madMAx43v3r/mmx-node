@@ -521,7 +521,7 @@ Vue.component('swap-trade', {
 			buy_amount: null,
 			buy_balance: null,
 			buy_estimate: null,
-			buy_num_iter: 20,
+			buy_num_iter: 5,
 			buy_slippage: 0.98,
 			buy_tx_fee: null,
 			sell_fee: null,
@@ -529,12 +529,12 @@ Vue.component('swap-trade', {
 			sell_amount: null,
 			sell_balance: null,
 			sell_estimate: null,
-			sell_num_iter: 20,
+			sell_num_iter: 5,
 			sell_slippage: 0.98,
 			sell_tx_fee: null,
 			result: null,
 			error: null,
-			num_iter_items: [1, 5, 10, 20, 50, 200],
+			num_iter_items: [1, 5, 20, 100],
 			slippage_items: [
 				{text: "0.5 %", value: 0.995},
 				{text: "1 %", value: 0.99},
@@ -938,6 +938,7 @@ Vue.component('swap-liquid', {
 			}
 		},
 		wallet() {
+			this.paid = false;
 			this.pool_idx = -1;
 			this.update_user();
 		},
@@ -1020,9 +1021,9 @@ Vue.component('swap-liquid', {
 					</v-row>
 				</v-card-text>
 				<v-card-actions class="justify-end">
-					<v-btn @click="match()">{{ $t('swap.price_match') }}</v-btn>
 					<v-btn @click="payout()" :disabled="disable_payout">{{ $t('swap.payout') }}</v-btn>
 					<v-btn @click="switch_pool()" :disabled="disable_switch">{{ $t('swap.switch_fee') }}</v-btn>
+					<v-btn @click="match()">{{ $t('swap.price_match') }}</v-btn>
 					<v-btn color="green lighten-1" @click="submit(true)" :disabled="disable_add_rem || disable_add">{{ $t('swap.add_liquidity') }}</v-btn>
 					<v-btn color="red lighten-1" @click="submit(false)" :disabled="disable_add_rem">{{ $t('swap.remove_iquidity') }}</v-btn>
 					<v-btn color="red lighten-1" @click="rem_all_liquid()" :disabled="disable_rem_all">{{ $t('swap.remove_all') }}</v-btn>

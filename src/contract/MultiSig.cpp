@@ -10,6 +10,7 @@
 #include <mmx/solution/PubKey.hxx>
 #include <mmx/write_bytes.h>
 #include <mmx/exception.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -34,31 +35,36 @@ hash_t MultiSig::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
+uint64_t MultiSig::num_bytes(const vnx::bool_t& total) const
 {
-	return 32 * owners.size() * params->min_txfee_byte;
+	return (total ? Super::num_bytes() : 0) + 32 * owners.size();
 }
 
-void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t& txid) const
+uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
-	if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(operation->solution))
+	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
+}
+
+void MultiSig::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
+{
+	if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(solution))
 	{
 		if(num_required != 1) {
 			throw mmx::invalid_solution("num_required != 1");
 		}
-		if(owners.count(solution->pubkey.get_addr()))
+		if(owners.count(sol->pubkey.get_addr()))
 		{
-			if(!solution->signature.verify(solution->pubkey, txid)) {
+			if(!sol->signature.verify(sol->pubkey, txid)) {
 				throw mmx::invalid_solution("invalid signature");
 			}
 			return;
 		}
 		throw mmx::invalid_solution("no such owner");
 	}
-	if(auto solution = std::dynamic_pointer_cast<const solution::MultiSig>(operation->solution))
+	if(auto sol = std::dynamic_pointer_cast<const solution::MultiSig>(solution))
 	{
 		size_t count = 0;
-		for(const auto& entry : solution->solutions)
+		for(const auto& entry : sol->solutions)
 		{
 			if(owners.count(entry.first))
 			{
@@ -79,11 +85,23 @@ void MultiSig::validate(std::shared_ptr<const Operation> operation, const hash_t
 		}
 		return;
 	}
-	if(operation->solution) {
+	if(solution) {
 		throw mmx::invalid_solution("invalid type");
 	} else {
 		throw mmx::invalid_solution("missing");
 	}
+}
+
+vnx::Variant MultiSig::read_field(const std::string& name) const
+{
+	if(name == "owners") {
+		std::vector<std::string> tmp;
+		for(const auto& entry : owners) {
+			tmp.push_back(entry.to_string());
+		}
+		return vnx::Variant(tmp);
+	}
+	return Super::read_field(name);
 }
 
 

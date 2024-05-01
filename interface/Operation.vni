@@ -6,7 +6,9 @@ class Operation {
 	
 	addr_t address;					// zero = deployed contract
 	
-	Solution* solution;
+	ushort solution = -1;			// not part of crypto hash
+	
+	static const ushort NO_SOLUTION = -1;
 	
 	
 	bool is_valid() const;

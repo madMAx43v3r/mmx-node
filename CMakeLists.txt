@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.13)
 project(mmx-node C CXX ASM)
+
+include(FetchContent)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -11,7 +13,7 @@ if(MSVC)
 	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
 	add_compile_options(/openmp /EHsc /MP)
 
-	set(MSVC_DEBUG_OPTIONS /Od)
+	set(MSVC_DEBUG_OPTIONS /Od /FS)
 	set(MSVC_RELEASE_OPTIONS /W1 /O2)
 
 	add_compile_options( 
@@ -32,19 +34,24 @@ if(MSVC)
   		INTERFACE_INCLUDE_DIRECTORIES "${secp256k1_IMPORT_PREFIX}/include"
 	)
 else()
+	message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
+	
 	set(CMAKE_CXX_STANDARD 17)
 	include(cmake/commit_hash_json.cmake)
 	
-	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs)
+	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs -Wno-unknown-pragmas)
 	
-	set_source_files_properties(src/vm/Compiler.cpp
-		PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
-
-	if(WITH_SECP256K1)
-		message(STATUS "Using secp256k1")
-		include_directories(lib/secp256k1/include)
-		link_directories(lib/secp256k1/.libs)
+	if(WITH_COVERAGE)
+		message(STATUS "Enabling -O0 -coverage")
+		add_compile_options(-O0 --coverage)
+		add_link_options(-lgcov --coverage)
 	endif()
+	
+	set_source_files_properties(src/vm/Compiler.cpp PROPERTIES COMPILE_FLAGS -Wno-unused-but-set-variable)
+
+	find_library(secp256k1_LIBRARY NAMES secp256k1 PATHS "${CMAKE_CURRENT_SOURCE_DIR}/lib/secp256k1/.libs" NO_DEFAULT_PATH)
+
+	include_directories(lib/secp256k1/include)
 	
 	if(ENABLE_MEM_SANITIZE)
 		message(STATUS "Compiling with -fsanitize=address")
@@ -59,10 +66,6 @@ else()
 	endif()
 endif()
 
-set(ARITH "easy" CACHE STRING "BLS ARITH")
-set(BUILD_BLS_TESTS OFF CACHE BOOL "BUILD_BLS_TESTS")
-set(BUILD_BLS_BENCHMARKS OFF CACHE BOOL "BUILD_BLS_BENCHMARKS")
-set(BUILD_BLS_PYTHON_BINDINGS OFF CACHE BOOL "BUILD_BLS_PYTHON_BINDINGS")
 set(LIBBECH32_BUILD_TESTS OFF CACHE BOOL "LIBBECH32_BUILD_TESTS")
 set(LIBBECH32_BUILD_EXAMPLES OFF CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
 set(DIRENT_BUILD_TESTS OFF CACHE STRING "DIRENT_BUILD_TESTS")
@@ -71,7 +74,6 @@ set(VNX_BUILD_TOOLS ON CACHE STRING "VNX_BUILD_TOOLS")
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
 add_subdirectory(lib/libbech32)
-add_subdirectory(lib/bls-signatures)
 add_subdirectory(tools)
 add_subdirectory(test)
 
@@ -94,8 +96,6 @@ if(OpenCL_FOUND)
 		PUBLIC CL_TARGET_OPENCL_VERSION=120
 	)
 endif()
-
-include(cmake/chiapos.cmake)
 
 file(GLOB GENERATED_SOURCE_FILES
 	generated/src/*.cpp
@@ -123,17 +123,15 @@ add_library(mmx_iface SHARED
 	src/secp256k1.cpp
 	src/uint128.cpp
 	src/fixed128.cpp
-	src/skey_t.cpp
 	src/hash_t.cpp
+	src/hash_512_t.cpp
 	src/addr_t.cpp
 	src/pubkey_t.cpp
 	src/signature_t.cpp
-	src/bls_signature_t.cpp
 	src/exec_result_t.cpp
 	src/exec_error_t.cpp
 	src/vm/var_t.cpp
 	src/vm/varptr_t.cpp
-	src/contract/NFT.cpp
 	src/contract/Data.cpp
 	src/contract/WebData.cpp
 	src/contract/PubKey.cpp
@@ -145,11 +143,8 @@ add_library(mmx_iface SHARED
 	src/contract/method_t.cpp
 	src/solution/PubKey.cpp
 	src/solution/MultiSig.cpp
-	src/solution/BLS_PubKey.cpp
-	src/operation/Spend.cpp
 	src/operation/Deposit.cpp
 	src/operation/Execute.cpp
-	src/operation/Vote.cpp
 	src/sha256_avx2.cpp
 	src/sha256_64_x8.cpp
 	src/sha256_ni.cpp
@@ -179,6 +174,13 @@ add_library(mmx_db SHARED
 	src/table.cpp
 )
 
+add_library(mmx_pos SHARED
+	src/pos/mem_hash.cpp
+	src/pos/verify.cpp
+	src/pos/encoding.cpp
+	src/pos/Prover.cpp
+)
+
 add_library(mmx_modules SHARED
 	src/TimeLord.cpp
 	src/Node.cpp
@@ -199,10 +201,17 @@ add_library(uint256_t STATIC
 	uint256_t/uint256_t.cpp
 )
 
+target_include_directories(mmx_vm
+	PUBLIC lib/lexy/include
+)
+
+target_include_directories(mmx_pos
+	PUBLIC include
+)
+
 target_include_directories(mmx_iface
 	PUBLIC
 		include
-		lib/lexy/include
 		generated/include
 		generated/vm/include
 		generated/contract/include
@@ -216,23 +225,19 @@ target_include_directories(uint256_t
 
 target_compile_definitions(uint256_t PUBLIC _UINT256_T_STATIC _UINT128_T_STATIC)
 
-target_include_directories(mmx_chiapos
-	PUBLIC src/chiapos
-	PRIVATE chiapos/src chiapos/lib/include
-)
-
-target_link_libraries(mmx_iface uint256_t secp256k1 bech32 bls vnx_base vnx_addons)
+target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t bech32 ${secp256k1_LIBRARY})
 
 target_link_libraries(mmx_db mmx_iface)
-
+target_link_libraries(mmx_pos mmx_iface)
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 
-target_link_libraries(mmx_modules mmx_chiapos mmx_vm mmx_db mmx_iface)
+target_link_libraries(mmx_modules mmx_pos mmx_vm mmx_db mmx_iface)
 
 if(MSVC)
 	GENERATE_EXPORT_HEADER(mmx_iface)
 	GENERATE_EXPORT_HEADER(mmx_modules)
 	GENERATE_EXPORT_HEADER(mmx_db)
+	GENERATE_EXPORT_HEADER(mmx_pos)
 	GENERATE_EXPORT_HEADER(mmx_vm)
 	
 	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
@@ -244,6 +249,7 @@ if(MSVC)
 	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
 
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+	set_target_properties(mmx_pos PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
 	# Workaround for:
@@ -307,6 +313,7 @@ install(TARGETS mmx_db DESTINATION lib)
 install(TARGETS mmx_vm DESTINATION lib)
 install(TARGETS mmx_iface DESTINATION lib)
 install(TARGETS mmx_modules DESTINATION lib)
+install(FILES ${secp256k1_LIBRARY} DESTINATION lib)
 
 install(TARGETS mmx DESTINATION bin)
 install(TARGETS mmx_node DESTINATION bin)

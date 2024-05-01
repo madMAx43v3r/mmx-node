@@ -24,38 +24,29 @@ public:
 
 	varptr_t(const std::nullptr_t&) {}
 
-	explicit varptr_t(var_t* var)
+	explicit varptr_t(var_t* var, const bool aquire = true)
 	{
-		ptr = var;
-		if(ptr) {
-			ptr->addref();
+		if(aquire && var && var->ref_count != 0) {
+			throw std::logic_error("varptr_t(): ref_count != 0");
 		}
+		ptr = var;
+		addref();
 	}
 
 	template<typename T>
 	varptr_t(std::unique_ptr<T> var) : varptr_t(var.release()) {}
 
-	varptr_t(const varptr_t& other) : varptr_t(other.ptr) {}
+	varptr_t(const varptr_t& other) : varptr_t(other.ptr, false) {}
 
-	~varptr_t()
-	{
-		if(ptr) {
-			if(ptr->unref()) {
-				delete ptr;
-			}
-			ptr = nullptr;
-		}
+	~varptr_t() {
+		unref();
 	}
 
 	varptr_t& operator=(const varptr_t& other)
 	{
-		if(ptr && ptr->unref()) {
-			delete ptr;
-		}
+		unref();
 		ptr = other.ptr;
-		if(ptr) {
-			ptr->addref();
-		}
+		addref();
 		return *this;
 	}
 
@@ -84,6 +75,22 @@ public:
 	}
 
 private:
+	void addref() {
+		if(ptr) {
+			ptr->ref_count++;
+		}
+	}
+
+	void unref() {
+		if(ptr) {
+			if(ptr->ref_count-- == 1) {
+				delete ptr;
+			}
+			ptr = nullptr;
+		}
+	}
+
+private:
 	var_t* ptr = nullptr;
 
 };
@@ -102,6 +109,34 @@ inline bool operator==(const varptr_t& lhs, const varptr_t& rhs) {
 
 inline bool operator!=(const varptr_t& lhs, const varptr_t& rhs) {
 	return compare(lhs.get(), rhs.get()) != 0;
+}
+
+inline std::string to_string(const varptr_t& var) {
+	return to_string(var.get());
+}
+
+inline std::string to_string_value(const varptr_t& var) {
+	return to_string_value(var.get());
+}
+
+inline std::string to_string_value_hex(const varptr_t& var) {
+	return to_string_value_hex(var.get());
+}
+
+inline uint64_t to_ref(const varptr_t& var) {
+	return to_ref(var.get());
+}
+
+inline uint256_t to_uint(const varptr_t& var) {
+	return to_uint(var.get());
+}
+
+inline hash_t to_hash(const varptr_t& var) {
+	return to_hash(var.get());
+}
+
+inline addr_t to_addr(const varptr_t& var) {
+	return to_addr(var.get());
 }
 
 

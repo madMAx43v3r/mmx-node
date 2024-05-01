@@ -28,18 +28,37 @@ namespace vm {
 
 class StorageProxy;
 
-static constexpr uint64_t INSTR_COST = 10;
-static constexpr uint64_t INSTR_READ_COST = 2;
-static constexpr uint64_t SEND_COST = 1000;
-static constexpr uint64_t MINT_COST = 500;
-static constexpr uint64_t WRITE_COST = 10;
-static constexpr uint64_t WRITE_BYTE_COST = 1;
-static constexpr uint64_t STOR_READ_COST = 200;
-static constexpr uint64_t STOR_WRITE_COST = 1000;
+static constexpr uint64_t INSTR_COST = 20;
+static constexpr uint64_t INSTR_CALL_COST = 30;
+static constexpr uint64_t INSTR_MUL_128_COST = 50;
+static constexpr uint64_t INSTR_MUL_256_COST = 200;
+static constexpr uint64_t INSTR_DIV_64_COST = 50;
+static constexpr uint64_t INSTR_DIV_128_COST = 1000;
+static constexpr uint64_t INSTR_DIV_256_COST = 5000;
+
+static constexpr uint64_t WRITE_COST = 50;
+static constexpr uint64_t WRITE_32_BYTE_COST = 30;
+static constexpr uint64_t STOR_READ_COST = 2000;
+static constexpr uint64_t STOR_WRITE_COST = 2000;
 static constexpr uint64_t STOR_READ_BYTE_COST = 2;
-static constexpr uint64_t STOR_WRITE_BYTE_COST = 10;
-static constexpr uint64_t SHA256_BYTE_COST = 20;		// TODO: SHA256_BLOCK_COST = 1000
-static constexpr uint64_t ECDSA_VERIFY_COST = 10000;	// TODO: 2000
+static constexpr uint64_t STOR_WRITE_BYTE_COST = 50;
+
+static constexpr uint64_t CONV_STRING_UINT_CHAR_COST = 200;
+static constexpr uint64_t CONV_UINT_32_STRING_COST = 500;
+static constexpr uint64_t CONV_UINT_64_STRING_COST = 1000;
+static constexpr uint64_t CONV_UINT_128_STRING_COST = 25000;
+static constexpr uint64_t CONV_UINT_256_STRING_COST = 250000;
+static constexpr uint64_t CONV_STRING_BECH32_COST = 1000;
+static constexpr uint64_t CONV_BECH32_STRING_COST = 1000;
+
+static constexpr uint64_t SHA256_BLOCK_COST = 2000;
+static constexpr uint64_t ECDSA_VERIFY_COST = 20000;
+
+static constexpr uint64_t MAX_KEY_BYTES = 1024;
+static constexpr uint64_t MAX_VALUE_BYTES = 64 * 1024;
+static constexpr uint64_t MAX_CALL_RECURSION = 1000;
+static constexpr uint64_t MAX_ERASE_RECURSION = 100;
+static constexpr uint64_t MAX_COPY_RECURSION = 100;
 
 enum externvar_e : uint32_t {
 
@@ -55,8 +74,6 @@ enum externvar_e : uint32_t {
 enum globalvar_e : uint32_t {
 
 	GLOBAL_NEXT_ALLOC = 1,
-	GLOBAL_LOG_HISTORY,
-	GLOBAL_EVENT_HISTORY,
 	GLOBAL_DYNAMIC_START = 0x1000
 
 };
@@ -75,16 +92,20 @@ public:
 	std::vector<txout_t> outputs;
 	std::vector<txout_t> mint_outputs;
 
-	uint64_t total_gas = 0;
-	uint64_t total_cost = 0;
+	uint64_t gas_used = 0;
+	uint64_t gas_limit = 0;
 
 	uint32_t error_code = 0;
 	uint32_t error_addr = -1;
 
 	const addr_t contract;
-	const std::shared_ptr<StorageProxy> storage;
 
-	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote;
+	bool is_debug = false;
+
+	std::function<void(uint32_t level, const std::string& msg)> log_func;
+	std::function<void(const std::string& name, const uint64_t data)> event_func;
+	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote_call;
+	std::function<void(const addr_t& address, const std::string& field, const uint64_t dst)> read_contract;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
 
@@ -94,8 +115,6 @@ public:
 	void unref(const uint64_t dst);
 
 	var_t* assign(const uint64_t dst, std::unique_ptr<var_t> value);
-	var_t* assign_entry(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value);
-	var_t* assign_key(const uint64_t dst, const uint64_t key, std::unique_ptr<var_t> value);
 
 	uint64_t lookup(const uint64_t src, const bool read_only);
 	uint64_t lookup(const var_t* var, const bool read_only);
@@ -105,8 +124,6 @@ public:
 	var_t* write(const uint64_t dst, const var_t* src);
 	var_t* write(const uint64_t dst, const var_t& src);
 	var_t* write(const uint64_t dst, const varptr_t& var);
-	var_t* write(const uint64_t dst, const std::vector<varptr_t>& var);
-	var_t* write(const uint64_t dst, const std::map<varptr_t, varptr_t>& var);
 
 	var_t* write_entry(const uint64_t dst, const uint64_t key, const var_t& src);
 	var_t* write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var);
@@ -124,17 +141,16 @@ public:
 
 	void erase(const uint64_t dst);
 
-	var_t* read(const uint64_t src);
+	var_t* read(const uint64_t src, const bool mem_only = false);
 	var_t& read_fail(const uint64_t src);
 
 	var_t* read_entry(const uint64_t src, const uint64_t key);
 	var_t& read_entry_fail(const uint64_t src, const uint64_t key);
 
 	var_t* read_key(const uint64_t src, const uint64_t key);
+	var_t* read_key(const uint64_t src, const var_t& key);
+	var_t* read_key(const uint64_t src, const varptr_t& key);
 	var_t& read_key_fail(const uint64_t src, const uint64_t key);
-
-	std::unique_ptr<array_t> clone_array(const uint64_t dst, const array_t& src);
-	std::unique_ptr<map_t> clone_map(const uint64_t dst, const map_t& src);
 
 	void copy(const uint64_t dst, const uint64_t src);
 	void clone(const uint64_t dst, const uint64_t src);
@@ -148,9 +164,10 @@ public:
 	void verify(const uint64_t dst, const uint64_t msg, const uint64_t pubkey, const uint64_t signature);
 	void log(const uint64_t level, const uint64_t msg);
 	void event(const uint64_t name, const uint64_t data);
-	void send(const uint64_t address, const uint64_t amount, const uint64_t currency);
-	void mint(const uint64_t address, const uint64_t amount);
+	void send(const uint64_t address, const uint64_t amount, const uint64_t currency, const uint64_t memo);
+	void mint(const uint64_t address, const uint64_t amount, const uint64_t memo);
 	void rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs);
+	void cread(const uint64_t dst, const uint64_t address, const uint64_t field);
 
 	frame_t& get_frame();
 	uint64_t deref(const uint64_t src);
@@ -160,16 +177,17 @@ public:
 	void begin(const uint64_t instr_ptr);
 	void run();
 	void step();
-	void check_gas() const;
+	void check_gas();
 	void jump(const uint64_t instr_ptr);
 	void call(const uint64_t instr_ptr, const uint64_t stack_ptr);
 	bool ret();
 	void exec(const instr_t& instr);
 
-	void reset();
 	void commit();
 
 	void clear_stack(const uint64_t offset = 0);
+
+	vnx::optional<std::string> parse_memo(const uint64_t addr);
 
 	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;
 
@@ -197,9 +215,12 @@ private:
 
 private:
 	bool have_init = false;
+	std::shared_ptr<StorageProxy> storage;
 	std::map<uint64_t, std::unique_ptr<var_t>> memory;
 	std::map<std::pair<uint64_t, uint64_t>, std::unique_ptr<var_t>> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
+
+	size_t erase_call_depth = 0;
 
 };
 

@@ -9,7 +9,7 @@ class BlockHeader {
 	
 	uint height;
 	
-	// TODO: uint time_hour;				// hours since chain start
+	// TODO: uint time_hour;			// hours since chain start
 	// TODO: uint time_counter;			// blocks since last hour increment
 	
 	ulong nonce;
@@ -32,15 +32,18 @@ class BlockHeader {
 	ulong reward_amount;
 	optional<addr_t> reward_addr;
 	
+	char reward_vote;					// 0 = unchanged, 1 = up, -1 = down
+	ulong next_base_reward;
+	
 	uint static_cost;
 	uint total_cost;
 	
 	uint tx_count;
-	uint tx_fees;
+	ulong tx_fees;
 	
 	hash_t tx_hash;
 	
-	optional<bls_signature_t> farmer_sig;
+	optional<signature_t> farmer_sig;
 	
 	hash_t content_hash;
 	
@@ -52,5 +55,7 @@ class BlockHeader {
 	void validate() const;
 	
 	BlockHeader* get_header() const;
+	
+	block_index_t get_block_index(long file_offset) const;
 	
 }

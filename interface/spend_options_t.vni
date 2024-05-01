@@ -4,11 +4,9 @@ struct spend_options_t {
 	
 	bool auto_send = true;
 	
-	uint min_confirm = 1;
-	
 	uint fee_ratio = 1024;
 	
-	uint max_extra_cost = 1000000;
+	uint max_extra_cost = 5000000;
 	
 	optional<uint> expire_at;					// overrides delta if set
 	optional<uint> expire_delta;				// expire at current height + delta
@@ -17,6 +15,7 @@ struct spend_options_t {
 	optional<addr_t> sender;					// for tx fee
 	optional<string> passphrase;
 	optional<tx_note_e> note;
+	optional<string> memo;
 	
 	map<addr_t, addr_t> owner_map;
 	map<addr_t, Contract*> contract_map;

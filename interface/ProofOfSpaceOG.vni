@@ -4,10 +4,9 @@ class ProofOfSpaceOG extends ProofOfSpace {
 	
 	uchar ksize;
 	
-	vector<uchar> proof_bytes;
+	hash_t seed;
 	
-	bls_pubkey_t pool_key;
-	bls_pubkey_t local_key;
+	vector<uint> proof_xs;
 	
 	
 	bool is_valid() const;

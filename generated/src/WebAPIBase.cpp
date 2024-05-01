@@ -435,7 +435,7 @@ void read(TypeInput& in, ::mmx::WebAPIBase& value, const TypeCode* type_code, co
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[7]) {
 			vnx::read_value(_buf + _field->offset, value.max_log_history, _field->code.data());
@@ -468,7 +468,7 @@ void write(TypeOutput& out, const ::mmx::WebAPIBase& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(4);
+	auto* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.max_log_history);
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_proofs, type_code, type_code->fields[1].code.data());

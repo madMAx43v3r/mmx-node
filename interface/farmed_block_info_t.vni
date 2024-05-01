@@ -1,0 +1,10 @@
+package mmx;
+
+struct farmed_block_info_t {
+	
+	uint height;
+	uint reward;
+	
+	mmx.addr_t reward_addr;
+	
+}

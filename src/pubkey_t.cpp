@@ -6,6 +6,7 @@
  */
 
 #include <mmx/pubkey_t.hpp>
+#include <mmx/skey_t.hpp>
 
 
 namespace mmx {

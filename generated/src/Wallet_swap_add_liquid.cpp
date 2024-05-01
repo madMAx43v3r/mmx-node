@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_swap_add_liquid::VNX_TYPE_HASH(0xe053d1ae718e2f64ull);
-const vnx::Hash64 Wallet_swap_add_liquid::VNX_CODE_HASH(0xd4b7b7fe7ffaf9d4ull);
+const vnx::Hash64 Wallet_swap_add_liquid::VNX_CODE_HASH(0x329ca73f163043eaull);
 
 vnx::Hash64 Wallet_swap_add_liquid::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -156,7 +156,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_add_liquid::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.swap_add_liquid";
 	type_code->type_hash = vnx::Hash64(0xe053d1ae718e2f64ull);
-	type_code->code_hash = vnx::Hash64(0xd4b7b7fe7ffaf9d4ull);
+	type_code->code_hash = vnx::Hash64(0x329ca73f163043eaull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -238,7 +238,7 @@ void read(TypeInput& in, ::mmx::Wallet_swap_add_liquid& value, const TypeCode* t
 			}
 		}
 	}
-	const char* const _buf = in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
@@ -272,7 +272,7 @@ void write(TypeOutput& out, const ::mmx::Wallet_swap_add_liquid& value, const Ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	char* const _buf = out.write(24);
+	auto* const _buf = out.write(24);
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write_value(_buf + 4, value.amount);
 	vnx::write_value(_buf + 20, value.pool_idx);
