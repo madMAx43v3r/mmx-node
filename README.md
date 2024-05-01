@@ -38,8 +38,8 @@ Roadmap
 | testnet7 | Sep 2022 | Finished. <sup>[1]</sup> |
 | testnet8 | Oct 2022 | Finished. Incentivized testnet, height 25k-425k. <sup>[2]</sup> |
 | testnet9 | Dec 2022 | Finished. Incentivized testnet, height 25k-1220k. <sup>[2]</sup> |
-| testnet10 | Apr 2023 | Active. Incentivized testnet, height 40k-3200k. <sup>[2]</sup> |
-| testnet11 | _tbd_ | Planned May 2024. <sup>[2]</sup> |
+| testnet10 | Apr 2023 | Finished. Incentivized testnet, height 40k-3200k. <sup>[2]</sup> |
+| testnet11 | May 2024 | Active. Incentivized testnet, height _tbd_ <sup>[2]</sup> |
 | mainnet | _tbd_ | Planned Q4 2024. |
 
 _<sup>[1]</sup> Coins farmed on testnets are not worth anything, now or later._\
