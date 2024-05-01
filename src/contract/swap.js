@@ -67,7 +67,7 @@ function _payout(user)
 		const amount = user_share[i];
 		if(amount > 0) {
 			entry.fees_claimed[i] += amount;
-			send(this.user, amount, tokens[i]);
+			send(this.user, amount, tokens[i], "mmx_swap_payout");
 		}
 		user.last_fees_paid[i] = entry.fees_paid[i];
 	}
@@ -155,7 +155,7 @@ function _rem_liquid(user, i, amount, do_send = true)
 	}
 	if(trade_amount > 0) {
 		if(do_send) {
-			send(this.user, trade_amount, tokens[k]);
+			send(this.user, trade_amount, tokens[k], "mmx_swap_rem_liquid");
 		}
 		balance[k] -= trade_amount;
 	}
