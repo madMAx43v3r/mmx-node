@@ -5,31 +5,31 @@ _“ MMX &ndash; fast, low cost, feature rich, decentralized &ndash; with tokeno
 A blockchain written from scratch, doing most things differently.
 
 Design
-- Variable token supply governed by consensus voting (1 block = 1 vote)
+- Variable token supply governed by consensus (1 block = 1 vote)
 - High throughput L1 with consistent block interval (500 TPS, 10 sec)
-- Novel Smart Contract VM for ease of development + high performance
-- Energy efficient Proof of Space, with optional Proof of Stake (Tx fees only)
+- Novel Smart Contract VM for ease of development and high performance
+- Energy efficient Proof of Space, with optional Proof of Stake (limited to Tx fees)
 - Block reward is adjusted to stabilize price, a key property of any currency
-- Minimum transaction fee to allow large block size without spam and DB bloat
-- Using only a few libraries to keep codebase clean (and secure)
+- Minimum transaction fee to allow large block size without spam
+- Limited external library usage to keep codebase clean and secure
 - No pre-mine, no ICO, no investors
-- Account model based
+- Account based model
 
-Components
-- High performance code (C++, can handle over 1000 TPS easily)
-  - Parallel transaction execution when possible
-- Custom high-level VM for Smart Contracts (similar to JavaScript)
-  - Native support for variants, arrays, maps and objects
-  - Unified memory (automatic persistence and state updates)
-  - Compiler for a restricted sub-set of JavaScript
-  - Roughly two machine instructions per source line (on average)
+Elements
+- High performance C++ code (can handle over 1000 TPS easily)
+  - Transactions are executed in parallel when possible
+- Custom high-level VM for Smart Contracts
+  - Native support for variants, arrays, maps, and objects
+  - Unified memory with automatic persistence and state updates
+  - A restricted subset of JavaScript is compiled into bytecode
+  - Average of two machine instructions per line of code
 - Native token support (no "approvals" needed, NFT = 1 mojo)
 - Smart contract offer based trading (fixed price, OTC)
-- Liquidity pool swap based trading (AMM, multi-fee tiers, similar to UniSwap v3)
+- Liquidity pool swap based trading (AMM, multi-fee tiers, similar to Uniswap v3)
 - ECDSA signatures for seamless integration (same as Bitcoin)
-- Custom database engine (much faster than RocksDB / LevelDB, blockchain specific)
-- Adaptive SHA256 VDF to govern block interval (no fake timers like Solana)
-- Fully featured Node with built-in Block Explorer, Wallet, Market, Swap as well as HTTP RPC endpoints
+- Custom blockchain database engine (much faster than RocksDB or LevelDB overall)
+- Adaptive SHA256 VDF to govern block interval
+- Feature rich Node with built-in Block Explorer, Wallet, Market, Swap, RPC, etc
 
 Roadmap
 
