@@ -5,8 +5,9 @@ include(FetchContent)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+set(CMAKE_CXX_STANDARD 17)
+
 if(MSVC)
-	set(CMAKE_CXX_STANDARD 20)
 	include(GenerateExportHeader)
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	
@@ -35,8 +36,7 @@ if(MSVC)
 	)
 else()
 	message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
-	
-	set(CMAKE_CXX_STANDARD 17)
+
 	include(cmake/commit_hash_json.cmake)
 	
 	add_compile_options(-Wall -Wno-unused-function -Wno-parentheses -Wno-unused-local-typedefs -Wno-unknown-pragmas)
@@ -247,6 +247,8 @@ if(MSVC)
 	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
+
+	set_target_properties(mmx_vm PROPERTIES CXX_STANDARD 20)
 
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_pos PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)

@@ -248,7 +248,7 @@ void Node::update()
 		{
 			const auto proof = fork->block->proof;
 			std::stringstream msg;
-			msg << "\U0001F4BE New peak at height " << peak->height << " with score ";
+			msg << u8"\U0001F4BE New peak at height " << peak->height << " with score ";
 			if(proof) {
 				msg << proof->score;
 			} else {
@@ -825,7 +825,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->BlockHeader::operator=(*result);
 
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
-	log(INFO) << "\U0001F911 Created block at height " << block->height << " with: ntx = "
+	log(INFO) << u8"\U0001F911 Created block at height " << block->height << " with: ntx = "
 			<< (full_block ? std::to_string(block->tx_list.size()) : "dummy")
 			<< ", score = " << block->proof->score << ", reward = " << to_value(block->reward_amount, params) << " MMX"
 			<< ", fees = " << to_value(total_fees, params) << " MMX" << ", took " << elapsed << " sec";
