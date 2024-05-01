@@ -10,6 +10,7 @@ RUN apt-get update && apt-get -y upgrade \
 			build-essential \
 			libminiupnpc-dev \
 			libjemalloc-dev \
+			libsecp256k1-dev \
 			zlib1g-dev \
 			libzstd-dev \
 			ocl-icd-opencl-dev \
