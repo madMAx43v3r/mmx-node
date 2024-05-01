@@ -47,6 +47,8 @@
 
 namespace mmx {
 
+std::shared_ptr<vnx::ThreadPool> g_dummy_threads;
+
 Router::Router(const std::string& _vnx_name)
 	:	RouterBase(_vnx_name)
 {
@@ -137,17 +139,10 @@ void Router::main()
 
 	save_data();
 
-	for(const auto& entry : connect_tasks) {
-		try {
-			vnx::TcpEndpoint().shutdown(entry.second, 2);
-		} catch(const std::exception& ex) {
-			log(WARN) << "Failed to shutdown connecting socket " << entry.second << ", waiting for timeout ...";
-		}
-	}
 	if(upnp_mapper) {
 		upnp_mapper->stop();
 	}
-	connect_threads->close();
+	g_dummy_threads = connect_threads;
 }
 
 hash_t Router::get_id() const
@@ -995,7 +990,9 @@ void Router::connect_task(const vnx::TcpEndpoint& peer, int sock) noexcept
 			log(WARN) << "Connecting to peer " << peer.host_name << " failed with: " << ex.what();
 		}
 	}
-	add_task(std::bind(&Router::add_peer, this, peer.host_name, sock));
+	if(vnx::do_run()) {
+		add_task(std::bind(&Router::add_peer, this, peer.host_name, sock));
+	}
 }
 
 void Router::print_stats()
