@@ -47,8 +47,6 @@
 
 namespace mmx {
 
-std::shared_ptr<vnx::ThreadPool> g_dummy_threads;
-
 Router::Router(const std::string& _vnx_name)
 	:	RouterBase(_vnx_name)
 {
@@ -142,7 +140,7 @@ void Router::main()
 	if(upnp_mapper) {
 		upnp_mapper->stop();
 	}
-	g_dummy_threads = connect_threads;
+	connect_threads->detach();
 }
 
 hash_t Router::get_id() const
