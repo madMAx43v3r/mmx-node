@@ -110,6 +110,27 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) c
 	fork->is_proof_verified = true;
 }
 
+std::shared_ptr<const contract::VirtualPlot> Node::get_virtual_plot(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const
+{
+	if(auto plot = get_contract_as<contract::VirtualPlot>(plot_id)) {
+		return plot;
+	}
+	if(block_hash) {
+		if(auto head = find_fork(*block_hash)) {
+			for(const auto& fork : get_fork_line(head)) {
+				if(auto block = fork->block) {
+					for(const auto& tx : block->get_transactions()) {
+						if(tx->id == plot_id) {
+							return std::dynamic_pointer_cast<const contract::VirtualPlot>(tx->deploy);
+						}
+					}
+				}
+			}
+		}
+	}
+	return nullptr;
+}
+
 uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const
 {
 	hash_t hash;
@@ -195,7 +216,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 	}
 	else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof))
 	{
-		const auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id);
+		const auto plot = get_virtual_plot(stake->plot_id, diff_block->hash);
 		if(!plot) {
 			throw std::logic_error("no such virtual plot: " + stake->plot_id.to_string());
 		}

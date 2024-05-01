@@ -150,6 +150,8 @@ protected:
 
 	std::vector<virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<addr_t>& addresses) const override;
 
+	std::shared_ptr<const contract::VirtualPlot> get_virtual_plot(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const;
+
 	uint64_t get_virtual_plot_balance(const addr_t& plot_id, const vnx::optional<hash_t>& block_hash) const override;
 
 	offer_data_t get_offer(const addr_t& address) const override;
