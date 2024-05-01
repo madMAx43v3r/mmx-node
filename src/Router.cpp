@@ -324,7 +324,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 			bool is_ours = false;
 			if(vnx_sample && vnx_sample->topic == input_vdfs) {
 				is_ours = true;
-				log(INFO) << "\U0000231B Broadcasting VDF for height " << value->height;
+				log(INFO) << u8"\U0000231B Broadcasting VDF for height " << value->height;
 			}
 			auto& credits = timelord_credits[value->timelord_key];
 			credits = std::min(credits + vdf_credits, max_credits);
