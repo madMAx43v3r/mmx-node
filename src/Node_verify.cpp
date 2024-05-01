@@ -431,7 +431,11 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 	if(verify_vdf_rewards && proof->reward_addr) {
 		ss_reward << " (with reward)";
 	}
-	log(INFO) << u8"\U0001F552 Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec" << ss_reward.str();
+	const char* clocks[] = {
+			u8"\U0001F550", u8"\U0001F551", u8"\U0001F552", u8"\U0001F553", u8"\U0001F554", u8"\U0001F555",
+			u8"\U0001F556", u8"\U0001F557", u8"\U0001F558", u8"\U0001F559", u8"\U0001F55A", u8"\U0001F55B" };
+
+	log(INFO) << clocks[proof->height % 12] << " Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec" << ss_reward.str();
 
 	// add dummy blocks
 	const auto root = get_root();
