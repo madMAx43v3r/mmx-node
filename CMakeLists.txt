@@ -312,6 +312,7 @@ target_link_libraries(mmx_harvester mmx_modules)
 
 install(TARGETS mmx_db DESTINATION lib)
 install(TARGETS mmx_vm DESTINATION lib)
+install(TARGETS mmx_pos DESTINATION lib)
 install(TARGETS mmx_iface DESTINATION lib)
 install(TARGETS mmx_modules DESTINATION lib)
 install(FILES ${secp256k1_LIBRARY_FILES} DESTINATION lib)
