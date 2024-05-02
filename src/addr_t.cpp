@@ -8,7 +8,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/vm/var_t.h>
 
-#include <libbech32.h>
+#include <bech32.h>
 
 
 namespace mmx {
