@@ -71,12 +71,10 @@ void calc_mem_hash(uint32_t* mem, uint8_t* hash, const int num_iter)
 		const uint32_t bits = (dir >> 22) % 32u;
 		const uint32_t offset = (dir >> 27);
 
-		for(int i = 0; i < N; ++i)
-		{
+		for(int i = 0; i < N; ++i) {
 			state[i] += rotl_32(mem[offset * N + (iter + i) % N], bits) ^ sum;
 		}
-		for(int i = 0; i < N; ++i)
-		{
+		for(int i = 0; i < N; ++i) {
 			mem[offset * N + i] ^= state[i];
 		}
 	}
