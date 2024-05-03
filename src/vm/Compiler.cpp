@@ -1179,6 +1179,10 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		}
 		out.check_value();
 	}
+	else if(name == "position")
+	{
+		// ignore dummy position nodes by lexy
+	}
 	else {
 		throw std::logic_error("invalid statement: " + name);
 	}
