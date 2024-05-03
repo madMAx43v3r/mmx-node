@@ -48,7 +48,7 @@ constexpr inline Int cdiv(const Int& a, const Int2& b) {
 inline uint32_t rotl_32(const uint32_t v, int bits)
 {
 #ifdef _MSC_VER
-	return _rotl(v, bits)
+	return _rotl(v, bits);
 #else
 	return (v << bits) | (v >> (32 - bits));
 #endif
@@ -57,7 +57,7 @@ inline uint32_t rotl_32(const uint32_t v, int bits)
 inline uint64_t rotl_64(const uint64_t v, int bits)
 {
 #ifdef _MSC_VER
-	return _rotl64(v, bits)
+	return _rotl64(v, bits);
 #else
 	return (v << bits) | (v >> (64 - bits));
 #endif
