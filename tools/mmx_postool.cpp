@@ -10,6 +10,7 @@
 
 #include <vnx/vnx.h>
 #include <cmath>
+#include <thread>
 
 using namespace mmx;
 
@@ -35,7 +36,9 @@ int main(int argc, char** argv)
 	bool debug = false;
 	bool verbose = false;
 	int num_iter = 10;
-	int num_threads = 16;
+
+	const auto processor_count = std::thread::hardware_concurrency();
+	int num_threads = processor_count ? processor_count : 16;
 	int plot_filter = 4;
 	std::vector<std::string> file_names;
 
