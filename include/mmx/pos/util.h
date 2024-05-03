@@ -11,21 +11,17 @@
 #include <cstdint>
 #include <algorithm>
 
-#if defined(_WIN32) || defined(__i386__) || defined(__x86_64__)
+#ifdef _MSC_VER
 #include <immintrin.h>
-#define ROTL32(v,bits) _rotl(v,bits)
+#define ROTL32(v, bits) _rotl(v, bits)
+#define ROTL64(v, bits) _rotl64(v, bits)
 #else
-#define ROTL32(v,bits) (v << bits) | (v >> (32 - bits))
-#endif
-
-#if defined(_WIN32)
-#define ROTL64(v,bits) _rotl64(v,bits)
-#else
-#define ROTL64(v,bits) (v << bits) | (v >> (64 - bits))
+#define ROTL32(v, bits) (v << bits) | (v >> (32 - bits))
+#define ROTL64(v, bits) (v << bits) | (v >> (64 - bits))
 #endif
 
 // compiler-specific byte swap macros.
-#if defined(_MSC_VER)
+#ifdef _MSC_VER
 	#include <cstdlib>
 	// https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/byteswap-uint64-byteswap-ulong-byteswap-ushort?view=msvc-160
 	inline uint16_t bswap_16(uint16_t x) { return _byteswap_ushort(x); }
