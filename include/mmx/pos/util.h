@@ -12,18 +12,15 @@
 #include <algorithm>
 
 #if defined(_WIN32) || defined(__i386__) || defined(__x86_64__)
-
-#ifdef _MSC_VER
-#include <intrin.h>
-#else
-#include <x86intrin.h>
-#endif
-
+#include <immintrin.h>
 #define ROTL32(v,bits) _rotl(v,bits)
-#define ROTL64(v,bits) _rotl64(v,bits)
-
 #else
 #define ROTL32(v,bits) (v << bits) | (v >> (32 - bits))
+#endif
+
+#if defined(_WIN32)
+#define ROTL64(v,bits) _rotl64(v,bits)
+#else
 #define ROTL64(v,bits) (v << bits) | (v >> (64 - bits))
 #endif
 
