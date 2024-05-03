@@ -92,24 +92,24 @@ int main(int argc, char** argv)
 					try {
 						const auto qualities = prover->get_qualities(challenge, plot_filter);
 
-						for(const auto& entry : qualities)
-						{
-							if(!entry.valid) {
-								std::lock_guard<std::mutex> lock(mutex);
-								std::cerr << "Threw: " << entry.error_msg << std::endl;
-								out->num_fail++;
-								continue;
-							}
-							if(debug) {
-								std::lock_guard<std::mutex> lock(mutex);
-								std::cout << "[" << iter << "] index = " << entry.index << ", quality = " << entry.quality.to_string() << std::endl;
-							}
+						for(const auto& entry : qualities) {
 							try {
+								if(!entry.valid) {
+									throw std::runtime_error(entry.error_msg);
+								}
+								if(debug) {
+									std::lock_guard<std::mutex> lock(mutex);
+									std::cout << "[" << iter << "] index = " << entry.index << ", quality = " << entry.quality.to_string() << std::endl;
+								}
 								std::vector<uint32_t> proof;
 								if(entry.proof.size()) {
 									proof = entry.proof;
 								} else {
-									proof = prover->get_full_proof(challenge, entry.index).proof;
+									const auto res = prover->get_full_proof(challenge, entry.index);
+									if(!res.valid) {
+										throw std::runtime_error(entry.error_msg);
+									}
+									proof = res.proof;
 								}
 								const auto quality = pos::verify(proof, challenge, header->plot_id, plot_filter, header->ksize);
 								if(quality != entry.quality) {
