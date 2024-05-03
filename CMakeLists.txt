@@ -233,6 +233,8 @@ target_link_libraries(mmx_vm mmx_db mmx_iface)
 target_link_libraries(mmx_modules mmx_pos mmx_vm mmx_db mmx_iface)
 
 if(MSVC)
+	set_target_properties(vnx_base_static PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
+
 	GENERATE_EXPORT_HEADER(mmx_iface)
 	GENERATE_EXPORT_HEADER(mmx_modules)
 	GENERATE_EXPORT_HEADER(mmx_db)
