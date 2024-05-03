@@ -1,4 +1,9 @@
 
+{}
+
+{
+}
+
 if(false) {
 	fail("false");
 }
@@ -45,9 +50,18 @@ if(!(true ^ false)) {
 	fail("false ^ true");
 }
 if(true) {
-	// nop
+	// pass
 } else {
 	fail("else");
+}
+if(false) {
+	fail("else-if");
+} else if(false) {
+	fail("else-if");
+} else if(false) {
+	fail("else-if");
+} else {
+	// pass
 }
 
 if(!(1 > 0)) {
