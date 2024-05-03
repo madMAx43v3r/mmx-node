@@ -623,8 +623,12 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		}
 	}
 	catch(const std::exception& ex) {
-//		lexy_ext::node_position(tree, curr_node);
-		throw std::logic_error(std::string("error: ") + ex.what());
+		if(curr_node) {
+			const auto loc = lexy::get_input_location(lexy::string_input<lexy::utf8_encoding>(source), curr_node->position());
+			throw std::logic_error(std::string("error at line ") + std::to_string(loc.line_nr()) + ": " + ex.what());
+		} else {
+			throw std::logic_error(std::string("error: ") +  + ex.what());
+		}
 	}
 
 	for(const auto& var : const_vars) {
