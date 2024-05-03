@@ -26,6 +26,7 @@ int main(int argc, char** argv)
 	options["v"] = "verbose";
 	options["D"] = "verbose-debug";
 	options["file"] = "plot files";
+	options["plotdir"] = "plot files directory";
 	options["iter"] = "number of iterations";
 	options["threads"] = "number of threads";
 
@@ -41,10 +42,12 @@ int main(int argc, char** argv)
 	int num_threads = processor_count ? processor_count : 16;
 	int plot_filter = 4;
 	std::vector<std::string> file_names;
+	std::vector<std::string> dir_names;
 
 	vnx::read_config("verbose-debug", debug);
 	vnx::read_config("verbose", verbose);
 	vnx::read_config("file", file_names);
+	vnx::read_config("plotdir", dir_names);
 	vnx::read_config("iter", num_iter);
 	vnx::read_config("threads", num_threads);
 
@@ -66,6 +69,22 @@ int main(int argc, char** argv)
 
 	std::mutex mutex;
 	std::vector<std::shared_ptr<summary_t>> result;
+
+	for (const auto& dir_name : dir_names)
+	{
+		try {
+			vnx::Directory dir(dir_name);
+
+			for (const auto& file : dir.files()) {
+				if (file && file->get_extension() == ".plot") {
+					file_names.push_back(file->get_path());
+				}
+			}
+		}
+		catch (const std::exception& ex) {
+			std::cerr << "Threw: " << ex.what() << std::endl;
+		}
+	}
 
 	for(const auto& file_name : file_names)
 	{
