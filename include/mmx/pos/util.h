@@ -11,6 +11,22 @@
 #include <cstdint>
 #include <algorithm>
 
+#if defined(_WIN32) || defined(__i386__) || defined(__x86_64__)
+
+#ifdef _MSC_VER
+#include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
+
+#define ROTL32(v,bits) _rotl(v,bits)
+#define ROTL64(v,bits) _rotl64(v,bits)
+
+#else
+#define ROTL32(v,bits) (v << bits) | (v >> (32 - bits))
+#define ROTL64(v,bits) (v << bits) | (v >> (64 - bits))
+#endif
+
 // compiler-specific byte swap macros.
 #if defined(_MSC_VER)
 	#include <cstdlib>
@@ -46,11 +62,11 @@ constexpr inline Int cdiv(const Int& a, const Int2& b) {
 }
 
 inline uint32_t rotl_32(const uint32_t v, int bits) {
-	return (v << bits) | (v >> (32 - bits));
+	return ROTL32(v, bits);
 }
 
 inline uint64_t rotl_64(const uint64_t v, int bits) {
-	return (v << bits) | (v >> (64 - bits));
+	return ROTL64(v, bits);
 }
 
 inline
