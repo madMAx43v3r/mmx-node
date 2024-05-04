@@ -1126,7 +1126,7 @@ std::vector<virtual_plot_info_t> Node::get_virtual_plots(const std::vector<addr_
 			info.farmer_key = plot->farmer_key;
 			info.reward_address = plot->reward_address;
 			info.balance = get_balance(address, addr_t());
-			info.size_bytes = calc_virtual_plot_size(params, info.balance);
+			info.size_bytes = get_virtual_plot_size(params, info.balance);
 			info.owner = to_addr(read_storage_field(address, "owner").first);
 			result.push_back(info);
 		}

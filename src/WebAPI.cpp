@@ -2302,7 +2302,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				vnx::Object out;
 				if(info) {
 					out = render(*info);
-					out["total_virtual_bytes"] = mmx::calc_virtual_plot_size(params, info->total_balance);
+					out["total_virtual_bytes"] = mmx::get_virtual_plot_size(params, info->total_balance);
 				}
 				respond(request_id, out);
 			},
