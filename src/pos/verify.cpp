@@ -20,7 +20,7 @@ namespace pos {
 
 static constexpr int MEM_HASH_ITER = 256;
 
-static constexpr uint64_t MEM_SIZE = 32 * 32;
+static constexpr uint32_t MEM_SIZE = 32 * 32;
 
 static std::mutex g_mutex;
 static std::shared_ptr<vnx::ThreadPool> g_threads;
