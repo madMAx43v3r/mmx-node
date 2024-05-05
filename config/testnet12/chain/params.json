@@ -26,7 +26,7 @@
 	"max_block_size": 250000000,
 	"max_block_cost": 1000000000,
 	"max_tx_cost":     25000000,
-	"min_fee_ratio": [1, 3, 5, 10, 20],
+	"min_fee_ratio": [1, 2, 3, 5, 10],
 	"initial_time_diff":  20000,
 	"initial_space_diff": 100,
 	"time_diff_constant": 10000,
