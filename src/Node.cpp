@@ -313,7 +313,6 @@ void Node::main()
 		block->nonce = params->port;
 		block->time_diff = params->initial_time_diff;
 		block->space_diff = params->initial_space_diff;
-		block->next_base_reward = params->min_reward;
 		block->vdf_output[0] = hash_t(params->network);
 		block->vdf_output[1] = hash_t(params->network);
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
@@ -2544,14 +2543,16 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	if(!block->proof) {
 		return 0;
 	}
+	uint32_t avg_txfee = 0;
 	uint64_t base_reward = params->min_reward;
 	if(auto prev = find_prev_header(block, 1)) {
+		avg_txfee = prev->average_txfee;
 		base_reward = prev->next_base_reward;
 	}
 	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
 		base_reward = 0;
 	}
-	return mmx::calc_final_block_reward(params, base_reward, total_fees);
+	return mmx::calc_final_block_reward(params, base_reward, avg_txfee, total_fees);
 }
 
 std::shared_ptr<const BlockHeader> Node::read_block(

@@ -168,14 +168,19 @@ uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
-uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const uint64_t tx_fees)
+uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const uint64_t avg_txfee, const uint64_t tx_fees)
 {
 	const uint64_t fee_deduction = calc_project_reward(params, tx_fees);
-	return base_reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
+
+	uint64_t min_reward = 0;
+	if(params->min_reward > avg_txfee) {
+		min_reward = params->min_reward - avg_txfee;
+	}
+	return std::max(base_reward, min_reward) + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
 }
 
 inline
-uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const uint64_t avg_txfee, const int8_t vote)
+uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const int8_t vote)
 {
 	const auto step_size = std::max<uint64_t>(base_reward / params->reward_adjust_div, 1);
 
@@ -185,13 +190,7 @@ uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const 
 	} else if(vote < 0) {
 		reward -= step_size;
 	}
-	uint64_t min_reward = params->min_reward;
-	if(avg_txfee >= min_reward) {
-		min_reward = 0;
-	} else {
-		min_reward -= avg_txfee;
-	}
-	return std::max<int64_t>(std::min<int64_t>(reward, 4200000000000ll), min_reward);
+	return std::max<int64_t>(std::min<int64_t>(reward, 4200000000000ll), 0);
 }
 
 inline
