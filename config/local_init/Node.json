@@ -1,5 +1,6 @@
 {
 	"opencl_device": 0,
 	"verify_vdf_cpuopencl": false,
-	"verify_vdf_rewards": true
+	"verify_vdf_rewards": true,
+	"metalsdev_api_key": null
 }

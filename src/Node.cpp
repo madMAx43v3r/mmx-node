@@ -114,6 +114,7 @@ void Node::main()
 
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
 	vdf_threads = std::make_shared<vnx::ThreadPool>(num_vdf_threads);
+	fetch_threads = std::make_shared<vnx::ThreadPool>(2);
 
 	router = std::make_shared<RouterAsyncClient>(router_name);
 	timelord = std::make_shared<TimeLordAsyncClient>(timelord_name);
@@ -345,6 +346,7 @@ void Node::main()
 
 	set_timer_millis(30 * 1000, std::bind(&Node::purge_tx_pool, this));
 	set_timer_millis(300 * 1000, std::bind(&Node::print_stats, this));
+	set_timer_millis(3600 * 1000, std::bind(&Node::update_control, this));
 	set_timer_millis(validate_interval_ms, std::bind(&Node::validate_new, this));
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
@@ -364,6 +366,7 @@ void Node::main()
 
 	threads->close();
 	vdf_threads->close();
+	fetch_threads->detach();
 
 	opencl_vdf.clear();
 

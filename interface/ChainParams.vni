@@ -23,6 +23,8 @@ class ChainParams {
 	uint score_target = 16384;				// defines how many proofs are found per block (must be less than score_threshold)
 	uint score_threshold = 65536;			// should be <= 2^score_bits
 	
+	uint target_mmx_gold_price = 2000;		// [MMX / ounce]
+	
 	ulong vdf_reward = 2000;				// per block
 	ulong min_reward = 200000;
 	ulong reward_adjust_div = 1000000;		// relative adjustment per block
