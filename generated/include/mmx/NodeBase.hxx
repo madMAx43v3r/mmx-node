@@ -86,6 +86,8 @@ public:
 	std::string database_path = "db/";
 	std::string router_name = "Router";
 	std::string timelord_name = "TimeLord";
+	::mmx::addr_t mmx_usd_swap_addr;
+	std::string metalsdev_api_key;
 	
 	typedef ::vnx::Module Super;
 	
@@ -209,7 +211,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(43);
+	_visitor.template type_begin<NodeBase>(45);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -253,7 +255,9 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("database_path", 40); _visitor.accept(database_path);
 	_visitor.type_field("router_name", 41); _visitor.accept(router_name);
 	_visitor.type_field("timelord_name", 42); _visitor.accept(timelord_name);
-	_visitor.template type_end<NodeBase>(43);
+	_visitor.type_field("mmx_usd_swap_addr", 43); _visitor.accept(mmx_usd_swap_addr);
+	_visitor.type_field("metalsdev_api_key", 44); _visitor.accept(metalsdev_api_key);
+	_visitor.template type_end<NodeBase>(45);
 }
 
 
