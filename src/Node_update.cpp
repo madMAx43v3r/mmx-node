@@ -284,8 +284,8 @@ void Node::update()
 				sync_retry++;
 			}
 		} else {
-			log(INFO) << "Finished sync at height " << peak->height;
 			is_synced = true;
+			on_sync_done(peak->height);
 		}
 	}
 	if(!is_synced) {
@@ -414,6 +414,12 @@ void Node::update()
 			publish(value, output_challenges);
 		}
 	}
+}
+
+void Node::on_sync_done(const uint32_t height)
+{
+	log(INFO) << "Finished sync at height " << height;
+	update_control();
 }
 
 bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
@@ -810,10 +816,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	}
 	block->reward_amount = calc_block_reward(block, total_fees);
 	block->next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
-	{
-		// TODO: random voting for now to test
-		block->reward_vote = std::max(std::min(::rand() % 3 - 1, 1), -1);
-	}
+	block->reward_vote = reward_vote;
 	block->finalize();
 
 	FarmerClient farmer(proof.farmer_mac);

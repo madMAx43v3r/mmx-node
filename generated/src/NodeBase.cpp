@@ -207,7 +207,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xc174ce65d09af998ull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x90f7956e5aca1135ull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -255,6 +255,8 @@ NodeBase::NodeBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".database_path", database_path);
 	vnx::read_config(vnx_name + ".router_name", router_name);
 	vnx::read_config(vnx_name + ".timelord_name", timelord_name);
+	vnx::read_config(vnx_name + ".mmx_usd_swap_addr", mmx_usd_swap_addr);
+	vnx::read_config(vnx_name + ".metalsdev_api_key", metalsdev_api_key);
 }
 
 vnx::Hash64 NodeBase::get_type_hash() const {
@@ -315,6 +317,8 @@ void NodeBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, database_path);
 	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, router_name);
 	_visitor.type_field(_type_code->fields[42], 42); vnx::accept(_visitor, timelord_name);
+	_visitor.type_field(_type_code->fields[43], 43); vnx::accept(_visitor, mmx_usd_swap_addr);
+	_visitor.type_field(_type_code->fields[44], 44); vnx::accept(_visitor, metalsdev_api_key);
 	_visitor.type_end(*_type_code);
 }
 
@@ -363,6 +367,8 @@ void NodeBase::write(std::ostream& _out) const {
 	_out << ", \"database_path\": "; vnx::write(_out, database_path);
 	_out << ", \"router_name\": "; vnx::write(_out, router_name);
 	_out << ", \"timelord_name\": "; vnx::write(_out, timelord_name);
+	_out << ", \"mmx_usd_swap_addr\": "; vnx::write(_out, mmx_usd_swap_addr);
+	_out << ", \"metalsdev_api_key\": "; vnx::write(_out, metalsdev_api_key);
 	_out << "}";
 }
 
@@ -418,6 +424,8 @@ vnx::Object NodeBase::to_object() const {
 	_object["database_path"] = database_path;
 	_object["router_name"] = router_name;
 	_object["timelord_name"] = timelord_name;
+	_object["mmx_usd_swap_addr"] = mmx_usd_swap_addr;
+	_object["metalsdev_api_key"] = metalsdev_api_key;
 	return _object;
 }
 
@@ -455,6 +463,10 @@ void NodeBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(max_sync_ahead);
 		} else if(_entry.first == "max_sync_jobs") {
 			_entry.second.to(max_sync_jobs);
+		} else if(_entry.first == "metalsdev_api_key") {
+			_entry.second.to(metalsdev_api_key);
+		} else if(_entry.first == "mmx_usd_swap_addr") {
+			_entry.second.to(mmx_usd_swap_addr);
 		} else if(_entry.first == "num_db_threads") {
 			_entry.second.to(num_db_threads);
 		} else if(_entry.first == "num_sync_retries") {
@@ -643,6 +655,12 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	if(_name == "timelord_name") {
 		return vnx::Variant(timelord_name);
 	}
+	if(_name == "mmx_usd_swap_addr") {
+		return vnx::Variant(mmx_usd_swap_addr);
+	}
+	if(_name == "metalsdev_api_key") {
+		return vnx::Variant(metalsdev_api_key);
+	}
 	return vnx::Variant();
 }
 
@@ -733,6 +751,10 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(router_name);
 	} else if(_name == "timelord_name") {
 		_value.to(timelord_name);
+	} else if(_name == "mmx_usd_swap_addr") {
+		_value.to(mmx_usd_swap_addr);
+	} else if(_name == "metalsdev_api_key") {
+		_value.to(metalsdev_api_key);
 	}
 }
 
@@ -760,7 +782,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0xc174ce65d09af998ull);
+	type_code->code_hash = vnx::Hash64(0x90f7956e5aca1135ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
 	type_code->methods.resize(82);
@@ -846,7 +868,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[79] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[80] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[81] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(43);
+	type_code->fields.resize(45);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -1145,6 +1167,18 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "timelord_name";
 		field.value = vnx::to_string("TimeLord");
+		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[43];
+		field.is_extended = true;
+		field.name = "mmx_usd_swap_addr";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[44];
+		field.is_extended = true;
+		field.name = "metalsdev_api_key";
 		field.code = {32};
 	}
 	type_code->build();
@@ -1817,6 +1851,8 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			case 40: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
 			case 41: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
 			case 42: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
+			case 43: vnx::read(in, value.mmx_usd_swap_addr, type_code, _field->code.data()); break;
+			case 44: vnx::read(in, value.metalsdev_api_key, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -1879,6 +1915,8 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write(out, value.database_path, type_code, type_code->fields[40].code.data());
 	vnx::write(out, value.router_name, type_code, type_code->fields[41].code.data());
 	vnx::write(out, value.timelord_name, type_code, type_code->fields[42].code.data());
+	vnx::write(out, value.mmx_usd_swap_addr, type_code, type_code->fields[43].code.data());
+	vnx::write(out, value.metalsdev_api_key, type_code, type_code->fields[44].code.data());
 }
 
 void read(std::istream& in, ::mmx::NodeBase& value) {

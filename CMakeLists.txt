@@ -186,6 +186,7 @@ add_library(mmx_modules SHARED
 	src/Node_update.cpp
 	src/Node_verify.cpp
 	src/Node_validate.cpp
+	src/Node_control.cpp
 	src/Wallet.cpp
 	src/Farmer.cpp
 	src/Harvester.cpp
@@ -193,6 +194,7 @@ add_library(mmx_modules SHARED
 	src/WebAPI.cpp
 	src/OCL_VDF.cpp
 	src/upnp_mapper.cpp
+	src/http_request.cpp
 )
 
 add_library(uint256_t STATIC

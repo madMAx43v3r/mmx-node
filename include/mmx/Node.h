@@ -288,6 +288,7 @@ private:
 
 	void update();
 	void trigger_update();
+	void update_control();
 
 	void verify_vdfs();
 	void verify_proofs();
@@ -309,6 +310,8 @@ private:
 	void purge_tx_pool();
 
 	void validate_new();
+
+	void on_sync_done(const uint32_t height);
 
 	std::vector<tx_pool_t> validate_for_block();
 
@@ -533,6 +536,11 @@ private:
 	std::unordered_set<uint32_t> vdf_verify_pending;		// height
 	std::vector<std::shared_ptr<OCL_VDF>> opencl_vdf;
 	std::shared_ptr<vnx::ThreadPool> vdf_threads;
+
+	std::mutex fetch_mutex;
+	int reward_vote = 0;
+	std::set<std::string> pending_fetch;
+	std::shared_ptr<vnx::ThreadPool> fetch_threads;
 
 	friend class vnx::addons::HttpInterface<Node>;
 
