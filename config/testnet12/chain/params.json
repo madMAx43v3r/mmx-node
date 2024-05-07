@@ -28,9 +28,9 @@
 	"max_tx_cost":     25000000,
 	"min_fee_ratio": [1, 2, 3, 5, 10],
 	"initial_time_diff":  20000,
-	"initial_space_diff": 100,
+	"initial_space_diff": 10,
 	"time_diff_constant": 10000,
-	"space_diff_constant": 1000000000,
+	"space_diff_constant": 10000000000,
 	"virtual_space_constant": 8108,
 	"fixed_project_reward": 50000,
 	"project_ratio": {
