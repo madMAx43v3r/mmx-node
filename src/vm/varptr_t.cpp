@@ -28,7 +28,7 @@ void read(vnx::TypeInput& in, mmx::vm::varptr_t& value, const vnx::TypeCode* typ
 		case CODE_ALT_STRING: {
 			std::string tmp;
 			vnx::read(in, tmp, type_code, code);
-			value = mmx::vm::binary_t::alloc(tmp);
+			value = mmx::vm::to_binary(tmp);
 			break;
 		}
 		case CODE_DYNAMIC:
@@ -48,13 +48,13 @@ void read(vnx::TypeInput& in, mmx::vm::varptr_t& value, const vnx::TypeCode* typ
 
 void write(vnx::TypeOutput& out, const mmx::vm::varptr_t& value, const vnx::TypeCode* type_code, const uint16_t* code)
 {
-	if(auto var = value.get()) {
-		const auto data = mmx::vm::serialize(*var, false, false);
-		write(out, uint32_t(data.second));
-		out.write(data.first.get(), data.second);
-	} else {
-		write(out, uint32_t(0));
+	auto var = value;
+	if(!var) {
+		var = std::make_unique<mmx::vm::var_t>();
 	}
+	const auto data = mmx::vm::serialize(*var, false, false);
+	write(out, uint32_t(data.second));
+	out.write(data.first.get(), data.second);
 }
 
 void read(std::istream& in, mmx::vm::varptr_t& value)
