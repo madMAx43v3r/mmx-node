@@ -22,40 +22,21 @@ class varptr_t {
 public:
 	varptr_t() = default;
 
+	varptr_t(const varptr_t&) = default;
+
 	varptr_t(const std::nullptr_t&) {}
 
-	explicit varptr_t(var_t* var, const bool aquire = true)
-	{
-		if(aquire && var && var->ref_count != 0) {
-			throw std::logic_error("varptr_t(): ref_count != 0");
-		}
-		ptr = var;
-		addref();
-	}
-
 	template<typename T>
-	varptr_t(std::unique_ptr<T> var) : varptr_t(var.release()) {}
-
-	varptr_t(const varptr_t& other) : varptr_t(other.ptr, false) {}
-
-	~varptr_t() {
-		unref();
-	}
-
-	varptr_t& operator=(const varptr_t& other)
-	{
-		unref();
-		ptr = other.ptr;
-		addref();
-		return *this;
+	varptr_t(std::unique_ptr<T> var) {
+		ptr = std::move(var);
 	}
 
 	var_t* get() const {
-		return ptr;
+		return ptr.get();
 	}
 
 	operator bool() const {
-		return ptr;
+		return bool(ptr);
 	}
 
 	var_t& operator*() {
@@ -67,31 +48,15 @@ public:
 	}
 
 	var_t* operator->() {
-		return ptr;
+		return get();
 	}
 
 	const var_t* operator->() const {
-		return ptr;
+		return get();
 	}
 
 private:
-	void addref() {
-		if(ptr) {
-			ptr->ref_count++;
-		}
-	}
-
-	void unref() {
-		if(ptr) {
-			if(ptr->ref_count-- == 1) {
-				delete ptr;
-			}
-			ptr = nullptr;
-		}
-	}
-
-private:
-	var_t* ptr = nullptr;
+	std::shared_ptr<var_t> ptr;
 
 };
 
