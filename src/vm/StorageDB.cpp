@@ -91,6 +91,11 @@ std::unique_ptr<var_t> StorageDB::read(const addr_t& contract, const uint64_t sr
 	return read_ex(contract, src, -1);
 }
 
+std::unique_ptr<var_t> StorageDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
+{
+	return read_ex(contract, src, key, -1);
+}
+
 std::unique_ptr<var_t> StorageDB::read_ex(const addr_t& contract, const uint64_t src, const uint32_t height) const
 {
 	const auto key = get_key(contract, src);
@@ -102,10 +107,10 @@ std::unique_ptr<var_t> StorageDB::read_ex(const addr_t& contract, const uint64_t
 	return nullptr;
 }
 
-std::unique_ptr<var_t> StorageDB::read(const addr_t& contract, const uint64_t src, const uint64_t key) const
+std::unique_ptr<var_t> StorageDB::read_ex(const addr_t& contract, const uint64_t src, const uint64_t key, const uint32_t height) const
 {
 	const auto entry_key = write_entry_key(contract, src, key);
-	if(auto value = table_entries->find(entry_key)) {
+	if(auto value = table_entries->find(entry_key, height)) {
 		std::unique_ptr<var_t> var;
 		deserialize(var, value->data, value->size, false);
 		return var;
