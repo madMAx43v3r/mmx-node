@@ -139,6 +139,8 @@ struct binary_t : var_t {
 	uint32_t size = 0;
 	uint32_t capacity = 0;
 
+	binary_t(const vartype_e& type) : var_t(type) {}
+
 	binary_t(const binary_t&) = delete;
 	binary_t& operator=(const binary_t&) = delete;
 
@@ -208,7 +210,7 @@ struct binary_t : var_t {
 		::memset(bin->data(bin->size), 0, bin->capacity - bin->size);
 		return bin;
 	}
-	static std::unique_ptr<binary_t> alloc(size_t size, const vartype_e type) {
+	static std::unique_ptr<binary_t> alloc(const size_t size, const vartype_e type) {
 		auto bin = unsafe_alloc(size, type);
 		::memset(bin->data(), 0, bin->capacity);
 		return bin;
@@ -222,15 +224,13 @@ struct binary_t : var_t {
 			case TYPE_STRING: size += 1; break;
 			default: throw std::logic_error("invalid binary type");
 		}
-		auto bin = new binary_t(type);
+		auto bin = std::make_unique<binary_t>(type);
 		bin->capacity = size;
 		bin->p_data = ::malloc(size);
-		return std::unique_ptr<binary_t>(bin);
+		return bin;
 	}
 
 private:
-	binary_t(const vartype_e& type) : var_t(type) {}
-
 	void* p_data = nullptr;
 
 };
