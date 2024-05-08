@@ -136,6 +136,12 @@
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
 #include <mmx/Node_read_storage_array_return.hxx>
+#include <mmx/Node_read_storage_entry_addr.hxx>
+#include <mmx/Node_read_storage_entry_addr_return.hxx>
+#include <mmx/Node_read_storage_entry_string.hxx>
+#include <mmx/Node_read_storage_entry_string_return.hxx>
+#include <mmx/Node_read_storage_entry_var.hxx>
+#include <mmx/Node_read_storage_entry_var_return.hxx>
 #include <mmx/Node_read_storage_field.hxx>
 #include <mmx/Node_read_storage_field_return.hxx>
 #include <mmx/Node_read_storage_map.hxx>
@@ -721,6 +727,22 @@ uint64_t NodeAsyncClient::read_storage_var(const ::mmx::addr_t& contract, const 
 	return _request_id;
 }
 
+uint64_t NodeAsyncClient::read_storage_entry_var(const ::mmx::addr_t& contract, const uint64_t& address, const uint64_t& key, const uint32_t& height, const std::function<void(const ::mmx::vm::varptr_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Node_read_storage_entry_var::create();
+	_method->contract = contract;
+	_method->address = address;
+	_method->key = key;
+	_method->height = height;
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 38;
+		vnx_queue_read_storage_entry_var[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
 uint64_t NodeAsyncClient::read_storage_field(const ::mmx::addr_t& contract, const std::string& name, const uint32_t& height, const std::function<void(const std::pair<::mmx::vm::varptr_t, uint64_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_read_storage_field::create();
 	_method->contract = contract;
@@ -729,8 +751,40 @@ uint64_t NodeAsyncClient::read_storage_field(const ::mmx::addr_t& contract, cons
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 38;
+		vnx_pending[_request_id] = 39;
 		vnx_queue_read_storage_field[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
+uint64_t NodeAsyncClient::read_storage_entry_addr(const ::mmx::addr_t& contract, const std::string& name, const ::mmx::addr_t& key, const uint32_t& height, const std::function<void(const std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Node_read_storage_entry_addr::create();
+	_method->contract = contract;
+	_method->name = name;
+	_method->key = key;
+	_method->height = height;
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 40;
+		vnx_queue_read_storage_entry_addr[_request_id] = std::make_pair(_callback, _error_callback);
+	}
+	vnx_request(_method, _request_id);
+	return _request_id;
+}
+
+uint64_t NodeAsyncClient::read_storage_entry_string(const ::mmx::addr_t& contract, const std::string& name, const std::string& key, const uint32_t& height, const std::function<void(const std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Node_read_storage_entry_string::create();
+	_method->contract = contract;
+	_method->name = name;
+	_method->key = key;
+	_method->height = height;
+	const auto _request_id = ++vnx_next_id;
+	{
+		std::lock_guard<std::mutex> _lock(vnx_mutex);
+		vnx_pending[_request_id] = 41;
+		vnx_queue_read_storage_entry_string[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
 	return _request_id;
@@ -744,7 +798,7 @@ uint64_t NodeAsyncClient::read_storage_array(const ::mmx::addr_t& contract, cons
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 39;
+		vnx_pending[_request_id] = 42;
 		vnx_queue_read_storage_array[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -759,7 +813,7 @@ uint64_t NodeAsyncClient::read_storage_map(const ::mmx::addr_t& contract, const 
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 40;
+		vnx_pending[_request_id] = 43;
 		vnx_queue_read_storage_map[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -774,7 +828,7 @@ uint64_t NodeAsyncClient::read_storage_object(const ::mmx::addr_t& contract, con
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 41;
+		vnx_pending[_request_id] = 44;
 		vnx_queue_read_storage_object[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -791,7 +845,7 @@ uint64_t NodeAsyncClient::call_contract(const ::mmx::addr_t& address, const std:
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 42;
+		vnx_pending[_request_id] = 45;
 		vnx_queue_call_contract[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -804,7 +858,7 @@ uint64_t NodeAsyncClient::get_address_info(const ::mmx::addr_t& address, const s
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 43;
+		vnx_pending[_request_id] = 46;
 		vnx_queue_get_address_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -817,7 +871,7 @@ uint64_t NodeAsyncClient::get_address_infos(const std::vector<::mmx::addr_t>& ad
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 44;
+		vnx_pending[_request_id] = 47;
 		vnx_queue_get_address_infos[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -830,7 +884,7 @@ uint64_t NodeAsyncClient::get_virtual_plots(const std::vector<::mmx::addr_t>& ad
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 45;
+		vnx_pending[_request_id] = 48;
 		vnx_queue_get_virtual_plots[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -843,7 +897,7 @@ uint64_t NodeAsyncClient::get_virtual_plots_for(const ::mmx::pubkey_t& farmer_ke
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 46;
+		vnx_pending[_request_id] = 49;
 		vnx_queue_get_virtual_plots_for[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -856,7 +910,7 @@ uint64_t NodeAsyncClient::get_virtual_plots_owned_by(const std::vector<::mmx::ad
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 47;
+		vnx_pending[_request_id] = 50;
 		vnx_queue_get_virtual_plots_owned_by[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -870,7 +924,7 @@ uint64_t NodeAsyncClient::get_virtual_plot_balance(const ::mmx::addr_t& plot_id,
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 48;
+		vnx_pending[_request_id] = 51;
 		vnx_queue_get_virtual_plot_balance[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -883,7 +937,7 @@ uint64_t NodeAsyncClient::get_offer(const ::mmx::addr_t& address, const std::fun
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 49;
+		vnx_pending[_request_id] = 52;
 		vnx_queue_get_offer[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -897,7 +951,7 @@ uint64_t NodeAsyncClient::get_offers(const uint32_t& since, const vnx::bool_t& s
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 50;
+		vnx_pending[_request_id] = 53;
 		vnx_queue_get_offers[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -911,7 +965,7 @@ uint64_t NodeAsyncClient::get_offers_by(const std::vector<::mmx::addr_t>& owners
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 51;
+		vnx_pending[_request_id] = 54;
 		vnx_queue_get_offers_by[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -926,7 +980,7 @@ uint64_t NodeAsyncClient::fetch_offers(const std::vector<::mmx::addr_t>& address
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 52;
+		vnx_pending[_request_id] = 55;
 		vnx_queue_fetch_offers[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -940,7 +994,7 @@ uint64_t NodeAsyncClient::get_recent_offers(const int32_t& limit, const vnx::boo
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 53;
+		vnx_pending[_request_id] = 56;
 		vnx_queue_get_recent_offers[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -956,7 +1010,7 @@ uint64_t NodeAsyncClient::get_recent_offers_for(const vnx::optional<::mmx::addr_
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 54;
+		vnx_pending[_request_id] = 57;
 		vnx_queue_get_recent_offers_for[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -970,7 +1024,7 @@ uint64_t NodeAsyncClient::get_trade_history(const int32_t& limit, const uint32_t
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 55;
+		vnx_pending[_request_id] = 58;
 		vnx_queue_get_trade_history[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -986,7 +1040,7 @@ uint64_t NodeAsyncClient::get_trade_history_for(const vnx::optional<::mmx::addr_
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 56;
+		vnx_pending[_request_id] = 59;
 		vnx_queue_get_trade_history_for[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1001,7 +1055,7 @@ uint64_t NodeAsyncClient::get_swaps(const uint32_t& since, const vnx::optional<:
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 57;
+		vnx_pending[_request_id] = 60;
 		vnx_queue_get_swaps[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1014,7 +1068,7 @@ uint64_t NodeAsyncClient::get_swap_info(const ::mmx::addr_t& address, const std:
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 58;
+		vnx_pending[_request_id] = 61;
 		vnx_queue_get_swap_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1028,7 +1082,7 @@ uint64_t NodeAsyncClient::get_swap_user_info(const ::mmx::addr_t& address, const
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 59;
+		vnx_pending[_request_id] = 62;
 		vnx_queue_get_swap_user_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1042,7 +1096,7 @@ uint64_t NodeAsyncClient::get_swap_history(const ::mmx::addr_t& address, const i
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 60;
+		vnx_pending[_request_id] = 63;
 		vnx_queue_get_swap_history[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1058,7 +1112,7 @@ uint64_t NodeAsyncClient::get_swap_trade_estimate(const ::mmx::addr_t& address, 
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 61;
+		vnx_pending[_request_id] = 64;
 		vnx_queue_get_swap_trade_estimate[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1072,7 +1126,7 @@ uint64_t NodeAsyncClient::get_swap_fees_earned(const ::mmx::addr_t& address, con
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 62;
+		vnx_pending[_request_id] = 65;
 		vnx_queue_get_swap_fees_earned[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1086,7 +1140,7 @@ uint64_t NodeAsyncClient::get_swap_equivalent_liquidity(const ::mmx::addr_t& add
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 63;
+		vnx_pending[_request_id] = 66;
 		vnx_queue_get_swap_equivalent_liquidity[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1099,7 +1153,7 @@ uint64_t NodeAsyncClient::get_swap_liquidity_by(const std::vector<::mmx::addr_t>
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 64;
+		vnx_pending[_request_id] = 67;
 		vnx_queue_get_swap_liquidity_by[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1112,7 +1166,7 @@ uint64_t NodeAsyncClient::get_total_supply(const ::mmx::addr_t& currency, const 
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 65;
+		vnx_pending[_request_id] = 68;
 		vnx_queue_get_total_supply[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1128,7 +1182,7 @@ uint64_t NodeAsyncClient::get_farmed_blocks(const std::vector<::mmx::pubkey_t>& 
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 66;
+		vnx_pending[_request_id] = 69;
 		vnx_queue_get_farmed_blocks[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1141,7 +1195,7 @@ uint64_t NodeAsyncClient::get_farmed_block_count(const uint32_t& since, const st
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 67;
+		vnx_pending[_request_id] = 70;
 		vnx_queue_get_farmed_block_count[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1155,7 +1209,7 @@ uint64_t NodeAsyncClient::get_farmed_block_count_for(const std::vector<::mmx::pu
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 68;
+		vnx_pending[_request_id] = 71;
 		vnx_queue_get_farmed_block_count_for[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1168,7 +1222,7 @@ uint64_t NodeAsyncClient::start_sync(const vnx::bool_t& force, const std::functi
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 69;
+		vnx_pending[_request_id] = 72;
 		vnx_queue_start_sync[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1181,7 +1235,7 @@ uint64_t NodeAsyncClient::revert_sync(const uint32_t& height, const std::functio
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 70;
+		vnx_pending[_request_id] = 73;
 		vnx_queue_revert_sync[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1195,7 +1249,7 @@ uint64_t NodeAsyncClient::http_request(std::shared_ptr<const ::vnx::addons::Http
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 71;
+		vnx_pending[_request_id] = 74;
 		vnx_queue_http_request[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1211,7 +1265,7 @@ uint64_t NodeAsyncClient::http_request_chunk(std::shared_ptr<const ::vnx::addons
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 72;
+		vnx_pending[_request_id] = 75;
 		vnx_queue_http_request_chunk[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1223,7 +1277,7 @@ uint64_t NodeAsyncClient::vnx_get_config_object(const std::function<void(const :
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 73;
+		vnx_pending[_request_id] = 76;
 		vnx_queue_vnx_get_config_object[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1236,7 +1290,7 @@ uint64_t NodeAsyncClient::vnx_get_config(const std::string& name, const std::fun
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 74;
+		vnx_pending[_request_id] = 77;
 		vnx_queue_vnx_get_config[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1249,7 +1303,7 @@ uint64_t NodeAsyncClient::vnx_set_config_object(const ::vnx::Object& config, con
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 75;
+		vnx_pending[_request_id] = 78;
 		vnx_queue_vnx_set_config_object[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1263,7 +1317,7 @@ uint64_t NodeAsyncClient::vnx_set_config(const std::string& name, const ::vnx::V
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 76;
+		vnx_pending[_request_id] = 79;
 		vnx_queue_vnx_set_config[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1275,7 +1329,7 @@ uint64_t NodeAsyncClient::vnx_get_type_code(const std::function<void(const ::vnx
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 77;
+		vnx_pending[_request_id] = 80;
 		vnx_queue_vnx_get_type_code[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1287,7 +1341,7 @@ uint64_t NodeAsyncClient::vnx_get_module_info(const std::function<void(std::shar
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 78;
+		vnx_pending[_request_id] = 81;
 		vnx_queue_vnx_get_module_info[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1299,7 +1353,7 @@ uint64_t NodeAsyncClient::vnx_restart(const std::function<void()>& _callback, co
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 79;
+		vnx_pending[_request_id] = 82;
 		vnx_queue_vnx_restart[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1311,7 +1365,7 @@ uint64_t NodeAsyncClient::vnx_stop(const std::function<void()>& _callback, const
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 80;
+		vnx_pending[_request_id] = 83;
 		vnx_queue_vnx_stop[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1323,7 +1377,7 @@ uint64_t NodeAsyncClient::vnx_self_test(const std::function<void(const vnx::bool
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
-		vnx_pending[_request_id] = 81;
+		vnx_pending[_request_id] = 84;
 		vnx_queue_vnx_self_test[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
@@ -1796,6 +1850,18 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			break;
 		}
 		case 38: {
+			const auto _iter = vnx_queue_read_storage_entry_var.find(_request_id);
+			if(_iter != vnx_queue_read_storage_entry_var.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_read_storage_entry_var.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 39: {
 			const auto _iter = vnx_queue_read_storage_field.find(_request_id);
 			if(_iter != vnx_queue_read_storage_field.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1807,7 +1873,31 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 39: {
+		case 40: {
+			const auto _iter = vnx_queue_read_storage_entry_addr.find(_request_id);
+			if(_iter != vnx_queue_read_storage_entry_addr.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_read_storage_entry_addr.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 41: {
+			const auto _iter = vnx_queue_read_storage_entry_string.find(_request_id);
+			if(_iter != vnx_queue_read_storage_entry_string.end()) {
+				const auto _callback = std::move(_iter->second.second);
+				vnx_queue_read_storage_entry_string.erase(_iter);
+				_lock.unlock();
+				if(_callback) {
+					_callback(_ex);
+				}
+			}
+			break;
+		}
+		case 42: {
 			const auto _iter = vnx_queue_read_storage_array.find(_request_id);
 			if(_iter != vnx_queue_read_storage_array.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1819,7 +1909,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 40: {
+		case 43: {
 			const auto _iter = vnx_queue_read_storage_map.find(_request_id);
 			if(_iter != vnx_queue_read_storage_map.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1831,7 +1921,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 41: {
+		case 44: {
 			const auto _iter = vnx_queue_read_storage_object.find(_request_id);
 			if(_iter != vnx_queue_read_storage_object.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1843,7 +1933,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 42: {
+		case 45: {
 			const auto _iter = vnx_queue_call_contract.find(_request_id);
 			if(_iter != vnx_queue_call_contract.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1855,7 +1945,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 43: {
+		case 46: {
 			const auto _iter = vnx_queue_get_address_info.find(_request_id);
 			if(_iter != vnx_queue_get_address_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1867,7 +1957,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 44: {
+		case 47: {
 			const auto _iter = vnx_queue_get_address_infos.find(_request_id);
 			if(_iter != vnx_queue_get_address_infos.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1879,7 +1969,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 45: {
+		case 48: {
 			const auto _iter = vnx_queue_get_virtual_plots.find(_request_id);
 			if(_iter != vnx_queue_get_virtual_plots.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1891,7 +1981,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 46: {
+		case 49: {
 			const auto _iter = vnx_queue_get_virtual_plots_for.find(_request_id);
 			if(_iter != vnx_queue_get_virtual_plots_for.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1903,7 +1993,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 47: {
+		case 50: {
 			const auto _iter = vnx_queue_get_virtual_plots_owned_by.find(_request_id);
 			if(_iter != vnx_queue_get_virtual_plots_owned_by.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1915,7 +2005,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 48: {
+		case 51: {
 			const auto _iter = vnx_queue_get_virtual_plot_balance.find(_request_id);
 			if(_iter != vnx_queue_get_virtual_plot_balance.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1927,7 +2017,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 49: {
+		case 52: {
 			const auto _iter = vnx_queue_get_offer.find(_request_id);
 			if(_iter != vnx_queue_get_offer.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1939,7 +2029,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 50: {
+		case 53: {
 			const auto _iter = vnx_queue_get_offers.find(_request_id);
 			if(_iter != vnx_queue_get_offers.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1951,7 +2041,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 51: {
+		case 54: {
 			const auto _iter = vnx_queue_get_offers_by.find(_request_id);
 			if(_iter != vnx_queue_get_offers_by.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1963,7 +2053,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 52: {
+		case 55: {
 			const auto _iter = vnx_queue_fetch_offers.find(_request_id);
 			if(_iter != vnx_queue_fetch_offers.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1975,7 +2065,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 53: {
+		case 56: {
 			const auto _iter = vnx_queue_get_recent_offers.find(_request_id);
 			if(_iter != vnx_queue_get_recent_offers.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1987,7 +2077,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 54: {
+		case 57: {
 			const auto _iter = vnx_queue_get_recent_offers_for.find(_request_id);
 			if(_iter != vnx_queue_get_recent_offers_for.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -1999,7 +2089,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 55: {
+		case 58: {
 			const auto _iter = vnx_queue_get_trade_history.find(_request_id);
 			if(_iter != vnx_queue_get_trade_history.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2011,7 +2101,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 56: {
+		case 59: {
 			const auto _iter = vnx_queue_get_trade_history_for.find(_request_id);
 			if(_iter != vnx_queue_get_trade_history_for.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2023,7 +2113,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 57: {
+		case 60: {
 			const auto _iter = vnx_queue_get_swaps.find(_request_id);
 			if(_iter != vnx_queue_get_swaps.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2035,7 +2125,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 58: {
+		case 61: {
 			const auto _iter = vnx_queue_get_swap_info.find(_request_id);
 			if(_iter != vnx_queue_get_swap_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2047,7 +2137,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 59: {
+		case 62: {
 			const auto _iter = vnx_queue_get_swap_user_info.find(_request_id);
 			if(_iter != vnx_queue_get_swap_user_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2059,7 +2149,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 60: {
+		case 63: {
 			const auto _iter = vnx_queue_get_swap_history.find(_request_id);
 			if(_iter != vnx_queue_get_swap_history.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2071,7 +2161,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 61: {
+		case 64: {
 			const auto _iter = vnx_queue_get_swap_trade_estimate.find(_request_id);
 			if(_iter != vnx_queue_get_swap_trade_estimate.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2083,7 +2173,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 62: {
+		case 65: {
 			const auto _iter = vnx_queue_get_swap_fees_earned.find(_request_id);
 			if(_iter != vnx_queue_get_swap_fees_earned.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2095,7 +2185,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 63: {
+		case 66: {
 			const auto _iter = vnx_queue_get_swap_equivalent_liquidity.find(_request_id);
 			if(_iter != vnx_queue_get_swap_equivalent_liquidity.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2107,7 +2197,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 64: {
+		case 67: {
 			const auto _iter = vnx_queue_get_swap_liquidity_by.find(_request_id);
 			if(_iter != vnx_queue_get_swap_liquidity_by.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2119,7 +2209,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 65: {
+		case 68: {
 			const auto _iter = vnx_queue_get_total_supply.find(_request_id);
 			if(_iter != vnx_queue_get_total_supply.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2131,7 +2221,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 66: {
+		case 69: {
 			const auto _iter = vnx_queue_get_farmed_blocks.find(_request_id);
 			if(_iter != vnx_queue_get_farmed_blocks.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2143,7 +2233,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 67: {
+		case 70: {
 			const auto _iter = vnx_queue_get_farmed_block_count.find(_request_id);
 			if(_iter != vnx_queue_get_farmed_block_count.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2155,7 +2245,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 68: {
+		case 71: {
 			const auto _iter = vnx_queue_get_farmed_block_count_for.find(_request_id);
 			if(_iter != vnx_queue_get_farmed_block_count_for.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2167,7 +2257,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 69: {
+		case 72: {
 			const auto _iter = vnx_queue_start_sync.find(_request_id);
 			if(_iter != vnx_queue_start_sync.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2179,7 +2269,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 70: {
+		case 73: {
 			const auto _iter = vnx_queue_revert_sync.find(_request_id);
 			if(_iter != vnx_queue_revert_sync.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2191,7 +2281,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 71: {
+		case 74: {
 			const auto _iter = vnx_queue_http_request.find(_request_id);
 			if(_iter != vnx_queue_http_request.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2203,7 +2293,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 72: {
+		case 75: {
 			const auto _iter = vnx_queue_http_request_chunk.find(_request_id);
 			if(_iter != vnx_queue_http_request_chunk.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2215,7 +2305,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 73: {
+		case 76: {
 			const auto _iter = vnx_queue_vnx_get_config_object.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_config_object.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2227,7 +2317,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 74: {
+		case 77: {
 			const auto _iter = vnx_queue_vnx_get_config.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_config.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2239,7 +2329,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 75: {
+		case 78: {
 			const auto _iter = vnx_queue_vnx_set_config_object.find(_request_id);
 			if(_iter != vnx_queue_vnx_set_config_object.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2251,7 +2341,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 76: {
+		case 79: {
 			const auto _iter = vnx_queue_vnx_set_config.find(_request_id);
 			if(_iter != vnx_queue_vnx_set_config.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2263,7 +2353,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 77: {
+		case 80: {
 			const auto _iter = vnx_queue_vnx_get_type_code.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_type_code.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2275,7 +2365,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 78: {
+		case 81: {
 			const auto _iter = vnx_queue_vnx_get_module_info.find(_request_id);
 			if(_iter != vnx_queue_vnx_get_module_info.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2287,7 +2377,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 79: {
+		case 82: {
 			const auto _iter = vnx_queue_vnx_restart.find(_request_id);
 			if(_iter != vnx_queue_vnx_restart.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2299,7 +2389,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 80: {
+		case 83: {
 			const auto _iter = vnx_queue_vnx_stop.find(_request_id);
 			if(_iter != vnx_queue_vnx_stop.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -2311,7 +2401,7 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			}
 			break;
 		}
-		case 81: {
+		case 84: {
 			const auto _iter = vnx_queue_vnx_self_test.find(_request_id);
 			if(_iter != vnx_queue_vnx_self_test.end()) {
 				const auto _callback = std::move(_iter->second.second);
@@ -3047,6 +3137,25 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			break;
 		}
 		case 38: {
+			const auto _iter = vnx_queue_read_storage_entry_var.find(_request_id);
+			if(_iter == vnx_queue_read_storage_entry_var.end()) {
+				throw std::runtime_error("NodeAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_read_storage_entry_var.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_read_storage_entry_var_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<::mmx::vm::varptr_t>());
+				} else {
+					throw std::logic_error("NodeAsyncClient: invalid return value");
+				}
+			}
+			break;
+		}
+		case 39: {
 			const auto _iter = vnx_queue_read_storage_field.find(_request_id);
 			if(_iter == vnx_queue_read_storage_field.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3065,7 +3174,45 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 39: {
+		case 40: {
+			const auto _iter = vnx_queue_read_storage_entry_addr.find(_request_id);
+			if(_iter == vnx_queue_read_storage_entry_addr.end()) {
+				throw std::runtime_error("NodeAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_read_storage_entry_addr.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_read_storage_entry_addr_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>>());
+				} else {
+					throw std::logic_error("NodeAsyncClient: invalid return value");
+				}
+			}
+			break;
+		}
+		case 41: {
+			const auto _iter = vnx_queue_read_storage_entry_string.find(_request_id);
+			if(_iter == vnx_queue_read_storage_entry_string.end()) {
+				throw std::runtime_error("NodeAsyncClient: callback not found");
+			}
+			const auto _callback = std::move(_iter->second.first);
+			vnx_queue_read_storage_entry_string.erase(_iter);
+			_lock.unlock();
+			if(_callback) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_read_storage_entry_string_return>(_value)) {
+					_callback(_result->_ret_0);
+				} else if(_value && !_value->is_void()) {
+					_callback(_value->get_field_by_index(0).to<std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>>());
+				} else {
+					throw std::logic_error("NodeAsyncClient: invalid return value");
+				}
+			}
+			break;
+		}
+		case 42: {
 			const auto _iter = vnx_queue_read_storage_array.find(_request_id);
 			if(_iter == vnx_queue_read_storage_array.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3084,7 +3231,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 40: {
+		case 43: {
 			const auto _iter = vnx_queue_read_storage_map.find(_request_id);
 			if(_iter == vnx_queue_read_storage_map.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3103,7 +3250,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 41: {
+		case 44: {
 			const auto _iter = vnx_queue_read_storage_object.find(_request_id);
 			if(_iter == vnx_queue_read_storage_object.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3122,7 +3269,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 42: {
+		case 45: {
 			const auto _iter = vnx_queue_call_contract.find(_request_id);
 			if(_iter == vnx_queue_call_contract.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3141,7 +3288,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 43: {
+		case 46: {
 			const auto _iter = vnx_queue_get_address_info.find(_request_id);
 			if(_iter == vnx_queue_get_address_info.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3160,7 +3307,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 44: {
+		case 47: {
 			const auto _iter = vnx_queue_get_address_infos.find(_request_id);
 			if(_iter == vnx_queue_get_address_infos.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3179,7 +3326,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 45: {
+		case 48: {
 			const auto _iter = vnx_queue_get_virtual_plots.find(_request_id);
 			if(_iter == vnx_queue_get_virtual_plots.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3198,7 +3345,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 46: {
+		case 49: {
 			const auto _iter = vnx_queue_get_virtual_plots_for.find(_request_id);
 			if(_iter == vnx_queue_get_virtual_plots_for.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3217,7 +3364,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 47: {
+		case 50: {
 			const auto _iter = vnx_queue_get_virtual_plots_owned_by.find(_request_id);
 			if(_iter == vnx_queue_get_virtual_plots_owned_by.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3236,7 +3383,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 48: {
+		case 51: {
 			const auto _iter = vnx_queue_get_virtual_plot_balance.find(_request_id);
 			if(_iter == vnx_queue_get_virtual_plot_balance.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3255,7 +3402,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 49: {
+		case 52: {
 			const auto _iter = vnx_queue_get_offer.find(_request_id);
 			if(_iter == vnx_queue_get_offer.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3274,7 +3421,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 50: {
+		case 53: {
 			const auto _iter = vnx_queue_get_offers.find(_request_id);
 			if(_iter == vnx_queue_get_offers.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3293,7 +3440,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 51: {
+		case 54: {
 			const auto _iter = vnx_queue_get_offers_by.find(_request_id);
 			if(_iter == vnx_queue_get_offers_by.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3312,7 +3459,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 52: {
+		case 55: {
 			const auto _iter = vnx_queue_fetch_offers.find(_request_id);
 			if(_iter == vnx_queue_fetch_offers.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3331,7 +3478,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 53: {
+		case 56: {
 			const auto _iter = vnx_queue_get_recent_offers.find(_request_id);
 			if(_iter == vnx_queue_get_recent_offers.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3350,7 +3497,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 54: {
+		case 57: {
 			const auto _iter = vnx_queue_get_recent_offers_for.find(_request_id);
 			if(_iter == vnx_queue_get_recent_offers_for.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3369,7 +3516,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 55: {
+		case 58: {
 			const auto _iter = vnx_queue_get_trade_history.find(_request_id);
 			if(_iter == vnx_queue_get_trade_history.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3388,7 +3535,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 56: {
+		case 59: {
 			const auto _iter = vnx_queue_get_trade_history_for.find(_request_id);
 			if(_iter == vnx_queue_get_trade_history_for.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3407,7 +3554,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 57: {
+		case 60: {
 			const auto _iter = vnx_queue_get_swaps.find(_request_id);
 			if(_iter == vnx_queue_get_swaps.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3426,7 +3573,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 58: {
+		case 61: {
 			const auto _iter = vnx_queue_get_swap_info.find(_request_id);
 			if(_iter == vnx_queue_get_swap_info.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3445,7 +3592,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 59: {
+		case 62: {
 			const auto _iter = vnx_queue_get_swap_user_info.find(_request_id);
 			if(_iter == vnx_queue_get_swap_user_info.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3464,7 +3611,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 60: {
+		case 63: {
 			const auto _iter = vnx_queue_get_swap_history.find(_request_id);
 			if(_iter == vnx_queue_get_swap_history.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3483,7 +3630,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 61: {
+		case 64: {
 			const auto _iter = vnx_queue_get_swap_trade_estimate.find(_request_id);
 			if(_iter == vnx_queue_get_swap_trade_estimate.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3502,7 +3649,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 62: {
+		case 65: {
 			const auto _iter = vnx_queue_get_swap_fees_earned.find(_request_id);
 			if(_iter == vnx_queue_get_swap_fees_earned.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3521,7 +3668,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 63: {
+		case 66: {
 			const auto _iter = vnx_queue_get_swap_equivalent_liquidity.find(_request_id);
 			if(_iter == vnx_queue_get_swap_equivalent_liquidity.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3540,7 +3687,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 64: {
+		case 67: {
 			const auto _iter = vnx_queue_get_swap_liquidity_by.find(_request_id);
 			if(_iter == vnx_queue_get_swap_liquidity_by.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3559,7 +3706,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 65: {
+		case 68: {
 			const auto _iter = vnx_queue_get_total_supply.find(_request_id);
 			if(_iter == vnx_queue_get_total_supply.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3578,7 +3725,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 66: {
+		case 69: {
 			const auto _iter = vnx_queue_get_farmed_blocks.find(_request_id);
 			if(_iter == vnx_queue_get_farmed_blocks.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3597,7 +3744,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 67: {
+		case 70: {
 			const auto _iter = vnx_queue_get_farmed_block_count.find(_request_id);
 			if(_iter == vnx_queue_get_farmed_block_count.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3616,7 +3763,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 68: {
+		case 71: {
 			const auto _iter = vnx_queue_get_farmed_block_count_for.find(_request_id);
 			if(_iter == vnx_queue_get_farmed_block_count_for.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3635,7 +3782,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 69: {
+		case 72: {
 			const auto _iter = vnx_queue_start_sync.find(_request_id);
 			if(_iter == vnx_queue_start_sync.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3648,7 +3795,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 70: {
+		case 73: {
 			const auto _iter = vnx_queue_revert_sync.find(_request_id);
 			if(_iter == vnx_queue_revert_sync.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3661,7 +3808,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 71: {
+		case 74: {
 			const auto _iter = vnx_queue_http_request.find(_request_id);
 			if(_iter == vnx_queue_http_request.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3680,7 +3827,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 72: {
+		case 75: {
 			const auto _iter = vnx_queue_http_request_chunk.find(_request_id);
 			if(_iter == vnx_queue_http_request_chunk.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3699,7 +3846,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 73: {
+		case 76: {
 			const auto _iter = vnx_queue_vnx_get_config_object.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_config_object.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3718,7 +3865,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 74: {
+		case 77: {
 			const auto _iter = vnx_queue_vnx_get_config.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_config.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3737,7 +3884,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 75: {
+		case 78: {
 			const auto _iter = vnx_queue_vnx_set_config_object.find(_request_id);
 			if(_iter == vnx_queue_vnx_set_config_object.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3750,7 +3897,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 76: {
+		case 79: {
 			const auto _iter = vnx_queue_vnx_set_config.find(_request_id);
 			if(_iter == vnx_queue_vnx_set_config.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3763,7 +3910,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 77: {
+		case 80: {
 			const auto _iter = vnx_queue_vnx_get_type_code.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_type_code.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3782,7 +3929,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 78: {
+		case 81: {
 			const auto _iter = vnx_queue_vnx_get_module_info.find(_request_id);
 			if(_iter == vnx_queue_vnx_get_module_info.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3801,7 +3948,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 79: {
+		case 82: {
 			const auto _iter = vnx_queue_vnx_restart.find(_request_id);
 			if(_iter == vnx_queue_vnx_restart.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3814,7 +3961,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 80: {
+		case 83: {
 			const auto _iter = vnx_queue_vnx_stop.find(_request_id);
 			if(_iter == vnx_queue_vnx_stop.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
@@ -3827,7 +3974,7 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			}
 			break;
 		}
-		case 81: {
+		case 84: {
 			const auto _iter = vnx_queue_vnx_self_test.find(_request_id);
 			if(_iter == vnx_queue_vnx_self_test.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");

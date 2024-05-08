@@ -137,6 +137,12 @@
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
 #include <mmx/Node_read_storage_array_return.hxx>
+#include <mmx/Node_read_storage_entry_addr.hxx>
+#include <mmx/Node_read_storage_entry_addr_return.hxx>
+#include <mmx/Node_read_storage_entry_string.hxx>
+#include <mmx/Node_read_storage_entry_string_return.hxx>
+#include <mmx/Node_read_storage_entry_var.hxx>
+#include <mmx/Node_read_storage_entry_var_return.hxx>
 #include <mmx/Node_read_storage_field.hxx>
 #include <mmx/Node_read_storage_field_return.hxx>
 #include <mmx/Node_read_storage_map.hxx>
@@ -785,7 +791,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0x90f7956e5aca1135ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
-	type_code->methods.resize(82);
+	type_code->methods.resize(85);
 	type_code->methods[0] = ::mmx::Node_add_block::static_get_type_code();
 	type_code->methods[1] = ::mmx::Node_add_transaction::static_get_type_code();
 	type_code->methods[2] = ::mmx::Node_call_contract::static_get_type_code();
@@ -850,24 +856,27 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[61] = ::mmx::Node_get_virtual_plots_owned_by::static_get_type_code();
 	type_code->methods[62] = ::mmx::Node_read_storage::static_get_type_code();
 	type_code->methods[63] = ::mmx::Node_read_storage_array::static_get_type_code();
-	type_code->methods[64] = ::mmx::Node_read_storage_field::static_get_type_code();
-	type_code->methods[65] = ::mmx::Node_read_storage_map::static_get_type_code();
-	type_code->methods[66] = ::mmx::Node_read_storage_object::static_get_type_code();
-	type_code->methods[67] = ::mmx::Node_read_storage_var::static_get_type_code();
-	type_code->methods[68] = ::mmx::Node_revert_sync::static_get_type_code();
-	type_code->methods[69] = ::mmx::Node_start_sync::static_get_type_code();
-	type_code->methods[70] = ::mmx::Node_validate::static_get_type_code();
-	type_code->methods[71] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[72] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[73] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[74] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[75] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[76] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[77] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[78] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[79] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[80] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[81] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[64] = ::mmx::Node_read_storage_entry_addr::static_get_type_code();
+	type_code->methods[65] = ::mmx::Node_read_storage_entry_string::static_get_type_code();
+	type_code->methods[66] = ::mmx::Node_read_storage_entry_var::static_get_type_code();
+	type_code->methods[67] = ::mmx::Node_read_storage_field::static_get_type_code();
+	type_code->methods[68] = ::mmx::Node_read_storage_map::static_get_type_code();
+	type_code->methods[69] = ::mmx::Node_read_storage_object::static_get_type_code();
+	type_code->methods[70] = ::mmx::Node_read_storage_var::static_get_type_code();
+	type_code->methods[71] = ::mmx::Node_revert_sync::static_get_type_code();
+	type_code->methods[72] = ::mmx::Node_start_sync::static_get_type_code();
+	type_code->methods[73] = ::mmx::Node_validate::static_get_type_code();
+	type_code->methods[74] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[75] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[76] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[77] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[78] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[79] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[80] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[81] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[82] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[83] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[84] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(45);
 	{
 		auto& field = type_code->fields[0];
@@ -1592,6 +1601,24 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_read_storage_array>(_method);
 			auto _return_value = ::mmx::Node_read_storage_array_return::create();
 			_return_value->_ret_0 = read_storage_array(_args->contract, _args->address, _args->height);
+			return _return_value;
+		}
+		case 0xffbf8c4478bb5ab5ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_read_storage_entry_addr>(_method);
+			auto _return_value = ::mmx::Node_read_storage_entry_addr_return::create();
+			_return_value->_ret_0 = read_storage_entry_addr(_args->contract, _args->name, _args->key, _args->height);
+			return _return_value;
+		}
+		case 0xe5b52723a3714e9full: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_read_storage_entry_string>(_method);
+			auto _return_value = ::mmx::Node_read_storage_entry_string_return::create();
+			_return_value->_ret_0 = read_storage_entry_string(_args->contract, _args->name, _args->key, _args->height);
+			return _return_value;
+		}
+		case 0xb0ebcc688396e6dbull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_read_storage_entry_var>(_method);
+			auto _return_value = ::mmx::Node_read_storage_entry_var_return::create();
+			_return_value->_ret_0 = read_storage_entry_var(_args->contract, _args->address, _args->key, _args->height);
 			return _return_value;
 		}
 		case 0xc9a10c9f7f2cef16ull: {

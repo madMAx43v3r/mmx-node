@@ -162,7 +162,10 @@ protected:
 	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage(const ::mmx::addr_t& contract, const uint32_t& height) const = 0;
 	virtual std::map<uint64_t, ::mmx::vm::varptr_t> dump_storage(const ::mmx::addr_t& contract, const uint32_t& height) const = 0;
 	virtual ::mmx::vm::varptr_t read_storage_var(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
+	virtual ::mmx::vm::varptr_t read_storage_entry_var(const ::mmx::addr_t& contract, const uint64_t& address, const uint64_t& key, const uint32_t& height) const = 0;
 	virtual std::pair<::mmx::vm::varptr_t, uint64_t> read_storage_field(const ::mmx::addr_t& contract, const std::string& name, const uint32_t& height) const = 0;
+	virtual std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t> read_storage_entry_addr(const ::mmx::addr_t& contract, const std::string& name, const ::mmx::addr_t& key, const uint32_t& height) const = 0;
+	virtual std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t> read_storage_entry_string(const ::mmx::addr_t& contract, const std::string& name, const std::string& key, const uint32_t& height) const = 0;
 	virtual std::vector<::mmx::vm::varptr_t> read_storage_array(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> read_storage_map(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage_object(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;

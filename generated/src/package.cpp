@@ -159,6 +159,12 @@
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
 #include <mmx/Node_read_storage_array_return.hxx>
+#include <mmx/Node_read_storage_entry_addr.hxx>
+#include <mmx/Node_read_storage_entry_addr_return.hxx>
+#include <mmx/Node_read_storage_entry_string.hxx>
+#include <mmx/Node_read_storage_entry_string_return.hxx>
+#include <mmx/Node_read_storage_entry_var.hxx>
+#include <mmx/Node_read_storage_entry_var_return.hxx>
 #include <mmx/Node_read_storage_field.hxx>
 #include <mmx/Node_read_storage_field_return.hxx>
 #include <mmx/Node_read_storage_map.hxx>
@@ -2244,6 +2250,78 @@ void type<::mmx::Node_read_storage_array_return>::create_dynamic_code(std::vecto
 }
 
 void type<::mmx::Node_read_storage_array_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_array_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_read_storage_entry_addr>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_read_storage_entry_addr;
+}
+
+void type<::mmx::Node_read_storage_entry_addr>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_read_storage_entry_addr());
+}
+
+void type<::mmx::Node_read_storage_entry_addr>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_entry_addr& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_read_storage_entry_addr_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_read_storage_entry_addr_return;
+}
+
+void type<::mmx::Node_read_storage_entry_addr_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_read_storage_entry_addr_return());
+}
+
+void type<::mmx::Node_read_storage_entry_addr_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_entry_addr_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_read_storage_entry_string>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_read_storage_entry_string;
+}
+
+void type<::mmx::Node_read_storage_entry_string>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_read_storage_entry_string());
+}
+
+void type<::mmx::Node_read_storage_entry_string>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_entry_string& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_read_storage_entry_string_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_read_storage_entry_string_return;
+}
+
+void type<::mmx::Node_read_storage_entry_string_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_read_storage_entry_string_return());
+}
+
+void type<::mmx::Node_read_storage_entry_string_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_entry_string_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_read_storage_entry_var>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_read_storage_entry_var;
+}
+
+void type<::mmx::Node_read_storage_entry_var>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_read_storage_entry_var());
+}
+
+void type<::mmx::Node_read_storage_entry_var>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_entry_var& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_read_storage_entry_var_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_read_storage_entry_var_return;
+}
+
+void type<::mmx::Node_read_storage_entry_var_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_read_storage_entry_var_return());
+}
+
+void type<::mmx::Node_read_storage_entry_var_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_read_storage_entry_var_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5025,6 +5103,12 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Node_read_storage_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_array::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_array_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_read_storage_entry_addr::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_read_storage_entry_addr_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_read_storage_entry_string::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_read_storage_entry_string_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_read_storage_entry_var::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_read_storage_entry_var_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_field::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_field_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_map::static_create_type_code());
@@ -5403,6 +5487,12 @@ const vnx::TypeCode* const vnx_native_type_code_Node_read_storage = vnx::get_typ
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_return = vnx::get_type_code(vnx::Hash64(0xab73866ba23ed19aull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_array = vnx::get_type_code(vnx::Hash64(0xe5826950ca0a442bull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_array_return = vnx::get_type_code(vnx::Hash64(0xba7fed069216454dull));
+const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_entry_addr = vnx::get_type_code(vnx::Hash64(0xffbf8c4478bb5ab5ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_entry_addr_return = vnx::get_type_code(vnx::Hash64(0xacd2f58f1ca8df54ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_entry_string = vnx::get_type_code(vnx::Hash64(0xe5b52723a3714e9full));
+const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_entry_string_return = vnx::get_type_code(vnx::Hash64(0x56c6103ea03d7ceaull));
+const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_entry_var = vnx::get_type_code(vnx::Hash64(0xb0ebcc688396e6dbull));
+const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_entry_var_return = vnx::get_type_code(vnx::Hash64(0x773a90b50f714a11ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_field = vnx::get_type_code(vnx::Hash64(0xc9a10c9f7f2cef16ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_field_return = vnx::get_type_code(vnx::Hash64(0xf817bcace12b9ef3ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_map = vnx::get_type_code(vnx::Hash64(0x1cc0cc12bc2c1b4eull));
