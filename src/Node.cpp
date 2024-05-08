@@ -961,23 +961,46 @@ vm::varptr_t Node::read_storage_var(const addr_t& contract, const uint64_t& addr
 	return storage->read_ex(contract, address, height);
 }
 
+vm::varptr_t Node::read_storage_entry_var(const addr_t& contract, const uint64_t& address, const uint64_t& key, const uint32_t& height) const
+{
+	return storage->read_ex(contract, address, key, height);
+}
+
 std::pair<vm::varptr_t, uint64_t> Node::read_storage_field(const addr_t& contract, const std::string& name, const uint32_t& height) const
 {
-	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(contract))) {
-		return read_storage_field(exec->binary, contract, name, height);
+	if(auto exec = get_contract_as<contract::Executable>(contract)) {
+		if(auto bin = get_contract_as<contract::Binary>(exec->binary)) {
+			if(auto addr = bin->find_field(name)) {
+				return std::make_pair(read_storage_var(contract, *addr, height), *addr);
+			}
+		}
 	}
 	return {};
 }
 
-std::pair<vm::varptr_t, uint64_t> Node::read_storage_field(const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height) const
+std::tuple<vm::varptr_t, uint64_t, uint64_t> Node::read_storage_entry_var(const addr_t& contract, const std::string& name, const vm::varptr_t& key, const uint32_t& height) const
 {
-	if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(binary))) {
-		auto iter = bin->fields.find(name);
-		if(iter != bin->fields.end()) {
-			return std::make_pair(read_storage_var(contract, iter->second, height), iter->second);
+	const auto field = read_storage_field(contract, name, height);
+	if(auto var = field.first) {
+		uint64_t address = field.second;
+		if(var->type == vm::TYPE_REF) {
+			address = vm::to_ref(var);
+		}
+		if(auto entry = storage->lookup(contract, key)) {
+			return std::make_tuple(read_storage_entry_var(contract, address, entry, height), address, entry);
 		}
 	}
 	return {};
+}
+
+std::tuple<vm::varptr_t, uint64_t, uint64_t> Node::read_storage_entry_addr(const addr_t& contract, const std::string& name, const addr_t& key, const uint32_t& height) const
+{
+	return read_storage_entry_var(contract, name, vm::to_binary(key), height);
+}
+
+std::tuple<vm::varptr_t, uint64_t, uint64_t> Node::read_storage_entry_string(const addr_t& contract, const std::string& name, const std::string& key, const uint32_t& height) const
+{
+	return read_storage_entry_var(contract, name, vm::to_binary(key), height);
 }
 
 std::vector<vm::varptr_t> Node::read_storage_array(const addr_t& contract, const uint64_t& address, const uint32_t& height) const
@@ -991,9 +1014,10 @@ std::map<vm::varptr_t, vm::varptr_t> Node::read_storage_map(const addr_t& contra
 	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(contract))) {
 		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
 			auto engine = std::make_shared<vm::Engine>(contract, storage, true);
-			engine->gas_limit = params->max_block_cost;
+			engine->gas_limit = params->max_tx_cost;
 			vm::load(engine, bin);
 			for(const auto& entry : storage->find_entries(contract, address, height)) {
+				// need to use engine to support constant keys
 				if(auto key = engine->read(entry.first)) {
 					out[vm::clone(key)] = entry.second;
 				}
