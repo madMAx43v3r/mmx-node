@@ -19,7 +19,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <memory>
-#include <atomic>
 #include <sstream>
 #include <stdexcept>
 
@@ -66,14 +65,14 @@ enum vartype_e : uint8_t {
 
 struct var_t {
 
-	std::atomic<uint32_t> ref_count {0};
+	uint32_t ref_count = 0;
 
 	uint8_t flags = 0;
 
 	vartype_e type = TYPE_NIL;
 
 	var_t() = default;
-	var_t(const var_t& var) : ref_count(var.ref_count.load()), flags(var.flags), type(var.type) {}
+	var_t(const var_t& var) : ref_count(var.ref_count), flags(var.flags), type(var.type) {}
 	var_t(const vartype_e& type) : type(type) {}
 	var_t(const vartype_e& type, const uint8_t& flags) : flags(flags), type(type) {}
 
@@ -182,7 +181,7 @@ struct binary_t : var_t {
 
 	static std::unique_ptr<binary_t> clone(const binary_t& src) {
 		auto bin = alloc(src);
-		bin->ref_count = src.ref_count.load();
+		bin->ref_count = src.ref_count;
 		bin->flags = src.flags;
 		return bin;
 	}
