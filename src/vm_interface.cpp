@@ -41,13 +41,13 @@ void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, con
 	engine->push_back(addr, vm::uint_t(amount));
 }
 
-std::vector<std::unique_ptr<vm::var_t>> read_constants(const void* constant, const size_t constant_size)
+std::vector<std::unique_ptr<vm::var_t>> read_constants(const uint8_t* constant, const size_t constant_size)
 {
 	size_t offset = 0;
 	std::vector<std::unique_ptr<vm::var_t>> out;
 	while(offset < constant_size) {
 		std::unique_ptr<vm::var_t> var;
-		offset += vm::deserialize(var, ((const uint8_t*)constant) + offset, constant_size - offset, false, false);
+		offset += vm::deserialize(var, constant + offset, constant_size - offset, false, false);
 		out.push_back(std::move(var));
 	}
 	return out;
