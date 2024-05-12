@@ -146,7 +146,7 @@ install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT application
 FetchContent_Declare(
     mmx_cuda_plotter
     GIT_REPOSITORY https://github.com/madMAx43v3r/mmx-binaries.git
-    GIT_TAG "origin/testnet11"
+    GIT_TAG "origin/master"
 )
 FetchContent_MakeAvailable(mmx_cuda_plotter)
 
