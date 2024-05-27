@@ -1006,7 +1006,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 		return; // prevent replay attack of old signed data
 	}
 	if(!value->is_valid(params)) {
-		ban_peer(client, std::string("they sent us an invalid VDF"));
+		disconnect(client);
 		return;
 	}
 	const auto hash = value->content_hash;
@@ -1014,7 +1014,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 		try {
 			value->validate();
 		} catch(const std::exception& ex) {
-			ban_peer(client, std::string("they sent us an invalid VDF: ") + ex.what());
+			disconnect(client);
 			return;
 		}
 		auto iter = timelord_credits.find(value->timelord_key);
@@ -1038,8 +1038,8 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 	if(block->height + params->commit_delay < verified_peak_height) {
 		return; // prevent replay attack of old signed data
 	}
-	if(!block->is_valid() || !block->proof || !block->farmer_sig || block->static_cost > params->max_block_size) {
-		ban_peer(client, std::string("they sent us an invalid block"));
+	if(!block->is_valid() || !block->proof || !block->farmer_sig) {
+		disconnect(client);
 		return;
 	}
 	const auto hash = block->content_hash;
@@ -1047,7 +1047,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 		try {
 			block->validate();
 		} catch(const std::exception& ex) {
-			ban_peer(client, std::string("they sent us an invalid block: ") + ex.what());
+			disconnect(client);
 			return;
 		}
 		const auto farmer_key = block->proof->farmer_key;
@@ -1071,7 +1071,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> value)
 {
 	if(!value->is_valid()) {
-		ban_peer(client, std::string("they sent us an invalid proof"));
+		disconnect(client);
 		return;
 	}
 	if(receive_msg_hash(value->content_hash, client)) {
@@ -1082,7 +1082,7 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> valu
 void Router::on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx)
 {
 	if(!tx->is_valid(params) || tx->exec_result) {
-		ban_peer(client, std::string("they sent us an invalid tx"));
+		disconnect(client);
 		return;
 	}
 	if(receive_msg_hash(tx->content_hash, client)) {
