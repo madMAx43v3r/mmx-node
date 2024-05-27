@@ -78,6 +78,7 @@ private:
 	};
 
 	struct peer_t : Super::peer_t {
+		bool is_valid = true;
 		bool is_synced = false;
 		bool is_paused = false;
 		bool is_blocked = false;

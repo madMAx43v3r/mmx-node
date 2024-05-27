@@ -1182,6 +1182,9 @@ bool Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, boo
 
 bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
+	if(!peer->is_valid) {
+		return false;
+	}
 	if(!reliable && peer->is_blocked) {
 		bool drop = true;
 		switch(msg->get_type_hash()) {
@@ -1591,8 +1594,10 @@ void Router::on_connect(uint64_t client, const std::string& address)
 
 void Router::on_disconnect(uint64_t client, const std::string& address)
 {
-	synced_peers.erase(client);
-
+	if(auto peer = find_peer(client)) {
+		peer->is_valid = false;
+	}
+	// async processing to allow for() loops over peer_map, etc
 	add_task([this, client, address]() {
 		if(auto peer = find_peer(client)) {
 			const auto range = peer_addr_map.equal_range(peer->address);
@@ -1612,6 +1617,7 @@ void Router::on_disconnect(uint64_t client, const std::string& address)
 			}
 		}
 		peer_map.erase(client);
+		synced_peers.erase(client);
 		peer_retry_map[address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
 	});
 }
