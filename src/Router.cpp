@@ -1423,9 +1423,13 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			break;
 		case Router_get_peers_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers_return>(result)) {
+				size_t i = 0;
 				for(const auto& address : value->_ret_0) {
 					if(is_valid_address(address)) {
 						peer_retry_map.emplace(address, 0);
+					}
+					if(++i >= 10) {
+						break;
 					}
 				}
 			}
