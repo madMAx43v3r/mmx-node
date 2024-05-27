@@ -87,7 +87,6 @@ private:
 		int64_t last_receive_ms = 0;
 		int64_t connected_since_ms = 0;
 		double pending_cost = 0;
-		hash_t challenge;
 		node_info_t info;
 		std::string address;
 		vnx::optional<hash_t> node_id;
@@ -139,13 +138,9 @@ private:
 
 	void save_data();
 
-	void add_peer(const std::string& address, const int sock);
-
 	void ban_peer(uint64_t client, const std::string& reason);
 
 	void connect_to(const std::string& address);
-
-	void connect_task(const vnx::TcpEndpoint& peer, int sock) noexcept;
 
 	void print_stats() override;
 
@@ -195,7 +190,7 @@ private:
 
 	void on_connect(uint64_t client, const std::string& address) override;
 
-	void on_disconnect(uint64_t client) override;
+	void on_disconnect(uint64_t client, const std::string& address) override;
 
 	std::shared_ptr<Super::peer_t> get_peer_base(uint64_t client) const override;
 
@@ -217,7 +212,7 @@ private:
 	std::set<std::string> peer_set;
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
-	std::map<std::string, int> connect_tasks;
+	std::map<std::string, uint64_t> connect_tasks;
 
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
@@ -248,8 +243,6 @@ private:
 		uint32_t request_id = 0;
 		hash_t our_hash;
 	} peer_check;
-
-	std::shared_ptr<vnx::ThreadPool> connect_threads;
 
 	std::shared_ptr<NodeAsyncClient> node;
 	std::shared_ptr<const ChainParams> params;
