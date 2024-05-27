@@ -218,8 +218,13 @@ private:
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
 	std::multimap<std::string, std::shared_ptr<peer_t>> peer_addr_map;
 
+	struct hash_info_t {
+		bool did_relay = false;
+		bool did_reward = false;
+	};
+
 	std::queue<hash_t> hash_queue;
-	std::unordered_map<hash_t, bool> hash_info;
+	std::unordered_map<hash_t, hash_info_t> hash_info;
 
 	std::unordered_map<pubkey_t, uint32_t> farmer_credits;
 	std::unordered_map<pubkey_t, uint32_t> timelord_credits;

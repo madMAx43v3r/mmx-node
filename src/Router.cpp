@@ -316,20 +316,21 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> value)
 {
-	if(value->height > verified_peak_height) {
-		const auto& hash = value->content_hash;
-		if(relay_msg_hash(hash)) {
-			bool is_ours = false;
-			if(vnx_sample && vnx_sample->topic == input_vdfs) {
-				is_ours = true;
-				log(INFO) << u8"\U0000231B Broadcasting VDF for height " << value->height;
-			}
-			auto& credits = timelord_credits[value->timelord_key];
-			credits = std::min(credits + vdf_credits, max_credits);
-
-			broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
-			vdf_counter++;
+	const auto& hash = value->content_hash;
+	if(relay_msg_hash(hash)) {
+		bool is_ours = false;
+		if(vnx_sample && vnx_sample->topic == input_vdfs) {
+			is_ours = true;
+			log(INFO) << u8"\U0000231B Broadcasting VDF for height " << value->height;
 		}
+		broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
+		vdf_counter++;
+	}
+	auto& did_reward = hash_info[hash].did_reward;
+	if(!did_reward) {
+		did_reward = true;
+		auto& credits = timelord_credits[value->timelord_key];
+		credits = std::min(credits + vdf_credits, max_credits);
 	}
 }
 
@@ -345,14 +346,17 @@ void Router::handle(std::shared_ptr<const ProofResponse> value)
 			is_ours = true;
 			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->proof->score;
 		}
-		auto& credits = farmer_credits[value->proof->farmer_key];
-		credits = std::min(credits + proof_credits, max_credits);
-
 		auto copy = vnx::clone(value);
 		copy->harvester.clear();			// clear local information
 		copy->farmer_addr = vnx::Hash64();	// clear local information
 		broadcast(copy, hash, {node_type_e::FULL_NODE}, is_ours);
 		proof_counter++;
+	}
+	auto& did_reward = hash_info[hash].did_reward;
+	if(!did_reward) {
+		did_reward = true;
+		auto& credits = farmer_credits[value->proof->farmer_key];
+		credits = std::min(credits + proof_credits, max_credits);
 	}
 }
 
@@ -1004,28 +1008,25 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 		return;
 	}
 	const auto hash = value->content_hash;
-	const auto is_new = receive_msg_hash(hash, client);
-	if(is_new) {
+	if(receive_msg_hash(hash, client)) {
 		try {
 			value->validate();
 		} catch(const std::exception& ex) {
 			ban_peer(client, std::string("they sent us an invalid VDF: ") + ex.what());
 			return;
 		}
-	}
-	auto iter = timelord_credits.find(value->timelord_key);
-	if(iter != timelord_credits.end()) {
-		if(iter->second >= vdf_relay_cost) {
-			if(relay_msg_hash(hash)) {
-				iter->second -= vdf_relay_cost;
-				relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-				vdf_counter++;
+		auto iter = timelord_credits.find(value->timelord_key);
+		if(iter != timelord_credits.end()) {
+			if(iter->second >= vdf_relay_cost) {
+				if(relay_msg_hash(hash)) {
+					iter->second -= vdf_relay_cost;
+					relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+					vdf_counter++;
+				}
+			} else {
+				log(DEBUG) << "Timelord " << value->timelord_key << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
 			}
-		} else {
-			log(DEBUG) << "Timelord " << value->timelord_key << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
 		}
-	}
-	if(is_new) {
 		publish(value, output_vdfs);
 	}
 }
@@ -1040,30 +1041,27 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 		return;
 	}
 	const auto hash = block->content_hash;
-	const auto is_new = receive_msg_hash(hash, client);
-	if(is_new) {
+	if(receive_msg_hash(hash, client)) {
 		try {
 			block->validate();
 		} catch(const std::exception& ex) {
 			ban_peer(client, std::string("they sent us an invalid block: ") + ex.what());
 			return;
 		}
-	}
-	const auto farmer_key = block->proof->farmer_key;
+		const auto farmer_key = block->proof->farmer_key;
 
-	auto iter = farmer_credits.find(farmer_key);
-	if(iter != farmer_credits.end()) {
-		if(iter->second >= block_relay_cost) {
-			if(relay_msg_hash(hash)) {
-				iter->second -= block_relay_cost;
-				relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-				block_counter++;
+		auto iter = farmer_credits.find(farmer_key);
+		if(iter != farmer_credits.end()) {
+			if(iter->second >= block_relay_cost) {
+				if(relay_msg_hash(hash)) {
+					iter->second -= block_relay_cost;
+					relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+					block_counter++;
+				}
+			} else {
+				log(DEBUG) << "Farmer " << farmer_key << " has insufficient credits to relay block for height " << block->height << ", verifying first.";
 			}
-		} else {
-			log(DEBUG) << "Farmer " << farmer_key << " has insufficient credits to relay block for height " << block->height << ", verifying first.";
 		}
-	}
-	if(is_new) {
 		publish(block, output_blocks);
 	}
 }
@@ -1652,12 +1650,12 @@ std::vector<std::shared_ptr<Router::peer_t>> Router::find_peers(const std::strin
 
 bool Router::relay_msg_hash(const hash_t& hash)
 {
-	const auto ret = hash_info.emplace(hash, false);
+	const auto ret = hash_info.emplace(hash, hash_info_t());
 	if(ret.second) {
 		recv_notify(hash);
 		hash_queue.push(hash);
 	}
-	auto& did_relay = ret.first->second;
+	auto& did_relay = ret.first->second.did_relay;
 	if(!did_relay) {
 		did_relay = true;
 		return true;
@@ -1667,7 +1665,7 @@ bool Router::relay_msg_hash(const hash_t& hash)
 
 bool Router::receive_msg_hash(const hash_t& hash, uint64_t client)
 {
-	const auto ret = hash_info.emplace(hash, false);
+	const auto ret = hash_info.emplace(hash, hash_info_t());
 	if(ret.second) {
 		recv_notify(hash);
 		hash_queue.push(hash);
