@@ -366,7 +366,7 @@ void Node::main()
 
 	threads->close();
 	vdf_threads->close();
-	fetch_threads->detach();
+	fetch_threads->close();
 
 	opencl_vdf.clear();
 

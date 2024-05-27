@@ -121,7 +121,6 @@ void Router::main()
 		upnp_mapper = upnp_start_mapping(port, "MMX Node");
 		log(upnp_mapper ? INFO : WARN) << "UPnP supported: " << (upnp_mapper ? "yes" : "no");
 	}
-	connect_threads = std::make_shared<vnx::ThreadPool>(-1);
 
 	set_timer_millis(send_interval_ms, std::bind(&Router::send, this));
 	set_timer_millis(query_interval_ms, std::bind(&Router::query, this));
@@ -140,7 +139,6 @@ void Router::main()
 	if(upnp_mapper) {
 		upnp_mapper->stop();
 	}
-	connect_threads->detach();
 }
 
 hash_t Router::get_id() const
@@ -318,20 +316,21 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> value)
 {
-	if(value->height > verified_peak_height) {
-		const auto& hash = value->content_hash;
-		if(relay_msg_hash(hash)) {
-			bool is_ours = false;
-			if(vnx_sample && vnx_sample->topic == input_vdfs) {
-				is_ours = true;
-				log(INFO) << u8"\U0000231B Broadcasting VDF for height " << value->height;
-			}
-			auto& credits = timelord_credits[value->timelord_key];
-			credits = std::min(credits + vdf_credits, max_credits);
-
-			broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
-			vdf_counter++;
+	const auto& hash = value->content_hash;
+	if(relay_msg_hash(hash)) {
+		bool is_ours = false;
+		if(vnx_sample && vnx_sample->topic == input_vdfs) {
+			is_ours = true;
+			log(INFO) << u8"\U0000231B Broadcasting VDF for height " << value->height;
 		}
+		broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
+		vdf_counter++;
+	}
+	auto& did_reward = hash_info[hash].did_reward;
+	if(!did_reward) {
+		did_reward = true;
+		auto& credits = timelord_credits[value->timelord_key];
+		credits = std::min(credits + vdf_credits, max_credits);
 	}
 }
 
@@ -347,14 +346,17 @@ void Router::handle(std::shared_ptr<const ProofResponse> value)
 			is_ours = true;
 			log(INFO) << "Broadcasting proof for height " << value->request->height << " with score " << value->proof->score;
 		}
-		auto& credits = farmer_credits[value->proof->farmer_key];
-		credits = std::min(credits + proof_credits, max_credits);
-
 		auto copy = vnx::clone(value);
 		copy->harvester.clear();			// clear local information
 		copy->farmer_addr = vnx::Hash64();	// clear local information
 		broadcast(copy, hash, {node_type_e::FULL_NODE}, is_ours);
 		proof_counter++;
+	}
+	auto& did_reward = hash_info[hash].did_reward;
+	if(!did_reward) {
+		did_reward = true;
+		auto& credits = farmer_credits[value->proof->farmer_key];
+		credits = std::min(credits + proof_credits, max_credits);
 	}
 }
 
@@ -736,9 +738,16 @@ void Router::connect_to(const std::string& address)
 	vnx::TcpEndpoint peer;
 	peer.host_name = address;
 	peer.port = params->port;
-	const auto sock = peer.open();
-	connect_tasks[address] = sock;
-	connect_threads->add_task(std::bind(&Router::connect_task, this, peer, sock));
+
+	try {
+		const auto client = connect_client(peer);
+		connect_tasks[address] = client;
+	}
+	catch(const std::exception& ex) {
+		if(show_warnings) {
+			log(WARN) << "Connecting to peer " << address << " failed with: " << ex.what();
+		}
+	}
 }
 
 void Router::connect()
@@ -958,41 +967,6 @@ void Router::save_data()
 	}
 }
 
-void Router::add_peer(const std::string& address, const int sock)
-{
-	connect_tasks.erase(address);
-
-	if(sock >= 0) {
-		const auto client = add_client(sock, address);
-		if(auto peer = find_peer(client)) {
-			peer->is_outbound = true;
-		}
-		peer_set.insert(address);
-	} else {
-		peer_set.erase(address);
-		peer_retry_map[address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
-	}
-}
-
-void Router::connect_task(const vnx::TcpEndpoint& peer, int sock) noexcept
-{
-	try {
-		peer.connect(sock);
-	}
-	catch(const std::exception& ex) {
-		if(sock >= 0) {
-			peer.close(sock);
-			sock = -1;
-		}
-		if(show_warnings && vnx_do_run()) {
-			log(WARN) << "Connecting to peer " << peer.host_name << " failed with: " << ex.what();
-		}
-	}
-	if(vnx::do_run()) {
-		add_task(std::bind(&Router::add_peer, this, peer.host_name, sock));
-	}
-}
-
 void Router::print_stats()
 {
 	log(INFO) << float(tx_counter * 1000) / stats_interval_ms
@@ -1034,28 +1008,25 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 		return;
 	}
 	const auto hash = value->content_hash;
-	const auto is_new = receive_msg_hash(hash, client);
-	if(is_new) {
+	if(receive_msg_hash(hash, client)) {
 		try {
 			value->validate();
 		} catch(const std::exception& ex) {
 			ban_peer(client, std::string("they sent us an invalid VDF: ") + ex.what());
 			return;
 		}
-	}
-	auto iter = timelord_credits.find(value->timelord_key);
-	if(iter != timelord_credits.end()) {
-		if(iter->second >= vdf_relay_cost) {
-			if(relay_msg_hash(hash)) {
-				iter->second -= vdf_relay_cost;
-				relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-				vdf_counter++;
+		auto iter = timelord_credits.find(value->timelord_key);
+		if(iter != timelord_credits.end()) {
+			if(iter->second >= vdf_relay_cost) {
+				if(relay_msg_hash(hash)) {
+					iter->second -= vdf_relay_cost;
+					relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+					vdf_counter++;
+				}
+			} else {
+				log(DEBUG) << "Timelord " << value->timelord_key << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
 			}
-		} else {
-			log(DEBUG) << "Timelord " << value->timelord_key << " has insufficient credits to relay VDF for height " << value->height << ", verifying first.";
 		}
-	}
-	if(is_new) {
 		publish(value, output_vdfs);
 	}
 }
@@ -1070,30 +1041,27 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 		return;
 	}
 	const auto hash = block->content_hash;
-	const auto is_new = receive_msg_hash(hash, client);
-	if(is_new) {
+	if(receive_msg_hash(hash, client)) {
 		try {
 			block->validate();
 		} catch(const std::exception& ex) {
 			ban_peer(client, std::string("they sent us an invalid block: ") + ex.what());
 			return;
 		}
-	}
-	const auto farmer_key = block->proof->farmer_key;
+		const auto farmer_key = block->proof->farmer_key;
 
-	auto iter = farmer_credits.find(farmer_key);
-	if(iter != farmer_credits.end()) {
-		if(iter->second >= block_relay_cost) {
-			if(relay_msg_hash(hash)) {
-				iter->second -= block_relay_cost;
-				relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-				block_counter++;
+		auto iter = farmer_credits.find(farmer_key);
+		if(iter != farmer_credits.end()) {
+			if(iter->second >= block_relay_cost) {
+				if(relay_msg_hash(hash)) {
+					iter->second -= block_relay_cost;
+					relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+					block_counter++;
+				}
+			} else {
+				log(DEBUG) << "Farmer " << farmer_key << " has insufficient credits to relay block for height " << block->height << ", verifying first.";
 			}
-		} else {
-			log(DEBUG) << "Farmer " << farmer_key << " has insufficient credits to relay block for height " << block->height << ", verifying first.";
 		}
-	}
-	if(is_new) {
 		publish(block, output_blocks);
 	}
 }
@@ -1214,6 +1182,9 @@ bool Router::send_to(uint64_t client, std::shared_ptr<const vnx::Value> msg, boo
 
 bool Router::send_to(std::shared_ptr<peer_t> peer, std::shared_ptr<const vnx::Value> msg, bool reliable)
 {
+	if(!peer->is_valid) {
+		return false;
+	}
 	if(!reliable && peer->is_blocked) {
 		bool drop = true;
 		switch(msg->get_type_hash()) {
@@ -1453,9 +1424,13 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			break;
 		case Router_get_peers_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers_return>(result)) {
+				size_t i = 0;
 				for(const auto& address : value->_ret_0) {
 					if(is_valid_address(address)) {
 						peer_retry_map.emplace(address, 0);
+					}
+					if(++i >= 10) {
+						break;
 					}
 				}
 			}
@@ -1591,14 +1566,19 @@ void Router::on_connect(uint64_t client, const std::string& address)
 		disconnect(client);
 		return;
 	}
-	const auto seed = vnx::rand64();
-
 	auto peer = std::make_shared<peer_t>();
 	peer->client = client;
 	peer->address = address;
 	peer->info.type = node_type_e::FULL_NODE;	// assume full node
-	peer->challenge = hash_t(&seed, sizeof(seed));
 	peer->connected_since_ms = vnx::get_wall_time_millis();
+	{
+		const auto it = connect_tasks.find(address);
+		if(it != connect_tasks.end() && it->second == client) {
+			// we connected to them
+			peer->is_outbound = true;
+			connect_tasks.erase(it);
+		}
+	}
 	peer_map[client] = peer;
 	peer_addr_map.emplace(address, peer);
 
@@ -1612,14 +1592,14 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	log(DEBUG) << "Connected to peer " << peer->address;
 }
 
-void Router::on_disconnect(uint64_t client)
+void Router::on_disconnect(uint64_t client, const std::string& address)
 {
-	synced_peers.erase(client);
-
-	add_task([this, client]() {
+	if(auto peer = find_peer(client)) {
+		peer->is_valid = false;
+	}
+	// async processing to allow for() loops over peer_map, etc
+	add_task([this, client, address]() {
 		if(auto peer = find_peer(client)) {
-			log(DEBUG) << "Peer " << peer->address << " disconnected";
-
 			const auto range = peer_addr_map.equal_range(peer->address);
 			for(auto iter = range.first; iter != range.second; ++iter) {
 				if(iter->second == peer) {
@@ -1627,9 +1607,18 @@ void Router::on_disconnect(uint64_t client)
 					break;
 				}
 			}
-			peer_retry_map[peer->address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
+			log(DEBUG) << "Peer " << address << " disconnected";
+		}
+		{
+			const auto it = connect_tasks.find(address);
+			if(it != connect_tasks.end() && it->second == client) {
+				log(DEBUG) << "Failed to connect to " << it->first;
+				connect_tasks.erase(it);
+			}
 		}
 		peer_map.erase(client);
+		synced_peers.erase(client);
+		peer_retry_map[address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
 	});
 }
 
@@ -1667,12 +1656,12 @@ std::vector<std::shared_ptr<Router::peer_t>> Router::find_peers(const std::strin
 
 bool Router::relay_msg_hash(const hash_t& hash)
 {
-	const auto ret = hash_info.emplace(hash, false);
+	const auto ret = hash_info.emplace(hash, hash_info_t());
 	if(ret.second) {
 		recv_notify(hash);
 		hash_queue.push(hash);
 	}
-	auto& did_relay = ret.first->second;
+	auto& did_relay = ret.first->second.did_relay;
 	if(!did_relay) {
 		did_relay = true;
 		return true;
@@ -1682,7 +1671,7 @@ bool Router::relay_msg_hash(const hash_t& hash)
 
 bool Router::receive_msg_hash(const hash_t& hash, uint64_t client)
 {
-	const auto ret = hash_info.emplace(hash, false);
+	const auto ret = hash_info.emplace(hash, hash_info_t());
 	if(ret.second) {
 		recv_notify(hash);
 		hash_queue.push(hash);
