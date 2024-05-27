@@ -316,11 +316,13 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> value)
 {
+	const bool is_ours = vnx_sample && vnx_sample->topic == input_vdfs;
+	if(is_ours && value->height <= verified_peak_height) {
+		return;
+	}
 	const auto& hash = value->content_hash;
 	if(relay_msg_hash(hash)) {
-		bool is_ours = false;
-		if(vnx_sample && vnx_sample->topic == input_vdfs) {
-			is_ours = true;
+		if(is_ours) {
 			log(INFO) << u8"\U0000231B Broadcasting VDF for height " << value->height;
 		}
 		broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
