@@ -8,6 +8,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	vnx.TopicPtr output_proofs = "harvester.proof";
 	
 	set<string> plot_dirs;
+	set<string> dir_blacklist;
 	
 	string node_server = "Node";
 	string farmer_server = "Farmer";

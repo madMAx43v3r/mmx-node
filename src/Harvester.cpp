@@ -335,7 +335,7 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 				const auto path = sub_dir->get_path();
 				if(!all_dirs.count(path)) {
 					const auto name = sub_dir->get_name();
-					if(name != "System Volume Information" && name != "$RECYCLE.BIN" && name != "lost+found") {
+					if(!dir_blacklist.count(name)) {
 						sub_dirs.insert(sub_dir->get_path());
 					}
 				}
