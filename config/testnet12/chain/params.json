@@ -5,7 +5,7 @@
 	"min_ksize": 26,
 	"infuse_delay": 3,
 	"challenge_delay": 6,
-	"challenge_interval": 64,
+	"challenge_interval": 256,
 	"commit_delay": 24,
 	"min_vdf_segments": 1000,
 	"num_vdf_segments": 1500,
