@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x69459896864b462ull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xbea0a7042f000cfaull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -97,6 +97,8 @@ void ChainParams::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[47], 47); vnx::accept(_visitor, project_addr);
 	_visitor.type_field(_type_code->fields[48], 48); vnx::accept(_visitor, fixed_project_reward);
 	_visitor.type_field(_type_code->fields[49], 49); vnx::accept(_visitor, project_ratio);
+	_visitor.type_field(_type_code->fields[50], 50); vnx::accept(_visitor, reward_activation);
+	_visitor.type_field(_type_code->fields[51], 51); vnx::accept(_visitor, transaction_activation);
 	_visitor.type_end(*_type_code);
 }
 
@@ -152,6 +154,8 @@ void ChainParams::write(std::ostream& _out) const {
 	_out << ", \"project_addr\": "; vnx::write(_out, project_addr);
 	_out << ", \"fixed_project_reward\": "; vnx::write(_out, fixed_project_reward);
 	_out << ", \"project_ratio\": "; vnx::write(_out, project_ratio);
+	_out << ", \"reward_activation\": "; vnx::write(_out, reward_activation);
+	_out << ", \"transaction_activation\": "; vnx::write(_out, transaction_activation);
 	_out << "}";
 }
 
@@ -214,6 +218,8 @@ vnx::Object ChainParams::to_object() const {
 	_object["project_addr"] = project_addr;
 	_object["fixed_project_reward"] = fixed_project_reward;
 	_object["project_ratio"] = project_ratio;
+	_object["reward_activation"] = reward_activation;
+	_object["transaction_activation"] = transaction_activation;
 	return _object;
 }
 
@@ -297,6 +303,8 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(project_addr);
 		} else if(_entry.first == "project_ratio") {
 			_entry.second.to(project_ratio);
+		} else if(_entry.first == "reward_activation") {
+			_entry.second.to(reward_activation);
 		} else if(_entry.first == "reward_adjust_div") {
 			_entry.second.to(reward_adjust_div);
 		} else if(_entry.first == "score_bits") {
@@ -315,6 +323,8 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(time_diff_constant);
 		} else if(_entry.first == "token_binary") {
 			_entry.second.to(token_binary);
+		} else if(_entry.first == "transaction_activation") {
+			_entry.second.to(transaction_activation);
 		} else if(_entry.first == "vdf_reward") {
 			_entry.second.to(vdf_reward);
 		} else if(_entry.first == "virtual_space_constant") {
@@ -474,6 +484,12 @@ vnx::Variant ChainParams::get_field(const std::string& _name) const {
 	if(_name == "project_ratio") {
 		return vnx::Variant(project_ratio);
 	}
+	if(_name == "reward_activation") {
+		return vnx::Variant(reward_activation);
+	}
+	if(_name == "transaction_activation") {
+		return vnx::Variant(transaction_activation);
+	}
 	return vnx::Variant();
 }
 
@@ -578,6 +594,10 @@ void ChainParams::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(fixed_project_reward);
 	} else if(_name == "project_ratio") {
 		_value.to(project_ratio);
+	} else if(_name == "reward_activation") {
+		_value.to(reward_activation);
+	} else if(_name == "transaction_activation") {
+		_value.to(transaction_activation);
 	}
 }
 
@@ -605,14 +625,14 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0x69459896864b462ull);
+	type_code->code_hash = vnx::Hash64(0xbea0a7042f000cfaull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ChainParams>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::uint_fraction_t::static_get_type_code();
-	type_code->fields.resize(50);
+	type_code->fields.resize(52);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -952,6 +972,20 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 		field.name = "project_ratio";
 		field.code = {19, 0};
 	}
+	{
+		auto& field = type_code->fields[50];
+		field.data_size = 4;
+		field.name = "reward_activation";
+		field.value = vnx::to_string(50000);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[51];
+		field.data_size = 4;
+		field.name = "transaction_activation";
+		field.value = vnx::to_string(100000);
+		field.code = {3};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -1120,6 +1154,12 @@ void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, c
 		if(const auto* const _field = type_code->field_map[48]) {
 			vnx::read_value(_buf + _field->offset, value.fixed_project_reward, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[50]) {
+			vnx::read_value(_buf + _field->offset, value.reward_activation, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[51]) {
+			vnx::read_value(_buf + _field->offset, value.transaction_activation, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -1151,7 +1191,7 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(248);
+	auto* const _buf = out.write(256);
 	vnx::write_value(_buf + 0, value.port);
 	vnx::write_value(_buf + 4, value.decimals);
 	vnx::write_value(_buf + 8, value.min_ksize);
@@ -1192,6 +1232,8 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	vnx::write_value(_buf + 224, value.max_tx_cost);
 	vnx::write_value(_buf + 232, value.block_time);
 	vnx::write_value(_buf + 240, value.fixed_project_reward);
+	vnx::write_value(_buf + 248, value.reward_activation);
+	vnx::write_value(_buf + 252, value.transaction_activation);
 	vnx::write(out, value.min_fee_ratio, type_code, type_code->fields[38].code.data());
 	vnx::write(out, value.network, type_code, type_code->fields[40].code.data());
 	vnx::write(out, value.nft_binary, type_code, type_code->fields[41].code.data());

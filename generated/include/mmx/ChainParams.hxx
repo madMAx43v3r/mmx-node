@@ -65,6 +65,8 @@ public:
 	::mmx::addr_t project_addr;
 	uint64_t fixed_project_reward = 50000;
 	::mmx::uint_fraction_t project_ratio;
+	uint32_t reward_activation = 50000;
+	uint32_t transaction_activation = 100000;
 	
 	typedef ::vnx::Value Super;
 	
@@ -111,7 +113,7 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(50);
+	_visitor.template type_begin<ChainParams>(52);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
@@ -162,7 +164,9 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("project_addr", 47); _visitor.accept(project_addr);
 	_visitor.type_field("fixed_project_reward", 48); _visitor.accept(fixed_project_reward);
 	_visitor.type_field("project_ratio", 49); _visitor.accept(project_ratio);
-	_visitor.template type_end<ChainParams>(50);
+	_visitor.type_field("reward_activation", 50); _visitor.accept(reward_activation);
+	_visitor.type_field("transaction_activation", 51); _visitor.accept(transaction_activation);
+	_visitor.template type_end<ChainParams>(52);
 }
 
 

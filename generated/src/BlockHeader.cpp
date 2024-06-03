@@ -18,7 +18,7 @@ namespace mmx {
 
 
 const vnx::Hash64 BlockHeader::VNX_TYPE_HASH(0xcaae941a2fc712a6ull);
-const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xdfa1bb560f8aaafull);
+const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xc88a419a59d443ccull);
 
 vnx::Hash64 BlockHeader::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -369,7 +369,7 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.BlockHeader";
 	type_code->type_hash = vnx::Hash64(0xcaae941a2fc712a6ull);
-	type_code->code_hash = vnx::Hash64(0xdfa1bb560f8aaafull);
+	type_code->code_hash = vnx::Hash64(0xc88a419a59d443ccull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
@@ -491,15 +491,15 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[19];
-		field.data_size = 4;
+		field.data_size = 8;
 		field.name = "static_cost";
-		field.code = {3};
+		field.code = {4};
 	}
 	{
 		auto& field = type_code->fields[20];
-		field.data_size = 4;
+		field.data_size = 8;
 		field.name = "total_cost";
-		field.code = {3};
+		field.code = {4};
 	}
 	{
 		auto& field = type_code->fields[21];
@@ -656,7 +656,7 @@ void write(TypeOutput& out, const ::mmx::BlockHeader& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(85);
+	auto* const _buf = out.write(93);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.height);
 	vnx::write_value(_buf + 8, value.nonce);
@@ -669,9 +669,9 @@ void write(TypeOutput& out, const ::mmx::BlockHeader& value, const TypeCode* typ
 	vnx::write_value(_buf + 56, value.reward_vote);
 	vnx::write_value(_buf + 57, value.next_base_reward);
 	vnx::write_value(_buf + 65, value.static_cost);
-	vnx::write_value(_buf + 69, value.total_cost);
-	vnx::write_value(_buf + 73, value.tx_count);
-	vnx::write_value(_buf + 77, value.tx_fees);
+	vnx::write_value(_buf + 73, value.total_cost);
+	vnx::write_value(_buf + 81, value.tx_count);
+	vnx::write_value(_buf + 85, value.tx_fees);
 	vnx::write(out, value.hash, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.prev, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.weight, type_code, type_code->fields[7].code.data());
