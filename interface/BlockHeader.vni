@@ -8,10 +8,6 @@ class BlockHeader {
 	hash_t prev;
 	
 	uint height;
-	
-	// TODO: uint time_hour;			// hours since chain start
-	// TODO: uint time_counter;			// blocks since last hour increment
-	
 	ulong nonce;
 	
 	ulong time_diff;
@@ -35,8 +31,8 @@ class BlockHeader {
 	char reward_vote;					// 0 = unchanged, 1 = up, -1 = down
 	ulong next_base_reward;
 	
-	uint static_cost;
-	uint total_cost;
+	ulong static_cost;
+	ulong total_cost;
 	
 	uint tx_count;
 	ulong tx_fees;
