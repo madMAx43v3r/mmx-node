@@ -190,9 +190,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			}
 		}
 	}
-	if(block->next_base_reward < params->min_reward) {
-		throw std::logic_error("invalid next_base_reward: smaller than min reward");
-	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
 	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
 		throw std::logic_error("invalid space_diff adjust");
