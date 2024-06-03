@@ -206,6 +206,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->total_weight != total_weight) {
 		throw std::logic_error("invalid total weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
 	}
+	if(block->height < params->transaction_activation && block->tx_count) {
+		throw std::logic_error("transactions not activated yet");
+	}
 
 	auto context = new_exec_context(block->height);
 	{
@@ -311,6 +314,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 	}
 	if(block->reward_addr) {
+		if(block->height < params->reward_activation) {
+			throw std::logic_error("rewards not activated yet");
+		}
 		const auto amount = calc_block_reward(block, block->tx_fees);
 		if(block->reward_amount != amount) {
 			throw std::logic_error("invalid reward_amount: "

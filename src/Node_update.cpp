@@ -10,6 +10,7 @@
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Execute.hxx>
@@ -772,10 +773,13 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
 			block->reward_addr = plot->reward_address;
 		}
+	} else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+		block->reward_addr = nft_proof->contract;
 	}
 
 	uint64_t total_fees = 0;
-	if(full_block) {
+	if(full_block && block->height >= params->transaction_activation)
+	{
 		const auto tx_list = validate_for_block();
 		// select transactions
 		for(const auto& entry : tx_list) {
@@ -814,7 +818,11 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		block->weight = calc_block_weight(params, diff_block, block);
 		block->total_weight = prev->total_weight + block->weight;
 	}
-	block->reward_amount = calc_block_reward(block, total_fees);
+	if(block->height >= params->reward_activation) {
+		block->reward_amount = calc_block_reward(block, total_fees);
+	} else {
+		block->reward_addr = nullptr;
+	}
 	block->next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
 	block->reward_vote = reward_vote;
 	block->finalize();

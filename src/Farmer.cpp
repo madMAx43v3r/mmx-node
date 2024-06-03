@@ -193,14 +193,10 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
 
-	if(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
-		out->reward_addr = reward_addr;
-	}
-	else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
-		out->reward_addr = nft_proof->contract;
-	}
-	else if(!out->reward_addr) {
-		out->reward_addr = reward_addr;
+	if(block->reward_amount) {
+		if(!out->reward_addr || std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+			out->reward_addr = reward_addr;
+		}
 	}
 	out->hash = out->calc_hash().first;
 	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
