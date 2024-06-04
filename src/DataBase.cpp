@@ -1006,6 +1006,11 @@ DataBase::DataBase(const int num_threads)
 {
 }
 
+DataBase::~DataBase()
+{
+	threads.close();
+}
+
 void DataBase::add(std::shared_ptr<Table> table)
 {
 	std::lock_guard<std::mutex> lock(mutex);

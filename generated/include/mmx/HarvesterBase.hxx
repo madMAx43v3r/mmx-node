@@ -23,6 +23,7 @@ public:
 	::vnx::TopicPtr output_info = "harvester.info";
 	::vnx::TopicPtr output_proofs = "harvester.proof";
 	std::set<std::string> plot_dirs;
+	std::set<std::string> dir_blacklist;
 	std::string node_server = "Node";
 	std::string farmer_server = "Farmer";
 	std::string config_path;
@@ -86,21 +87,22 @@ protected:
 
 template<typename T>
 void HarvesterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<HarvesterBase>(13);
+	_visitor.template type_begin<HarvesterBase>(14);
 	_visitor.type_field("input_challenges", 0); _visitor.accept(input_challenges);
 	_visitor.type_field("output_info", 1); _visitor.accept(output_info);
 	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
 	_visitor.type_field("plot_dirs", 3); _visitor.accept(plot_dirs);
-	_visitor.type_field("node_server", 4); _visitor.accept(node_server);
-	_visitor.type_field("farmer_server", 5); _visitor.accept(farmer_server);
-	_visitor.type_field("config_path", 6); _visitor.accept(config_path);
-	_visitor.type_field("storage_path", 7); _visitor.accept(storage_path);
-	_visitor.type_field("max_queue_ms", 8); _visitor.accept(max_queue_ms);
-	_visitor.type_field("reload_interval", 9); _visitor.accept(reload_interval);
-	_visitor.type_field("num_threads", 10); _visitor.accept(num_threads);
-	_visitor.type_field("recursive_search", 11); _visitor.accept(recursive_search);
-	_visitor.type_field("farm_virtual_plots", 12); _visitor.accept(farm_virtual_plots);
-	_visitor.template type_end<HarvesterBase>(13);
+	_visitor.type_field("dir_blacklist", 4); _visitor.accept(dir_blacklist);
+	_visitor.type_field("node_server", 5); _visitor.accept(node_server);
+	_visitor.type_field("farmer_server", 6); _visitor.accept(farmer_server);
+	_visitor.type_field("config_path", 7); _visitor.accept(config_path);
+	_visitor.type_field("storage_path", 8); _visitor.accept(storage_path);
+	_visitor.type_field("max_queue_ms", 9); _visitor.accept(max_queue_ms);
+	_visitor.type_field("reload_interval", 10); _visitor.accept(reload_interval);
+	_visitor.type_field("num_threads", 11); _visitor.accept(num_threads);
+	_visitor.type_field("recursive_search", 12); _visitor.accept(recursive_search);
+	_visitor.type_field("farm_virtual_plots", 13); _visitor.accept(farm_virtual_plots);
+	_visitor.template type_end<HarvesterBase>(14);
 }
 
 

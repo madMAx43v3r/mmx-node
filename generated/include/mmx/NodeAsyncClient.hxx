@@ -198,8 +198,20 @@ public:
 			const std::function<void(const ::mmx::vm::varptr_t&)>& _callback = std::function<void(const ::mmx::vm::varptr_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t read_storage_entry_var(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint64_t& key = 0, const uint32_t& height = -1, 
+			const std::function<void(const ::mmx::vm::varptr_t&)>& _callback = std::function<void(const ::mmx::vm::varptr_t&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t read_storage_field(const ::mmx::addr_t& contract = ::mmx::addr_t(), const std::string& name = "", const uint32_t& height = -1, 
 			const std::function<void(const std::pair<::mmx::vm::varptr_t, uint64_t>&)>& _callback = std::function<void(const std::pair<::mmx::vm::varptr_t, uint64_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t read_storage_entry_addr(const ::mmx::addr_t& contract = ::mmx::addr_t(), const std::string& name = "", const ::mmx::addr_t& key = ::mmx::addr_t(), const uint32_t& height = -1, 
+			const std::function<void(const std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>&)>& _callback = std::function<void(const std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t read_storage_entry_string(const ::mmx::addr_t& contract = ::mmx::addr_t(), const std::string& name = "", const std::string& key = "", const uint32_t& height = -1, 
+			const std::function<void(const std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>&)>& _callback = std::function<void(const std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t read_storage_array(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint32_t& height = -1, 
@@ -418,7 +430,10 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<uint64_t, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_dump_storage;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::vm::varptr_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_var;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::vm::varptr_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_entry_var;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::pair<::mmx::vm::varptr_t, uint64_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_field;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_entry_addr;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_entry_string;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_array;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_map;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_object;

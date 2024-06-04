@@ -126,7 +126,13 @@ public:
 	
 	::mmx::vm::varptr_t read_storage_var(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint32_t& height = -1);
 	
+	::mmx::vm::varptr_t read_storage_entry_var(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint64_t& key = 0, const uint32_t& height = -1);
+	
 	std::pair<::mmx::vm::varptr_t, uint64_t> read_storage_field(const ::mmx::addr_t& contract = ::mmx::addr_t(), const std::string& name = "", const uint32_t& height = -1);
+	
+	std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t> read_storage_entry_addr(const ::mmx::addr_t& contract = ::mmx::addr_t(), const std::string& name = "", const ::mmx::addr_t& key = ::mmx::addr_t(), const uint32_t& height = -1);
+	
+	std::tuple<::mmx::vm::varptr_t, uint64_t, uint64_t> read_storage_entry_string(const ::mmx::addr_t& contract = ::mmx::addr_t(), const std::string& name = "", const std::string& key = "", const uint32_t& height = -1);
 	
 	std::vector<::mmx::vm::varptr_t> read_storage_array(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint64_t& address = 0, const uint32_t& height = -1);
 	

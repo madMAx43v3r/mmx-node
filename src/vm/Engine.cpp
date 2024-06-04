@@ -74,7 +74,7 @@ var_t* Engine::assign(std::unique_ptr<var_t>& var, std::unique_ptr<var_t> value)
 			throw std::logic_error("read-only memory");
 		}
 		value->flags = var->flags;
-		value->ref_count = var->ref_count.load();
+		value->ref_count = var->ref_count;
 		clear(var.get());
 	}
 	const auto size = num_bytes(value.get());

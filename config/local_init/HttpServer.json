@@ -1,3 +1,4 @@
 {
-	"host": "localhost"
+	"host": "localhost",
+	"token_map": []
 }

@@ -2495,6 +2495,52 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "contract/storage/field?id|name");
 		}
 	}
+	else if(sub_path == "/contract/storage/entry") {
+		const auto iter_address = query.find("id");
+		const auto iter_name = query.find("name");
+		const auto iter_addr = query.find("addr");
+		const auto iter_key = query.find("key");
+		if(iter_address != query.end() && iter_name != query.end() && (iter_addr != query.end() || iter_key != query.end())) {
+			const auto contract = vnx::from_string_value<addr_t>(iter_address->second);
+			const auto name = vnx::from_string_value<std::string>(iter_name->second);
+			if(iter_addr != query.end()) {
+				const auto key = vnx::from_string_value<std::string>(iter_addr->second);
+				node->read_storage_entry_addr(contract, name, key, -1,
+					[this, request_id, contract](const std::tuple<vm::varptr_t, uint64_t, uint64_t>& ret) {
+						const auto addr = std::get<1>(ret);
+						const auto key = std::get<2>(ret);
+						log(INFO) << "value = " << vm::to_string(std::get<0>(ret));
+						resolve_vm_varptr(contract, std::get<0>(ret), request_id,
+							[this, request_id, addr, key](const vnx::Variant& value) {
+								vnx::Object out;
+								out["address"] = addr;
+								out["key"] = key;
+								out["value"] = value;
+								respond(request_id, out);
+							});
+					},
+					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			} else if(iter_key != query.end()) {
+				const auto key = vnx::from_string_value<std::string>(iter_key->second);
+				node->read_storage_entry_string(contract, name, key, -1,
+					[this, request_id, contract](const std::tuple<vm::varptr_t, uint64_t, uint64_t>& ret) {
+						const auto addr = std::get<1>(ret);
+						const auto key = std::get<2>(ret);
+						resolve_vm_varptr(contract, std::get<0>(ret), request_id,
+							[this, request_id, addr, key](const vnx::Variant& value) {
+								vnx::Object out;
+								out["address"] = addr;
+								out["key"] = key;
+								out["value"] = value;
+								respond(request_id, out);
+							});
+					},
+					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			}
+		} else {
+			respond_status(request_id, 404, "contract/storage/entry?id|name|addr|key");
+		}
+	}
 	else {
 		std::vector<std::string> options = {
 			"config/get", "config/set", "farmer", "farmers",
@@ -2506,7 +2552,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
 			"farmer/info", "farmer/blocks", "farmer/proofs",
 			"node/offers", "node/offer", "node/trade_history",
-			"contract/storage", "contract/storage/field"
+			"contract/storage", "contract/storage/field", "contract/storage/entry"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
@@ -2541,7 +2587,8 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 								const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const
 {
 	if(!var) {
-		throw std::logic_error("!var");
+		callback(vnx::Variant());
+		return;
 	}
 	switch(var->type) {
 		case vm::TYPE_REF: {

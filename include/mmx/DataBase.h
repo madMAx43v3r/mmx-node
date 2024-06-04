@@ -247,6 +247,8 @@ class DataBase {
 public:
 	DataBase(const int num_threads = 0);
 
+	~DataBase();
+
 	void add(std::shared_ptr<Table> table);
 
 	void commit(const uint32_t new_version);

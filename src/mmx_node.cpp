@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 	const auto params = mmx::get_params();
 
 	if(params->network.empty()) {
-		std::cerr << "This version is not compatible with testnet 1-10, please remove NETWORK file and try again to switch to testnet9." << std::endl;
+		std::cerr << "This binary is not compatible with testnet 1-10, please remove NETWORK file and try again to switch to testnet11." << std::endl;
 		vnx::close();
 		return -1;
 	}
@@ -121,7 +121,6 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
-		module->default_access = "NETWORK";
 		module->components["/server/"] = "HttpServer";
 		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";

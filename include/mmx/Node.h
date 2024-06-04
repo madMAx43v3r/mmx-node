@@ -127,7 +127,15 @@ protected:
 
 	vm::varptr_t read_storage_var(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 
+	vm::varptr_t read_storage_entry_var(const addr_t& contract, const uint64_t& address, const uint64_t& key, const uint32_t& height = -1) const override;
+
 	std::pair<vm::varptr_t, uint64_t> read_storage_field(const addr_t& contract, const std::string& name, const uint32_t& height = -1) const override;
+
+	std::tuple<vm::varptr_t, uint64_t, uint64_t> read_storage_entry_addr(
+			const addr_t& contract, const std::string& name, const addr_t& key, const uint32_t& height = -1) const;
+
+	std::tuple<vm::varptr_t, uint64_t, uint64_t> read_storage_entry_string(
+			const addr_t& contract, const std::string& name, const std::string& key, const uint32_t& height = -1) const;
 
 	std::vector<vm::varptr_t> read_storage_array(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 
@@ -323,8 +331,8 @@ private:
 			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
 			const bool state = false, const bool filter = false) const;
 
-	std::pair<vm::varptr_t, uint64_t> read_storage_field(
-			const addr_t& binary, const addr_t& contract, const std::string& name, const uint32_t& height = -1) const;
+	std::tuple<vm::varptr_t, uint64_t, uint64_t> read_storage_entry_var(
+			const addr_t& contract, const std::string& name, const vm::varptr_t& key, const uint32_t& height = -1) const;
 
 	void sync_more();
 

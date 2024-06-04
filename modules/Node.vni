@@ -177,7 +177,16 @@ module Node implements vnx.addons.HttpComponent {
 	varptr_t read_storage_var(addr_t contract, ulong address, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
+	varptr_t read_storage_entry_var(addr_t contract, ulong address, ulong key, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
 	pair<varptr_t, ulong> read_storage_field(addr_t contract, string name, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	tuple<varptr_t, ulong, ulong> read_storage_entry_addr(addr_t contract, string name, addr_t key, uint height = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	tuple<varptr_t, ulong, ulong> read_storage_entry_string(addr_t contract, string name, string key, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<varptr_t> read_storage_array(addr_t contract, ulong address, uint height = -1) const;
