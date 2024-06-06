@@ -2571,15 +2571,19 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 		return 0;
 	}
 	uint32_t avg_txfee = 0;
-	uint64_t base_reward = params->min_reward;
+	uint64_t base_reward = 0;
 	if(auto prev = find_prev_header(block, 1)) {
 		avg_txfee = prev->average_txfee;
 		base_reward = prev->next_base_reward;
 	}
-	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-		base_reward = 0;
+	uint64_t reward = base_reward;
+	if(params->min_reward > avg_txfee) {
+		reward += params->min_reward - avg_txfee;
 	}
-	return mmx::calc_final_block_reward(params, base_reward, avg_txfee, total_fees);
+	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+		reward = 0;
+	}
+	return mmx::calc_final_block_reward(params, reward, total_fees);
 }
 
 std::shared_ptr<const BlockHeader> Node::read_block(
