@@ -14,6 +14,8 @@
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
+#include <mmx/operation/Execute.hxx>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
@@ -79,6 +81,75 @@ void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, s
 		if(entry.memo) {
 			std::cout << " M(" << *entry.memo << ")";
 		}
+		std::cout << std::endl;
+	}
+}
+
+void print_tx(std::shared_ptr<const mmx::Transaction> tx, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
+{
+	std::cout << "TX ID: " << tx->id << std::endl;
+	std::cout << "Note: " << vnx::to_string_value(tx->note) << std::endl;
+	std::cout << "Network: " << tx->network << std::endl;
+	std::cout << "Expires: at height " << tx->expires << std::endl;
+	std::cout << "Fee Ratio: " << tx->fee_ratio / 1024. << std::endl;
+	std::cout << "Max Fee Amount: " << mmx::to_value(tx->max_fee_amount, params->decimals) << " MMX" << std::endl;
+	std::cout << "Sender: " << vnx::to_string_value(tx->sender) << std::endl;
+	{
+		int i = 0;
+		for(const auto& in : tx->inputs) {
+			const auto token = get_token(node, in.contract);
+			const auto decimals = token ? token->decimals : in.contract == mmx::addr_t() ? params->decimals : 0;
+			const auto symbol = token ? token->symbol : in.contract == mmx::addr_t() ? std::string("MMX") : std::string("???");
+			std::cout << "Input[" << i++ << "]: " << mmx::to_value(in.amount, decimals) << " " << symbol << " [" << in.contract << "] from " << in.address << std::endl;
+			if(in.memo) {
+				std::cout << "  Memo: " << vnx::to_string(in.memo) << std::endl;
+			}
+		}
+	}
+	{
+		int i = 0;
+		for(const auto& out : tx->outputs) {
+			const auto token = get_token(node, out.contract);
+			const auto decimals = token ? token->decimals : out.contract == mmx::addr_t() ? params->decimals : 0;
+			const auto symbol = token ? token->symbol : out.contract == mmx::addr_t() ? std::string("MMX") : std::string("???");
+			std::cout << "Output[" << i++ << "]: " << mmx::to_value(out.amount, decimals) << " " << symbol << " [" << out.contract << "] to " << out.address << std::endl;
+			if(out.memo) {
+				std::cout << "  Memo: " << vnx::to_string(out.memo) << std::endl;
+			}
+		}
+	}
+	{
+		int i = 0;
+		for(const auto& op : tx->execute) {
+			std::cout << "Operation[" << i++ << "]: ";
+			const auto exec = std::dynamic_pointer_cast<const mmx::operation::Execute>(op);
+			const auto deposit = std::dynamic_pointer_cast<const mmx::operation::Deposit>(op);
+			if(deposit) {
+				std::cout << "Deposit via " << deposit->method << "()" << std::endl;
+			} else if(exec) {
+				std::cout << "Execute " << exec->method << "()" << std::endl;
+			} else {
+				std::cout << "null" << std::endl;
+				continue;
+			}
+			if(deposit) {
+				const auto token = get_token(node, deposit->currency);
+				const auto decimals = token ? token->decimals : deposit->currency == mmx::addr_t() ? params->decimals : 0;
+				const auto symbol = token ? token->symbol : deposit->currency == mmx::addr_t() ? std::string("MMX") : std::string("???");
+				std::cout << "  Amount: " << mmx::to_value(deposit->amount, decimals) << " " << symbol << " [" << deposit->currency << "]" << std::endl;
+			}
+			std::cout << "  Contract: " << (op->address != mmx::addr_t() ? op->address.to_string() : std::string("<deployed>")) << std::endl;
+			std::cout << "  User: " << vnx::to_string(exec->user) << std::endl;
+			int k = 0;
+			for(const auto& arg : exec->args) {
+				std::cout << "  Argument[" << k++ << "]: " << vnx::to_string(arg) << std::endl;
+			}
+		}
+	}
+	if(auto contract = tx->deploy) {
+		std::cout << "Deploy: (see below)" << std::endl;
+		vnx::PrettyPrinter print(std::cout);
+		vnx::accept(print, contract);
 		std::cout << std::endl;
 	}
 }
