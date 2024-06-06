@@ -591,7 +591,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				}
 			}
 		} else {
-			uint32_t max_block_size = 0;
+			uint64_t max_block_size = 0;
 			for(const auto& entry : job->blocks) {
 				max_block_size = std::max(entry.second->static_cost, max_block_size);
 			}
