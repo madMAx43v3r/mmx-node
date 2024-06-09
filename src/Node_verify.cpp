@@ -201,20 +201,26 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 	}
 	proof->validate();
 
-	if(!check_plot_filter(params, challenge, proof->plot_id)) {
-		throw std::logic_error("plot filter failed");
+	const auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof);
+	const auto og_proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof);
+	const auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(proof);
+
+	if(!stake) {
+		if(!check_plot_filter(params, challenge, proof->plot_id)) {
+			throw std::logic_error("plot filter failed");
+		}
 	}
 	uint256_t score = uint256_max;
 
-	if(auto og_proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof))
+	if(og_proof)
 	{
 		score = verify_proof_impl(og_proof, challenge, diff_block);
 	}
-	else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(proof))
+	else if(nft_proof)
 	{
 		score = verify_proof_impl(nft_proof, challenge, diff_block);
 	}
-	else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(proof))
+	else if(stake)
 	{
 		const auto plot = get_virtual_plot(stake->plot_id, diff_block->hash);
 		if(!plot) {
