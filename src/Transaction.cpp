@@ -217,9 +217,6 @@ uint64_t Transaction::calc_cost(std::shared_ptr<const ChainParams> params) const
 	if(deploy) {
 		cost += params->min_txfee_deploy + deploy->calc_cost(params);
 	}
-	if(cost >> 32) {
-		throw std::logic_error("tx cost amount overflow");
-	}
 	return cost;
 }
 
