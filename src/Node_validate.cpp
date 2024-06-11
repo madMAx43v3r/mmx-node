@@ -515,6 +515,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	if(tx->static_cost > params->max_tx_cost) {
 		throw mmx::static_failure("static_cost > max_tx_cost");
 	}
+	if(uint64_t(tx->max_fee_amount) >> 32) {
+		throw mmx::static_failure("max fee amount >= 2^32");
+	}
 	if(tx_index.count(tx->id)) {
 		throw mmx::static_failure("duplicate tx");
 	}
