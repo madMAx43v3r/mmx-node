@@ -719,6 +719,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		if(tx_cost > params->max_tx_cost) {
 			throw mmx::static_failure("transaction cost > max_tx_cost");
 		}
+		if(tx_cost >> 32) {
+			throw mmx::static_failure("transaction cost >= 2^32");
+		}
 	} catch(const mmx::static_failure& ex) {
 		throw;
 	} catch(...) {
