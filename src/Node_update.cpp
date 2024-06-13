@@ -818,11 +818,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		block->weight = calc_block_weight(params, diff_block, block);
 		block->total_weight = prev->total_weight + block->weight;
 	}
-	if(block->height >= params->reward_activation) {
-		block->reward_amount = calc_block_reward(block, total_fees);
-	} else {
-		block->reward_addr = nullptr;
-	}
+	block->reward_amount = calc_block_reward(block, total_fees);
 	block->next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
 	block->reward_vote = reward_vote;
 	block->finalize();

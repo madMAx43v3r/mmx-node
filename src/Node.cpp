@@ -2570,6 +2570,9 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	if(!block->proof) {
 		return 0;
 	}
+	if(block->height < params->reward_activation) {
+		return 0;
+	}
 	uint32_t avg_txfee = 0;
 	uint64_t base_reward = 0;
 	if(auto prev = find_prev_header(block, 1)) {
