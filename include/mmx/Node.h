@@ -511,7 +511,7 @@ private:
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
 
 	hash_multi_table<pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
-	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;		// TODO: [farmer key => info]
+	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;		// [farmer key => info]
 
 	hash_table<addr_t, farmer_info_t> farmer_info_map;							// TODO: [reward address => info]
 
