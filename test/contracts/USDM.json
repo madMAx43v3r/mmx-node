@@ -1,8 +1,8 @@
 {
 	"__type": "mmx.contract.Executable",
-	"name": "Stably USD",
-	"symbol": "USDS",
+	"name": "Fake Testnet USD",
+	"symbol": "USDM",
 	"decimals": 4,
-	"binary": "mmx14p3r04475n5qjcchuklk0z8qunknjwl7jr93zhv9xzzp0n78hgwsjy39kq",
+	"binary": "mmx1af3nmx8zefduyqexz8z5v6qz2ks96znd89jxjk0jwtu9sqvvgmzqw7u6xt",
 	"init_args": ["mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z"]
 }

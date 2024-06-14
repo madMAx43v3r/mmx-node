@@ -10,6 +10,7 @@
 #include <mmx/TimeInfusion.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Execute.hxx>
@@ -772,10 +773,13 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
 			block->reward_addr = plot->reward_address;
 		}
+	} else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+		block->reward_addr = nft_proof->contract;
 	}
 
 	uint64_t total_fees = 0;
-	if(full_block) {
+	if(full_block && block->height >= params->transaction_activation)
+	{
 		const auto tx_list = validate_for_block();
 		// select transactions
 		for(const auto& entry : tx_list) {

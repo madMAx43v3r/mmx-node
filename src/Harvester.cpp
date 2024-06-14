@@ -267,24 +267,21 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		}
 	});
 
-	for(const auto& entry : virtual_map)
-	{
-		if(check_plot_filter(params, value->challenge, entry.first)) {
-			try {
-				const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
-				if(balance) {
-					const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
-					if(score < params->score_threshold) {
-						auto proof = std::make_shared<ProofOfStake>();
-						proof->farmer_key = entry.second.farmer_key;
-						proof->plot_id = entry.first;
-						proof->score = score;
-						send_response(value, proof, score, recv_time_ms);
-					}
+	for(const auto& entry : virtual_map) {
+		try {
+			const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
+			if(balance) {
+				const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
+				if(score < params->score_threshold) {
+					auto proof = std::make_shared<ProofOfStake>();
+					proof->farmer_key = entry.second.farmer_key;
+					proof->plot_id = entry.first;
+					proof->score = score;
+					send_response(value, proof, score, recv_time_ms);
 				}
-			} catch(const std::exception& ex) {
-				log(WARN) << "[" << host_name << "] Failed to check virtual plot: " << ex.what() << " (" << entry.first << ")";
 			}
+		} catch(const std::exception& ex) {
+			log(WARN) << "[" << host_name << "] Failed to check virtual plot: " << ex.what() << " (" << entry.first << ")";
 		}
 	}
 	const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;

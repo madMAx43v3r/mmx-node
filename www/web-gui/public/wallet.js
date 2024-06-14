@@ -953,7 +953,7 @@ Vue.component('account-plots', {
 				</template>
 				
 				<template v-slot:item.size_bytes="{ item }">
-					<b>{{(item.size_bytes / Math.pow(1000,4)).toFixed(2)}}</b>&nbsp;&nbsp;TB
+					<b>{{parseFloat((item.size_bytes / Math.pow(1000,4)).toFixed(3))}}</b>&nbsp;&nbsp;TB
 				</template>
 				
 				<template v-slot:item.address="{ item }">

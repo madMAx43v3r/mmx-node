@@ -127,12 +127,6 @@ uint64_t to_effective_space(const uint64_t num_bytes)
 }
 
 inline
-uint64_t get_effective_plot_size(const int ksize)
-{
-	return to_effective_space(uint64_t((2 * ksize) + 1) << (ksize - 1));
-}
-
-inline
 uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
 	return ((uint256_t(space_diff) * params->space_diff_constant) << params->score_bits) / params->score_target;
@@ -150,8 +144,7 @@ uint256_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 {
 	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->space_diff_constant);
 	divider *= (2 * ksize) + 1;
-	divider <<= ksize - 1;
-	return quality.to_uint256() / divider;
+	return (quality.to_uint256() / divider) >> (ksize - 1);
 }
 
 inline
@@ -163,8 +156,8 @@ uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
 		throw std::logic_error("zero balance (virtual plot)");
 	}
 	const hash_t quality(std::string("virtual_score") + plot_id + challenge);
-	const uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->virtual_space_constant);
-	return (quality.to_uint256() / divider) / balance;
+	const uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->space_diff_constant);
+	return (quality.to_uint256() / divider) / (uint128_t(balance) * params->virtual_space_constant);
 }
 
 inline
@@ -175,16 +168,17 @@ uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
-uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const uint64_t tx_fees)
+uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t tx_fees)
 {
 	const uint64_t fee_deduction = calc_project_reward(params, tx_fees);
-	return base_reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
+
+	return reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
 }
 
 inline
 uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const int8_t vote)
 {
-	const auto step_size = std::max<uint64_t>(base_reward / params->reward_adjust_div, 1);
+	const auto step_size = std::max<int64_t>(base_reward / params->reward_adjust_div, 1);
 
 	int64_t reward = base_reward;
 	if(vote > 0) {
@@ -192,13 +186,19 @@ uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const 
 	} else if(vote < 0) {
 		reward -= step_size;
 	}
-	return std::max<int64_t>(std::min<int64_t>(reward, 4200000000000ll), params->min_reward);
+	return std::max<int64_t>(std::min<int64_t>(reward, 4200000000000ll), 0);
 }
 
 inline
-uint64_t calc_virtual_plot_size(std::shared_ptr<const ChainParams> params, const uint64_t balance)
+uint64_t get_effective_plot_size(const int ksize)
 {
-	return to_effective_space((uint128_t(balance) * params->space_diff_constant) / (params->virtual_space_constant));
+	return to_effective_space(uint64_t((2 * ksize) + 1) << (ksize - 1));
+}
+
+inline
+uint64_t get_virtual_plot_size(std::shared_ptr<const ChainParams> params, const uint64_t balance)
+{
+	return to_effective_space(uint128_t(balance) * params->virtual_space_constant);
 }
 
 inline

@@ -190,9 +190,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			}
 		}
 	}
-	if(block->next_base_reward < params->min_reward) {
-		throw std::logic_error("invalid next_base_reward: smaller than min reward");
-	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
 	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
 		throw std::logic_error("invalid space_diff adjust");
@@ -205,6 +202,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	if(block->total_weight != total_weight) {
 		throw std::logic_error("invalid total weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
+	}
+	if(block->height < params->transaction_activation && block->tx_count) {
+		throw std::logic_error("transactions not activated yet");
 	}
 
 	auto context = new_exec_context(block->height);
@@ -512,6 +512,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	if(tx->static_cost > params->max_tx_cost) {
 		throw mmx::static_failure("static_cost > max_tx_cost");
 	}
+	if(uint64_t(tx->max_fee_amount) >> 32) {
+		throw mmx::static_failure("max fee amount >= 2^32");
+	}
 	if(tx_index.count(tx->id)) {
 		throw mmx::static_failure("duplicate tx");
 	}
@@ -715,6 +718,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		}
 		if(tx_cost > params->max_tx_cost) {
 			throw mmx::static_failure("transaction cost > max_tx_cost");
+		}
+		if(tx_cost >> 32) {
+			throw mmx::static_failure("transaction cost >= 2^32");
 		}
 	} catch(const mmx::static_failure& ex) {
 		throw;

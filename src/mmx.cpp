@@ -14,6 +14,8 @@
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
+#include <mmx/operation/Execute.hxx>
+#include <mmx/operation/Deposit.hxx>
 #include <mmx/KeyFile.hxx>
 #include <mmx/secp256k1.hpp>
 #include <mmx/hash_t.hpp>
@@ -65,20 +67,91 @@ void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, s
 			case mmx::tx_type_e::PROJECT_REWARD:  std::cout << "PROJECT_REWARD + "; break;
 			default: std::cout << "????    "; break;
 		}
-		const auto contract = get_contract(node, entry.contract);
+		const auto currency = entry.contract;
+		const auto contract = get_contract(node, currency);
 		if(auto exe = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
 			if(exe->binary == params->nft_binary) {
-				std::cout << entry.contract << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+				std::cout << currency << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
 				continue;
 			}
 		}
 		const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
-		const auto decimals = token ? token->decimals : params->decimals;
-		std::cout << to_value_128(entry.amount, decimals) << " " << (token ? token->symbol : "MMX")
+		const auto decimals = token ? token->decimals : currency == mmx::addr_t() ? params->decimals : 0;
+		const auto symbol = token ? token->symbol : currency == mmx::addr_t() ? std::string("MMX") : std::string("???");
+		std::cout << to_value_128(entry.amount, decimals) << " " << symbol
 				<< " (" << entry.amount << ") " << arrow << " " << entry.address << " TX(" << entry.txid << ")";
 		if(entry.memo) {
 			std::cout << " M(" << *entry.memo << ")";
 		}
+		std::cout << std::endl;
+	}
+}
+
+void print_tx(std::shared_ptr<const mmx::Transaction> tx, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
+{
+	std::cout << "TX ID: " << tx->id << std::endl;
+	std::cout << "Note: " << vnx::to_string_value(tx->note) << std::endl;
+	std::cout << "Network: " << tx->network << std::endl;
+	std::cout << "Expires: at height " << tx->expires << std::endl;
+	std::cout << "Fee Ratio: " << tx->fee_ratio / 1024. << std::endl;
+	std::cout << "Max Fee Amount: " << mmx::to_value(tx->max_fee_amount, params->decimals) << " MMX" << std::endl;
+	std::cout << "Sender: " << vnx::to_string_value(tx->sender) << std::endl;
+	{
+		int i = 0;
+		for(const auto& in : tx->inputs) {
+			const auto token = get_token(node, in.contract);
+			const auto decimals = token ? token->decimals : in.contract == mmx::addr_t() ? params->decimals : 0;
+			const auto symbol = token ? token->symbol : in.contract == mmx::addr_t() ? std::string("MMX") : std::string("???");
+			std::cout << "Input[" << i++ << "]: " << mmx::to_value(in.amount, decimals) << " " << symbol << " [" << in.contract << "] from " << in.address << std::endl;
+			if(in.memo) {
+				std::cout << "  Memo: " << vnx::to_string(in.memo) << std::endl;
+			}
+		}
+	}
+	{
+		int i = 0;
+		for(const auto& out : tx->outputs) {
+			const auto token = get_token(node, out.contract);
+			const auto decimals = token ? token->decimals : out.contract == mmx::addr_t() ? params->decimals : 0;
+			const auto symbol = token ? token->symbol : out.contract == mmx::addr_t() ? std::string("MMX") : std::string("???");
+			std::cout << "Output[" << i++ << "]: " << mmx::to_value(out.amount, decimals) << " " << symbol << " [" << out.contract << "] to " << out.address << std::endl;
+			if(out.memo) {
+				std::cout << "  Memo: " << vnx::to_string(out.memo) << std::endl;
+			}
+		}
+	}
+	{
+		int i = 0;
+		for(const auto& op : tx->execute) {
+			std::cout << "Operation[" << i++ << "]: ";
+			const auto exec = std::dynamic_pointer_cast<const mmx::operation::Execute>(op);
+			const auto deposit = std::dynamic_pointer_cast<const mmx::operation::Deposit>(op);
+			if(deposit) {
+				std::cout << "Deposit via " << deposit->method << "()" << std::endl;
+			} else if(exec) {
+				std::cout << "Execute " << exec->method << "()" << std::endl;
+			} else {
+				std::cout << "null" << std::endl;
+				continue;
+			}
+			if(deposit) {
+				const auto token = get_token(node, deposit->currency);
+				const auto decimals = token ? token->decimals : deposit->currency == mmx::addr_t() ? params->decimals : 0;
+				const auto symbol = token ? token->symbol : deposit->currency == mmx::addr_t() ? std::string("MMX") : std::string("???");
+				std::cout << "  Amount: " << mmx::to_value(deposit->amount, decimals) << " " << symbol << " [" << deposit->currency << "]" << std::endl;
+			}
+			std::cout << "  Contract: " << (op->address != mmx::addr_t() ? op->address.to_string() : std::string("<deployed>")) << std::endl;
+			std::cout << "  User: " << vnx::to_string(exec->user) << std::endl;
+			int k = 0;
+			for(const auto& arg : exec->args) {
+				std::cout << "  Argument[" << k++ << "]: " << vnx::to_string(arg) << std::endl;
+			}
+		}
+	}
+	if(auto contract = tx->deploy) {
+		std::cout << "Deploy: (see below)" << std::endl;
+		vnx::PrettyPrinter print(std::cout);
+		vnx::accept(print, contract);
 		std::cout << std::endl;
 	}
 }
@@ -343,7 +416,7 @@ int main(int argc, char** argv)
 						if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
 							const auto balance = node.get_virtual_plot_balance(entry.first);
 							std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
-							std::cout << ", " << mmx::calc_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
+							std::cout << ", " << mmx::get_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
 						}
 						std::cout << ")" << std::endl;
 
@@ -1466,7 +1539,7 @@ int main(int argc, char** argv)
 				}
 				std::cout << "Physical size:  " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
 				std::cout << "Effective size: " << info->total_bytes_effective / pow(1000, 4) << " TBe" << std::endl;
-				const auto virtual_bytes = mmx::calc_virtual_plot_size(params, info->total_balance);
+				const auto virtual_bytes = mmx::get_virtual_plot_size(params, info->total_balance);
 				std::cout << "Virtual size:   " << info->total_balance / pow(10, params->decimals) << " MMX ("
 						<< virtual_bytes / pow(1000, 4) << " TBe)" << std::endl;
 				std::cout << "Total size:     " << (info->total_bytes_effective + virtual_bytes) / pow(1000, 4) << " TBe" << std::endl;

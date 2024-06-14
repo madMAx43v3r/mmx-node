@@ -174,8 +174,8 @@ const enLocale = {
         "from": "from",
         "to": "to",
         
-        "deposit_warning": "Only 90% of the amount deposited will be returned on withdraw, the rest is burned as fee.",
-        "withdraw_warning": "Only 90% of the amount will be returned, the rest is burned as fee."
+        "deposit_warning": "Only 90% of the amount deposited will be returned on withdrawal, the remaining 10% is burned as fee.",
+        "withdraw_warning": "Only 90% of the amount will be returned, the remaining 10% is burned as fee."
     },
 
     "account_offers": {

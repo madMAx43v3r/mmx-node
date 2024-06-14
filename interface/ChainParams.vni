@@ -40,7 +40,7 @@ class ChainParams {
 	ulong min_txfee_io = 100;				// per input / output
 	ulong min_txfee_sign = 1000;			// per solution
 	ulong min_txfee_memo = 50;				// per memo
-	ulong min_txfee_exec = 10000;			// per contract operation
+	ulong min_txfee_exec = 10000;			// per operation
 	ulong min_txfee_deploy = 100000;		// per contract
 	ulong min_txfee_byte = 10;				// per byte of data
 	ulong min_txfee_read = 1000;			// per lookup
@@ -66,5 +66,8 @@ class ChainParams {
 	addr_t project_addr;
 	ulong fixed_project_reward = 50000;
 	uint_fraction_t project_ratio;
+	
+	uint reward_activation = 50000;
+	uint transaction_activation = 100000;
 	
 }

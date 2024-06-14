@@ -314,7 +314,6 @@ void Node::main()
 		block->nonce = params->port;
 		block->time_diff = params->initial_time_diff;
 		block->space_diff = params->initial_space_diff;
-		block->next_base_reward = params->min_reward;
 		block->vdf_output[0] = hash_t(params->network);
 		block->vdf_output[1] = hash_t(params->network);
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
@@ -391,7 +390,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
 			info->vdf_speed = (peak->time_diff / params->block_time) * (params->time_diff_constant / 1e6);
-			info->block_reward = peak->next_base_reward;
+			info->block_reward = (peak->height >= params->reward_activation ? std::max(peak->next_base_reward, params->min_reward) : 0);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = mmx_address_count;
@@ -1153,7 +1152,7 @@ std::vector<virtual_plot_info_t> Node::get_virtual_plots(const std::vector<addr_
 			info.farmer_key = plot->farmer_key;
 			info.reward_address = plot->reward_address;
 			info.balance = get_balance(address, addr_t());
-			info.size_bytes = calc_virtual_plot_size(params, info.balance);
+			info.size_bytes = get_virtual_plot_size(params, info.balance);
 			info.owner = to_addr(read_storage_field(address, "owner").first);
 			result.push_back(info);
 		}
@@ -2571,14 +2570,23 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	if(!block->proof) {
 		return 0;
 	}
-	uint64_t base_reward = params->min_reward;
+	if(block->height < params->reward_activation) {
+		return 0;
+	}
+	uint32_t avg_txfee = 0;
+	uint64_t base_reward = 0;
 	if(auto prev = find_prev_header(block, 1)) {
+		avg_txfee = prev->average_txfee;
 		base_reward = prev->next_base_reward;
 	}
-	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-		base_reward = 0;
+	uint64_t reward = base_reward;
+	if(params->min_reward > avg_txfee) {
+		reward += params->min_reward - avg_txfee;
 	}
-	return mmx::calc_final_block_reward(params, base_reward, total_fees);
+	if(std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
+		reward = 0;
+	}
+	return mmx::calc_final_block_reward(params, reward, total_fees);
 }
 
 std::shared_ptr<const BlockHeader> Node::read_block(

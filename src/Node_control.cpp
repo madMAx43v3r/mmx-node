@@ -158,6 +158,11 @@ void Node::update_control()
 		return;
 	}
 
+	if(mmx_usd_swap_addr == addr_t()) {
+		log(INFO) << "Reward voting is disabled due to lack of MMX swap / exchange";
+		return;
+	}
+
 	try {
 		const auto swap_info = get_swap_info(mmx_usd_swap_addr);
 		const auto usd_contract_addr = swap_info.tokens[1];

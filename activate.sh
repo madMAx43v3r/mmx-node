@@ -28,7 +28,7 @@ cp "${PASSWD_PATH}" "${MMX_HOME}PASSWD"
 if [ -f "${MMX_HOME}NETWORK" ]; then
 	NETWORK=$(cat "${MMX_HOME}NETWORK")
 else
-	NETWORK=testnet11
+	NETWORK=testnet12
 	echo ${NETWORK} > "${MMX_HOME}NETWORK"
 fi
 

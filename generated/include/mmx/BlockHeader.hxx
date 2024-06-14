@@ -38,8 +38,8 @@ public:
 	vnx::optional<::mmx::addr_t> reward_addr;
 	int8_t reward_vote = 0;
 	uint64_t next_base_reward = 0;
-	uint32_t static_cost = 0;
-	uint32_t total_cost = 0;
+	uint64_t static_cost = 0;
+	uint64_t total_cost = 0;
 	uint32_t tx_count = 0;
 	uint64_t tx_fees = 0;
 	::mmx::hash_t tx_hash;
