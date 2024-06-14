@@ -1640,7 +1640,9 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 	}
 	if(limit >= 0) {
 		std::reverse(entries.begin(), entries.end());
-		entries.resize(limit);
+		if(entries.size() > size_t(limit)) {
+			entries.resize(limit);
+		}
 	}
 	std::vector<std::shared_ptr<const BlockHeader>> out;
 	for(const auto& entry : entries) {
