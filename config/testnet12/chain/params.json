@@ -33,7 +33,7 @@
 	"space_diff_constant": 10000000000,
 	"virtual_space_constant": 8108,
 	"reward_activation": 25000,
-	"transaction_activation": 30000,
+	"transaction_activation": 100,
 	"fixed_project_reward": 50000,
 	"project_ratio": {
 		"value": 1,
