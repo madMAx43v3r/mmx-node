@@ -4,7 +4,7 @@ var mint_height;
 
 function init(creator_)
 {
-	if(this.decimals != 0) {
+	if(read("decimals") != 0) {
 		fail("decimals not zero");
 	}
 	creator = bech32(creator_);

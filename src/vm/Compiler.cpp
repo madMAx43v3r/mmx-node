@@ -553,7 +553,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["fail"].name = "fail";
 	function_map["log"].name = "log";
 	function_map["event"].name = "event";
-	function_map["cread"].name = "cread";
+	function_map["read"].name = "read";
 	function_map["bech32"].name = "bech32";
 	function_map["binary"].name = "binary";
 	function_map["binary_le"].name = "binary_le";
@@ -1623,12 +1623,15 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_EVENT, 0, get(recurse(args[0])), get(recurse(args[1])));
 				out.address = 0;
 			}
-			else if(name == "cread") {
-				if(args.size() != 2) {
-					throw std::logic_error("expected 2 arguments for cread(address, field)");
-				}
+			else if(name == "read") {
 				out.address = stack.new_addr();
-				code.emplace_back(OP_CREAD, 0, out.address, get(recurse(args[0])), get(recurse(args[1])));
+				if(args.size() == 2) {
+					code.emplace_back(OP_CREAD, 0, out.address, get(recurse(args[1])), get(recurse(args[0])));
+				} else if(args.size() == 1) {
+					code.emplace_back(OP_CREAD, 0, out.address, MEM_EXTERN + EXTERN_ADDRESS, get(recurse(args[0])));
+				} else {
+					throw std::logic_error("expected 1 or 2 arguments for read(field, [address])");
+				}
 			}
 			else if(name == "bech32") {
 				if(args.size() == 0) {
