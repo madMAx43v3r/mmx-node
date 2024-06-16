@@ -96,7 +96,7 @@ Note: Objects are maps with string keys.
 - `<=`: Less than or equal (integers only)
 - `>=`: Greater than or equal (integers only)
 - `!=`: Not equal (any types)
-- `==`: Equals (any types, strict, no implict conversions)
+- `==`: Equals (any types, strict, no implicit conversions)
 - `&`: Bitwise AND (integers only)
 - `&&`: Logical AND (boolean only)
 - `^`: Bitwise XOR (integers only)
@@ -132,12 +132,12 @@ Note: Objects are maps with string keys.
 	- 6 = Binary
 	- 7 = Array
 	- 8 = Map
-- `concat(a, b)`: Returns concatenation of two (binary) strings (like `a + b`)
+- `concat(a, b)`: Returns concatenation of two (binary) strings (like `a + b` in JS)
 - `memcpy(src, count, [offset])`
 	- Returns a sub-string of `src` with length `count` starting at `offset`
-	- Default `offset` if not specified is zero
-	- Works for strings as well as binary strings
-	- Out of bounds access will fail
+	- `offset` defaults to `0`
+	- `src` must be a string or binary string
+	- Out of bounds access will fail execution
 - `fail(message, [code])`: Fails execution with string `message` and optional integer `code`
 - `bech32(addr)`: Parses a bech32 address string and returns 32 bytes.
 	- Returns 32 zero bytes if no argument given, which corresponds to the zero address.
@@ -265,7 +265,7 @@ Deposits in MMX are made through function calls to a `payable` function:
 var currency = bech32();
 var balances = {};
 function deposit(account) public payable {
-	if(this.deposit.currency != currency() {
+	if(this.deposit.currency != currency) {
 		fail("invalid currency");
 	}
 	balances[account] += this.deposit.amount;
@@ -282,6 +282,36 @@ Funds that are sent to a contract (via normal transfer) at height `H` will only 
 
 Any funds not spent in the transaction that deploys a contract will be credited to the contract's address before the contructor is called.
 This allows a more efficient way to deploy with funding, compared to executing a deposit function.
+
+### Built-in Contracts
+
+- [offer.js] (../src/contract/offer.js) Offer
+	- Allows to trade between two currencies at a fixed price (See GUI -> Market)
+	- Takers can trade any fraction of the offer
+	- Maker can cancel / refill at any time
+	- Bids are accumulated in the contract (for lower tx fees)
+	- Manual withdrawal will transfer accumulated bids to maker wallet
+- [swap.js] (../src/contract/swap.js) Swap
+	- Liquidity pool AMM, similar to UniSwap (see GUI -> Swap)
+	- Has 4 different fee-tiers, each with their own liquidty and price
+	- A trade is divided into multiple chunks / iterations
+	- `trade()` loops over all pools in multiple iterations and picks the best pool to trade with for each chunk (while taking the fee into account)
+	- Supports one-sided liquidity
+	- Liquidity is locked for 24 hours after it's been added / or fee-tier was changed
+	- A single account can only provide liquidity for one fee-tier
+	- Fee payouts are heuristic for better trade efficiency (manual trigger, no automatic compounding)
+- [virtual_plot.js] (../src/contract/virtual_plot.js) Virtual Plot
+	- Used for Proof Of Stake farming
+	- Only 90% of deposited balance is returned on withdrawal, to avoid short-term staking.
+- [plot_nft.js] (../src/contract/plot_nft.js) Plot NFT
+	- Used for pooled farming to control rewards / switch pools
+- [token.js] (../src/contract/token.js) Simple Token
+	- Token contract with single owner to mint a token (without limits)
+- [nft.js] (../src/contract/nft.js) NFT
+	- Contract used to mint NFTs
+	- Ensures only a single token is ever minted by a verified creator
+- [time_lock.js] (../src/contract/time_lock.js) Simple Time Lock
+- [escrow.js] (../src/contract/escrow.js) Simple Escrow with middle-man
 
 ### Minting tokens
 
