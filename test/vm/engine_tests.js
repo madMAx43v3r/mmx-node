@@ -632,9 +632,22 @@ __nop();
 		fail("map[key] != 1337 (key = bech32())");
 	}
 }
-
-
-
+{
+	const array = [1, 2, 3];
+	const tmp = array;
+	push(tmp, 4);
+	if(array[3] != 4) {
+		fail("array[3] != 4");
+	}
+}
+{
+	const object = {"foo": {}};
+	const foo = object.foo;
+	foo.bar = true;
+	if(object.foo.bar != true) {
+		fail("object.foo.bar != true");
+	}
+}
 
 
 
