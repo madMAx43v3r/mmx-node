@@ -6,8 +6,8 @@ The MMX smart contract language is a restricted subset of JavaScript with some a
 
 - Null (`null`)
 - Boolean (`true` / `false`)
-- 256-bit unsigned integer
-- Binary (same as `ArrayBuffer` in JS, aka. "binary string")
+- Integer (256-bit unsigned)
+- Binary (aka. "binary string", same as `ArrayBuffer` in JS)
 - String (UTF-8 encoded)
 - Array
 - Map
@@ -18,16 +18,16 @@ Note: Objects are maps with string keys.
 
 - `var` has local scope (behaves like `let`)
 - Integer overflows / underflows will fail execution (except for `unsafe_*(...)`)
-- Reading un-initialized variables will fail execution
+- Reading un-initialized variables will fail execution (instead of returning `undefined`)
 - Reading non-existent map values will return `null` (instead of `undefined`)
 - `==` comparison is strict (ie. same as `===` in JS)
 - `+` only supports integer addition (need to use `concat()` for strings)
 - `$` is not supported in variable / function names
-- `delete` is a function (not an operator) and it only works on variables (no object fields)
+- `delete` is a function (not an operator) and only works on variables directly
 
 ## Not supported from JavaScript
 
-- Classes
+- Classes (KISS)
 - Signed integers / negative values
 - Floating point values / arithmetic
 - Function variables (all functions are global like in `C`)
