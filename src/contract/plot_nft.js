@@ -61,7 +61,7 @@ function claim_all(address, currency) public
 	if(currency != null) {
 		currency = bech32(currency);
 	} else {
-		currency = 0;
+		currency = bech32();
 	}
 	const amount = this.balance[currency];
 	if(amount == null) {
