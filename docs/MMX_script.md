@@ -225,7 +225,7 @@ When converting floating point constants, rounding to nearest is best for accura
 Function argument passing from the outside is limited to what JSON can describe.
 This means no integer values greater than 64-bit and no binary strings.
 
-In order to pass an address, pass it as a bech32 encoded string like `mmx1..` and then decode via `bech32(...)`.
+In order to pass an address, pass it as a bech32 encoded string (`mmx1..`) and then decode via `bech32(...)`.
 
 In order to pass binary strings, encode it as a hex string (`0x...`) and then decode via `binary_hex(...)`.
 
@@ -249,7 +249,7 @@ function get() const public {
 
 ### Constructor
 
-Any private function can be a constructor, when deploying a contract you have specify which function to use.
+Any private function can be a constructor. When deploying a contract you have to specify which function to use. \
 The default is to use `init()`:
 ```
 var foo;
@@ -276,7 +276,7 @@ Note: If a function is called "deposit" the `payable` modifier can be omitted.
 Trying to deposit funds via a non-`payable` function is not possible.
 However it's possible to send funds to a contract via a normal transfer.
 In this case no function is called, and the contract needs to handle this case implicitly.
-This cannot be avoided since it's possible to send to a contract's address before deployment.
+It cannot be avoided since it's possible to send to a contract's address before deployment.
 
 Funds that are sent to a contract (via normal transfer) at height `H` will only be visible to the contract at height `H+1`.
 
@@ -285,7 +285,7 @@ This allows a more efficient way to deploy with funding, compared to executing a
 
 ### Minting tokens
 
-Minting tokens is only possible via calling `mint()`, which mints new tokens of the contract.
+Minting tokens is only possible via calling `mint()`, which mints new tokens of the contract. \
 Every contract is also a currency, contract address = currency address.
 
 A smart contract inherits from `mmx.contract.TokenBase`, which has the following fields:
@@ -299,19 +299,19 @@ The same goes for `symbol`, etc.
 
 ### Deploying a Smart Contract
 
-Smart contract code is actually a separate contract (of type `mmx.contract.Binary`) which needs to be deployed first.
+Smart contract code is actually a separate contract of type `mmx.contract.Binary` which needs to be deployed first.
 
 Multiple contracts can share the same binary, this reduces the cost of deploying contracts significantly.
 
 If the code is not deployed on-chain yet, it needs to be compiled and deployed first:
 ```
-mmx\_compile -t -n testnet12 -f example.js -o example.dat
+mmx_compile -t -n testnet12 -f example.js -o example.dat
 mmx wallet deploy example.dat
 ```
 `mmx_compile` returns the binary address that we need to sepecify when deploying a contract later.
 `-n testnet12` can be omitted for mainnet.
 
-Once the binary is confirmed on-chain, we can deploy any number of contracts with the same code.
+Once the binary is confirmed on-chain, we can deploy any number of contracts with the same code. \
 This can be done via JSON files:
 ```
 {
