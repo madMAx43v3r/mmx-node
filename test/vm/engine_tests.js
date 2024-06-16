@@ -247,13 +247,13 @@ if(bech32("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") != b
 if(to_string_bech32(binary_hex("09292D77A8DF8E790D467F458B29591C1AFB11F0676CC7ABBB778C60D90D38F7")) != "mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") {
 	fail("bech32", 3);
 }
-if(bech32("MMX") != binary_hex("0000000000000000000000000000000000000000000000000000000000000000")) {
+if(bech32("MMX") != bech32()) {
 	fail("bech32", 4);
 }
 if(bech32() != binary_hex("0000000000000000000000000000000000000000000000000000000000000000")) {
 	fail("bech32", 5);
 }
-if(bech32(null) != binary_hex("0000000000000000000000000000000000000000000000000000000000000000")) {
+if(bech32(null) != bech32()) {
 	fail("bech32", 6);
 }
 if(to_string(1337) != "1337") {

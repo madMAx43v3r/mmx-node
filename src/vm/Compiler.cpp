@@ -486,8 +486,8 @@ Compiler::Compiler(const compile_flags_t& flags)
 	rank_map["-"] = rank++;
 	rank_map[">>"] = rank;
 	rank_map["<<"] = rank++;
-	rank_map[">"] = rank;
 	rank_map["<"] = rank;
+	rank_map[">"] = rank;
 	rank_map["<="] = rank;
 	rank_map[">="] = rank++;
 	rank_map["!="] = rank;
@@ -1641,7 +1641,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					out.address = stack.new_addr();
 					code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_ADDRESS, CONVTYPE_DEFAULT);
 				} else {
-					throw std::logic_error("expected 0 or 1 argument for bech32([input])");
+					throw std::logic_error("expected 0 or 1 argument for bech32()");
 				}
 			}
 			else if(name == "binary") {
