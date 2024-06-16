@@ -71,7 +71,7 @@ Note: Objects are maps with string keys.
 	- `balance`: Map of contract balances (Type: Map[32-bytes] = 256-bit unsigned int)
 	- `address`: Contract address (Type: 32-bytes)
 	- `user`: A user address can be specified when executing a contract function,
-		which is verified via a signature before executution (same as `msg.sender` in EVM).
+		which is verified via a signature before executution, same as `msg.sender` in EVM.
 		(Type: 32-bytes or `null`)
 	- `deposit`: Object to check for deposited currency and amount (for `payable` functions):
 		- `currency`: Currency address (Type: 32-bytes)
@@ -272,9 +272,10 @@ function deposit(account) public payable {
 }
 ```
 Note: If a function is called "deposit" the `payable` modifier can be omitted.
+Note: `this.balance` already includes the deposited amount, it always equals the amount that can be spent via `send()`.
 
 Trying to deposit funds via a non-`payable` function is not possible.
-However it's possible to send funds to a contract via a normal transfer.
+However it's possible to send funds to a contract via normal transfer.
 In this case no function is called, and the contract needs to handle this case implicitly.
 It cannot be avoided since it's possible to send to a contract's address before deployment.
 
@@ -329,7 +330,7 @@ The same goes for `symbol`, etc.
 
 ### Deploying a Smart Contract
 
-Smart contract code is actually a separate contract of type `mmx.contract.Binary` which needs to be deployed first.
+A smart contract's code is actually a separate "contract" of type `mmx.contract.Binary` which needs to be deployed first.
 
 Multiple contracts can share the same binary, this reduces the cost of deploying contracts significantly.
 
@@ -442,7 +443,7 @@ Memory is unified in MMX, but there are regions for different usage:
 
 As in JavaScript: Arrays, Maps and Objects are reference counted.
 
-This means "copying" by assignment does not make a deep copy, it only copies the reference:
+That means "copying" by assignment does not make a deep copy, it only copies the reference:
 ```
 const array = [1, 2, 3];
 const tmp = array;
@@ -455,7 +456,7 @@ const foo = object.foo;
 foo.bar = true;
 return object;	// returns {foo: {"bar": true}}
 ```
-In order to make a deep-copy you need to use the `clone()` function.
+In order to make a deep-copy you need to use `clone()`.
 
 ### clone() from storage
 
@@ -477,6 +478,6 @@ not other contracts or addresses (since that would break parallel execution).
 However it's possible to call a method of another contract that returns its balance.
 In this case execution is serialized.
 
-
+Note: `this.balance` is updated automatically when receiving funds via deposit, or when spending via `send()`.
 
 
