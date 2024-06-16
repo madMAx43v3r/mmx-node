@@ -648,6 +648,12 @@ __nop();
 		fail("object.foo.bar != true");
 	}
 }
-
+{
+	const obj = {"foo": true};
+	delete(obj.foo);
+	if(obj.foo != true) {
+		fail("delete(): obj.foo != true");
+	}
+}
 
 
