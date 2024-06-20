@@ -3,7 +3,8 @@ Mainnet
 - Public RPC
 - Multisig
 - Test remote calls again
-- Disable fork detection
 - Harvester num_threads GUI config
-- MMX script docu
-- unsafe_add() / unsafe_sub()
+- unsafe_add() / unsafe_sub() / unsafe_mul()
+- Website
+- Linux packages
+- Double check msg hashes again
