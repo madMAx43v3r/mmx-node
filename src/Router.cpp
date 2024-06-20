@@ -127,7 +127,6 @@ void Router::main()
 	set_timer_millis(update_interval_ms, std::bind(&Router::update, this));
 	set_timer_millis(connect_interval_ms, std::bind(&Router::connect, this));
 	set_timer_millis(discover_interval * 1000, std::bind(&Router::discover, this));
-	set_timer_millis(fork_check_interval * 1000, std::bind(&Router::exec_fork_check, this));
 	set_timer_millis(5 * 60 * 1000, std::bind(&Router::save_data, this));
 
 	connect();
@@ -856,59 +855,6 @@ void Router::query()
 	last_query_ms = now_ms;
 }
 
-void Router::exec_fork_check()
-{
-	node->get_synced_height(
-		[this](const vnx::optional<uint32_t>& sync_height) {
-			if(sync_height) {
-				hash_t major_hash;
-				size_t major_count = 0;
-				size_t total_count = 0;
-				for(const auto& entry : fork_check.hash_count) {
-					if(entry.second > major_count) {
-						major_hash = entry.first;
-						major_count = entry.second;
-					}
-					total_count += entry.second;
-				}
-				if(major_count > 0 && major_hash == fork_check.our_hash) {
-					log(INFO) << "A majority of " << major_count << " / " << total_count << " peers agree at height " << fork_check.height;
-				}
-				if(major_count >= min_sync_peers && major_hash != fork_check.our_hash)
-				{
-					log(WARN) << "We forked from the network, a majority of "
-							<< major_count << " / " << total_count << " peers disagree at height " << fork_check.height << "!";
-					node->start_sync();
-					fork_check.hash_count.clear();
-				}
-				else {
-					const auto height = *sync_height - params->commit_delay / 2;
-					node->get_block_hash(height,
-						[this, height](const vnx::optional<hash_t>& hash) {
-							if(hash) {
-								fork_check.height = height;
-								fork_check.our_hash = *hash;
-								fork_check.hash_count.clear();
-								fork_check.request_map.clear();
-								auto req = Node_get_block_hash::create();
-								req->height = height;
-								for(const auto& entry : peer_map) {
-									const auto& peer = entry.second;
-									if(peer->is_outbound && peer->is_synced && peer->info.type == node_type_e::FULL_NODE) {
-										const auto id = send_request(peer, req);
-										fork_check.request_map[id] = peer->client;
-									}
-								}
-							}
-						});
-				}
-				is_synced = true;
-			} else {
-				is_synced = false;
-			}
-		});
-}
-
 void Router::discover()
 {
 	if(peer_set.size() < max_peer_set) {
@@ -1475,14 +1421,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			break;
 		case Node_get_block_hash_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Node_get_block_hash_return>(result)) {
-				auto iter = fork_check.request_map.find(msg->id);
-				if(iter != fork_check.request_map.end()) {
-					if(iter->second == client) {
-						if(auto hash = value->_ret_0) {
-							fork_check.hash_count[*hash]++;
-						}
-					}
-				}
 				if(msg->id == peer_check.request_id) {
 					const auto hash = value->_ret_0;
 					if(!hash || *hash != peer_check.our_hash) {

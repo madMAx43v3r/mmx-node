@@ -135,8 +135,6 @@ private:
 
 	void query();
 
-	void exec_fork_check();
-
 	void save_data();
 
 	void ban_peer(uint64_t client, const std::string& reason);
@@ -236,13 +234,6 @@ private:
 
 	mutable std::unordered_map<vnx::request_id_t, std::shared_ptr<sync_job_t>> sync_jobs;
 	mutable std::unordered_map<vnx::request_id_t, std::shared_ptr<fetch_job_t>> fetch_jobs;
-
-	struct {
-		uint32_t height = -1;
-		hash_t our_hash;
-		std::unordered_map<hash_t, size_t> hash_count;
-		std::unordered_map<uint32_t, uint64_t> request_map;
-	} fork_check;
 
 	struct {
 		uint32_t height = -1;
