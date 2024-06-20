@@ -1516,6 +1516,7 @@ void Router::on_connect(uint64_t client, const std::string& address)
 		if(it != connect_tasks.end() && it->second == client) {
 			// we connected to them
 			peer->is_outbound = true;
+			peer_set.insert(address);
 			connect_tasks.erase(it);
 		}
 	}
