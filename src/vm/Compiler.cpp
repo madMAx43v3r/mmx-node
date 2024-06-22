@@ -1857,9 +1857,7 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 		throw std::logic_error("copy(): dst is const");
 	}
 	if(src.key && dst.key) {
-		const auto tmp_addr = frame.back().new_addr();
-		code.emplace_back(OP_GET, OPFLAG_REF_B, tmp_addr, src.address, *src.key);
-		code.emplace_back(OP_SET, OPFLAG_REF_A, dst.address, *dst.key, tmp_addr);
+		code.emplace_back(OP_SET, OPFLAG_REF_A, dst.address, *dst.key, get(src));
 	} else if(!src.key && dst.key) {
 		code.emplace_back(OP_SET, OPFLAG_REF_A, dst.address, *dst.key, src.address);
 	} else if(src.key && !dst.key) {
