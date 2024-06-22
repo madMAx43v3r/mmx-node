@@ -486,7 +486,7 @@ Vue.component('tx-fee-select', {
 		<v-select
 			v-model="value"
 			:items="items"
-			label="TX Fee"
+			label="TX Fee Ratio"
 		></v-select>
 	`
 })
