@@ -81,21 +81,23 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 	for(const auto& op : tx->get_operations()) {
 		mutate_set.insert(op->address == addr_t() ? tx->id : op->address);
 	}
-	auto list = std::vector<addr_t>(mutate_set.begin(), mutate_set.end());
-	while(!list.empty()) {
-		std::vector<addr_t> more;
-		// TODO: parallelize get_contract() calls
-		for(const auto& address : list) {
-			auto contract = (address == tx->id ? tx->deploy : get_contract(address));
-			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
-				for(const auto& entry : exec->depends) {
-					if(mutate_set.insert(entry.second).second) {
-						more.push_back(entry.second);
+	{
+		auto list = std::vector<addr_t>(mutate_set.begin(), mutate_set.end());
+		while(!list.empty()) {
+			std::vector<addr_t> more;
+			// TODO: parallelize get_contract() calls
+			for(const auto& address : list) {
+				auto contract = (address == tx->id ? tx->deploy : get_contract(address));
+				if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+					for(const auto& entry : exec->depends) {
+						if(mutate_set.insert(entry.second).second) {
+							more.push_back(entry.second);
+						}
 					}
 				}
 			}
+			list = std::move(more);
 		}
-		list = std::move(more);
 	}
 	for(const auto& address : mutate_set) {
 		context->setup_wait(tx->id, address);
