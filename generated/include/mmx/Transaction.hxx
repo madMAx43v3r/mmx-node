@@ -56,6 +56,8 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual void reset(std::shared_ptr<const ::mmx::ChainParams> params = nullptr);
+	virtual void update(const ::mmx::exec_result_t& result = ::mmx::exec_result_t(), std::shared_ptr<const ::mmx::ChainParams> params = nullptr);
 	virtual void finalize();
 	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
 	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const vnx::optional<std::string>& memo = nullptr);

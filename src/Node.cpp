@@ -1742,6 +1742,11 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate)
 {
+	if(tx->exec_result) {
+		auto tmp = vnx::clone(tx);
+		tmp->reset(params);
+		tx = tmp;
+	}
 	if(pre_validate) {
 		const auto res = validate(tx);
 		if(res.did_fail) {
@@ -2014,8 +2019,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 			for(const auto& tx : peak->block->tx_list) {
 				tx_pool_t entry;
 				auto copy = vnx::clone(tx);
-				copy->exec_result = nullptr;
-				copy->content_hash = copy->calc_hash(true);
+				copy->reset(params);
 				entry.tx = copy;
 				entry.fee = tx->exec_result->total_fee;
 				entry.cost = tx->exec_result->total_cost;

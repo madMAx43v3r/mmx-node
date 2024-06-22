@@ -37,6 +37,10 @@ class Transaction extends TransactionBase {
 	static const uint MAX_SOLUTIONS = 65535;		// limit of 16-bit solution index
 	
 	
+	void reset(ChainParams* params);
+	
+	void update(exec_result_t result, ChainParams* params);
+	
 	void finalize();
 	
 	void add_input(addr_t currency, addr_t address, ulong amount);

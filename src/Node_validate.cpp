@@ -326,11 +326,19 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 
 exec_result_t Node::validate(std::shared_ptr<const Transaction> tx) const
 {
+	if(tx->exec_result) {
+		auto tmp = vnx::clone(tx);
+		tmp->reset(params);
+		tx = tmp;
+	}
 	auto context = new_exec_context(get_height() + 1);
 	prepare_context(context, tx);
 
-	const auto out = validate(tx, context);
-	return out ? *out : *tx->exec_result;
+	const auto result = validate(tx, context);
+	if(!result) {
+		throw std::logic_error("!result");
+	}
+	return *result;
 }
 
 void Node::execute(	std::shared_ptr<const Transaction> tx,

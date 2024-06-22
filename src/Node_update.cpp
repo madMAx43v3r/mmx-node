@@ -565,13 +565,17 @@ void Node::validate_new()
 	for(auto& entry : tx_list) {
 		threads->add_task([this, &entry, context]() {
 			entry.is_valid = false;
-
-			const auto& tx = entry.tx;
+			auto& tx = entry.tx;
+			if(tx->exec_result) {
+				auto tmp = vnx::clone(tx);
+				tmp->reset(params);
+				tx = tmp;
+			}
 			context->wait(tx->id);
 			try {
-				if(auto res = validate(tx, context)) {
-					entry.cost = res->total_cost;
-					entry.fee = res->total_fee;
+				if(auto result = validate(tx, context)) {
+					entry.cost = result->total_cost;
+					entry.fee = result->total_fee;
 					entry.is_valid = true;
 				}
 			} catch(const std::exception& ex) {
@@ -640,22 +644,24 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	for(auto& entry : tx_list) {
 		threads->add_task([this, &entry, context]() {
 			entry.is_valid = false;
-
 			auto& tx = entry.tx;
+			if(tx->exec_result) {
+				auto tmp = vnx::clone(tx);
+				tmp->reset(params);
+				tx = tmp;
+			}
 			context->wait(tx->id);
 			try {
-				if(auto res = validate(tx, context)) {
-					{
-						auto copy = vnx::clone(tx);
-						copy->exec_result = *res;
-						copy->static_cost = copy->calc_cost(params);
-						copy->content_hash = copy->calc_hash(true);
-						tx = copy;
-					}
-					entry.cost = res->total_cost;
-					entry.fee = res->total_fee;
-					entry.is_valid = true;
+				auto result = validate(tx, context);
+				if(!result) {
+					throw std::logic_error("!result");
 				}
+				auto tmp = vnx::clone(tx);
+				tmp->update(*result, params);
+				tx = tmp;
+				entry.cost = result->total_cost;
+				entry.fee = result->total_fee;
+				entry.is_valid = true;
 			} catch(const std::exception& ex) {
 				if(show_warnings) {
 					log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
