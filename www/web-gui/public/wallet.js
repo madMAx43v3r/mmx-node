@@ -1471,6 +1471,7 @@ Vue.component('account-send-form', {
 			address: "",
 			currency: null,
 			fee_ratio: 1024,
+			fee_amount: 0.05,
 			confirmed: false,
 			result: null,
 			error: null,
@@ -1569,6 +1570,13 @@ Vue.component('account-send-form', {
 		amount(value) {
 			// TODO: validate
 		},
+		memo(value) {
+			if(value) {
+				this.fee_amount = (value.length > 32 ? 0.06 : 0.055);
+			} else {
+				this.fee_amount = 0.05;
+			}
+		},
 		result(value) {
 			if(value) {
 				this.error = null;
@@ -1662,6 +1670,14 @@ Vue.component('account-send-form', {
 					<v-text-field v-model="memo" label="Memo"></v-text-field>
 
 					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
+					<v-row>
+						<v-col cols="3">
+							<v-text-field class="text-align-right"
+								label="Transaction Fee"
+								v-model.number="fee_amount" suffix="MMX" disabled>
+							</v-text-field>
+						</v-col>
+					</v-row>
 					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed || !target || !currency || !amount">{{ $t('account_send_form.send') }}</v-btn>
 
 				</v-card-text>
