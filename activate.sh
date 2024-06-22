@@ -32,6 +32,9 @@ else
 	echo ${NETWORK} > "${MMX_HOME}NETWORK"
 fi
 
+if [ -f "${MMX_HOME}config/local/MMX_DATA" ]; then
+	MMX_DATA=$(cat "${MMX_HOME}config/local/MMX_DATA")
+fi
 if [[ -z "${MMX_DATA}" ]]; then
 	MMX_DATA=${MMX_HOME}
 fi

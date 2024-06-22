@@ -1,0 +1,29 @@
+#!/bin/bash
+
+if [[ -z $1 ]]; then
+	echo "Usage: move_storage.sh destination_path/"
+	exit
+fi
+
+set -e
+source ./activate.sh
+
+CURR=${PWD}
+mkdir -p $1
+cd $1
+DST=${PWD}/
+cd ${CURR}
+
+echo "OLD=${MMX_NETWORK}"
+echo "NEW=${DST}"
+
+echo "Copying files ..."
+cp -rv ${MMX_NETWORK} ${DST} || exit
+
+echo ${DST} > config/local/MMX_DATA
+
+echo "Deleting old files ..."
+rm -r ${MMX_NETWORK}
+
+echo "Done"
+
