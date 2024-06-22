@@ -14,8 +14,8 @@ cd $1
 DST=${PWD}/
 cd ${CURR}
 
-echo "OLD=${MMX_NETWORK}"
-echo "NEW=${DST}"
+echo "SRC=${MMX_NETWORK}"
+echo "DST=${DST}"
 
 echo "Copying files ..."
 cp -rv ${MMX_NETWORK} ${DST} || exit
