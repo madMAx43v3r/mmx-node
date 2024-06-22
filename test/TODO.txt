@@ -8,7 +8,9 @@ Mainnet
 - Website
 - Linux packages
 - Double check msg hashes again
-- Time to win GUI display
-- Fee amount display
-- GUI config for DB / network
+- Time to win display (GUI & CLI)
+- TX fee amount display (GUI & CLI)
+- GUI config for DB / network path
 - New project wallet
+- Check remaining in-source TODOs
+- Test mainnet-rc changes
