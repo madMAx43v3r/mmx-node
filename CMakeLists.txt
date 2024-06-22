@@ -332,6 +332,7 @@ install(DIRECTORY
 )
 install(FILES
 	activate.sh run_node.sh run_farmer.sh run_wallet.sh run_timelord.sh run_harvester.sh
+	start_node.sh start_harvester.sh start_wallet.sh stop_node.sh stop_harvester.sh stop_wallet.sh
 	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
 	DESTINATION .
 )
