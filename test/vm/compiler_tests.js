@@ -46,5 +46,5 @@ if(concat(to_string(1), to_string(2), to_string(3)) != "123") {
 }
 
 if(this.balance[bech32()] != 0) {
-	// fail("balance != 0");
+	fail("balance != 0");
 }
