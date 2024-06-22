@@ -5,6 +5,12 @@ if [[ -z $1 ]]; then
 	exit
 fi
 
+if pgrep -x "mmx_node" > /dev/null
+then
+    echo "Please stop MMX node first."
+    exit
+fi
+
 set -e
 source ./activate.sh
 
