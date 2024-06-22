@@ -268,7 +268,7 @@ int main(int argc, char** argv)
 
 	mmx::spend_options_t spend_options;
 	spend_options.fee_ratio = fee_ratio * 1024;
-	spend_options.max_extra_cost = mmx::to_amount(gas_limit / fee_ratio, params);
+	spend_options.gas_limit = mmx::to_amount(gas_limit / fee_ratio, params);
 	spend_options.memo = memo;
 
 	mmx::NodeClient node("Node");

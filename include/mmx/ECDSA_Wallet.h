@@ -463,8 +463,8 @@ public:
 			}
 		}
 		const auto static_cost = tx->calc_cost(params);
-		const auto static_fee = (static_cost * tx->fee_ratio) / 1024;
-		tx->max_fee_amount = ((static_cost + options.max_extra_cost) * tx->fee_ratio) / 1024;
+		const auto static_fee = cost_to_fee<std::logic_error>(static_cost, tx->fee_ratio);
+		tx->max_fee_amount = cost_to_fee<std::logic_error>(static_cost + options.gas_limit, tx->fee_ratio);
 
 		if(!tx->sender) {
 			if(options.sender) {
