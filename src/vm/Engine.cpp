@@ -521,6 +521,9 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 			return (entries[mapkey] = std::move(var)).get();
 		}
 	}
+	if(src == MEM_EXTERN + EXTERN_BALANCE) {
+		return (entries[mapkey] = std::make_unique<uint_t>()).get();
+	}
 	return nullptr;
 }
 
