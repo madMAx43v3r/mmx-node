@@ -534,6 +534,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	this_obj_map["deposit"] = MEM_EXTERN + EXTERN_DEPOSIT;
 
 	function_map["__nop"].name = "__nop";
+	function_map["__copy"].name = "__copy";
 	function_map["size"].name = "size";
 	function_map["push"].name = "push";
 	function_map["pop"].name = "pop";
@@ -1537,6 +1538,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					code.emplace_back(name == "min" ? OP_MIN : OP_MAX, 0, out.address, lhs, get(recurse(args[i])));
 					lhs = out.address;
 				}
+			}
+			else if(name == "__copy") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for __copy(dst, src)");
+				}
+				copy(recurse(args[0]), recurse(args[1]), false);
+				out.address = 0;
 			}
 			else if(name == "clone") {
 				if(args.size() != 1) {
