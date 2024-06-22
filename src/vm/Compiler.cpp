@@ -469,6 +469,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	}
 
 	int rank = 0;
+	rank_map["position"] = -1;
 	rank_map[lang::constant::name] = rank++;
 	rank_map[lang::identifier::name] = rank++;
 	rank_map["."] = rank++;
@@ -1200,12 +1201,10 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len, const vref_t* lhs, const int lhs_rank)
 {
 	if(expr_len == 0) {
-		if(!lhs) {
-			throw std::logic_error("invalid expression");
-		}
-		return *lhs;
+		return lhs ? *lhs : vref_t();
 	}
-	const auto rank = get_node_rank(*p_node);
+	const auto node = p_node[0];
+	const auto rank = get_node_rank(node);
 
 	if(lhs_rank >= 0 && rank >= lhs_rank) {
 		if(!lhs) {
@@ -1213,9 +1212,10 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 		}
 		return *lhs;
 	}
-	vref_t out;
-	const auto node = *(p_node++); expr_len--;
+	p_node++;
+	expr_len--;
 
+	vref_t out;
 	auto& stack = frame.back();
 	const std::string name(node.kind().name());
 	const auto list = get_children(node);
@@ -1823,6 +1823,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				copy(vref_t(out.address, key_addr), recurse(list[2]));
 			}
 		}
+	}
+	else if(name == "position") {
+		// ignore
 	}
 	else {
 		throw std::logic_error("invalid expression");
