@@ -340,9 +340,15 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 	if(have_init && dst < MEM_EXTERN) {
 		throw std::logic_error("already initialized");
 	}
+	auto& container = read_fail(dst);
+
+	if(container.flags & FLAG_CONST) {
+		throw std::logic_error("read-only memory at " + to_hex(dst));
+	}
 	auto& var = entries[std::make_pair(dst, key)];
 
-	if(!var && dst >= MEM_STATIC && (read_fail(dst).flags & FLAG_STORED)) {
+	// load potential previous value if container is stored
+	if(!var && dst >= MEM_STATIC && (container.flags & FLAG_STORED)) {
 		var = storage->read(contract, dst, key);
 	}
 	return write(var, nullptr, src);
