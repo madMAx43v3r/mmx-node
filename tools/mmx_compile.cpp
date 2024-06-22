@@ -108,6 +108,7 @@ int main(int argc, char** argv)
 		};
 
 		vm::load(engine, bin);
+		vm::set_balance(engine, {});
 		engine->begin(0);
 
 		try {
