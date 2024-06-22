@@ -8,3 +8,7 @@ Mainnet
 - Website
 - Linux packages
 - Double check msg hashes again
+- Time to win GUI display
+- Fee amount display
+- GUI config for DB / network
+- New project wallet
