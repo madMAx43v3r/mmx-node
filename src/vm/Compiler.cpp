@@ -389,7 +389,7 @@ protected:
 
 	vref_t recurse_expr(const node_t*& p_node, size_t& expr_len, const vref_t* lhs = nullptr, const int lhs_rank = -1);
 
-	vref_t copy(const vref_t& dst, const vref_t& src);
+	vref_t copy(const vref_t& dst, const vref_t& src, const bool validate = true);
 
 	uint32_t get(const vref_t& src);
 
@@ -1848,12 +1848,12 @@ void Compiler::pop_scope()
 	frame.pop_back();
 }
 
-Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
+Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src, const bool validate)
 {
 	src.check_value();
 	dst.check_value();
 
-	if(!dst.is_mutable()) {
+	if(validate && !dst.is_mutable()) {
 		throw std::logic_error("copy(): dst is const");
 	}
 	if(src.key && dst.key) {
