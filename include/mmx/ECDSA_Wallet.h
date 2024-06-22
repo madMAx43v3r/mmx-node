@@ -304,9 +304,6 @@ public:
 
 	void sign_off(std::shared_ptr<Transaction> tx, const spend_options_t& options = {})
 	{
-		if(is_locked()) {
-			throw std::logic_error("wallet is locked");
-		}
 		bool was_locked = false;
 		if(is_locked()) {
 			was_locked = true;
@@ -421,79 +418,96 @@ public:
 			const spend_options_t& options = {},
 			const std::vector<std::pair<addr_t, uint64_t>>& deposit = {})
 	{
+		bool was_locked = false;
 		if(is_locked()) {
-			throw std::logic_error("wallet is locked");
-		}
-		if(options.note) {
-			tx->note = *options.note;
-		}
-		if(options.expire_at) {
-			tx->expires = std::min(tx->expires, *options.expire_at);
-		} else if(options.expire_delta) {
-			tx->expires = std::min(tx->expires, height + *options.expire_delta);
-		} else {
-			tx->expires = std::min(tx->expires, height + default_expire);
-		}
-		tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
-
-		std::map<addr_t, uint128_t> missing;
-		for(const auto& out : tx->outputs) {
-			missing[out.contract] += out.amount;
-		}
-		for(const auto& op : tx->execute) {
-			if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
-				missing[deposit->currency] += deposit->amount;
-			}
-		}
-		for(const auto& in : tx->inputs) {
-			auto& amount = missing[in.contract];
-			if(in.amount < amount) {
-				amount -= in.amount;
+			was_locked = true;
+			if(auto passphrase = options.passphrase) {
+				unlock(*passphrase);
 			} else {
-				amount = 0;
+				throw std::logic_error("wallet is locked");
 			}
 		}
-		for(const auto& entry : deposit) {
-			missing[entry.first] += entry.second;
-		}
-		std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
-		for(const auto& entry : missing) {
-			if(const auto& amount = entry.second) {
-				gather_inputs(tx, spent_map, amount, entry.first, options);
+		try {
+			if(options.note) {
+				tx->note = *options.note;
 			}
-		}
-		const auto static_cost = tx->calc_cost(params);
-		const auto static_fee = cost_to_fee<std::logic_error>(static_cost, tx->fee_ratio);
-		tx->max_fee_amount = cost_to_fee<std::logic_error>(static_cost + options.gas_limit, tx->fee_ratio);
-
-		if(!tx->sender) {
-			if(options.sender) {
-				tx->sender = *options.sender;
+			if(options.expire_at) {
+				tx->expires = std::min(tx->expires, *options.expire_at);
+			} else if(options.expire_delta) {
+				tx->expires = std::min(tx->expires, height + *options.expire_delta);
 			} else {
-				// pick a sender address
-				addr_t max_address;
-				uint128_t max_amount = 0;
-				for(const auto& entry : balance_map) {
-					if(entry.first.second == addr_t()) {
-						auto balance = entry.second;
-						auto iter = spent_map.find(entry.first);
-						if(iter != spent_map.end()) {
-							balance -= iter->second;
-						}
-						if(balance > max_amount) {
-							max_amount = balance;
-							max_address = entry.first.first;
+				tx->expires = std::min(tx->expires, height + default_expire);
+			}
+			tx->fee_ratio = std::max(tx->fee_ratio, options.fee_ratio);
+
+			std::map<addr_t, uint128_t> missing;
+			for(const auto& out : tx->outputs) {
+				missing[out.contract] += out.amount;
+			}
+			for(const auto& op : tx->execute) {
+				if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
+					missing[deposit->currency] += deposit->amount;
+				}
+			}
+			for(const auto& in : tx->inputs) {
+				auto& amount = missing[in.contract];
+				if(in.amount < amount) {
+					amount -= in.amount;
+				} else {
+					amount = 0;
+				}
+			}
+			for(const auto& entry : deposit) {
+				missing[entry.first] += entry.second;
+			}
+			std::map<std::pair<addr_t, addr_t>, uint128_t> spent_map;
+			for(const auto& entry : missing) {
+				if(const auto& amount = entry.second) {
+					gather_inputs(tx, spent_map, amount, entry.first, options);
+				}
+			}
+			const auto static_cost = tx->calc_cost(params);
+			const auto static_fee = cost_to_fee<std::logic_error>(static_cost, tx->fee_ratio);
+			tx->max_fee_amount = cost_to_fee<std::logic_error>(static_cost + options.gas_limit, tx->fee_ratio);
+
+			if(!tx->sender) {
+				if(options.sender) {
+					tx->sender = *options.sender;
+				} else {
+					// pick a sender address
+					addr_t max_address;
+					uint128_t max_amount = 0;
+					for(const auto& entry : balance_map) {
+						if(entry.first.second == addr_t()) {
+							auto balance = entry.second;
+							auto iter = spent_map.find(entry.first);
+							if(iter != spent_map.end()) {
+								balance -= iter->second;
+							}
+							if(balance > max_amount) {
+								max_amount = balance;
+								max_address = entry.first.first;
+							}
 						}
 					}
-				}
-				if(max_amount >= static_fee) {
-					tx->sender = max_address;
-				} else {
-					throw std::logic_error("insufficient funds for tx fee");
+					if(max_amount >= static_fee) {
+						tx->sender = max_address;
+					} else {
+						throw std::logic_error("insufficient funds for tx fee");
+					}
 				}
 			}
+			sign_off(tx, options);
 		}
-		sign_off(tx, options);
+		catch(...) {
+			if(was_locked) {
+				lock();
+			}
+			throw;
+		}
+		if(was_locked) {
+			lock();
+		}
 	}
 
 	void reset_cache()
