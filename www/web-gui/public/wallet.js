@@ -1506,6 +1506,11 @@ Vue.component('account-send-form', {
 					.then(data => this.balances = data.balances);
 			}
 		},
+		update_fee() {
+			var amount = this.memo ? (this.memo.length > 32 ? 0.06 : 0.055) : 0.05;
+			amount *= (this.fee_ratio / 1024);
+			this.fee_amount = parseFloat(amount.toFixed(3));
+		},
 		submit() {
 			fetch('/api/wallet/is_locked?index=' + this.index)
 				.then(response => response.json())
@@ -1547,6 +1552,12 @@ Vue.component('account-send-form', {
 					this.$refs.balance.update();
 					this.$refs.history.update();
 				});
+		},
+		memo_rule(value) {
+			if(value && value.length > 64) {
+				return "maximum length is 64";
+			}
+			return true;
 		}
 	},
 	created() {
@@ -1570,12 +1581,11 @@ Vue.component('account-send-form', {
 		amount(value) {
 			// TODO: validate
 		},
-		memo(value) {
-			if(value) {
-				this.fee_amount = (value.length > 32 ? 0.06 : 0.055);
-			} else {
-				this.fee_amount = 0.05;
-			}
+		memo() {
+			this.update_fee();
+		},
+		fee_ratio() {
+			this.update_fee();
 		},
 		result(value) {
 			if(value) {
@@ -1635,11 +1645,8 @@ Vue.component('account-send-form', {
 							<v-text-field
 								v-model="target"
 								:label="$t('account_send_form.destination_address')"
-								:disabled="!!address || !!target_" placeholder="mmx1...">
+								:disabled="!!address || !!target_" placeholder="mmx1..." clearable>
 							</v-text-field>
-						</v-col>
-						<v-col cols="2">
-							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
 						</v-col>
 					</v-row>
 
@@ -1667,9 +1674,10 @@ Vue.component('account-send-form', {
 						</v-col>
 					</v-row>
 					
-					<v-text-field v-model="memo" label="Memo"></v-text-field>
-
+					<v-text-field v-model="memo" label="Memo" :rules="[memo_rule]"" clearable></v-text-field>
+					
 					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
+
 					<v-row>
 						<v-col cols="3">
 							<v-text-field class="text-align-right"
@@ -1677,7 +1685,11 @@ Vue.component('account-send-form', {
 								v-model.number="fee_amount" suffix="MMX" disabled>
 							</v-text-field>
 						</v-col>
+						<v-col cols="2">
+							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
+						</v-col>
 					</v-row>
+					
 					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed || !target || !currency || !amount">{{ $t('account_send_form.send') }}</v-btn>
 
 				</v-card-text>
