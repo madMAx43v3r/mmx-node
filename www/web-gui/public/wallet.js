@@ -1531,7 +1531,7 @@ Vue.component('account-send-form', {
 			}
 			req.dst_addr = this.target;
 			req.options = {};
-			req.options.memo = this.memo;
+			req.options.memo = this.memo ? this.memo : null;
 			req.options.fee_ratio = this.fee_ratio;
 			req.options.passphrase = passphrase;
 			
