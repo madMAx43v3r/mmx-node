@@ -287,6 +287,7 @@ public:
 				txin_t in;
 				in.address = entry.first.first;
 				in.contract = currency;
+				in.memo = options.memo;
 				if(left < balance) {
 					in.amount = left;
 				} else {
