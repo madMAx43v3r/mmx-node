@@ -125,7 +125,7 @@ Vue.component('account-header', {
 			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
 			<v-chip label style="min-width: 500px" class="pr-0">
 				{{ address }}
-				<v-btn v-if="address" @click="copyToClipboard(address)" text icon>
+				<v-btn v-if="navigator.clipboard && address" @click="copyToClipboard(address)" text icon>
 					<v-icon small class="pr-0">mdi-content-copy</v-icon>
 				</btn>
 			</v-chip>
@@ -1528,7 +1528,7 @@ Vue.component('account-send-form', {
 				this.error = "invalid destination address";
 				return;
 			}
-			const req = {};
+			const req = {"options": {}};
 			req.index = this.index;
 			req.amount = this.amount;
 			req.currency = this.currency;
@@ -1536,7 +1536,6 @@ Vue.component('account-send-form', {
 				req.src_addr = this.source;
 			}
 			req.dst_addr = this.target;
-			req.options = {};
 			req.options.memo = this.memo ? this.memo : null;
 			req.options.fee_ratio = this.fee_ratio;
 			req.options.passphrase = passphrase;
@@ -1691,15 +1690,15 @@ Vue.component('account-send-form', {
 						</v-col>
 						<v-col cols="2">
 							<v-text-field class="text-align-right"
-								label="Transaction Fee"
+								label="TX Fee"
 								v-model.number="fee_amount" suffix="MMX" disabled>
 							</v-text-field>
 						</v-col>
 					</v-row>
 					
 					<v-card-actions>
-						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch>
 						<v-spacer></v-spacer>
+						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block" style="margin-right: 50px"></v-switch>
 						<v-btn @click="submit" outlined color="primary" :disabled="!is_valid()">{{ $t('account_send_form.send') }}</v-btn>
 					</v-card-actions>
 				</v-card-text>
@@ -1791,13 +1790,12 @@ Vue.component('account-offer-form', {
 			}
 		},
 		create_request() {
-			const req = {};
+			const req = {"options": {}};
 			req.index = this.index;
 			req.bid = this.bid_amount;
 			req.ask = this.ask_amount;
 			req.bid_currency = this.bid_currency.contract;
 			req.ask_currency = this.ask_currency.currency;
-			req.options = {};
 			req.options.fee_ratio = this.fee_ratio;
 			return req;
 		},
@@ -1813,7 +1811,8 @@ Vue.component('account-offer-form', {
 				});
 		},
 		is_valid() {
-			return validate_address(this.bid_currency.contract) && validate_address(this.ask_currency.currency)
+			return this.bid_currency && this.ask_currency
+				&& validate_address(this.bid_currency.contract) && validate_address(this.ask_currency.currency)
 				&& validate_amount(this.bid_amount) == true && validate_amount(this.ask_amount) == true;
 		}
 	},
@@ -1864,7 +1863,7 @@ Vue.component('account-offer-form', {
 			<v-card class="my-2">
 				<v-card-text>
 					<v-row>
-						<v-col cols="3">
+						<v-col cols="3" class="pb-0">
 							<v-text-field class="text-align-right"
 								:label="$t('account_offer_form.offer_amount')"
 								placeholder="1.23"
@@ -1872,7 +1871,7 @@ Vue.component('account-offer-form', {
 								:rules="[validate_amount]"
 							></v-text-field>
 						</v-col>
-						<v-col>
+						<v-col class="pb-0">
 							<v-select
 								v-model="bid_currency"
 								:label="$t('account_offer_form.offer_currency')"
@@ -1882,12 +1881,11 @@ Vue.component('account-offer-form', {
 									{{item.symbol + (item.is_validated ? '' : '?')}}
 									<template v-if="!item.is_native"> - [{{item.contract}}]</template>
 								</template>
-
 							</v-select>
 						</v-col>
 					</v-row>
 					<v-row>
-						<v-col cols="3">
+						<v-col cols="3" class="py-0">
 							<v-text-field class="text-align-right"
 								:label="$t('account_offer_form.receive_amount')"
 								placeholder="1.23"
@@ -1895,7 +1893,7 @@ Vue.component('account-offer-form', {
 								:rules="[validate_amount]"
 							></v-text-field>
 						</v-col>
-						<v-col>
+						<v-col class="py-0">
 							<v-select
 								v-model="ask_currency"
 								label="Receive Currency"
@@ -1905,40 +1903,41 @@ Vue.component('account-offer-form', {
 									{{item.symbol}}
 									<template v-if="item.currency != MMX_ADDR"> - [{{item.currency}}]</template>
 								</template>
-
 							</v-select>
 						</v-col>
 					</v-row>
 					<v-row justify="end">
-						<v-col cols="3">
+						<v-col cols="3" class="py-0">
 							<v-text-field class="text-align-right"
 								:label="$t('account_offers.price')"
 								v-model="price"
 								:suffix="ask_currency && bid_currency ? ask_currency.symbol + ' / ' + bid_currency.symbol : null"
+								readonly
 							></v-text-field>
 						</v-col>
-						<v-col cols="3">
+						<v-col cols="3" class="py-0">
 							<v-text-field class="text-align-right"
 								:label="$t('account_offers.price')"
 								v-model="inv_price"
 								:suffix="ask_currency && bid_currency ? bid_currency.symbol + ' / ' + ask_currency.symbol : null"
+								readonly
 							></v-text-field>
 						</v-col>
 					</v-row>
 					<v-row justify="end">
-						<v-col cols="2">
+						<v-col cols="2" class="py-0">
 							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
 						</v-col>
-						<v-col cols="2">
+						<v-col cols="2" class="py-0">
 							<v-text-field class="text-align-right"
-								label="Transaction Fee"
+								label="TX Fee"
 								v-model.number="fee_amount" suffix="MMX" disabled>
 							</v-text-field>
 						</v-col>
 					</v-row>
 					<v-card-actions>
-						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch>
 						<v-spacer></v-spacer>
+						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block" style="margin-right: 50px"></v-switch>
 						<v-btn @click="submit" outlined color="primary" :disabled="!this.confirmed || !is_valid()">{{ $t('account_offer_form.offer') }}</v-btn>
 					</v-card-actions>
 				</v-card-text>
@@ -1967,9 +1966,14 @@ Vue.component('account-offers', {
 			result: null,
 			timer: null,
 			state: true,
-			dialog: false,
 			dialog_item: null,
-			dialog_amount: null,
+			dialog_cancel: false,
+			dialog_deposit: false,
+			dialog_withdraw: false,
+			deposit_amount: null,
+			fee_amount: null,
+			request: null,
+			request_url: null,
 			canceled: new Set(),
 			withdrawn: new Set()
 		}
@@ -1988,52 +1992,82 @@ Vue.component('account-offers', {
 				.then(response => response.json())
 				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
+		update_fee() {
+			if(this.request) {
+				const req = this.request;
+				const url = this.request_url;
+				req.options.auto_send = false;
+				fetch(url, {body: JSON.stringify(req), method: "post"})
+					.then(response => {
+						if(response.ok) {
+							response.json().then(tx => this.fee_amount = tx.exec_result.total_fee_value);
+						} else {
+							this.fee_amount = null;
+						}
+					});
+			} else {
+				this.fee_amount = null;
+			}
+		},
+		update_fee_ratio(value) {
+			if(this.request) {
+				this.request.options.fee_ratio = value;
+				this.update_fee();
+			}
+		},
 		cancel(item) {
-			const args = {};
+			const args = {"options": {}};
 			args.index = this.index;
 			args.address = item.address;
-			fetch('/wapi/wallet/cancel_offer', {body: JSON.stringify(args), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.canceled.add(item.address);
-							this.result = data;
-						});
-					} else {
-						response.text().then(data => this.error = data);
-					}
-				});
+			this.request = args;
+			this.request_url = '/wapi/wallet/cancel_offer';
+			this.update_fee();
+			
+			this.dialog_item = item;
+			this.dialog_cancel = true;
 		},
 		withdraw(item) {
-			const args = {};
+			const args = {"options": {}};
 			args.index = this.index;
 			args.address = item.address;
-			fetch('/wapi/wallet/offer_withdraw', {body: JSON.stringify(args), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.withdrawn.add(item.address);
-							this.result = data;
-						});
-					} else {
-						response.text().then(data => this.error = data);
-					}
-				});
+			this.request = args;
+			this.request_url = '/wapi/wallet/offer_withdraw';
+			this.update_fee();
+			
+			this.dialog_item = item;
+			this.dialog_withdraw = true;
 		},
 		deposit(item) {
-			this.dialog_item = item;
-			this.dialog_amount = null;
-			this.dialog = true;
-		},
-		submit_deposit(item, amount) {
-			const args = {};
+			const args = {"options": {}};
 			args.index = this.index;
-			args.amount = amount;
-			args.currency = item.bid_currency
+			args.currency = item.bid_currency;
 			args.dst_addr = item.address;
-			fetch('/wapi/wallet/send', {body: JSON.stringify(args), method: "post"})
+			args.amount = 1;
+			this.request = args;
+			this.request_url = '/wapi/wallet/send';
+			this.update_fee();
+			
+			this.dialog_item = item;
+			this.deposit_amount = null;
+			this.dialog_deposit = true;
+		},
+		submit() {
+			const url = this.request_url;
+			const item = this.dialog_item;
+			const req = this.request;
+			req.options.auto_send = true;
+			fetch(url, {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
+						if(url == '/wapi/wallet/send') {
+							this.canceled.delete(item.address);
+						}
+						if(url == '/wapi/wallet/cancel_offer') {
+							this.canceled.add(item.address);
+						}
+						if(url == '/wapi/wallet/offer_withdraw') {
+							this.withdrawn.add(item.address);
+						}
 						response.json().then(data => {
 							this.result = data;
 						});
@@ -2041,7 +2075,12 @@ Vue.component('account-offers', {
 						response.text().then(data => this.error = data);
 					}
 				});
-			this.dialog = false;
+			this.dialog_cancel = false;
+			this.dialog_withdraw = false;
+			this.dialog_deposit = false;
+			this.request = null;
+			this.request_url = null;
+			this.deposit_amount = null;
 		}
 	},
 	watch: {
@@ -2050,6 +2089,11 @@ Vue.component('account-offers', {
 		},
 		index(value) {
 			this.update();
+		},
+		deposit_amount(value) {
+			if(this.request) {
+				this.request.amount = value;
+			}
 		},
 		result(value) {
 			if(value) {
@@ -2115,21 +2159,84 @@ Vue.component('account-offers', {
 			</v-simple-table>
 		</v-card>
 		
-		<v-dialog v-model="dialog" max-width="1000">
+		<v-dialog v-model="dialog_cancel" max-width="1000">
+			<template v-slot:default="dialog">
+				<v-card>
+					<v-toolbar color="primary"></v-toolbar>
+					<v-card-title>{{ $t('account_offers.revoke') }} {{dialog_item.address}}</v-card-title>
+					<v-card-text class="pb-0">
+						<v-row justify="end">
+							<v-col cols="3">
+								<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+							</v-col>
+							<v-col cols="3">
+								<v-text-field class="text-align-right"
+									label="TX Fee"
+									v-model.number="fee_amount" suffix="MMX" disabled>
+								</v-text-field>
+							</v-col>
+						</v-row>
+					</v-card-text>
+					<v-card-actions class="justify-end">
+						<v-btn @click="submit()" color="primary">{{ $t('account_offers.revoke') }}</v-btn>
+						<v-btn @click="dialog_cancel = false">{{ $t('common.cancel') }}</v-btn>
+					</v-card-actions>
+				</v-card>
+			</template>
+		</v-dialog>
+		
+		<v-dialog v-model="dialog_withdraw" max-width="1000">
+			<template v-slot:default="dialog">
+				<v-card>
+					<v-toolbar color="primary"></v-toolbar>
+					<v-card-title>Withdraw from {{dialog_item.address}}</v-card-title>
+					<v-card-text class="pb-0">
+						<v-row justify="end">
+							<v-col cols="3">
+								<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+							</v-col>
+							<v-col cols="3">
+								<v-text-field class="text-align-right"
+									label="TX Fee"
+									v-model.number="fee_amount" suffix="MMX" disabled>
+								</v-text-field>
+							</v-col>
+						</v-row>
+					</v-card-text>
+					<v-card-actions class="justify-end">
+						<v-btn @click="submit()" color="primary">Withdraw</v-btn>
+						<v-btn @click="dialog_withdraw = false">{{ $t('common.cancel') }}</v-btn>
+					</v-card-actions>
+				</v-card>
+			</template>
+		</v-dialog>
+		
+		<v-dialog v-model="dialog_deposit" max-width="1000">
 			<template v-slot:default="dialog">
 				<v-card>
 					<v-toolbar color="primary"></v-toolbar>
 					<v-card-title>{{ $t('account_offers.deposit_to') }} {{dialog_item.address}}</v-card-title>
 					<v-card-text class="pb-0">
 						<v-text-field class="text-align-right"
-							v-model="dialog_amount"
+							v-model="deposit_amount"
 							:label="$t('common.amount')"
 							:suffix="dialog_item.bid_symbol">
 						</v-text-field>
+						<v-row justify="end">
+							<v-col cols="3">
+								<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+							</v-col>
+							<v-col cols="3">
+								<v-text-field class="text-align-right"
+									label="TX Fee"
+									v-model.number="fee_amount" suffix="MMX" disabled>
+								</v-text-field>
+							</v-col>
+						</v-row>
 					</v-card-text>
 					<v-card-actions class="justify-end">
-						<v-btn @click="submit_deposit(dialog_item, dialog_amount)" color="primary" :disabled="!(dialog_amount > 0)">{{ $t('common.deposit') }}</v-btn>
-						<v-btn @click="dialog.value = false">{{ $t('common.cancel') }}</v-btn>
+						<v-btn @click="submit()" color="primary" :disabled="!(deposit_amount > 0)">{{ $t('common.deposit') }}</v-btn>
+						<v-btn @click="dialog_deposit = false">{{ $t('common.cancel') }}</v-btn>
 					</v-card-actions>
 				</v-card>
 			</template>

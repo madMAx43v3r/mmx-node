@@ -109,9 +109,13 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -137,9 +141,13 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 	}
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Sent many with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Sent many with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -174,9 +182,13 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -199,9 +211,13 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Deployed " << contract->get_type_name() << " with cost " << tx->static_cost << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Deployed " << contract->get_type_name() << " with cost " << tx->static_cost << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -409,9 +425,13 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 	}
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Added liquidity to [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Added liquidity to [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -443,9 +463,13 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 	}
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Removed liquidity from [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Removed liquidity from [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
