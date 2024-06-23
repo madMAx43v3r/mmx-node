@@ -841,7 +841,7 @@ Vue.component('account-plots', {
 		submit_button_label() {
 			return this.dialog_mode == 'Deposit'? this.$t('account_contract_summary.deposit') : this.$t('account_contract_summary.withdraw')
 		},
-		from_to(){
+		from_to() {
 			return this.dialog_mode == "Deposit" ? this.$t('account_plots.to') : this.$t('account_plots.from')
 		},
 		card_title() {
@@ -1528,7 +1528,7 @@ Vue.component('account-send-form', {
 				this.error = "invalid destination address";
 				return;
 			}
-			const req = {"options": {}};
+			const req = {options: {}};
 			req.index = this.index;
 			req.amount = this.amount;
 			req.currency = this.currency;
@@ -1790,7 +1790,7 @@ Vue.component('account-offer-form', {
 			}
 		},
 		create_request() {
-			const req = {"options": {}};
+			const req = {options: {}};
 			req.index = this.index;
 			req.bid = this.bid_amount;
 			req.ask = this.ask_amount;
@@ -2016,7 +2016,7 @@ Vue.component('account-offers', {
 			}
 		},
 		cancel(item) {
-			const args = {"options": {}};
+			const args = {options: {}};
 			args.index = this.index;
 			args.address = item.address;
 			this.request = args;
@@ -2027,7 +2027,7 @@ Vue.component('account-offers', {
 			this.dialog_cancel = true;
 		},
 		withdraw(item) {
-			const args = {"options": {}};
+			const args = {options: {}};
 			args.index = this.index;
 			args.address = item.address;
 			this.request = args;
@@ -2038,7 +2038,7 @@ Vue.component('account-offers', {
 			this.dialog_withdraw = true;
 		},
 		deposit(item) {
-			const args = {"options": {}};
+			const args = {options: {}};
 			args.index = this.index;
 			args.currency = item.bid_currency;
 			args.dst_addr = item.address;
