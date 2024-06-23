@@ -225,9 +225,13 @@ std::shared_ptr<const Transaction> Wallet::execute(
 
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -253,9 +257,13 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -290,10 +298,14 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 
 	wallet->complete(tx, options, deposit);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Offering " << bid_amount << " [" << bid_currency << "] for " << ask_amount
-				<< " [" << ask_currency << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Offering " << bid_amount << " [" << bid_currency << "] for " << ask_amount
+					<< " [" << ask_currency << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }

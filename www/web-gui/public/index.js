@@ -17,6 +17,13 @@ function get_short_hash(hash, length) {
 	return hash.substring(0, length) + '...' + hash.substring(64 - length);
 }
 
+function validate_amount(value) {
+	if(value && value.length && value.match(/^(\d+([.,]\d*)?)$/)) {
+		return true;
+	}
+	return "invalid amount";
+}
+
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
 const Wallet = {
