@@ -167,7 +167,9 @@ Vue.component('market-offers', {
 			trade_amount: null,
 			trade_estimate: null,
 			trade_estimate_data: null,
-			wallet_balance: null
+			wallet_balance: null,
+			fee_ratio: 1024,
+			fee_amount: null,
 		}
 	},
 	methods: {
@@ -200,83 +202,147 @@ Vue.component('market-offers', {
 			}
 		},
 		update_estimate() {
-			if(this.offer) {
-				this.trade_estimate = null;
-				fetch('/wapi/offer/trade_estimate?id=' + this.offer.address + '&amount=' + (this.trade_amount > 0 ? this.trade_amount : 0))
-					.then(response => response.json())
-					.then(data => {
-						this.trade_estimate = data.trade.value;
-						this.trade_estimate_data = data;
-					});
+			this.trade_estimate = null;
+			fetch('/wapi/offer/trade_estimate?id=' + this.offer.address + '&amount=' + (this.trade_amount > 0 ? this.trade_amount : 0))
+				.then(response => response.json())
+				.then(data => {
+					this.trade_estimate = data.trade.value;
+					this.trade_estimate_data = data;
+				});
+			this.submit_trade(true);
+		},
+		update_fee_ratio(value) {
+			this.fee_ratio = value;
+			if(this.trade_dialog) {
+				this.submit_trade(true);
+			}
+			if(this.accept_dialog) {
+				this.submit_accept(true);
 			}
 		},
-		trade(offer) {
-			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + offer.ask_currency)
+		update_balance(currency) {
+			this.wallet_balance = null;
+			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + currency)
 				.then(response => response.json())
 				.then(data => this.wallet_balance = data ? data.spendable : 0);
+		},
+		trade(offer) {
+			this.update_balance(offer.ask_currency);
 			this.offer = offer;
+			this.fee_amount = null;
 			this.trade_amount = null;
+			this.trade_estimate = null;
 			this.trade_dialog = true;
-			this.update_estimate();
 		},
 		accept(offer) {
+			this.update_balance(offer.ask_currency);
 			this.offer = offer;
+			this.fee_amount = null;
+			this.submit_accept(true);
 			this.accept_dialog = true;
 		},
 		increase() {
 			this.trade_amount = this.trade_estimate_data.next_input.value;
 		},
-		submit(offer, amount) {
+		submit_trade(estimate = false) {
 			const req = {};
 			req.index = this.wallet;
-			req.address = offer.address;
-			req.amount = amount;
+			req.address = this.offer.address;
+			req.amount = this.trade_amount;
+			req.options = {};
+			req.options.fee_ratio = this.fee_ratio;
+			if(estimate) {
+				req.options.auto_send = false;
+			}
+			if(!(req.amount > 0)) {
+				return;
+			}
 			fetch('/wapi/wallet/offer_trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
 							this.error = null;
-							this.result = data;
+							if(estimate) {
+								this.fee_amount = data.exec_result.total_fee_value;
+							} else {
+								this.result = data;
+							}
 						});
-					} else {
+					} else if(!estimate) {
 						response.text().then(data => {
 							this.error = data;
 							this.result = null;
 						});
 					}
 				});
-			this.trade_dialog = false;
+			if(!estimate) {
+				this.trade_dialog = false;
+			}
 		},
-		submit_accept(offer) {
+		submit_accept(estimate = false) {
+			const address = this.offer.address;
 			const req = {};
 			req.index = this.wallet;
-			req.address = offer.address;
+			req.address = address;
+			req.options = {};
+			req.options.fee_ratio = this.fee_ratio;
+			if(estimate) {
+				req.options.auto_send = false;
+			}
 			fetch('/wapi/wallet/accept_offer', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
 							this.error = null;
-							this.result = data;
-							this.accepted.add(offer.address);
+							if(estimate) {
+								this.fee_amount = data.exec_result.total_fee_value;
+							} else {
+								this.result = data;
+								this.accepted.add(address);
+							}
 						});
-					} else {
+					} else if(!estimate) {
 						response.text().then(data => {
 							this.error = data;
 							this.result = null;
 						});
 					}
 				});
-			this.accept_dialog = false;
+			if(!estimate) {
+				this.accept_dialog = false;
+			}
 		},
 		is_valid_trade() {
-			return this.trade_estimate_data && this.offer
+			return this.offer
+				&& this.trade_amount > 0
+				&& this.trade_amount <= this.wallet_balance
+				&& this.trade_estimate_data
 				&& this.trade_estimate_data.trade.amount > 0
 				&& this.trade_estimate_data.trade.amount <= this.offer.bid_balance;
+		},
+		is_valid_trade_amount() {
+			if(this.trade_amount > this.wallet_balance) {
+				return "insufficient funds";
+			}
+			if(this.trade_amount == null || this.trade_amount == "" || this.trade_amount > 0) {
+				return true;
+			}
+			return "invalid amount";
+		},
+		is_valid_bid_amount() {
+			if(this.trade_estimate != null) {
+				if(this.trade_estimate > this.offer.bid_balance_value) {
+					return "exceeding offer";
+				}
+			}
+			return true;
 		}
 	},
 	watch: {
 		trade_amount() {
-			this.update_estimate();
+			if(this.offer) {
+				this.update_estimate();
+			}
 		}
 	},
 	created() {
@@ -295,12 +361,75 @@ Vue.component('market-offers', {
 				{{ $t('common.failed_with') }}: <b>{{error}}</b>
 			</v-alert>
 
-			<v-dialog v-model="trade_dialog" max-width="800">
+			<v-dialog v-model="trade_dialog" max-width="900">
 				<template v-slot:default="dialog">
 					<v-card>
 						<v-toolbar color="primary" dark></v-toolbar>
 						<v-card-title>
-							{{offer.address}}
+							Trade - {{offer.address}}
+						</v-card-title>
+						<v-card-text>
+							<v-row>
+								<v-col class="pb-0">
+									<v-text-field class="text-align-right"
+										v-model="wallet_balance"
+										:label="$t('market_offers.wallet_ballance')"
+										:suffix="offer.ask_symbol" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col class="pb-0">
+									<v-text-field class="text-align-right"
+										v-model="trade_amount"
+										:label="$t('market_offers.you_send')"
+										:suffix="offer.ask_symbol"
+										:rules="[is_valid_trade_amount]">
+									</v-text-field>
+								</v-col>
+							</v-row>
+							<v-row>
+								<v-col class="py-0">
+									<v-text-field class="text-align-right"
+										v-model="offer.bid_balance_value"
+										label="They Offer"
+										:suffix="offer.bid_symbol" disabled>
+									</v-text-field>
+								</v-col>
+								<v-col class="py-0">
+									<v-text-field class="text-align-right"
+										v-model="trade_estimate"
+										:label="$t('market_offers.you_receive')"
+										:suffix="offer.bid_symbol"
+										:rules="[is_valid_bid_amount]" disabled>
+									</v-text-field>
+								</v-col>
+							</v-row>
+							<v-row justify="end">
+								<v-col cols="3">
+									<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+								</v-col>
+								<v-col cols="3">
+									<v-text-field class="text-align-right"
+										label="TX Fee"
+										v-model.number="fee_amount" suffix="MMX" disabled>
+									</v-text-field>
+								</v-col>
+							</v-row>
+						</v-card-text>
+						<v-card-actions class="justify-end">
+							<v-btn color="primary" @click="submit_trade()" :disabled="!is_valid_trade()">{{ $t('market_offers.trade') }}</v-btn>
+							<v-btn @click="increase()">{{ $t('market_offers.increase') }}</v-btn>
+							<v-btn @click="trade_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
+						</v-card-actions>
+					</v-card>
+				</template>
+			</v-dialog>
+			
+			<v-dialog v-model="accept_dialog" max-width="900">
+				<template v-slot:default="dialog">
+					<v-card>
+						<v-toolbar color="primary" dark></v-toolbar>
+						<v-card-title>
+							Accept - {{offer.address}}
 						</v-card-title>
 						<v-card-text>
 							<v-row>
@@ -313,48 +442,31 @@ Vue.component('market-offers', {
 								</v-col>
 								<v-col>
 									<v-text-field class="text-align-right"
-										v-model="trade_amount"
+										v-model="offer.ask_value"
 										:label="$t('market_offers.you_send')"
-										:suffix="offer.ask_symbol">
+										:suffix="offer.ask_symbol" disabled>
 									</v-text-field>
 								</v-col>
 							</v-row>
-							<v-text-field class="text-align-right"
-								v-model="trade_estimate"
-								:label="$t('market_offers.you_receive')"
-								:suffix="offer.bid_symbol" disabled>
-							</v-text-field>
-						</v-card-text>
-						<v-card-actions class="justify-end">
-							<v-btn color="primary" @click="submit(offer, trade_amount)" :disabled="!is_valid_trade()">{{ $t('market_offers.trade') }}</v-btn>
-							<v-btn @click="increase()">{{ $t('market_offers.increase') }}</v-btn>
-							<v-btn @click="trade_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
-						</v-card-actions>
-					</v-card>
-				</template>
-			</v-dialog>
-			
-			<v-dialog v-model="accept_dialog" max-width="800">
-				<template v-slot:default="dialog">
-					<v-card>
-						<v-toolbar color="primary" dark></v-toolbar>
-						<v-card-title>
-							{{offer.address}}
-						</v-card-title>
-						<v-card-text>
-							<v-text-field class="text-align-right"
-								v-model="offer.ask_value"
-								:label="$t('market_offers.you_send')"
-								:suffix="offer.ask_symbol" disabled>
-							</v-text-field>
 							<v-text-field class="text-align-right"
 								v-model="offer.bid_balance_value"
 								:label="$t('market_offers.you_receive')"
 								:suffix="offer.bid_symbol" disabled>
 							</v-text-field>
+							<v-row justify="end">
+								<v-col cols="3">
+									<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+								</v-col>
+								<v-col cols="3">
+									<v-text-field class="text-align-right"
+										label="TX Fee"
+										v-model.number="fee_amount" suffix="MMX" disabled>
+									</v-text-field>
+								</v-col>
+							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
-							<v-btn color="primary" @click="submit_accept(offer)">{{ $t('market_offers.accept') }}</v-btn>
+							<v-btn color="primary" @click="submit_accept()">{{ $t('market_offers.accept') }}</v-btn>
 							<v-btn @click="accept_dialog = false">{{ $t('market_offers.cancel') }}</v-btn>
 						</v-card-actions>
 					</v-card>
