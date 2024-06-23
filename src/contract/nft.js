@@ -20,7 +20,7 @@ function mint_to(address) public
 	}
 	mint_height = this.height;
 	
-	mint(bech32(address), 1);
+	mint(bech32(address), 1, "mmx_nft_mint");
 }
 
 function get_creator() const public

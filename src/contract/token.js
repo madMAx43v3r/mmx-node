@@ -17,7 +17,7 @@ function mint_to(address, amount, memo) public
 {
 	check_owner();
 	
-	mint(bech32(address), amount, memo);
+	mint(bech32(address), amount, memo, "mmx_token_mint");
 }
 
 function transfer(owner_) public

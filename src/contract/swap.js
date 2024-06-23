@@ -149,13 +149,13 @@ function _rem_liquid(user, i, amount, do_send = true)
 	
 	if(ret_amount > 0) {
 		if(do_send) {
-			send(this.user, ret_amount, tokens[i]);
+			send(this.user, ret_amount, tokens[i], "mmx_swap_rem_liquid");
 		}
 		balance[i] -= ret_amount;
 	}
 	if(trade_amount > 0) {
 		if(do_send) {
-			send(this.user, trade_amount, tokens[k], "mmx_swap_rem_liquid");
+			send(this.user, trade_amount, tokens[k], "mmx_swap_rem_liquid_trade");
 		}
 		balance[k] -= trade_amount;
 	}
@@ -320,7 +320,7 @@ function trade(i, address, min_trade, num_iter) public payable
 	if(total_actual_amount == 0) {
 		fail("empty trade", 7);
 	}
-	send(bech32(address), total_actual_amount, tokens[k]);
+	send(bech32(address), total_actual_amount, tokens[k], "mmx_swap_trade");
 	
 	return out;
 }

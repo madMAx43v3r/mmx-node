@@ -67,7 +67,7 @@ function claim_all(address, currency) public
 	if(amount == null) {
 		fail("nothing to claim", 5);
 	}
-	send(bech32(address), amount, currency);
+	send(bech32(address), amount, currency, "mmx_plot_nft_claim");
 }
 
 function transfer(owner_) public

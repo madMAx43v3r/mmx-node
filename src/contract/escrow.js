@@ -17,7 +17,7 @@ function unlock(currency) public
 	if(this.user != agent) {
 		fail("user != agent");
 	}
-	send(beneficiary, this.balance[currency], currency);
+	send(beneficiary, this.balance[currency], currency, "mmx_escrow_unlock");
 }
 
 function revoke(currency) public
@@ -25,5 +25,5 @@ function revoke(currency) public
 	if(this.user != agent) {
 		fail("user != agent");
 	}
-	send(source, this.balance[currency], currency);
+	send(source, this.balance[currency], currency, "mmx_escrow_revoke");
 }

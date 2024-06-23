@@ -21,6 +21,6 @@ function withdraw(amount, currency) public
 	if(currency == bech32()) {
 		ret_amount = (amount * WITHDRAW_FACTOR) / 100;
 	}
-	send(owner, ret_amount, currency);
-	send(bech32(), amount - ret_amount, currency);
+	send(owner, ret_amount, currency, "mmx_virtual_plot_withdraw");
+	send(bech32(), amount - ret_amount, currency, "mmx_virtual_plot_burn");
 }

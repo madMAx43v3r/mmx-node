@@ -44,14 +44,14 @@ function cancel() public
 {
 	check_owner();
 	
-	send(owner, this.balance[bid_currency], bid_currency);
+	send(owner, this.balance[bid_currency], bid_currency, "mmx_offer_cancel");
 }
 
 function withdraw() public
 {
 	check_owner();
 	
-	send(owner, this.balance[ask_currency], ask_currency);
+	send(owner, this.balance[ask_currency], ask_currency, "mmx_offer_withdraw");
 }
 
 function trade(dst_addr) public payable
@@ -65,7 +65,7 @@ function trade(dst_addr) public payable
 	if(bid_amount == 0) {
 		fail("empty trade", 4);
 	}
-	send(bech32(dst_addr), bid_amount, bid_currency);
+	send(bech32(dst_addr), bid_amount, bid_currency, "mmx_offer_trade");
 }
 
 function accept(dst_addr) public payable
@@ -83,8 +83,8 @@ function accept(dst_addr) public payable
 	}
 	const ask_amount = ((bid_amount << FRACT_BITS) + inv_price - 1) / inv_price;
 	const ret_amount = this.deposit.amount - ask_amount;
-	send(dst_addr, bid_amount, bid_currency);
-	send(dst_addr, ret_amount, ask_currency);
+	send(dst_addr, bid_amount, bid_currency, "mmx_offer_accept");
+	send(dst_addr, ret_amount, ask_currency, "mmx_offer_accept_return");
 }
 
 
