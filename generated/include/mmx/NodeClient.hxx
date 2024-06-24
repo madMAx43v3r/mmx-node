@@ -14,7 +14,6 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
@@ -143,10 +142,6 @@ public:
 	
 	::vnx::Variant call_contract(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const vnx::optional<::mmx::addr_t>& user = nullptr, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit = nullptr);
 	
-	::mmx::address_info_t get_address_info(const ::mmx::addr_t& address = ::mmx::addr_t());
-	
-	std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses = {});
-	
 	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses = {});
 	
 	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key = ::mmx::pubkey_t());
@@ -165,7 +160,7 @@ public:
 	
 	std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit = 100, const vnx::bool_t& state = true);
 	
-	std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const vnx::bool_t& state = true);
+	std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const uint64_t& min_bid = 0, const int32_t& limit = 100, const vnx::bool_t& state = true);
 	
 	std::vector<::mmx::trade_entry_t> get_trade_history(const int32_t& limit = 100, const uint32_t& since = 0);
 	

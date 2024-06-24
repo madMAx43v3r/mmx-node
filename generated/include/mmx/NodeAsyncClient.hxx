@@ -14,7 +14,6 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
@@ -231,14 +230,6 @@ public:
 			const std::function<void(const ::vnx::Variant&)>& _callback = std::function<void(const ::vnx::Variant&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_address_info(const ::mmx::addr_t& address = ::mmx::addr_t(), 
-			const std::function<void(const ::mmx::address_info_t&)>& _callback = std::function<void(const ::mmx::address_info_t&)>(),
-			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
-	
-	uint64_t get_address_infos(const std::vector<::mmx::addr_t>& addresses = {}, 
-			const std::function<void(const std::vector<::mmx::address_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::address_info_t>&)>(),
-			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
-	
 	uint64_t get_virtual_plots(const std::vector<::mmx::addr_t>& addresses = {}, 
 			const std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -275,7 +266,7 @@ public:
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const vnx::bool_t& state = true, 
+	uint64_t get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const uint64_t& min_bid = 0, const int32_t& limit = 100, const vnx::bool_t& state = true, 
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -439,8 +430,6 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_map;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_object;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Variant&)>, std::function<void(const vnx::exception&)>>> vnx_queue_call_contract;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::address_info_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address_info;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::address_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address_infos;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plots;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plots_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plots_owned_by;

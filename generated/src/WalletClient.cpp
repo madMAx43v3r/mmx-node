@@ -32,12 +32,8 @@
 #include <mmx/Wallet_get_account_return.hxx>
 #include <mmx/Wallet_get_address.hxx>
 #include <mmx/Wallet_get_address_return.hxx>
-#include <mmx/Wallet_get_address_info.hxx>
-#include <mmx/Wallet_get_address_info_return.hxx>
 #include <mmx/Wallet_get_all_accounts.hxx>
 #include <mmx/Wallet_get_all_accounts_return.hxx>
-#include <mmx/Wallet_get_all_address_infos.hxx>
-#include <mmx/Wallet_get_all_address_infos_return.hxx>
 #include <mmx/Wallet_get_all_addresses.hxx>
 #include <mmx/Wallet_get_all_addresses_return.hxx>
 #include <mmx/Wallet_get_all_farmer_keys.hxx>
@@ -122,7 +118,6 @@
 #include <mmx/Wallet_update_cache_return.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
@@ -761,33 +756,6 @@ std::vector<::mmx::addr_t> WalletClient::get_all_addresses(const int32_t& index)
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<::mmx::addr_t>>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
-::mmx::address_info_t WalletClient::get_address_info(const uint32_t& index, const uint32_t& offset) {
-	auto _method = ::mmx::Wallet_get_address_info::create();
-	_method->index = index;
-	_method->offset = offset;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_address_info_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<::mmx::address_info_t>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
-std::vector<::mmx::address_info_t> WalletClient::get_all_address_infos(const int32_t& index) {
-	auto _method = ::mmx::Wallet_get_all_address_infos::create();
-	_method->index = index;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_all_address_infos_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::vector<::mmx::address_info_t>>();
 	} else {
 		throw std::logic_error("WalletClient: invalid return value");
 	}
