@@ -493,7 +493,7 @@ Vue.component('swap-history', {
 				</template>
 				
 				<template v-slot:item.user="{ item }">
-					<router-link :to="'/explore/address/' + item.user">{{item.user}}</router-link>
+					<router-link :to="'/explore/address/' + item.user">{{get_short_addr(item.user, 20)}}</router-link>
 				</template>
 				
 				<template v-slot:item.txid="{ item }">

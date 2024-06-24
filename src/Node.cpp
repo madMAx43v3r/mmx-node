@@ -1210,7 +1210,7 @@ std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vn
 }
 
 std::vector<offer_data_t> Node::get_recent_offers_for(
-		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const vnx::bool_t& state) const
+		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint64_t& min_bid, const int32_t& limit, const vnx::bool_t& state) const
 {
 	std::vector<offer_data_t> result;
 	std::unordered_set<addr_t> bid_set;
@@ -1270,8 +1270,10 @@ std::vector<offer_data_t> Node::get_recent_offers_for(
 			tmp = get_recent_offers(limit, state);
 		}
 		for(const auto& entry : tmp) {
-			if(offer_set.insert(entry.address).second) {
-				result.push_back(entry);
+			if(entry.bid_balance >= min_bid) {
+				if(offer_set.insert(entry.address).second) {
+					result.push_back(entry);
+				}
 			}
 		}
 		if(bid_list.empty() && ask_list.empty()) {

@@ -157,6 +157,9 @@ Vue.component('market-offers', {
 			data: null,
 			offer: {},
 			tokens: null,
+			bid_symbol: null,
+			bid_decimals: null,
+			min_bid_amount: null,
 			accepted: new Set(),
 			timer: null,
 			result: null,
@@ -183,6 +186,9 @@ Vue.component('market-offers', {
 				if(this.ask) {
 					query += '&ask=' + this.ask;
 				}
+				if(this.min_bid_amount > 0) {
+					query += '&min_bid=' + parseInt(this.min_bid_amount * Math.pow(10, this.bid_decimals));
+				}
 				fetch(query)
 					.then(response => response.json())
 					.then(data => {
@@ -195,6 +201,10 @@ Vue.component('market-offers', {
 					.then(data => {
 						this.tokens = new Set();
 						for(const token of data) {
+							if(token.currency == this.bid) {
+								this.bid_symbol = token.symbol;
+								this.bid_decimals = token.decimals;
+							}
 							this.tokens.add(token.currency);
 						}
 						this.update();
@@ -343,6 +353,9 @@ Vue.component('market-offers', {
 			if(this.offer) {
 				this.update_estimate();
 			}
+		},
+		min_bid_amount() {
+			this.update();
 		}
 	},
 	created() {
@@ -433,14 +446,14 @@ Vue.component('market-offers', {
 						</v-card-title>
 						<v-card-text>
 							<v-row>
-								<v-col>
+								<v-col class="pb-0">
 									<v-text-field class="text-align-right"
 										v-model="wallet_balance"
 										:label="$t('market_offers.wallet_ballance')"
 										:suffix="offer.ask_symbol" disabled>
 									</v-text-field>
 								</v-col>
-								<v-col>
+								<v-col class="pb-0">
 									<v-text-field class="text-align-right"
 										v-model="offer.ask_value"
 										:label="$t('market_offers.you_send')"
@@ -448,11 +461,15 @@ Vue.component('market-offers', {
 									</v-text-field>
 								</v-col>
 							</v-row>
-							<v-text-field class="text-align-right"
-								v-model="offer.bid_balance_value"
-								:label="$t('market_offers.you_receive')"
-								:suffix="offer.bid_symbol" disabled>
-							</v-text-field>
+							<v-row justify="end">
+								<v-col cols="6" class="py-0">
+									<v-text-field class="text-align-right"
+										v-model="offer.bid_balance_value"
+										:label="$t('market_offers.you_receive')"
+										:suffix="offer.bid_symbol" disabled>
+									</v-text-field>
+								</v-col>
+							</v-row>
 							<v-row justify="end">
 								<v-col cols="3">
 									<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
@@ -472,6 +489,22 @@ Vue.component('market-offers', {
 					</v-card>
 				</template>
 			</v-dialog>
+			
+			<template v-if="bid">
+				<v-card class="my-2">
+					<v-card-text>
+						<v-row>
+							<v-col cols="3" class="pb-0">
+								<v-text-field class="text-align-right"
+									v-model="min_bid_amount"
+									label="Minimum Offer"
+									:suffix="bid_symbol">
+								</v-text-field>
+							</v-col>
+						</v-row>
+					</v-card-text>
+				</v-card>
+			</template>
 
 			<v-card>
 				<div v-if="!data && loading">
@@ -601,7 +634,7 @@ Vue.component('market-history', {
 								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.time') }}</th>
-								<th>{{ $t('market_offers.link') }}</th>
+								<th></th>
 								<th></th>
 							</tr>
 						</thead>
@@ -630,7 +663,7 @@ Vue.component('market-history', {
 								<td><b>{{parseFloat((item.display_price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
 								<td><b>{{parseFloat((1 / item.display_price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
+								<td><router-link :to="'/explore/address/' + item.address">Offer</router-link></td>
 								<td><router-link :to="'/explore/transaction/' + item.txid">TX</router-link></td>
 							</tr>
 						</tbody>

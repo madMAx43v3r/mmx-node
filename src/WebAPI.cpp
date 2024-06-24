@@ -2350,6 +2350,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		vnx::optional<addr_t> ask;
 		const auto iter_bid = query.find("bid");
 		const auto iter_ask = query.find("ask");
+		const auto iter_min_bid = query.find("min_bid");
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
 		const auto iter_state = query.find("state");
@@ -2359,11 +2360,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_ask != query.end()) {
 			ask = vnx::from_string_value<addr_t>(iter_ask->second);
 		}
+		const uint64_t min_bid = iter_min_bid != query.end() ? vnx::from_string<uint64_t>(iter_min_bid->second) : 0;
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 		const bool state = iter_state != query.end() ? vnx::from_string<bool>(iter_state->second) : true;
 
-		node->get_recent_offers_for(bid, ask, bid && ask ? std::max<size_t>(1000, limit) : offset + limit, state,
+		const auto limit_ = bid && ask ? std::max<size_t>(1000, limit) : offset + limit;
+		node->get_recent_offers_for(bid, ask, min_bid, limit_, state,
 			[this, request_id, bid, ask, limit, offset](const std::vector<offer_data_t>& offers) {
 				std::unordered_set<addr_t> addr_set;
 				std::vector<std::pair<offer_data_t, double>> result;
