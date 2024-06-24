@@ -52,8 +52,8 @@
 #include <mmx/Node_get_exec_history_return.hxx>
 #include <mmx/Node_get_farmed_block_count.hxx>
 #include <mmx/Node_get_farmed_block_count_return.hxx>
-#include <mmx/Node_get_farmed_block_count_for.hxx>
-#include <mmx/Node_get_farmed_block_count_for_return.hxx>
+#include <mmx/Node_get_farmed_block_summary.hxx>
+#include <mmx/Node_get_farmed_block_summary_return.hxx>
 #include <mmx/Node_get_farmed_blocks.hxx>
 #include <mmx/Node_get_farmed_blocks_return.hxx>
 #include <mmx/Node_get_genesis_hash.hxx>
@@ -164,6 +164,7 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
+#include <mmx/farmed_block_summary_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
 #include <mmx/pubkey_t.hpp>
@@ -1202,15 +1203,15 @@ uint64_t NodeAsyncClient::get_farmed_block_count(const uint32_t& since, const st
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_farmed_block_count_for(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since, const std::function<void(const uint32_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
-	auto _method = ::mmx::Node_get_farmed_block_count_for::create();
+uint64_t NodeAsyncClient::get_farmed_block_summary(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since, const std::function<void(const ::mmx::farmed_block_summary_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+	auto _method = ::mmx::Node_get_farmed_block_summary::create();
 	_method->farmer_keys = farmer_keys;
 	_method->since = since;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
 		vnx_pending[_request_id] = 71;
-		vnx_queue_get_farmed_block_count_for[_request_id] = std::make_pair(_callback, _error_callback);
+		vnx_queue_get_farmed_block_summary[_request_id] = std::make_pair(_callback, _error_callback);
 	}
 	vnx_request(_method, _request_id);
 	return _request_id;
@@ -2246,10 +2247,10 @@ int32_t NodeAsyncClient::vnx_purge_request(uint64_t _request_id, const vnx::exce
 			break;
 		}
 		case 71: {
-			const auto _iter = vnx_queue_get_farmed_block_count_for.find(_request_id);
-			if(_iter != vnx_queue_get_farmed_block_count_for.end()) {
+			const auto _iter = vnx_queue_get_farmed_block_summary.find(_request_id);
+			if(_iter != vnx_queue_get_farmed_block_summary.end()) {
 				const auto _callback = std::move(_iter->second.second);
-				vnx_queue_get_farmed_block_count_for.erase(_iter);
+				vnx_queue_get_farmed_block_summary.erase(_iter);
 				_lock.unlock();
 				if(_callback) {
 					_callback(_ex);
@@ -3764,18 +3765,18 @@ int32_t NodeAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared_p
 			break;
 		}
 		case 71: {
-			const auto _iter = vnx_queue_get_farmed_block_count_for.find(_request_id);
-			if(_iter == vnx_queue_get_farmed_block_count_for.end()) {
+			const auto _iter = vnx_queue_get_farmed_block_summary.find(_request_id);
+			if(_iter == vnx_queue_get_farmed_block_summary.end()) {
 				throw std::runtime_error("NodeAsyncClient: callback not found");
 			}
 			const auto _callback = std::move(_iter->second.first);
-			vnx_queue_get_farmed_block_count_for.erase(_iter);
+			vnx_queue_get_farmed_block_summary.erase(_iter);
 			_lock.unlock();
 			if(_callback) {
-				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_farmed_block_count_for_return>(_value)) {
+				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_farmed_block_summary_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<uint32_t>());
+					_callback(_value->get_field_by_index(0).to<::mmx::farmed_block_summary_t>());
 				} else {
 					throw std::logic_error("NodeAsyncClient: invalid return value");
 				}

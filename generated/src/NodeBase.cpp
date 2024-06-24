@@ -53,8 +53,8 @@
 #include <mmx/Node_get_exec_history_return.hxx>
 #include <mmx/Node_get_farmed_block_count.hxx>
 #include <mmx/Node_get_farmed_block_count_return.hxx>
-#include <mmx/Node_get_farmed_block_count_for.hxx>
-#include <mmx/Node_get_farmed_block_count_for_return.hxx>
+#include <mmx/Node_get_farmed_block_summary.hxx>
+#include <mmx/Node_get_farmed_block_summary_return.hxx>
 #include <mmx/Node_get_farmed_blocks.hxx>
 #include <mmx/Node_get_farmed_blocks_return.hxx>
 #include <mmx/Node_get_genesis_hash.hxx>
@@ -165,6 +165,7 @@
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
+#include <mmx/farmed_block_summary_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
 #include <mmx/pubkey_t.hpp>
@@ -814,7 +815,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[19] = ::mmx::Node_get_contracts_owned_by::static_get_type_code();
 	type_code->methods[20] = ::mmx::Node_get_exec_history::static_get_type_code();
 	type_code->methods[21] = ::mmx::Node_get_farmed_block_count::static_get_type_code();
-	type_code->methods[22] = ::mmx::Node_get_farmed_block_count_for::static_get_type_code();
+	type_code->methods[22] = ::mmx::Node_get_farmed_block_summary::static_get_type_code();
 	type_code->methods[23] = ::mmx::Node_get_farmed_blocks::static_get_type_code();
 	type_code->methods[24] = ::mmx::Node_get_genesis_hash::static_get_type_code();
 	type_code->methods[25] = ::mmx::Node_get_header::static_get_type_code();
@@ -1351,10 +1352,10 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_farmed_block_count(_args->since);
 			return _return_value;
 		}
-		case 0xae16fe7993abd822ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_farmed_block_count_for>(_method);
-			auto _return_value = ::mmx::Node_get_farmed_block_count_for_return::create();
-			_return_value->_ret_0 = get_farmed_block_count_for(_args->farmer_keys, _args->since);
+		case 0xa6cda1247bd4f537ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_farmed_block_summary>(_method);
+			auto _return_value = ::mmx::Node_get_farmed_block_summary_return::create();
+			_return_value->_ret_0 = get_farmed_block_summary(_args->farmer_keys, _args->since);
 			return _return_value;
 		}
 		case 0xfc412d06ff25542eull: {

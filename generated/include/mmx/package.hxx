@@ -98,8 +98,8 @@ class Node_get_exec_history;
 class Node_get_exec_history_return;
 class Node_get_farmed_block_count;
 class Node_get_farmed_block_count_return;
-class Node_get_farmed_block_count_for;
-class Node_get_farmed_block_count_for_return;
+class Node_get_farmed_block_summary;
+class Node_get_farmed_block_summary_return;
 class Node_get_farmed_blocks;
 class Node_get_farmed_blocks_return;
 class Node_get_genesis_hash;
@@ -374,7 +374,7 @@ struct exec_entry_t;
 struct exec_error_t;
 struct exec_result_t;
 struct farmed_block_info_t;
-struct farmer_info_t;
+struct farmed_block_summary_t;
 class fixed128;
 class hash_512_t;
 class hash_t;
@@ -483,8 +483,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_exec_
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_exec_history_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_count; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_count_return; ///< \private
-MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_count_for; ///< \private
-MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_count_for_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_summary; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_summary_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_blocks; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_blocks_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_genesis_hash; ///< \private
@@ -758,7 +758,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_exec_entry_t; 
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_exec_error_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_exec_result_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_farmed_block_info_t; ///< \private
-MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_farmer_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_farmed_block_summary_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_node_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_node_type_e; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_offer_data_t; ///< \private
@@ -865,8 +865,8 @@ void read(TypeInput& in, ::mmx::Node_get_exec_history& value, const TypeCode* ty
 void read(TypeInput& in, ::mmx::Node_get_exec_history_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_farmed_block_count& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_farmed_block_count_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Node_get_farmed_block_count_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::Node_get_farmed_block_count_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_farmed_block_summary& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_farmed_block_summary_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_farmed_blocks& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_farmed_blocks_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_genesis_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1141,7 +1141,7 @@ void read(TypeInput& in, ::mmx::exec_entry_t& value, const TypeCode* type_code, 
 void read(TypeInput& in, ::mmx::exec_error_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::exec_result_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::farmed_block_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::farmer_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::farmed_block_summary_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::fixed128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::hash_512_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::hash_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1250,8 +1250,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_exec_history& value, const Typ
 void write(TypeOutput& out, const ::mmx::Node_get_exec_history_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_count& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_count_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_count_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_count_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_summary& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_summary_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_farmed_blocks& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_farmed_blocks_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_genesis_hash& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1526,7 +1526,7 @@ void write(TypeOutput& out, const ::mmx::exec_entry_t& value, const TypeCode* ty
 void write(TypeOutput& out, const ::mmx::exec_error_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::exec_result_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::farmed_block_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::farmer_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::farmed_block_summary_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::fixed128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::hash_512_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::hash_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1635,8 +1635,8 @@ void read(std::istream& in, ::mmx::Node_get_exec_history& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_exec_history_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_farmed_block_count& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_farmed_block_count_return& value); ///< \private
-void read(std::istream& in, ::mmx::Node_get_farmed_block_count_for& value); ///< \private
-void read(std::istream& in, ::mmx::Node_get_farmed_block_count_for_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_farmed_block_summary& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_farmed_block_summary_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_farmed_blocks& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_farmed_blocks_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_genesis_hash& value); ///< \private
@@ -1911,7 +1911,7 @@ void read(std::istream& in, ::mmx::exec_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::exec_error_t& value); ///< \private
 void read(std::istream& in, ::mmx::exec_result_t& value); ///< \private
 void read(std::istream& in, ::mmx::farmed_block_info_t& value); ///< \private
-void read(std::istream& in, ::mmx::farmer_info_t& value); ///< \private
+void read(std::istream& in, ::mmx::farmed_block_summary_t& value); ///< \private
 void read(std::istream& in, ::mmx::fixed128& value); ///< \private
 void read(std::istream& in, ::mmx::hash_512_t& value); ///< \private
 void read(std::istream& in, ::mmx::hash_t& value); ///< \private
@@ -2020,8 +2020,8 @@ void write(std::ostream& out, const ::mmx::Node_get_exec_history& value); ///< \
 void write(std::ostream& out, const ::mmx::Node_get_exec_history_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_farmed_block_count& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_farmed_block_count_return& value); ///< \private
-void write(std::ostream& out, const ::mmx::Node_get_farmed_block_count_for& value); ///< \private
-void write(std::ostream& out, const ::mmx::Node_get_farmed_block_count_for_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_farmed_block_summary& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_farmed_block_summary_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_farmed_blocks& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_farmed_blocks_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_genesis_hash& value); ///< \private
@@ -2296,7 +2296,7 @@ void write(std::ostream& out, const ::mmx::exec_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_error_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::exec_result_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::farmed_block_info_t& value); ///< \private
-void write(std::ostream& out, const ::mmx::farmer_info_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::farmed_block_summary_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::fixed128& value); ///< \private
 void write(std::ostream& out, const ::mmx::hash_512_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::hash_t& value); ///< \private
@@ -2405,8 +2405,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_exec_history& value); ///< \
 void accept(Visitor& visitor, const ::mmx::Node_get_exec_history_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_count& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_count_return& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_count_for& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_count_for_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_summary& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_summary_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_farmed_blocks& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_farmed_blocks_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_genesis_hash& value); ///< \private
@@ -2681,7 +2681,7 @@ void accept(Visitor& visitor, const ::mmx::exec_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_error_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::exec_result_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::farmed_block_info_t& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::farmer_info_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::farmed_block_summary_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::fixed128& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::hash_512_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::hash_t& value); ///< \private
@@ -4411,48 +4411,48 @@ struct type<::mmx::Node_get_farmed_block_count_return> {
 
 /// \private
 template<>
-struct type<::mmx::Node_get_farmed_block_count_for> {
-	void read(TypeInput& in, ::mmx::Node_get_farmed_block_count_for& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::Node_get_farmed_block_summary> {
+	void read(TypeInput& in, ::mmx::Node_get_farmed_block_summary& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_count_for& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_summary& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::Node_get_farmed_block_count_for& value) {
+	void read(std::istream& in, ::mmx::Node_get_farmed_block_summary& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::Node_get_farmed_block_count_for& value) {
+	void write(std::ostream& out, const ::mmx::Node_get_farmed_block_summary& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_count_for& value) {
+	void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_summary& value) {
 		vnx::accept(visitor, value);
 	}
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmed_block_count_for& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmed_block_summary& value, bool special = false);
 };
 
 /// \private
 template<>
-struct type<::mmx::Node_get_farmed_block_count_for_return> {
-	void read(TypeInput& in, ::mmx::Node_get_farmed_block_count_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::Node_get_farmed_block_summary_return> {
+	void read(TypeInput& in, ::mmx::Node_get_farmed_block_summary_return& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_count_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::Node_get_farmed_block_summary_return& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::Node_get_farmed_block_count_for_return& value) {
+	void read(std::istream& in, ::mmx::Node_get_farmed_block_summary_return& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::Node_get_farmed_block_count_for_return& value) {
+	void write(std::ostream& out, const ::mmx::Node_get_farmed_block_summary_return& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_count_for_return& value) {
+	void accept(Visitor& visitor, const ::mmx::Node_get_farmed_block_summary_return& value) {
 		vnx::accept(visitor, value);
 	}
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmed_block_count_for_return& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmed_block_summary_return& value, bool special = false);
 };
 
 /// \private
@@ -10747,25 +10747,25 @@ struct type<::mmx::farmed_block_info_t> {
 
 /// \private
 template<>
-struct type<::mmx::farmer_info_t> {
-	void read(TypeInput& in, ::mmx::farmer_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+struct type<::mmx::farmed_block_summary_t> {
+	void read(TypeInput& in, ::mmx::farmed_block_summary_t& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
 	}
-	void write(TypeOutput& out, const ::mmx::farmer_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+	void write(TypeOutput& out, const ::mmx::farmed_block_summary_t& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::write(out, value, type_code, code);
 	}
-	void read(std::istream& in, ::mmx::farmer_info_t& value) {
+	void read(std::istream& in, ::mmx::farmed_block_summary_t& value) {
 		vnx::read(in, value);
 	}
-	void write(std::ostream& out, const ::mmx::farmer_info_t& value) {
+	void write(std::ostream& out, const ::mmx::farmed_block_summary_t& value) {
 		vnx::write(out, value);
 	}
-	void accept(Visitor& visitor, const ::mmx::farmer_info_t& value) {
+	void accept(Visitor& visitor, const ::mmx::farmed_block_summary_t& value) {
 		vnx::accept(visitor, value);
 	}
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::farmer_info_t& value, bool special = false);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::farmed_block_summary_t& value, bool special = false);
 };
 
 /// \private
