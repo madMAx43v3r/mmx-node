@@ -488,7 +488,7 @@ Vue.component('market-offers', {
 								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.time') }}</th>
-								<th>{{ $t('market_offers.link') }}</th>
+								<th></th>
 								<th></th>
 							</tr>
 						</thead>
@@ -517,7 +517,7 @@ Vue.component('market-offers', {
 								<td><b>{{ parseFloat( (item.display_price).toPrecision(3) ) }}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
 								<td><b>{{ parseFloat( (1 / item.display_price).toPrecision(3) ) }}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
-								<td><router-link :to="'/explore/address/' + item.address">{{ $t('market_offers.address') }}</router-link></td>
+								<td><router-link :to="'/explore/address/' + item.address">TX</router-link></td>
 								<td>
 									<v-btn outlined text @click="trade(item)">{{ $t('market_offers.trade') }}</v-btn>
 									<template v-if="!accepted.has(item.address)">

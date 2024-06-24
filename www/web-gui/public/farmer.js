@@ -132,14 +132,13 @@ Vue.component('farmer-rewards', {
 					<v-simple-table>
 						<thead>
 						<tr>
-							<th>Reward</th>
-							<th></th>
+							<th colspan="2">Reward</th>
 							<th>{{ $t('transaction_view.address') }}</th>
 						</tr>
 						</thead>
 						<tbody>
 						<tr v-for="item in data.rewards" :key="item.address">
-							<td><b>{{item.value}}</b></td>
+							<td class="collapsing"><b>{{item.value}}</b></td>
 							<td>MMX</td>
 							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
 						</tr>

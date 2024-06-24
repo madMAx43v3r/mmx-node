@@ -423,7 +423,7 @@ Vue.component('block-view', {
 									</tr>
 									<template v-if="data.vdf_reward_addr">
 										<tr>
-											<td class="key-cell">Timelord</td>
+											<td class="key-cell">Timelord Address</td>
 											<td><router-link :to="'/explore/address/' + data.vdf_reward_addr">{{data.vdf_reward_addr}}</router-link></td>
 										</tr>
 									</template>

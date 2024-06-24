@@ -523,7 +523,8 @@ Vue.component('swap-trade', {
 			buy_estimate: null,
 			buy_num_iter: 5,
 			buy_slippage: 0.98,
-			buy_tx_fee: null,
+			buy_tx_fee_ratio: null,
+			buy_tx_fee_amount: null,
 			sell_fee: null,
 			sell_price: null,
 			sell_amount: null,
@@ -531,7 +532,8 @@ Vue.component('swap-trade', {
 			sell_estimate: null,
 			sell_num_iter: 5,
 			sell_slippage: 0.98,
-			sell_tx_fee: null,
+			sell_tx_fee_ratio: null,
+			sell_tx_fee_amount: null,
 			result: null,
 			error: null,
 			num_iter_items: [1, 5, 20, 100],
@@ -561,7 +563,7 @@ Vue.component('swap-trade', {
 				.then(response => response.json())
 				.then(data => this.buy_balance = data ? data.spendable : 0);
 		},
-		submit(index, amount, min_trade, num_iter, fee_ratio) {
+		submit(index, amount, min_trade, num_iter, fee_ratio, estimate = false) {
 			const req = {};
 			req.wallet = this.wallet;
 			req.address = this.address;
@@ -573,34 +575,50 @@ Vue.component('swap-trade', {
 			if(fee_ratio) {
 				req.options.fee_ratio = fee_ratio;
 			}
+			if(estimate) {
+				req.options.auto_send = false;
+			}
 			fetch('/wapi/wallet/swap/trade', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => {
-							this.result = data;
-							this.error = null;
+							if(estimate) {
+								if(index == 1) {
+									this.buy_tx_fee_amount = data.exec_result.total_fee_value;
+								} else {
+									this.sell_tx_fee_amount = data.exec_result.total_fee_value;
+								}
+							} else {
+								this.result = data;
+								this.error = null;
+							}
 						});
-					} else {
+					} else if(!estimate) {
 						response.text().then(data => {
 							this.result = null;
 							this.error = data;
 						});
 					}
 				});
-			this.buy_amount = null;
-			this.sell_amount = null;
+			if(!estimate) {
+				if(index == 1) {
+					this.buy_amount = null;
+				} else {
+					this.sell_amount = null;
+				}
+			}
 		},
-		submit_buy() {
-			this.submit(1, this.buy_amount, this.buy_estimate * this.buy_slippage, this.buy_num_iter, this.buy_tx_fee);
+		submit_buy(estimate = false) {
+			this.submit(1, this.buy_amount, this.buy_estimate * this.buy_slippage, this.buy_num_iter, this.buy_tx_fee_ratio, estimate);
 		},
-		submit_sell() {
-			this.submit(0, this.sell_amount, this.sell_estimate * this.sell_slippage, this.sell_num_iter, this.sell_tx_fee);
+		submit_sell(estimate = false) {
+			this.submit(0, this.sell_amount, this.sell_estimate * this.sell_slippage, this.sell_num_iter, this.sell_tx_fee_ratio, estimate);
 		},
 		update_buy_estimate() {
 			this.buy_fee = null;
 			this.buy_price = null;
 			this.buy_estimate = null;
-			if(this.buy_amount > 0) {
+			if(this.is_valid_buy()) {
 				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=1&amount=' + this.buy_amount + '&iters=' + this.buy_num_iter)
 					.then(response => response.json())
 					.then(data => {
@@ -608,13 +626,16 @@ Vue.component('swap-trade', {
 						this.buy_price = parseFloat((1 / data.avg_price).toPrecision(6));
 						this.buy_estimate = data.trade.value;
 					});
+				this.submit_buy(true);
+			} else {
+				this.buy_tx_fee_amount = null;
 			}
 		},
 		update_sell_estimate() {
 			this.sell_fee = null;
 			this.sell_price = null;
 			this.sell_estimate = null;
-			if(this.sell_amount > 0) {
+			if(this.is_valid_sell()) {
 				fetch('/wapi/swap/trade_estimate?id=' + this.address + '&index=0&amount=' + this.sell_amount + '&iters=' + this.sell_num_iter)
 					.then(response => response.json())
 					.then(data => {
@@ -622,7 +643,22 @@ Vue.component('swap-trade', {
 						this.sell_price = parseFloat(data.avg_price.toPrecision(6));
 						this.sell_estimate = data.trade.value;
 					});
+				this.submit_sell(true);
+			} else {
+				this.sell_tx_fee_amount = null;
 			}
+		},
+		is_valid_buy_amount(value) {
+			return value < this.buy_balance ? true : "insufficient funds";
+		},
+		is_valid_sell_amount(value) {
+			return value < this.sell_balance ? true : "insufficient funds";
+		},
+		is_valid_buy() {
+			return this.buy_amount > 0 && this.buy_amount <= this.buy_balance;
+		},
+		is_valid_sell() {
+			return this.sell_amount > 0 && this.sell_amount <= this.sell_balance;
 		}
 	},
 	watch: {
@@ -637,10 +673,16 @@ Vue.component('swap-trade', {
 		buy_num_iter() {
 			this.update_buy_estimate();
 		},
+		buy_tx_fee_ratio() {
+			this.update_buy_estimate();
+		},
 		sell_amount() {
 			this.update_sell_estimate();
 		},
 		sell_num_iter() {
+			this.update_sell_estimate();
+		},
+		sell_tx_fee_ratio() {
 			this.update_sell_estimate();
 		}
 	},
@@ -659,30 +701,31 @@ Vue.component('swap-trade', {
 						<v-toolbar color="green lighten-1" elevation="1" dense></v-toolbar>
 						<v-card-text>
 							<v-row>
-								<v-col>
+								<v-col class="pb-0">
 									<v-text-field class="text-align-right"
 										v-model="buy_balance"
 										:label="$t('swap.wallet_ballance')"
 										:suffix="data.symbols[1]" disabled>
 									</v-text-field>
 								</v-col>
-								<v-col>
+								<v-col class="pb-0">
 									<v-text-field class="text-align-right"
 										v-model="buy_amount"
 										:label="$t('swap.buy_amount')"
-										:suffix="data.symbols[1]">
+										:suffix="data.symbols[1]"
+										:rules="[is_valid_buy_amount]">
 									</v-text-field>
 								</v-col>
 							</v-row>
 							<v-row>
-								<v-col>
+								<v-col class="py-0">
 									<v-text-field class="text-align-right"
 										v-model="buy_fee"
 										:label="$t('swap.trade_fee_estimated')"
 										suffix="%" disabled>
 									</v-text-field>
 								</v-col>
-								<v-col>
+								<v-col class="py-0">
 									<v-text-field class="text-align-right"
 										v-model="buy_estimate"
 										:label="$t('swap.you_receive_estimated')"
@@ -691,7 +734,14 @@ Vue.component('swap-trade', {
 								</v-col>
 							</v-row>
 							<v-row>
-								<v-col>
+								<v-col cols="3" class="py-0">
+									<v-select
+										v-model="buy_num_iter"
+										:items="num_iter_items"
+										label="Iterations"
+									></v-select>
+								</v-col>
+								<v-col class="py-0">
 									<v-text-field class="text-align-right"
 										v-model="buy_price"
 										label="Trade Price (average, including fee)"
@@ -700,28 +750,27 @@ Vue.component('swap-trade', {
 								</v-col>
 							</v-row>
 							<v-row>
-								<v-col>
-									<v-select
-										v-model="buy_num_iter"
-										:items="num_iter_items"
-										label="Trade Iterations"
-									></v-select>
-								</v-col>
-								<v-col>
+								<v-col cols="3" class="py-0">
 									<v-select
 										v-model="buy_slippage"
 										:items="slippage_items"
 										label="Max Slippage"
 									></v-select>
 								</v-col>
-								<v-col>
-									<tx-fee-select @update-value="value => this.buy_tx_fee = value"></tx-fee-select>
+								<v-col class="py-0">
+									<tx-fee-select @update-value="value => this.buy_tx_fee_ratio = value"></tx-fee-select>
+								</v-col>
+								<v-col class="py-0">
+									<v-text-field class="text-align-right"
+										label="TX Fee"
+										v-model.number="buy_tx_fee_amount" suffix="MMX" disabled>
+									</v-text-field>
 								</v-col>
 							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
 							<v-btn @click="update_buy_estimate()" :disabled="!(buy_amount > 0)">Update</v-btn>
-							<v-btn color="green lighten-1" @click="submit_buy()" :disabled="!(buy_amount > 0) || !(buy_estimate > 0)">{{ $t('swap.buy') }}</v-btn>
+							<v-btn color="green lighten-1" @click="submit_buy()" :disabled="!is_valid_buy() || !(buy_estimate > 0)">{{ $t('swap.buy') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -730,30 +779,31 @@ Vue.component('swap-trade', {
 						<v-toolbar color="red lighten-1" elevation="1" dense></v-toolbar>
 						<v-card-text>
 							<v-row>
-								<v-col>
+								<v-col class="pb-0">
 									<v-text-field class="text-align-right"
 										v-model="sell_balance"
 										:label="$t('swap.wallet_ballance')"
 										:suffix="data.symbols[0]" disabled>
 									</v-text-field>
 								</v-col>
-								<v-col>
+								<v-col class="pb-0">
 									<v-text-field class="text-align-right"
 										v-model="sell_amount"
 										:label="$t('swap.sell_amount')"
-										:suffix="data.symbols[0]">
+										:suffix="data.symbols[0]"
+										:rules="[is_valid_sell_amount]">
 									</v-text-field>
 								</v-col>
 							</v-row>
 							<v-row>
-								<v-col>
+								<v-col class="py-0">
 									<v-text-field class="text-align-right"
 										v-model="sell_fee"
 										:label="$t('swap.trade_fee_estimated')"
 										suffix="%" disabled>
 									</v-text-field>
 								</v-col>
-								<v-col>
+								<v-col class="py-0">
 									<v-text-field class="text-align-right"
 										v-model="sell_estimate"
 										:label="$t('swap.you_receive_estimated')"
@@ -762,7 +812,14 @@ Vue.component('swap-trade', {
 								</v-col>
 							</v-row>
 							<v-row>
-								<v-col>
+								<v-col cols="3" class="py-0">
+									<v-select
+										v-model="sell_num_iter"
+										:items="num_iter_items"
+										label="Iterations"
+									></v-select>
+								</v-col>
+								<v-col class="py-0">
 									<v-text-field class="text-align-right"
 										v-model="sell_price"
 										label="Trade Price (average, including fee)"
@@ -771,28 +828,27 @@ Vue.component('swap-trade', {
 								</v-col>
 							</v-row>
 							<v-row>
-								<v-col>
-									<v-select
-										v-model="sell_num_iter"
-										:items="num_iter_items"
-										label="Trade Iterations"
-									></v-select>
-								</v-col>
-								<v-col>
+								<v-col cols="3" class="py-0">
 									<v-select
 										v-model="sell_slippage"
 										:items="slippage_items"
 										label="Max Slippage"
 									></v-select>
 								</v-col>
-								<v-col>
-									<tx-fee-select @update-value="value => this.sell_tx_fee = value"></tx-fee-select>
+								<v-col class="py-0">
+									<tx-fee-select @update-value="value => this.sell_tx_fee_ratio = value"></tx-fee-select>
+								</v-col>
+								<v-col class="py-0">
+									<v-text-field class="text-align-right"
+										label="TX Fee"
+										v-model.number="sell_tx_fee_amount" suffix="MMX" disabled>
+									</v-text-field>
 								</v-col>
 							</v-row>
 						</v-card-text>
 						<v-card-actions class="justify-end">
 							<v-btn @click="update_sell_estimate()" :disabled="!(sell_amount > 0)">Update</v-btn>
-							<v-btn color="red lighten-1" @click="submit_sell()" :disabled="!(sell_amount > 0) || !(sell_estimate > 0)">{{ $t('swap.sell') }}</v-btn>
+							<v-btn color="red lighten-1" @click="submit_sell()" :disabled="!is_valid_sell() || !(sell_estimate > 0)">{{ $t('swap.sell') }}</v-btn>
 						</v-card-actions>
 					</v-card>
 				</v-col>
@@ -837,6 +893,9 @@ Vue.component('swap-liquid', {
 			pool_idx: -1,
 			amount_0: null,
 			amount_1: null,
+			balance_0: null,
+			balance_1: null,
+			fee_ratio: 1024,
 			price: null,
 			result: null,
 			error: null,
@@ -853,7 +912,16 @@ Vue.component('swap-liquid', {
 				.then(data => {
 					this.data = data;
 					this.loading = false;
+					this.update_wallet();
 				});
+		},
+		update_wallet() {
+			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + this.data.tokens[0])
+				.then(response => response.json())
+				.then(data => this.balance_0 = data ? data.spendable : 0);
+			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + this.data.tokens[1])
+				.then(response => response.json())
+				.then(data => this.balance_1 = data ? data.spendable : 0);
 		},
 		update_user() {
 			fetch('/wapi/wallet/address?index=' + this.wallet)
@@ -891,35 +959,39 @@ Vue.component('swap-liquid', {
 			}
 		},
 		submit(mode) {
-			const req = {};
+			const req = {options: {}};
 			req.index = this.wallet;
 			req.address = this.address;
 			req.pool_idx = this.pool_idx;
 			req.amount = [this.amount_0, this.amount_1];
+			req.options.fee_ratio = this.fee_ratio;
 			fetch('/wapi/wallet/swap/' + (mode ? "add" : "rem") + "_liquid", {body: JSON.stringify(req), method: "post"})
 				.then(response => this.on_response(response));
 			this.amount_0 = null;
 			this.amount_1 = null;
 		},
 		payout() {
-			const req = {};
+			const req = {options: {}};
 			req.index = this.wallet;
 			req.address = this.address;
+			req.options.fee_ratio = this.fee_ratio;
 			fetch('/wapi/wallet/swap/payout', {body: JSON.stringify(req), method: "post"})
 				.then(response => this.on_response(response, "payout"));
 		},
 		switch_pool() {
-			const req = {};
+			const req = {options: {}};
 			req.index = this.wallet;
 			req.address = this.address;
 			req.pool_idx = this.pool_idx;
+			req.options.fee_ratio = this.fee_ratio;
 			fetch('/wapi/wallet/swap/switch_pool', {body: JSON.stringify(req), method: "post"})
 				.then(response => this.on_response(response, "switch_pool"));
 		},
 		rem_all_liquid() {
-			const req = {};
+			const req = {options: {}};
 			req.index = this.wallet;
 			req.address = this.address;
+			req.options.fee_ratio = this.fee_ratio;
 			fetch('/wapi/wallet/swap/rem_all_liquid', {body: JSON.stringify(req), method: "post"})
 				.then(response => this.on_response(response, "rem_all_liquid"));
 		}
@@ -986,8 +1058,27 @@ Vue.component('swap-liquid', {
 			
 			<v-card v-if="data" class="my-2">
 				<v-card-text>
-					<v-row>
-						<v-col>
+					<v-row justify="end">
+						<v-col cols="2" class="pb-0">
+							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
+						</v-col>
+						<v-col cols="3" class="pb-0">
+							<v-text-field class="text-align-right"
+								v-model="balance_0"
+								:label="$t('swap.wallet_ballance')"
+								:suffix="data.symbols[0]" disabled>
+							</v-text-field>
+						</v-col>
+						<v-col cols="3" class="pb-0">
+							<v-text-field class="text-align-right"
+								v-model="balance_1"
+								:label="$t('swap.wallet_ballance')"
+								:suffix="data.symbols[1]" disabled>
+							</v-text-field>
+						</v-col>
+					</v-row>
+					<v-row justify="end">
+						<v-col class="py-0">
 							<v-select
 								v-model="pool_idx"
 								:items="fee_rates"
@@ -996,7 +1087,7 @@ Vue.component('swap-liquid', {
 								item-value="value"
 							></v-select>
 						</v-col>
-						<v-col>
+						<v-col class="py-0">
 							<v-text-field class="text-align-right"
 								v-model="price"
 								:label="$t('common.price')"
@@ -1004,14 +1095,14 @@ Vue.component('swap-liquid', {
 								disabled>
 							</v-text-field>
 						</v-col>
-						<v-col>
+						<v-col class="py-0">
 							<v-text-field class="text-align-right"
 								v-model="amount_0"
 								:label="$t('swap.token_amount')"
 								:suffix="data.symbols[0]">
 							</v-text-field>
 						</v-col>
-						<v-col>
+						<v-col class="py-0">
 							<v-text-field class="text-align-right"
 								v-model="amount_1"
 								:label="$t('swap.currency_amount')"
