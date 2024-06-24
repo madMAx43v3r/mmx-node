@@ -119,10 +119,6 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<addr_t> get_all_addresses(int index) const;				// (index == -1) -> all wallets
 	
-	address_info_t get_address_info(uint index, uint offset) const;
-	
-	vector<address_info_t> get_all_address_infos(int index) const;
-	
 	account_t get_account(uint index) const;
 	
 	map<uint, account_t> get_all_accounts() const;

@@ -145,10 +145,6 @@ protected:
 	vnx::Variant call_contract(	const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args = {},
 								const vnx::optional<addr_t>& user = nullptr, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit = nullptr) const override;
 
-	address_info_t get_address_info(const addr_t& address) const override;
-
-	std::vector<address_info_t> get_address_infos(const std::vector<addr_t>& addresses) const override;
-
 	uint128 get_total_supply(const addr_t& currency) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;

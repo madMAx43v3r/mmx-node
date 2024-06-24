@@ -795,16 +795,6 @@ std::vector<addr_t> Wallet::get_all_addresses(const int32_t& index) const
 	return list;
 }
 
-address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& offset) const
-{
-	return node->get_address_info(get_address(index, offset));
-}
-
-std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) const
-{
-	return node->get_address_infos(get_all_addresses(index));
-}
-
 std::pair<skey_t, pubkey_t> Wallet::get_farmer_keys(const uint32_t& index) const
 {
 	if(auto wallet = wallets.at(index)) {

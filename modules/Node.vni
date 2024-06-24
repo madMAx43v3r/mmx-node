@@ -201,12 +201,6 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, ulong>> deposit) const;
 	
 	@Permission(permission_e.PUBLIC)
-	address_info_t get_address_info(addr_t address) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<address_info_t> get_address_infos(vector<addr_t> addresses) const;
-	
-	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)

@@ -536,10 +536,6 @@ public:
 		set(tmp);
 	}
 
-	void accept(const address_info_t& value) {
-		set(render(value, context));
-	}
-
 	void accept(const exec_entry_t& value) {
 		auto tmp = render(value, context);
 		if(context) {
@@ -1750,23 +1746,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "wallet/address?index|limit|offset");
 		}
 	}
-	else if(sub_path == "/wallet/address_info") {
-		const auto iter_index = query.find("index");
-		const auto iter_limit = query.find("limit");
-		const auto iter_offset = query.find("offset");
-		if(iter_index != query.end()) {
-			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
-			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-			wallet->get_all_address_infos(index,
-				[this, request_id, limit, offset](const std::vector<address_info_t>& list) {
-					respond(request_id, render_value(get_page(list, limit, offset)));
-				},
-				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
-		} else {
-			respond_status(request_id, 404, "wallet/address_info?index|limit|offset");
-		}
-	}
 	else if(sub_path == "/wallet/tokens") {
 		wallet->get_token_list(
 			[this, request_id](const std::set<addr_t>& tokens) {
@@ -2565,7 +2544,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		std::vector<std::string> options = {
 			"config/get", "config/set", "farmer", "farmers",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
-			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/address_info", "wallet/coins",
+			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins",
 			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid",

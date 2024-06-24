@@ -83,14 +83,6 @@ const AccountContracts = {
 		</div>
 	`
 }
-const AccountAddresses = {
-	props: {
-		index: Number
-	},
-	template: `
-		<account-addresses :index="index" :limit="1000"></account-addresses>
-	`
-}
 const AccountSend = {
 	props: {
 		index: Number

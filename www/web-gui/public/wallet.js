@@ -42,7 +42,6 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index" exact>{{ $t('account_menu.balance') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</v-btn>
-			<v-btn :to="'/wallet/account/' + index + '/addresses'">{{ $t('account_menu.addresses') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
@@ -737,81 +736,6 @@ Vue.component('account-contracts', {
 			<account-contract-summary v-if="filteredData" v-for="item in filteredData" :key="item.address" :index="index" :address="item.address" :contract="item">
 			</account-contract-summary>
 		</v-card>
-		`
-})
-
-Vue.component('account-addresses', {
-	props: {
-		index: Number,
-		limit: Number
-	},
-	data() {
-		return {
-			data: [],
-			loading: true
-		}
-	},
-	computed: {
-		headers() {
-			return [
-				{ text: this.$t('account_addresses.index'), value: 'index' },
-				{ text: this.$t('account_addresses.address'), value: 'address' },
-				{ text: "Active", value: 'num_active' },
-				{ text: this.$t('account_addresses.n_recv'), value: 'num_receive' },
-				{ text: this.$t('account_addresses.n_spend'), value: 'num_spend' },
-				{ text: this.$t('account_addresses.last_recv'), value: 'last_receive_height' },
-				{ text: this.$t('account_addresses.last_spend'), value: 'last_spend_height' },
-			]
-		}
-	},
-	methods: {
-		update() {
-			fetch('/wapi/wallet/address_info?limit=' + this.limit + '&index=' + this.index)
-				.then(response => response.json())
-				.then(data => {
-					this.loading = false;
-					this.data = data;
-				});
-		}
-	},
-	created() {
-		this.update()
-	},
-	template: `
-		<v-data-table
-			:headers="headers"
-			:items="data"
-			:loading="loading"
-			hide-default-footer
-			disable-sort
-			disable-pagination
-			class="elevation-2"
-		>
-			<template v-slot:progress>
-				<v-progress-linear indeterminate absolute top></v-progress-linear>
-				<v-skeleton-loader type="table-row-divider@6" />
-			</template>
-			
-			<template v-slot:item.index="{ item, index }">
-				{{ index }}
-			</template>
-			
-			<template v-slot:item.address="{ item }">
-				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
-			</template>
-			
-			<template v-slot:item.last_receive_height="{ item }">
-				<router-link :to="'/explore/block/height/' + item.last_receive_height">
-					{{item.num_receive || item.last_receive_height ? item.last_receive_height : null}}
-				</router-link>
-			</template>
-			
-			<template v-slot:item.last_spend_height="{ item }">
-				<router-link :to="'/explore/block/height/' + item.last_spend_height">
-					{{item.num_spend || item.last_spend_height ? item.last_spend_height : null}}
-				</router-link>
-			</template>
-		</v-data-table>
 		`
 })
 
