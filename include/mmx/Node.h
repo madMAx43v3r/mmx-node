@@ -23,7 +23,6 @@
 #include <mmx/table.h>
 #include <mmx/multi_table.h>
 #include <mmx/balance_cache_t.h>
-#include <mmx/farmer_info_t.hxx>
 #include <mmx/farmed_block_info_t.hxx>
 #include <mmx/utils.h>
 
@@ -201,7 +200,7 @@ protected:
 
 	std::map<pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const override;
 
-	uint32_t get_farmed_block_count_for(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
+	farmed_block_summary_t get_farmed_block_summary(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
 
 	void on_stuck_timeout();
 
@@ -512,8 +511,6 @@ private:
 
 	hash_multi_table<pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
 	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;		// [farmer key => info]
-
-	hash_table<addr_t, farmer_info_t> farmer_info_map;							// TODO: [reward address => info]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;

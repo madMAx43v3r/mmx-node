@@ -463,6 +463,10 @@ Vue.component('account-history', {
 			<template v-slot:item.height="{ item }">
 				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
 			</template>	
+			
+			<template v-slot:item.type="{ item }">
+				<span :class="get_tx_type_color(item.type)">{{item.type}}</span>
+			</template>
 
 			<template v-slot:item.value="{ item }">
 				<b>{{item.value}}</b>

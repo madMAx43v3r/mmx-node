@@ -24,6 +24,13 @@ function validate_amount(value) {
 	return "invalid amount";
 }
 
+function get_tx_type_color(type) {
+	if(type == "RECEIVE" || type == "REWARD" || type == "VDF_REWARD") return "green--text";
+	if(type == "SPEND") return "red--text";
+	if(type == "TXFEE") return "grey--text";
+	return "";
+}
+
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
 const Wallet = {
@@ -379,6 +386,7 @@ const Farmer = {
 	template: `
 		<div>
 			<farmer-info></farmer-info>
+			<farmer-rewards></farmer-rewards>
 			<farmer-menu class="mt-4"></farmer-menu>
 			<router-view class="mt-2"></router-view>
 		</div>

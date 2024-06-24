@@ -1635,20 +1635,26 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 	std::vector<farmed_block_info_t> entries;
 	for(const auto& key : farmer_keys) {
 		std::vector<farmed_block_info_t> tmp;
-		farmer_block_map.find(key, tmp);
-		entries.insert(entries.end(), tmp.begin(), tmp.end());
+		farmer_block_map.find_last(key, tmp, size_t(limit));
+		for(const auto& entry : tmp) {
+			if(entry.height >= since) {
+				entries.push_back(entry);
+			}
+		}
 	}
+	std::sort(entries.begin(), entries.end(), [](const farmed_block_info_t& L, const farmed_block_info_t& R) -> bool {
+		return L.height > R.height;
+	});
 	if(limit >= 0) {
-		std::reverse(entries.begin(), entries.end());
 		if(entries.size() > size_t(limit)) {
 			entries.resize(limit);
 		}
+	} else {
+		std::reverse(entries.begin(), entries.end());
 	}
 	std::vector<std::shared_ptr<const BlockHeader>> out;
 	for(const auto& entry : entries) {
-		if(entry.height >= since) {
-			out.push_back(get_block_at_ex(entry.height, full_blocks));
-		}
+		out.push_back(get_block_at_ex(entry.height, full_blocks));
 	}
 	return out;
 }
@@ -1664,19 +1670,22 @@ std::map<pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& since)
 	return out;
 }
 
-uint32_t Node::get_farmed_block_count_for(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since) const
+farmed_block_summary_t Node::get_farmed_block_summary(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since) const
 {
-	size_t total = 0;
+	farmed_block_summary_t out;
 	for(const auto& key : farmer_keys) {
 		std::vector<farmed_block_info_t> tmp;
 		farmer_block_map.find(key, tmp);
 		for(const auto& entry : tmp) {
 			if(entry.height >= since) {
-				total++;
+				out.num_blocks++;
+				out.last_height = std::max(entry.height, out.last_height);
+				out.total_rewards += entry.reward;
+				out.reward_map[entry.reward_addr] += entry.reward;
 			}
 		}
 	}
-	return total;
+	return out;
 }
 
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,

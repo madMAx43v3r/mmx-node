@@ -1,0 +1,12 @@
+package mmx;
+
+struct farmed_block_summary_t {
+	
+	uint num_blocks;
+	uint last_height;
+	
+	ulong total_rewards;
+	
+	map<mmx.addr_t, ulong> reward_map;
+	
+}

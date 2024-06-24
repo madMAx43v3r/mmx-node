@@ -86,6 +86,72 @@ Vue.component('farmer-info', {
 		`
 })
 
+Vue.component('farmer-rewards', {
+	data() {
+		return {
+			data: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farmer/blocks/summary')
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 30000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-card class="my-2">
+		<v-card-text>
+			<template v-if="data">
+				<v-card class="my-2">
+					<v-simple-table>
+						<tbody>
+						<tr>
+							<td class="key-cell">No. Blocks</td>
+							<td>{{data.num_blocks}}</td>
+						</tr>
+						<tr>
+							<td class="key-cell">Last Height</td>
+							<td>{{data.last_height > 0 ? data.last_height : "N/A"}}</td>
+						</tr>
+						<tr>
+							<td class="key-cell">Total Rewards</td>
+							<td><b>{{data.total_rewards_value}}</b>&nbsp; MMX</td>
+						</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+				<v-card class="my-2">
+					<v-simple-table>
+						<thead>
+						<tr>
+							<th>Reward</th>
+							<th></th>
+							<th>{{ $t('transaction_view.address') }}</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr v-for="item in data.rewards" :key="item.address">
+							<td><b>{{item.value}}</b></td>
+							<td>MMX</td>
+							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+						</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+			</template>
+		</v-card-text>
+		</v-card>
+		`
+})
+
 Vue.component('farmer-plots', {
 	data() {
 		return {

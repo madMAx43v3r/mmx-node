@@ -626,6 +626,7 @@ public:
 			tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
 			tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
 			tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
+			tmp["next_base_reward"] = to_amount_object(value->next_base_reward, context->params->decimals);
 			tmp["vdf_reward"] = to_amount_object(value->vdf_reward_addr ? context->params->vdf_reward : 0, context->params->decimals);
 			tmp["project_reward"] = to_amount_object(calc_project_reward(context->params, value->tx_fees), context->params->decimals);
 			tmp["project_reward_addr"] = context->params->project_addr.to_string();
@@ -766,8 +767,8 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 						out["score"] = nullptr;
 					}
 					out["reward"] = to_value(block->reward_amount, params->decimals);
-					out["tx_fees"] = block->tx_fees / pow(10, params->decimals);
-					out["base_reward"] = block->next_base_reward / pow(10, params->decimals);
+					out["tx_fees"] = to_value(block->tx_fees, params->decimals);
+					out["base_reward"] = to_value(block->next_base_reward, params->decimals);
 				}
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));
@@ -1553,41 +1554,31 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto iter_limit = query.find("limit");
 			const auto iter_since = query.find("since");
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
-			node->get_farmed_blocks({farmer_key}, false, since, -1,
-				[this, request_id, farmer_key, limit](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
-					uint64_t total_reward = 0;
-					std::vector<std::shared_ptr<const BlockHeader>> recent;
-					std::map<addr_t, uint64_t> reward_map;
-					for(auto iter = blocks.rbegin(); iter != blocks.rend(); ++iter) {
-						const auto& block = *iter;
-						if(block->reward_addr) {
-							// TODO: use Node::block_reward_map
-							total_reward += block->reward_amount;
-							reward_map[*block->reward_addr] += block->reward_amount;
-						}
-						if(recent.size() < limit) {
-							recent.push_back(block);
-						}
-					}
-					vnx::Object out;
-					out["farmer_key"] = farmer_key.to_string();
-					out["blocks"] = render_value(recent, get_context());
-					out["block_count"] = blocks.size();
-					out["total_reward"] = total_reward;
-					out["total_reward_value"] = to_value(total_reward, params->decimals);
-					{
-						std::vector<vnx::Object> rewards;
-						for(const auto& entry : reward_map) {
-							vnx::Object tmp;
-							tmp["address"] = entry.first.to_string();
-							tmp["amount"] = entry.second;
-							tmp["value"] = to_value(entry.second, params->decimals);
-							rewards.push_back(tmp);
-						}
-						out["rewards"] = rewards;
-					}
-					respond(request_id, out);
+			const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
+			node->get_farmed_block_summary({farmer_key}, since,
+				[this, request_id, farmer_key, since, limit](const farmed_block_summary_t& summary) {
+					node->get_farmed_blocks({farmer_key}, false, since, limit,
+						[this, request_id, farmer_key, summary](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
+							vnx::Object out;
+							out["farmer_key"] = farmer_key.to_string();
+							out["blocks"] = render_value(blocks, get_context());
+							out["block_count"] = summary.num_blocks;
+							out["total_reward"] = summary.total_rewards;
+							out["total_reward_value"] = to_value(summary.total_rewards, params->decimals);
+							{
+								std::vector<vnx::Object> rewards;
+								for(const auto& entry : summary.reward_map) {
+									vnx::Object tmp;
+									tmp["address"] = entry.first.to_string();
+									tmp["amount"] = entry.second;
+									tmp["value"] = to_value(entry.second, params->decimals);
+									rewards.push_back(tmp);
+								}
+								out["rewards"] = rewards;
+							}
+							respond(request_id, out);
+						},
+						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
@@ -2314,14 +2305,43 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		farmer->get_farmer_keys(
-				[this, request_id, limit, since](const std::vector<pubkey_t>& farmer_keys) {
-					node->get_farmed_blocks(farmer_keys, false, since, limit,
-						[this, request_id, limit](const std::vector<std::shared_ptr<const BlockHeader>> blocks) {
-							respond(request_id, render_value(blocks, get_context()));
-						},
-						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
-				},
-				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			[this, request_id, limit, since](const std::vector<pubkey_t>& farmer_keys) {
+				node->get_farmed_blocks(farmer_keys, false, since, limit,
+					[this, request_id, limit](const std::vector<std::shared_ptr<const BlockHeader>> blocks) {
+						respond(request_id, render_value(blocks, get_context()));
+					},
+					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			},
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	}
+	else if(sub_path == "/farmer/blocks/summary") {
+		const auto iter_since = query.find("since");
+		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
+		farmer->get_farmer_keys(
+			[this, request_id, since](const std::vector<pubkey_t>& farmer_keys) {
+				node->get_farmed_block_summary(farmer_keys, since,
+					[this, request_id](const farmed_block_summary_t& summary) {
+						vnx::Object out;
+						out["num_blocks"] = summary.num_blocks;
+						out["last_height"] = summary.last_height;
+						out["total_rewards"] = summary.total_rewards;
+						out["total_rewards_value"] = to_value(summary.total_rewards, params->decimals);
+						{
+							std::vector<vnx::Object> rewards;
+							for(const auto& entry : summary.reward_map) {
+								vnx::Object tmp;
+								tmp["address"] = entry.first.to_string();
+								tmp["amount"] = entry.second;
+								tmp["value"] = to_value(entry.second, params->decimals);
+								rewards.push_back(tmp);
+							}
+							out["rewards"] = rewards;
+						}
+						respond(request_id, out);
+					},
+					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			},
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/farmer/proofs") {
 		const auto iter_limit = query.find("limit");
@@ -2550,7 +2570,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
-			"farmer/info", "farmer/blocks", "farmer/proofs",
+			"farmer/info", "farmer/blocks", "farmer/blocks/summary", "farmer/proofs",
 			"node/offers", "node/offer", "node/trade_history",
 			"contract/storage", "contract/storage/field", "contract/storage/entry"
 		};

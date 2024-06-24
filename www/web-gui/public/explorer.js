@@ -406,6 +406,18 @@ Vue.component('block-view', {
 										<td>{{data.space_diff}}</td>
 									</tr>
 									<tr>
+										<td class="key-cell">Reward Vote</td>
+										<td>{{data.reward_vote}}</td>
+									</tr>
+									<tr>
+										<td class="key-cell">Base Reward</td>
+										<td><b>{{data.next_base_reward.value}}</b>&nbsp; MMX</td>
+									</tr>
+									<tr>
+										<td class="key-cell">Avg. TX Fee</td>
+										<td><b>{{data.average_txfee.value}}</b>&nbsp; MMX</td>
+									</tr>
+									<tr>
 										<td class="key-cell">{{ $t('block_view.vdf_iterations') }}</td>
 										<td>{{data.vdf_iters}}</td>
 									</tr>
@@ -424,11 +436,11 @@ Vue.component('block-view', {
 									<template v-if="data.proof">
 										<tr>
 											<td class="key-cell">Block Reward</td>
-											<td>{{data.reward_amount.value}} MMX</td>
+											<td><b>{{data.reward_amount.value}}</b>&nbsp; MMX</td>
 										</tr>
 										<tr>
 											<td class="key-cell">TX Fees</td>
-											<td>{{data.tx_fees.value}} MMX</td>
+											<td><b>{{data.tx_fees.value}}</b>&nbsp; MMX</td>
 										</tr>
 										<tr>
 											<td class="key-cell">{{ $t('block_view.tx_count') }}</td>
@@ -591,11 +603,11 @@ Vue.component('transaction-view', {
 						</tr>
 						<tr>
 							<td class="key-cell">{{ $t('transaction_view.cost') }}</td>
-							<td><b>{{data.cost.value}}</b> MMX</td>
+							<td><b>{{data.cost.value}}</b>&nbsp; MMX</td>
 						</tr>
 						<tr>
 							<td class="key-cell">{{ $t('transaction_view.fee') }}</td>
-							<td><b>{{data.fee.value}}</b> MMX</td>
+							<td><b>{{data.fee.value}}</b>&nbsp; MMX</td>
 						</tr>
 						</tbody>
 					</v-simple-table>
@@ -868,6 +880,10 @@ Vue.component('address-history-table', {
 		>
 			<template v-slot:item.height="{ item }">
 				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+			</template>
+			
+			<template v-slot:item.type="{ item }">
+				<span :class="get_tx_type_color(item.type)">{{item.type}}</span>
 			</template>
 
 			<template v-slot:item.amount="{ item }">

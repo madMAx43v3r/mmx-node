@@ -276,7 +276,7 @@ module Node implements vnx.addons.HttpComponent {
 	map<pubkey_t, uint> get_farmed_block_count(uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint get_farmed_block_count_for(vector<pubkey_t> farmer_keys, uint since) const;
+	farmed_block_summary_t get_farmed_block_summary(vector<pubkey_t> farmer_keys, uint since) const;
 	
 	void start_sync(bool force);
 	
