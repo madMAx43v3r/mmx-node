@@ -916,6 +916,9 @@ Vue.component('swap-liquid', {
 				});
 		},
 		update_wallet() {
+			if(!this.data) {
+				return;
+			}
 			fetch('/wapi/wallet/balance?index=' + this.wallet + '&currency=' + this.data.tokens[0])
 				.then(response => response.json())
 				.then(data => this.balance_0 = data ? data.spendable : 0);
@@ -927,6 +930,7 @@ Vue.component('swap-liquid', {
 			fetch('/wapi/wallet/address?index=' + this.wallet)
 				.then(response => response.json())
 				.then(data => this.user_address = data[0]);
+			this.update_wallet();
 		},
 		update_price() {
 			if(this.amount_0 && this.amount_1) {
