@@ -1336,6 +1336,25 @@ std::vector<swap_info_t> Node::get_swaps(const uint32_t& since, const vnx::optio
 			result.push_back(info);
 		}
 	}
+	if(token) {
+		std::sort(result.begin(), result.end(), [](const swap_info_t& L, const swap_info_t& R) -> bool {
+			return L.balance[0] > R.balance[0];
+		});
+	} else if(currency) {
+		std::sort(result.begin(), result.end(), [](const swap_info_t& L, const swap_info_t& R) -> bool {
+			return L.balance[1] > R.balance[1];
+		});
+	} else {
+		std::sort(result.begin(), result.end(), [](const swap_info_t& L, const swap_info_t& R) -> bool {
+			if(!L.user_total[0] || !L.user_total[1]) {
+				return false;
+			}
+			if(!R.user_total[0] || !R.user_total[1]) {
+				return true;
+			}
+			return (L.avg_apy_7d[0] + L.avg_apy_7d[1]) > (R.avg_apy_7d[0] + R.avg_apy_7d[1]);
+		});
+	}
 	return result;
 }
 
