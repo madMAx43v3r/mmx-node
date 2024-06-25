@@ -1,3 +1,4 @@
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/nsis/;${CMAKE_MODULE_PATH}")
 
 function(get_all_targets var)
     set(targets)
