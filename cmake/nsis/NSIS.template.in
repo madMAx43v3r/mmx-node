@@ -19,6 +19,9 @@
   Var ADD_TO_PATH_CURRENT_USER
   Var INSTALL_DESKTOP
   Var IS_DEFAULT_INSTALLDIR
+
+  Var mmxDataDir
+  Var mmxDataDir_default
 ;--------------------------------
 ;Include Modern UI
 
@@ -543,6 +546,11 @@ FunctionEnd
   Page custom InstallOptionsPage
   !insertmacro MUI_PAGE_DIRECTORY
 
+  !define MUI_DIRECTORYPAGE_VARIABLE $mmxDataDir
+  !define MUI_DIRECTORYPAGE_TEXT_TOP "Setup will install $(^NameDA) blockchain data (MMX_DATA) in the following folder. To install in a different folder, click Browse and select another folder. $_CLICK"
+  !define MUI_DIRECTORYPAGE_TEXT_DESTINATION "Data folder"
+  !insertmacro MUI_PAGE_DIRECTORY
+
   ;Start Menu Folder Page Configuration
   !define MUI_STARTMENUPAGE_REGISTRY_ROOT "SHCTX"
   !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\@CPACK_PACKAGE_VENDOR@\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
@@ -652,6 +660,10 @@ FunctionEnd
 ;Installer Sections
 
 Section "-Core installation"
+
+  WriteRegExpandStr ${NT_current_env} MMX_DATA "$mmxDataDir\"
+  SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
+
   ;Use the entire tree produced by the INSTALL target.  Keep the
   ;list of directories here in sync with the RMDir commands below.
   SetOutPath "$INSTDIR"
@@ -857,6 +869,7 @@ Section "Uninstall"
 
   ; Remove the registry entries.
   DeleteRegKey SHCTX "Software\@CPACK_PACKAGE_VENDOR@\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
+  DeleteRegValue ${NT_current_env} MMX_DATA
 
   ; Removes all optional components
   !insertmacro SectionList "RemoveSection_CPack"
@@ -918,6 +931,11 @@ SectionEnd
 ; "Program Files" for AllUsers, "My Documents" for JustMe...
 
 Function .onInit
+  StrCpy $mmxDataDir_default "$PROFILE\.mmx\"
+  ReadRegStr $mmxDataDir ${NT_current_env} "MMX_DATA"
+  StrCmp $mmxDataDir "" 0 +2
+  StrCpy $mmxDataDir $mmxDataDir_default
+
   StrCmp "@CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL@" "ON" 0 inst
 
   ReadRegStr $0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@" "UninstallString"

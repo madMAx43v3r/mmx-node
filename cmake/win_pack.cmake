@@ -1,3 +1,4 @@
+set(NETWORK "testnet12")
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/nsis/;${CMAKE_MODULE_PATH}")
 
 function(get_all_targets var)
@@ -16,7 +17,6 @@ macro(get_all_targets_recursive targets dir)
     list(APPEND ${targets} ${current_targets})
 endmacro()
 
-set(NETWORK "testnet12")
 get_all_targets(all_targets)
 set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_ENVIRONMENT "MMX_HOME=$(USERPROFILE)\\.mmx\\\nMMX_DATA=$(USERPROFILE)\\.mmx\\\nNETWORK=${NETWORK}\nMMX_NETWORK=$(USERPROFILE)\\.mmx\\${NETWORK}\\\n")
