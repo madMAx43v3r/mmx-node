@@ -89,7 +89,9 @@ Vue.component('farmer-info', {
 Vue.component('farmer-rewards', {
 	data() {
 		return {
-			data: null
+			data: null,
+			netspace: null,
+			farm_size: null
 		}
 	},
 	methods: {
@@ -97,6 +99,29 @@ Vue.component('farmer-rewards', {
 			fetch('/wapi/farmer/blocks/summary')
 				.then(response => response.json())
 				.then(data => this.data = data);
+			fetch('/wapi/node/info')
+				.then(response => response.json())
+				.then(data => this.netspace = data.total_space);
+			fetch('/wapi/farmer/info')
+				.then(response => response.json())
+				.then(data => this.farm_size = data.total_bytes_effective + data.total_virtual_bytes);
+		}
+	},
+	computed: {
+		est_time_to_win() {
+			if(this.netspace && this.farm_size) {
+				const est_min = (this.netspace / this.farm_size) / 6;
+				if(est_min < 120) {
+					return Math.floor(est_min) + " minutes";
+				}
+				const est_hours = est_min / 60;
+				if(est_hours < 48) {
+					return Math.floor(est_hours) + " hours";
+				}
+				const est_days = est_hours / 24;
+				return Math.floor(est_days) + " days";
+			}
+			return "N/A";
 		}
 	},
 	created() {
@@ -124,6 +149,10 @@ Vue.component('farmer-rewards', {
 						<tr>
 							<td class="key-cell">Total Rewards</td>
 							<td><b>{{data.total_rewards_value}}</b>&nbsp; MMX</td>
+						</tr>
+						<tr>
+							<td class="key-cell">Time to win</td>
+							<td>{{est_time_to_win}} (on average)</td>
 						</tr>
 						</tbody>
 					</v-simple-table>

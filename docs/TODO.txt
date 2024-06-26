@@ -8,9 +8,8 @@ Mainnet
 - Website
 - Linux packages
 - Double check msg hashes again
-- Time to win display (GUI & CLI)
-- TX fee amount display (GUI & CLI)
 - GUI config for DB / network path
 - New project wallet
 - Check remaining in-source TODOs
 - Test mainnet-rc changes
+- Max farm size estimate mmx_postool
