@@ -29,6 +29,7 @@
 #include <mmx/Harvester_rem_plot_dir_return.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/KeyFile.hxx>
+#include <mmx/LookupInfo.hxx>
 #include <mmx/NetworkInfo.hxx>
 #include <mmx/NodeBase.hxx>
 #include <mmx/Node_add_block.hxx>
@@ -693,6 +694,18 @@ void type<::mmx::KeyFile>::create_dynamic_code(std::vector<uint16_t>& code) {
 }
 
 void type<::mmx::KeyFile>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::KeyFile& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::LookupInfo>::get_type_code() {
+	return mmx::vnx_native_type_code_LookupInfo;
+}
+
+void type<::mmx::LookupInfo>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::LookupInfo());
+}
+
+void type<::mmx::LookupInfo>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::LookupInfo& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -4856,6 +4869,7 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Harvester_rem_plot_dir_return::static_create_type_code());
 	vnx::register_type_code(::mmx::IntervalRequest::static_create_type_code());
 	vnx::register_type_code(::mmx::KeyFile::static_create_type_code());
+	vnx::register_type_code(::mmx::LookupInfo::static_create_type_code());
 	vnx::register_type_code(::mmx::NetworkInfo::static_create_type_code());
 	vnx::register_type_code(::mmx::NodeBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_add_block::static_create_type_code());
@@ -5231,6 +5245,7 @@ const vnx::TypeCode* const vnx_native_type_code_Harvester_rem_plot_dir = vnx::ge
 const vnx::TypeCode* const vnx_native_type_code_Harvester_rem_plot_dir_return = vnx::get_type_code(vnx::Hash64(0xb2a8cfb3633bf358ull));
 const vnx::TypeCode* const vnx_native_type_code_IntervalRequest = vnx::get_type_code(vnx::Hash64(0xa4e39be061f13d71ull));
 const vnx::TypeCode* const vnx_native_type_code_KeyFile = vnx::get_type_code(vnx::Hash64(0xdf868931a939cba1ull));
+const vnx::TypeCode* const vnx_native_type_code_LookupInfo = vnx::get_type_code(vnx::Hash64(0xb7b2ff343487dd63ull));
 const vnx::TypeCode* const vnx_native_type_code_NetworkInfo = vnx::get_type_code(vnx::Hash64(0xd984018819746101ull));
 const vnx::TypeCode* const vnx_native_type_code_NodeBase = vnx::get_type_code(vnx::Hash64(0x289d7651582d76a3ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_add_block = vnx::get_type_code(vnx::Hash64(0x63abca4d23f93894ull));

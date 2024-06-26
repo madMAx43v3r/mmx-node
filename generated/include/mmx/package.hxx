@@ -52,6 +52,7 @@ class Harvester_rem_plot_dir;
 class Harvester_rem_plot_dir_return;
 class IntervalRequest;
 class KeyFile;
+class LookupInfo;
 class NetworkInfo;
 class NodeBase;
 class Node_add_block;
@@ -428,6 +429,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_rem_
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_rem_plot_dir_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_IntervalRequest; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_KeyFile; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_LookupInfo; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NetworkInfo; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_NodeBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_add_block; ///< \private
@@ -801,6 +803,7 @@ void read(TypeInput& in, ::mmx::Harvester_rem_plot_dir& value, const TypeCode* t
 void read(TypeInput& in, ::mmx::Harvester_rem_plot_dir_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::IntervalRequest& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::KeyFile& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::LookupInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::NetworkInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_add_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1177,6 +1180,7 @@ void write(TypeOutput& out, const ::mmx::Harvester_rem_plot_dir& value, const Ty
 void write(TypeOutput& out, const ::mmx::Harvester_rem_plot_dir_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::IntervalRequest& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::KeyFile& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::LookupInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_add_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1553,6 +1557,7 @@ void read(std::istream& in, ::mmx::Harvester_rem_plot_dir& value); ///< \private
 void read(std::istream& in, ::mmx::Harvester_rem_plot_dir_return& value); ///< \private
 void read(std::istream& in, ::mmx::IntervalRequest& value); ///< \private
 void read(std::istream& in, ::mmx::KeyFile& value); ///< \private
+void read(std::istream& in, ::mmx::LookupInfo& value); ///< \private
 void read(std::istream& in, ::mmx::NetworkInfo& value); ///< \private
 void read(std::istream& in, ::mmx::NodeBase& value); ///< \private
 void read(std::istream& in, ::mmx::Node_add_block& value); ///< \private
@@ -1929,6 +1934,7 @@ void write(std::ostream& out, const ::mmx::Harvester_rem_plot_dir& value); ///< 
 void write(std::ostream& out, const ::mmx::Harvester_rem_plot_dir_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::IntervalRequest& value); ///< \private
 void write(std::ostream& out, const ::mmx::KeyFile& value); ///< \private
+void write(std::ostream& out, const ::mmx::LookupInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::NetworkInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::NodeBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_add_block& value); ///< \private
@@ -2305,6 +2311,7 @@ void accept(Visitor& visitor, const ::mmx::Harvester_rem_plot_dir& value); ///< 
 void accept(Visitor& visitor, const ::mmx::Harvester_rem_plot_dir_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::IntervalRequest& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::KeyFile& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::LookupInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::NetworkInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::NodeBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_add_block& value); ///< \private
@@ -3289,6 +3296,29 @@ struct type<::mmx::KeyFile> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::KeyFile& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::LookupInfo> {
+	void read(TypeInput& in, ::mmx::LookupInfo& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::LookupInfo& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::LookupInfo& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::LookupInfo& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::LookupInfo& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::LookupInfo& value, bool special = false);
 };
 
 /// \private
