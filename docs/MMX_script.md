@@ -437,7 +437,7 @@ Memory is unified in MMX, but there are regions for different usage:
 - `0x48000000` to `0xFFFFFFFF`: global variables (stored in DB)
 - `0x100000000` to `0xFFFFFFFFFFFFFFFF`: heap / dynamic storage (stored in DB, if not garbage collected)
 
-## Special notes
+## Notes
 
 ### References
 
@@ -479,5 +479,15 @@ However it's possible to call a method of another contract that returns its bala
 In this case execution is serialized.
 
 Note: `this.balance` is updated automatically when receiving funds via deposit, or when spending via `send()`.
+
+### Instruction costs
+
+TODO
+
+
+
+
+
+
 
 
