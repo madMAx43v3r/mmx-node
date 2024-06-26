@@ -869,7 +869,7 @@ Section "Uninstall"
 
   ; Remove the registry entries.
   DeleteRegKey SHCTX "Software\@CPACK_PACKAGE_VENDOR@\@CPACK_PACKAGE_INSTALL_REGISTRY_KEY@"
-  DeleteRegValue ${NT_current_env} MMX_DATA
+  ; DeleteRegValue ${NT_current_env} MMX_DATA
 
   ; Removes all optional components
   !insertmacro SectionList "RemoveSection_CPack"
