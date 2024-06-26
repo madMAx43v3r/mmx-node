@@ -6,6 +6,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr output_info = "harvester.info";
 	vnx.TopicPtr output_proofs = "harvester.proof";
+	vnx.TopicPtr output_lookups = "harvester.lookups";
 	
 	set<string> plot_dirs;
 	set<string> dir_blacklist;
