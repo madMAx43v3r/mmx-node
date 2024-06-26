@@ -116,10 +116,10 @@ Vue.component('farmer-rewards', {
 				}
 				const est_hours = est_min / 60;
 				if(est_hours < 48) {
-					return Math.floor(est_hours) + " hours";
+					return Math.floor(est_hours) + " hours and " + Math.floor(est_min % 60) + " minutes";
 				}
 				const est_days = est_hours / 24;
-				return Math.floor(est_days) + " days";
+				return Math.floor(est_days) + " days and " + Math.floor(est_hours % 24) + " hours";
 			}
 			return "N/A";
 		}
