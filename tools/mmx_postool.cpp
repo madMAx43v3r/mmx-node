@@ -172,7 +172,9 @@ int main(int argc, char** argv)
 			std::cout << "Pass: " << out->num_pass << " / " << expected << ", " << float(100 * out->num_pass) / expected << " %" << std::endl;
 			std::cout << "Fail: " << out->num_fail << " / " << expected << ", " << float(100 * out->num_fail) / expected << " %" << std::endl;
 
-			if(!prover->has_meta()) {
+			if(prover->has_meta()) {
+				std::cout << "Full Proof Time: " << elapsed / out->num_pass << " sec (should be less than 20)" << std::endl;
+			} else {
 				const auto max_time = 8.0;
 				const auto plot_size = vnx::File(file_name).file_size();
 				std::cout << "Max Farm Size: " << double(plot_size) / pow(1024, 5) * max_time * out->num_pass / elapsed << " PiB (physical)" << std::endl;
