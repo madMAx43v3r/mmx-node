@@ -107,6 +107,8 @@ int main(int argc, char** argv)
 			}
 			out->valid = true;
 
+			const auto time_begin = vnx::get_wall_time_millis();
+
 			for(int iter = 0; iter < num_iter && vnx::do_run(); ++iter)
 			{
 				threads.add_task([iter, prover, header, out, plot_filter, verbose, debug, &mutex]() {
@@ -163,10 +165,18 @@ int main(int argc, char** argv)
 			}
 			threads.sync();
 
+			const auto time_end = vnx::get_wall_time_millis();
+			const auto elapsed = (time_end - time_begin) / 1e3;
+
 			const auto expected = uint64_t(num_iter) << plot_filter;
 			std::cout << "Pass: " << out->num_pass << " / " << expected << ", " << float(100 * out->num_pass) / expected << " %" << std::endl;
 			std::cout << "Fail: " << out->num_fail << " / " << expected << ", " << float(100 * out->num_fail) / expected << " %" << std::endl;
 
+			if(!prover->has_meta()) {
+				const auto max_time = 8.0;
+				const auto plot_size = vnx::File(file_name).file_size();
+				std::cout << "Max Farm Size: " << double(plot_size) / pow(1024, 5) * max_time * out->num_pass / elapsed << " PiB (physical)" << std::endl;
+			}
 			if(!vnx::do_run()) {
 				break;
 			}
