@@ -1222,7 +1222,7 @@ Vue.component('create-wallet', {
 	data() {
 		return {
 			name: null,
-			num_addresses: 100,
+			num_addresses: 1,
 			with_seed: false,
 			with_passphrase: false,
 			seed: null,
