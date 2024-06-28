@@ -82,7 +82,7 @@ function accept(dst_addr) public payable
 		fail("empty offer", 5);
 	}
 	const ask_amount = ((bid_amount << FRACT_BITS) + inv_price - 1) / inv_price;
-	const ret_amount = this.deposit.amount - ask_amount;
+	const ret_amount = this.deposit.amount - ask_amount;	// will fail on underflow
 	send(dst_addr, bid_amount, bid_currency, "mmx_offer_accept");
 	send(dst_addr, ret_amount, ask_currency, "mmx_offer_accept_return");
 }
