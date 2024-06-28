@@ -684,6 +684,15 @@ vnx::Variant render_value(const T& value, std::shared_ptr<const RenderContext> c
 }
 
 template<typename T>
+vnx::Variant render_list(const std::vector<T>& list, std::shared_ptr<const RenderContext> context = nullptr) {
+	std::vector<vnx::Object> tmp;
+	for(const auto& entry : list) {
+		tmp.push_back(render(entry, context));
+	}
+	return vnx::Variant(tmp);
+}
+
+template<typename T>
 vnx::Object render_object(const T& value, std::shared_ptr<const RenderContext> context = nullptr) {
 	return render_value(value, context).to_object();
 }
@@ -1654,6 +1663,26 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 404, "wallet/seed?index");
 		}
 	}
+	else if(sub_path == "/wallet/accounts") {
+		wallet->get_all_accounts(
+			[this, request_id](const std::vector<account_info_t>& list) {
+				respond(request_id, render_list(list));
+			},
+			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+	}
+	else if(sub_path == "/wallet/account") {
+		const auto iter_index = query.find("index");
+		if(iter_index != query.end()) {
+			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			wallet->get_account(index,
+				[this, request_id](const account_info_t& info) {
+					respond(request_id, render(info));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 404, "wallet/account?index");
+		}
+	}
 	else if(sub_path == "/wallet/balance") {
 		const auto iter_index = query.find("index");
 		const auto iter_currency = query.find("currency");
@@ -2551,7 +2580,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins",
 			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
-			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid",
+			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid", "wallet/accounts", "wallet/account",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
 			"farmer/info", "farmer/blocks", "farmer/blocks/summary", "farmer/proofs",
 			"node/offers", "node/offer", "node/trade_history",

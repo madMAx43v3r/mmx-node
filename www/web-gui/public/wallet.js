@@ -9,7 +9,7 @@ Vue.component('wallet-summary', {
 	methods: {
 		update() {
 			this.loading = true;
-			fetch('/api/wallet/get_all_accounts')
+			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
@@ -24,8 +24,8 @@ Vue.component('wallet-summary', {
 		<div>
 			<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 
-			<div v-for="item in data" :key="item[0]">
-				<account-summary :index="item[0]" :account="item[1]"></account-summary>
+			<div v-for="item in data" :key="item.address">
+				<account-summary :index="item.account" :account="item"></account-summary>
 			</div>
 
 			<v-btn to="/wallet/create" outlined color="primary" class="my-2">{{ $t('wallet_summary.new_wallet') }}</v-btn>
@@ -64,25 +64,27 @@ Vue.component('account-header', {
 			info: {
 				name: null,
 				index: null,
+				address: null,
 				with_passphrase: null
 			},
-			address: null,
 			is_locked: null,
 			passphrase_dialog: false
+		}
+	},
+	computed: {
+		address() {
+			return this.info.address ? this.info.address : "N/A";
 		}
 	},
 	methods: {
 		update() {
 			if(this.account) {
-				this.info = this.account
+				this.info = this.account;
 			} else {
-				fetch('/api/wallet/get_account?index=' + this.index)
+				fetch('/wapi/wallet/account?index=' + this.index)
 					.then(response => response.json())
 					.then(data => this.info = data);
 			}
-			fetch('/wapi/wallet/address?index=' + this.index)
-				.then(response => response.json())
-				.then(data => this.address = data.length ? data[0] : "N/A");
 			this.update_lock();
 		},
 		update_lock() {
@@ -131,7 +133,7 @@ Vue.component('account-header', {
 			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
 			<v-chip label class="pr-0">
 				{{ address }}
-				<v-btn v-if="navigator.clipboard && address" @click="copyToClipboard(address)" text icon>
+				<v-btn v-if="navigator.clipboard && info.address" @click="copyToClipboard(address)" text icon>
 					<v-icon small class="pr-0">mdi-content-copy</v-icon>
 				</btn>
 			</v-chip>
@@ -1041,7 +1043,7 @@ Vue.component('account-details', {
 	},
 	methods: {
 		update() {
-			fetch('/api/wallet/get_account?index=' + this.index)
+			fetch('/wapi/wallet/account?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.account = data);
 			fetch('/wapi/wallet/keys?index=' + this.index)
@@ -1176,7 +1178,7 @@ Vue.component('create-account', {
 	},
 	methods: {
 		update() {
-			fetch('/api/wallet/get_account?index=' + this.index)
+			fetch('/wapi/wallet/account?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.data = data);
 		},
@@ -1428,22 +1430,9 @@ Vue.component('account-send-form', {
 	},
 	methods: {
 		update() {
-			fetch('/api/wallet/get_all_accounts')
+			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
-				.then(data => {
-					this.accounts = [];
-					for(const entry of data) {
-						const info = entry[1];
-						info.account = entry[0];
-						fetch('/wapi/wallet/address?limit=1&index=' + entry[0])
-							.then(response => response.json())
-							.then(data => {
-								info.address = data[0];
-								this.accounts.push(info);
-								this.accounts.sort((a, b) => a.account - b.account);
-							});
-					}
-				});
+				.then(data => this.accounts = data);
 			if(this.source) {
 				fetch('/wapi/address?id=' + this.source)
 					.then(response => response.json())
@@ -2516,12 +2505,12 @@ Vue.component('wallet-menu', {
 	],
 	methods: {
 		update() {
-			fetch('/api/wallet/get_all_accounts')
+			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
 				.then(data => {
 					this.wallets = data;
 					if(this.wallet == null && data.length > 0) {
-						this.wallet = data[0][0];
+						this.wallet = data[0].account;
 					}
 				});
 		}
@@ -2543,10 +2532,10 @@ Vue.component('wallet-menu', {
 			v-model="wallet"
 			:items="wallets"
 			:label="$t('market_menu.wallet')"
-			item-text="[0]"
-			item-value="[0]">
+			item-text="account"
+			item-value="account">
 			<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-				{{ $t('market_menu.wallet') }} #{{item[0]}}
+				{{ $t('market_menu.wallet') }} #{{item.account}} ({{item.address}})
 			</template>
 		</v-select>
 	`

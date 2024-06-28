@@ -135,6 +135,14 @@ public:
 		return farmer_key;
 	}
 
+	vnx::optional<addr_t> find_address(const uint32_t index) const
+	{
+		if(index >= addresses.size()) {
+			return nullptr;
+		}
+		return addresses[index];
+	}
+
 	addr_t get_address(const uint32_t index) const
 	{
 		if(index >= addresses.size()) {

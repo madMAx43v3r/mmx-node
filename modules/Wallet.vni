@@ -120,9 +120,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<addr_t> get_all_addresses(int index) const;				// (index == -1) -> all wallets
 	
-	account_t get_account(uint index) const;
+	account_info_t get_account(uint index) const;
 	
-	map<uint, account_t> get_all_accounts() const;
+	vector<account_info_t> get_all_accounts() const;
 	
 	bool is_locked(uint index) const;
 	

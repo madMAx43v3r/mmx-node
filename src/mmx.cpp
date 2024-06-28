@@ -327,9 +327,11 @@ int main(int argc, char** argv)
 				} catch(...) {
 					// ignore
 				}
-				const auto accounts = wallet.get_all_accounts();
-				if(index == 0 && !accounts.empty() && accounts.find(index) == accounts.end()) {
-					index = accounts.begin()->first;
+				if(index == 0) {
+					const auto accounts = wallet.get_all_accounts();
+					if(!accounts.empty()) {
+						index = accounts[0].account;
+					}
 				}
 			}
 
@@ -452,9 +454,10 @@ int main(int argc, char** argv)
 			else if(command == "accounts")
 			{
 				for(const auto& entry : wallet.get_all_accounts()) {
-					const auto& config = entry.second;
-					std::cout << "[" << entry.first << "] name = '" << config.name << "', index = " << config.index
-							<< ", num_addresses = " << config.num_addresses << ", key_file = '" << config.key_file << "'" << std::endl;
+					std::cout << "[" << entry.account << "] name = '" << entry.name << "', index = " << entry.index
+							<< ", passphrase = " << (entry.with_passphrase ? "yes" : "no")
+							<< ", num_addresses = " << entry.num_addresses << ", key_file = " << entry.key_file
+							<< " (" << vnx::to_string(entry.address) << ")" << std::endl;
 				}
 			}
 			else if(command == "keys")

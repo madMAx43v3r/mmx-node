@@ -139,9 +139,9 @@ protected:
 
 	std::vector<std::pair<skey_t, pubkey_t>> get_all_farmer_keys() const override;
 
-	account_t get_account(const uint32_t& index) const override;
+	account_info_t get_account(const uint32_t& index) const override;
 
-	std::map<uint32_t, account_t> get_all_accounts() const override;
+	std::vector<account_info_t> get_all_accounts() const override;
 
 	bool is_locked(const uint32_t& index) const override;
 

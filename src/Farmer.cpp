@@ -33,9 +33,10 @@ void Farmer::main()
 {
 	if(reward_addr) {
 		if(*reward_addr == addr_t()) {
-			throw std::logic_error("reward_addr == zero");
+			reward_addr = nullptr;
+		} else {
+			log(INFO) << "Reward address: " << reward_addr->to_string();
 		}
-		log(INFO) << "Reward address: " << reward_addr->to_string();
 	}
 	params = get_params();
 
@@ -107,22 +108,20 @@ void Farmer::update()
 
 	if(!reward_addr) {
 		wallet->get_all_accounts(
-			[this](const std::map<uint32_t, account_t>& accounts) {
-				if(accounts.empty()) {
-					log(WARN) << "Failed to get reward address from wallet: no wallet available";
-					return;
-				}
-				wallet->get_address(accounts.begin()->first, 0,
-					[this](const addr_t& address) {
-						if(!reward_addr) {
-							log(INFO) << "Reward address: " << address.to_string();
+			[this](const std::vector<account_info_t>& accounts) {
+				if(!reward_addr) {
+					for(const auto& entry : accounts) {
+						if(entry.address) {
+							reward_addr = entry.address;
+							break;
 						}
-						reward_addr = address;
-					},
-					[this](const vnx::exception& ex) {
-						log(WARN) << "Failed to get reward address from wallet: " << ex.what();
-					});
-
+					}
+					if(reward_addr) {
+						log(INFO) << "Reward address: " << reward_addr->to_string();
+					} else {
+						log(WARN) << "Failed to get reward address from wallet: no wallet available";
+					}
+				}
 			},
 			[this](const vnx::exception& ex) {
 				log(WARN) << "Failed to get reward address from wallet: " << ex.what();

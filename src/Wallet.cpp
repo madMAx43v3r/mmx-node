@@ -822,17 +822,18 @@ std::vector<std::pair<skey_t, pubkey_t>> Wallet::get_all_farmer_keys() const
 	return res;
 }
 
-account_t Wallet::get_account(const uint32_t& index) const
+account_info_t Wallet::get_account(const uint32_t& index) const
 {
-	return get_wallet(index)->config;
+	const auto wallet = get_wallet(index);
+	return account_info_t::make(index, wallet->find_address(0), wallet->config);
 }
 
-std::map<uint32_t, account_t> Wallet::get_all_accounts() const
+std::vector<account_info_t> Wallet::get_all_accounts() const
 {
-	std::map<uint32_t, account_t> res;
+	std::vector<account_info_t> res;
 	for(size_t i = 0; i < wallets.size(); ++i) {
 		if(auto wallet = wallets[i]) {
-			res[i] = wallet->config;
+			res.push_back(account_info_t::make(i, wallet->find_address(0), wallet->config));
 		}
 	}
 	return res;

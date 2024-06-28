@@ -36,11 +36,15 @@ void TimeLord::main()
 		if(!reward_addr) {
 			try {
 				WalletClient wallet(wallet_server);
-				const auto accounts = wallet.get_all_accounts();
-				if(accounts.empty()) {
+				for(const auto& entry : wallet.get_all_accounts()) {
+					if(entry.address) {
+						reward_addr = entry.address;
+						break;
+					}
+				}
+				if(!reward_addr) {
 					throw std::logic_error("no wallet available");
 				}
-				reward_addr = wallet.get_address(accounts.begin()->first, 0);
 			}
 			catch(const std::exception& ex) {
 				log(WARN) << "Failed to get reward address from wallet: " << ex.what();
@@ -52,7 +56,7 @@ void TimeLord::main()
 			enable_reward = false;
 		}
 	} else {
-		log(INFO) << "Rewards not enabled";
+		log(INFO) << "Reward is disabled";
 	}
 	{
 		vnx::File file(storage_path + "timelord_sk.dat");
@@ -78,7 +82,7 @@ void TimeLord::main()
 			}
 		}
 		timelord_key = pubkey_t::from_skey(timelord_sk);
-		log(INFO) << "Our Timelord Key: " << timelord_key;
+		log(DEBUG) << "Timelord Key: " << timelord_key;
 	}
 
 	set_timer_millis(10000, std::bind(&TimeLord::print_info, this));

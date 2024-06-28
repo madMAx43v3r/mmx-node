@@ -1,0 +1,12 @@
+package mmx;
+
+struct account_info_t extends account_t {
+	
+	optional<addr_t> address;
+	
+	uint account;
+	
+	
+	static account_info_t make(uint account, optional<addr_t> address, account_t config);
+	
+}

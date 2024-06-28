@@ -18,7 +18,7 @@ Vue.component('market-menu', {
 	methods: {
 		update() {
 			this.loading = true;
-			fetch('/api/wallet/get_all_accounts')
+			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
@@ -27,7 +27,7 @@ Vue.component('market-menu', {
 						this.wallet = this.wallet_;
 					}
 					else if(data.length > 0) {
-						this.wallet = data[0][0];
+						this.wallet = data[0].account;
 					}
 				})
 				.catch(error => {
@@ -108,10 +108,10 @@ Vue.component('market-menu', {
 							v-model="wallet"
 							:items="wallets"
 							:lablel="$t('market_menu.wallet')"						
-							item-text="[0]"
-							item-value="[0]">
+							item-text="account"
+							item-value="account">
 							<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-								{{ $t('market_menu.wallet') }} #{{item[0]}}
+								{{ $t('market_menu.wallet') }} #{{item.account}} ({{item.address}})
 							</template>				
 						</v-select>
 
