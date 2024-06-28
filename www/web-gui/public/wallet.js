@@ -82,7 +82,10 @@ Vue.component('account-header', {
 			}
 			fetch('/wapi/wallet/address?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.address = data[0]);
+				.then(data => this.address = data.length ? data[0] : "N/A");
+			this.update_lock();
+		},
+		update_lock() {
 			fetch('/api/wallet/is_locked?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.is_locked = data);
@@ -94,7 +97,7 @@ Vue.component('account-header', {
 				const req = {};
 				req.index = this.index;
 				fetch('/api/wallet/lock', {body: JSON.stringify(req), method: "post"})
-					.then(() => this.update());
+					.then(() => this.update_lock());
 			}
 		},
 		unlock(passphrase) {
@@ -117,12 +120,16 @@ Vue.component('account-header', {
 		}
 	},
 	created() {
-		this.update()
+		this.update();
+		this.timer = setInterval(() => { this.update_lock(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
 	},
 	template: `
 		<div>
 			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
-			<v-chip label style="min-width: 500px" class="pr-0">
+			<v-chip label class="pr-0">
 				{{ address }}
 				<v-btn v-if="navigator.clipboard && address" @click="copyToClipboard(address)" text icon>
 					<v-icon small class="pr-0">mdi-content-copy</v-icon>

@@ -181,6 +181,8 @@ private:
 
 	std::vector<std::shared_ptr<ECDSA_Wallet>> wallets;
 
+	std::map<uint32_t, std::weak_ptr<vnx::Timer>> lock_timers;
+
 	mutable mmx::hash_multi_table<addr_t, tx_log_entry_t> tx_log;
 
 	std::shared_ptr<const ChainParams> params;
