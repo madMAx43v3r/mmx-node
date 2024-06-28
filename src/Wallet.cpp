@@ -854,19 +854,23 @@ void Wallet::unlock(const uint32_t& index, const std::string& passphrase)
 	wallet->unlock(passphrase);
 
 	if(wallet->config.with_passphrase) {
-		auto info = WalletFile::create();
-		info->addresses = wallet->get_all_addresses();
-		vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
-	}
-	if(lock_timeout_sec > 0) {
-		auto& timer = lock_timers[index];
-		if(auto t = timer.lock()) {
-			t->stop();
+		if(lock_timeout_sec > 0) {
+			auto& timer = lock_timers[index];
+			if(auto t = timer.lock()) {
+				t->stop();
+			}
+			timer = set_timeout_millis(int64_t(lock_timeout_sec) * 1000, [this, index, wallet]() {
+				wallet->lock();
+				lock_timers.erase(index);
+			});
 		}
-		timer = set_timeout_millis(int64_t(lock_timeout_sec) * 1000, [this, index, wallet]() {
-			wallet->lock();
-			lock_timers.erase(index);
-		});
+		try {
+			auto info = WalletFile::create();
+			info->addresses = wallet->get_all_addresses();
+			vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
+		} catch(const std::exception& ex) {
+			log(ERROR) << "Failed to store wallet info: " << ex.what();
+		}
 	}
 }
 
