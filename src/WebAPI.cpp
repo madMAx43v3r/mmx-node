@@ -1933,18 +1933,19 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/deploy") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		const auto iter_index = query.find("index");
-		if(request->payload.size() && iter_index != query.end()) {
-			std::shared_ptr<Contract> contract;
-			vnx::from_string(request->payload.as_string(), contract);
-			const auto index = vnx::from_string<uint32_t>(iter_index->second);
-			wallet->deploy(index, contract, {},
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto payload = args["payload"].to<std::shared_ptr<Contract>>();
+			const auto options = args["options"].to<spend_options_t>();
+			wallet->deploy(index, payload, options,
 				[this, request_id](std::shared_ptr<const Transaction> tx) {
 					respond(request_id, vnx::Variant(addr_t(tx->id).to_string()));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/deploy?index {...}");
+			respond_status(request_id, 404, "POST wallet/deploy {...}");
 		}
 	}
 	else if(sub_path == "/wallet/execute") {

@@ -755,6 +755,7 @@ Vue.component('account-plots', {
 			dialog_owner: null,
 			dialog_address: null,
 			dialog_amount: null,
+			passphrase_dialog: false,
 		}
 	},
 	computed: {
@@ -798,10 +799,21 @@ Vue.component('account-plots', {
 			this.dialog = true;
 		},
 		submit() {
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					if(data) {
+						this.passphrase_dialog = true;
+					} else {
+						this.submit_ex(null);
+					}
+				});
+		},
+		submit_ex(passphrase) {
 			let url = "";
 			const req = {};
 			req.index = this.index;
-			req.options = {user: this.dialog_owner};
+			req.options = {user: this.dialog_owner, passphrase: passphrase};
 			if(this.dialog_mode == "Deposit") {
 				url = "/wapi/wallet/send";
 				req.currency = null;
@@ -840,6 +852,8 @@ Vue.component('account-plots', {
 	},
 	template: `
 		<div>
+			<passphrase-dialog v-model="passphrase_dialog" @submit="p => submit_ex(p)"/>
+			
 			<v-alert
 				border="left"
 				colored-border
@@ -1357,9 +1371,8 @@ Vue.component('passphrase-dialog', {
 		<v-dialog v-model="show" max-width="800" persistent>
 			<template v-slot:default="dialog">
 				<v-card>
-					<v-toolbar color="primary">
-					</v-toolbar>
-					<v-card-text class="pb-0">			
+					<v-toolbar color="primary"></v-toolbar>
+					<v-card-text class="pb-0 pt-2">
 						<v-text-field
 							v-model="passphrase"
 							:label="$t('wallet_common.enter_passphrase')"
@@ -2231,13 +2244,20 @@ Vue.component('create-locked-contract', {
 			}
 		},
 		submit() {
+			// TODO
+		},
+		submit_ex(passhprase) {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.Executable";
 			// TODO
 			contract.owner = this.owner;
 			contract.unlock_height = this.unlock_height;
-			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
+			const req = {};
+			req.index = this.index;
+			req.payload = contract;
+			req.options = {passhprase: passhprase};
+			fetch('/wapi/wallet/deploy', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => this.result = data);
@@ -2332,6 +2352,7 @@ Vue.component('create-virtual-plot-contract', {
 			reward_address: null,
 			valid: false,
 			confirmed: false,
+			passphrase_dialog: false,
 			result: null,
 			error: null
 		}
@@ -2346,6 +2367,17 @@ Vue.component('create-virtual-plot-contract', {
 			}
 		},
 		submit() {
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					if(data) {
+						this.passphrase_dialog = true;
+					} else {
+						this.submit_ex(null);
+					}
+				});
+		},
+		submit_ex(passphrase) {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.VirtualPlot";
@@ -2355,7 +2387,11 @@ Vue.component('create-virtual-plot-contract', {
 			if(this.reward_address) {
 				contract.reward_address = this.reward_address;
 			}
-			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
+			const req = {};
+			req.index = this.index;
+			req.payload = contract;
+			req.options = {passphrase: passphrase};
+			fetch('/wapi/wallet/deploy', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => this.result = data);
@@ -2432,6 +2468,8 @@ Vue.component('create-virtual-plot-contract', {
 
 				</v-card-text>
 			</v-card>
+			
+			<passphrase-dialog v-model="passphrase_dialog" @submit="p => submit_ex(p)"/>
 
 			<v-alert
 				border="left"
