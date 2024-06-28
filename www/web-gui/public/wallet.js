@@ -1644,7 +1644,7 @@ Vue.component('account-send-form', {
 						</v-col>
 					</v-row>
 					
-					<v-card-actions>
+					<v-card-actions class="py-0">
 						<v-spacer></v-spacer>
 						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block" style="margin-right: 50px"></v-switch>
 						<v-btn @click="submit" outlined color="primary" :disabled="!is_valid()">{{ $t('account_send_form.send') }}</v-btn>
@@ -1883,7 +1883,7 @@ Vue.component('account-offer-form', {
 							</v-text-field>
 						</v-col>
 					</v-row>
-					<v-card-actions>
+					<v-card-actions class="pb-0">
 						<v-spacer></v-spacer>
 						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block" style="margin-right: 50px"></v-switch>
 						<v-btn @click="submit" outlined color="primary" :disabled="!this.confirmed || !is_valid()">{{ $t('account_offer_form.offer') }}</v-btn>
