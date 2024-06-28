@@ -8,6 +8,7 @@
 #include <mmx/Contract.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/account_info_t.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
@@ -122,8 +123,8 @@ protected:
 	virtual std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity(const uint32_t& index) const = 0;
 	virtual ::mmx::addr_t get_address(const uint32_t& index, const uint32_t& offset) const = 0;
 	virtual std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index) const = 0;
-	virtual ::mmx::account_t get_account(const uint32_t& index) const = 0;
-	virtual std::map<uint32_t, ::mmx::account_t> get_all_accounts() const = 0;
+	virtual ::mmx::account_info_t get_account(const uint32_t& index) const = 0;
+	virtual std::vector<::mmx::account_info_t> get_all_accounts() const = 0;
 	virtual vnx::bool_t is_locked(const uint32_t& index) const = 0;
 	virtual void lock(const uint32_t& index) = 0;
 	virtual void unlock(const uint32_t& index, const std::string& passphrase) = 0;

@@ -116,6 +116,7 @@
 #include <mmx/Wallet_unlock_return.hxx>
 #include <mmx/Wallet_update_cache.hxx>
 #include <mmx/Wallet_update_cache_return.hxx>
+#include <mmx/account_info_t.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
@@ -765,7 +766,7 @@ uint64_t WalletAsyncClient::get_all_addresses(const int32_t& index, const std::f
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_account(const uint32_t& index, const std::function<void(const ::mmx::account_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_account(const uint32_t& index, const std::function<void(const ::mmx::account_info_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_account::create();
 	_method->index = index;
 	const auto _request_id = ++vnx_next_id;
@@ -778,7 +779,7 @@ uint64_t WalletAsyncClient::get_account(const uint32_t& index, const std::functi
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_all_accounts(const std::function<void(const std::map<uint32_t, ::mmx::account_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_all_accounts(const std::function<void(const std::vector<::mmx::account_info_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_all_accounts::create();
 	const auto _request_id = ++vnx_next_id;
 	{
@@ -2643,7 +2644,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_account_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<::mmx::account_t>());
+					_callback(_value->get_field_by_index(0).to<::mmx::account_info_t>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}
@@ -2662,7 +2663,7 @@ int32_t WalletAsyncClient::vnx_callback_switch(uint64_t _request_id, std::shared
 				if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_all_accounts_return>(_value)) {
 					_callback(_result->_ret_0);
 				} else if(_value && !_value->is_void()) {
-					_callback(_value->get_field_by_index(0).to<std::map<uint32_t, ::mmx::account_t>>());
+					_callback(_value->get_field_by_index(0).to<std::vector<::mmx::account_info_t>>());
 				} else {
 					throw std::logic_error("WalletAsyncClient: invalid return value");
 				}

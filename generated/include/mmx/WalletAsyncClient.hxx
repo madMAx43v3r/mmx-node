@@ -8,6 +8,7 @@
 #include <mmx/Contract.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/account_info_t.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
@@ -194,11 +195,11 @@ public:
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_account(const uint32_t& index = 0, 
-			const std::function<void(const ::mmx::account_t&)>& _callback = std::function<void(const ::mmx::account_t&)>(),
+			const std::function<void(const ::mmx::account_info_t&)>& _callback = std::function<void(const ::mmx::account_info_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_all_accounts(
-			const std::function<void(const std::map<uint32_t, ::mmx::account_t>&)>& _callback = std::function<void(const std::map<uint32_t, ::mmx::account_t>&)>(),
+			const std::function<void(const std::vector<::mmx::account_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::account_info_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t is_locked(const uint32_t& index = 0, 
@@ -346,8 +347,8 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_swap_liquidity;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::addr_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_address;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::addr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_addresses;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::account_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_account;
-	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<uint32_t, ::mmx::account_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_accounts;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::account_info_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_account;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::account_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_all_accounts;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::bool_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_is_locked;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_lock;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_unlock;

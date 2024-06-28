@@ -333,6 +333,7 @@
 #include <mmx/WebAPIBase.hxx>
 #include <mmx/WebAPI_shutdown.hxx>
 #include <mmx/WebAPI_shutdown_return.hxx>
+#include <mmx/account_info_t.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/block_index_t.hxx>
@@ -4285,6 +4286,18 @@ void type<::mmx::WebAPI_shutdown_return>::create_dynamic_code(std::vector<uint16
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::account_info_t>::get_type_code() {
+	return mmx::vnx_native_type_code_account_info_t;
+}
+
+void type<::mmx::account_info_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::account_info_t());
+}
+
+void type<::mmx::account_info_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::account_info_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::account_t>::get_type_code() {
 	return mmx::vnx_native_type_code_account_t;
 }
@@ -5173,6 +5186,7 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::WebAPIBase::static_create_type_code());
 	vnx::register_type_code(::mmx::WebAPI_shutdown::static_create_type_code());
 	vnx::register_type_code(::mmx::WebAPI_shutdown_return::static_create_type_code());
+	vnx::register_type_code(::mmx::account_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::account_t::static_create_type_code());
 	vnx::register_type_code(::mmx::balance_t::static_create_type_code());
 	vnx::register_type_code(::mmx::block_index_t::static_create_type_code());
@@ -5549,6 +5563,7 @@ const vnx::TypeCode* const vnx_native_type_code_WalletFile = vnx::get_type_code(
 const vnx::TypeCode* const vnx_native_type_code_WebAPIBase = vnx::get_type_code(vnx::Hash64(0xfe90ce601fcc0cc6ull));
 const vnx::TypeCode* const vnx_native_type_code_WebAPI_shutdown = vnx::get_type_code(vnx::Hash64(0x75dd6111dc25b9d6ull));
 const vnx::TypeCode* const vnx_native_type_code_WebAPI_shutdown_return = vnx::get_type_code(vnx::Hash64(0x248624ff297c34ull));
+const vnx::TypeCode* const vnx_native_type_code_account_info_t = vnx::get_type_code(vnx::Hash64(0x5858a2f32468feaeull));
 const vnx::TypeCode* const vnx_native_type_code_account_t = vnx::get_type_code(vnx::Hash64(0xc0c163f453729a7ull));
 const vnx::TypeCode* const vnx_native_type_code_balance_t = vnx::get_type_code(vnx::Hash64(0x613173c7e5ce65b4ull));
 const vnx::TypeCode* const vnx_native_type_code_block_index_t = vnx::get_type_code(vnx::Hash64(0xd00c722670bca900ull));

@@ -8,6 +8,7 @@
 #include <mmx/Contract.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/account_info_t.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
@@ -129,9 +130,9 @@ public:
 	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);
 	
-	::mmx::account_t get_account(const uint32_t& index = 0);
+	::mmx::account_info_t get_account(const uint32_t& index = 0);
 	
-	std::map<uint32_t, ::mmx::account_t> get_all_accounts();
+	std::vector<::mmx::account_info_t> get_all_accounts();
 	
 	vnx::bool_t is_locked(const uint32_t& index = 0);
 	
