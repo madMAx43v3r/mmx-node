@@ -14,7 +14,7 @@ struct MMX_EXPORT account_t {
 	
 	
 	uint32_t index = 0;
-	uint32_t num_addresses = 10;
+	uint32_t num_addresses = 1;
 	std::string name;
 	std::string key_file;
 	std::string finger_print;
