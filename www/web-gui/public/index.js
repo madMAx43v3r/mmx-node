@@ -31,6 +31,11 @@ function get_tx_type_color(type) {
 	return "";
 }
 
+function get_active_wallet() {
+	const value = localStorage.getItem('active_wallet');
+	return value != null ? parseInt(value) : null;
+}
+
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
 
 const Wallet = {

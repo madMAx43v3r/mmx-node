@@ -208,7 +208,7 @@ Vue.component('node-settings', {
 		},
 		'$vuetify.theme.dark': async function (newVal, oldVal) {
 			localStorage.setItem('theme_dark', newVal);
-		}		
+		}
 	},
 	template: `
 		<div>

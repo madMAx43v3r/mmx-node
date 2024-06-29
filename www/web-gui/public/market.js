@@ -23,10 +23,7 @@ Vue.component('market-menu', {
 				.then(data => {
 					this.loading = false;
 					this.wallets = data;
-					if(!this.wallet && this.wallet_) {
-						this.wallet = this.wallet_;
-					}
-					else if(data.length > 0) {
+					if(this.wallet == null && data.length) {
 						this.wallet = data[0].account;
 					}
 				})
@@ -46,10 +43,16 @@ Vue.component('market-menu', {
 					page = "offers";
 				}
 			}
+			localStorage.setItem('active_wallet', this.wallet);
 			this.$router.push('/market/' + page + '/' + this.wallet + '/' + this.bid + '/' + this.ask).catch(()=>{});
 		}
 	},
 	created() {
+		if(this.wallet_ != null) {
+			this.wallet = this.wallet_;
+		} else {
+			this.wallet = get_active_wallet();
+		}
 		this.update();
 	},
 	watch: {

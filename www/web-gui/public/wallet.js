@@ -2509,7 +2509,7 @@ Vue.component('wallet-menu', {
 				.then(response => response.json())
 				.then(data => {
 					this.wallets = data;
-					if(this.wallet == null && data.length > 0) {
+					if(this.wallet == null && data.length) {
 						this.wallet = data[0].account;
 					}
 				});
@@ -2517,10 +2517,12 @@ Vue.component('wallet-menu', {
 	},
 	watch: {
 		wallet(value) {
+			localStorage.setItem('active_wallet', value);
 			this.$emit('wallet-select', value);
 		}
 	},
 	created() {
+		this.wallet = get_active_wallet();
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60000);
 	},
