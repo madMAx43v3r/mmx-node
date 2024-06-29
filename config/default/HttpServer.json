@@ -1,5 +1,6 @@
 {
 	"port": 11380,
 	"stats_interval_ms": 60000,
-	"default_access": "NETWORK"
+	"default_access": "NETWORK",
+	"allow_anon_login": false
 }
