@@ -414,7 +414,7 @@ void Harvester::reload()
 						std::lock_guard<std::mutex> lock(mutex);
 						missing.erase(file_name);
 					}
-					if(!plot_map.count(file_name) && file->get_extension() == ".plot")
+					if(!plot_map.count(file_name) && file->get_extension() == ".plot" && file->get_name().substr(0, 9) == "plot-mmx-")
 					{
 						std::lock_guard<std::mutex> lock(mutex);
 						plot_files.push_back(file_name);
