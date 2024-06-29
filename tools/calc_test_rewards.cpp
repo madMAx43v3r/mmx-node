@@ -6,6 +6,7 @@
  */
 
 #include <mmx/BlockHeader.hxx>
+#include <mmx/Transaction.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 
 #include <vnx/vnx.h>
@@ -44,24 +45,48 @@ int main(int argc, char** argv)
 
 	size_t block_count = 0;
 	std::map<addr_t, size_t> reward_count;
+	std::map<addr_t, std::string> contract_map;
+	std::map<pubkey_t, addr_t> farmer_address_map;
 
 	while(auto value = vnx::read(block_chain.in))
 	{
 		if(auto block = std::dynamic_pointer_cast<const BlockHeader>(value))
 		{
-			if(block->height >= start_height
-				&& block->height <= end_height)
+			if(block->height >= start_height && block->height <= end_height)
 			{
 				block_count++;
 
-				if(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
-					if(block->reward_addr) {
-						reward_count[*block->reward_addr] += block_count;
-						block_count = 0;
+				if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof))
+				{
+					if(auto addr = block->reward_addr)
+					{
+						const auto iter = contract_map.find(*addr);
+						if(iter != contract_map.end()) {
+							const auto iter2 = farmer_address_map.find(proof->farmer_key);
+							if(iter2 != farmer_address_map.end()) {
+								std::cout << "[" << block->height << "] Redirected reward sent to " << iter->second << ": " << *addr << " -> " << iter2->second << std::endl;
+								addr = iter2->second;
+							} else {
+								std::cerr << "[" << block->height << "] Lost reward sent to " << iter->second << " at " << *block->reward_addr << std::endl;
+								addr = nullptr;
+							}
+						}
+						if(addr) {
+							farmer_address_map[proof->farmer_key] = *addr;
+							reward_count[*addr] += block_count;
+							block_count = 0;
+						}
 					}
 				}
 			}
-			while(vnx::read(block_chain.in));
+
+			while(auto value = vnx::read(block_chain.in)) {
+				if(auto tx = std::dynamic_pointer_cast<const Transaction>(value)) {
+					if(tx->deploy) {
+						contract_map[tx->id] = tx->deploy->get_type_name();
+					}
+				}
+			}
 		}
 	}
 
