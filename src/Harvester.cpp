@@ -238,9 +238,12 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 			auto proof_xs = job->best_proof.proof;
 			if(proof_xs.empty()) {
 				try {
+					const auto time_begin = vnx::get_wall_time_millis();
 					const auto data = prover->get_full_proof(value->challenge, job->best_proof.index);
 					if(data.valid) {
 						proof_xs = data.proof;
+						const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+						log(elapsed > 20 ? WARN : DEBUG) << "Fetching full proof took " << elapsed << " sec (" << prover->get_file_path() << ")";
 					} else {
 						throw std::runtime_error(data.error_msg);
 					}
@@ -291,7 +294,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		if(job->total_plots) {
 			const auto slow_time = job->slow_time_ms / 1e3;
 			if(job->num_passed) {
-				log(DEBUG) << "[" << host_name << "] Slowest plot took " << slow_time << " sec: " << job->slow_plot;
+				log(slow_time > 20 ? WARN : DEBUG) << "[" << host_name << "] Slowest plot took " << slow_time << " sec: " << job->slow_plot;
 			}
 			const auto delay_sec = (time_end - recv_time_ms) / 1e3;
 			log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
