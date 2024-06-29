@@ -89,7 +89,7 @@ Vue.component('market-menu', {
 		}
 	},	
 	template: `
-		<div class="my-2">
+		<div class="mb-2">
 			<div v-if="loading">
 				<v-card>
 					<v-card-text>
@@ -110,7 +110,7 @@ Vue.component('market-menu', {
 						<v-select
 							v-model="wallet"
 							:items="wallets"
-							:lablel="$t('market_menu.wallet')"						
+							:label="$t('common.wallet')"
 							item-text="account"
 							item-value="account">
 							<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
