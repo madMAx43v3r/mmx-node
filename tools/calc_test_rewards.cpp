@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 						if(iter != contract_map.end()) {
 							const auto iter2 = farmer_address_map.find(proof->farmer_key);
 							if(iter2 != farmer_address_map.end()) {
-								std::cout << "[" << block->height << "] Redirected reward sent to " << iter->second << ": " << *addr << " -> " << iter2->second << std::endl;
+								std::cerr << "[" << block->height << "] Redirected reward sent to " << iter->second << ": " << *addr << " -> " << iter2->second << std::endl;
 								addr = iter2->second;
 							} else {
 								std::cerr << "[" << block->height << "] Lost reward sent to " << iter->second << " at " << *block->reward_addr << std::endl;
