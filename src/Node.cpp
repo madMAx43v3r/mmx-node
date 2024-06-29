@@ -716,7 +716,7 @@ std::vector<tx_entry_t> Node::get_history(
 		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo) >
 			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo);
 	});
-	if(limit >= 0 && size_t(limit) < res.size()) {
+	if(limit >= 0 && res.size() > size_t(limit)) {
 		res.resize(limit);
 	}
 	std::reverse(res.begin(), res.end());

@@ -182,7 +182,7 @@ Vue.component('market-offers', {
 		update() {
 			if(this.tokens) {
 				this.loading = true;
-				let query = '/wapi/node/offers?limit=' + this.limit;
+				let query = '/wapi/offers?limit=' + this.limit;
 				if(this.bid) {
 					query += '&bid=' + this.bid;
 				}
@@ -587,7 +587,7 @@ Vue.component('market-history', {
 		update() {
 			if(this.tokens) {
 				this.loading = true;
-				let query = '/wapi/node/trade_history?limit=' + this.limit;
+				let query = '/wapi/trade_history?limit=' + this.limit;
 				if(this.bid) {
 					query += '&bid=' + this.bid;
 				}
