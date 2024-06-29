@@ -2084,12 +2084,12 @@ Vue.component('account-offers', {
 					<td><router-link :to="'/explore/address/' + item.address">TX</router-link></td>
 					<td>
 						<template v-if="item.bid_balance && !canceled.has(item.address)">
-							<v-btn outlined text color="red darken-1" @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
+							<v-btn outlined text small color="red darken-1" @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
 						</template>
 						<template v-if="item.ask_balance && !withdrawn.has(item.address)">
-							<v-btn outlined text @click="withdraw(item)">Withdraw</v-btn>
+							<v-btn outlined text small @click="withdraw(item)">Withdraw</v-btn>
 						</template>
-						<v-btn outlined text color="green darken-1" @click="deposit(item)">{{ $t('account_offers.deposit') }}</v-btn>
+						<v-btn outlined text small color="green darken-1" @click="deposit(item)">{{ $t('account_offers.deposit') }}</v-btn>
 					</td>
 				</tr>
 				</tbody>
