@@ -17,6 +17,8 @@ Vue.component('explore-menu', {
 				else if(hex.test(this.input)) {
 					if(this.input.length == 64) {
 						this.$router.push("/explore/transaction/" + this.input);
+					} else if(this.input.length == 66) {
+						this.$router.push("/explore/farmer/" + this.input);
 					} else {
 						this.error = true;
 					}
