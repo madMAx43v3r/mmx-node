@@ -12,3 +12,5 @@ Mainnet
 - Check remaining in-source TODOs
 - Test mainnet-rc changes
 - Harvester latency graphs
+- Choose reward_adjust_div
+- GUI settings tabs
