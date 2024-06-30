@@ -109,6 +109,7 @@ int main(int argc, char** argv)
 
 		vm::load(engine, bin);
 		vm::set_balance(engine, {});
+		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 		engine->begin(0);
 
 		try {
