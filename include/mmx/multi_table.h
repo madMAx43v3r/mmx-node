@@ -168,10 +168,10 @@ public:
 		return result.size();
 	}
 
-	void scan(const std::function<void(const K&, const V&)>& callback) const
+	void scan(const std::function<bool(const K&, const V&)>& callback) const
 	{
-		super_t::scan([callback](const std::pair<K, I>& key, const V& value) {
-			callback(key.first, value);
+		super_t::scan([callback](const std::pair<K, I>& key, const V& value) -> bool {
+			return callback(key.first, value);
 		});
 	}
 

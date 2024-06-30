@@ -165,11 +165,12 @@ void Node::main()
 		revert(height);
 
 		uint64_t balance_count = 0;
-		balance_table.scan([this, &balance_count](const std::pair<addr_t, addr_t>& key, const uint128& value) {
+		balance_table.scan([this, &balance_count](const std::pair<addr_t, addr_t>& key, const uint128& value) -> bool {
 			if(value >= 1000000 && key.second == addr_t()) {
 				mmx_address_count++;
 			}
 			balance_count++;
+			return true;
 		});
 
 		if(height) {

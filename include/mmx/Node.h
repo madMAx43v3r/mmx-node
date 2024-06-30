@@ -79,6 +79,8 @@ protected:
 
 	std::vector<hash_t> get_tx_ids_since(const uint32_t& height) const override;
 
+	std::vector<hash_t> get_tx_ids(const uint32_t& limit) const override;
+
 	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
 
 	vnx::optional<tx_info_t> get_tx_info_for(std::shared_ptr<const Transaction> tx) const;

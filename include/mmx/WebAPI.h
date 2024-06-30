@@ -61,9 +61,6 @@ private:
 
 	void render_transactions(const vnx::request_id_t& request_id, size_t limit, const size_t offset, const std::vector<hash_t>& tx_ids) const;
 
-	void gather_transactions(	const vnx::request_id_t& request_id, const size_t limit, const int64_t height,
-								std::shared_ptr<std::vector<hash_t>> result, const std::vector<hash_t>& tx_ids) const;
-
 	void render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint128>& balances) const;
 
 	void render_balances(const vnx::request_id_t& request_id, const vnx::optional<addr_t>& currency, const std::map<addr_t, balance_t>& balances) const;

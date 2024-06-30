@@ -16,6 +16,7 @@
 #include <mmx/Node_get_block_at.hxx>
 #include <mmx/Node_get_header.hxx>
 #include <mmx/Node_get_header_at.hxx>
+#include <mmx/Node_get_tx_ids.hxx>
 #include <mmx/Node_get_tx_ids_at.hxx>
 #include <mmx/Node_get_tx_ids_since.hxx>
 #include <mmx/Node_get_tx_height.hxx>
@@ -212,6 +213,22 @@ vnx::optional<std::pair<hash_t, hash_t>> Node::get_block_hash_ex(const uint32_t&
 		return std::make_pair(entry.hash, entry.content_hash);
 	}
 	return nullptr;
+}
+
+std::vector<hash_t> Node::get_tx_ids(const uint32_t& limit) const
+{
+	std::vector<hash_t> out;
+	tx_log.reverse_scan([&out, limit](const uint32_t&, const std::vector<hash_t>& list) -> bool {
+		for(const auto& id : list) {
+			if(out.size() < limit) {
+				out.push_back(id);
+			} else {
+				return false;
+			}
+		}
+		return out.size() < limit;
+	});
+	return out;
 }
 
 std::vector<hash_t> Node::get_tx_ids_at(const uint32_t& height) const
@@ -1323,10 +1340,12 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 std::map<pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& since) const
 {
 	std::map<pubkey_t, uint32_t> out;
-	farmer_block_map.scan([&out, since](const pubkey_t& key, const farmed_block_info_t& info) {
+	// TODO: optimize somehow
+	farmer_block_map.scan([&out, since](const pubkey_t& key, const farmed_block_info_t& info) -> bool {
 		if(info.height >= since) {
 			out[key]++;
 		}
+		return true;
 	});
 	return out;
 }
@@ -1388,6 +1407,7 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case Node_get_block_at::VNX_TYPE_ID:
 		case Node_get_header::VNX_TYPE_ID:
 		case Node_get_header_at::VNX_TYPE_ID:
+		case Node_get_tx_ids::VNX_TYPE_ID:
 		case Node_get_tx_ids_at::VNX_TYPE_ID:
 		case Node_get_tx_ids_since::VNX_TYPE_ID:
 		case Node_get_tx_height::VNX_TYPE_ID:
