@@ -78,8 +78,11 @@ int main(int argc, char** argv)
 			if(target) {
 				wallet.send(index, amount, *target, contract, spend_options);
 			}
-			if(swap) {
-				wallet.swap_trade(index, *swap, amount, contract, nullptr, 10, spend_options);
+			else if(swap) {
+				wallet.swap_trade(index, *swap, amount, contract, nullptr, 5, spend_options);
+			}
+			else {
+				wallet.send(index, amount, mmx::hash_t::random(), contract, spend_options);
 			}
 			counter++;
 			total++;
