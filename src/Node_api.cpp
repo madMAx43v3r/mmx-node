@@ -242,6 +242,7 @@ std::vector<hash_t> Node::get_tx_ids_since(const uint32_t& height) const
 {
 	std::vector<std::vector<hash_t>> list;
 	tx_log.find_greater_equal(height, list);
+
 	std::vector<hash_t> out;
 	for(const auto& entry : list) {
 		out.insert(out.end(), entry.begin(), entry.end());

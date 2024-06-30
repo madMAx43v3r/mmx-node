@@ -528,7 +528,7 @@ private:
 	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_queue;
 
-	std::shared_mutex db_mutex;								// covers DB as well as is_synced
+	std::shared_mutex db_mutex;								// covers DB as well as history, is_synced
 	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<vnx::ThreadPool> api_threads;			// executed under shared db_mutex lock
 	std::shared_ptr<vnx::Timer> stuck_timer;
