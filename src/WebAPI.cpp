@@ -1147,7 +1147,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			}
 			respond_status(request_id, 200);
 		} else {
-			respond_status(request_id, 404, "config/set?key|value");
+			respond_status(request_id, 400, "config/set?key|value");
 		}
 	}
 	else if(sub_path == "/exit" || sub_path == "/node/exit") {
@@ -1220,7 +1220,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_header, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "header?hash|height");
+			respond_status(request_id, 400, "header?hash|height");
 		}
 	}
 	else if(sub_path == "/headers") {
@@ -1244,7 +1244,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "headers?limit|offset");
+			respond_status(request_id, 400, "headers?limit|offset");
 		}
 	}
 	else if(sub_path == "/block") {
@@ -1260,7 +1260,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_block, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "block?hash|height");
+			respond_status(request_id, 400, "block?hash|height");
 		}
 	}
 	else if(sub_path == "/blocks") {
@@ -1282,7 +1282,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "blocks?limit|offset");
+			respond_status(request_id, 400, "blocks?limit|offset");
 		}
 	}
 	else if(sub_path == "/transaction") {
@@ -1292,7 +1292,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_transaction, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "transaction?id");
+			respond_status(request_id, 400, "transaction?id");
 		}
 	}
 	else if(sub_path == "/transactions") {
@@ -1329,7 +1329,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_address, this, request_id, address, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "address?id");
+			respond_status(request_id, 400, "address?id");
 		}
 	}
 	else if(sub_path == "/balance") {
@@ -1347,7 +1347,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "balance?id|currency");
+			respond_status(request_id, 400, "balance?id|currency");
 		}
 	}
 	else if(sub_path == "/contract") {
@@ -1360,7 +1360,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "contract?id");
+			respond_status(request_id, 400, "contract?id");
 		}
 	}
 	else if(sub_path == "/swap/list") {
@@ -1414,7 +1414,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "swap/info?id");
+			respond_status(request_id, 400, "swap/info?id");
 		}
 	}
 	else if(sub_path == "/swap/user_info") {
@@ -1458,7 +1458,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "swap/user_info?id|user");
+			respond_status(request_id, 400, "swap/user_info?id|user");
 		}
 	}
 	else if(sub_path == "/swap/history") {
@@ -1480,7 +1480,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "swap/history?id|limit|offset");
+			respond_status(request_id, 400, "swap/history?id|limit|offset");
 		}
 	}
 	else if(sub_path == "/swap/trade_estimate") {
@@ -1521,7 +1521,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "swap/trade_estimate?id|index|amount|iters");
+			respond_status(request_id, 400, "swap/trade_estimate?id|index|amount|iters");
 		}
 	}
 	else if(sub_path == "/offer/trade_estimate") {
@@ -1554,7 +1554,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "offer/trade_estimate?id|amount");
+			respond_status(request_id, 400, "offer/trade_estimate?id|amount");
 		}
 	}
 	else if(sub_path == "/farmers") {
@@ -1635,7 +1635,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "farmer?id|since");
+			respond_status(request_id, 400, "farmer?id|since");
 		}
 	}
 	else if(sub_path == "/address/history") {
@@ -1655,7 +1655,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "address/history?id|limit|offset|since");
+			respond_status(request_id, 400, "address/history?id|limit|offset|since");
 		}
 	}
 	else if(sub_path == "/contract/exec_history") {
@@ -1682,7 +1682,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "contract/exec_history?id|limit");
+			respond_status(request_id, 400, "contract/exec_history?id|limit");
 		}
 	}
 	else if(sub_path == "/wallet/keys") {
@@ -1697,7 +1697,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/keys?index");
+			respond_status(request_id, 400, "wallet/keys?index");
 		}
 	}
 	else if(sub_path == "/wallet/seed") {
@@ -1714,7 +1714,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/seed?index");
+			respond_status(request_id, 400, "wallet/seed?index");
 		}
 	}
 	else if(sub_path == "/wallet/accounts") {
@@ -1734,7 +1734,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/account?index");
+			respond_status(request_id, 400, "wallet/account?index");
 		}
 	}
 	else if(sub_path == "/wallet/balance") {
@@ -1754,7 +1754,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_balances, this, request_id, currency, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/balance?index|confirm|currency");
+			respond_status(request_id, 400, "wallet/balance?index|confirm|currency");
 		}
 	}
 	else if(sub_path == "/wallet/contracts") {
@@ -1787,7 +1787,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					callback, std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 			}
 		} else {
-			respond_status(request_id, 404, "wallet/contracts?index");
+			respond_status(request_id, 400, "wallet/contracts?index");
 		}
 	}
 	else if(sub_path == "/wallet/plots") {
@@ -1805,7 +1805,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/plots?index");
+			respond_status(request_id, 400, "wallet/plots?index");
 		}
 	}
 	else if(sub_path == "/wallet/address") {
@@ -1826,7 +1826,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/address?index|limit|offset");
+			respond_status(request_id, 400, "wallet/address?index|limit|offset");
 		}
 	}
 	else if(sub_path == "/wallet/tokens") {
@@ -1876,7 +1876,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/history?index|limit|since|until|type|currency");
+			respond_status(request_id, 400, "wallet/history?index|limit|since|until|type|currency");
 		}
 	}
 	else if(sub_path == "/wallet/history/memo") {
@@ -1896,7 +1896,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/history/memo?index|memo|limit|currency");
+			respond_status(request_id, 400, "wallet/history/memo?index|memo|limit|currency");
 		}
 	}
 	else if(sub_path == "/wallet/tx_history") {
@@ -1911,7 +1911,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_tx_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/tx_history?index|limit|offset|since");
+			respond_status(request_id, 400, "wallet/tx_history?index|limit|offset|since");
 		}
 	}
 	else if(sub_path == "/wallet/offers") {
@@ -1938,7 +1938,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/offers?index");
+			respond_status(request_id, 400, "wallet/offers?index");
 		}
 	}
 	else if(sub_path == "/wallet/send") {
@@ -1979,7 +1979,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 404, "POST wallet/send {...}");
+			respond_status(request_id, 400, "POST wallet/send {...}");
 		}
 	}
 	else if(sub_path == "/wallet/send_many") {
@@ -2011,7 +2011,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 404, "POST wallet/send_many {...}");
+			respond_status(request_id, 400, "POST wallet/send_many {...}");
 		}
 	}
 	else if(sub_path == "/wallet/deploy") {
@@ -2028,7 +2028,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/deploy {...}");
+			respond_status(request_id, 400, "POST wallet/deploy {...}");
 		}
 	}
 	else if(sub_path == "/wallet/execute") {
@@ -2048,7 +2048,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/execute {...}");
+			respond_status(request_id, 400, "POST wallet/execute {...}");
 		}
 	}
 	else if(sub_path == "/wallet/offer") {
@@ -2085,7 +2085,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 404, "POST wallet/offer {...}");
+			respond_status(request_id, 400, "POST wallet/offer {...}");
 		}
 	}
 	else if(sub_path == "/wallet/cancel_offer") {
@@ -2102,7 +2102,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/cancel_offer {...}");
+			respond_status(request_id, 400, "POST wallet/cancel_offer {...}");
 		}
 	}
 	else if(sub_path == "/wallet/offer_withdraw") {
@@ -2119,7 +2119,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/offer_withdraw {...}");
+			respond_status(request_id, 400, "POST wallet/offer_withdraw {...}");
 		}
 	}
 	else if(sub_path == "/wallet/offer_trade") {
@@ -2150,7 +2150,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/offer_trade {...}");
+			respond_status(request_id, 400, "POST wallet/offer_trade {...}");
 		}
 	}
 	else if(sub_path == "/wallet/accept_offer") {
@@ -2171,7 +2171,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/accept_offer {...}");
+			respond_status(request_id, 400, "POST wallet/accept_offer {...}");
 		}
 	}
 	else if(sub_path == "/wallet/swap/liquid") {
@@ -2215,7 +2215,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "wallet/swap/liquid?index|limit|offset");
+			respond_status(request_id, 400, "wallet/swap/liquid?index|limit|offset");
 		}
 	}
 	else if(sub_path == "/wallet/swap/trade") {
@@ -2255,7 +2255,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/swap/trade {...}");
+			respond_status(request_id, 400, "POST wallet/swap/trade {...}");
 		}
 	}
 	else if(sub_path == "/wallet/swap/add_liquid" || sub_path == "/wallet/swap/rem_liquid") {
@@ -2295,7 +2295,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/swap/[add/rem]_liquid {...}");
+			respond_status(request_id, 400, "POST wallet/swap/[add/rem]_liquid {...}");
 		}
 	}
 	else if(sub_path == "/wallet/swap/payout") {
@@ -2312,7 +2312,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/swap/payout {...}");
+			respond_status(request_id, 400, "POST wallet/swap/payout {...}");
 		}
 	}
 	else if(sub_path == "/wallet/swap/switch_pool") {
@@ -2330,7 +2330,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/swap/switch_pool {...}");
+			respond_status(request_id, 400, "POST wallet/swap/switch_pool {...}");
 		}
 	}
 	else if(sub_path == "/wallet/swap/rem_all_liquid") {
@@ -2347,7 +2347,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "POST wallet/swap/switch_pool {...}");
+			respond_status(request_id, 400, "POST wallet/swap/switch_pool {...}");
 		}
 	}
 	else if(sub_path == "/farmer/info") {
@@ -2496,7 +2496,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "offer?id");
+			respond_status(request_id, 400, "offer?id");
 		}
 	}
 	else if(sub_path == "/trade_history") {
@@ -2564,7 +2564,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "contract/storage?id");
+			respond_status(request_id, 400, "contract/storage?id");
 		}
 	}
 	else if(sub_path == "/contract/storage/field") {
@@ -2586,7 +2586,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 404, "contract/storage/field?id|name");
+			respond_status(request_id, 400, "contract/storage/field?id|name");
 		}
 	}
 	else if(sub_path == "/contract/storage/entry") {
@@ -2632,7 +2632,35 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 			}
 		} else {
-			respond_status(request_id, 404, "contract/storage/entry?id|name|addr|key");
+			respond_status(request_id, 400, "contract/storage/entry?id|name|addr|key");
+		}
+	}
+	else if(sub_path == "/transaction/validate") {
+		if(request->payload.size()) {
+			auto tx = mmx::Transaction::create();
+			vnx::from_string(request->payload.as_string(), tx);
+			node->validate(tx,
+				[this, request_id](const exec_result_t& result) {
+					respond(request_id, render(result));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 400, "POST transaction/validate {...}");
+		}
+	}
+	else if(sub_path == "/transaction/broadcast") {
+		if(request->payload.size()) {
+			auto tx = mmx::Transaction::create();
+			vnx::from_string(request->payload.as_string(), tx);
+			node->validate(tx,
+				[this, request_id, tx](const exec_result_t& result) {
+					node->add_transaction(tx, false,
+						std::bind(&WebAPI::respond_status, this, request_id, 200, ""),
+						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 400, "POST transaction/broadcast {...}");
 		}
 	}
 	else {
@@ -2646,7 +2674,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
 			"farmer/info", "farmer/blocks", "farmer/blocks/summary", "farmer/proofs",
 			"offers", "offer", "trade_history",
-			"contract/storage", "contract/storage/field", "contract/storage/entry"
+			"contract/storage", "contract/storage/field", "contract/storage/entry",
+			"transaction/validate", "transaction/broadcast"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
