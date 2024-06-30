@@ -138,6 +138,7 @@ protected:
 	virtual vnx::optional<uint32_t> get_tx_height(const ::mmx::hash_t& id) const = 0;
 	virtual vnx::optional<::mmx::tx_info_t> get_tx_info(const ::mmx::hash_t& id) const = 0;
 	virtual vnx::optional<::mmx::tx_info_t> get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx) const = 0;
+	virtual std::vector<::mmx::hash_t> get_tx_ids(const uint32_t& limit) const = 0;
 	virtual std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height) const = 0;
 	virtual std::vector<::mmx::hash_t> get_tx_ids_since(const uint32_t& height) const = 0;
 	virtual ::mmx::exec_result_t validate(std::shared_ptr<const ::mmx::Transaction> tx) const = 0;

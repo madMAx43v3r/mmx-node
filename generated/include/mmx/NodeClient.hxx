@@ -74,6 +74,8 @@ public:
 	
 	vnx::optional<::mmx::tx_info_t> get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	
+	std::vector<::mmx::hash_t> get_tx_ids(const uint32_t& limit = 0);
+	
 	std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height = 0);
 	
 	std::vector<::mmx::hash_t> get_tx_ids_since(const uint32_t& height = 0);
