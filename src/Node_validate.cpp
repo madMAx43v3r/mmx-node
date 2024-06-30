@@ -85,7 +85,6 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 		auto list = std::vector<addr_t>(mutate_set.begin(), mutate_set.end());
 		while(!list.empty()) {
 			std::vector<addr_t> more;
-			// TODO: parallelize get_contract() calls
 			for(const auto& address : list) {
 				auto contract = (address == tx->id ? tx->deploy : get_contract(address));
 				if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {

@@ -68,15 +68,16 @@ void MultiSig::validate(std::shared_ptr<const Solution> solution, const hash_t& 
 		size_t count = 0;
 		for(const auto& entry : sol->solutions)
 		{
-			if(owners.count(entry.first))
+			const auto& owner = entry.first;
+			if(owners.count(owner))
 			{
 				if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(entry.second))
 				{
-					if(sol->pubkey.get_addr() != entry.first) {
-						throw mmx::invalid_solution("wrong pubkey for " + entry.first.to_string());
+					if(sol->pubkey.get_addr() != owner) {
+						throw mmx::invalid_solution("wrong public key for " + owner.to_string());
 					}
 					if(!sol->signature.verify(sol->pubkey, txid)) {
-						throw mmx::invalid_solution("invalid signature for " + entry.first.to_string());
+						throw mmx::invalid_solution("invalid signature for " + owner.to_string());
 					}
 					count++;
 				}
