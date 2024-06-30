@@ -19,13 +19,16 @@ http.createServer(app).listen(80);
 
 console.log("Listening on port 80 ...");
 
-const enable_https = fs.existsSync('/etc/letsencrypt/live/rpc.mmx.network');
+const cert_path = '/etc/letsencrypt/live/rpc.mmx.network/';
 
-if(enable_https) {
+if(fs.existsSync(cert_path))
+{
 	var options = {
-		key: fs.readFileSync('/etc/letsencrypt/live/rpc.mmx.network/fullchain.pem'),
-		cert: fs.readFileSync('/etc/letsencrypt/live/rpc.mmx.network/fullchain.pem')
+		key: fs.readFileSync(cert_path + 'privkey.pem'),
+		cert: fs.readFileSync(cert_path + 'fullchain.pem'),
+		ca: fs.readFileSync(cert_path + 'chain.pem')
 	};
+
 	https.createServer(options, app).listen(443);
 	
 	console.log("Listening on port 443 ...");
