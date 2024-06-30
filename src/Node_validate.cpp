@@ -328,9 +328,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 exec_result_t Node::validate(std::shared_ptr<const Transaction> tx) const
 {
 	if(tx->exec_result) {
-		auto tmp = vnx::clone(tx);
-		tmp->reset(params);
-		tx = tmp;
+		throw std::logic_error("exec_result not null");
 	}
 	auto context = new_exec_context(get_height() + 1);
 	prepare_context(context, tx);
