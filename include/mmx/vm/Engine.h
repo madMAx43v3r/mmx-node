@@ -68,6 +68,7 @@ enum externvar_e : uint32_t {
 	EXTERN_BALANCE,
 	EXTERN_DEPOSIT,
 	EXTERN_ADDRESS,
+	EXTERN_NETWORK,		// network identifier
 
 };
 

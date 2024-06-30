@@ -361,6 +361,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 	}
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 
 	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
 		{
@@ -440,6 +441,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		}
 		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(engine->contract));
 		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
+		child->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 
 		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, true);
 
