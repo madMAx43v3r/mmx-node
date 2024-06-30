@@ -1038,6 +1038,7 @@ Vue.component('account-details', {
 	data() {
 		return {
 			account: null,
+			addresses: null,
 			keys: null
 		}
 	},
@@ -1046,6 +1047,9 @@ Vue.component('account-details', {
 			fetch('/wapi/wallet/account?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.account = data);
+			fetch('/wapi/wallet/address?index=' + this.index + '&limit=1000')
+				.then(response => response.json())
+				.then(data => this.addresses = data);
 			fetch('/wapi/wallet/keys?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.keys = data);
@@ -1063,6 +1067,20 @@ Vue.component('account-details', {
 			<object-table :data="keys" class="my-2"></object-table>
 
 			<v-btn v-if="$isWinGUI && this.keys" @click="copyKeysToPlotter" color="primary">{{ $t('account_details.copy_keys_to_plotter') }}</v-btn>
+			
+			<v-simple-table>
+				<thead>
+					<tr>
+						<th>Index</th><th>Address</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="(address, index) in addresses" :key="address">
+						<td class="key-cell"><b>{{index}}</b></td>
+						<td>{{address}}</td>
+					</tr>
+				</tbody>
+			</v-simple-table>
 		</div>
 		`
 })
@@ -1172,7 +1190,7 @@ Vue.component('create-account', {
 			data: null,
 			name: null,
 			offset: null,
-			num_addresses: 100,
+			num_addresses: 1,
 			error: null
 		}
 	},
