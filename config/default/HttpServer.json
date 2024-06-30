@@ -2,5 +2,6 @@
 	"port": 11380,
 	"stats_interval_ms": 60000,
 	"default_access": "NETWORK",
-	"allow_anon_login": false
+	"allow_anon_login": false,
+	"deflate_level": 3
 }
