@@ -1,6 +1,5 @@
 Mainnet
 - Pooling protocol
-- Public RPC
 - Multisig
 - Test remote calls again
 - Harvester num_threads GUI config
