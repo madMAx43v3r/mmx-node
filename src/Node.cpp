@@ -956,7 +956,9 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				tx_ids.push_back(tx->id);
 			}
 		}
-		tx_log.insert(block->height, tx_ids);
+		if(!tx_ids.empty()) {
+			tx_log.insert(block->height, tx_ids);
+		}
 
 		for(auto iter = tx_queue.begin(); iter != tx_queue.end();) {
 			if(tx_set.count(iter->second->id)) {
