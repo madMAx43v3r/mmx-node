@@ -259,10 +259,10 @@ void Node::main()
 						}
 						{
 							const auto now = vnx::get_wall_time_millis();
-							if(now - last_time >= 1000) {
-								log(INFO) << "DB replay height " << block->height << " ...";
+							if(now - last_time >= 5000) {
+								log(INFO) << "DB replay at height " << block->height << " ...";
+								last_time = now;
 							}
-							last_time = now;
 						}
 						vnx_process(false);
 					}
