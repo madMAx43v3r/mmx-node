@@ -100,6 +100,8 @@ private:
 	uint64_t log_counter = 0;
 	uint64_t proof_counter = 0;
 
+	static std::mutex g_config_mutex;
+
 };
 
 

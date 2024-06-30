@@ -105,6 +105,8 @@ std::vector<T> get_page(const std::vector<T>& list, const size_t limit, const si
 }
 
 
+std::mutex WebAPI::g_config_mutex;
+
 WebAPI::WebAPI(const std::string& _vnx_name)
 	:	WebAPIBase(_vnx_name)
 {
@@ -114,6 +116,7 @@ WebAPI::WebAPI(const std::string& _vnx_name)
 void WebAPI::init()
 {
 	vnx::open_pipe(vnx_name, this, 3000);
+	vnx::open_pipe(vnx_get_id(), this, 3000);
 
 	subscribe(vnx::log_out, 10000);
 }
@@ -1095,6 +1098,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 
 	if(sub_path == "/config/get") {
 		require<vnx::permission_e>(vnx_session, vnx::permission_e::READ_CONFIG);
+		std::lock_guard lock(g_config_mutex);
 		const auto iter_key = query.find("key");
 		const auto config = vnx::get_all_configs(true);
 		vnx::Object object;
@@ -1107,6 +1111,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/config/set") {
 		require<vnx::permission_e>(vnx_session, vnx::permission_e::WRITE_CONFIG);
+		std::lock_guard lock(g_config_mutex);
 		vnx::Object args;
 		vnx::from_string(request->payload.as_string(), args);
 		const auto iter_key = args.field.find("key");
