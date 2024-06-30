@@ -24,4 +24,6 @@ class NetworkInfo {
 	
 	hash_t genesis_hash;
 	
+	string name;				// network name
+	
 }
