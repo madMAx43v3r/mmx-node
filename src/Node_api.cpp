@@ -1403,7 +1403,10 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 {
 	switch(method->get_type_hash())
 	{
-		// Note: HttpComponent_http_request is not thread-safe
+		// Note: NOT thread-safe:
+		// - http_request()
+		// - get_network_info()
+		// - get_synced_height()
 		case Node_get_block::VNX_TYPE_ID:
 		case Node_get_block_at::VNX_TYPE_ID:
 		case Node_get_header::VNX_TYPE_ID:
