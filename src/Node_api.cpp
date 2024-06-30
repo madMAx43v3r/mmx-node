@@ -72,6 +72,7 @@
 #include <mmx/Node_get_farmed_blocks.hxx>
 #include <mmx/Node_get_farmed_block_count.hxx>
 #include <mmx/Node_get_farmed_block_summary.hxx>
+#include <mmx/Node_validate.hxx>
 
 #include <vnx/vnx.h>
 #include <vnx/InternalError.hxx>
@@ -1468,6 +1469,7 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case Node_get_farmed_blocks::VNX_TYPE_ID:
 		case Node_get_farmed_block_count::VNX_TYPE_ID:
 		case Node_get_farmed_block_summary::VNX_TYPE_ID:
+		case Node_validate::VNX_TYPE_ID:
 			api_threads->add_task(std::bind(&Node::async_api_call, this, method, request_id));
 			return nullptr;
 		default:
