@@ -64,7 +64,7 @@ function claim_all(address, currency) public
 		currency = bech32();
 	}
 	const amount = this.balance[currency];
-	if(amount == null) {
+	if(amount == 0) {
 		fail("nothing to claim", 5);
 	}
 	send(bech32(address), amount, currency, "mmx_plot_nft_claim");
