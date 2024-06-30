@@ -550,10 +550,7 @@ void Node::start_sync(const vnx::bool_t& force)
 	if((!is_synced || !do_sync) && !force) {
 		return;
 	}
-	{
-		std::unique_lock lock(db_mutex);
-		is_synced = false;
-	}
+	is_synced = false;
 	sync_pos = 0;
 	sync_peak = nullptr;
 	sync_retry = 0;
