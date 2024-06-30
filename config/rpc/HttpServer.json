@@ -1,0 +1,5 @@
+{
+	"num_threads": 16,
+	"deflate_level": 1,
+	"allow_anon_login": false
+}
