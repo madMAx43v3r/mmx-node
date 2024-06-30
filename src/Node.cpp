@@ -927,7 +927,30 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		std::unordered_set<hash_t> tx_set;
 		balance_cache_t balance_cache(&balance_table);
 
-		for(const auto& out : block->get_outputs(params))
+		const auto block_inputs = block->get_inputs(params);
+		const auto block_outputs = block->get_outputs(params);
+		{
+			std::set<std::pair<addr_t, addr_t>> keys;
+			for(const auto& io : block_inputs) {
+				keys.emplace(io.address, io.contract);
+			}
+			for(const auto& io : block_outputs) {
+				keys.emplace(io.address, io.contract);
+			}
+
+			// pre-load balance table entries in parallel
+			if(keys.size() >= 16) {
+				std::atomic<int32_t> total {0};
+				for(const auto& key : keys) {
+					threads->add_task([this, &key, &total]() {
+						total += balance_table.count(key);
+					});
+				}
+				threads->sync();
+				log(DEBUG) << "apply(): pre-loaded " << total << " / " << keys.size() << " balance entries at height " << block->height;
+			}
+		}
+		for(const auto& out : block_outputs)
 		{
 			if(out.memo) {
 				const auto key = hash_t(out.address + (*out.memo));
@@ -936,7 +959,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			recv_log.insert(std::make_tuple(out.address, block->height, counter++), out);
 			balance_cache.get(out.address, out.contract) += out.amount;
 		}
-		for(const auto& in : block->get_inputs(params))
+		for(const auto& in : block_inputs)
 		{
 			if(auto balance = balance_cache.find(in.address, in.contract)) {
 				clamped_sub_assign(*balance, in.amount);
