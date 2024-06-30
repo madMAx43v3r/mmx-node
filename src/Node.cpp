@@ -1052,6 +1052,7 @@ vnx::Variant Node::call_contract(
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(get_height()));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 			if(user) {
 				engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(*user));
 			} else {
