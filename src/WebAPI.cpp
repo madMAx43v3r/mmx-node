@@ -1086,7 +1086,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 
 	if(is_public) {
 		if(!is_synced) {
-			throw std::logic_error("node lost sync");
+			respond_status(request_id, 503, "lost sync with network");
+			return;
 		}
 		if(		sub_path.substr(0, 8) == "/wallet/"
 			||	sub_path.substr(0, 8) == "/farmer/")

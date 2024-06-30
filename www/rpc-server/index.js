@@ -13,7 +13,7 @@ app.all('*', function(req, res) {
 	return proxy.web(req, res, {
 		target: 'http://localhost:11380/wapi/'
 	});
-})
+});
 
 http.createServer(app).listen(80);
 
