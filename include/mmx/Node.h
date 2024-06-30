@@ -35,6 +35,7 @@
 
 #include <unordered_set>
 #include <unordered_map>
+#include <shared_mutex>
 
 
 namespace mmx {
@@ -219,6 +220,8 @@ protected:
 
 	void handle(std::shared_ptr<const ProofResponse> value) override;
 
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> method, const vnx::request_id_t& request_id) override;
+
 private:
 	struct waitcond_t {
 		std::mutex mutex;
@@ -301,7 +304,7 @@ private:
 
 	void print_stats();
 
-	bool recv_height(const uint32_t& height);
+	bool recv_height(const uint32_t& height) const;
 
 	void add_fork(std::shared_ptr<fork_t> fork);
 
@@ -457,6 +460,8 @@ private:
 
 	std::shared_ptr<const Contract> get_contract_for_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
 
+	void async_api_call(std::shared_ptr<const vnx::Value> method, const vnx::request_id_t& request_id);
+
 private:
 	hash_t state_hash;
 	std::shared_ptr<DataBase> db;
@@ -521,7 +526,9 @@ private:
 	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_queue;
 
+	std::shared_mutex db_mutex;								// covers DB as well as is_synced
 	std::shared_ptr<vnx::ThreadPool> threads;
+	std::shared_ptr<vnx::ThreadPool> api_threads;			// executed under shared db_mutex lock
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
 

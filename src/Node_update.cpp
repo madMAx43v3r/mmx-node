@@ -175,6 +175,8 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 
 void Node::update()
 {
+	std::unique_lock lock(db_mutex);
+
 	const auto time_begin = vnx::get_wall_time_millis();
 	update_pending = false;
 
