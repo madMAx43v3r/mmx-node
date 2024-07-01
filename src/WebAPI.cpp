@@ -1300,7 +1300,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
 		if(iter_height != query.end()) {
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : (is_public ? 1000 : -1);
 			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 			if(is_public && limit > 1000) {
 				throw std::logic_error("limit > 1000");
