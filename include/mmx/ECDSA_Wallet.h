@@ -274,37 +274,47 @@ public:
 			}
 		}
 
-		// create new inputs
-		for(const auto& entry : balance_map)
-		{
-			if(left == 0) {
-				return;
-			}
-			if(entry.first.second == currency)
-			{
+		// gather addresses with non-zero balance
+		std::vector<std::pair<addr_t, uint128_t>> addr_list;
+		for(const auto& entry : balance_map) {
+			if(entry.first.second == currency) {
 				auto balance = entry.second;
-				{
-					auto iter = spent_map.find(entry.first);
-					if(iter != spent_map.end()) {
-						balance -= iter->second;
-					}
+				const auto iter = spent_map.find(entry.first);
+				if(iter != spent_map.end()) {
+					balance -= iter->second;
 				}
-				if(!balance) {
-					continue;
+				if(balance) {
+					addr_list.emplace_back(entry.first.first, balance);
 				}
-				txin_t in;
-				in.address = entry.first.first;
-				in.contract = currency;
-				in.memo = options.memo;
-				if(left < balance) {
-					in.amount = left;
-				} else {
-					in.amount = balance;
-				}
-				spent_map[entry.first] += in.amount;
-				left -= in.amount;
-				tx->inputs.push_back(in);
 			}
+		}
+		// sort by largest balance first
+		std::sort(addr_list.begin(), addr_list.end(),
+			[](const std::pair<addr_t, uint128_t>& L, const std::pair<addr_t, uint128_t>& R) -> bool {
+				return L.second > R.second;
+			});
+
+		// create new inputs
+		for(const auto& entry : addr_list)
+		{
+			if(!left) {
+				break;
+			}
+			const auto& address = entry.first;
+			const auto& balance = entry.second;
+
+			txin_t in;
+			in.address = address;
+			in.contract = currency;
+			in.memo = options.memo;
+			if(left < balance) {
+				in.amount = left;
+			} else {
+				in.amount = balance;
+			}
+			spent_map[std::make_pair(address, currency)] += in.amount;
+			left -= in.amount;
+			tx->inputs.push_back(in);
 		}
 		if(left) {
 			throw std::logic_error("not enough funds");
