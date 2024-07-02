@@ -4,6 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/WalletClient.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/KeyFile.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
@@ -26,6 +27,8 @@
 #include <mmx/Wallet_deposit_return.hxx>
 #include <mmx/Wallet_execute.hxx>
 #include <mmx/Wallet_execute_return.hxx>
+#include <mmx/Wallet_export_wallet.hxx>
+#include <mmx/Wallet_export_wallet_return.hxx>
 #include <mmx/Wallet_gather_inputs_for.hxx>
 #include <mmx/Wallet_gather_inputs_for_return.hxx>
 #include <mmx/Wallet_get_account.hxx>
@@ -72,6 +75,8 @@
 #include <mmx/Wallet_get_tx_log_return.hxx>
 #include <mmx/Wallet_get_virtual_plots.hxx>
 #include <mmx/Wallet_get_virtual_plots_return.hxx>
+#include <mmx/Wallet_import_wallet.hxx>
+#include <mmx/Wallet_import_wallet_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
 #include <mmx/Wallet_is_locked_return.hxx>
 #include <mmx/Wallet_lock.hxx>
@@ -90,6 +95,8 @@
 #include <mmx/Wallet_release_all_return.hxx>
 #include <mmx/Wallet_rem_token.hxx>
 #include <mmx/Wallet_rem_token_return.hxx>
+#include <mmx/Wallet_remove_account.hxx>
+#include <mmx/Wallet_remove_account_return.hxx>
 #include <mmx/Wallet_reserve.hxx>
 #include <mmx/Wallet_reserve_return.hxx>
 #include <mmx/Wallet_reset_cache.hxx>
@@ -870,6 +877,49 @@ void WalletClient::create_wallet_async(const ::mmx::account_t& config, const vnx
 	_method->words = words;
 	_method->passphrase = passphrase;
 	vnx_request(_method, true);
+}
+
+void WalletClient::import_wallet(const ::mmx::account_t& config, std::shared_ptr<const ::mmx::KeyFile> key_file, const vnx::optional<std::string>& passphrase) {
+	auto _method = ::mmx::Wallet_import_wallet::create();
+	_method->config = config;
+	_method->key_file = key_file;
+	_method->passphrase = passphrase;
+	vnx_request(_method, false);
+}
+
+void WalletClient::import_wallet_async(const ::mmx::account_t& config, std::shared_ptr<const ::mmx::KeyFile> key_file, const vnx::optional<std::string>& passphrase) {
+	auto _method = ::mmx::Wallet_import_wallet::create();
+	_method->config = config;
+	_method->key_file = key_file;
+	_method->passphrase = passphrase;
+	vnx_request(_method, true);
+}
+
+void WalletClient::remove_account(const uint32_t& index, const uint32_t& account) {
+	auto _method = ::mmx::Wallet_remove_account::create();
+	_method->index = index;
+	_method->account = account;
+	vnx_request(_method, false);
+}
+
+void WalletClient::remove_account_async(const uint32_t& index, const uint32_t& account) {
+	auto _method = ::mmx::Wallet_remove_account::create();
+	_method->index = index;
+	_method->account = account;
+	vnx_request(_method, true);
+}
+
+std::shared_ptr<const ::mmx::KeyFile> WalletClient::export_wallet(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_export_wallet::create();
+	_method->index = index;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_export_wallet_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::KeyFile>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
 }
 
 std::vector<std::string> WalletClient::get_mnemonic_wordlist(const std::string& lang) {

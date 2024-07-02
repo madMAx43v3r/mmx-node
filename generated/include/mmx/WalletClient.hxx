@@ -6,6 +6,7 @@
 
 #include <vnx/Client.h>
 #include <mmx/Contract.hxx>
+#include <mmx/KeyFile.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/account_info_t.hxx>
@@ -155,6 +156,16 @@ public:
 	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
 	
 	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
+	
+	void import_wallet(const ::mmx::account_t& config = ::mmx::account_t(), std::shared_ptr<const ::mmx::KeyFile> key_file = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
+	
+	void import_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), std::shared_ptr<const ::mmx::KeyFile> key_file = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
+	
+	void remove_account(const uint32_t& index = 0, const uint32_t& account = 0);
+	
+	void remove_account_async(const uint32_t& index = 0, const uint32_t& account = 0);
+	
+	std::shared_ptr<const ::mmx::KeyFile> export_wallet(const uint32_t& index = 0);
 	
 	std::vector<std::string> get_mnemonic_wordlist(const std::string& lang = "en");
 	

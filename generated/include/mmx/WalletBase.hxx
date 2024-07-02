@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Contract.hxx>
+#include <mmx/KeyFile.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/account_info_t.hxx>
@@ -131,6 +132,9 @@ protected:
 	virtual void add_account(const uint32_t& index, const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) = 0;
 	virtual void create_account(const ::mmx::account_t& config, const vnx::optional<std::string>& passphrase) = 0;
 	virtual void create_wallet(const ::mmx::account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) = 0;
+	virtual void import_wallet(const ::mmx::account_t& config, std::shared_ptr<const ::mmx::KeyFile> key_file, const vnx::optional<std::string>& passphrase) = 0;
+	virtual void remove_account(const uint32_t& index, const uint32_t& account) = 0;
+	virtual std::shared_ptr<const ::mmx::KeyFile> export_wallet(const uint32_t& index) const = 0;
 	virtual std::vector<std::string> get_mnemonic_wordlist(const std::string& lang) const = 0;
 	virtual std::set<::mmx::addr_t> get_token_list() const = 0;
 	virtual void add_token(const ::mmx::addr_t& address) = 0;

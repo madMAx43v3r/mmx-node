@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 KeyFile::VNX_TYPE_HASH(0xdf868931a939cba1ull);
-const vnx::Hash64 KeyFile::VNX_CODE_HASH(0x26198bfda6944ef5ull);
+const vnx::Hash64 KeyFile::VNX_CODE_HASH(0x35062c98e95706b2ull);
 
 vnx::Hash64 KeyFile::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,12 +47,14 @@ void KeyFile::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_KeyFile;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, seed_value);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, finger_print);
 	_visitor.type_end(*_type_code);
 }
 
 void KeyFile::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.KeyFile\"";
 	_out << ", \"seed_value\": "; vnx::write(_out, seed_value);
+	_out << ", \"finger_print\": "; vnx::write(_out, finger_print);
 	_out << "}";
 }
 
@@ -66,12 +68,15 @@ vnx::Object KeyFile::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.KeyFile";
 	_object["seed_value"] = seed_value;
+	_object["finger_print"] = finger_print;
 	return _object;
 }
 
 void KeyFile::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "seed_value") {
+		if(_entry.first == "finger_print") {
+			_entry.second.to(finger_print);
+		} else if(_entry.first == "seed_value") {
 			_entry.second.to(seed_value);
 		}
 	}
@@ -81,12 +86,17 @@ vnx::Variant KeyFile::get_field(const std::string& _name) const {
 	if(_name == "seed_value") {
 		return vnx::Variant(seed_value);
 	}
+	if(_name == "finger_print") {
+		return vnx::Variant(finger_print);
+	}
 	return vnx::Variant();
 }
 
 void KeyFile::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "seed_value") {
 		_value.to(seed_value);
+	} else if(_name == "finger_print") {
+		_value.to(finger_print);
 	}
 }
 
@@ -114,17 +124,23 @@ std::shared_ptr<vnx::TypeCode> KeyFile::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.KeyFile";
 	type_code->type_hash = vnx::Hash64(0xdf868931a939cba1ull);
-	type_code->code_hash = vnx::Hash64(0x26198bfda6944ef5ull);
+	type_code->code_hash = vnx::Hash64(0x35062c98e95706b2ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::KeyFile);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<KeyFile>(); };
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "seed_value";
 		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.is_extended = true;
+		field.name = "finger_print";
+		field.code = {33, 32};
 	}
 	type_code->build();
 	return type_code;
@@ -178,6 +194,7 @@ void read(TypeInput& in, ::mmx::KeyFile& value, const TypeCode* type_code, const
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.seed_value, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.finger_print, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -197,6 +214,7 @@ void write(TypeOutput& out, const ::mmx::KeyFile& value, const TypeCode* type_co
 		type_code = type_code->depends[code[1]];
 	}
 	vnx::write(out, value.seed_value, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.finger_print, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::KeyFile& value) {
