@@ -1178,7 +1178,7 @@ Vue.component('account-actions', {
 					
 					<v-dialog v-model="remove_dialog" max-width="800">
 						<template v-slot:activator="{ on, attrs }">
-							<v-btn outlined color="red" @click="remove_dialog = true">Remove</v-btn>
+							<v-btn v-if="index >= 100" outlined color="red" @click="remove_dialog = true">Remove</v-btn>
 						</template>
 						<template v-slot:default="dialog">
 							<v-card>
