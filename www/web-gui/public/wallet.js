@@ -1159,6 +1159,12 @@ Vue.component('account-actions', {
 								<v-card-text class="pb-0">
 									<v-container>
 										<seed v-model="seed.string" readonly></seed>
+										<v-text-field class="mt-2"
+											v-if="account.with_passphrase"
+											v-model="account.finger_print"
+											label="Fingerprint (needed to verify passphrase)"
+											readonly>
+										</v-text-field>
 									</v-container>
 								</v-card-text>
 								<v-card-actions>
