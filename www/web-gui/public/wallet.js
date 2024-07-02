@@ -137,6 +137,7 @@ Vue.component('account-header', {
 					<v-icon small class="pr-0">mdi-content-copy</v-icon>
 				</btn>
 			</v-chip>
+			<v-chip v-if="info.name" label>{{info.name}}</v-chip>
 			<v-btn v-if="info.with_passphrase && (is_locked != null)" @click="toggle_lock()" text icon>
 				<v-icon small class="pr-0">{{ is_locked ? "mdi-lock" : "mdi-lock-open-variant" }}</v-icon>
 			</btn>
@@ -1091,13 +1092,20 @@ Vue.component('account-actions', {
 	},
 	data() {
 		return {
+			account: null,
 			seed: null,
 			info: null,
 			error: null,
-			dialog: false
+			seed_dialog: false,
+			remove_dialog: false
 		}
 	},
 	methods: {
+		update() {
+			fetch('/wapi/wallet/account?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.account = data);
+		},
 		reset_cache() {
 			const req = {};
 			req.index = this.index;
@@ -1119,12 +1127,21 @@ Vue.component('account-actions', {
 				.then(response => response.json())
 				.then(data => {
 					this.seed = data;
-					this.dialog = true;
+					this.seed_dialog = true;
+				});
+		},
+		remove() {
+			fetch('/api/wallet/remove_account?index=' + this.index + "&account=" + this.account.index)
+				.then(response => {
+					if(response.ok) this.$router.push('/wallet/');
 				});
 		},
 		copyToClipboard(value) {
 			navigator.clipboard.writeText(value).then(() => {});
 		}		
+	},
+	created() {
+		this.update();
 	},
 	template: `
 		<div>			
@@ -1132,27 +1149,48 @@ Vue.component('account-actions', {
 				<v-card-text>
 					<v-btn outlined @click="reset_cache">{{ $t('account_actions.reset_cache') }}</v-btn>
 
-					<v-dialog v-model="dialog" max-width="800">
+					<v-dialog v-model="seed_dialog" max-width="800">
 						<template v-slot:activator="{ on, attrs }">
 							<v-btn outlined @click="show_seed">{{ $t('account_actions.show_seed') }}</v-btn>
 						</template>
 						<template v-slot:default="dialog">
 							<v-card>
-							<v-toolbar color="primary"></v-toolbar>
+								<v-toolbar color="primary"></v-toolbar>
 								<v-card-text class="pb-0">
-									<v-container>					
+									<v-container>
 										<seed v-model="seed.string" readonly></seed>
 									</v-container>
 								</v-card-text>
 								<v-card-actions>
 									<v-spacer></v-spacer>
 									<v-btn text @click="copyToClipboard(seed.string)">Copy</v-btn>
-									<v-btn text @click="dialog.value = false">Close</v-btn>
+									<v-btn text @click="seed_dialog = false">Close</v-btn>
 								</v-card-actions>
 							</v-card>
 						</template>
 					</v-dialog>
-
+					
+					<v-dialog v-model="remove_dialog" max-width="800">
+						<template v-slot:activator="{ on, attrs }">
+							<v-btn outlined color="red" @click="remove_dialog = true">Remove</v-btn>
+						</template>
+						<template v-slot:default="dialog">
+							<v-card>
+								<v-toolbar color="primary"></v-toolbar>
+								<v-card-text class="pb-0">
+									<v-container>
+										<v-alert border="left" colored-border type="warning" elevation="2">
+											To recover any funds you will need to re-create the wallet from a stored backup!
+										</v-alert>
+									</v-container>
+								</v-card-text>
+								<v-card-actions class="justify-end">
+									<v-btn color="error" @click="remove()">Remove</v-btn>
+									<v-btn @click="remove_dialog = false">{{ $t('common.cancel') }}</v-btn>
+								</v-card-actions>
+							</v-card>
+						</template>
+					</v-dialog>
 				</v-card-text>
 			</v-card>
 
@@ -1268,6 +1306,7 @@ Vue.component('create-wallet', {
 			with_passphrase: false,
 			seed: null,
 			passphrase: null,
+			finger_print: null,
 			error: null,
 			show_passphrase: false
 		}
@@ -1294,6 +1333,24 @@ Vue.component('create-wallet', {
 						});
 					}
 				});
+		},
+		validate() {
+			if(this.with_seed && this.with_passphrase && this.finger_print) {
+				const req = {};
+				req.words = this.seed;
+				req.finger_print = this.finger_print;
+				req.passphrase = this.passphrase;
+				fetch('/wapi/passphrase/validate', {body: JSON.stringify(req), method: "post"})
+					.then(response => {
+						if(response.ok) {
+							this.submit();
+						} else {
+							this.error = "Wrong passphrase!";
+						}
+					});
+			} else {
+				this.submit();
+			}
 		}
 	},
 	template: `
@@ -1323,15 +1380,13 @@ Vue.component('create-wallet', {
 						:label="$t('create_wallet.use_custom_seed')">
 					</v-checkbox>
 
-					<v-card :disabled="!with_seed">
+					<v-card v-if="with_seed">
 						<v-card-title class="text-subtitle-1">
 							{{$t('create_wallet.seed_words')}}
 						</v-card-title>
-						<v-expand-transition>
-							<v-card-text v-show="with_seed">
-								<seed v-model="seed" :disabled="!with_seed"/>
-							</v-card-text>
-						</v-expand-transition>
+						<v-card-text v-show="with_seed">
+							<seed v-model="seed" :disabled="!with_seed"/>
+						</v-card-text>
 					</v-card>
 
 					<v-checkbox
@@ -1339,20 +1394,29 @@ Vue.component('create-wallet', {
 						:label="$t('create_wallet.use_passphrase')">
 					</v-checkbox>
 
-					<v-text-field
-						v-model="passphrase"
-						:label="$t('create_wallet.passphrase')"
-						:disabled="!with_passphrase"
-						autocomplete="new-password"
-						:type="show_passphrase ? 'text' : 'password'"
-						:append-icon="show_passphrase ? 'mdi-eye' : 'mdi-eye-off'"
-						@click:append="show_passphrase = !show_passphrase">
-					</v-text-field>
-
-					<v-btn @click="submit" outlined color="primary">{{ $t('create_wallet.create_wallet') }}</v-btn>
-
+					<v-card v-if="with_passphrase" class="pt-0">
+						<v-card-text class="pt-2 pb-0">
+							<v-text-field
+								v-model="passphrase"
+								:label="$t('create_wallet.passphrase')"
+								:disabled="!with_passphrase"
+								autocomplete="new-password"
+								:type="show_passphrase ? 'text' : 'password'"
+								:append-icon="show_passphrase ? 'mdi-eye' : 'mdi-eye-off'"
+								@click:append="show_passphrase = !show_passphrase">
+							</v-text-field>
+							
+							<v-text-field
+								v-if="with_seed"
+								v-model="finger_print"
+								label="Fingerprint (optional, to validate passphrase)"
+								placeholder="123456789">
+							</v-text-field>
+						</v-card-text>
+					</v-card>
+					
+					<v-btn @click="validate()" class="mt-5" outlined color="primary">{{ $t('create_wallet.create_wallet') }}</v-btn>
 				</v-card-text>
-
 			</v-card>
 							
 			<v-alert

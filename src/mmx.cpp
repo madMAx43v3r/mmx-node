@@ -456,8 +456,9 @@ int main(int argc, char** argv)
 				for(const auto& entry : wallet.get_all_accounts()) {
 					std::cout << "[" << entry.account << "] name = '" << entry.name << "', index = " << entry.index
 							<< ", passphrase = " << (entry.with_passphrase ? "yes" : "no")
+							<< ", finger_print = " << entry.finger_print
 							<< ", num_addresses = " << entry.num_addresses << ", key_file = " << entry.key_file
-							<< " (" << vnx::to_string(entry.address) << ")" << std::endl;
+							<< " (" << vnx::to_string_value(entry.address) << ")" << std::endl;
 				}
 			}
 			else if(command == "keys")
@@ -994,13 +995,38 @@ int main(int argc, char** argv)
 				vnx::write_to_file(file_name, wallet);
 				std::filesystem::permissions(file_name, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 
-				// TODO: add key file in config/local/Wallet.json
-
-				std::cout << "Created wallet '" << file_name << "' with seed: "
-						<< std::endl << wallet.seed_value << std::endl;
+				std::cout << "Created wallet '" << file_name << "' with seed " << wallet.seed_value << std::endl;
+				std::cout << mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(wallet.seed_value)) << std::endl;
+			}
+			else if(command == "import")
+			{
+				vnx::read_config("$3", file_name);
+				if(file_name.empty()) {
+					std::cerr << "Usage: mmx wallet import path/to/wallet*.dat";
+					goto failed;
+				}
+				auto key_file = vnx::read_from_file<mmx::KeyFile>(file_name);
+				if(!key_file) {
+					vnx::log_error() << "Failed to read wallet file '" << file_name << "'";
+					goto failed;
+				}
+				vnx::optional<std::string> passphrase;
+				if(key_file->finger_print) {
+					passphrase = vnx::input_password("Passphrase: ");
+				}
+				mmx::account_t config;
+				config.num_addresses = 0;	// use default
+				wallet.import_wallet(config, key_file, passphrase);
+			}
+			else if(command == "remove") {
+				if(index < 100) {
+					vnx::log_error() << "Wallet removal not supported for indices below 100!";
+					goto failed;
+				}
+				wallet.remove_account(index, offset);
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | accounts | keys | lock | unlock]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | import | remove | accounts | keys | lock | unlock]" << std::endl;
 			}
 		}
 		else if(module == "node")

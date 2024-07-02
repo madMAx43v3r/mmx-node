@@ -155,6 +155,12 @@ protected:
 
 	void create_wallet(const account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) override;
 
+	void import_wallet(const account_t& config, std::shared_ptr<const KeyFile> key_file, const vnx::optional<std::string>& passphrase) override;
+
+	std::shared_ptr<const KeyFile> export_wallet(const uint32_t& index) const override;
+
+	void remove_account(const uint32_t& index, const uint32_t& account) override;
+
 	std::set<addr_t> get_token_list() const override;
 
 	void add_token(const addr_t& address) override;

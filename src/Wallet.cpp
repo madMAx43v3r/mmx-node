@@ -896,7 +896,11 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 					key_file->seed_value, (info ? info->addresses : std::vector<addr_t>()), config, params);
 			wallets[index] = wallet;
 		} else {
-			wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config, params);
+			auto config_ = config;
+			if(config_.finger_print.empty()) {
+				config_.finger_print = get_finger_print(key_file->seed_value, passphrase);
+			}
+			wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config_, params);
 			wallets[index] = wallet;
 			if(passphrase) {
 				unlock(index, *passphrase);
@@ -917,7 +921,8 @@ void Wallet::create_account(const account_t& config, const vnx::optional<std::st
 	if(config.num_addresses <= 0) {
 		throw std::logic_error("num_addresses <= 0");
 	}
-	add_account(std::max<uint32_t>(max_key_files, wallets.size()), config, passphrase);
+	const auto index = std::max<uint32_t>(max_key_files, wallets.size());
+	add_account(index, config, passphrase);
 
 	const std::string path = config_path + vnx_name + ".json";
 	{
@@ -930,33 +935,94 @@ void Wallet::create_account(const account_t& config, const vnx::optional<std::st
 	}
 }
 
-void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase)
+void Wallet::create_wallet(const account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase)
 {
-	mmx::KeyFile key_file;
+	auto key_file = KeyFile::create();
 	if(words) {
-		key_file.seed_value = mnemonic::words_to_seed(mnemonic::string_to_words(*words));
+		key_file->seed_value = mnemonic::words_to_seed(mnemonic::string_to_words(*words));
 	} else {
-		key_file.seed_value = hash_t::secure_random();
+		key_file->seed_value = hash_t::secure_random();
+	}
+	if(passphrase) {
+		key_file->finger_print = get_finger_print(key_file->seed_value, passphrase);
+	}
+	import_wallet(config, key_file, passphrase);
+}
+
+void Wallet::import_wallet(const account_t& config_, std::shared_ptr<const KeyFile> key_file, const vnx::optional<std::string>& passphrase)
+{
+	if(!key_file) {
+		throw std::logic_error("!key_file");
+	}
+	const auto finger_print = get_finger_print(key_file->seed_value, passphrase);
+
+	if(key_file->finger_print) {
+		if(finger_print != *key_file->finger_print) {
+			throw std::logic_error(passphrase ? "wrong passphrase" : "passphrase needed");
+		}
 	}
 	auto config = config_;
+	if(!config.num_addresses) {
+		config.num_addresses = num_addresses;
+	}
 	config.with_passphrase = passphrase;
-	config.finger_print = get_finger_print(key_file.seed_value, passphrase);
+	config.finger_print = finger_print;
 
 	if(config.key_file.empty()) {
 		config.key_file = "wallet_" + config.finger_print + ".dat";
 	}
-	if(vnx::File(config.key_file).exists()) {
-		throw std::logic_error("key file already exists");
-	}
 	const auto key_path = storage_path + config.key_file;
+
+	const auto existing = vnx::read_from_file<KeyFile>(key_path);
+	if(existing) {
+		if(existing->seed_value != key_file->seed_value) {
+			throw std::logic_error("key file already exists");
+		}
+	}
 	vnx::write_to_file(key_path, key_file);
 	try {
 		create_account(config, passphrase);
 	} catch(...) {
-		vnx::File(key_path).remove();
+		if(!existing) {
+			vnx::File(key_path).remove();
+		}
 		throw;
 	}
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
+}
+
+std::shared_ptr<const KeyFile> Wallet::export_wallet(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+
+	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
+		return key_file;
+	}
+	throw std::logic_error("failed to read key file");
+}
+
+void Wallet::remove_account(const uint32_t& index, const uint32_t& account)
+{
+	const auto wallet = get_wallet(index);
+
+	const std::string path = config_path + vnx_name + ".json";
+	{
+		auto object = vnx::read_config_file(path);
+		auto& accounts = object["accounts+"];
+		std::vector<account_t> list;
+		for(const auto& entry : accounts.to<std::vector<account_t>>()) {
+			if(entry.finger_print != wallet->config.finger_print || entry.index != account) {
+				list.push_back(entry);
+			}
+		}
+		accounts = list;
+		vnx::write_config_file(path, object);
+	}
+	if(index + 1 == wallets.size()) {
+		wallets.resize(index);
+	} else {
+		wallets[index] = nullptr;
+	}
 }
 
 std::set<addr_t> Wallet::get_token_list() const
@@ -1005,22 +1071,12 @@ void Wallet::rem_token(const addr_t& address)
 
 hash_t Wallet::get_master_seed(const uint32_t& index) const
 {
-	const auto wallet = get_wallet(index);
-
-	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
-		return key_file->seed_value;
-	}
-	throw std::logic_error("failed to read key file");
+	return export_wallet(index)->seed_value;
 }
 
 std::vector<std::string> Wallet::get_mnemonic_seed(const uint32_t& index) const
 {
-	const auto wallet = get_wallet(index);
-
-	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
-		return mnemonic::seed_to_words(key_file->seed_value);
-	}
-	throw std::logic_error("failed to read key file");
+	return mnemonic::seed_to_words(export_wallet(index)->seed_value);
 }
 
 std::vector<std::string> Wallet::get_mnemonic_wordlist(const std::string& lang) const

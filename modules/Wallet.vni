@@ -136,6 +136,12 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void create_wallet(account_t config, optional<string> words, optional<string> passphrase);
 	
+	void import_wallet(account_t config, KeyFile* key_file, optional<string> passphrase);
+	
+	void remove_account(uint index, uint account);
+	
+	KeyFile* export_wallet(uint index) const;
+	
 	vector<string> get_mnemonic_wordlist(string lang = "en") const;
 	
 	set<addr_t> get_token_list() const;

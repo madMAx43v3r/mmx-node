@@ -2663,6 +2663,25 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 400, "POST transaction/broadcast {...}");
 		}
 	}
+	else if(sub_path == "/passphrase/validate") {
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			hash_t seed = args["seed"].to<hash_t>();
+			if(args.field.count("words")) {
+				seed = mnemonic::words_to_seed(mnemonic::string_to_words(args["words"].to_string_value()));
+			}
+			const std::string finger_print = args["finger_print"].to_string_value();
+			const std::string passphrase = args["passphrase"].to_string_value();
+			if(get_finger_print(seed, passphrase) == finger_print) {
+				respond_status(request_id, 200, "true");
+			} else {
+				respond_status(request_id, 500, "false");
+			}
+		} else {
+			respond_status(request_id, 400, "POST passphrase/validate {...}");
+		}
+	}
 	else {
 		std::vector<std::string> options = {
 			"config/get", "config/set", "farmer", "farmers",
