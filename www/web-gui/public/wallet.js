@@ -1077,7 +1077,7 @@ Vue.component('account-details', {
 				<tbody>
 					<tr v-for="(address, index) in addresses" :key="address">
 						<td class="key-cell"><b>{{index}}</b></td>
-						<td>{{address}}</td>
+						<td><router-link :to="'/explore/address/' + address">{{address}}</router-link></td>
 					</tr>
 				</tbody>
 			</v-simple-table>
