@@ -15,7 +15,9 @@ Vue.component('node-settings', {
 			timelord_reward_addr: "null",
 			enable_timelord_reward: null,
 			verify_timelord_reward: null,
+			harv_num_threads: null,
 			reload_interval: null,
+			recursive_search: null,
 			plot_dirs: [],
 			new_plot_dir: null,
 			revert_height: null,
@@ -59,7 +61,9 @@ Vue.component('node-settings', {
 					this.timelord_reward_addr = data["TimeLord.reward_addr"];
 					this.enable_timelord_reward = data["TimeLord.enable_reward"];
 					this.verify_timelord_reward = data["Node.verify_vdf_rewards"];
+					this.harv_num_threads = data["Harvester.num_threads"];
 					this.reload_interval = data["Harvester.reload_interval"];
+					this.recursive_search = data["Harvester.recursive_search"];
 					this.plot_dirs = data["Harvester.plot_dirs"];
 				});
 		},
@@ -187,6 +191,16 @@ Vue.component('node-settings', {
 				this.set_config("Node.verify_vdf_rewards", value, true);
 			}
 		},
+		harv_num_threads(value, prev) {
+			if(prev != null) {
+				this.set_config("Harvester.num_threads", value, true);
+			}
+		},
+		recursive_search(value, prev) {
+			if(prev != null) {
+				this.set_config("Harvester.recursive_search", value ? true : false, true);
+			}
+		},
 		reload_interval(value, prev) {
 			if(prev != null) {
 				this.set_config("Harvester.reload_interval", value, true);
@@ -309,9 +323,20 @@ Vue.component('node-settings', {
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 					
 					<v-text-field
+						label="Num. Threads (for lookups, reload)"
+						:value="harv_num_threads" @change="value => harv_num_threads = parseInt(value)"
+					></v-text-field>
+					
+					<v-text-field
 						:label="$t('harvester_settings.harvester_reload_interval')"
 						:value="reload_interval" @change="value => reload_interval = parseInt(value)"
 					></v-text-field>
+					
+					<v-checkbox
+						v-model="recursive_search"
+						label="Recursive Search"
+						class="my-0"
+					></v-checkbox>
 					
 					<v-card class="my-2">
 						<v-simple-table>
