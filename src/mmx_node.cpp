@@ -95,6 +95,7 @@ int main(int argc, char** argv)
 	for(uint32_t i = 0; i < wapi_threads; ++i)
 	{
 		vnx::Handle<mmx::WebAPI> module = new mmx::WebAPI("WebAPI" + std::string(wapi_threads > 1 ? "_" + std::to_string(i) : ""));
+		vnx::read_config("WebAPI.config_path", module->config_path);
 		module->config_path = mmx_home + module->config_path;
 		wapi_instances.push_back(module->vnx_get_id());
 		module.start_detached();

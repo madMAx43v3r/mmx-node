@@ -1147,7 +1147,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			}
 			respond_status(request_id, 200);
 		} else {
-			respond_status(request_id, 400, "config/set?key|value");
+			respond_status(request_id, 400, "POST config/set {key,value}");
 		}
 	}
 	else if(sub_path == "/exit" || sub_path == "/node/exit") {
