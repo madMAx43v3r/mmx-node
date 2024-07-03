@@ -2,9 +2,9 @@ Mainnet
 - Pooling protocol
 - Multisig
 - Test remote calls again
-- Harvester num_threads GUI config
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 - Website
+- Block explorer
 - Linux packages
 - Double check msg hashes again
 - New project wallet
@@ -13,3 +13,5 @@ Mainnet
 - Harvester latency graphs
 - Choose reward_adjust_div
 - GUI settings tabs
+- GUI option to increase wallet address count
+- Native Linux GUI
