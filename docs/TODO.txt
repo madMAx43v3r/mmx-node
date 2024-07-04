@@ -15,3 +15,6 @@ Mainnet
 - GUI settings tabs
 - GUI option to increase wallet address count
 - Native Linux GUI
+- GUI add peer feature
+- Swap warning for one-sided pool
+- VDF trust system (order queue by trust)
