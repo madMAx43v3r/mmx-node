@@ -737,7 +737,9 @@ void WebAPI::render_headers(const vnx::request_id_t& request_id, size_t limit, c
 	for(size_t i = 0; i < limit; ++i) {
 		node->get_header_at(offset - i,
 			[this, job, i](std::shared_ptr<const BlockHeader> block) {
-				job->result[i] = render_value(block, get_context());
+				auto tmp = vnx::clone(block);
+				tmp->proof = nullptr;
+				job->result[i] = render_value(std::shared_ptr<const BlockHeader>(tmp), get_context());
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));
 				}
