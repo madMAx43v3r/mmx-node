@@ -10,14 +10,21 @@ var proxy = http_proxy.createProxyServer({});
 var app = express();
 
 app.all('*', function(req, res) {
-	return proxy.web(req, res, {
+	console.log(req.method + ' ' + req.url);
+	proxy.web(req, res, {
 		target: 'http://localhost:11380/wapi/'
+	}, function(err) {
+		res.status(500);
+		res.send(err.code);
+		console.log(err);
 	});
 });
 
-http.createServer(app).listen(80);
-
-console.log("Listening on port 80 ...");
+{
+	http.createServer(app).listen(80);
+	
+	console.log("Listening on port 80 ...");
+}
 
 const cert_path = '/etc/letsencrypt/live/rpc.mmx.network/';
 
