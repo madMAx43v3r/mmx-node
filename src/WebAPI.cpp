@@ -2676,7 +2676,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			if(get_finger_print(seed, passphrase) == finger_print) {
 				respond_status(request_id, 200, "true");
 			} else {
-				respond_status(request_id, 500, "false");
+				respond_status(request_id, 400, "false");
 			}
 		} else {
 			respond_status(request_id, 400, "POST passphrase/validate {...}");
@@ -2849,7 +2849,7 @@ void WebAPI::respond(const vnx::request_id_t& request_id, const vnx::Object& val
 
 void WebAPI::respond_ex(const vnx::request_id_t& request_id, const std::exception& ex) const
 {
-	respond(request_id, vnx::addons::HttpResponse::from_text_ex(ex.what(), 500));
+	respond(request_id, vnx::addons::HttpResponse::from_text_ex(ex.what(), 400));
 }
 
 void WebAPI::respond_status(const vnx::request_id_t& request_id, const int32_t& status, const std::string& text) const
