@@ -1,5 +1,6 @@
 {
 	"num_threads": 16,
 	"deflate_level": 1,
+	"max_connections": 200,
 	"allow_anon_login": false
 }
