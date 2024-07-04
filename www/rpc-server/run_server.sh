@@ -4,4 +4,4 @@ set -e
 
 ulimit -n 100000
 
-sudo node index.js
+node index.js
