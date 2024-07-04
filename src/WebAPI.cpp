@@ -2835,7 +2835,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 void WebAPI::respond(const vnx::request_id_t& request_id, std::shared_ptr<const vnx::addons::HttpResponse> response) const
 {
 	auto tmp = vnx::clone(response);
-	tmp->headers.emplace_back("Cache-Control", "max-age=" + std::to_string(cache_max_age));
+	tmp->headers.emplace_back("Cache-Control", "max-age=" + std::to_string(cache_max_age) + ", no-store");
 	http_request_async_return(request_id, tmp);
 }
 
