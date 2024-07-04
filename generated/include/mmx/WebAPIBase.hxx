@@ -28,7 +28,7 @@ public:
 	std::string exchange_server = "ExchClient";
 	std::string config_path;
 	uint32_t max_log_history = 10000;
-	uint32_t cache_max_age = 1;
+	uint32_t cache_max_age = 0;
 	
 	typedef ::vnx::Module Super;
 	

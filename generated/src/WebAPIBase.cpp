@@ -44,7 +44,7 @@ namespace mmx {
 
 
 const vnx::Hash64 WebAPIBase::VNX_TYPE_HASH(0xfe90ce601fcc0cc6ull);
-const vnx::Hash64 WebAPIBase::VNX_CODE_HASH(0xe66936111e8db385ull);
+const vnx::Hash64 WebAPIBase::VNX_CODE_HASH(0x8205a34e5a89b37bull);
 
 WebAPIBase::WebAPIBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -223,7 +223,7 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.WebAPI";
 	type_code->type_hash = vnx::Hash64(0xfe90ce601fcc0cc6ull);
-	type_code->code_hash = vnx::Hash64(0xe66936111e8db385ull);
+	type_code->code_hash = vnx::Hash64(0x8205a34e5a89b37bull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::WebAPIBase);
 	type_code->methods.resize(12);
@@ -299,7 +299,7 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 		auto& field = type_code->fields[8];
 		field.data_size = 4;
 		field.name = "cache_max_age";
-		field.value = vnx::to_string(1);
+		field.value = vnx::to_string(0);
 		field.code = {3};
 	}
 	type_code->build();
