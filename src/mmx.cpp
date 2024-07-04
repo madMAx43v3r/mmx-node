@@ -1002,7 +1002,7 @@ int main(int argc, char** argv)
 			{
 				vnx::read_config("$3", file_name);
 				if(file_name.empty()) {
-					std::cerr << "Usage: mmx wallet import path/to/wallet*.dat";
+					std::cerr << "Usage: mmx wallet import path/to/wallet*.dat" << std::endl;
 					goto failed;
 				}
 				auto key_file = vnx::read_from_file<mmx::KeyFile>(file_name);
