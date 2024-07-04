@@ -2830,27 +2830,34 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 	}
 }
 
+void WebAPI::respond(const vnx::request_id_t& request_id, std::shared_ptr<const vnx::addons::HttpResponse> response) const
+{
+	auto tmp = vnx::clone(response);
+	tmp->headers.emplace_back("Cache-Control", "max-age=" + std::to_string(cache_max_age));
+	http_request_async_return(request_id, tmp);
+}
+
 void WebAPI::respond(const vnx::request_id_t& request_id, const vnx::Variant& value) const
 {
-	http_request_async_return(request_id, vnx::addons::HttpResponse::from_variant_json(value));
+	respond(request_id, vnx::addons::HttpResponse::from_variant_json(value));
 }
 
 void WebAPI::respond(const vnx::request_id_t& request_id, const vnx::Object& value) const
 {
-	http_request_async_return(request_id, vnx::addons::HttpResponse::from_object_json(value));
+	respond(request_id, vnx::addons::HttpResponse::from_object_json(value));
 }
 
 void WebAPI::respond_ex(const vnx::request_id_t& request_id, const std::exception& ex) const
 {
-	http_request_async_return(request_id, vnx::addons::HttpResponse::from_text_ex(ex.what(), 500));
+	respond(request_id, vnx::addons::HttpResponse::from_text_ex(ex.what(), 500));
 }
 
 void WebAPI::respond_status(const vnx::request_id_t& request_id, const int32_t& status, const std::string& text) const
 {
 	if(text.empty()) {
-		http_request_async_return(request_id, vnx::addons::HttpResponse::from_status(status));
+		respond(request_id, vnx::addons::HttpResponse::from_status(status));
 	} else {
-		http_request_async_return(request_id, vnx::addons::HttpResponse::from_text_ex(text, status));
+		respond(request_id, vnx::addons::HttpResponse::from_text_ex(text, status));
 	}
 }
 

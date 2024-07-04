@@ -77,6 +77,8 @@ private:
 	void resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 							const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const;
 
+	void respond(const vnx::request_id_t& request_id, std::shared_ptr<const vnx::addons::HttpResponse> response) const;
+
 	void respond(const vnx::request_id_t& request_id, const vnx::Variant& value) const;
 
 	void respond(const vnx::request_id_t& request_id, const vnx::Object& value) const;

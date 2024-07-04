@@ -14,6 +14,8 @@ module WebAPI implements vnx.addons.HttpComponent {
 	
 	uint max_log_history = 10000;
 	
+	uint cache_max_age = 1;
+	
 	
 	void shutdown();
 	
