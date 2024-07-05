@@ -40,36 +40,36 @@ app.all('*', function(req, res)
 	}
 	const time_begin = Date.now();
 	
-	var back = servers[0];
+	var server = servers[0];
 	if(!hop_count || hop_count <= max_retry) {
-		var is_fallback = back.timeout > time_begin;
+		var is_fallback = server.timeout > time_begin;
 		for(const entry of servers) {
 			if(time_begin > entry.timeout) {
-				if(entry.latency < back.latency || is_fallback) {
+				if(entry.latency < server.latency || is_fallback) {
 					is_fallback = false;
-					back = entry;
+					server = entry;
 				}
 			}
 		}
 	}
-	back.count++;
+	server.count++;
 	
 	res.on('finish', function() {
 		if(res.statusCode >= 500) {
-			back.errors++;
-			back.timeout = Date.now() + error_timeout_ms;
+			server.errors++;
+			server.timeout = Date.now() + error_timeout_ms;
 		}
 		
 		const now = Date.now();
 		const latency = now - time_begin;
-		back.latency = parseInt(back.latency * (1 - latency_gain) + latency * latency_gain);
-		back.last_response = now;
+		server.latency = parseInt(server.latency * (1 - latency_gain) + latency * latency_gain);
+		server.last_response = now;
 		
-		console.log(req.method + ' ' + back.url + req.url + ' => status ' + res.statusCode + ', took ' + latency + ' ms, latency ' + parseInt(back.latency) + ' ms');
+		console.log(req.method + ' ' + server.url + req.url + ' => status ' + res.statusCode + ', took ' + latency + ' ms, latency ' + server.latency + ' ms');
     });
     
 	proxy.web(req, res, {
-		target: back.url,
+		target: server.url,
 		headers: {'x-hop-count': (hop_count ? hop_count + 1 : 1)}
 	}, function(err) {
 		try {
@@ -82,27 +82,27 @@ app.all('*', function(req, res)
 });
 
 function health_check() {
-	for(const back of servers) {
+	for(const server of servers) {
 		const time_begin = Date.now();
-		axios.get(back.url + '/node/info').then((res) =>  {
+		axios.get(server.url + '/node/info').then((res) => {
 			var info = {};
 			if(res.status == 200) {
 				if(res.data) {
 					info = res.data;
 				}
-				back.timeout = 0;
+				server.timeout = 0;
 			}
 			const now = Date.now();
 			const latency = now - time_begin;
-			if(now - back.last_response > check_interval_ms) {
-				back.latency = latency + 100;
+			if(now - server.last_response > check_interval_ms) {
+				server.latency = latency + 100;
 			} else {
-				back.latency = Math.max(back.latency, latency);
+				server.latency = Math.max(server.latency, latency);
 			}
-			console.log('CHECK ' + back.url + ' => status ' + res.status + ', height ' + info.height + ', latency ' + latency + ' ms');
+			console.log('CHECK ' + server.url + ' => status ' + res.status + ', height ' + info.height + ', latency ' + latency + ' ms');
 		}).catch((err) => {
-			back.timeout = Date.now() + error_timeout_ms;
-			console.log('CHECK ' + back.url + ' failed with: ' + err.code);
+			server.timeout = Date.now() + error_timeout_ms;
+			console.log('CHECK ' + server.url + ' failed with: ' + err.code);
 		});
 	}
 }
