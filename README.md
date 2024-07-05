@@ -61,9 +61,8 @@ Please take a look at the Wiki:
 
 To access WebGUI, go to: http://localhost:11380/gui/
 
-Only available on localhost, because it has _full access_ to your wallet.
-
-Login password is auto-generated at first launch, located in `$MMX_HOME/PASSWD` file.
+It's only available on localhost by default. \
+The login password is auto-generated at first launch, located in `mmx-node/PASSWD` file (`$MMX_HOME/PASSWD`).
 
 ## Release Notes
 
