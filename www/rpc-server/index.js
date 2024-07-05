@@ -72,7 +72,7 @@ app.all('*', function(req, res)
     
 	proxy.web(req, res, {
 		target: back.url,
-		headers: {'x-hop-count': hop_count + 1}
+		headers: {'x-hop-count': (hop_count ? hop_count + 1 : 1)}
 	}, function(err) {
 		try {
 			res.status(500);
