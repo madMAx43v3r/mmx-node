@@ -1554,6 +1554,7 @@ void Router::on_disconnect(uint64_t client, const std::string& address)
 			const auto it = connect_tasks.find(address);
 			if(it != connect_tasks.end() && it->second == client) {
 				log(DEBUG) << "Failed to connect to " << it->first;
+				peer_set.erase(address);
 				connect_tasks.erase(it);
 			}
 		}
