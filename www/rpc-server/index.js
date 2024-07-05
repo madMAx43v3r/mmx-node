@@ -86,9 +86,7 @@ function health_check() {
 		const time_begin = Date.now();
 		axios.get(back.url + '/node/info').then((res) =>  {
 			var info = {};
-			if(res.status >= 500) {
-				back.timeout = Date.now() + error_timeout_ms;
-			} else {
+			if(res.status == 200) {
 				if(res.data) {
 					info = res.data;
 				}
