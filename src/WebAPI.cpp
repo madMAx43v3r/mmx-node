@@ -142,14 +142,15 @@ void WebAPI::main()
 
 void WebAPI::update()
 {
+	node->get_height(
+		[this](const uint32_t& height) {
+			if(height != curr_height) {
+				time_offset = vnx::get_time_seconds();
+				curr_height = height;
+			}
+		});
 	node->get_synced_height(
 		[this](const vnx::optional<uint32_t>& height) {
-			if(height) {
-				if(*height != curr_height) {
-					time_offset = vnx::get_time_seconds();
-					curr_height = *height;
-				}
-			}
 			is_synced = height;
 		});
 }
