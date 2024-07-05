@@ -102,3 +102,9 @@ Login password is auto-generated at first launch, located in `$MMX_HOME/PASSWD` 
 - Swap fee levels changed to: 0.05%, 0.25%, 1% and 5%
 - Using zstd compression for network traffic
 - NFT plot support (testing only)
+
+### Testnet12
+
+- Fixed Virtual Plots, they now win blocks at the expected rate. On TN11 it was ~20 times less.
+- Fixed block reward formula, average tx fee is subtracted from minimum reward again.
+
