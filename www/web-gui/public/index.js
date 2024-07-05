@@ -24,7 +24,8 @@ function validate_amount(value) {
 	return "invalid amount";
 }
 
-function get_tx_type_color(type) {
+function get_tx_type_color(type, dark = false) {
+	if(type == "REWARD") return dark ? "lime--text" : "lime--text text--darken-2";
 	if(type == "RECEIVE" || type == "REWARD" || type == "VDF_REWARD") return "green--text";
 	if(type == "SPEND") return "red--text";
 	if(type == "TXFEE") return "grey--text";

@@ -885,7 +885,7 @@ Vue.component('address-history-table', {
 			</template>
 			
 			<template v-slot:item.type="{ item }">
-				<span :class="get_tx_type_color(item.type)">{{item.type}}</span>
+				<span :class="get_tx_type_color(item.type, $vuetify.theme.dark)">{{item.type}}</span>
 			</template>
 
 			<template v-slot:item.amount="{ item }">
