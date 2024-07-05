@@ -19,7 +19,7 @@ console.log(targets);
 
 var servers = [];
 for(const entry of targets) {
-	servers.push({url: entry, count: 0, errors: 0, pending: 0, latency: 1000, timeout: 0, last_response: 0});
+	servers.push({url: entry, count: 0, errors: 0, latency: 1000, timeout: 0, last_response: 0});
 }
 servers[0].latency = 0;
 
@@ -53,21 +53,19 @@ app.all('*', function(req, res)
 		}
 	}
 	back.count++;
-	back.pending++;
 	
 	res.on('finish', function() {
 		if(res.statusCode >= 500) {
 			back.errors++;
 			back.timeout = Date.now() + error_timeout_ms;
 		}
-		back.pending--;
 		
 		const now = Date.now();
 		const latency = now - time_begin;
 		back.latency = parseInt(back.latency * (1 - latency_gain) + latency * latency_gain);
 		back.last_response = now;
 		
-		console.log(req.method + ' ' + back.url + req.url + ' => status ' + res.statusCode + ', took ' + latency + ' ms, pending ' + back.pending + ', latency ' + parseInt(back.latency) + ' ms');
+		console.log(req.method + ' ' + back.url + req.url + ' => status ' + res.statusCode + ', took ' + latency + ' ms, latency ' + parseInt(back.latency) + ' ms');
     });
     
 	proxy.web(req, res, {
