@@ -92,6 +92,82 @@ Vue.component('main-menu', {
 		`
 })
 
+Vue.component('balance-table', {
+	props: {
+		address: String,
+		show_empty: Boolean
+	},
+	data() {
+		return {
+			data: [],
+			loading: false,
+			loaded: false,
+			timer: null
+		}
+	},
+	computed: {
+		headers() {
+			return [
+				{ text: this.$t('balance_table.balance'), value: 'total'},
+				{ text: this.$t('balance_table.locked'), value: 'locked'},
+				{ text: this.$t('balance_table.spendable'), value: 'spendable'},
+				{ text: this.$t('balance_table.token'), value: 'symbol'},
+				{ text: this.$t('balance_table.contract'), value: 'contract'},
+			]
+		}
+	},
+	methods: {
+		update() {
+			this.loading = true;
+			fetch(WAPI_URL + '/balance?id=' + this.address)
+				.then(response => response.json())
+				.then(data => {
+					this.loading = false;
+					this.loaded = true;
+					this.data = data.balances;
+				});
+		}
+	},
+	watch: {
+		address() {
+			this.update();
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div>
+		<v-data-table
+			:headers="headers"
+			:items="data"
+			:loading="!loaded"
+			hide-default-footer
+			disable-sort
+			disable-pagination
+			class="elevation-2"
+			v-if="!loaded || loaded && (data.length || show_empty)"
+		>
+			<template v-slot:item.spendable="{ item }">
+				<b>{{item.spendable}}</b>
+			</template>
+
+			<template v-slot:item.contract="{ item }">
+				<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
+			</template>
+		</v-data-table>
+
+		<template v-if="!data && loading">
+			<div class="ui basic loading placeholder segment"></div>
+		</template>
+		</div>
+		`
+})
+
 Vue.component('app', {
 	computed: {
 		colClass(){
