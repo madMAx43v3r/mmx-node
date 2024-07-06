@@ -48,7 +48,8 @@
 namespace mmx {
 
 Router::Router(const std::string& _vnx_name)
-	:	RouterBase(_vnx_name)
+	:	RouterBase(_vnx_name),
+		rand_engine(vnx::get_time_micros())
 {
 	params = get_params();
 	port = params->port;
