@@ -1,4 +1,6 @@
 
+const WAPI_URL = "/wapi";
+
 function validate_address(address) {
 	return address && address.length == 62 && address.startsWith("mmx1");
 }

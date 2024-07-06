@@ -138,7 +138,7 @@ Vue.component('explore-blocks', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/headers?limit=' + this.limit)
+			fetch(WAPI_URL + '/headers?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;
@@ -184,7 +184,7 @@ Vue.component('explore-transactions', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/transactions?limit=' + this.limit)
+			fetch(WAPI_URL + '/transactions?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;
@@ -255,7 +255,7 @@ Vue.component('explore-farmers', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmers?limit=' + this.limit)
+			fetch(WAPI_URL + '/farmers?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;
@@ -306,10 +306,10 @@ Vue.component('block-view', {
 		update() {
 			let url = null;
 			if(this.hash) {
-				url = '/wapi/block?hash=' + this.hash;
+				url = WAPI_URL + '/block?hash=' + this.hash;
 			}
 			if(this.height >= 0) {
-				url = '/wapi/block?height=' + this.height;
+				url = WAPI_URL + '/block?height=' + this.height;
 			}
 			if(url) {
 				this.loading = true;
@@ -514,7 +514,7 @@ Vue.component('transaction-view', {
 		update() {
 			if(this.id) {
 				this.loading = true;
-				fetch('/wapi/transaction?id=' + this.id)
+				fetch(WAPI_URL + '/transaction?id=' + this.id)
 					.then(response => {
 						if(response.ok) {
 							response.json()
@@ -702,7 +702,7 @@ Vue.component('farmer-view', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmer?limit=' + this.limit + "&id=" + this.farmer_key)
+			fetch(WAPI_URL + '/farmer?limit=' + this.limit + "&id=" + this.farmer_key)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;
@@ -774,7 +774,7 @@ Vue.component('address-view', {
 	methods: {
 		update() {
 			this.loading = true;
-			fetch('/wapi/contract?id=' + this.address)
+			fetch(WAPI_URL + '/contract?id=' + this.address)
 				.then(response => {
 					if(response.ok) {
 						response.json()
@@ -844,7 +844,7 @@ Vue.component('address-history-table', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/address/history?limit=' + this.limit + '&id=' + this.address)
+			fetch(WAPI_URL + '/address/history?limit=' + this.limit + '&id=' + this.address)
 				.then(response => response.json())
 				.then(data => {
 					this.loaded = true;
