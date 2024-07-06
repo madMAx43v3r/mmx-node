@@ -74,10 +74,20 @@ const ExploreTransaction = {
 }
 
 Vue.component('main-menu', {
+	methods: {
+		toggle_dark_mode() {
+			const value = !this.$vuetify.theme.dark;
+			this.$vuetify.theme.dark = value;
+			localStorage.setItem('theme_dark', value);
+		}
+	},
 	template: `
 		<v-tabs>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-spacer></v-spacer>
+			<v-btn icon color="info" @click="toggle_dark_mode">
+				<v-icon class="m-1">{{$vuetify.theme.dark ? 'mdi-moon-waxing-crescent' : 'mdi-white-balance-sunny'}}</v-icon>
+			</v-btn>
 		</v-tabs>
 		`
 })
