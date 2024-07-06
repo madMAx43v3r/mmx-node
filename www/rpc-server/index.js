@@ -26,6 +26,10 @@ servers[0].latency = 0;
 var http_proxy = require('http-proxy');
 var proxy = http_proxy.createProxyServer({});
 
+proxy.on('proxyRes', function(proxyRes) {
+	proxyRes.headers['Access-Control-Allow-Origin'] = "*";
+});
+
 var app = express();
 
 app.all('*', function(req, res)
