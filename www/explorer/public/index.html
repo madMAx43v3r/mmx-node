@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Explorer - MMX</title>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <link href="assets/fonts/roboto/roboto.css" rel="stylesheet">
+    <link href="assets/fonts/materialdesignicons/materialdesignicons.min.css" rel="stylesheet">
+    <link href="assets/vuetify/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
+    <script src="assets/vuetify/vue.min.js"></script>
+    <script src="assets/vuetify/vue-i18n.min.js"></script>
+    <script src="assets/vuetify/vue-router.min.js"></script>
+    <script src="assets/vuetify/vuetify.min.js"></script>
+
+    <script src="index.js" defer></script>
+    <script src="explorer.js" defer></script>
+        
+    <script src="locales/common.js" defer></script>
+    <script src="locales/en.js" defer></script>
+    <script src="i18n.utils.js" defer></script>
+    
+    <script src="mount.js" defer></script>
+
+
+    <style>
+        .theme--light.v-data-table tbody tr:nth-of-type(odd) td {
+            background-color: rgba(0, 0, 0, .03);
+        }
+        .theme--dark.v-data-table tbody tr:nth-of-type(odd) td {
+            background-color: rgba(0, 0, 0, .5);
+        }
+        .v-data-table.object-table tr:hover {
+            background: transparent !important;
+        }
+
+        .no-padding .v-toolbar__content {
+            padding-left: 0px;
+            padding-right: 0px;
+        }
+        .text-align-right .v-text-field__slot input {
+            text-align: right;
+        }
+        .key-cell {
+            min-width: 150px; 
+            width: 5%;
+        }
+        .theme--dark .key-cell {
+            background-color: black !important;
+        }
+        .theme--light .key-cell {
+            background-color: #EEEEEE !important;
+        }
+        .v-tabs-bar {
+            background-color: transparent !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <app></app>
+    </div>
+</body>
+</html>
