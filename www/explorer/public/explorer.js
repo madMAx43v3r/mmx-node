@@ -547,6 +547,7 @@ Vue.component('transaction-view', {
 	},
 	template: `
 		<v-card class="my-2">
+		<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 		<v-card-text>
 			<v-chip label>{{ $t('transaction_view.transaction') }}</v-chip>
 			<v-chip label>{{ id }}</v-chip>
