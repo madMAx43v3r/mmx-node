@@ -754,7 +754,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	return out;
 }
 
-std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<vdf_point_t> vdf_point, const proof_data_t& proof, const bool full_block)
+std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 
@@ -771,12 +771,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->proof = proof.proof;
 	block->netspace_ratio = calc_new_netspace_ratio(
 			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
+	block->vdf_reward_addr = vdf_point->reward_addr;
 
-	if(vdf_point->vdf_reward_valid) {
-		if(auto vdf_proof = vdf_point->proof) {
-			block->vdf_reward_addr = vdf_proof->reward_addr;
-		}
-	}
 	if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
 		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
 			block->reward_addr = plot->reward_address;

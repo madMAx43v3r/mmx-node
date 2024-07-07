@@ -407,7 +407,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	}
 }
 
-void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<vdf_point_t> point)
+void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<const VDF_Point> point)
 {
 	if(is_synced && proof->height > get_height()) {
 		log(INFO) << "-------------------------------------------------------------------------------";
@@ -423,7 +423,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 		log(WARN) << "VDF verification took longer than recommended: " << elapsed << " sec";
 	}
 
-	std::shared_ptr<const vdf_point_t> prev;
+	std::shared_ptr<const VDF_Point> prev;
 	for(auto iter = verified_vdfs.lower_bound(proof->height - 1); iter != verified_vdfs.lower_bound(proof->height); ++iter) {
 		if(iter->second->output == point->input) {
 			prev = iter->second;
@@ -476,7 +476,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 				}
 			}
 		}
-		auto point = std::make_shared<vdf_point_t>();
+		auto point = std::make_shared<VDF_Point>();
 
 		for(int i = 0; i < 3; ++i) {
 			if(i < 2 || (verify_vdf_rewards && proof->reward_addr)) {
@@ -488,7 +488,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) const noexc
 						verify_vdf(proof, i);
 					}
 					if(i == 2) {
-						point->vdf_reward_valid = true;
+						point->reward_addr = proof->reward_addr;
 					}
 				} catch(const std::exception& ex) {
 					if(i < 2) {

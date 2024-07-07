@@ -242,18 +242,6 @@ private:
 		void setup_wait(const hash_t& txid, const addr_t& address);
 	};
 
-	struct vdf_point_t {
-		uint32_t height = -1;
-		uint64_t vdf_start = 0;
-		uint64_t vdf_iters = 0;
-		int64_t recv_time = 0;
-		bool vdf_reward_valid = false;
-		std::array<hash_t, 2> input;
-		std::array<hash_t, 2> output;
-		vnx::optional<hash_t> infused;					// chain 0
-		std::shared_ptr<const ProofOfTime> proof;
-	};
-
 	struct balance_log_t {
 		std::map<std::pair<addr_t, addr_t>, uint128> added;
 		std::map<std::pair<addr_t, addr_t>, uint128> removed;
@@ -269,7 +257,7 @@ private:
 		int64_t recv_time = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
-		std::shared_ptr<const vdf_point_t> vdf_point;
+		std::shared_ptr<const VDF_Point> vdf_point;
 		std::shared_ptr<const BlockHeader> diff_block;
 		std::shared_ptr<const execution_context_t> context;
 		balance_log_t balance;
@@ -324,7 +312,7 @@ private:
 
 	std::vector<tx_pool_t> validate_for_block();
 
-	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<vdf_point_t> vdf_point, const proof_data_t& proof, const bool full_block);
+	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block);
 
 	int get_offer_state(const addr_t& address) const;
 
@@ -405,7 +393,7 @@ private:
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) const;
 
-	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<vdf_point_t> point);
+	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<const VDF_Point> point);
 
 	void verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof);
 
@@ -443,10 +431,10 @@ private:
 
 	bool find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset = 0) const;
 
-	std::shared_ptr<vdf_point_t> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
+	std::shared_ptr<const VDF_Point> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
 			const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const;
 
-	std::shared_ptr<vdf_point_t> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
+	std::shared_ptr<const VDF_Point> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
 
 	std::vector<proof_data_t> find_proof(const hash_t& challenge) const;
 
@@ -494,7 +482,7 @@ private:
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 
-	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
+	std::multimap<uint32_t, std::shared_ptr<const VDF_Point>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]

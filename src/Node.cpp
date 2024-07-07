@@ -1280,7 +1280,7 @@ bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& chal
 	return false;
 }
 
-std::shared_ptr<Node::vdf_point_t>
+std::shared_ptr<const VDF_Point>
 Node::find_vdf_point(	const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
 						const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const
 {
@@ -1295,7 +1295,7 @@ Node::find_vdf_point(	const uint32_t height, const uint64_t vdf_start, const uin
 	return nullptr;
 }
 
-std::shared_ptr<Node::vdf_point_t> Node::find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const
+std::shared_ptr<const VDF_Point> Node::find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const
 {
 	if(auto diff_block = find_diff_header(block, 1))
 	{
