@@ -81,8 +81,9 @@ app.all('*', function(req, res)
 	}, function(err) {
 		try {
 			res.status(500);
-		} finally {
 			res.send(err.code);
+		} catch(e) {
+			// ignore
 		}
 		console.log(err);
 	});
