@@ -1,5 +1,4 @@
 {
 	"num_threads": 32,
-	"max_history": 10000,
-	"verify_vdf_rewards": false
+	"max_history": 10000
 }
