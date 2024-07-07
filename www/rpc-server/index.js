@@ -81,10 +81,10 @@ app.all('*', function(req, res)
 	}, function(err) {
 		try {
 			res.status(500);
+		} catch(e) {}
+		try {
 			res.send(err.code);
-		} catch(e) {
-			// ignore
-		}
+		} catch(e) {}
 		console.log(err);
 	});
 });
