@@ -26,6 +26,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get -y upgrade \
 		&& apt-get install -y \
 			apt-utils \
+			curl \
 			libminiupnpc17 \
 			libjemalloc2 \
 			zlib1g \
