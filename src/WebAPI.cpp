@@ -1230,14 +1230,14 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_limit != query.end() && iter_offset != query.end()) {
 			const size_t limit = std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0);
 			const size_t offset = vnx::from_string<int64_t>(iter_offset->second);
-			if(is_public && limit > 1000) {
-				throw std::logic_error("limit > 1000");
+			if(is_public && limit > 100) {
+				throw std::logic_error("limit > 100");
 			}
 			render_headers(request_id, limit, offset);
 		} else if(iter_offset == query.end()) {
 			const uint32_t limit = iter_limit != query.end() ? std::max<int64_t>(vnx::from_string<int64_t>(iter_limit->second), 0) : 20;
-			if(is_public && limit > 1000) {
-				throw std::logic_error("limit > 1000");
+			if(is_public && limit > 100) {
+				throw std::logic_error("limit > 100");
 			}
 			node->get_height(
 				[this, request_id, limit](const uint32_t& height) {
@@ -1301,10 +1301,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
 		if(iter_height != query.end()) {
-			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : (is_public ? 1000 : -1);
+			const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : (is_public ? 100 : -1);
 			const size_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
-			if(is_public && limit > 1000) {
-				throw std::logic_error("limit > 1000");
+			if(is_public && limit > 100) {
+				throw std::logic_error("limit > 100");
 			}
 			node->get_tx_ids_at(vnx::from_string_value<uint32_t>(iter_height->second),
 				std::bind(&WebAPI::render_transactions, this, request_id, limit, offset, std::placeholders::_1),
@@ -1313,6 +1313,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const uint64_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 			const uint64_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 			if(is_public) {
+				if(limit > 100) {
+					throw std::logic_error("limit > 100");
+				}
 				if(offset + limit > 1000 || (limit >> 60) || (offset >> 60)) {
 					throw std::logic_error("offset + limit > 1000");
 				}
@@ -1471,6 +1474,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const uint64_t offset = iter_offset != query.end() ? vnx::from_string_value<int64_t>(iter_offset->second) : 0;
 			const auto address = vnx::from_string_value<addr_t>(iter->second);
 			if(is_public) {
+				if(limit > 100) {
+					throw std::logic_error("limit > 100");
+				}
 				if(offset + limit > 1000 || (offset >> 32) || (limit >> 32)) {
 					throw std::logic_error("offset + limit > 1000");
 				}
@@ -1564,6 +1570,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const uint32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 		const uint32_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 		if(is_public) {
+			if(limit > 1000) {
+				throw std::logic_error("limit > 1000");
+			}
 			if(offset + limit > 10000 || (offset >> 30) || (limit >> 30)) {
 				throw std::logic_error("offset + limit > 10000");
 			}
@@ -1590,8 +1599,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				  uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			const uint32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 			if(is_public) {
-				if(limit > 1000) {
-					throw std::logic_error("limit > 1000");
+				if(limit > 100) {
+					throw std::logic_error("limit > 100");
 				}
 				const auto max_delta = 3153600u;
 				if(curr_height > max_delta) {
@@ -1638,8 +1647,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const uint32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			const uint32_t until = iter_until != query.end() ? vnx::from_string<int64_t>(iter_until->second) : -1;
-			if(is_public && limit > 10000) {
-				throw std::logic_error("limit > 10000");
+			if(is_public && limit > 200) {
+				throw std::logic_error("limit > 200");
 			}
 			node->get_history({address}, since, until, limit,
 				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
@@ -1654,8 +1663,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_id != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
 			const uint32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
-			if(is_public && limit > 10000) {
-				throw std::logic_error("limit > 10000");
+			if(is_public && limit > 100) {
+				throw std::logic_error("limit > 100");
 			}
 			node->get_exec_history(address, limit, true,
 				[this, request_id](const std::vector<exec_entry_t>& history) {
@@ -2440,6 +2449,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const bool state = iter_state != query.end() ? vnx::from_string<bool>(iter_state->second) : true;
 
 		if(is_public) {
+			if(limit > 100) {
+				throw std::logic_error("limit > 100");
+			}
 			if(offset + limit > 1000 || (offset >> 32) || (limit >> 32)) {
 				throw std::logic_error("offset + limit > 1000");
 			}
@@ -2504,8 +2516,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 		const uint32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
-		if(is_public && limit > 1000) {
-			throw std::logic_error("limit > 1000");
+		if(is_public && limit > 200) {
+			throw std::logic_error("limit > 200");
 		}
 		node->get_trade_history_for(bid, ask, limit, since,
 			[this, request_id, bid, ask, limit](const std::vector<trade_entry_t>& result) {
