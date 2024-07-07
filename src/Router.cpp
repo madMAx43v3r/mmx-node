@@ -805,6 +805,9 @@ void Router::connect()
 
 		for(const auto& address : all_peers)
 		{
+			if(!is_valid_address(address)) {
+				continue;
+			}
 			if(outbound_synced.size() >= num_peers_out) {
 				auto iter = peer_retry_map.find(address);
 				if(iter != peer_retry_map.end()) {
@@ -827,10 +830,8 @@ void Router::connect()
 			if(connect_tasks.size() >= 2 * num_peers_out) {
 				break;
 			}
-			if(is_valid_address(address)) {
-				connect_to(address);
-				peer_retry_map.erase(address);
-			}
+			connect_to(address);
+			peer_retry_map.erase(address);
 		}
 	}
 
