@@ -1,7 +1,9 @@
 
 const max_retry = 1;
+const latency_gain = 0.5;
+const load_balance_tick = 500;		// [ms]
 const check_interval_ms = 10 * 1000;
-const error_timeout_ms = 2 * check_interval_ms;
+const error_timeout_ms = 3 * check_interval_ms;
 
 const express = require('express');
 const axios = require("axios");
@@ -18,7 +20,7 @@ console.log(targets);
 
 var servers = [];
 for(const entry of targets) {
-	servers.push({url: entry, count: 0, errors: 0, latency: 1000, timeout: 0, last_request: 0});
+	servers.push({url: entry, count: 0, pending: 0, errors: 0, latency: 1000, timeout: 0, last_request: 0});
 }
 servers[0].latency = 0;
 
@@ -50,7 +52,7 @@ app.all('*', function(req, res)
 			var is_fallback = server.timeout > time_begin;
 			for(const entry of servers) {
 				if(time_begin > entry.timeout) {
-					if(entry.latency < server.latency || is_fallback) {
+					if((entry.pending + 1) * entry.latency < (server.pending + 1) * server.latency || is_fallback) {
 						is_fallback = false;
 						server = entry;
 					}
@@ -58,8 +60,9 @@ app.all('*', function(req, res)
 			}
 		}
 		server.count++;
+		server.pending++;
+		server.last_request = time_begin;
 	}
-	server.last_request = time_begin;
 	
 	res.on('finish', function() {
 		const now = Date.now();
@@ -77,10 +80,10 @@ app.all('*', function(req, res)
 	}, function(err) {
 		try {
 			res.status(500);
-		} catch(e) {}
-		try {
 			res.send(err.code);
-		} catch(e) {}
+		} catch(e) {
+			// ignore
+		}
 		console.log(err);
 	});
 });
@@ -98,7 +101,7 @@ function health_check() {
 					server.timeout = 0;
 				}
 				const latency = Date.now() - time_begin;
-				server.latency = latency;
+				server.latency = parseInt(server.latency * (1 - latency_gain) + latency * latency_gain);
 				console.log('CHECK ' + server.url + ' => status ' + res.status + ', height ' + info.height + ', latency ' + latency + ' ms');
 			}).catch((err) => {
 				server.timeout = Date.now() + error_timeout_ms;
@@ -107,9 +110,16 @@ function health_check() {
 	}
 }
 
+function reset_pending() {
+	for(const server of servers) {
+		server.pending = 0;
+	}
+}
+
 health_check();
 
 setInterval(health_check, check_interval_ms);
+setInterval(reset_pending, load_balance_tick);
 
 {
 	http.createServer(app).listen(80);
