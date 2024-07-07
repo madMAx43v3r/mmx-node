@@ -35,8 +35,9 @@ var app = express();
 app.all('*', function(req, res)
 {
 	const hop_count = req.get('x-hop-count');
+	const is_health_check = req.get('x-health-check');
 	
-	console.log(req.method + ' ' + req.url + ' (hop ' + (hop_count ? hop_count : 0) + ')');
+	console.log(req.method + ' ' + req.url + ' (hop ' + (hop_count ? hop_count : 0) + ')' + (is_health_check ? " (check)" : ""));
 	
 	if(req.url == "/server/status") {
 		res.send(JSON.stringify(servers, null, 4) + '\n');
@@ -45,18 +46,20 @@ app.all('*', function(req, res)
 	const time_begin = Date.now();
 	
 	var server = servers[0];
-	if(!hop_count || hop_count <= max_retry) {
-		var is_fallback = server.timeout > time_begin;
-		for(const entry of servers) {
-			if(time_begin > entry.timeout) {
-				if(entry.latency < server.latency || is_fallback) {
-					is_fallback = false;
-					server = entry;
+	if(!is_health_check) {
+		if(!hop_count || hop_count <= max_retry) {
+			var is_fallback = server.timeout > time_begin;
+			for(const entry of servers) {
+				if(time_begin > entry.timeout) {
+					if(entry.latency < server.latency || is_fallback) {
+						is_fallback = false;
+						server = entry;
+					}
 				}
 			}
 		}
+		server.count++;
 	}
-	server.count++;
 	
 	res.on('finish', function() {
 		if(res.statusCode >= 500) {
@@ -88,26 +91,27 @@ app.all('*', function(req, res)
 function health_check() {
 	for(const server of servers) {
 		const time_begin = Date.now();
-		axios.get(server.url + '/node/info').then((res) => {
-			var info = {};
-			if(res.status == 200) {
-				if(res.data) {
-					info = res.data;
+		axios.get(server.url + '/node/info', {headers: {'x-health-check': true}})
+			.then((res) => {
+				var info = {};
+				if(res.status == 200) {
+					if(res.data) {
+						info = res.data;
+					}
+					server.timeout = 0;
 				}
-				server.timeout = 0;
-			}
-			const now = Date.now();
-			const latency = now - time_begin;
-			if(now - server.last_response > check_interval_ms) {
-				server.latency = latency + 100;
-			} else {
-				server.latency = Math.max(server.latency, latency);
-			}
-			console.log('CHECK ' + server.url + ' => status ' + res.status + ', height ' + info.height + ', latency ' + latency + ' ms');
-		}).catch((err) => {
-			server.timeout = Date.now() + error_timeout_ms;
-			console.log('CHECK ' + server.url + ' failed with: ' + err.code);
-		});
+				const now = Date.now();
+				const latency = now - time_begin;
+				if(now - server.last_response > check_interval_ms) {
+					server.latency = latency + 100;
+				} else {
+					server.latency = Math.max(server.latency, latency);
+				}
+				console.log('CHECK ' + server.url + ' => status ' + res.status + ', height ' + info.height + ', latency ' + latency + ' ms');
+			}).catch((err) => {
+				server.timeout = Date.now() + error_timeout_ms;
+				console.log('CHECK ' + server.url + ' failed with: ' + err.code);
+			});
 	}
 }
 
