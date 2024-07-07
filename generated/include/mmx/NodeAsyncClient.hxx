@@ -13,6 +13,7 @@
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/VDF_Point.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>

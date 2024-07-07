@@ -220,6 +220,7 @@
 #include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/TransactionBase.hxx>
+#include <mmx/VDF_Point.hxx>
 #include <mmx/WalletBase.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
 #include <mmx/Wallet_accept_offer_return.hxx>
@@ -2962,6 +2963,18 @@ void type<::mmx::TransactionBase>::create_dynamic_code(std::vector<uint16_t>& co
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::VDF_Point>::get_type_code() {
+	return mmx::vnx_native_type_code_VDF_Point;
+}
+
+void type<::mmx::VDF_Point>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::VDF_Point());
+}
+
+void type<::mmx::VDF_Point>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::VDF_Point& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::Wallet_accept_offer>::get_type_code() {
 	return mmx::vnx_native_type_code_Wallet_accept_offer;
 }
@@ -5177,6 +5190,7 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::TimeLord_stop_vdf_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Transaction::static_create_type_code());
 	vnx::register_type_code(::mmx::TransactionBase::static_create_type_code());
+	vnx::register_type_code(::mmx::VDF_Point::static_create_type_code());
 	vnx::register_type_code(::mmx::WalletBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_accept_offer::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_accept_offer_return::static_create_type_code());
@@ -5562,6 +5576,7 @@ const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf = vnx::get_typ
 const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return = vnx::get_type_code(vnx::Hash64(0x53e37fb500ea3a9full));
 const vnx::TypeCode* const vnx_native_type_code_Transaction = vnx::get_type_code(vnx::Hash64(0xce0462acdceaa5bcull));
 const vnx::TypeCode* const vnx_native_type_code_TransactionBase = vnx::get_type_code(vnx::Hash64(0x6697ffbf3611887dull));
+const vnx::TypeCode* const vnx_native_type_code_VDF_Point = vnx::get_type_code(vnx::Hash64(0x1671551501b6c956ull));
 const vnx::TypeCode* const vnx_native_type_code_WalletBase = vnx::get_type_code(vnx::Hash64(0x62207fd96d3aead7ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_accept_offer = vnx::get_type_code(vnx::Hash64(0x3299e81eb354b78full));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_accept_offer_return = vnx::get_type_code(vnx::Hash64(0xb44ec1a26ab66acdull));
