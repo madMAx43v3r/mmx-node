@@ -47,12 +47,12 @@
 #include <mmx/Node_get_contracts_owned_by_return.hxx>
 #include <mmx/Node_get_exec_history.hxx>
 #include <mmx/Node_get_exec_history_return.hxx>
-#include <mmx/Node_get_farmed_block_count.hxx>
-#include <mmx/Node_get_farmed_block_count_return.hxx>
 #include <mmx/Node_get_farmed_block_summary.hxx>
 #include <mmx/Node_get_farmed_block_summary_return.hxx>
 #include <mmx/Node_get_farmed_blocks.hxx>
 #include <mmx/Node_get_farmed_blocks_return.hxx>
+#include <mmx/Node_get_farmer_ranking.hxx>
+#include <mmx/Node_get_farmer_ranking_return.hxx>
 #include <mmx/Node_get_genesis_hash.hxx>
 #include <mmx/Node_get_genesis_hash_return.hxx>
 #include <mmx/Node_get_header.hxx>
@@ -809,9 +809,9 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[16] = ::mmx::Node_get_contracts_by::static_get_type_code();
 	type_code->methods[17] = ::mmx::Node_get_contracts_owned_by::static_get_type_code();
 	type_code->methods[18] = ::mmx::Node_get_exec_history::static_get_type_code();
-	type_code->methods[19] = ::mmx::Node_get_farmed_block_count::static_get_type_code();
-	type_code->methods[20] = ::mmx::Node_get_farmed_block_summary::static_get_type_code();
-	type_code->methods[21] = ::mmx::Node_get_farmed_blocks::static_get_type_code();
+	type_code->methods[19] = ::mmx::Node_get_farmed_block_summary::static_get_type_code();
+	type_code->methods[20] = ::mmx::Node_get_farmed_blocks::static_get_type_code();
+	type_code->methods[21] = ::mmx::Node_get_farmer_ranking::static_get_type_code();
 	type_code->methods[22] = ::mmx::Node_get_genesis_hash::static_get_type_code();
 	type_code->methods[23] = ::mmx::Node_get_header::static_get_type_code();
 	type_code->methods[24] = ::mmx::Node_get_header_at::static_get_type_code();
@@ -1330,12 +1330,6 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			_return_value->_ret_0 = get_exec_history(_args->address, _args->limit, _args->recent);
 			return _return_value;
 		}
-		case 0xf48282ff0941a1f8ull: {
-			auto _args = std::static_pointer_cast<const ::mmx::Node_get_farmed_block_count>(_method);
-			auto _return_value = ::mmx::Node_get_farmed_block_count_return::create();
-			_return_value->_ret_0 = get_farmed_block_count(_args->since);
-			return _return_value;
-		}
 		case 0xa6cda1247bd4f537ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_farmed_block_summary>(_method);
 			auto _return_value = ::mmx::Node_get_farmed_block_summary_return::create();
@@ -1346,6 +1340,12 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_farmed_blocks>(_method);
 			auto _return_value = ::mmx::Node_get_farmed_blocks_return::create();
 			_return_value->_ret_0 = get_farmed_blocks(_args->farmer_keys, _args->full_blocks, _args->since, _args->limit);
+			return _return_value;
+		}
+		case 0x548d571d6384bd43ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Node_get_farmer_ranking>(_method);
+			auto _return_value = ::mmx::Node_get_farmer_ranking_return::create();
+			_return_value->_ret_0 = get_farmer_ranking(_args->limit);
 			return _return_value;
 		}
 		case 0xbfab786cb64c5a3ull: {

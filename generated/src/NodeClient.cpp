@@ -46,12 +46,12 @@
 #include <mmx/Node_get_contracts_owned_by_return.hxx>
 #include <mmx/Node_get_exec_history.hxx>
 #include <mmx/Node_get_exec_history_return.hxx>
-#include <mmx/Node_get_farmed_block_count.hxx>
-#include <mmx/Node_get_farmed_block_count_return.hxx>
 #include <mmx/Node_get_farmed_block_summary.hxx>
 #include <mmx/Node_get_farmed_block_summary_return.hxx>
 #include <mmx/Node_get_farmed_blocks.hxx>
 #include <mmx/Node_get_farmed_blocks_return.hxx>
+#include <mmx/Node_get_farmer_ranking.hxx>
+#include <mmx/Node_get_farmer_ranking_return.hxx>
 #include <mmx/Node_get_genesis_hash.hxx>
 #include <mmx/Node_get_genesis_hash_return.hxx>
 #include <mmx/Node_get_header.hxx>
@@ -1174,19 +1174,6 @@ std::vector<std::shared_ptr<const ::mmx::BlockHeader>> NodeClient::get_farmed_bl
 	}
 }
 
-std::map<::mmx::pubkey_t, uint32_t> NodeClient::get_farmed_block_count(const uint32_t& since) {
-	auto _method = ::mmx::Node_get_farmed_block_count::create();
-	_method->since = since;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_farmed_block_count_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::map<::mmx::pubkey_t, uint32_t>>();
-	} else {
-		throw std::logic_error("NodeClient: invalid return value");
-	}
-}
-
 ::mmx::farmed_block_summary_t NodeClient::get_farmed_block_summary(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since) {
 	auto _method = ::mmx::Node_get_farmed_block_summary::create();
 	_method->farmer_keys = farmer_keys;
@@ -1196,6 +1183,19 @@ std::map<::mmx::pubkey_t, uint32_t> NodeClient::get_farmed_block_count(const uin
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::mmx::farmed_block_summary_t>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::vector<std::pair<::mmx::pubkey_t, uint32_t>> NodeClient::get_farmer_ranking(const int32_t& limit) {
+	auto _method = ::mmx::Node_get_farmer_ranking::create();
+	_method->limit = limit;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_farmer_ranking_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::vector<std::pair<::mmx::pubkey_t, uint32_t>>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

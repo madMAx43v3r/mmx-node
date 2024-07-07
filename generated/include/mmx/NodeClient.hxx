@@ -188,9 +188,9 @@ public:
 	
 	std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0, const int32_t& limit = 100);
 	
-	std::map<::mmx::pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since = 0);
-	
 	::mmx::farmed_block_summary_t get_farmed_block_summary(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const uint32_t& since = 0);
+	
+	std::vector<std::pair<::mmx::pubkey_t, uint32_t>> get_farmer_ranking(const int32_t& limit = -1);
 	
 	void start_sync(const vnx::bool_t& force = 0);
 	

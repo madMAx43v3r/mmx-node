@@ -70,12 +70,12 @@
 #include <mmx/Node_get_contracts_owned_by_return.hxx>
 #include <mmx/Node_get_exec_history.hxx>
 #include <mmx/Node_get_exec_history_return.hxx>
-#include <mmx/Node_get_farmed_block_count.hxx>
-#include <mmx/Node_get_farmed_block_count_return.hxx>
 #include <mmx/Node_get_farmed_block_summary.hxx>
 #include <mmx/Node_get_farmed_block_summary_return.hxx>
 #include <mmx/Node_get_farmed_blocks.hxx>
 #include <mmx/Node_get_farmed_blocks_return.hxx>
+#include <mmx/Node_get_farmer_ranking.hxx>
+#include <mmx/Node_get_farmer_ranking_return.hxx>
 #include <mmx/Node_get_genesis_hash.hxx>
 #include <mmx/Node_get_genesis_hash_return.hxx>
 #include <mmx/Node_get_header.hxx>
@@ -1186,30 +1186,6 @@ void type<::mmx::Node_get_exec_history_return>::create_dynamic_code(std::vector<
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::Node_get_farmed_block_count>::get_type_code() {
-	return mmx::vnx_native_type_code_Node_get_farmed_block_count;
-}
-
-void type<::mmx::Node_get_farmed_block_count>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Node_get_farmed_block_count());
-}
-
-void type<::mmx::Node_get_farmed_block_count>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmed_block_count& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::Node_get_farmed_block_count_return>::get_type_code() {
-	return mmx::vnx_native_type_code_Node_get_farmed_block_count_return;
-}
-
-void type<::mmx::Node_get_farmed_block_count_return>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::Node_get_farmed_block_count_return());
-}
-
-void type<::mmx::Node_get_farmed_block_count_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmed_block_count_return& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::Node_get_farmed_block_summary>::get_type_code() {
 	return mmx::vnx_native_type_code_Node_get_farmed_block_summary;
 }
@@ -1255,6 +1231,30 @@ void type<::mmx::Node_get_farmed_blocks_return>::create_dynamic_code(std::vector
 }
 
 void type<::mmx::Node_get_farmed_blocks_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmed_blocks_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_farmer_ranking>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_farmer_ranking;
+}
+
+void type<::mmx::Node_get_farmer_ranking>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_farmer_ranking());
+}
+
+void type<::mmx::Node_get_farmer_ranking>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmer_ranking& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_farmer_ranking_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_farmer_ranking_return;
+}
+
+void type<::mmx::Node_get_farmer_ranking_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_farmer_ranking_return());
+}
+
+void type<::mmx::Node_get_farmer_ranking_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_farmer_ranking_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5027,12 +5027,12 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_contracts_owned_by_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_exec_history::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_exec_history_return::static_create_type_code());
-	vnx::register_type_code(::mmx::Node_get_farmed_block_count::static_create_type_code());
-	vnx::register_type_code(::mmx::Node_get_farmed_block_count_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_farmed_block_summary::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_farmed_block_summary_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_farmed_blocks::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_farmed_blocks_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_farmer_ranking::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_farmer_ranking_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_genesis_hash::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_genesis_hash_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_header::static_create_type_code());
@@ -5412,12 +5412,12 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_owned_by = vn
 const vnx::TypeCode* const vnx_native_type_code_Node_get_contracts_owned_by_return = vnx::get_type_code(vnx::Hash64(0x3b9dbec85ee482bfull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_exec_history = vnx::get_type_code(vnx::Hash64(0xf17c2f67bedb9df6ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_exec_history_return = vnx::get_type_code(vnx::Hash64(0x17079d265ede8785ull));
-const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_count = vnx::get_type_code(vnx::Hash64(0xf48282ff0941a1f8ull));
-const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_count_return = vnx::get_type_code(vnx::Hash64(0xd1a45ae62f564f3eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_summary = vnx::get_type_code(vnx::Hash64(0xa6cda1247bd4f537ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_block_summary_return = vnx::get_type_code(vnx::Hash64(0xef3dcd5d4d2a58e3ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_blocks = vnx::get_type_code(vnx::Hash64(0xfc412d06ff25542eull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_farmed_blocks_return = vnx::get_type_code(vnx::Hash64(0xe8697ffd381616baull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_farmer_ranking = vnx::get_type_code(vnx::Hash64(0x548d571d6384bd43ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_farmer_ranking_return = vnx::get_type_code(vnx::Hash64(0xb74e7f1a70a60ecdull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_genesis_hash = vnx::get_type_code(vnx::Hash64(0xbfab786cb64c5a3ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_genesis_hash_return = vnx::get_type_code(vnx::Hash64(0x5c5ea53e3163fd5ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_header = vnx::get_type_code(vnx::Hash64(0xf17a5d0c180db198ull));
