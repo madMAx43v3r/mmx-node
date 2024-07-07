@@ -524,7 +524,7 @@ void Node::handle(std::shared_ptr<const VDF_Point> value)
 {
 	verified_vdfs.emplace(value->height, value);
 
-	log(INFO) << "Received VDF point for height " << value->height;
+	log(INFO) << "\U0001F552 Received VDF point for height " << value->height;
 
 	add_dummy_blocks(value->height);
 	trigger_update();
