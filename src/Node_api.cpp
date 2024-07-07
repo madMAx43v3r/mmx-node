@@ -70,7 +70,7 @@
 #include <mmx/Node_get_swap_equivalent_liquidity.hxx>
 #include <mmx/Node_get_swap_liquidity_by.hxx>
 #include <mmx/Node_get_farmed_blocks.hxx>
-#include <mmx/Node_get_farmed_block_count.hxx>
+#include <mmx/Node_get_farmer_ranking.hxx>
 #include <mmx/Node_get_farmed_block_summary.hxx>
 #include <mmx/Node_validate.hxx>
 
@@ -1341,19 +1341,6 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 	return out;
 }
 
-std::map<pubkey_t, uint32_t> Node::get_farmed_block_count(const uint32_t& since) const
-{
-	std::map<pubkey_t, uint32_t> out;
-	// TODO: optimize somehow
-	farmer_block_map.scan([&out, since](const pubkey_t& key, const farmed_block_info_t& info) -> bool {
-		if(info.height >= since) {
-			out[key]++;
-		}
-		return true;
-	});
-	return out;
-}
-
 farmed_block_summary_t Node::get_farmed_block_summary(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since) const
 {
 	farmed_block_summary_t out;
@@ -1367,6 +1354,22 @@ farmed_block_summary_t Node::get_farmed_block_summary(const std::vector<pubkey_t
 				out.total_rewards += entry.reward;
 				out.reward_map[entry.reward_addr] += entry.reward;
 			}
+		}
+	}
+	return out;
+}
+
+std::vector<std::pair<pubkey_t, uint32_t>> Node::get_farmer_ranking(const int32_t& limit) const
+{
+	if(limit < 0) {
+		return farmer_ranking;
+	}
+	std::vector<std::pair<pubkey_t, uint32_t>> out;
+	for(const auto& entry : farmer_ranking) {
+		if(out.size() < size_t(limit)) {
+			out.push_back(entry);
+		} else {
+			break;
 		}
 	}
 	return out;
@@ -1468,7 +1471,7 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case Node_get_swap_equivalent_liquidity::VNX_TYPE_ID:
 		case Node_get_swap_liquidity_by::VNX_TYPE_ID:
 		case Node_get_farmed_blocks::VNX_TYPE_ID:
-		case Node_get_farmed_block_count::VNX_TYPE_ID:
+		case Node_get_farmer_ranking::VNX_TYPE_ID:
 		case Node_get_farmed_block_summary::VNX_TYPE_ID:
 		case Node_validate::VNX_TYPE_ID:
 			api_threads->add_task(std::bind(&Node::async_api_call, this, method, request_id));

@@ -172,10 +172,20 @@ void Node::main()
 			balance_count++;
 			return true;
 		});
-
+		{
+			std::map<pubkey_t, uint32_t> farmer_block_count;
+			farmer_block_map.scan([&farmer_block_count](const pubkey_t& key, const farmed_block_info_t& info) -> bool {
+				farmer_block_count[key]++;
+				return true;
+			});
+			for(const auto& entry : farmer_block_count) {
+				farmer_ranking.push_back(entry);
+			}
+			update_farmer_ranking();
+		}
 		if(height) {
-			log(INFO) << "Loaded DB at height " << (height - 1) << ", " << balance_count << " balances, " << mmx_address_count << " addresses"
-					<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+			log(INFO) << "Loaded DB at height " << (height - 1) << ", " << balance_count << " balances, " << mmx_address_count << " addresses, "
+					<< farmer_ranking.size() << " farmers, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	}
 	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
@@ -861,6 +871,14 @@ void Node::purge_tree()
 	}
 }
 
+void Node::update_farmer_ranking()
+{
+	std::sort(farmer_ranking.begin(), farmer_ranking.end(),
+		[](const std::pair<pubkey_t, uint32_t>& L, const std::pair<pubkey_t, uint32_t>& R) -> bool {
+			return L.second > R.second;
+		});
+}
+
 void Node::commit(std::shared_ptr<const Block> block)
 {
 	if(!history.empty()) {
@@ -1029,6 +1047,14 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			info.reward = block->reward_amount;
 			info.reward_addr = (block->reward_addr ? *block->reward_addr : addr_t());
 			farmer_block_map.insert(proof->farmer_key, info);
+
+			for(auto& entry : farmer_ranking) {
+				if(entry.first == proof->farmer_key) {
+					entry.second++;
+					break;
+				}
+			}
+			update_farmer_ranking();
 		}
 		hash_index.insert(block->hash, block->height);
 
@@ -1140,6 +1166,25 @@ void Node::apply(	std::shared_ptr<const Block> block,
 void Node::revert(const uint32_t height)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
+
+	if(const auto peak = get_peak()) {
+		// revert farmer_ranking
+		for(int64_t i = peak->height; i >= int64_t(height); --i) {
+			if(const auto header = get_header_at(i)) {
+				if(const auto proof = header->proof) {
+					for(auto& entry : farmer_ranking) {
+						if(entry.first == proof->farmer_key) {
+							if(entry.second) {
+								entry.second--;
+							}
+							break;
+						}
+					}
+				}
+			}
+		}
+		update_farmer_ranking();
+	}
 	if(block_chain) {
 		block_index_t entry;
 		if(block_index.find(height, entry)) {

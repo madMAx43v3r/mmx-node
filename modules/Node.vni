@@ -270,10 +270,10 @@ module Node implements vnx.addons.HttpComponent {
 	vector<BlockHeader*> get_farmed_blocks(vector<pubkey_t> farmer_keys, bool full_blocks, uint since, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<pubkey_t, uint> get_farmed_block_count(uint since) const;
+	farmed_block_summary_t get_farmed_block_summary(vector<pubkey_t> farmer_keys, uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	farmed_block_summary_t get_farmed_block_summary(vector<pubkey_t> farmer_keys, uint since) const;
+	vector<pair<pubkey_t, uint>> get_farmer_ranking(int limit = -1) const;
 	
 	void start_sync(bool force);
 	

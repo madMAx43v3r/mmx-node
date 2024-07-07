@@ -1559,30 +1559,19 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/farmers") {
-		const auto iter_since = query.find("since");
 		const auto iter_limit = query.find("limit");
 		const auto iter_offset = query.find("offset");
-			  uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
-		const uint64_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
-		const uint64_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
+		const uint32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
+		const uint32_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 		if(is_public) {
-			if(offset + limit > 10000 || (offset >> 32) || (limit >> 32)) {
+			if(offset + limit > 10000 || (offset >> 30) || (limit >> 30)) {
 				throw std::logic_error("offset + limit > 10000");
 			}
-			const auto max_delta = 3153600u;
-			if(curr_height > max_delta) {
-				since = std::max(since, curr_height - max_delta);
-			}
 		}
-		node->get_farmed_block_count(since,
-			[this, request_id, limit, offset](const std::map<pubkey_t, uint32_t>& result) {
-				std::vector<std::pair<pubkey_t, uint32_t>> data(result.begin(), result.end());
-				std::sort(data.begin(), data.end(),
-					[](const std::pair<pubkey_t, uint32_t>& L, std::pair<pubkey_t, uint32_t>& R) -> bool {
-						return L.second > R.second;
-					});
+		node->get_farmer_ranking(offset + limit,
+			[this, request_id, limit, offset](const std::vector<std::pair<pubkey_t, uint32_t>>& result) {
 				std::vector<vnx::Object> out;
-				for(const auto& entry : get_page(data, limit, offset)) {
+				for(const auto& entry : get_page(result, limit, offset)) {
 					vnx::Object tmp;
 					tmp["farmer_key"] = entry.first.to_string();
 					tmp["block_count"] = entry.second;

@@ -198,9 +198,9 @@ protected:
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
 			const std::vector<pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0, const int32_t& limit = -1) const override;
 
-	std::map<pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const override;
-
 	farmed_block_summary_t get_farmed_block_summary(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
+
+	std::vector<std::pair<pubkey_t, uint32_t>> get_farmer_ranking(const int32_t& limit) const override;
 
 	void on_stuck_timeout();
 
@@ -386,6 +386,8 @@ private:
 
 	void purge_tree();
 
+	void update_farmer_ranking();
+
 	void add_proof(	const uint32_t height, const hash_t& challenge,
 					std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac);
 
@@ -515,6 +517,8 @@ private:
 
 	hash_multi_table<pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
 	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;		// [farmer key => info]
+
+	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;				// sorted by count DSC [farmer key => num. blocks]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
