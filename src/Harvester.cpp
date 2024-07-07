@@ -351,8 +351,11 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 	return info;
 }
 
-void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const
+void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs, const size_t depth) const
 {
+	if(depth > max_recursion) {
+		return;
+	}
 	std::set<std::string> sub_dirs;
 	for(const auto& path : dirs) {
 		vnx::Directory dir(path);
@@ -377,7 +380,7 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 		}
 	}
 	if(!sub_dirs.empty()) {
-		find_plot_dirs(sub_dirs, all_dirs);
+		find_plot_dirs(sub_dirs, all_dirs, depth + 1);
 	}
 }
 
@@ -387,7 +390,7 @@ void Harvester::reload()
 
 	std::set<std::string> dir_set;
 	if(recursive_search) {
-		find_plot_dirs(plot_dirs, dir_set);
+		find_plot_dirs(plot_dirs, dir_set, 0);
 	} else {
 		dir_set = plot_dirs;
 	}
