@@ -1,6 +1,5 @@
 
 const max_retry = 2;
-const latency_gain = 0.1;
 const check_interval_ms = 10 * 1000;
 const error_timeout_ms = 2 * check_interval_ms;
 
@@ -19,7 +18,7 @@ console.log(targets);
 
 var servers = [];
 for(const entry of targets) {
-	servers.push({url: entry, count: 0, errors: 0, latency: 1000, timeout: 0, last_response: 0});
+	servers.push({url: entry, count: 0, errors: 0, latency: 1000, timeout: 0, last_request: 0});
 }
 servers[0].latency = 0;
 
@@ -60,19 +59,16 @@ app.all('*', function(req, res)
 		}
 		server.count++;
 	}
+	server.last_request = time_begin;
 	
 	res.on('finish', function() {
+		const now = Date.now();
 		if(res.statusCode >= 500) {
 			server.errors++;
-			server.timeout = Date.now() + error_timeout_ms;
+			server.timeout = now + error_timeout_ms;
 		}
-		
-		const now = Date.now();
 		const latency = now - time_begin;
-		server.latency = parseInt(server.latency * (1 - latency_gain) + latency * latency_gain);
-		server.last_response = now;
-		
-		console.log(req.method + ' ' + server.url + req.url + ' => status ' + res.statusCode + ', took ' + latency + ' ms, latency ' + server.latency + ' ms');
+		console.log(req.method + ' ' + server.url + req.url + ' => status ' + res.statusCode + ', took ' + latency + ' ms');
     });
     
 	proxy.web(req, res, {
@@ -101,13 +97,8 @@ function health_check() {
 					}
 					server.timeout = 0;
 				}
-				const now = Date.now();
-				const latency = now - time_begin;
-				if(now - server.last_response > check_interval_ms) {
-					server.latency = latency + 100;
-				} else {
-					server.latency = Math.max(server.latency, latency);
-				}
+				const latency = Date.now() - time_begin;
+				server.latency = latency;
 				console.log('CHECK ' + server.url + ' => status ' + res.status + ', height ' + info.height + ', latency ' + latency + ' ms');
 			}).catch((err) => {
 				server.timeout = Date.now() + error_timeout_ms;
