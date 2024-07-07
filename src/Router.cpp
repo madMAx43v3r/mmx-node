@@ -1381,11 +1381,25 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 	{
 		case Router_get_id_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_id_return>(result)) {
+				const auto& id = value->_ret_0;
 				const auto peer = find_peer(client);
-				if(peer) {
-					peer->node_id = value->_ret_0;
+				for(const auto& entry : peer_map) {
+					const auto& existing = entry.second;
+					if(existing->node_id) {
+						if(id == *existing->node_id) {
+							if(peer && fixed_peers.count(peer->address)) {
+								disconnect(existing->client);
+							} else {
+								log(INFO) << "Already connected to " << existing->address << ", disconnecting from " << (peer ? peer->address : "?");
+								disconnect(client);
+							}
+						}
+					}
 				}
-				if(value->_ret_0 == get_id()) {
+				if(peer) {
+					peer->node_id = id;
+				}
+				if(id == get_id()) {
 					if(peer) {
 						log(INFO) << "Discovered our own address: " << peer->address;
 						self_addrs.insert(peer->address);
