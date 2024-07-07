@@ -77,6 +77,7 @@ void Router::main()
 			throw std::logic_error("min_sync_peers > max_connections");
 		}
 	}
+	fixed_peers.insert(master_nodes.begin(), master_nodes.end());
 	{
 		const auto max_block_size = to_value(params->max_block_size, params);
 		tx_upload_bandwidth = max_tx_upload * max_block_size / params->block_time;
@@ -91,6 +92,7 @@ void Router::main()
 	subscribe(input_verified_blocks, max_queue_ms);
 	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
+	subscribe(input_vdf_points, max_queue_ms);
 
 	node_id = hash_t::random();
 	{
@@ -333,6 +335,19 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 		did_reward = true;
 		auto& credits = timelord_credits[value->timelord_key];
 		credits = std::min(credits + vdf_credits, max_credits);
+	}
+}
+
+void Router::handle(std::shared_ptr<const VDF_Point> value)
+{
+	if(value->proof) {
+		auto tmp = vnx::clone(value);
+		tmp->proof = nullptr;
+		value = tmp;
+	}
+	const auto& hash = value->content_hash;
+	if(relay_msg_hash(hash)) {
+		broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, true);
 	}
 }
 
@@ -956,7 +971,7 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 		disconnect(client);
 		return;
 	}
-	const auto hash = value->content_hash;
+	const auto& hash = value->content_hash;
 	if(receive_msg_hash(hash, client)) {
 		try {
 			value->validate();
@@ -989,7 +1004,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 		disconnect(client);
 		return;
 	}
-	const auto hash = block->content_hash;
+	const auto& hash = block->content_hash;
 	if(receive_msg_hash(hash, client)) {
 		try {
 			block->validate();
@@ -1012,6 +1027,21 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 			}
 		}
 		publish(block, output_blocks);
+	}
+}
+
+void Router::on_vdf_point(uint64_t client, std::shared_ptr<const VDF_Point> value)
+{
+	if(auto peer = find_peer(client)) {
+		if(master_nodes.count(peer->address)) {
+			if(value->is_valid()) {
+				if(receive_msg_hash(value->content_hash, client)) {
+					auto copy = vnx::clone(value);
+					copy->recv_time = vnx::get_wall_time_micros();
+					publish(copy, output_vdf_points);
+				}
+			}
+		}
 	}
 }
 
@@ -1448,6 +1478,11 @@ void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 	case ProofOfTime::VNX_TYPE_ID:
 		if(auto value = std::dynamic_pointer_cast<const ProofOfTime>(msg)) {
 			on_vdf(client, value);
+		}
+		break;
+	case VDF_Point::VNX_TYPE_ID:
+		if(auto value = std::dynamic_pointer_cast<const VDF_Point>(msg)) {
+			on_vdf_point(client, value);
 		}
 		break;
 	case ProofResponse::VNX_TYPE_ID:

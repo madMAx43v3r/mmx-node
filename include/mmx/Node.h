@@ -222,6 +222,8 @@ protected:
 
 	void handle(std::shared_ptr<const ProofResponse> value) override;
 
+	void handle(std::shared_ptr<const VDF_Point> value) override;
+
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> method, const vnx::request_id_t& request_id) override;
 
 private:
@@ -297,6 +299,8 @@ private:
 	bool recv_height(const uint32_t& height) const;
 
 	void add_fork(std::shared_ptr<fork_t> fork);
+
+	void add_dummy_blocks(const uint32_t& height);
 
 	void add_dummy_block(std::shared_ptr<const BlockHeader> prev);
 

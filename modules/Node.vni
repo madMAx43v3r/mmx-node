@@ -10,6 +10,7 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.TopicPtr input_transactions = "network.transactions";
 	vnx.TopicPtr input_timelord_vdfs = "timelord.proof";
 	vnx.TopicPtr input_harvester_proof = "farmer.proof";
+	vnx.TopicPtr input_vdf_points = "network.vdf_points";
 
 	vnx.TopicPtr output_verified_vdfs = "node.verified_vdfs";
 	vnx.TopicPtr output_verified_proof = "node.verified_proof";
@@ -20,6 +21,7 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.TopicPtr output_interval_request = "timelord.requests";
 	vnx.TopicPtr output_timelord_infuse = "timelord.infuse";
 	vnx.TopicPtr output_challenges = "harvester.challenges";
+	vnx.TopicPtr output_vdf_points = "node.vdf_points";
 	
 	int max_queue_ms = 10000;				// [ms]
 	int update_interval_ms = 1000;			// [ms]
@@ -47,6 +49,7 @@ module Node implements vnx.addons.HttpComponent {
 	bool do_sync = true;
 	bool db_replay = false;
 	bool show_warnings = false;
+	bool vdf_slave_mode = false;
 	bool verify_vdf_cpuopencl = false;			// verify VDF streams on cpu and opencl, if possible
 	bool verify_vdf_rewards = true;
 	bool debug_exec_fails = false;
@@ -284,5 +287,6 @@ module Node implements vnx.addons.HttpComponent {
 	void handle(Transaction value);
 	void handle(ProofOfTime value);
 	void handle(ProofResponse value);
+	void handle(VDF_Point value);
 	
 }

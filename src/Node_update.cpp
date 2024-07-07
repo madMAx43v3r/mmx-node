@@ -173,6 +173,18 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 	}
 }
 
+void Node::add_dummy_blocks(const uint32_t& height)
+{
+	const auto root = get_root();
+	if(height == root->height + 1) {
+		add_dummy_block(root);
+	}
+	const auto range = fork_index.equal_range(height - 1);
+	for(auto iter = range.first; iter != range.second; ++iter) {
+		add_dummy_block(iter->second->block);
+	}
+}
+
 void Node::update()
 {
 	std::unique_lock lock(db_mutex);

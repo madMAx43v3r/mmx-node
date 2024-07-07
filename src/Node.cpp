@@ -347,7 +347,11 @@ void Node::main()
 		commit(block);
 	}
 
-	subscribe(input_vdfs, max_queue_ms);
+	if(vdf_slave_mode) {
+		subscribe(input_vdf_points, max_queue_ms);
+	} else {
+		subscribe(input_vdfs, max_queue_ms);
+	}
 	subscribe(input_proof, max_queue_ms);
 	subscribe(input_blocks, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
@@ -514,6 +518,16 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 			log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
 		}
 	}
+}
+
+void Node::handle(std::shared_ptr<const VDF_Point> value)
+{
+	verified_vdfs.emplace(value->height, value);
+
+	log(INFO) << "Received VDF point for height " << value->height;
+
+	add_dummy_blocks(value->height);
+	trigger_update();
 }
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)

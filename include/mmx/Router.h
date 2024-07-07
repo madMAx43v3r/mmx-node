@@ -62,13 +62,15 @@ protected:
 	void http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
 
-	void handle(std::shared_ptr<const Block> value);
+	void handle(std::shared_ptr<const Block> value) override;
 
-	void handle(std::shared_ptr<const Transaction> value);
+	void handle(std::shared_ptr<const Transaction> value) override;
 
-	void handle(std::shared_ptr<const ProofOfTime> value);
+	void handle(std::shared_ptr<const ProofOfTime> value) override;
 
-	void handle(std::shared_ptr<const ProofResponse> value);
+	void handle(std::shared_ptr<const ProofResponse> value) override;
+
+	void handle(std::shared_ptr<const VDF_Point> value) override;
 
 private:
 	struct send_item_t {
@@ -148,6 +150,8 @@ private:
 	uint32_t send_request(uint64_t client, std::shared_ptr<const vnx::Value> method, bool reliable = true);
 
 	void on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> proof);
+
+	void on_vdf_point(uint64_t client, std::shared_ptr<const VDF_Point> value);
 
 	void on_block(uint64_t client, std::shared_ptr<const Block> block);
 

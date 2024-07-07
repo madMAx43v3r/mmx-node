@@ -14,8 +14,17 @@ class VDF_Point {
 	
 	optional<addr_t> reward_addr;
 	
+	hash_t content_hash;
+	
+	// below not included in content_hash
+	
+	long recv_time;								// [usec]
+	
 	ProofOfTime* proof;
 	
-	long recv_time;
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
 	
 }
