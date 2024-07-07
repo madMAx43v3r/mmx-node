@@ -1,5 +1,5 @@
 
-const max_retry = 2;
+const max_retry = 1;
 const check_interval_ms = 10 * 1000;
 const error_timeout_ms = 2 * check_interval_ms;
 
