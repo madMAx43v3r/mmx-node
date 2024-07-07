@@ -522,6 +522,9 @@ void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 
 void Node::handle(std::shared_ptr<const VDF_Point> value)
 {
+	if(verified_vdfs.count(value->height) == 0) {
+		log(INFO) << "-------------------------------------------------------------------------------";
+	}
 	verified_vdfs.emplace(value->height, value);
 
 	log(INFO) << "\U0001F552 Received VDF point for height " << value->height;
