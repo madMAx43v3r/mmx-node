@@ -1093,13 +1093,15 @@ int main(int argc, char** argv)
 			else if(command == "peers")
 			{
 				auto info = router.get_peer_info();
+				size_t max_length = 0;
 				uint32_t max_height = 0;
 				for(const auto& peer : info->peers) {
+					max_length = std::max(max_length, peer.address.size());
 					max_height = std::max(max_height, peer.height);
 				}
 				for(const auto& peer : info->peers) {
 					std::cout << "[" << peer.address << "]";
-					for(size_t i = peer.address.size(); i < 15; ++i) {
+					for(size_t i = peer.address.size(); i < max_length + 1; ++i) {
 						std::cout << " ";
 					}
 					std::cout << " height = ";
