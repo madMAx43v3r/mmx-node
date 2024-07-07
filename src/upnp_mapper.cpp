@@ -64,7 +64,7 @@ public:
 
 			const int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr)
 #if MINIUPNPC_API_VERSION >= 18
-					wanaddr, sizeof(wanaddr)
+					, wanaddr, sizeof(wanaddr)
 #endif
 			);
 			freeUPNPDevlist(devlist);
