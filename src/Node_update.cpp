@@ -159,6 +159,7 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->version = 0;
 		block->prev = prev->hash;
 		block->height = prev->height + 1;
+		block->time_stamp = prev->time_stamp + params->block_interval_ms;
 		block->time_diff = prev->time_diff;
 		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
 		block->vdf_iters = vdf_point->vdf_iters;
@@ -291,7 +292,7 @@ void Node::update()
 	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_pending_total())
 	{
 		if(sync_retry < num_sync_retries) {
-			if(now_ms - sync_finish_ms > params->block_time * 500) {
+			if(now_ms - sync_finish_ms > params->block_interval_ms / 2) {
 				log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
 				sync_pos = *sync_peak;
 				sync_peak = nullptr;
@@ -807,15 +808,25 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 
 	const auto prev_fork = find_fork(prev->hash);
 
+	// set time stamp
+	if(auto point = prev_fork->vdf_point) {
+		auto delta_ms = (vdf_point->recv_time - point->recv_time) / 1000;
+		delta_ms = std::min(delta_ms, params->block_interval_ms * 2);
+		delta_ms = std::max(delta_ms, params->block_interval_ms / 2);
+		block->time_stamp = prev->time_stamp + delta_ms;
+	} else {
+		block->time_stamp = prev->time_stamp + params->block_interval_ms;
+	}
+
 	// set new time difficulty
 	if(auto fork = find_prev_fork(prev_fork, params->infuse_delay))
 	{
 		if(auto point = fork->vdf_point) {
-			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->infuse_delay + 1);
-			if(time_delta > 0) {
+			const int64_t delta_ms = (vdf_point->recv_time - point->recv_time) / (params->infuse_delay + 1) / 1000;
+			if(delta_ms > 0) {
 				const double gain = 0.1;
 				if(auto diff_block = fork->diff_block) {
-					double new_diff = params->block_time * diff_block->time_diff / (time_delta * 1e-6);
+					auto new_diff = (double(params->block_interval_ms) * diff_block->time_diff) / delta_ms;
 					new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
 					block->time_diff = std::max<int64_t>(new_diff + 0.5, 1);
 				}

@@ -282,10 +282,11 @@ std::map<addr_t, std::pair<uint128, uint128>> Transaction::get_balance() const
 	return balance;
 }
 
-tx_index_t Transaction::get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params, const uint32_t& height, const int64_t& file_offset) const
+tx_index_t Transaction::get_tx_index(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> block, const int64_t& file_offset) const
 {
 	tx_index_t index;
-	index.height = height;
+	index.height = block->height;
+	index.time_stamp = block->time_stamp;
 	index.file_offset = file_offset;
 	index.static_cost = static_cost;
 	if(deploy) {

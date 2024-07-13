@@ -417,12 +417,12 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 
 	publish(point, output_vdf_points);
 
-	const auto elapsed = (vnx::get_wall_time_micros() - point->recv_time) / 1000 / 1e3;
-	if(elapsed > params->block_time) {
+	const auto elapsed = (vnx::get_wall_time_micros() - point->recv_time) / 1000;
+	if(elapsed > params->block_interval_ms) {
 		log(WARN) << "VDF verification took longer than block interval, unable to keep sync!";
 	}
-	else if(elapsed > 0.5 * params->block_time) {
-		log(WARN) << "VDF verification took longer than recommended: " << elapsed << " sec";
+	else if(elapsed > params->block_interval_ms / 2) {
+		log(WARN) << "VDF verification took longer than recommended: " << elapsed / 1e3 << " sec";
 	}
 
 	std::shared_ptr<const VDF_Point> prev;
@@ -443,7 +443,7 @@ void Node::verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::sha
 			u8"\U0001F550", u8"\U0001F551", u8"\U0001F552", u8"\U0001F553", u8"\U0001F554", u8"\U0001F555",
 			u8"\U0001F556", u8"\U0001F557", u8"\U0001F558", u8"\U0001F559", u8"\U0001F55A", u8"\U0001F55B" };
 
-	log(INFO) << clocks[proof->height % 12] << " Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed << " sec" << ss_reward.str();
+	log(INFO) << clocks[proof->height % 12] << " Verified VDF for height " << proof->height << ss_delta.str() << ", took " << elapsed / 1e3 << " sec" << ss_reward.str();
 
 	add_dummy_blocks(proof->height);
 	trigger_update();

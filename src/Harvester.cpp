@@ -105,7 +105,7 @@ void Harvester::check_queue()
 		const auto& entry = iter->second;
 		const auto delay_sec = (now_ms - entry.recv_time_ms) / 1e3;
 
-		if(delay_sec > params->block_time * entry.request->max_delay) {
+		if(delay_sec > (params->block_interval_ms / 1e3) * entry.request->max_delay) {
 			log(WARN) << "[" << host_name << "] Missed deadline for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
 			iter = lookup_queue.erase(iter);
 		} else {
@@ -156,7 +156,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	job->num_left = job->total_plots;
 	job->time_begin = vnx::get_wall_time_millis();
 
-	const auto max_delay_sec = params->block_time * (double(value->max_delay) - 0.5);
+	const auto max_delay_sec = (params->block_interval_ms / 1e3) * (value->max_delay - 0.5);
 	const auto deadline_ms = recv_time_ms + int64_t(max_delay_sec * 1000);
 
 	for(const auto& entry : id_map)

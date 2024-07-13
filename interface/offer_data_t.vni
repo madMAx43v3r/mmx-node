@@ -4,6 +4,8 @@ struct offer_data_t {
 	
 	uint height;
 	
+	long time_stamp;			// UNIX [ms]
+	
 	addr_t owner;
 	addr_t address;
 	

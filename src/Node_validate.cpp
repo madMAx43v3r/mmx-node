@@ -129,6 +129,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
+	if(block->time_stamp - prev->time_stamp > (params->block_interval_ms * 2)) {
+		throw std::logic_error("time stamp delta too high");
+	}
+	if(block->time_stamp - prev->time_stamp < (params->block_interval_ms / 2)) {
+		throw std::logic_error("time stamp delta too low");
+	}
 	if(block->time_diff == 0 || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}

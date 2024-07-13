@@ -94,10 +94,11 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			auto info = NetworkInfo::create();
 			info->is_synced = is_synced;
 			info->height = peak->height;
+			info->time_stamp = peak->time_stamp;
 			info->name = params->network;
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
-			info->vdf_speed = (peak->time_diff / params->block_time) * (params->time_diff_constant / 1e6);
+			info->vdf_speed = get_vdf_speed(params, peak->time_diff) / 1e6;
 			info->block_reward = (peak->height >= params->reward_activation ?
 					(peak->next_base_reward + std::max<int64_t>(params->min_reward - peak->average_txfee, 0)) : 0);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
@@ -278,9 +279,13 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	tx_info_t info;
 	info.id = tx->id;
 	info.expires = tx->expires;
-	if(auto height = get_tx_height(tx->id)) {
-		info.height = *height;
-		info.block = get_block_hash(*height);
+	{
+		tx_index_t entry;
+		if(tx_index.find(tx->id, entry)) {
+			info.height = entry.height;
+			info.time_stamp = entry.time_stamp;
+			info.block = get_block_hash(entry.height);
+		}
 	}
 	if(tx->exec_result) {
 		info.fee = tx->exec_result->total_fee;
@@ -367,6 +372,7 @@ std::vector<tx_entry_t> Node::get_history(
 {
 	struct entry_t {
 		uint32_t height = 0;
+		int64_t time_stamp = 0;
 		uint128_t recv = 0;
 		uint128_t spent = 0;
 	};
@@ -388,6 +394,7 @@ std::vector<tx_entry_t> Node::get_history(
 				const std::string memo = entry.memo ? *entry.memo : std::string();
 				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type, memo)];
 				delta.height = entry.height;
+				delta.time_stamp = entry.time_stamp;
 				delta.recv += entry.amount;
 			}
 		}
@@ -404,6 +411,7 @@ std::vector<tx_entry_t> Node::get_history(
 				const std::string memo = entry.memo ? *entry.memo : std::string();
 				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type, memo)];
 				delta.height = entry.height;
+				delta.time_stamp = entry.time_stamp;
 				delta.spent += entry.amount;
 			}
 		}
@@ -414,6 +422,7 @@ std::vector<tx_entry_t> Node::get_history(
 		const auto& delta = entry.second;
 		tx_entry_t out;
 		out.height = delta.height;
+		out.time_stamp = delta.time_stamp;
 		out.txid = std::get<1>(entry.first);
 		out.address = std::get<0>(entry.first);
 		out.contract = std::get<2>(entry.first);
@@ -842,8 +851,12 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	}
 	offer_data_t out;
 	out.address = address;
-	if(auto height = get_tx_height(address)) {
-		out.height = *height;
+	{
+		tx_index_t entry;
+		if(tx_index.find(address, entry)) {
+			out.height = entry.height;
+			out.time_stamp = entry.time_stamp;
+		}
 	}
 	out.owner = to_addr(data["owner"]);
 	out.bid_currency = to_addr(data["bid_currency"]);
@@ -1017,16 +1030,17 @@ std::vector<offer_data_t> Node::get_recent_offers_for(
 
 std::vector<trade_entry_t> Node::get_trade_history(const int32_t& limit, const uint32_t& since) const
 {
-	std::vector<std::pair<std::pair<uint32_t, uint32_t>, std::tuple<addr_t, hash_t, uint64_t>>> entries;
+	std::vector<std::pair<std::pair<uint32_t, uint32_t>, std::tuple<addr_t, hash_t, int64_t, uint64_t>>> entries;
 	trade_log.find_last_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries, limit);
 
 	std::vector<trade_entry_t> result;
 	for(const auto& entry : entries) {
 		trade_entry_t out;
 		out.height = entry.first.first;
+		out.time_stamp = std::get<2>(entry.second);
 		out.address = std::get<0>(entry.second);
 		out.txid = std::get<1>(entry.second);
-		out.ask_amount = std::get<2>(entry.second);
+		out.ask_amount = std::get<3>(entry.second);
 		const auto data = get_offer(out.address);
 		out.bid_currency = data.bid_currency;
 		out.ask_currency = data.ask_currency;
@@ -1223,6 +1237,7 @@ std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const in
 	for(const auto& entry : get_exec_history(address, limit, true)) {
 		swap_entry_t out;
 		out.height = entry.height;
+		out.time_stamp = entry.time_stamp;
 		out.txid = entry.txid;
 		out.user = entry.user;
 		out.index = -1;

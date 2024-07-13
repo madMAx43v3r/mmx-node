@@ -9,6 +9,7 @@ class BlockHeader {
 	
 	uint height;
 	ulong nonce;
+	long time_stamp;					// UNIX [ms]
 	
 	ulong time_diff;
 	ulong space_diff;
