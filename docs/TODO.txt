@@ -18,5 +18,5 @@ Mainnet
 - Swap warning for one-sided pool
 - VDF trust system (order queue by trust)
 - Remove wallet account feature in GUI
-- Block timestamps
 - Use getaddrinfo()
+- Include account index in info_*.dat files
