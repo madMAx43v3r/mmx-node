@@ -4,7 +4,6 @@ Mainnet
 - Test remote calls again
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 - Website
-- Block explorer
 - Linux packages
 - Double check msg hashes again
 - New project wallet
@@ -18,3 +17,6 @@ Mainnet
 - GUI add peer feature
 - Swap warning for one-sided pool
 - VDF trust system (order queue by trust)
+- Remove wallet account feature in GUI
+- Block timestamps
+- Use getaddrinfo()
