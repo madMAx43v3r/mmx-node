@@ -54,7 +54,7 @@ public:
 	uint64_t max_block_cost = 100000000;
 	uint64_t max_tx_cost = 1000000;
 	std::vector<uint32_t> min_fee_ratio;
-	vnx::float64_t block_time = 10;
+	int64_t block_interval_ms = 10000;
 	std::string network;
 	::mmx::addr_t nft_binary;
 	::mmx::addr_t plot_binary;
@@ -153,7 +153,7 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("max_block_cost", 36); _visitor.accept(max_block_cost);
 	_visitor.type_field("max_tx_cost", 37); _visitor.accept(max_tx_cost);
 	_visitor.type_field("min_fee_ratio", 38); _visitor.accept(min_fee_ratio);
-	_visitor.type_field("block_time", 39); _visitor.accept(block_time);
+	_visitor.type_field("block_interval_ms", 39); _visitor.accept(block_interval_ms);
 	_visitor.type_field("network", 40); _visitor.accept(network);
 	_visitor.type_field("nft_binary", 41); _visitor.accept(nft_binary);
 	_visitor.type_field("plot_binary", 42); _visitor.accept(plot_binary);

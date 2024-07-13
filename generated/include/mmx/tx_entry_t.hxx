@@ -18,6 +18,7 @@ struct MMX_EXPORT tx_entry_t {
 	
 	
 	uint32_t height = 0;
+	int64_t time_stamp = 0;
 	::mmx::hash_t txid;
 	::mmx::tx_type_e type;
 	::mmx::addr_t address;
@@ -66,16 +67,17 @@ struct MMX_EXPORT tx_entry_t {
 
 template<typename T>
 void tx_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_entry_t>(8);
+	_visitor.template type_begin<tx_entry_t>(9);
 	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("txid", 1); _visitor.accept(txid);
-	_visitor.type_field("type", 2); _visitor.accept(type);
-	_visitor.type_field("address", 3); _visitor.accept(address);
-	_visitor.type_field("contract", 4); _visitor.accept(contract);
-	_visitor.type_field("amount", 5); _visitor.accept(amount);
-	_visitor.type_field("memo", 6); _visitor.accept(memo);
-	_visitor.type_field("is_validated", 7); _visitor.accept(is_validated);
-	_visitor.template type_end<tx_entry_t>(8);
+	_visitor.type_field("time_stamp", 1); _visitor.accept(time_stamp);
+	_visitor.type_field("txid", 2); _visitor.accept(txid);
+	_visitor.type_field("type", 3); _visitor.accept(type);
+	_visitor.type_field("address", 4); _visitor.accept(address);
+	_visitor.type_field("contract", 5); _visitor.accept(contract);
+	_visitor.type_field("amount", 6); _visitor.accept(amount);
+	_visitor.type_field("memo", 7); _visitor.accept(memo);
+	_visitor.type_field("is_validated", 8); _visitor.accept(is_validated);
+	_visitor.template type_end<tx_entry_t>(9);
 }
 
 

@@ -25,6 +25,7 @@ public:
 	uint32_t expires = 0;
 	vnx::bool_t did_fail = 0;
 	vnx::optional<uint32_t> height;
+	vnx::optional<int64_t> time_stamp;
 	vnx::optional<::mmx::hash_t> block;
 	vnx::optional<std::string> message;
 	int64_t fee = 0;
@@ -84,25 +85,26 @@ protected:
 
 template<typename T>
 void tx_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_info_t>(17);
+	_visitor.template type_begin<tx_info_t>(18);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("expires", 1); _visitor.accept(expires);
 	_visitor.type_field("did_fail", 2); _visitor.accept(did_fail);
 	_visitor.type_field("height", 3); _visitor.accept(height);
-	_visitor.type_field("block", 4); _visitor.accept(block);
-	_visitor.type_field("message", 5); _visitor.accept(message);
-	_visitor.type_field("fee", 6); _visitor.accept(fee);
-	_visitor.type_field("cost", 7); _visitor.accept(cost);
-	_visitor.type_field("note", 8); _visitor.accept(note);
-	_visitor.type_field("sender", 9); _visitor.accept(sender);
-	_visitor.type_field("inputs", 10); _visitor.accept(inputs);
-	_visitor.type_field("outputs", 11); _visitor.accept(outputs);
-	_visitor.type_field("operations", 12); _visitor.accept(operations);
-	_visitor.type_field("deployed", 13); _visitor.accept(deployed);
-	_visitor.type_field("input_amounts", 14); _visitor.accept(input_amounts);
-	_visitor.type_field("output_amounts", 15); _visitor.accept(output_amounts);
-	_visitor.type_field("contracts", 16); _visitor.accept(contracts);
-	_visitor.template type_end<tx_info_t>(17);
+	_visitor.type_field("time_stamp", 4); _visitor.accept(time_stamp);
+	_visitor.type_field("block", 5); _visitor.accept(block);
+	_visitor.type_field("message", 6); _visitor.accept(message);
+	_visitor.type_field("fee", 7); _visitor.accept(fee);
+	_visitor.type_field("cost", 8); _visitor.accept(cost);
+	_visitor.type_field("note", 9); _visitor.accept(note);
+	_visitor.type_field("sender", 10); _visitor.accept(sender);
+	_visitor.type_field("inputs", 11); _visitor.accept(inputs);
+	_visitor.type_field("outputs", 12); _visitor.accept(outputs);
+	_visitor.type_field("operations", 13); _visitor.accept(operations);
+	_visitor.type_field("deployed", 14); _visitor.accept(deployed);
+	_visitor.type_field("input_amounts", 15); _visitor.accept(input_amounts);
+	_visitor.type_field("output_amounts", 16); _visitor.accept(output_amounts);
+	_visitor.type_field("contracts", 17); _visitor.accept(contracts);
+	_visitor.template type_end<tx_info_t>(18);
 }
 
 

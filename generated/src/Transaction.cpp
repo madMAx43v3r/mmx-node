@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
