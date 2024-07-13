@@ -12,7 +12,6 @@ const routes = [
 			{ path: '', component: AccountHome, meta: { page: 'balance' } },
 			{ path: 'nfts', component: AccountNFTs, meta: { page: 'nfts' } },
 			{ path: 'contracts', component: AccountContracts, meta: { page: 'contracts' } },
-			{ path: 'addresses', component: AccountAddresses, meta: { page: 'addresses' } },
 			{ path: 'send/:target?', component: AccountSend, meta: { page: 'send' } },
 			{ path: 'send_from/:source?', component: AccountSendFrom, meta: { page: 'send' } },
 			{ path: 'split', component: AccountSplit, meta: { page: 'split' } },

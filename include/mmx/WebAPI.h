@@ -61,9 +61,6 @@ private:
 
 	void render_transactions(const vnx::request_id_t& request_id, size_t limit, const size_t offset, const std::vector<hash_t>& tx_ids) const;
 
-	void gather_transactions(	const vnx::request_id_t& request_id, const size_t limit, const int64_t height,
-								std::shared_ptr<std::vector<hash_t>> result, const std::vector<hash_t>& tx_ids) const;
-
 	void render_address(const vnx::request_id_t& request_id, const addr_t& address, const std::map<addr_t, uint128>& balances) const;
 
 	void render_balances(const vnx::request_id_t& request_id, const vnx::optional<addr_t>& currency, const std::map<addr_t, balance_t>& balances) const;
@@ -79,6 +76,8 @@ private:
 
 	void resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 							const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const;
+
+	void respond(const vnx::request_id_t& request_id, std::shared_ptr<const vnx::addons::HttpResponse> response) const;
 
 	void respond(const vnx::request_id_t& request_id, const vnx::Variant& value) const;
 
@@ -97,10 +96,13 @@ private:
 	std::list<std::pair<std::shared_ptr<const vnx::LogMsg>, uint64_t>> log_history;
 	std::list<std::pair<std::shared_ptr<const ProofResponse>, uint64_t>> proof_history;
 
+	bool is_synced = false;
 	int64_t time_offset = 0;		// [sec]
 	uint32_t curr_height = 0;
 	uint64_t log_counter = 0;
 	uint64_t proof_counter = 0;
+
+	static std::mutex g_config_mutex;
 
 };
 

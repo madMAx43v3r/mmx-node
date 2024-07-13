@@ -9,7 +9,7 @@ Vue.component('wallet-summary', {
 	methods: {
 		update() {
 			this.loading = true;
-			fetch('/api/wallet/get_all_accounts')
+			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
 				.then(data => {
 					this.loading = false;
@@ -24,8 +24,8 @@ Vue.component('wallet-summary', {
 		<div>
 			<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 
-			<div v-for="item in data" :key="item[0]">
-				<account-summary :index="item[0]" :account="item[1]"></account-summary>
+			<div v-for="item in data" :key="item.address">
+				<account-summary :index="item.account" :account="item"></account-summary>
 			</div>
 
 			<v-btn to="/wallet/create" outlined color="primary" class="my-2">{{ $t('wallet_summary.new_wallet') }}</v-btn>
@@ -42,7 +42,6 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index" exact>{{ $t('account_menu.balance') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/nfts'">{{ $t('account_menu.nfts') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/contracts'">{{ $t('account_menu.contracts') }}</v-btn>
-			<v-btn :to="'/wallet/account/' + index + '/addresses'">{{ $t('account_menu.addresses') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/send'">{{ $t('account_menu.send') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/history'">{{ $t('account_menu.history') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
@@ -65,25 +64,30 @@ Vue.component('account-header', {
 			info: {
 				name: null,
 				index: null,
+				address: null,
 				with_passphrase: null
 			},
-			address: null,
 			is_locked: null,
 			passphrase_dialog: false
+		}
+	},
+	computed: {
+		address() {
+			return this.info.address ? this.info.address : "N/A";
 		}
 	},
 	methods: {
 		update() {
 			if(this.account) {
-				this.info = this.account
+				this.info = this.account;
 			} else {
-				fetch('/api/wallet/get_account?index=' + this.index)
+				fetch('/wapi/wallet/account?index=' + this.index)
 					.then(response => response.json())
 					.then(data => this.info = data);
 			}
-			fetch('/wapi/wallet/address?index=' + this.index)
-				.then(response => response.json())
-				.then(data => this.address = data[0]);
+			this.update_lock();
+		},
+		update_lock() {
 			fetch('/api/wallet/is_locked?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.is_locked = data);
@@ -95,7 +99,7 @@ Vue.component('account-header', {
 				const req = {};
 				req.index = this.index;
 				fetch('/api/wallet/lock', {body: JSON.stringify(req), method: "post"})
-					.then(() => this.update());
+					.then(() => this.update_lock());
 			}
 		},
 		unlock(passphrase) {
@@ -118,17 +122,22 @@ Vue.component('account-header', {
 		}
 	},
 	created() {
-		this.update()
+		this.update();
+		this.timer = setInterval(() => { this.update_lock(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
 	},
 	template: `
 		<div>
 			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
-			<v-chip label style="min-width: 500px" class="pr-0">
+			<v-chip label class="pr-0">
 				{{ address }}
-				<v-btn v-if="address" @click="copyToClipboard(address)" text icon>
+				<v-btn v-if="navigator.clipboard && info.address" @click="copyToClipboard(address)" text icon>
 					<v-icon small class="pr-0">mdi-content-copy</v-icon>
 				</btn>
 			</v-chip>
+			<v-chip v-if="info.name" label>{{info.name}}</v-chip>
 			<v-btn v-if="info.with_passphrase && (is_locked != null)" @click="toggle_lock()" text icon>
 				<v-icon small class="pr-0">{{ is_locked ? "mdi-lock" : "mdi-lock-open-variant" }}</v-icon>
 			</btn>
@@ -463,6 +472,10 @@ Vue.component('account-history', {
 			<template v-slot:item.height="{ item }">
 				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
 			</template>	
+			
+			<template v-slot:item.type="{ item }">
+				<span :class="get_tx_type_color(item.type, $vuetify.theme.dark)">{{item.type}}</span>
+			</template>
 
 			<template v-slot:item.value="{ item }">
 				<b>{{item.value}}</b>
@@ -736,81 +749,6 @@ Vue.component('account-contracts', {
 		`
 })
 
-Vue.component('account-addresses', {
-	props: {
-		index: Number,
-		limit: Number
-	},
-	data() {
-		return {
-			data: [],
-			loading: true
-		}
-	},
-	computed: {
-		headers() {
-			return [
-				{ text: this.$t('account_addresses.index'), value: 'index' },
-				{ text: this.$t('account_addresses.address'), value: 'address' },
-				{ text: "Active", value: 'num_active' },
-				{ text: this.$t('account_addresses.n_recv'), value: 'num_receive' },
-				{ text: this.$t('account_addresses.n_spend'), value: 'num_spend' },
-				{ text: this.$t('account_addresses.last_recv'), value: 'last_receive_height' },
-				{ text: this.$t('account_addresses.last_spend'), value: 'last_spend_height' },
-			]
-		}
-	},
-	methods: {
-		update() {
-			fetch('/wapi/wallet/address_info?limit=' + this.limit + '&index=' + this.index)
-				.then(response => response.json())
-				.then(data => {
-					this.loading = false;
-					this.data = data;
-				});
-		}
-	},
-	created() {
-		this.update()
-	},
-	template: `
-		<v-data-table
-			:headers="headers"
-			:items="data"
-			:loading="loading"
-			hide-default-footer
-			disable-sort
-			disable-pagination
-			class="elevation-2"
-		>
-			<template v-slot:progress>
-				<v-progress-linear indeterminate absolute top></v-progress-linear>
-				<v-skeleton-loader type="table-row-divider@6" />
-			</template>
-			
-			<template v-slot:item.index="{ item, index }">
-				{{ index }}
-			</template>
-			
-			<template v-slot:item.address="{ item }">
-				<router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link>
-			</template>
-			
-			<template v-slot:item.last_receive_height="{ item }">
-				<router-link :to="'/explore/block/height/' + item.last_receive_height">
-					{{item.num_receive || item.last_receive_height ? item.last_receive_height : null}}
-				</router-link>
-			</template>
-			
-			<template v-slot:item.last_spend_height="{ item }">
-				<router-link :to="'/explore/block/height/' + item.last_spend_height">
-					{{item.num_spend || item.last_spend_height ? item.last_spend_height : null}}
-				</router-link>
-			</template>
-		</v-data-table>
-		`
-})
-
 Vue.component('account-plots', {
 	props: {
 		index: Number,
@@ -827,6 +765,7 @@ Vue.component('account-plots', {
 			dialog_owner: null,
 			dialog_address: null,
 			dialog_amount: null,
+			passphrase_dialog: false,
 		}
 	},
 	computed: {
@@ -841,7 +780,7 @@ Vue.component('account-plots', {
 		submit_button_label() {
 			return this.dialog_mode == 'Deposit'? this.$t('account_contract_summary.deposit') : this.$t('account_contract_summary.withdraw')
 		},
-		from_to(){
+		from_to() {
 			return this.dialog_mode == "Deposit" ? this.$t('account_plots.to') : this.$t('account_plots.from')
 		},
 		card_title() {
@@ -870,10 +809,21 @@ Vue.component('account-plots', {
 			this.dialog = true;
 		},
 		submit() {
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					if(data) {
+						this.passphrase_dialog = true;
+					} else {
+						this.submit_ex(null);
+					}
+				});
+		},
+		submit_ex(passphrase) {
 			let url = "";
 			const req = {};
 			req.index = this.index;
-			req.options = {user: this.dialog_owner};
+			req.options = {user: this.dialog_owner, passphrase: passphrase};
 			if(this.dialog_mode == "Deposit") {
 				url = "/wapi/wallet/send";
 				req.currency = null;
@@ -912,6 +862,8 @@ Vue.component('account-plots', {
 	},
 	template: `
 		<div>
+			<passphrase-dialog v-model="passphrase_dialog" @submit="p => submit_ex(p)"/>
+			
 			<v-alert
 				border="left"
 				colored-border
@@ -1087,14 +1039,18 @@ Vue.component('account-details', {
 	data() {
 		return {
 			account: null,
+			addresses: null,
 			keys: null
 		}
 	},
 	methods: {
 		update() {
-			fetch('/api/wallet/get_account?index=' + this.index)
+			fetch('/wapi/wallet/account?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.account = data);
+			fetch('/wapi/wallet/address?index=' + this.index + '&limit=1000')
+				.then(response => response.json())
+				.then(data => this.addresses = data);
 			fetch('/wapi/wallet/keys?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.keys = data);
@@ -1112,6 +1068,20 @@ Vue.component('account-details', {
 			<object-table :data="keys" class="my-2"></object-table>
 
 			<v-btn v-if="$isWinGUI && this.keys" @click="copyKeysToPlotter" color="primary">{{ $t('account_details.copy_keys_to_plotter') }}</v-btn>
+			
+			<v-simple-table>
+				<thead>
+					<tr>
+						<th>Index</th><th>Address</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="(address, index) in addresses" :key="address">
+						<td class="key-cell"><b>{{index}}</b></td>
+						<td><router-link :to="'/explore/address/' + address">{{address}}</router-link></td>
+					</tr>
+				</tbody>
+			</v-simple-table>
 		</div>
 		`
 })
@@ -1122,13 +1092,20 @@ Vue.component('account-actions', {
 	},
 	data() {
 		return {
+			account: null,
 			seed: null,
 			info: null,
 			error: null,
-			dialog: false
+			seed_dialog: false,
+			remove_dialog: false
 		}
 	},
 	methods: {
+		update() {
+			fetch('/wapi/wallet/account?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.account = data);
+		},
 		reset_cache() {
 			const req = {};
 			req.index = this.index;
@@ -1150,12 +1127,21 @@ Vue.component('account-actions', {
 				.then(response => response.json())
 				.then(data => {
 					this.seed = data;
-					this.dialog = true;
+					this.seed_dialog = true;
+				});
+		},
+		remove() {
+			fetch('/api/wallet/remove_account?index=' + this.index + "&account=" + this.account.index)
+				.then(response => {
+					if(response.ok) this.$router.push('/wallet/');
 				});
 		},
 		copyToClipboard(value) {
 			navigator.clipboard.writeText(value).then(() => {});
 		}		
+	},
+	created() {
+		this.update();
 	},
 	template: `
 		<div>			
@@ -1163,27 +1149,54 @@ Vue.component('account-actions', {
 				<v-card-text>
 					<v-btn outlined @click="reset_cache">{{ $t('account_actions.reset_cache') }}</v-btn>
 
-					<v-dialog v-model="dialog" max-width="800">
+					<v-dialog v-model="seed_dialog" max-width="800">
 						<template v-slot:activator="{ on, attrs }">
 							<v-btn outlined @click="show_seed">{{ $t('account_actions.show_seed') }}</v-btn>
 						</template>
 						<template v-slot:default="dialog">
 							<v-card>
-							<v-toolbar color="primary"></v-toolbar>
+								<v-toolbar color="primary"></v-toolbar>
 								<v-card-text class="pb-0">
-									<v-container>					
+									<v-container>
 										<seed v-model="seed.string" readonly></seed>
+										<v-text-field class="mt-2"
+											v-if="account.with_passphrase"
+											v-model="account.finger_print"
+											label="Fingerprint (needed to verify passphrase)"
+											readonly>
+										</v-text-field>
 									</v-container>
 								</v-card-text>
 								<v-card-actions>
 									<v-spacer></v-spacer>
 									<v-btn text @click="copyToClipboard(seed.string)">Copy</v-btn>
-									<v-btn text @click="dialog.value = false">Close</v-btn>
+									<v-btn text @click="seed_dialog = false">Close</v-btn>
 								</v-card-actions>
 							</v-card>
 						</template>
 					</v-dialog>
-
+					
+					<v-dialog v-model="remove_dialog" max-width="800">
+						<template v-slot:activator="{ on, attrs }">
+							<v-btn v-if="index >= 100" outlined color="red" @click="remove_dialog = true">Remove</v-btn>
+						</template>
+						<template v-slot:default="dialog">
+							<v-card>
+								<v-toolbar color="primary"></v-toolbar>
+								<v-card-text class="pb-0">
+									<v-container>
+										<v-alert border="left" colored-border type="warning" elevation="2">
+											To recover any funds you will need to re-create the wallet from a stored backup!
+										</v-alert>
+									</v-container>
+								</v-card-text>
+								<v-card-actions class="justify-end">
+									<v-btn color="error" @click="remove()">Remove</v-btn>
+									<v-btn @click="remove_dialog = false">{{ $t('common.cancel') }}</v-btn>
+								</v-card-actions>
+							</v-card>
+						</template>
+					</v-dialog>
 				</v-card-text>
 			</v-card>
 
@@ -1221,13 +1234,13 @@ Vue.component('create-account', {
 			data: null,
 			name: null,
 			offset: null,
-			num_addresses: 100,
+			num_addresses: 1,
 			error: null
 		}
 	},
 	methods: {
 		update() {
-			fetch('/api/wallet/get_account?index=' + this.index)
+			fetch('/wapi/wallet/account?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.data = data);
 		},
@@ -1294,11 +1307,12 @@ Vue.component('create-wallet', {
 	data() {
 		return {
 			name: null,
-			num_addresses: 100,
+			num_addresses: 1,
 			with_seed: false,
 			with_passphrase: false,
 			seed: null,
 			passphrase: null,
+			finger_print: null,
 			error: null,
 			show_passphrase: false
 		}
@@ -1325,6 +1339,24 @@ Vue.component('create-wallet', {
 						});
 					}
 				});
+		},
+		validate() {
+			if(this.with_seed && this.with_passphrase && this.finger_print) {
+				const req = {};
+				req.words = this.seed;
+				req.finger_print = this.finger_print;
+				req.passphrase = this.passphrase;
+				fetch('/wapi/passphrase/validate', {body: JSON.stringify(req), method: "post"})
+					.then(response => {
+						if(response.ok) {
+							this.submit();
+						} else {
+							this.error = "Wrong passphrase!";
+						}
+					});
+			} else {
+				this.submit();
+			}
 		}
 	},
 	template: `
@@ -1354,15 +1386,13 @@ Vue.component('create-wallet', {
 						:label="$t('create_wallet.use_custom_seed')">
 					</v-checkbox>
 
-					<v-card :disabled="!with_seed">
+					<v-card v-if="with_seed">
 						<v-card-title class="text-subtitle-1">
 							{{$t('create_wallet.seed_words')}}
 						</v-card-title>
-						<v-expand-transition>
-							<v-card-text v-show="with_seed">
-								<seed v-model="seed" :disabled="!with_seed"/>
-							</v-card-text>
-						</v-expand-transition>
+						<v-card-text v-show="with_seed">
+							<seed v-model="seed" :disabled="!with_seed"/>
+						</v-card-text>
 					</v-card>
 
 					<v-checkbox
@@ -1370,20 +1400,29 @@ Vue.component('create-wallet', {
 						:label="$t('create_wallet.use_passphrase')">
 					</v-checkbox>
 
-					<v-text-field
-						v-model="passphrase"
-						:label="$t('create_wallet.passphrase')"
-						:disabled="!with_passphrase"
-						autocomplete="new-password"
-						:type="show_passphrase ? 'text' : 'password'"
-						:append-icon="show_passphrase ? 'mdi-eye' : 'mdi-eye-off'"
-						@click:append="show_passphrase = !show_passphrase">
-					</v-text-field>
-
-					<v-btn @click="submit" outlined color="primary">{{ $t('create_wallet.create_wallet') }}</v-btn>
-
+					<v-card v-if="with_passphrase" class="pt-0">
+						<v-card-text class="pt-2 pb-0">
+							<v-text-field
+								v-model="passphrase"
+								:label="$t('create_wallet.passphrase')"
+								:disabled="!with_passphrase"
+								autocomplete="new-password"
+								:type="show_passphrase ? 'text' : 'password'"
+								:append-icon="show_passphrase ? 'mdi-eye' : 'mdi-eye-off'"
+								@click:append="show_passphrase = !show_passphrase">
+							</v-text-field>
+							
+							<v-text-field
+								v-if="with_seed"
+								v-model="finger_print"
+								label="Fingerprint (optional, to validate passphrase)"
+								placeholder="123456789">
+							</v-text-field>
+						</v-card-text>
+					</v-card>
+					
+					<v-btn @click="validate()" class="mt-5" outlined color="primary">{{ $t('create_wallet.create_wallet') }}</v-btn>
 				</v-card-text>
-
 			</v-card>
 							
 			<v-alert
@@ -1429,9 +1468,8 @@ Vue.component('passphrase-dialog', {
 		<v-dialog v-model="show" max-width="800" persistent>
 			<template v-slot:default="dialog">
 				<v-card>
-					<v-toolbar color="primary">
-					</v-toolbar>
-					<v-card-text class="pb-0">			
+					<v-toolbar color="primary"></v-toolbar>
+					<v-card-text class="pb-0 pt-2">
 						<v-text-field
 							v-model="passphrase"
 							:label="$t('wallet_common.enter_passphrase')"
@@ -1471,6 +1509,7 @@ Vue.component('account-send-form', {
 			address: "",
 			currency: null,
 			fee_ratio: 1024,
+			fee_amount: 0.05,
 			confirmed: false,
 			result: null,
 			error: null,
@@ -1479,22 +1518,9 @@ Vue.component('account-send-form', {
 	},
 	methods: {
 		update() {
-			fetch('/api/wallet/get_all_accounts')
+			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
-				.then(data => {
-					this.accounts = [];
-					for(const entry of data) {
-						const info = entry[1];
-						info.account = entry[0];
-						fetch('/wapi/wallet/address?limit=1&index=' + entry[0])
-							.then(response => response.json())
-							.then(data => {
-								info.address = data[0];
-								this.accounts.push(info);
-								this.accounts.sort((a, b) => a.account - b.account);
-							});
-					}
-				});
+				.then(data => this.accounts = data);
 			if(this.source) {
 				fetch('/wapi/address?id=' + this.source)
 					.then(response => response.json())
@@ -1504,6 +1530,11 @@ Vue.component('account-send-form', {
 					.then(response => response.json())
 					.then(data => this.balances = data.balances);
 			}
+		},
+		update_fee() {
+			var amount = this.memo ? (this.memo.length > 32 ? 0.06 : 0.055) : 0.05;
+			amount *= (this.fee_ratio / 1024);
+			this.fee_amount = parseFloat(amount.toFixed(3));
 		},
 		submit() {
 			fetch('/api/wallet/is_locked?index=' + this.index)
@@ -1522,7 +1553,7 @@ Vue.component('account-send-form', {
 				this.error = "invalid destination address";
 				return;
 			}
-			const req = {};
+			const req = {options: {}};
 			req.index = this.index;
 			req.amount = this.amount;
 			req.currency = this.currency;
@@ -1530,8 +1561,7 @@ Vue.component('account-send-form', {
 				req.src_addr = this.source;
 			}
 			req.dst_addr = this.target;
-			req.options = {};
-			req.options.memo = this.memo;
+			req.options.memo = this.memo ? this.memo : null;
 			req.options.fee_ratio = this.fee_ratio;
 			req.options.passphrase = passphrase;
 			
@@ -1546,6 +1576,15 @@ Vue.component('account-send-form', {
 					this.$refs.balance.update();
 					this.$refs.history.update();
 				});
+		},
+		memo_rule(value) {
+			if(value && value.length > 64) {
+				return "maximum length is 64";
+			}
+			return true;
+		},
+		is_valid() {
+			return this.confirmed && this.target && this.currency && validate_amount(this.amount) == true;
 		}
 	},
 	created() {
@@ -1565,9 +1604,22 @@ Vue.component('account-send-form', {
 			} else {
 				this.target = null;
 			}
+			this.confirmed = false;
 		},
-		amount(value) {
-			// TODO: validate
+		target() {
+			this.confirmed = false;
+		},
+		currency() {
+			this.confirmed = false;
+		},
+		amount() {
+			this.confirmed = false;
+		},
+		memo() {
+			this.update_fee();
+		},
+		fee_ratio() {
+			this.update_fee();
 		},
 		result(value) {
 			if(value) {
@@ -1622,24 +1674,20 @@ Vue.component('account-send-form', {
 						:disabled="!!target_">
 					</v-select>
 
-					<v-row>
-						<v-col>
-							<v-text-field
-								v-model="target"
-								:label="$t('account_send_form.destination_address')"
-								:disabled="!!address || !!target_" placeholder="mmx1...">
-							</v-text-field>
-						</v-col>
-						<v-col cols="2">
-							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
-						</v-col>
-					</v-row>
+					<v-text-field
+						v-model="target"
+						:label="$t('account_send_form.destination_address')"
+						:disabled="!!address || !!target_"
+						placeholder="mmx1..." clearable
+					></v-text-field>
 
 					<v-row>
 						<v-col cols="3">
 							<v-text-field class="text-align-right"
-							:label="$t('account_send_form.amount')"
-							v-model.number="amount" placeholder="1.23"
+								:label="$t('account_send_form.amount')"
+								v-model="amount"
+								placeholder="1.23"
+								:rules="[validate_amount]"
 							></v-text-field>
 						</v-col>
 						<v-col>
@@ -1659,11 +1707,25 @@ Vue.component('account-send-form', {
 						</v-col>
 					</v-row>
 					
-					<v-text-field v-model="memo" label="Memo"></v-text-field>
-
-					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
-					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed || !target || !currency || !amount">{{ $t('account_send_form.send') }}</v-btn>
-
+					<v-text-field v-model="memo" label="Memo" :rules="[memo_rule]"" clearable></v-text-field>
+					
+					<v-row justify="end">
+						<v-col cols="2">
+							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
+						</v-col>
+						<v-col cols="2">
+							<v-text-field class="text-align-right"
+								label="TX Fee"
+								v-model.number="fee_amount" suffix="MMX" disabled>
+							</v-text-field>
+						</v-col>
+					</v-row>
+					
+					<v-card-actions class="py-0">
+						<v-spacer></v-spacer>
+						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block" style="margin-right: 50px"></v-switch>
+						<v-btn @click="submit" outlined color="primary" :disabled="!is_valid()">{{ $t('account_send_form.send') }}</v-btn>
+					</v-card-actions>
 				</v-card-text>
 			</v-card>
 
@@ -1704,9 +1766,14 @@ Vue.component('account-offer-form', {
 			balances: [],
 			bid_amount: null,
 			ask_amount: null,
-			ask_symbol: "MMX",
+			ask_symbol: null,
+			bid_symbol: null,
 			bid_currency: null,
 			ask_currency: null,
+			price: null,
+			inv_price: null,
+			fee_ratio: 1024,
+			fee_amount: null,
 			confirmed: false,
 			timer: null,
 			result: null,
@@ -1722,19 +1789,44 @@ Vue.component('account-offer-form', {
 				.then(response => response.json())
 				.then(data => this.balances = data.balances);
 		},
-		submit() {
-			this.confirmed = false;
-			if(this.ask_currency && !validate_address(this.ask_currency)) {
-				this.error = "invalid currency address";
-				return;
+		update_fee() {
+			if(this.is_valid()) {
+				const req = this.create_request();
+				req.options.auto_send = false;
+				fetch('/wapi/wallet/offer', {body: JSON.stringify(req), method: "post"})
+					.then(response => {
+						if(response.ok) {
+							response.json().then(tx => this.fee_amount = tx.exec_result.total_fee_value);
+						} else {
+							this.fee_amount = null;
+						}
+					});
+			} else {
+				this.fee_amount = null;
 			}
-			const req = {};
+		},
+		update_price() {
+			if(this.bid_amount && this.ask_amount) {
+				this.price = parseFloat((this.ask_amount / this.bid_amount).toPrecision(6));
+				this.inv_price = parseFloat((this.bid_amount / this.ask_amount).toPrecision(6));
+			} else {
+				this.price = null;
+				this.inv_price = null;
+			}
+		},
+		create_request() {
+			const req = {options: {}};
 			req.index = this.index;
 			req.bid = this.bid_amount;
 			req.ask = this.ask_amount;
-			req.bid_currency = this.bid_currency;
-			req.ask_currency = this.ask_currency;
-			fetch('/wapi/wallet/offer', {body: JSON.stringify(req), method: "post"})
+			req.bid_currency = this.bid_currency.contract;
+			req.ask_currency = this.ask_currency.currency;
+			req.options.fee_ratio = this.fee_ratio;
+			return req;
+		},
+		submit() {
+			this.confirmed = false;
+			fetch('/wapi/wallet/offer', {body: JSON.stringify(this.create_request()), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => this.result = data);
@@ -1742,6 +1834,11 @@ Vue.component('account-offer-form', {
 						response.text().then(data => this.error = data);
 					}
 				});
+		},
+		is_valid() {
+			return this.bid_currency && this.ask_currency
+				&& validate_address(this.bid_currency.contract) && validate_address(this.ask_currency.currency)
+				&& validate_amount(this.bid_amount) == true && validate_amount(this.ask_amount) == true;
 		}
 	},
 	created() {
@@ -1752,11 +1849,27 @@ Vue.component('account-offer-form', {
 		clearInterval(this.timer);
 	},
 	watch: {
-		ask_amount(value) {
-			// TODO: validate
+		ask_amount() {
+			this.confirmed = false;
+			this.update_price();
 		},
-		bid_amount(value) {
-			// TODO: validate
+		bid_amount() {
+			this.confirmed = false;
+			this.update_price();
+		},
+		ask_currency() {
+			this.confirmed = false;
+		},
+		bid_currency() {
+			this.confirmed = false;
+		},
+		fee_ratio() {
+			this.update_fee();
+		},
+		confirmed(value) {
+			if(value) {
+				this.update_fee();
+			}
 		},
 		result(value) {
 			if(value) {
@@ -1775,55 +1888,83 @@ Vue.component('account-offer-form', {
 			<v-card class="my-2">
 				<v-card-text>
 					<v-row>
-						<v-col cols="3">
+						<v-col cols="3" class="pb-0">
 							<v-text-field class="text-align-right"
 								:label="$t('account_offer_form.offer_amount')"
 								placeholder="1.23"
-								v-model.number="bid_amount"	
+								v-model="bid_amount"
+								:rules="[validate_amount]"
 							></v-text-field>
 						</v-col>
-						<v-col>
+						<v-col class="pb-0">
 							<v-select
 								v-model="bid_currency"
 								:label="$t('account_offer_form.offer_currency')"
-								:items="balances" 
-								item-text="contract"
-								item-value="contract">
+								:items="balances">
 
 								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
 									{{item.symbol + (item.is_validated ? '' : '?')}}
 									<template v-if="!item.is_native"> - [{{item.contract}}]</template>
 								</template>
-
 							</v-select>
 						</v-col>
 					</v-row>
 					<v-row>
-						<v-col cols="3">
+						<v-col cols="3" class="py-0">
 							<v-text-field class="text-align-right"
 								:label="$t('account_offer_form.receive_amount')"
 								placeholder="1.23"
-								v-model.number="ask_amount"	
+								v-model="ask_amount"
+								:rules="[validate_amount]"
 							></v-text-field>
 						</v-col>
-						<v-col>
+						<v-col class="py-0">
 							<v-select
 								v-model="ask_currency"
 								label="Receive Currency"
-								:items="tokens" 
-								item-text="currency"
-								item-value="currency">
+								:items="tokens">
 
 								<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
 									{{item.symbol}}
 									<template v-if="item.currency != MMX_ADDR"> - [{{item.currency}}]</template>
 								</template>
-
 							</v-select>
 						</v-col>
 					</v-row>
-					<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block"></v-switch><br>
-					<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('account_offer_form.offer') }}</v-btn>
+					<v-row justify="end">
+						<v-col cols="3" class="py-0">
+							<v-text-field class="text-align-right"
+								:label="$t('account_offers.price')"
+								v-model="price"
+								:suffix="ask_currency && bid_currency ? ask_currency.symbol + ' / ' + bid_currency.symbol : null"
+								readonly
+							></v-text-field>
+						</v-col>
+						<v-col cols="3" class="py-0">
+							<v-text-field class="text-align-right"
+								:label="$t('account_offers.price')"
+								v-model="inv_price"
+								:suffix="ask_currency && bid_currency ? bid_currency.symbol + ' / ' + ask_currency.symbol : null"
+								readonly
+							></v-text-field>
+						</v-col>
+					</v-row>
+					<v-row justify="end">
+						<v-col cols="2" class="py-0">
+							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
+						</v-col>
+						<v-col cols="2" class="py-0">
+							<v-text-field class="text-align-right"
+								label="TX Fee"
+								v-model.number="fee_amount" suffix="MMX" disabled>
+							</v-text-field>
+						</v-col>
+					</v-row>
+					<v-card-actions class="pb-0">
+						<v-spacer></v-spacer>
+						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block" style="margin-right: 50px"></v-switch>
+						<v-btn @click="submit" outlined color="primary" :disabled="!this.confirmed || !is_valid()">{{ $t('account_offer_form.offer') }}</v-btn>
+					</v-card-actions>
 				</v-card-text>
 			</v-card>
 			
@@ -1850,9 +1991,14 @@ Vue.component('account-offers', {
 			result: null,
 			timer: null,
 			state: true,
-			dialog: false,
 			dialog_item: null,
-			dialog_amount: null,
+			dialog_cancel: false,
+			dialog_deposit: false,
+			dialog_withdraw: false,
+			deposit_amount: null,
+			fee_amount: null,
+			request: null,
+			request_url: null,
 			canceled: new Set(),
 			withdrawn: new Set()
 		}
@@ -1871,52 +2017,82 @@ Vue.component('account-offers', {
 				.then(response => response.json())
 				.then(data => this.data = data.sort((L, R) => R.height - L.height));
 		},
+		update_fee() {
+			if(this.request) {
+				const req = this.request;
+				const url = this.request_url;
+				req.options.auto_send = false;
+				fetch(url, {body: JSON.stringify(req), method: "post"})
+					.then(response => {
+						if(response.ok) {
+							response.json().then(tx => this.fee_amount = tx.exec_result.total_fee_value);
+						} else {
+							this.fee_amount = null;
+						}
+					});
+			} else {
+				this.fee_amount = null;
+			}
+		},
+		update_fee_ratio(value) {
+			if(this.request) {
+				this.request.options.fee_ratio = value;
+				this.update_fee();
+			}
+		},
 		cancel(item) {
-			const args = {};
+			const args = {options: {}};
 			args.index = this.index;
 			args.address = item.address;
-			fetch('/wapi/wallet/cancel_offer', {body: JSON.stringify(args), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.canceled.add(item.address);
-							this.result = data;
-						});
-					} else {
-						response.text().then(data => this.error = data);
-					}
-				});
+			this.request = args;
+			this.request_url = '/wapi/wallet/cancel_offer';
+			this.update_fee();
+			
+			this.dialog_item = item;
+			this.dialog_cancel = true;
 		},
 		withdraw(item) {
-			const args = {};
+			const args = {options: {}};
 			args.index = this.index;
 			args.address = item.address;
-			fetch('/wapi/wallet/offer_withdraw', {body: JSON.stringify(args), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						response.json().then(data => {
-							this.withdrawn.add(item.address);
-							this.result = data;
-						});
-					} else {
-						response.text().then(data => this.error = data);
-					}
-				});
+			this.request = args;
+			this.request_url = '/wapi/wallet/offer_withdraw';
+			this.update_fee();
+			
+			this.dialog_item = item;
+			this.dialog_withdraw = true;
 		},
 		deposit(item) {
-			this.dialog_item = item;
-			this.dialog_amount = null;
-			this.dialog = true;
-		},
-		submit_deposit(item, amount) {
-			const args = {};
+			const args = {options: {}};
 			args.index = this.index;
-			args.amount = amount;
-			args.currency = item.bid_currency
+			args.currency = item.bid_currency;
 			args.dst_addr = item.address;
-			fetch('/wapi/wallet/send', {body: JSON.stringify(args), method: "post"})
+			args.amount = 1;
+			this.request = args;
+			this.request_url = '/wapi/wallet/send';
+			this.update_fee();
+			
+			this.dialog_item = item;
+			this.deposit_amount = null;
+			this.dialog_deposit = true;
+		},
+		submit() {
+			const url = this.request_url;
+			const item = this.dialog_item;
+			const req = this.request;
+			req.options.auto_send = true;
+			fetch(url, {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
+						if(url == '/wapi/wallet/send') {
+							this.canceled.delete(item.address);
+						}
+						if(url == '/wapi/wallet/cancel_offer') {
+							this.canceled.add(item.address);
+						}
+						if(url == '/wapi/wallet/offer_withdraw') {
+							this.withdrawn.add(item.address);
+						}
 						response.json().then(data => {
 							this.result = data;
 						});
@@ -1924,7 +2100,12 @@ Vue.component('account-offers', {
 						response.text().then(data => this.error = data);
 					}
 				});
-			this.dialog = false;
+			this.dialog_cancel = false;
+			this.dialog_withdraw = false;
+			this.dialog_deposit = false;
+			this.request = null;
+			this.request_url = null;
+			this.deposit_amount = null;
 		}
 	},
 	watch: {
@@ -1933,6 +2114,11 @@ Vue.component('account-offers', {
 		},
 		index(value) {
 			this.update();
+		},
+		deposit_amount(value) {
+			if(this.request) {
+				this.request.amount = value;
+			}
 		},
 		result(value) {
 			if(value) {
@@ -1968,7 +2154,8 @@ Vue.component('account-offers', {
 					<th colspan="2">{{ $t('account_offers.offering') }}</th>
 					<th colspan="2">{{ $t('account_offers.received') }}</th>
 					<th colspan="2">{{ $t('account_offers.price') }}</th>
-					<th>{{ $t('account_offers.address') }}</th>
+					<th colspan="2">{{ $t('account_offers.price') }}</th>
+					<th></th>
 					<th></th>
 				</tr>
 				</thead>
@@ -1978,38 +2165,103 @@ Vue.component('account-offers', {
 					<td>{{item.bid_symbol}}</td>
 					<td class="collapsing"><b>{{item.ask_balance_value}}</b></td>
 					<td>{{item.ask_symbol}}</td>
-					<td class="collapsing"><b>{{item.display_price}}</b></td>
+					<td class="collapsing"><b>{{parseFloat(item.display_price.toPrecision(6))}}</b></td>
 					<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
-					<td><router-link :to="'/explore/address/' + item.address">{{get_short_addr(item.address, 8)}}</router-link></td>
+					<td class="collapsing"><b>{{parseFloat((1/item.display_price).toPrecision(6))}}</b></td>
+					<td>{{item.bid_symbol}} / {{item.ask_symbol}}</td>
+					<td><router-link :to="'/explore/address/' + item.address">TX</router-link></td>
 					<td>
 						<template v-if="item.bid_balance && !canceled.has(item.address)">
-							<v-btn outlined text color="red darken-1" @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
+							<v-btn outlined text small color="red darken-1" @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
 						</template>
 						<template v-if="item.ask_balance && !withdrawn.has(item.address)">
-							<v-btn outlined text @click="withdraw(item)">Withdraw</v-btn>
+							<v-btn outlined text small @click="withdraw(item)">Withdraw</v-btn>
 						</template>
-						<v-btn outlined text color="green darken-1" @click="deposit(item)">{{ $t('account_offers.deposit') }}</v-btn>
+						<v-btn outlined text small color="green darken-1" @click="deposit(item)">{{ $t('account_offers.deposit') }}</v-btn>
 					</td>
 				</tr>
 				</tbody>
 			</v-simple-table>
 		</v-card>
 		
-		<v-dialog v-model="dialog" max-width="1000">
+		<v-dialog v-model="dialog_cancel" max-width="1000">
+			<template v-slot:default="dialog">
+				<v-card>
+					<v-toolbar color="primary"></v-toolbar>
+					<v-card-title>{{ $t('account_offers.revoke') }} {{dialog_item.address}}</v-card-title>
+					<v-card-text class="pb-0">
+						<v-row justify="end">
+							<v-col cols="3">
+								<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+							</v-col>
+							<v-col cols="3">
+								<v-text-field class="text-align-right"
+									label="TX Fee"
+									v-model.number="fee_amount" suffix="MMX" disabled>
+								</v-text-field>
+							</v-col>
+						</v-row>
+					</v-card-text>
+					<v-card-actions class="justify-end">
+						<v-btn @click="submit()" color="primary">{{ $t('account_offers.revoke') }}</v-btn>
+						<v-btn @click="dialog_cancel = false">{{ $t('common.cancel') }}</v-btn>
+					</v-card-actions>
+				</v-card>
+			</template>
+		</v-dialog>
+		
+		<v-dialog v-model="dialog_withdraw" max-width="1000">
+			<template v-slot:default="dialog">
+				<v-card>
+					<v-toolbar color="primary"></v-toolbar>
+					<v-card-title>Withdraw from {{dialog_item.address}}</v-card-title>
+					<v-card-text class="pb-0">
+						<v-row justify="end">
+							<v-col cols="3">
+								<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+							</v-col>
+							<v-col cols="3">
+								<v-text-field class="text-align-right"
+									label="TX Fee"
+									v-model.number="fee_amount" suffix="MMX" disabled>
+								</v-text-field>
+							</v-col>
+						</v-row>
+					</v-card-text>
+					<v-card-actions class="justify-end">
+						<v-btn @click="submit()" color="primary">Withdraw</v-btn>
+						<v-btn @click="dialog_withdraw = false">{{ $t('common.cancel') }}</v-btn>
+					</v-card-actions>
+				</v-card>
+			</template>
+		</v-dialog>
+		
+		<v-dialog v-model="dialog_deposit" max-width="1000">
 			<template v-slot:default="dialog">
 				<v-card>
 					<v-toolbar color="primary"></v-toolbar>
 					<v-card-title>{{ $t('account_offers.deposit_to') }} {{dialog_item.address}}</v-card-title>
 					<v-card-text class="pb-0">
 						<v-text-field class="text-align-right"
-							v-model="dialog_amount"
+							v-model="deposit_amount"
 							:label="$t('common.amount')"
 							:suffix="dialog_item.bid_symbol">
 						</v-text-field>
+						<v-row justify="end">
+							<v-col cols="3">
+								<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+							</v-col>
+							<v-col cols="3">
+								<v-text-field class="text-align-right"
+									label="TX Fee"
+									v-model.number="fee_amount" suffix="MMX" disabled>
+								</v-text-field>
+							</v-col>
+						</v-row>
 					</v-card-text>
 					<v-card-actions class="justify-end">
-						<v-btn @click="submit_deposit(dialog_item, dialog_amount)" color="primary" :disabled="!(dialog_amount > 0)">{{ $t('common.deposit') }}</v-btn>
-						<v-btn @click="dialog.value = false">{{ $t('common.cancel') }}</v-btn>
+						<v-btn @click="submit()" color="primary" :disabled="!(deposit_amount > 0)">{{ $t('common.deposit') }}</v-btn>
+						<v-btn @click="dialog_deposit = false">{{ $t('common.cancel') }}</v-btn>
 					</v-card-actions>
 				</v-card>
 			</template>
@@ -2076,13 +2328,20 @@ Vue.component('create-locked-contract', {
 			}
 		},
 		submit() {
+			// TODO
+		},
+		submit_ex(passhprase) {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.Executable";
 			// TODO
 			contract.owner = this.owner;
 			contract.unlock_height = this.unlock_height;
-			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
+			const req = {};
+			req.index = this.index;
+			req.payload = contract;
+			req.options = {passhprase: passhprase};
+			fetch('/wapi/wallet/deploy', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => this.result = data);
@@ -2177,6 +2436,7 @@ Vue.component('create-virtual-plot-contract', {
 			reward_address: null,
 			valid: false,
 			confirmed: false,
+			passphrase_dialog: false,
 			result: null,
 			error: null
 		}
@@ -2191,6 +2451,17 @@ Vue.component('create-virtual-plot-contract', {
 			}
 		},
 		submit() {
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => {
+					if(data) {
+						this.passphrase_dialog = true;
+					} else {
+						this.submit_ex(null);
+					}
+				});
+		},
+		submit_ex(passphrase) {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.VirtualPlot";
@@ -2200,7 +2471,11 @@ Vue.component('create-virtual-plot-contract', {
 			if(this.reward_address) {
 				contract.reward_address = this.reward_address;
 			}
-			fetch('/wapi/wallet/deploy?index=' + this.index, {body: JSON.stringify(contract), method: "post"})
+			const req = {};
+			req.index = this.index;
+			req.payload = contract;
+			req.options = {passphrase: passphrase};
+			fetch('/wapi/wallet/deploy', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => this.result = data);
@@ -2277,6 +2552,8 @@ Vue.component('create-virtual-plot-contract', {
 
 				</v-card-text>
 			</v-card>
+			
+			<passphrase-dialog v-model="passphrase_dialog" @submit="p => submit_ex(p)"/>
 
 			<v-alert
 				border="left"
@@ -2316,22 +2593,24 @@ Vue.component('wallet-menu', {
 	],
 	methods: {
 		update() {
-			fetch('/api/wallet/get_all_accounts')
+			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
 				.then(data => {
 					this.wallets = data;
-					if(this.wallet == null && data.length > 0) {
-						this.wallet = data[0][0];
+					if(this.wallet == null && data.length) {
+						this.wallet = data[0].account;
 					}
 				});
 		}
 	},
 	watch: {
 		wallet(value) {
+			localStorage.setItem('active_wallet', value);
 			this.$emit('wallet-select', value);
 		}
 	},
 	created() {
+		this.wallet = get_active_wallet();
 		this.update();
 		this.timer = setInterval(() => { this.update(); }, 60000);
 	},
@@ -2343,10 +2622,10 @@ Vue.component('wallet-menu', {
 			v-model="wallet"
 			:items="wallets"
 			:label="$t('market_menu.wallet')"
-			item-text="[0]"
-			item-value="[0]">
+			item-text="account"
+			item-value="account">
 			<template v-for="slotName in ['item', 'selection']" v-slot:[slotName]="{ item }">
-				{{ $t('market_menu.wallet') }} #{{item[0]}}
+				{{ $t('market_menu.wallet') }} #{{item.account}} ({{item.address}})
 			</template>
 		</v-select>
 	`

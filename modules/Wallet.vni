@@ -15,6 +15,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	uint num_addresses = 100;
 	uint default_expire = 100;				// when transactions expire
 	
+	int lock_timeout_sec = 600;				// when to auto-lock after unlock [sec]
 	int cache_timeout_ms = 1000;			// how often to update from node [ms]
 	
 	bool enable_bls = true;
@@ -119,13 +120,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<addr_t> get_all_addresses(int index) const;				// (index == -1) -> all wallets
 	
-	address_info_t get_address_info(uint index, uint offset) const;
+	account_info_t get_account(uint index) const;
 	
-	vector<address_info_t> get_all_address_infos(int index) const;
-	
-	account_t get_account(uint index) const;
-	
-	map<uint, account_t> get_all_accounts() const;
+	vector<account_info_t> get_all_accounts() const;
 	
 	bool is_locked(uint index) const;
 	
@@ -138,6 +135,12 @@ module Wallet implements vnx.addons.HttpComponent {
 	void create_account(account_t config, optional<string> passphrase);
 	
 	void create_wallet(account_t config, optional<string> words, optional<string> passphrase);
+	
+	void import_wallet(account_t config, KeyFile* key_file, optional<string> passphrase);
+	
+	void remove_account(uint index, uint account);
+	
+	KeyFile* export_wallet(uint index) const;
 	
 	vector<string> get_mnemonic_wordlist(string lang = "en") const;
 	

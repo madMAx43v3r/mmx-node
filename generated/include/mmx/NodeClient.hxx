@@ -13,11 +13,12 @@
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/VDF_Point.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/exec_result_t.hxx>
+#include <mmx/farmed_block_summary_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
 #include <mmx/pubkey_t.hpp>
@@ -73,6 +74,8 @@ public:
 	vnx::optional<::mmx::tx_info_t> get_tx_info(const ::mmx::hash_t& id = ::mmx::hash_t());
 	
 	vnx::optional<::mmx::tx_info_t> get_tx_info_for(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
+	
+	std::vector<::mmx::hash_t> get_tx_ids(const uint32_t& limit = 0);
 	
 	std::vector<::mmx::hash_t> get_tx_ids_at(const uint32_t& height = 0);
 	
@@ -142,10 +145,6 @@ public:
 	
 	::vnx::Variant call_contract(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const vnx::optional<::mmx::addr_t>& user = nullptr, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit = nullptr);
 	
-	::mmx::address_info_t get_address_info(const ::mmx::addr_t& address = ::mmx::addr_t());
-	
-	std::vector<::mmx::address_info_t> get_address_infos(const std::vector<::mmx::addr_t>& addresses = {});
-	
 	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses = {});
 	
 	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key = ::mmx::pubkey_t());
@@ -164,7 +163,7 @@ public:
 	
 	std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit = 100, const vnx::bool_t& state = true);
 	
-	std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const int32_t& limit = 100, const vnx::bool_t& state = true);
+	std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const uint64_t& min_bid = 0, const int32_t& limit = 100, const vnx::bool_t& state = true);
 	
 	std::vector<::mmx::trade_entry_t> get_trade_history(const int32_t& limit = 100, const uint32_t& since = 0);
 	
@@ -190,9 +189,9 @@ public:
 	
 	std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const vnx::bool_t& full_blocks = 0, const uint32_t& since = 0, const int32_t& limit = 100);
 	
-	std::map<::mmx::pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since = 0);
+	::mmx::farmed_block_summary_t get_farmed_block_summary(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const uint32_t& since = 0);
 	
-	uint32_t get_farmed_block_count_for(const std::vector<::mmx::pubkey_t>& farmer_keys = {}, const uint32_t& since = 0);
+	std::vector<std::pair<::mmx::pubkey_t, uint32_t>> get_farmer_ranking(const int32_t& limit = -1);
 	
 	void start_sync(const vnx::bool_t& force = 0);
 	

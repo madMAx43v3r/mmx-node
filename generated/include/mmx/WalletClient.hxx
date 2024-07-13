@@ -6,11 +6,12 @@
 
 #include <vnx/Client.h>
 #include <mmx/Contract.hxx>
+#include <mmx/KeyFile.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/account_info_t.hxx>
 #include <mmx/account_t.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/address_info_t.hxx>
 #include <mmx/balance_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
@@ -130,13 +131,9 @@ public:
 	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);
 	
-	::mmx::address_info_t get_address_info(const uint32_t& index = 0, const uint32_t& offset = 0);
+	::mmx::account_info_t get_account(const uint32_t& index = 0);
 	
-	std::vector<::mmx::address_info_t> get_all_address_infos(const int32_t& index = 0);
-	
-	::mmx::account_t get_account(const uint32_t& index = 0);
-	
-	std::map<uint32_t, ::mmx::account_t> get_all_accounts();
+	std::vector<::mmx::account_info_t> get_all_accounts();
 	
 	vnx::bool_t is_locked(const uint32_t& index = 0);
 	
@@ -159,6 +156,16 @@ public:
 	void create_wallet(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
 	
 	void create_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), const vnx::optional<std::string>& words = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
+	
+	void import_wallet(const ::mmx::account_t& config = ::mmx::account_t(), std::shared_ptr<const ::mmx::KeyFile> key_file = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
+	
+	void import_wallet_async(const ::mmx::account_t& config = ::mmx::account_t(), std::shared_ptr<const ::mmx::KeyFile> key_file = nullptr, const vnx::optional<std::string>& passphrase = nullptr);
+	
+	void remove_account(const uint32_t& index = 0, const uint32_t& account = 0);
+	
+	void remove_account_async(const uint32_t& index = 0, const uint32_t& account = 0);
+	
+	std::shared_ptr<const ::mmx::KeyFile> export_wallet(const uint32_t& index = 0);
 	
 	std::vector<std::string> get_mnemonic_wordlist(const std::string& lang = "en");
 	

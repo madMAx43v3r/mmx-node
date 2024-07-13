@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_recent_offers_for::VNX_TYPE_HASH(0xd89f845556eb17a0ull);
-const vnx::Hash64 Node_get_recent_offers_for::VNX_CODE_HASH(0xd72de5423adf1acaull);
+const vnx::Hash64 Node_get_recent_offers_for::VNX_CODE_HASH(0x86ca17a3a5f42831ull);
 
 vnx::Hash64 Node_get_recent_offers_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,8 +49,9 @@ void Node_get_recent_offers_for::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, bid);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, ask);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, limit);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, state);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, min_bid);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, limit);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, state);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,6 +59,7 @@ void Node_get_recent_offers_for::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_recent_offers_for\"";
 	_out << ", \"bid\": "; vnx::write(_out, bid);
 	_out << ", \"ask\": "; vnx::write(_out, ask);
+	_out << ", \"min_bid\": "; vnx::write(_out, min_bid);
 	_out << ", \"limit\": "; vnx::write(_out, limit);
 	_out << ", \"state\": "; vnx::write(_out, state);
 	_out << "}";
@@ -74,6 +76,7 @@ vnx::Object Node_get_recent_offers_for::to_object() const {
 	_object["__type"] = "mmx.Node.get_recent_offers_for";
 	_object["bid"] = bid;
 	_object["ask"] = ask;
+	_object["min_bid"] = min_bid;
 	_object["limit"] = limit;
 	_object["state"] = state;
 	return _object;
@@ -87,6 +90,8 @@ void Node_get_recent_offers_for::from_object(const vnx::Object& _object) {
 			_entry.second.to(bid);
 		} else if(_entry.first == "limit") {
 			_entry.second.to(limit);
+		} else if(_entry.first == "min_bid") {
+			_entry.second.to(min_bid);
 		} else if(_entry.first == "state") {
 			_entry.second.to(state);
 		}
@@ -99,6 +104,9 @@ vnx::Variant Node_get_recent_offers_for::get_field(const std::string& _name) con
 	}
 	if(_name == "ask") {
 		return vnx::Variant(ask);
+	}
+	if(_name == "min_bid") {
+		return vnx::Variant(min_bid);
 	}
 	if(_name == "limit") {
 		return vnx::Variant(limit);
@@ -114,6 +122,8 @@ void Node_get_recent_offers_for::set_field(const std::string& _name, const vnx::
 		_value.to(bid);
 	} else if(_name == "ask") {
 		_value.to(ask);
+	} else if(_name == "min_bid") {
+		_value.to(min_bid);
 	} else if(_name == "limit") {
 		_value.to(limit);
 	} else if(_name == "state") {
@@ -145,7 +155,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_recent_offers_for";
 	type_code->type_hash = vnx::Hash64(0xd89f845556eb17a0ull);
-	type_code->code_hash = vnx::Hash64(0xd72de5423adf1acaull);
+	type_code->code_hash = vnx::Hash64(0x86ca17a3a5f42831ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -153,7 +163,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_recent_offers_for>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_recent_offers_for_return::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -168,13 +178,19 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.data_size = 8;
+		field.name = "min_bid";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[3];
 		field.data_size = 4;
 		field.name = "limit";
 		field.value = vnx::to_string(100);
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[4];
 		field.data_size = 1;
 		field.name = "state";
 		field.value = vnx::to_string(true);
@@ -224,9 +240,12 @@ void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCod
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.min_bid, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[3]) {
+			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.state, _field->code.data());
 		}
 	}
@@ -252,9 +271,10 @@ void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for& value, cons
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(5);
-	vnx::write_value(_buf + 0, value.limit);
-	vnx::write_value(_buf + 4, value.state);
+	auto* const _buf = out.write(13);
+	vnx::write_value(_buf + 0, value.min_bid);
+	vnx::write_value(_buf + 8, value.limit);
+	vnx::write_value(_buf + 12, value.state);
 	vnx::write(out, value.bid, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.ask, type_code, type_code->fields[1].code.data());
 }

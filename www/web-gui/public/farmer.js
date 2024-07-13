@@ -86,6 +86,100 @@ Vue.component('farmer-info', {
 		`
 })
 
+Vue.component('farmer-rewards', {
+	data() {
+		return {
+			data: null,
+			netspace: null,
+			farm_size: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farmer/blocks/summary')
+				.then(response => response.json())
+				.then(data => this.data = data);
+			fetch('/wapi/node/info')
+				.then(response => response.json())
+				.then(data => this.netspace = data.total_space);
+			fetch('/wapi/farmer/info')
+				.then(response => response.json())
+				.then(data => this.farm_size = data.total_bytes_effective + data.total_virtual_bytes);
+		}
+	},
+	computed: {
+		est_time_to_win() {
+			if(this.netspace && this.farm_size) {
+				const est_min = (this.netspace / this.farm_size) / 6;
+				if(est_min <= 60) {
+					return Math.floor(est_min) + " minutes";
+				}
+				const est_hours = est_min / 60;
+				if(est_hours <= 24) {
+					return Math.floor(est_hours) + " hours and " + Math.floor(est_min % 60) + " minutes";
+				}
+				const est_days = est_hours / 24;
+				return Math.floor(est_days) + " days and " + Math.floor(est_hours % 24) + " hours";
+			}
+			return "N/A";
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 30000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-card class="my-2">
+		<v-card-text>
+			<template v-if="data">
+				<v-card class="my-2">
+					<v-simple-table>
+						<tbody>
+						<tr>
+							<td class="key-cell">No. Blocks</td>
+							<td>{{data.num_blocks}}</td>
+						</tr>
+						<tr>
+							<td class="key-cell">Last Height</td>
+							<td>{{data.last_height > 0 ? data.last_height : "N/A"}}</td>
+						</tr>
+						<tr>
+							<td class="key-cell">Total Rewards</td>
+							<td><b>{{data.total_rewards_value}}</b>&nbsp; MMX</td>
+						</tr>
+						<tr>
+							<td class="key-cell">Time to win</td>
+							<td>{{est_time_to_win}} (on average)</td>
+						</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+				<v-card class="my-2">
+					<v-simple-table>
+						<thead>
+						<tr>
+							<th colspan="2">Reward</th>
+							<th>{{ $t('transaction_view.address') }}</th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr v-for="item in data.rewards" :key="item.address">
+							<td class="collapsing"><b>{{item.value}}</b></td>
+							<td>MMX</td>
+							<td><router-link :to="'/explore/address/' + item.address">{{item.address}}</router-link></td>
+						</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card>
+			</template>
+		</v-card-text>
+		</v-card>
+		`
+})
+
 Vue.component('farmer-plots', {
 	data() {
 		return {

@@ -29,6 +29,20 @@ std::shared_ptr<const TransactionBase> TransactionBase::create_ex(const hash_t& 
 	return tx;
 }
 
+void Transaction::reset(std::shared_ptr<const ChainParams> params)
+{
+	exec_result = nullptr;
+	static_cost = calc_cost(params);
+	content_hash = calc_hash(true);
+}
+
+void Transaction::update(const exec_result_t& result, std::shared_ptr<const ChainParams> params)
+{
+	exec_result = result;
+	static_cost = calc_cost(params);
+	content_hash = calc_hash(true);
+}
+
 void Transaction::finalize()
 {
 	while(!nonce) {

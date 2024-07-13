@@ -15,6 +15,7 @@ class MMX_EXPORT KeyFile : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t seed_value;
+	vnx::optional<std::string> finger_print;
 	
 	typedef ::vnx::Value Super;
 	
@@ -61,9 +62,10 @@ protected:
 
 template<typename T>
 void KeyFile::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<KeyFile>(1);
+	_visitor.template type_begin<KeyFile>(2);
 	_visitor.type_field("seed_value", 0); _visitor.accept(seed_value);
-	_visitor.template type_end<KeyFile>(1);
+	_visitor.type_field("finger_print", 1); _visitor.accept(finger_print);
+	_visitor.template type_end<KeyFile>(2);
 }
 
 

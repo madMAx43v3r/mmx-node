@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NetworkInfo::VNX_TYPE_HASH(0xd984018819746101ull);
-const vnx::Hash64 NetworkInfo::VNX_CODE_HASH(0x7811fc103f9d81a0ull);
+const vnx::Hash64 NetworkInfo::VNX_CODE_HASH(0xc5774e1294cc2a9cull);
 
 vnx::Hash64 NetworkInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -59,6 +59,7 @@ void NetworkInfo::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, netspace_ratio);
 	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, average_txfee);
 	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, genesis_hash);
+	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, name);
 	_visitor.type_end(*_type_code);
 }
 
@@ -77,6 +78,7 @@ void NetworkInfo::write(std::ostream& _out) const {
 	_out << ", \"netspace_ratio\": "; vnx::write(_out, netspace_ratio);
 	_out << ", \"average_txfee\": "; vnx::write(_out, average_txfee);
 	_out << ", \"genesis_hash\": "; vnx::write(_out, genesis_hash);
+	_out << ", \"name\": "; vnx::write(_out, name);
 	_out << "}";
 }
 
@@ -102,6 +104,7 @@ vnx::Object NetworkInfo::to_object() const {
 	_object["netspace_ratio"] = netspace_ratio;
 	_object["average_txfee"] = average_txfee;
 	_object["genesis_hash"] = genesis_hash;
+	_object["name"] = name;
 	return _object;
 }
 
@@ -121,6 +124,8 @@ void NetworkInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(height);
 		} else if(_entry.first == "is_synced") {
 			_entry.second.to(is_synced);
+		} else if(_entry.first == "name") {
+			_entry.second.to(name);
 		} else if(_entry.first == "netspace_ratio") {
 			_entry.second.to(netspace_ratio);
 		} else if(_entry.first == "space_diff") {
@@ -177,6 +182,9 @@ vnx::Variant NetworkInfo::get_field(const std::string& _name) const {
 	if(_name == "genesis_hash") {
 		return vnx::Variant(genesis_hash);
 	}
+	if(_name == "name") {
+		return vnx::Variant(name);
+	}
 	return vnx::Variant();
 }
 
@@ -207,6 +215,8 @@ void NetworkInfo::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(average_txfee);
 	} else if(_name == "genesis_hash") {
 		_value.to(genesis_hash);
+	} else if(_name == "name") {
+		_value.to(name);
 	}
 }
 
@@ -234,12 +244,12 @@ std::shared_ptr<vnx::TypeCode> NetworkInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.NetworkInfo";
 	type_code->type_hash = vnx::Hash64(0xd984018819746101ull);
-	type_code->code_hash = vnx::Hash64(0x7811fc103f9d81a0ull);
+	type_code->code_hash = vnx::Hash64(0xc5774e1294cc2a9cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::NetworkInfo);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<NetworkInfo>(); };
-	type_code->fields.resize(13);
+	type_code->fields.resize(14);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 1;
@@ -317,6 +327,12 @@ std::shared_ptr<vnx::TypeCode> NetworkInfo::static_create_type_code() {
 		field.is_extended = true;
 		field.name = "genesis_hash";
 		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[13];
+		field.is_extended = true;
+		field.name = "name";
+		field.code = {32};
 	}
 	type_code->build();
 	return type_code;
@@ -406,6 +422,7 @@ void read(TypeInput& in, ::mmx::NetworkInfo& value, const TypeCode* type_code, c
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 12: vnx::read(in, value.genesis_hash, type_code, _field->code.data()); break;
+			case 13: vnx::read(in, value.name, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -438,6 +455,7 @@ void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* typ
 	vnx::write_value(_buf + 69, value.netspace_ratio);
 	vnx::write_value(_buf + 77, value.average_txfee);
 	vnx::write(out, value.genesis_hash, type_code, type_code->fields[12].code.data());
+	vnx::write(out, value.name, type_code, type_code->fields[13].code.data());
 }
 
 void read(std::istream& in, ::mmx::NetworkInfo& value) {

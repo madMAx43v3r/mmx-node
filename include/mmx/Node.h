@@ -23,7 +23,6 @@
 #include <mmx/table.h>
 #include <mmx/multi_table.h>
 #include <mmx/balance_cache_t.h>
-#include <mmx/farmer_info_t.hxx>
 #include <mmx/farmed_block_info_t.hxx>
 #include <mmx/utils.h>
 
@@ -36,6 +35,7 @@
 
 #include <unordered_set>
 #include <unordered_map>
+#include <shared_mutex>
 
 
 namespace mmx {
@@ -78,6 +78,8 @@ protected:
 	std::vector<hash_t> get_tx_ids_at(const uint32_t& height) const override;
 
 	std::vector<hash_t> get_tx_ids_since(const uint32_t& height) const override;
+
+	std::vector<hash_t> get_tx_ids(const uint32_t& limit) const override;
 
 	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
 
@@ -146,10 +148,6 @@ protected:
 	vnx::Variant call_contract(	const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args = {},
 								const vnx::optional<addr_t>& user = nullptr, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit = nullptr) const override;
 
-	address_info_t get_address_info(const addr_t& address) const override;
-
-	std::vector<address_info_t> get_address_infos(const std::vector<addr_t>& addresses) const override;
-
 	uint128 get_total_supply(const addr_t& currency) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
@@ -173,7 +171,8 @@ protected:
 	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const override;
 
 	std::vector<offer_data_t> get_recent_offers_for(
-			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const vnx::bool_t& state) const override;
+			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint64_t& min_bid,
+			const int32_t& limit, const vnx::bool_t& state) const override;
 
 	std::vector<trade_entry_t> get_trade_history(const int32_t& limit, const uint32_t& since = 0) const override;
 
@@ -199,9 +198,9 @@ protected:
 	std::vector<std::shared_ptr<const BlockHeader>> get_farmed_blocks(
 			const std::vector<pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since = 0, const int32_t& limit = -1) const override;
 
-	std::map<pubkey_t, uint32_t> get_farmed_block_count(const uint32_t& since) const override;
+	farmed_block_summary_t get_farmed_block_summary(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
 
-	uint32_t get_farmed_block_count_for(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
+	std::vector<std::pair<pubkey_t, uint32_t>> get_farmer_ranking(const int32_t& limit) const override;
 
 	void on_stuck_timeout();
 
@@ -223,6 +222,10 @@ protected:
 
 	void handle(std::shared_ptr<const ProofResponse> value) override;
 
+	void handle(std::shared_ptr<const VDF_Point> value) override;
+
+	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> method, const vnx::request_id_t& request_id) override;
+
 private:
 	struct waitcond_t {
 		std::mutex mutex;
@@ -241,18 +244,6 @@ private:
 		void setup_wait(const hash_t& txid, const addr_t& address);
 	};
 
-	struct vdf_point_t {
-		uint32_t height = -1;
-		uint64_t vdf_start = 0;
-		uint64_t vdf_iters = 0;
-		int64_t recv_time = 0;
-		bool vdf_reward_valid = false;
-		std::array<hash_t, 2> input;
-		std::array<hash_t, 2> output;
-		vnx::optional<hash_t> infused;					// chain 0
-		std::shared_ptr<const ProofOfTime> proof;
-	};
-
 	struct balance_log_t {
 		std::map<std::pair<addr_t, addr_t>, uint128> added;
 		std::map<std::pair<addr_t, addr_t>, uint128> removed;
@@ -268,7 +259,7 @@ private:
 		int64_t recv_time = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
-		std::shared_ptr<const vdf_point_t> vdf_point;
+		std::shared_ptr<const VDF_Point> vdf_point;
 		std::shared_ptr<const BlockHeader> diff_block;
 		std::shared_ptr<const execution_context_t> context;
 		balance_log_t balance;
@@ -305,9 +296,11 @@ private:
 
 	void print_stats();
 
-	bool recv_height(const uint32_t& height);
+	bool recv_height(const uint32_t& height) const;
 
 	void add_fork(std::shared_ptr<fork_t> fork);
+
+	void add_dummy_blocks(const uint32_t& height);
 
 	void add_dummy_block(std::shared_ptr<const BlockHeader> prev);
 
@@ -323,7 +316,7 @@ private:
 
 	std::vector<tx_pool_t> validate_for_block();
 
-	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<vdf_point_t> vdf_point, const proof_data_t& proof, const bool full_block);
+	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block);
 
 	int get_offer_state(const addr_t& address) const;
 
@@ -385,6 +378,8 @@ private:
 
 	void purge_tree();
 
+	void update_farmer_ranking();
+
 	void add_proof(	const uint32_t height, const hash_t& challenge,
 					std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac);
 
@@ -402,7 +397,7 @@ private:
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) const;
 
-	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<vdf_point_t> point);
+	void verify_vdf_success(std::shared_ptr<const ProofOfTime> proof, std::shared_ptr<const VDF_Point> point);
 
 	void verify_vdf_failed(std::shared_ptr<const ProofOfTime> proof);
 
@@ -440,10 +435,10 @@ private:
 
 	bool find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset = 0) const;
 
-	std::shared_ptr<vdf_point_t> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
+	std::shared_ptr<const VDF_Point> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
 			const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const;
 
-	std::shared_ptr<vdf_point_t> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
+	std::shared_ptr<const VDF_Point> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
 
 	std::vector<proof_data_t> find_proof(const hash_t& challenge) const;
 
@@ -460,6 +455,8 @@ private:
 	std::shared_ptr<const Contract> get_contract_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
 
 	std::shared_ptr<const Contract> get_contract_for_ex(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
+
+	void async_api_call(std::shared_ptr<const vnx::Value> method, const vnx::request_id_t& request_id);
 
 private:
 	hash_t state_hash;
@@ -489,7 +486,7 @@ private:
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 
-	std::multimap<uint32_t, std::shared_ptr<vdf_point_t>> verified_vdfs;			// [height => output]
+	std::multimap<uint32_t, std::shared_ptr<const VDF_Point>> verified_vdfs;			// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]
@@ -513,7 +510,7 @@ private:
 	hash_multi_table<pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
 	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;		// [farmer key => info]
 
-	hash_table<addr_t, farmer_info_t> farmer_info_map;							// TODO: [reward address => info]
+	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;				// sorted by count DSC [farmer key => num. blocks]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
@@ -527,7 +524,9 @@ private:
 	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_queue;
 
+	std::shared_mutex db_mutex;								// covers DB as well as history
 	std::shared_ptr<vnx::ThreadPool> threads;
+	std::shared_ptr<vnx::ThreadPool> api_threads;			// executed under shared db_mutex lock
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
 

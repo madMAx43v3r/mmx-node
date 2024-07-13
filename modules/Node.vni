@@ -10,6 +10,7 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.TopicPtr input_transactions = "network.transactions";
 	vnx.TopicPtr input_timelord_vdfs = "timelord.proof";
 	vnx.TopicPtr input_harvester_proof = "farmer.proof";
+	vnx.TopicPtr input_vdf_points = "network.vdf_points";
 
 	vnx.TopicPtr output_verified_vdfs = "node.verified_vdfs";
 	vnx.TopicPtr output_verified_proof = "node.verified_proof";
@@ -20,6 +21,7 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.TopicPtr output_interval_request = "timelord.requests";
 	vnx.TopicPtr output_timelord_infuse = "timelord.infuse";
 	vnx.TopicPtr output_challenges = "harvester.challenges";
+	vnx.TopicPtr output_vdf_points = "node.vdf_points";
 	
 	int max_queue_ms = 10000;				// [ms]
 	int update_interval_ms = 1000;			// [ms]
@@ -47,6 +49,7 @@ module Node implements vnx.addons.HttpComponent {
 	bool do_sync = true;
 	bool db_replay = false;
 	bool show_warnings = false;
+	bool vdf_slave_mode = false;
 	bool verify_vdf_cpuopencl = false;			// verify VDF streams on cpu and opencl, if possible
 	bool verify_vdf_rewards = true;
 	bool debug_exec_fails = false;
@@ -101,6 +104,9 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	optional<tx_info_t> get_tx_info_for(Transaction* tx) const;
+	
+	@Permission(permission_e.PUBLIC)
+	vector<hash_t> get_tx_ids(uint limit) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<hash_t> get_tx_ids_at(uint height) const;
@@ -201,12 +207,6 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, ulong>> deposit) const;
 	
 	@Permission(permission_e.PUBLIC)
-	address_info_t get_address_info(addr_t address) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<address_info_t> get_address_infos(vector<addr_t> addresses) const;
-	
-	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
@@ -234,7 +234,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<offer_data_t> get_recent_offers(int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, bool state = true) const;
+	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, ulong min_bid, int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<trade_entry_t> get_trade_history(int limit = 100, uint since) const;
@@ -273,10 +273,10 @@ module Node implements vnx.addons.HttpComponent {
 	vector<BlockHeader*> get_farmed_blocks(vector<pubkey_t> farmer_keys, bool full_blocks, uint since, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<pubkey_t, uint> get_farmed_block_count(uint since) const;
+	farmed_block_summary_t get_farmed_block_summary(vector<pubkey_t> farmer_keys, uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint get_farmed_block_count_for(vector<pubkey_t> farmer_keys, uint since) const;
+	vector<pair<pubkey_t, uint>> get_farmer_ranking(int limit = -1) const;
 	
 	void start_sync(bool force);
 	
@@ -287,5 +287,6 @@ module Node implements vnx.addons.HttpComponent {
 	void handle(Transaction value);
 	void handle(ProofOfTime value);
 	void handle(ProofResponse value);
+	void handle(VDF_Point value);
 	
 }

@@ -252,7 +252,7 @@ public:
 		return result.size();
 	}
 
-	void scan(const std::function<void(const K&, const V&)>& callback) const
+	void scan(const std::function<bool(const K&, const V&)>& callback) const
 	{
 		Table::Iterator iter(db);
 		iter.seek_begin();
@@ -268,9 +268,35 @@ public:
 				// ignore
 			}
 			if(valid) {
-				callback(key, value);
+				if(!callback(key, value)) {
+					break;
+				}
 			}
 			iter.next();
+		}
+	}
+
+	void reverse_scan(const std::function<bool(const K&, const V&)>& callback) const
+	{
+		Table::Iterator iter(db);
+		iter.seek_last();
+		while(iter.is_valid()) {
+			K key;
+			V value;
+			bool valid = false;
+			try {
+				read(iter.key(), key);
+				read(iter.value(), value, value_type, value_code);
+				valid = true;
+			} catch(...) {
+				// ignore
+			}
+			if(valid) {
+				if(!callback(key, value)) {
+					break;
+				}
+			}
+			iter.prev();
 		}
 	}
 

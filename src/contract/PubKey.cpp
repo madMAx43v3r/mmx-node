@@ -55,7 +55,7 @@ void PubKey::validate(std::shared_ptr<const Solution> solution, const hash_t& tx
 	{
 		const auto sol_address = sol->pubkey.get_addr();
 		if(sol_address != address) {
-			throw mmx::invalid_solution("wrong pubkey: " + sol_address.to_string() + " != " + address.to_string());
+			throw mmx::invalid_solution("wrong public key: " + sol_address.to_string() + " != " + address.to_string());
 		}
 		if(!sol->signature.verify(sol->pubkey, txid)) {
 			throw mmx::invalid_solution("invalid signature for " + address.to_string());

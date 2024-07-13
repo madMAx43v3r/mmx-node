@@ -1,0 +1,30 @@
+package mmx;
+
+class VDF_Point {
+	
+	uint height;
+	
+	ulong vdf_start;
+	ulong vdf_iters;
+	
+	hash_t input[2];
+	hash_t output[2];
+	
+	optional<hash_t> infused;					// chain 0
+	
+	optional<addr_t> reward_addr;
+	
+	hash_t content_hash;
+	
+	// below not included in content_hash
+	
+	long recv_time;								// [usec]
+	
+	ProofOfTime* proof;
+	
+	
+	bool is_valid() const;
+	
+	hash_t calc_hash() const;
+	
+}

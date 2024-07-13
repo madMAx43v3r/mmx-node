@@ -61,6 +61,7 @@ int main(int argc, char** argv)
 		proxy->import_list.push_back(module->input_challenges);
 		proxy->export_list.push_back(module->output_info);
 		proxy->export_list.push_back(module->output_proofs);
+		proxy->export_list.push_back(module->output_lookups);
 		module.start_detached();
 	}
 

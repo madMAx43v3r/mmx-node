@@ -109,9 +109,13 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -137,9 +141,13 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 	}
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Sent many with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Sent many with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -174,9 +182,13 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 
 	wallet->complete(tx, options_);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Sent " << amount << " with cost " << tx->static_cost << " to " << dst_addr << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -199,9 +211,13 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Deployed " << contract->get_type_name() << " with cost " << tx->static_cost << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Deployed " << contract->get_type_name() << " with cost " << tx->static_cost << " as " << addr_t(tx->id) << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -225,9 +241,13 @@ std::shared_ptr<const Transaction> Wallet::execute(
 
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -253,9 +273,13 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Executed " << method << "() on [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -290,10 +314,14 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 
 	wallet->complete(tx, options, deposit);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Offering " << bid_amount << " [" << bid_currency << "] for " << ask_amount
-				<< " [" << ask_currency << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Offering " << bid_amount << " [" << bid_currency << "] for " << ask_amount
+					<< " [" << ask_currency << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -397,9 +425,13 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 	}
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Added liquidity to [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Added liquidity to [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -431,9 +463,13 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 	}
 	wallet->complete(tx, options);
 
-	if(tx->is_signed() && options.auto_send) {
-		send_off(index, tx);
-		log(INFO) << "Removed liquidity from [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+	if(tx->is_signed()) {
+		if(options.auto_send) {
+			send_off(index, tx);
+			log(INFO) << "Removed liquidity from [" << address << "] with cost " << tx->static_cost << " (" << tx->id << ")";
+		} else {
+			tx->exec_result = node->validate(tx);
+		}
 	}
 	return tx;
 }
@@ -476,6 +512,14 @@ void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> 
 {
 	if(!tx) {
 		return;
+	}
+	{
+		auto iter = lock_timers.find(index);
+		if(iter != lock_timers.end()) {
+			if(auto timer = iter->second.lock()) {
+				timer->reset();		// reset auto-lock timer
+			}
+		}
 	}
 	const auto wallet = get_wallet(index);
 	node->add_transaction(tx, true);
@@ -759,16 +803,6 @@ std::vector<addr_t> Wallet::get_all_addresses(const int32_t& index) const
 	return list;
 }
 
-address_info_t Wallet::get_address_info(const uint32_t& index, const uint32_t& offset) const
-{
-	return node->get_address_info(get_address(index, offset));
-}
-
-std::vector<address_info_t> Wallet::get_all_address_infos(const int32_t& index) const
-{
-	return node->get_address_infos(get_all_addresses(index));
-}
-
 std::pair<skey_t, pubkey_t> Wallet::get_farmer_keys(const uint32_t& index) const
 {
 	if(auto wallet = wallets.at(index)) {
@@ -788,17 +822,18 @@ std::vector<std::pair<skey_t, pubkey_t>> Wallet::get_all_farmer_keys() const
 	return res;
 }
 
-account_t Wallet::get_account(const uint32_t& index) const
+account_info_t Wallet::get_account(const uint32_t& index) const
 {
-	return get_wallet(index)->config;
+	const auto wallet = get_wallet(index);
+	return account_info_t::make(index, wallet->find_address(0), wallet->config);
 }
 
-std::map<uint32_t, account_t> Wallet::get_all_accounts() const
+std::vector<account_info_t> Wallet::get_all_accounts() const
 {
-	std::map<uint32_t, account_t> res;
+	std::vector<account_info_t> res;
 	for(size_t i = 0; i < wallets.size(); ++i) {
 		if(auto wallet = wallets[i]) {
-			res[i] = wallet->config;
+			res.push_back(account_info_t::make(i, wallet->find_address(0), wallet->config));
 		}
 	}
 	return res;
@@ -820,9 +855,23 @@ void Wallet::unlock(const uint32_t& index, const std::string& passphrase)
 	wallet->unlock(passphrase);
 
 	if(wallet->config.with_passphrase) {
-		auto info = WalletFile::create();
-		info->addresses = wallet->get_all_addresses();
-		vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
+		if(lock_timeout_sec > 0) {
+			auto& timer = lock_timers[index];
+			if(auto t = timer.lock()) {
+				t->stop();
+			}
+			timer = set_timeout_millis(int64_t(lock_timeout_sec) * 1000, [this, index, wallet]() {
+				wallet->lock();
+				lock_timers.erase(index);
+			});
+		}
+		try {
+			auto info = WalletFile::create();
+			info->addresses = wallet->get_all_addresses();
+			vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
+		} catch(const std::exception& ex) {
+			log(ERROR) << "Failed to store wallet info: " << ex.what();
+		}
 	}
 }
 
@@ -847,7 +896,11 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 					key_file->seed_value, (info ? info->addresses : std::vector<addr_t>()), config, params);
 			wallets[index] = wallet;
 		} else {
-			wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config, params);
+			auto config_ = config;
+			if(config_.finger_print.empty()) {
+				config_.finger_print = get_finger_print(key_file->seed_value, passphrase);
+			}
+			wallet = std::make_shared<ECDSA_Wallet>(key_file->seed_value, config_, params);
 			wallets[index] = wallet;
 			if(passphrase) {
 				unlock(index, *passphrase);
@@ -868,7 +921,8 @@ void Wallet::create_account(const account_t& config, const vnx::optional<std::st
 	if(config.num_addresses <= 0) {
 		throw std::logic_error("num_addresses <= 0");
 	}
-	add_account(std::max<uint32_t>(max_key_files, wallets.size()), config, passphrase);
+	const auto index = std::max<uint32_t>(max_key_files, wallets.size());
+	add_account(index, config, passphrase);
 
 	const std::string path = config_path + vnx_name + ".json";
 	{
@@ -881,33 +935,94 @@ void Wallet::create_account(const account_t& config, const vnx::optional<std::st
 	}
 }
 
-void Wallet::create_wallet(const account_t& config_, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase)
+void Wallet::create_wallet(const account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase)
 {
-	mmx::KeyFile key_file;
+	auto key_file = KeyFile::create();
 	if(words) {
-		key_file.seed_value = mnemonic::words_to_seed(mnemonic::string_to_words(*words));
+		key_file->seed_value = mnemonic::words_to_seed(mnemonic::string_to_words(*words));
 	} else {
-		key_file.seed_value = hash_t::secure_random();
+		key_file->seed_value = hash_t::secure_random();
+	}
+	if(passphrase) {
+		key_file->finger_print = get_finger_print(key_file->seed_value, passphrase);
+	}
+	import_wallet(config, key_file, passphrase);
+}
+
+void Wallet::import_wallet(const account_t& config_, std::shared_ptr<const KeyFile> key_file, const vnx::optional<std::string>& passphrase)
+{
+	if(!key_file) {
+		throw std::logic_error("!key_file");
+	}
+	const auto finger_print = get_finger_print(key_file->seed_value, passphrase);
+
+	if(key_file->finger_print) {
+		if(finger_print != *key_file->finger_print) {
+			throw std::logic_error(passphrase ? "wrong passphrase" : "passphrase needed");
+		}
 	}
 	auto config = config_;
+	if(!config.num_addresses) {
+		config.num_addresses = num_addresses;
+	}
 	config.with_passphrase = passphrase;
-	config.finger_print = get_finger_print(key_file.seed_value, passphrase);
+	config.finger_print = finger_print;
 
 	if(config.key_file.empty()) {
 		config.key_file = "wallet_" + config.finger_print + ".dat";
 	}
-	if(vnx::File(config.key_file).exists()) {
-		throw std::logic_error("key file already exists");
-	}
 	const auto key_path = storage_path + config.key_file;
+
+	const auto existing = vnx::read_from_file<KeyFile>(key_path);
+	if(existing) {
+		if(existing->seed_value != key_file->seed_value) {
+			throw std::logic_error("key file already exists");
+		}
+	}
 	vnx::write_to_file(key_path, key_file);
 	try {
 		create_account(config, passphrase);
 	} catch(...) {
-		vnx::File(key_path).remove();
+		if(!existing) {
+			vnx::File(key_path).remove();
+		}
 		throw;
 	}
 	std::filesystem::permissions(key_path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
+}
+
+std::shared_ptr<const KeyFile> Wallet::export_wallet(const uint32_t& index) const
+{
+	const auto wallet = get_wallet(index);
+
+	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
+		return key_file;
+	}
+	throw std::logic_error("failed to read key file");
+}
+
+void Wallet::remove_account(const uint32_t& index, const uint32_t& account)
+{
+	const auto wallet = get_wallet(index);
+
+	const std::string path = config_path + vnx_name + ".json";
+	{
+		auto object = vnx::read_config_file(path);
+		auto& accounts = object["accounts+"];
+		std::vector<account_t> list;
+		for(const auto& entry : accounts.to<std::vector<account_t>>()) {
+			if(entry.finger_print != wallet->config.finger_print || entry.index != account) {
+				list.push_back(entry);
+			}
+		}
+		accounts = list;
+		vnx::write_config_file(path, object);
+	}
+	if(index + 1 == wallets.size()) {
+		wallets.resize(index);
+	} else {
+		wallets[index] = nullptr;
+	}
 }
 
 std::set<addr_t> Wallet::get_token_list() const
@@ -956,22 +1071,12 @@ void Wallet::rem_token(const addr_t& address)
 
 hash_t Wallet::get_master_seed(const uint32_t& index) const
 {
-	const auto wallet = get_wallet(index);
-
-	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
-		return key_file->seed_value;
-	}
-	throw std::logic_error("failed to read key file");
+	return export_wallet(index)->seed_value;
 }
 
 std::vector<std::string> Wallet::get_mnemonic_seed(const uint32_t& index) const
 {
-	const auto wallet = get_wallet(index);
-
-	if(auto key_file = vnx::read_from_file<KeyFile>(storage_path + wallet->config.key_file)) {
-		return mnemonic::seed_to_words(key_file->seed_value);
-	}
-	throw std::logic_error("failed to read key file");
+	return mnemonic::seed_to_words(export_wallet(index)->seed_value);
 }
 
 std::vector<std::string> Wallet::get_mnemonic_wordlist(const std::string& lang) const

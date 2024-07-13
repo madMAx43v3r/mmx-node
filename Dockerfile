@@ -15,6 +15,7 @@ RUN apt-get update && apt-get -y upgrade \
 			ocl-icd-opencl-dev \
 			ccache \
 			&& rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY . .
 RUN git submodule update --init --recursive
@@ -25,15 +26,16 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get -y upgrade \
 		&& apt-get install -y \
 			apt-utils \
+			curl \
 			libminiupnpc17 \
 			libjemalloc2 \
 			zlib1g \
 			libzstd1 \
 			libgomp1 \
 			ocl-icd-libopencl1 \
-			curl \
-			clinfo \
+			tzdata \
 			&& rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY --from=builder /app/build/dist ./
 COPY ["docker-entrypoint.sh", "./"]
@@ -42,7 +44,7 @@ ENV MMX_HOME="/data/"
 VOLUME /data
 
 # node p2p port
-EXPOSE 12341/tcp
+EXPOSE 12342/tcp
 # http api port
 EXPOSE 11380/tcp
 
@@ -67,3 +69,7 @@ RUN mkdir -p /etc/OpenCL/vendors \
     && echo "libnvidia-opencl.so.1" > /etc/OpenCL/vendors/nvidia.icd
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+
+FROM base AS intel
+RUN apt-get update && apt-get install --no-install-recommends -y intel-opencl-icd \
+	&& rm -rf /var/lib/apt/lists/*

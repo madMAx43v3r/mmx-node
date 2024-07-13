@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-mmx::hash_t ProofOfStake::calc_hash(const vnx::bool_t& full_hash) const
+hash_t ProofOfStake::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

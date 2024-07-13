@@ -1,0 +1,22 @@
+Mainnet
+- Pooling protocol
+- Multisig
+- Test remote calls again
+- unsafe_add() / unsafe_sub() / unsafe_mul()
+- Website
+- Linux packages
+- Double check msg hashes again
+- New project wallet
+- Check remaining in-source TODOs
+- Test mainnet-rc changes
+- Harvester latency graphs
+- Choose reward_adjust_div
+- GUI settings tabs
+- GUI option to increase wallet address count
+- Native Linux GUI
+- GUI add peer feature
+- Swap warning for one-sided pool
+- VDF trust system (order queue by trust)
+- Remove wallet account feature in GUI
+- Block timestamps
+- Use getaddrinfo()

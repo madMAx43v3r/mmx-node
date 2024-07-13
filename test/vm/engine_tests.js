@@ -64,6 +64,37 @@ if(false) {
 	// pass
 }
 
+if(null != null) {
+	fail("null != null");
+}
+if(null == 0) {
+	fail("null == 0");
+}
+if(null == false) {
+	fail("null == false");
+}
+if(null == true) {
+	fail("null == true");
+}
+if(null == "") {
+	fail("null == ''");
+}
+if(!(null == null)) {
+	fail("!(null == null)");
+}
+if(!(null != 0)) {
+	fail("!(null != 0)");
+}
+if(!(null != false)) {
+	fail("!(null != false)");
+}
+if(!(null != true)) {
+	fail("!(null != true)");
+}
+if(!(null != "")) {
+	fail("!(null != '')");
+}
+
 if(!(1 > 0)) {
 	fail("1 > 0");
 }
@@ -653,6 +684,12 @@ __nop();
 	delete(obj.foo);
 	if(obj.foo != true) {
 		fail("delete(): obj.foo != true");
+	}
+}
+{
+	var map = {};
+	if(map[bech32()] == 0) {
+		fail("map[bech32()] == 0");
 	}
 }
 

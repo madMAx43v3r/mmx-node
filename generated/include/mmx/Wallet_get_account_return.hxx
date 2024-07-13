@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Wallet_get_account_return_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/account_t.hxx>
+#include <mmx/account_info_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -14,7 +14,7 @@ namespace mmx {
 class MMX_EXPORT Wallet_get_account_return : public ::vnx::Value {
 public:
 	
-	::mmx::account_t _ret_0;
+	::mmx::account_info_t _ret_0;
 	
 	typedef ::vnx::Value Super;
 	

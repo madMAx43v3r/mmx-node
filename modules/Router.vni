@@ -8,11 +8,13 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	vnx.TopicPtr input_verified_blocks = "node.verified_blocks";
 	vnx.TopicPtr input_verified_transactions = "node.verified_transactions";
 	vnx.TopicPtr input_transactions = "node.transactions";
+	vnx.TopicPtr input_vdf_points = "node.vdf_points";
 	
 	vnx.TopicPtr output_vdfs = "network.vdfs";
 	vnx.TopicPtr output_proof = "network.proof";
 	vnx.TopicPtr output_blocks = "network.blocks";
 	vnx.TopicPtr output_transactions = "network.transactions";
+	vnx.TopicPtr output_vdf_points = "network.vdf_points";
 	
 	int max_queue_ms = 1000;				// [ms]
 	int send_interval_ms = 20;				// [ms]
@@ -54,6 +56,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	set<string> seed_peers;
 	set<string> fixed_peers;
 	set<string> block_peers;
+	set<string> master_nodes;
 	
 	string storage_path;
 	string node_server = "Node";
@@ -86,5 +89,6 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	void handle(Transaction sample);
 	void handle(ProofOfTime sample);
 	void handle(ProofResponse sample);
+	void handle(VDF_Point sample);
 	
 }

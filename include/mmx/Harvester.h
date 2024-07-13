@@ -55,7 +55,7 @@ private:
 
 	void lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const;
 
-	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const;
+	void find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs, const size_t depth) const;
 
 	// thread safe
 	void send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const ProofOfSpace> proof,

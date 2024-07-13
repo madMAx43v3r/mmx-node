@@ -44,18 +44,22 @@ fixed128::fixed128(const uint128_t& value, const int decimals)
 
 fixed128::fixed128(const std::string& str)
 {
+	if(str.empty() || str.find_first_not_of("0123456789.,eE-") != std::string::npos) {
+		throw std::logic_error("string is not a number: '" + str + "'");
+	}
 	const auto dec_pos = str.find_first_of(".,");
 	const auto exp_pos = str.find_first_of("eE");
-	if(dec_pos != std::string::npos || exp_pos != std::string::npos) {
-		if(dec_pos != std::string::npos) {
-			fixed = uint128_t(str.substr(0, dec_pos), 10);
-		} else {
-			fixed = uint128_t(str.substr(0, exp_pos), 10);
+	if(dec_pos != std::string::npos || exp_pos != std::string::npos)
+	{
+		const auto integer = str.substr(0, std::min(dec_pos, exp_pos));
+		if(integer.empty() || integer.find_first_not_of("0123456789") != std::string::npos) {
+			throw std::logic_error("invalid integer part: '" + integer + "'");
 		}
+		fixed = uint128_t(integer, 10);
 		fixed *= divider;
 
+		std::string fract;
 		if(dec_pos != std::string::npos) {
-			std::string fract;
 			if(exp_pos != std::string::npos && exp_pos > dec_pos) {
 				fract = str.substr(dec_pos + 1, exp_pos - dec_pos - 1);
 			} else {
@@ -72,7 +76,7 @@ fixed128::fixed128(const std::string& str)
 		}
 		if(exp_pos != std::string::npos) {
 			const auto exp_10 = vnx::from_string<int>(str.substr(exp_pos + 1));
-			if(std::abs(exp_10) > decimals) {
+			if(std::abs(exp_10) > decimals - int(fract.size())) {
 				throw std::logic_error("out of range exponent: " + str.substr(exp_pos));
 			}
 			if(exp_10 >= 0) {

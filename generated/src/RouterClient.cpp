@@ -30,6 +30,7 @@
 #include <mmx/Router_kick_peer.hxx>
 #include <mmx/Router_kick_peer_return.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/VDF_Point.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>

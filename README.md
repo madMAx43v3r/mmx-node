@@ -61,9 +61,8 @@ Please take a look at the Wiki:
 
 To access WebGUI, go to: http://localhost:11380/gui/
 
-Only available on localhost, because it has _full access_ to your wallet.
-
-Login password is auto-generated at first launch, located in `$MMX_HOME/PASSWD` file.
+It's only available on localhost by default. \
+The login password is auto-generated at first launch, located in `mmx-node/PASSWD` file (`$MMX_HOME/PASSWD`).
 
 ## Release Notes
 
@@ -102,3 +101,9 @@ Login password is auto-generated at first launch, located in `$MMX_HOME/PASSWD` 
 - Swap fee levels changed to: 0.05%, 0.25%, 1% and 5%
 - Using zstd compression for network traffic
 - NFT plot support (testing only)
+
+### Testnet12
+
+- Fixed Virtual Plots, they now win blocks at the expected rate. On TN11 it was ~20 times less.
+- Fixed block reward formula, average tx fee is subtracted from minimum reward again.
+

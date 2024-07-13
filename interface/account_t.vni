@@ -4,7 +4,7 @@ struct account_t {
 	
 	uint index;
 	
-	uint num_addresses = 10;
+	uint num_addresses = 1;
 	
 	string name;
 	

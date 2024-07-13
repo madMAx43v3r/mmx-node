@@ -18,7 +18,7 @@ struct MMX_EXPORT spend_options_t {
 	
 	vnx::bool_t auto_send = true;
 	uint32_t fee_ratio = 1024;
-	uint32_t max_extra_cost = 5000000;
+	uint32_t gas_limit = 5000000;
 	vnx::optional<uint32_t> expire_at;
 	vnx::optional<uint32_t> expire_delta;
 	vnx::optional<::mmx::addr_t> user;
@@ -72,7 +72,7 @@ void spend_options_t::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<spend_options_t>(12);
 	_visitor.type_field("auto_send", 0); _visitor.accept(auto_send);
 	_visitor.type_field("fee_ratio", 1); _visitor.accept(fee_ratio);
-	_visitor.type_field("max_extra_cost", 2); _visitor.accept(max_extra_cost);
+	_visitor.type_field("gas_limit", 2); _visitor.accept(gas_limit);
 	_visitor.type_field("expire_at", 3); _visitor.accept(expire_at);
 	_visitor.type_field("expire_delta", 4); _visitor.accept(expire_delta);
 	_visitor.type_field("user", 5); _visitor.accept(user);

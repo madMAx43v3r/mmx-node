@@ -52,29 +52,32 @@ void MultiSig::validate(std::shared_ptr<const Solution> solution, const hash_t& 
 		if(num_required != 1) {
 			throw mmx::invalid_solution("num_required != 1");
 		}
-		if(owners.count(sol->pubkey.get_addr()))
+		const auto sol_address = sol->pubkey.get_addr();
+
+		if(owners.count(sol_address))
 		{
 			if(!sol->signature.verify(sol->pubkey, txid)) {
 				throw mmx::invalid_solution("invalid signature");
 			}
 			return;
 		}
-		throw mmx::invalid_solution("no such owner");
+		throw mmx::invalid_solution("no such owner: " + sol_address.to_string());
 	}
 	if(auto sol = std::dynamic_pointer_cast<const solution::MultiSig>(solution))
 	{
 		size_t count = 0;
 		for(const auto& entry : sol->solutions)
 		{
-			if(owners.count(entry.first))
+			const auto& owner = entry.first;
+			if(owners.count(owner))
 			{
-				if(auto solution = std::dynamic_pointer_cast<const solution::PubKey>(entry.second))
+				if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(entry.second))
 				{
-					if(solution->pubkey.get_addr() != entry.first) {
-						throw mmx::invalid_solution("wrong pubkey for " + entry.first.to_string());
+					if(sol->pubkey.get_addr() != owner) {
+						throw mmx::invalid_solution("wrong public key for " + owner.to_string());
 					}
-					if(!solution->signature.verify(solution->pubkey, txid)) {
-						throw mmx::invalid_solution("invalid signature for " + entry.first.to_string());
+					if(!sol->signature.verify(sol->pubkey, txid)) {
+						throw mmx::invalid_solution("invalid signature for " + owner.to_string());
 					}
 					count++;
 				}

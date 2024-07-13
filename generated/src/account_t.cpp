@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 account_t::VNX_TYPE_HASH(0xc0c163f453729a7ull);
-const vnx::Hash64 account_t::VNX_CODE_HASH(0x819bd0784badd5acull);
+const vnx::Hash64 account_t::VNX_CODE_HASH(0xf4016806c91ec1b7ull);
 
 vnx::Hash64 account_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -162,7 +162,7 @@ std::shared_ptr<vnx::TypeCode> account_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.account_t";
 	type_code->type_hash = vnx::Hash64(0xc0c163f453729a7ull);
-	type_code->code_hash = vnx::Hash64(0x819bd0784badd5acull);
+	type_code->code_hash = vnx::Hash64(0xf4016806c91ec1b7ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::account_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<account_t>>(); };
@@ -177,7 +177,7 @@ std::shared_ptr<vnx::TypeCode> account_t::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "num_addresses";
-		field.value = vnx::to_string(10);
+		field.value = vnx::to_string(1);
 		field.code = {3};
 	}
 	{

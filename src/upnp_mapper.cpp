@@ -48,6 +48,9 @@ public:
 			const char* minissdpdpath = nullptr;
 			struct UPNPDev* devlist = nullptr;
 			char lanaddr[64] = {};
+#if MINIUPNPC_API_VERSION >= 18
+			char wanaddr[64] = {};
+#endif
 
 			int error = 0;
 #if MINIUPNPC_API_VERSION < 14
@@ -59,7 +62,11 @@ public:
 			struct UPNPUrls urls;
 			struct IGDdatas data;
 
-			const int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+			const int ret = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr)
+#if MINIUPNPC_API_VERSION >= 18
+					, wanaddr, sizeof(wanaddr)
+#endif
+			);
 			freeUPNPDevlist(devlist);
 			devlist = nullptr;
 

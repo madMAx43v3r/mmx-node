@@ -11,6 +11,7 @@
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
+#include <mmx/LookupInfo.hxx>
 #include <mmx/utils.h>
 #include <vnx/vnx.h>
 
@@ -142,6 +143,9 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		std::condition_variable signal;
 		size_t total_plots = 0;
 		uint32_t best_score = -1;
+		int64_t slow_time_ms = 0;
+		int64_t time_begin = 0;
+		std::string slow_plot;
 		pos::proof_data_t best_proof;
 		std::shared_ptr<pos::Prover> best_plot;
 		std::atomic<uint64_t> num_left {0};
@@ -150,6 +154,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	const auto job = std::make_shared<lookup_job_t>();
 	job->total_plots = id_map.size();
 	job->num_left = job->total_plots;
+	job->time_begin = vnx::get_wall_time_millis();
 
 	const auto max_delay_sec = params->block_time * (double(value->max_delay) - 0.5);
 	const auto deadline_ms = recv_time_ms + int64_t(max_delay_sec * 1000);
@@ -168,7 +173,8 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		threads->add_task([this, plot_id, prover, value, job, recv_time_ms, deadline_ms]()
 		{
 			const bool passed = check_plot_filter(params, value->challenge, plot_id);
-			const bool expired = vnx::get_wall_time_millis() > deadline_ms;
+			const auto time_begin = vnx::get_wall_time_millis();
+			const bool expired = time_begin > deadline_ms;
 
 			if(passed && !expired) try {
 				const auto challenge = get_plot_challenge(value->challenge, plot_id);
@@ -199,9 +205,14 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 			if(passed && expired) {
 				log(DEBUG) << "Skipping quality lookup for height " << value->height << " due to deadline overshoot";
 			}
+			const auto time_lookup = vnx::get_wall_time_millis() - time_begin;
 			{
 				std::lock_guard<std::mutex> lock(job->mutex);
 				if(passed) {
+					if(time_lookup > job->slow_time_ms) {
+						job->slow_time_ms = time_lookup;
+						job->slow_plot = prover->get_file_path();
+					}
 					job->num_passed++;
 				}
 				job->num_left--;
@@ -220,14 +231,19 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				break;
 			}
 		}
+		const auto time_end = vnx::get_wall_time_millis();
+
 		if(auto prover = job->best_plot)
 		{
 			auto proof_xs = job->best_proof.proof;
 			if(proof_xs.empty()) {
 				try {
+					const auto time_begin = vnx::get_wall_time_millis();
 					const auto data = prover->get_full_proof(value->challenge, job->best_proof.index);
 					if(data.valid) {
 						proof_xs = data.proof;
+						const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+						log(elapsed > 20 ? WARN : DEBUG) << "[" << host_name << "] Fetching full proof took " << elapsed << " sec (" << prover->get_file_path() << ")";
 					} else {
 						throw std::runtime_error(data.error_msg);
 					}
@@ -260,10 +276,29 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				send_response(value, proof, job->best_score, recv_time_ms);
 			}
 		}
+		{
+			auto out = LookupInfo::create();
+			out->id = harvester_id;
+			out->name = host_name;
+			out->height = value->height;
+			out->num_total = job->total_plots;
+			out->num_passed = job->num_passed;
+			out->total_time_ms = time_end - job->time_begin;
+			out->total_delay_ms = time_end - recv_time_ms;
+			if(job->num_passed) {
+				out->slow_time_ms = job->slow_time_ms;
+				out->slow_plot = job->slow_plot;
+			}
+			publish(out, output_lookups);
+		}
 		if(job->total_plots) {
-			const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
+			const auto slow_time = job->slow_time_ms / 1e3;
+			if(job->num_passed) {
+				log(slow_time > 20 ? WARN : DEBUG) << "[" << host_name << "] Slowest plot took " << slow_time << " sec (" << job->slow_plot << ")";
+			}
+			const auto delay_sec = (time_end - recv_time_ms) / 1e3;
 			log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
-					<< " plots were eligible for height " << value->height << ", delay " << delay_sec << " sec";
+					<< " plots were eligible for height " << value->height << ", max lookup " << slow_time << " sec, delay " << delay_sec << " sec";
 		}
 	});
 
@@ -316,8 +351,11 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 	return info;
 }
 
-void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs) const
+void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs, const size_t depth) const
 {
+	if(depth > max_recursion) {
+		return;
+	}
 	std::set<std::string> sub_dirs;
 	for(const auto& path : dirs) {
 		vnx::Directory dir(path);
@@ -342,7 +380,7 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 		}
 	}
 	if(!sub_dirs.empty()) {
-		find_plot_dirs(sub_dirs, all_dirs);
+		find_plot_dirs(sub_dirs, all_dirs, depth + 1);
 	}
 }
 
@@ -352,7 +390,7 @@ void Harvester::reload()
 
 	std::set<std::string> dir_set;
 	if(recursive_search) {
-		find_plot_dirs(plot_dirs, dir_set);
+		find_plot_dirs(plot_dirs, dir_set, 0);
 	} else {
 		dir_set = plot_dirs;
 	}
@@ -379,7 +417,7 @@ void Harvester::reload()
 						std::lock_guard<std::mutex> lock(mutex);
 						missing.erase(file_name);
 					}
-					if(!plot_map.count(file_name) && file->get_extension() == ".plot")
+					if(!plot_map.count(file_name) && file->get_extension() == ".plot" && file->get_name().substr(0, 9) == "plot-mmx-")
 					{
 						std::lock_guard<std::mutex> lock(mutex);
 						plot_files.push_back(file_name);

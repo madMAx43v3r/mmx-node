@@ -135,17 +135,13 @@ protected:
 
 	std::vector<addr_t> get_all_addresses(const int32_t& index) const override;
 
-	address_info_t get_address_info(const uint32_t& index, const uint32_t& offset) const;
-
-	std::vector<address_info_t> get_all_address_infos(const int32_t& index) const;
-
 	std::pair<skey_t, pubkey_t> get_farmer_keys(const uint32_t& index) const override;
 
 	std::vector<std::pair<skey_t, pubkey_t>> get_all_farmer_keys() const override;
 
-	account_t get_account(const uint32_t& index) const override;
+	account_info_t get_account(const uint32_t& index) const override;
 
-	std::map<uint32_t, account_t> get_all_accounts() const override;
+	std::vector<account_info_t> get_all_accounts() const override;
 
 	bool is_locked(const uint32_t& index) const override;
 
@@ -158,6 +154,12 @@ protected:
 	void create_account(const account_t& config, const vnx::optional<std::string>& passphrase) override;
 
 	void create_wallet(const account_t& config, const vnx::optional<std::string>& words, const vnx::optional<std::string>& passphrase) override;
+
+	void import_wallet(const account_t& config, std::shared_ptr<const KeyFile> key_file, const vnx::optional<std::string>& passphrase) override;
+
+	std::shared_ptr<const KeyFile> export_wallet(const uint32_t& index) const override;
+
+	void remove_account(const uint32_t& index, const uint32_t& account) override;
 
 	std::set<addr_t> get_token_list() const override;
 
@@ -184,6 +186,8 @@ private:
 	std::shared_ptr<NodeClient> node;
 
 	std::vector<std::shared_ptr<ECDSA_Wallet>> wallets;
+
+	std::map<uint32_t, std::weak_ptr<vnx::Timer>> lock_timers;
 
 	mutable mmx::hash_multi_table<addr_t, tx_log_entry_t> tx_log;
 

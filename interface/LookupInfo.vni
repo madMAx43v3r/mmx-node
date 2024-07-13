@@ -1,0 +1,20 @@
+package mmx;
+
+class LookupInfo {
+	
+	hash_t id;				// harvester id
+	
+	string name;
+	
+	uint height;
+	
+	uint num_passed;
+	uint num_total;
+	
+	long slow_time_ms;		// slowest plot lookup time
+	long total_time_ms;		// for all plots
+	long total_delay_ms;
+	
+	optional<string> slow_plot;		// slowest plot file path
+	
+}

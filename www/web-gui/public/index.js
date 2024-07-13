@@ -1,4 +1,6 @@
 
+const WAPI_URL = "/wapi";
+
 function validate_address(address) {
 	return address && address.length == 62 && address.startsWith("mmx1");
 }
@@ -15,6 +17,26 @@ function get_short_hash(hash, length) {
 		length = 10;
 	}
 	return hash.substring(0, length) + '...' + hash.substring(64 - length);
+}
+
+function validate_amount(value) {
+	if(value && value.length && value.match(/^(\d+([.,]\d*)?)$/)) {
+		return true;
+	}
+	return "invalid amount";
+}
+
+function get_tx_type_color(type, dark = false) {
+	if(type == "REWARD") return dark ? "lime--text" : "lime--text text--darken-2";
+	if(type == "RECEIVE" || type == "REWARD" || type == "VDF_REWARD") return "green--text";
+	if(type == "SPEND") return "red--text";
+	if(type == "TXFEE") return "grey--text";
+	return "";
+}
+
+function get_active_wallet() {
+	const value = localStorage.getItem('active_wallet');
+	return value != null ? parseInt(value) : null;
 }
 
 const MMX_ADDR = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
@@ -67,14 +89,6 @@ const AccountContracts = {
 			<create-contract-menu :index="index"></create-contract-menu>
 			<account-contracts :index="index"></account-contracts>
 		</div>
-	`
-}
-const AccountAddresses = {
-	props: {
-		index: Number
-	},
-	template: `
-		<account-addresses :index="index" :limit="1000"></account-addresses>
 	`
 }
 const AccountSend = {
@@ -372,6 +386,7 @@ const Farmer = {
 	template: `
 		<div>
 			<farmer-info></farmer-info>
+			<farmer-rewards></farmer-rewards>
 			<farmer-menu class="mt-4"></farmer-menu>
 			<router-view class="mt-2"></router-view>
 		</div>
@@ -486,7 +501,7 @@ Vue.component('tx-fee-select', {
 		<v-select
 			v-model="value"
 			:items="items"
-			label="TX Fee"
+			label="TX Fee Ratio"
 		></v-select>
 	`
 })

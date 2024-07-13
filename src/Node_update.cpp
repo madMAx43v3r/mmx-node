@@ -173,8 +173,22 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 	}
 }
 
+void Node::add_dummy_blocks(const uint32_t& height)
+{
+	const auto root = get_root();
+	if(height == root->height + 1) {
+		add_dummy_block(root);
+	}
+	const auto range = fork_index.equal_range(height - 1);
+	for(auto iter = range.first; iter != range.second; ++iter) {
+		add_dummy_block(iter->second->block);
+	}
+}
+
 void Node::update()
 {
+	std::unique_lock lock(db_mutex);
+
 	const auto time_begin = vnx::get_wall_time_millis();
 	update_pending = false;
 
@@ -565,13 +579,17 @@ void Node::validate_new()
 	for(auto& entry : tx_list) {
 		threads->add_task([this, &entry, context]() {
 			entry.is_valid = false;
-
-			const auto& tx = entry.tx;
+			auto& tx = entry.tx;
+			if(tx->exec_result) {
+				auto tmp = vnx::clone(tx);
+				tmp->reset(params);
+				tx = tmp;
+			}
 			context->wait(tx->id);
 			try {
-				if(auto res = validate(tx, context)) {
-					entry.cost = res->total_cost;
-					entry.fee = res->total_fee;
+				if(auto result = validate(tx, context)) {
+					entry.cost = result->total_cost;
+					entry.fee = result->total_fee;
 					entry.is_valid = true;
 				}
 			} catch(const std::exception& ex) {
@@ -640,22 +658,24 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	for(auto& entry : tx_list) {
 		threads->add_task([this, &entry, context]() {
 			entry.is_valid = false;
-
 			auto& tx = entry.tx;
+			if(tx->exec_result) {
+				auto tmp = vnx::clone(tx);
+				tmp->reset(params);
+				tx = tmp;
+			}
 			context->wait(tx->id);
 			try {
-				if(auto res = validate(tx, context)) {
-					{
-						auto copy = vnx::clone(tx);
-						copy->exec_result = *res;
-						copy->static_cost = copy->calc_cost(params);
-						copy->content_hash = copy->calc_hash(true);
-						tx = copy;
-					}
-					entry.cost = res->total_cost;
-					entry.fee = res->total_fee;
-					entry.is_valid = true;
+				auto result = validate(tx, context);
+				if(!result) {
+					throw std::logic_error("!result");
 				}
+				auto tmp = vnx::clone(tx);
+				tmp->update(*result, params);
+				tx = tmp;
+				entry.cost = result->total_cost;
+				entry.fee = result->total_fee;
+				entry.is_valid = true;
 			} catch(const std::exception& ex) {
 				if(show_warnings) {
 					log(WARN) << "TX validation failed with: " << ex.what() << " (" << tx->id << ")";
@@ -746,7 +766,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	return out;
 }
 
-std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<vdf_point_t> vdf_point, const proof_data_t& proof, const bool full_block)
+std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 
@@ -763,12 +783,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->proof = proof.proof;
 	block->netspace_ratio = calc_new_netspace_ratio(
 			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
+	block->vdf_reward_addr = vdf_point->reward_addr;
 
-	if(vdf_point->vdf_reward_valid) {
-		if(auto vdf_proof = vdf_point->proof) {
-			block->vdf_reward_addr = vdf_proof->reward_addr;
-		}
-	}
 	if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
 		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
 			block->reward_addr = plot->reward_address;
