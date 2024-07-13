@@ -160,7 +160,7 @@ node_info_t Router::get_info() const
 static
 bool is_valid_address(const std::string& addr)
 {
-	if(addr.substr(0, 4) == "127." || addr == "0.0.0.0") {
+	if(addr.empty() || addr.substr(0, 4) == "127." || addr == "0.0.0.0") {
 		return false;
 	}
 	return true;
