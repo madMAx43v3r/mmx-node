@@ -20,3 +20,4 @@ Mainnet
 - Remove wallet account feature in GUI
 - Use getaddrinfo()
 - Include account index in info_*.dat files
+- Increase min_sync_peers to 5 after launch
