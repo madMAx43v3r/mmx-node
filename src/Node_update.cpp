@@ -808,10 +808,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 
 	// set time stamp
 	{
-		auto delta_ms = ((vdf_point->recv_time / 1000) - prev->time_stamp) % 3600000;
-		if(delta_ms < 0) {
-			delta_ms += 3600000;
-		}
+		auto delta_ms = (vdf_point->recv_time / 1000) - prev->time_stamp;
 		delta_ms = std::min(delta_ms, params->block_interval_ms * 2);
 		delta_ms = std::max(delta_ms, params->block_interval_ms / 2);
 		block->time_stamp = prev->time_stamp + delta_ms;
