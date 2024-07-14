@@ -806,17 +806,17 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	}
 	block->average_txfee = calc_new_average_txfee(params, prev->average_txfee, total_fees);
 
-	const auto prev_fork = find_fork(prev->hash);
-
 	// set time stamp
-	if(auto point = prev_fork->vdf_point) {
-		auto delta_ms = (vdf_point->recv_time - point->recv_time) / 1000;
+	{
+		auto delta_ms = ((vdf_point->recv_time / 1000) - prev->time_stamp) % 3600000;
+		if(delta_ms < 0) {
+			delta_ms += 3600000;
+		}
 		delta_ms = std::min(delta_ms, params->block_interval_ms * 2);
 		delta_ms = std::max(delta_ms, params->block_interval_ms / 2);
 		block->time_stamp = prev->time_stamp + delta_ms;
-	} else {
-		block->time_stamp = prev->time_stamp + params->block_interval_ms;
 	}
+	const auto prev_fork = find_fork(prev->hash);
 
 	// set new time difficulty
 	if(auto fork = find_prev_fork(prev_fork, params->infuse_delay))
