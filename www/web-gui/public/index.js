@@ -173,10 +173,7 @@ const AccountOptions = {
 		index: Number
 	},
 	template: `
-		<div>
-			<account-actions :index="index"></account-actions>
-			<create-account :index="index" class="my-2"></create-account>
-		</div>
+		<account-actions :index="index"></account-actions>
 	`
 }
 const AccountCreateLocked = {
