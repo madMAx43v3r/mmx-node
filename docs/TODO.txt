@@ -17,5 +17,4 @@ Mainnet
 - GUI add peer feature
 - Swap warning for one-sided pool
 - VDF trust system (order queue by trust)
-- Use getaddrinfo()
 - Increase min_sync_peers to 5 after launch
