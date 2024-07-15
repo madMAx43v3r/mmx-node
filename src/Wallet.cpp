@@ -23,6 +23,12 @@
 
 namespace mmx {
 
+static std::string get_info_file_name(const account_t& config)
+{
+	const auto suffix = config.index ? "_" + std::to_string(config.index) : "";
+	return "info_" + config.finger_print + suffix + ".dat";
+}
+
 Wallet::Wallet(const std::string& _vnx_name)
 	:	WalletBase(_vnx_name)
 {
@@ -868,7 +874,7 @@ void Wallet::unlock(const uint32_t& index, const std::string& passphrase)
 		try {
 			auto info = WalletFile::create();
 			info->addresses = wallet->get_all_addresses();
-			vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
+			vnx::write_to_file(database_path + get_info_file_name(wallet->config), info);
 		} catch(const std::exception& ex) {
 			log(ERROR) << "Failed to store wallet info: " << ex.what();
 		}
@@ -887,7 +893,7 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 	if(auto key_file = vnx::read_from_file<KeyFile>(key_path)) {
 		std::shared_ptr<ECDSA_Wallet> wallet;
 		if(config.with_passphrase && !passphrase) {
-			const auto info_path = database_path + "info_" + config.finger_print + ".dat";
+			const auto info_path = database_path + get_info_file_name(config);
 			const auto info = vnx::read_from_file<WalletFile>(info_path);
 			if(!info) {
 				log(WARN) << "Missing info file: " << info_path;
