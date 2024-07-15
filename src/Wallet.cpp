@@ -76,7 +76,9 @@ void Wallet::main()
 	}
 	for(size_t i = 0; i < accounts.size(); ++i) {
 		try {
-			add_account(max_key_files + i, accounts[i], nullptr);
+			if(!accounts[i].is_hidden) {
+				add_account(max_key_files + i, accounts[i], nullptr);
+			}
 		} catch(const std::exception& ex) {
 			log(WARN) << ex.what();
 		}
@@ -1009,26 +1011,26 @@ std::shared_ptr<const KeyFile> Wallet::export_wallet(const uint32_t& index) cons
 
 void Wallet::remove_account(const uint32_t& index, const uint32_t& account)
 {
+	if(index < 100) {
+		throw std::logic_error("cannot remove wallet");
+	}
 	const auto wallet = get_wallet(index);
 
 	const std::string path = config_path + vnx_name + ".json";
 	{
 		auto object = vnx::read_config_file(path);
 		auto& accounts = object["accounts+"];
-		std::vector<account_t> list;
-		for(const auto& entry : accounts.to<std::vector<account_t>>()) {
-			if(entry.finger_print != wallet->config.finger_print || entry.index != account) {
-				list.push_back(entry);
-			}
+		auto list = accounts.to<std::vector<account_t>>();
+		const auto offset = index - 100;
+		if(offset < list.size()) {
+			list[offset].is_hidden = true;
+		} else {
+			throw std::logic_error("cannot remove wallet");
 		}
 		accounts = list;
 		vnx::write_config_file(path, object);
 	}
-	if(index + 1 == wallets.size()) {
-		wallets.resize(index);
-	} else {
-		wallets[index] = nullptr;
-	}
+	wallets[index] = nullptr;
 }
 
 std::set<addr_t> Wallet::get_token_list() const
