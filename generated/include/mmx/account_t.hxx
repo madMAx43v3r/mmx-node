@@ -19,6 +19,7 @@ struct MMX_EXPORT account_t {
 	std::string key_file;
 	std::string finger_print;
 	vnx::bool_t with_passphrase = 0;
+	vnx::bool_t is_hidden = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -60,14 +61,15 @@ struct MMX_EXPORT account_t {
 
 template<typename T>
 void account_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<account_t>(6);
+	_visitor.template type_begin<account_t>(7);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("num_addresses", 1); _visitor.accept(num_addresses);
 	_visitor.type_field("name", 2); _visitor.accept(name);
 	_visitor.type_field("key_file", 3); _visitor.accept(key_file);
 	_visitor.type_field("finger_print", 4); _visitor.accept(finger_print);
 	_visitor.type_field("with_passphrase", 5); _visitor.accept(with_passphrase);
-	_visitor.template type_end<account_t>(6);
+	_visitor.type_field("is_hidden", 6); _visitor.accept(is_hidden);
+	_visitor.template type_end<account_t>(7);
 }
 
 
