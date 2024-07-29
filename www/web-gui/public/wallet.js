@@ -562,7 +562,7 @@ Vue.component('account-history-form', {
 					<v-row>
 						<v-col cols="3">
 							<v-select v-model="type" :label="$t('account_history.type')"
-								:items="select_types" item-text="text" item-value="value" :disabled="memo">
+								:items="select_types" item-text="text" item-value="value" :disabled="memo?.length>0">
 							</v-select>
 						</v-col>
 						<v-col>
