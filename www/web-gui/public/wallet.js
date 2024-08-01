@@ -695,7 +695,7 @@ Vue.component('account-contract-summary', {
 					<v-btn outlined @click="withdraw">{{ $t('account_contract_summary.withdraw') }}</v-btn>
 				</div>
 			</v-card-text>
-		</div>
+		</v-card>
 		`
 })
 
@@ -2330,7 +2330,7 @@ Vue.component('create-locked-contract', {
 		submit() {
 			// TODO
 		},
-		submit_ex(passhprase) {
+		submit_ex(passphrase) {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.Executable";
@@ -2340,7 +2340,7 @@ Vue.component('create-locked-contract', {
 			const req = {};
 			req.index = this.index;
 			req.payload = contract;
-			req.options = {passhprase: passhprase};
+			req.options = {passphrase: passphrase};
 			fetch('/wapi/wallet/deploy', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
