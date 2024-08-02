@@ -408,6 +408,16 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					const std::string& method_name,
 					exec_error_t& error, const bool is_public) const
 {
+	{
+		auto iter = context->mutate_map.find(engine->contract);
+		if(iter == context->mutate_map.end()) {
+			throw std::logic_error("contract not locked");
+		}
+		const auto& list = iter->second;
+		if(std::find(list.begin(), list.end(), tx->id) == list.end()) {
+			throw std::logic_error("transaction did not lock contract: " + engine->contract.to_string());
+		}
+	}
 	const auto binary = get_contract_as<contract::Binary>(executable->binary, &engine->gas_used, engine->gas_limit);
 	if(!binary) {
 		throw std::logic_error("no such binary: " + executable->binary.to_string());

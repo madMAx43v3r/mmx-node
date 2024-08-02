@@ -236,9 +236,9 @@ private:
 	struct execution_context_t {
 		uint32_t height = 0;
 		std::shared_ptr<vm::StorageCache> storage;
-		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
-		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
-		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;
+		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;				// [contract => TX ids]
+		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;		// [TX id => TX ids]
+		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;		// [TX id => condition]
 		void wait(const hash_t& txid) const;
 		void signal(const hash_t& txid) const;
 		void setup_wait(const hash_t& txid, const addr_t& address);
