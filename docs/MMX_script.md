@@ -57,6 +57,10 @@ Note: Objects are maps with string keys.
 - `const` function modifier
 	- `function get_price() const {}`
 	- `const` functions cannot modify contract state
+- `static` function modifier
+	- `function init_ex(...) static {}`
+	- Denotes that function is a constructor (executes static init first)
+	- Any `init()` function is implicitly static
 - `public` function modifier
 	- `function payout() public {}`
 	- Only public functions can be executed via transactions.
@@ -72,6 +76,7 @@ Note: Objects are maps with string keys.
 	- `address`: Contract address (Type: 32-bytes)
 	- `user`: A user address can be specified when executing a contract function,
 		which is verified via a signature before executution, same as `msg.sender` in EVM.
+		In case of a remote call this is the address of the caller's contract.
 		(Type: 32-bytes or `null`)
 	- `deposit`: Object to check for deposited currency and amount (for `payable` functions):
 		- `currency`: Currency address (Type: 32-bytes)
