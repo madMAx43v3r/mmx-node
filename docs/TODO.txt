@@ -20,7 +20,6 @@ Mainnet
 - Increase min_sync_peers to 5 after launch
 - Node + Wallet get_balances() limit
 - mmx_test framework
-- Native batch-minting via sha256(address + index) ?
 - Native pooling support (needed to avoid TX fees for claim)
 - Keep total TX fee deduction balance and spread over future blocks
 - 1000 commas for balances
