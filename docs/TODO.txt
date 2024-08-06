@@ -24,3 +24,4 @@ Mainnet
 - Keep total TX fee deduction balance and spread over future blocks
 - 1000 commas for balances
 - Timestamp delta adjustment (limited to +- 1 sec per block)
+- VDF reward vote based (most votes every diff block)
