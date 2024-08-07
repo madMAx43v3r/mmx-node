@@ -52,7 +52,7 @@ class ChainParams {
 	
 	vector<uint> min_fee_ratio;				// for dynamic block size
 	
-	double block_time = 10;					// [sec]
+	long block_interval_ms = 10000;			// [ms]
 	
 	string network;
 	

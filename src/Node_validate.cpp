@@ -132,6 +132,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
+	if(block->time_stamp - prev->time_stamp > (params->block_interval_ms * 2)) {
+		throw std::logic_error("time stamp delta too high");
+	}
+	if(block->time_stamp - prev->time_stamp < (params->block_interval_ms / 2)) {
+		throw std::logic_error("time stamp delta too low");
+	}
 	if(block->time_diff == 0 || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}
@@ -371,6 +377,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 	}
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 
 	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
 		{
@@ -460,6 +467,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		}
 		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(engine->contract));
 		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
+		child->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 
 		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, true);
 
@@ -815,7 +823,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			for(size_t i = 0; i < exec_inputs.size(); ++i) {
 				const auto& lhs = exec_inputs[i];
 				const auto& rhs = result->inputs[i];
-				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.flags != rhs.flags) {
+				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.memo != rhs.memo || lhs.flags != rhs.flags) {
 					throw std::logic_error("execution input mismatch at index " + std::to_string(i));
 				}
 			}

@@ -80,7 +80,7 @@ void Router::main()
 	fixed_peers.insert(master_nodes.begin(), master_nodes.end());
 	{
 		const auto max_block_size = to_value(params->max_block_size, params);
-		tx_upload_bandwidth = max_tx_upload * max_block_size / params->block_time;
+		tx_upload_bandwidth = max_tx_upload * max_block_size / (params->block_interval_ms / 1e3);
 		max_pending_cost_value = max_pending_cost * max_block_size;
 	}
 	log(INFO) << "Global TX upload limit: " << tx_upload_bandwidth << " MMX/s";

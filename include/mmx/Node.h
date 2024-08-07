@@ -474,7 +474,7 @@ private:
 
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
-	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
+	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, int64_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, time, amount]]
 
 	balance_table_t<uint128> balance_table;										// [[address, currency] => balance]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]

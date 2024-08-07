@@ -4,6 +4,8 @@ struct swap_entry_t {
 	
 	uint height;
 	
+	long time_stamp;			// UNIX [ms]
+	
 	hash_t txid;
 	
 	string type;				// [buy, sell, add, remove, payout]

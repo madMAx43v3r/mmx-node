@@ -243,6 +243,12 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shar
 }
 
 inline
+uint64_t get_vdf_speed(std::shared_ptr<const ChainParams> params, const uint64_t time_diff)
+{
+	return (uint128_t(time_diff) * params->time_diff_constant * 1000) / params->block_interval_ms;
+}
+
+inline
 std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::string>& passphrase)
 {
 	hash_t pass_hash;

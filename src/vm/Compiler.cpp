@@ -389,7 +389,7 @@ protected:
 
 	vref_t recurse_expr(const node_t*& p_node, size_t& expr_len, const vref_t* lhs = nullptr, const int lhs_rank = -1);
 
-	vref_t copy(const vref_t& dst, const vref_t& src);
+	vref_t copy(const vref_t& dst, const vref_t& src, const bool validate = true);
 
 	uint32_t get(const vref_t& src);
 
@@ -535,6 +535,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	this_obj_map["deposit"] = MEM_EXTERN + EXTERN_DEPOSIT;
 
 	function_map["__nop"].name = "__nop";
+	function_map["__copy"].name = "__copy";
 	function_map["size"].name = "size";
 	function_map["push"].name = "push";
 	function_map["pop"].name = "pop";
@@ -1538,6 +1539,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					lhs = out.address;
 				}
 			}
+			else if(name == "__copy") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for __copy(dst, src)");
+				}
+				copy(recurse(args[0]), recurse(args[1]), false);
+				out.address = 0;
+			}
 			else if(name == "clone") {
 				if(args.size() != 1) {
 					throw std::logic_error("expected 1 argument for clone()");
@@ -1851,12 +1859,12 @@ void Compiler::pop_scope()
 	frame.pop_back();
 }
 
-Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
+Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src, const bool validate)
 {
 	src.check_value();
 	dst.check_value();
 
-	if(!dst.is_mutable()) {
+	if(validate && !dst.is_mutable()) {
 		throw std::logic_error("copy(): dst is const");
 	}
 	if(src.key && dst.key) {

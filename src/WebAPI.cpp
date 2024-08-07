@@ -51,10 +51,6 @@ public:
 		currency.symbol = "MMX";
 	}
 
-	int64_t get_time(const uint32_t& height) const {
-		return int64_t(height - int64_t(curr_height)) * int64_t(params->block_time) + time_offset;
-	}
-
 	bool have_contract(const addr_t& address) const {
 		return currency_map.count(address);
 	}
@@ -84,7 +80,6 @@ public:
 		}
 	}
 
-	int64_t time_offset = 0;		// [sec]
 	uint32_t curr_height = 0;
 	std::shared_ptr<const ChainParams> params;
 	std::unordered_map<addr_t, currency_t> currency_map;
@@ -144,10 +139,7 @@ void WebAPI::update()
 {
 	node->get_height(
 		[this](const uint32_t& height) {
-			if(height != curr_height) {
-				time_offset = vnx::get_time_seconds();
-				curr_height = height;
-			}
+			curr_height = height;
 		});
 	node->get_synced_height(
 		[this](const vnx::optional<uint32_t>& height) {
@@ -373,8 +365,10 @@ public:
 		if(context) {
 			tmp["fee"] = to_amount_object(value.fee, context->params->decimals);
 			tmp["cost"] = to_amount_object(value.cost, context->params->decimals);
+			if(value.time_stamp) {
+				tmp["time"] = (*value.time_stamp) / 1e3;
+			}
 			if(auto height = value.height) {
-				tmp["time"] = context->get_time(*height);
 				tmp["confirm"] = context->curr_height >= *height ? 1 + context->curr_height - *height : 0;
 			}
 		}
@@ -405,9 +399,7 @@ public:
 
 	void accept(const tx_entry_t& value) {
 		auto tmp = augment(render(value, context), value.contract, value.amount);
-		if(context) {
-			tmp["time"] = context->get_time(value.height);
-		}
+		tmp["time"] = value.time_stamp / 1e3;
 		set(tmp);
 	}
 
@@ -446,7 +438,7 @@ public:
 			if(bid_currency && ask_currency) {
 				tmp["display_price"] = value.price * pow(10, bid_currency->decimals - ask_currency->decimals);
 			}
-			tmp["time"] = context->get_time(value.height);
+			tmp["time"] = value.time_stamp / 1e3;
 		}
 		set(tmp);
 	}
@@ -467,7 +459,7 @@ public:
 			if(bid_currency && ask_currency) {
 				tmp["display_price"] = value.price * pow(10, bid_currency->decimals - ask_currency->decimals);
 			}
-			tmp["time"] = context->get_time(value.height);
+			tmp["time"] = value.time_stamp / 1e3;
 		}
 		set(tmp);
 	}
@@ -538,7 +530,7 @@ public:
 	void accept(const swap_entry_t& value) {
 		auto tmp = render(value, context);
 		if(context) {
-			tmp["time"] = context->get_time(value.height);
+			tmp["time"] = value.time_stamp / 1e3;
 		}
 		set(tmp);
 	}
@@ -555,7 +547,7 @@ public:
 				}
 				tmp["deposit"] = deposit;
 			}
-			tmp["time"] = context->get_time(value.height);
+			tmp["time"] = value.time_stamp / 1e3;
 		}
 		set(tmp);
 	}
@@ -624,7 +616,7 @@ public:
 
 	void augment_block_header(vnx::Object& tmp, std::shared_ptr<const BlockHeader> value) {
 		if(context) {
-			tmp["time"] = context->get_time(value->height);
+			tmp["time"] = value->time_stamp / 1e3;
 			tmp["tx_fees"] = to_amount_object(value->tx_fees, context->params->decimals);
 			tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
 			tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
@@ -707,7 +699,6 @@ vnx::Object render_object(const T& value, std::shared_ptr<const RenderContext> c
 std::shared_ptr<RenderContext> WebAPI::get_context() const
 {
 	auto context = std::make_shared<RenderContext>(params);
-	context->time_offset = time_offset;
 	context->curr_height = curr_height;
 	return context;
 }
@@ -772,7 +763,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					out["height"] = block->height;
 					out["tx_count"] = block->tx_count;
 					out["netspace"] = double(calc_total_netspace(params, block->space_diff)) * pow(1000, -5);
-					out["vdf_speed"] = (block->time_diff / params->block_time) * (params->time_diff_constant / 1e6);
+					out["vdf_speed"] = get_vdf_speed(params, block->time_diff) / 1e6;
 					if(auto proof = block->proof) {
 						out["score"] = proof->score;
 					} else {
@@ -1163,7 +1154,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				if(info) {
 					auto context = get_context();
 					res = render(*info);
-					res["time"] = context->get_time(info->height);
+					res["time"] = info->time_stamp / 1e3;
 					res["block_reward"] = to_amount_object(info->block_reward, params->decimals);
 					res["average_txfee"] = to_amount_object(info->average_txfee, params->decimals);
 				}

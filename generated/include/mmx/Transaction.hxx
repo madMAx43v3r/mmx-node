@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_Transaction_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
@@ -73,7 +74,7 @@ public:
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
 	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_operations() const;
 	virtual std::map<::mmx::addr_t, std::pair<::mmx::uint128, ::mmx::uint128>> get_balance() const;
-	virtual ::mmx::tx_index_t get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, const uint32_t& height = 0, const int64_t& file_offset = 0) const;
+	virtual ::mmx::tx_index_t get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, const int64_t& file_offset = 0) const;
 	
 	static std::shared_ptr<Transaction> create();
 	std::shared_ptr<vnx::Value> clone() const override;

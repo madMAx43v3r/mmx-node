@@ -250,7 +250,7 @@ void Node::main()
 						}
 						for(size_t i = 0; i < tx_offsets.size(); ++i) {
 							const auto& tx = block->tx_list[i];
-							tx_index.insert(tx->id, tx->get_tx_index(params, block->height, tx_offsets[i]));
+							tx_index.insert(tx->id, tx->get_tx_index(params, block, tx_offsets[i]));
 						}
 						block_index.insert(block->height, block->get_block_index(block_offset));
 
@@ -323,6 +323,7 @@ void Node::main()
 	{
 		auto block = Block::create();
 		block->nonce = params->port;
+		block->time_stamp = int64_t(1729230897) * 1000;		// TODO
 		block->time_diff = params->initial_time_diff;
 		block->space_diff = params->initial_space_diff;
 		block->vdf_output[0] = hash_t(params->network);
@@ -1137,6 +1138,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
 			exec_entry_t entry;
 			entry.height = block->height;
+			entry.time_stamp = block->time_stamp;
 			entry.txid = tx->id;
 			entry.method = exec->method;
 			entry.args = exec->args;
@@ -1172,7 +1174,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				}
 				if(executable->binary == params->offer_binary) {
 					if((exec->method == "trade" || exec->method == "accept") && deposit) {
-						trade_log.insert(std::make_pair(block->height, ticket), std::make_tuple(address, tx->id, deposit->amount));
+						trade_log.insert(std::make_pair(block->height, ticket), std::make_tuple(address, tx->id, block->time_stamp, deposit->amount));
 					}
 				}
 			}
@@ -1418,7 +1420,7 @@ void Node::write_block(std::shared_ptr<const Block> block)
 
 	std::vector<std::pair<hash_t, tx_index_t>> tx_list;
 	for(const auto& tx : block->tx_list) {
-		tx_list.emplace_back(tx->id, tx->get_tx_index(params, block->height, out.get_output_pos()));
+		tx_list.emplace_back(tx->id, tx->get_tx_index(params, block, out.get_output_pos()));
 		vnx::write(out, tx);
 	}
 	for(const auto& entry : tx_list) {
