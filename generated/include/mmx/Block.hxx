@@ -84,7 +84,7 @@ void Block::accept_generic(T& _visitor) const {
 	_visitor.type_field("weight", 8); _visitor.accept(weight);
 	_visitor.type_field("total_weight", 9); _visitor.accept(total_weight);
 	_visitor.type_field("netspace_ratio", 10); _visitor.accept(netspace_ratio);
-	_visitor.type_field("average_txfee", 11); _visitor.accept(average_txfee);
+	_visitor.type_field("txfee_buffer", 11); _visitor.accept(txfee_buffer);
 	_visitor.type_field("vdf_iters", 12); _visitor.accept(vdf_iters);
 	_visitor.type_field("vdf_output", 13); _visitor.accept(vdf_output);
 	_visitor.type_field("vdf_reward_addr", 14); _visitor.accept(vdf_reward_addr);
