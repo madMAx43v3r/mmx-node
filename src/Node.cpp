@@ -997,6 +997,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			if(auto balance = balance_cache.find(in.address, in.contract)) {
 				clamped_sub_assign(*balance, in.amount);
 			}
+			// TODO: memo_log
 			spend_log.insert(std::make_tuple(in.address, block->height, counter++), in);
 		}
 		for(const auto& tx : block->get_transactions()) {
