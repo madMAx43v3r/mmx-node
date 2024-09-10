@@ -168,6 +168,14 @@ uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
+uint64_t calc_min_reward_deduction(std::shared_ptr<const ChainParams> params, const uint64_t txfee_buffer)
+{
+	const uint64_t divider = 8640;
+	const uint64_t min_deduction = 5000;
+	return std::min(std::max(txfee_buffer / divider, min_deduction), txfee_buffer);
+}
+
+inline
 uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t tx_fees)
 {
 	const uint64_t fee_deduction = calc_project_reward(params, tx_fees);
@@ -221,9 +229,9 @@ uint64_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, cons
 }
 
 inline
-uint64_t calc_new_average_txfee(std::shared_ptr<const ChainParams> params, const uint64_t prev_value, const uint64_t total_fees)
+uint64_t calc_new_txfee_buffer(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
-	return (prev_value * ((uint64_t(1) << params->avg_txfee_adjust) - 1) + total_fees) >> params->avg_txfee_adjust;
+	return (prev->txfee_buffer - calc_min_reward_deduction(params, prev->txfee_buffer)) + prev->tx_fees;
 }
 
 inline

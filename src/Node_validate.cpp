@@ -153,9 +153,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->netspace_ratio != netspace_ratio) {
 			throw std::logic_error("invalid netspace_ratio: " + std::to_string(block->netspace_ratio) + " != " + std::to_string(netspace_ratio));
 		}
-		const auto average_txfee = calc_new_average_txfee(params, prev->average_txfee, block->tx_fees);
-		if(block->average_txfee != average_txfee) {
-			throw std::logic_error("invalid average_txfee: " + std::to_string(block->average_txfee) + " != " + std::to_string(average_txfee));
+		const auto txfee_buffer = calc_new_txfee_buffer(params, prev);
+		if(block->txfee_buffer != txfee_buffer) {
+			throw std::logic_error("invalid txfee_buffer: " + std::to_string(block->txfee_buffer) + " != " + std::to_string(txfee_buffer));
 		}
 		const auto next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
 		if(block->next_base_reward != next_base_reward) {
@@ -171,8 +171,8 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->netspace_ratio != prev->netspace_ratio) {
 			throw std::logic_error("invalid netspace_ratio adjust");
 		}
-		if(block->average_txfee != prev->average_txfee) {
-			throw std::logic_error("invalid average_txfee adjust");
+		if(block->txfee_buffer != prev->txfee_buffer) {
+			throw std::logic_error("invalid txfee_buffer change");
 		}
 		if(block->next_base_reward != prev->next_base_reward) {
 			throw std::logic_error("invalid next_base_reward adjust");

@@ -45,7 +45,7 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "weight", 		weight);
 	write_field(out, "total_weight",	total_weight);
 	write_field(out, "netspace_ratio", 	netspace_ratio);
-	write_field(out, "average_txfee", 	average_txfee);
+	write_field(out, "txfee_buffer", 	txfee_buffer);
 	write_field(out, "vdf_iters", 	vdf_iters);
 	write_field(out, "vdf_output", 	vdf_output);
 	write_field(out, "vdf_reward_addr", vdf_reward_addr);

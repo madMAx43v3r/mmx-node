@@ -167,8 +167,8 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->weight = calc_block_weight(params, diff_block, block);
 		block->total_weight = prev->total_weight + block->weight;
 		block->netspace_ratio = prev->netspace_ratio;
-		block->average_txfee = prev->average_txfee;
 		block->next_base_reward = prev->next_base_reward;
+		block->txfee_buffer = prev->txfee_buffer;
 		block->finalize();
 		add_block(block);
 	}
@@ -804,7 +804,7 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 			total_fees += entry.fee;
 		}
 	}
-	block->average_txfee = calc_new_average_txfee(params, prev->average_txfee, total_fees);
+	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
 
 	// set time stamp
 	{

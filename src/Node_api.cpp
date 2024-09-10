@@ -99,13 +99,14 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
 			info->vdf_speed = get_vdf_speed(params, peak->time_diff) / 1e6;
+			const auto avg_txfee = calc_min_reward_deduction(params, peak->txfee_buffer);
 			info->block_reward = (peak->height >= params->reward_activation ?
-					(peak->next_base_reward + std::max<int64_t>(params->min_reward - peak->average_txfee, 0)) : 0);
+					(peak->next_base_reward + std::max<int64_t>(params->min_reward - avg_txfee, 0)) : 0);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = mmx_address_count;
 			info->genesis_hash = get_genesis_hash();
-			info->average_txfee = peak->average_txfee;
+			info->average_txfee = avg_txfee;
 			info->netspace_ratio = double(peak->netspace_ratio) / (uint64_t(1) << (2 * params->max_diff_adjust));
 			{
 				size_t num_blocks = 0;
