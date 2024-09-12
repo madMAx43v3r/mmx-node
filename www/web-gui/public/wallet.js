@@ -2067,10 +2067,8 @@ Vue.component('account-offers', {
 			args.index = this.index;
 			args.currency = item.bid_currency;
 			args.dst_addr = item.address;
-			args.amount = 1;
 			this.request = args;
 			this.request_url = '/wapi/wallet/send';
-			this.update_fee();
 			
 			this.dialog_item = item;
 			this.deposit_amount = null;
@@ -2118,6 +2116,7 @@ Vue.component('account-offers', {
 		deposit_amount(value) {
 			if(this.request) {
 				this.request.amount = value;
+				this.update_fee();
 			}
 		},
 		result(value) {
