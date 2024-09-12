@@ -151,6 +151,9 @@ void WebAPI::update()
 		});
 	node->get_synced_height(
 		[this](const vnx::optional<uint32_t>& height) {
+			if(!is_synced && height) {
+				synced_since = *height;
+			}
 			is_synced = height;
 		});
 }
@@ -1086,7 +1089,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	const bool is_public = !is_private;
 
 	if(is_public) {
-		if(!is_synced) {
+		if(!is_synced || curr_height - synced_since < sync_delay) {
 			respond_status(request_id, 503, "lost sync with network");
 			return;
 		}
@@ -2346,7 +2349,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 400, "POST wallet/swap/switch_pool {...}");
+			respond_status(request_id, 400, "POST wallet/swap/rem_all_liquid {...}");
 		}
 	}
 	else if(sub_path == "/farmer/info") {

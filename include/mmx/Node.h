@@ -514,6 +514,7 @@ private:
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
+	uint32_t synced_since = 0;								// height of last sync done
 	int64_t sync_finish_ms = 0;								// when peak was reached
 	double max_sync_pending = 0;
 	std::set<uint32_t> sync_pending;						// set of heights

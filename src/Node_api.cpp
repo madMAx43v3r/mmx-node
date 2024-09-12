@@ -94,6 +94,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			auto info = NetworkInfo::create();
 			info->is_synced = is_synced;
 			info->height = peak->height;
+			info->synced_since = synced_since;
 			info->name = params->network;
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;

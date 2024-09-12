@@ -5,6 +5,7 @@ class NetworkInfo {
 	bool is_synced;
 	
 	uint height;
+	uint synced_since;
 	
 	ulong time_diff;
 	ulong space_diff;

@@ -434,6 +434,7 @@ void Node::update()
 void Node::on_sync_done(const uint32_t height)
 {
 	log(INFO) << "Finished sync at height " << height;
+	synced_since = height;
 	update_control();
 }
 
