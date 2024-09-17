@@ -27,8 +27,9 @@ public:
 	std::string farmer_server = "Farmer";
 	std::string exchange_server = "ExchClient";
 	std::string config_path;
+	uint32_t max_recursion = 100;
 	uint32_t max_log_history = 10000;
-	uint32_t sync_delay = 6;
+	uint32_t sync_delay = 18;
 	uint32_t cache_max_age = 0;
 	
 	typedef ::vnx::Module Super;
@@ -82,7 +83,7 @@ protected:
 
 template<typename T>
 void WebAPIBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WebAPIBase>(10);
+	_visitor.template type_begin<WebAPIBase>(11);
 	_visitor.type_field("input_blocks", 0); _visitor.accept(input_blocks);
 	_visitor.type_field("input_proofs", 1); _visitor.accept(input_proofs);
 	_visitor.type_field("node_server", 2); _visitor.accept(node_server);
@@ -90,10 +91,11 @@ void WebAPIBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("farmer_server", 4); _visitor.accept(farmer_server);
 	_visitor.type_field("exchange_server", 5); _visitor.accept(exchange_server);
 	_visitor.type_field("config_path", 6); _visitor.accept(config_path);
-	_visitor.type_field("max_log_history", 7); _visitor.accept(max_log_history);
-	_visitor.type_field("sync_delay", 8); _visitor.accept(sync_delay);
-	_visitor.type_field("cache_max_age", 9); _visitor.accept(cache_max_age);
-	_visitor.template type_end<WebAPIBase>(10);
+	_visitor.type_field("max_recursion", 7); _visitor.accept(max_recursion);
+	_visitor.type_field("max_log_history", 8); _visitor.accept(max_log_history);
+	_visitor.type_field("sync_delay", 9); _visitor.accept(sync_delay);
+	_visitor.type_field("cache_max_age", 10); _visitor.accept(cache_max_age);
+	_visitor.template type_end<WebAPIBase>(11);
 }
 
 
