@@ -240,12 +240,38 @@ int main(int argc, char** argv)
 
 	VNX_TEST_BEGIN("copy")
 	{
-		auto engine1 = std::make_shared<vm::Engine>(hash_t("1"), storage, false);
+		auto engine1 = std::make_shared<vm::Engine>(hash_t("copy:1"), storage, false);
 		engine1->gas_limit = 1000000;
 		for(size_t i = 1; i <= 16; ++i) {
 			vm::copy(engine1, engine, vm::MEM_STACK + i, vm::MEM_STATIC + i);
 		}
 		check_func_1(engine1, vm::MEM_STACK);
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("data_recursion")
+	{
+		auto engine1 = std::make_shared<vm::Engine>(hash_t("data_recursion:1"), storage, false);
+		engine1->gas_limit = 10000000;
+
+		const auto addr = engine1->alloc();
+		engine1->write(addr, vm::map_t());
+		engine1->write(vm::MEM_STATIC + 1, vm::ref_t(addr));
+		engine1->write_key(addr, vm::uint_t(0), vm::ref_t(addr));
+
+		auto engine2 = std::make_shared<vm::Engine>(hash_t("data_recursion:2"), storage, false);
+		engine2->gas_limit = 10000000;
+
+		bool failed = false;
+		try {
+			vm::copy(engine2, engine1, vm::MEM_STACK + 1, vm::MEM_STATIC + 1);
+		} catch(...) {
+			failed = true;
+		}
+		if(!failed) {
+			throw std::logic_error("expected vm::copy() to fail");
+		}
+		engine1->commit();
 	}
 	VNX_TEST_END()
 

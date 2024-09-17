@@ -692,5 +692,15 @@ __nop();
 		fail("map[bech32()] == 0");
 	}
 }
+{
+	var obj = {test: "data"};
+	obj.ptr = obj;
+	delete(obj);
+}
+{
+	const A = {};
+	const B = {ptr: A};
+	A.ptr = B;
+}
 
 
