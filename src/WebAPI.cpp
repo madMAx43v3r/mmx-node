@@ -2555,7 +2555,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 
 					for(const auto& entry : ret) {
 						const auto key = entry.first;
-						resolve_vm_varptr(contract, entry.second, request_id,
+						resolve_vm_varptr(contract, entry.second, request_id, 0,
 							[this, request_id, job, count, key](const vnx::Variant& value) {
 								job->out[key] = value;
 								if(++(job->k) == count) {
@@ -2581,7 +2581,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			node->read_storage_field(contract, name, -1,
 				[this, request_id, contract](const std::pair<vm::varptr_t, uint64_t>& ret) {
 					const auto addr = ret.second;
-					resolve_vm_varptr(contract, ret.first, request_id,
+					resolve_vm_varptr(contract, ret.first, request_id, 0,
 						[this, request_id, addr](const vnx::Variant& value) {
 							vnx::Object out;
 							out["address"] = addr;
@@ -2609,7 +2609,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						const auto addr = std::get<1>(ret);
 						const auto key = std::get<2>(ret);
 						log(INFO) << "value = " << vm::to_string(std::get<0>(ret));
-						resolve_vm_varptr(contract, std::get<0>(ret), request_id,
+						resolve_vm_varptr(contract, std::get<0>(ret), request_id, 0,
 							[this, request_id, addr, key](const vnx::Variant& value) {
 								vnx::Object out;
 								out["address"] = addr;
@@ -2625,7 +2625,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					[this, request_id, contract](const std::tuple<vm::varptr_t, uint64_t, uint64_t>& ret) {
 						const auto addr = std::get<1>(ret);
 						const auto key = std::get<2>(ret);
-						resolve_vm_varptr(contract, std::get<0>(ret), request_id,
+						resolve_vm_varptr(contract, std::get<0>(ret), request_id, 0,
 							[this, request_id, addr, key](const vnx::Variant& value) {
 								vnx::Object out;
 								out["address"] = addr;
@@ -2730,23 +2730,33 @@ void WebAPI::get_context(	const std::unordered_set<addr_t>& addr_set, const vnx:
 		std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
 
-void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
-								const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const
+void WebAPI::resolve_vm_varptr(	const addr_t& contract,
+								const vm::varptr_t& var,
+								const vnx::request_id_t& request_id,
+								const uint32_t call_depth,
+								const std::function<void(const vnx::Variant&)>& callback) const
 {
 	if(!var) {
 		callback(vnx::Variant());
 		return;
 	}
+	if(call_depth > max_recursion) {
+		vnx::Object err;
+		err["__type"] = "mmx.Exception";
+		err["message"] = "Maximum recursion limit reached: " + std::to_string(max_recursion);
+		callback(vnx::Variant(err));
+		return;
+	}
 	switch(var->type) {
 		case vm::TYPE_REF: {
 			node->read_storage_var(contract, vm::to_ref(var), -1,
-					std::bind(&WebAPI::resolve_vm_varptr, this, contract, std::placeholders::_1, request_id, callback),
+					std::bind(&WebAPI::resolve_vm_varptr, this, contract, std::placeholders::_1, request_id, call_depth + 1, callback),
 					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 			break;
 		}
 		case vm::TYPE_ARRAY:
 			node->read_storage_array(contract, vm::to_ref(var), -1,
-				[this, contract, request_id, callback](const std::vector<vm::varptr_t>& ret) {
+				[this, contract, request_id, callback, call_depth](const std::vector<vm::varptr_t>& ret) {
 					struct job_t {
 						size_t k = 0;
 						std::vector<vnx::Variant> out;
@@ -2756,7 +2766,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 					job->out.resize(count);
 
 					for(size_t i = 0; i < count; ++i) {
-						resolve_vm_varptr(contract, ret[i], request_id,
+						resolve_vm_varptr(contract, ret[i], request_id, call_depth + 1,
 							[this, job, callback, count, i](const vnx::Variant& value) {
 								job->out[i] = value;
 								if(++(job->k) == count) {
@@ -2772,7 +2782,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 			break;
 		case vm::TYPE_MAP:
 			node->read_storage_map(contract, vm::to_ref(var), -1,
-				[this, contract, request_id, callback](const std::map<vm::varptr_t, vm::varptr_t>& ret) {
+				[this, contract, request_id, callback, call_depth](const std::map<vm::varptr_t, vm::varptr_t>& ret) {
 					struct job_t {
 						size_t k = 0;
 						vnx::Object out;
@@ -2793,7 +2803,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 								default:				key = vm::to_string(var);
 							}
 						}
-						resolve_vm_varptr(contract, entry.second, request_id,
+						resolve_vm_varptr(contract, entry.second, request_id, call_depth + 1,
 							[this, job, callback, count, key](const vnx::Variant& value) {
 								job->out[key] = value;
 								if(++(job->k) == count) {
