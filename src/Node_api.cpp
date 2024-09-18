@@ -1412,6 +1412,9 @@ std::vector<std::pair<pubkey_t, uint32_t>> Node::get_farmer_ranking(const int32_
 
 std::tuple<pooling_error_e, std::string> Node::verify_plot_nft_target(const addr_t& address, const addr_t& pool_target) const
 {
+	if(!is_synced) {
+		throw std::logic_error("out of sync");
+	}
 	if(auto info = get_plot_nft_info(address)) {
 		if(!info->is_locked) {
 			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT is not locked"};
