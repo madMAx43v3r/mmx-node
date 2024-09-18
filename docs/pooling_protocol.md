@@ -89,6 +89,49 @@ Returns pool information as `application/json` object:
 - `pool_target`: Plot NFT target address
 - `min_difficulty`: Lowest partial difficulty that is supported
 
+## Node API
+
+### POST /wapi/node/verify_partial
+
+Endpoint to verify a partial, optionally with plot NFT verification.
+
+Note:
+Partials should be verfied after a certain delay, for example once the height of the partial has been reached on-chain.
+Partials can be received up to 6 blocks in advance, so waiting until the partial's height has been reached will give 6 blocks security.
+
+Content-Type: `application/json`
+
+Payload: Object
+- `partial`: The same object as was received by the pool via POST `/partial`.
+- `pool_target`: Expected plot NFT target address (optional)
+	- When specified will verify plot NFT is locked to given target address at current blockchain height.
+
+On success returns status 200 without payload.
+
+On error returns status 400 with `application/json` object as follows:
+- `error_code`: Integer error code (see below)
+- `error_message`: Message string
+
+When the node is not synced will return status 500 with error text.
+
+### POST /wapi/node/verify_plot_nft_target
+
+Endpoint to verify that a plot NFT is locked and pointed to the given target address, at the current blockchain height.
+
+Content-Type: `application/json`
+
+Payload: Object
+- `address`: Plot NFT address
+- `pool_target`: Expected plot NFT target address
+
+On success returns status 200 without payload.
+
+On error returns status 400 with `application/json` object as follows:
+- `error_code`: Integer error code (see below)
+- `error_message`: Message string
+
+When the node is not synced will return status 500 with error text.
+
 ## Message hash algorithm
 
 A string is generated for JSON objects as follows:
