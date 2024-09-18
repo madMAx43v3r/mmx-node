@@ -112,7 +112,7 @@ void Node::main()
 #endif
 
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
-	api_threads = std::make_shared<vnx::ThreadPool>(num_threads);
+	api_threads = std::make_shared<vnx::ThreadPool>(num_api_threads);
 	vdf_threads = std::make_shared<vnx::ThreadPool>(num_vdf_threads);
 	fetch_threads = std::make_shared<vnx::ThreadPool>(2);
 
