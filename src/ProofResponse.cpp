@@ -30,7 +30,7 @@ mmx::hash_t ProofResponse::calc_hash(const vnx::bool_t& full_hash) const
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "request",		request ? request->calc_hash() : hash_t());
-	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
+	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
 
 	// farmer_addr, harvester and lookup_time_ms are not hashed (local info only)
 

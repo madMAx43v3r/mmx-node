@@ -1,0 +1,28 @@
+package mmx;
+
+class Partial {
+	
+	uint height;
+	
+	hash_t hash;
+	
+	hash_t challenge;
+	
+	addr_t account;						// payout address
+	
+	ProofOfSpace* proof;
+	
+	string pool_url;
+	
+	string harvester;					// name (defaults to hostname)
+	
+	ulong partial_diff;
+	
+	uint lookup_time_ms;
+	
+	optional<signature_t> farmer_sig;
+	
+	
+	hash_t calc_hash() const;
+	
+}

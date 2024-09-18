@@ -25,6 +25,10 @@ protected:
 
 	vnx::Hash64 get_mac_addr() const override;
 
+	uint64_t get_partial_diff(const addr_t& plot_nft) const override;
+
+	std::map<addr_t, uint64_t> get_partial_diffs(const std::vector<addr_t>& plot_nfts) const override;
+
 	std::vector<pubkey_t> get_farmer_keys() const override;
 
 	std::shared_ptr<const FarmInfo> get_farm_info() const override;
@@ -34,6 +38,8 @@ protected:
 	void handle(std::shared_ptr<const FarmInfo> value) override;
 
 	void handle(std::shared_ptr<const ProofResponse> value) override;
+
+	void handle(std::shared_ptr<const Partial> value) override;
 
 private:
 	void update();

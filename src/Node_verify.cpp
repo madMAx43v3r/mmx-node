@@ -73,9 +73,6 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	}
 	verify_proof(value->proof, challenge, diff_block);
 
-	if(value->proof->score >= params->score_threshold) {
-		throw std::logic_error("invalid score");
-	}
 	add_proof(request->height, challenge, value->proof, value->farmer_addr);
 
 	publish(value, output_verified_proof);
@@ -177,8 +174,8 @@ uint64_t Node::get_virtual_plot_balance(const addr_t& plot_id, const vnx::option
 }
 
 template<typename T>
-uint256_t Node::verify_proof_impl(	std::shared_ptr<const T> proof, const hash_t& challenge,
-									std::shared_ptr<const BlockHeader> diff_block) const
+uint256_t Node::verify_proof_impl(
+		std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff) const
 {
 	if(proof->ksize < params->min_ksize) {
 		throw std::logic_error("ksize too small");
@@ -190,11 +187,11 @@ uint256_t Node::verify_proof_impl(	std::shared_ptr<const T> proof, const hash_t&
 
 	const auto quality = pos::verify(proof->proof_xs, plot_challenge, proof->plot_id, params->plot_filter, proof->ksize);
 
-	return calc_proof_score(params, proof->ksize, quality, diff_block->space_diff);
+	return calc_proof_score(params, proof->ksize, quality, space_diff);
 }
 
 void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge,
-							std::shared_ptr<const BlockHeader> diff_block) const
+							std::shared_ptr<const BlockHeader> diff_block, const vnx::optional<uint64_t>& space_diff_) const
 {
 	if(!proof->is_valid()) {
 		throw std::logic_error("invalid proof");
@@ -205,6 +202,8 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 	const auto og_proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(proof);
 	const auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(proof);
 
+	const uint64_t space_diff = space_diff_ ? *space_diff_ : diff_block->space_diff;
+
 	if(!stake) {
 		if(!check_plot_filter(params, challenge, proof->plot_id)) {
 			throw std::logic_error("plot filter failed");
@@ -214,11 +213,11 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 
 	if(og_proof)
 	{
-		score = verify_proof_impl(og_proof, challenge, diff_block);
+		score = verify_proof_impl(og_proof, challenge, space_diff);
 	}
 	else if(nft_proof)
 	{
-		score = verify_proof_impl(nft_proof, challenge, diff_block);
+		score = verify_proof_impl(nft_proof, challenge, space_diff);
 	}
 	else if(stake)
 	{
@@ -233,7 +232,7 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 		if(balance == 0) {
 			throw std::logic_error("virtual plot has zero balance: " + stake->plot_id.to_string());
 		}
-		score = calc_virtual_score(params, challenge, stake->plot_id, balance, diff_block->space_diff);
+		score = calc_virtual_score(params, challenge, stake->plot_id, balance, space_diff);
 	}
 	else {
 		throw std::logic_error("invalid proof type: " + proof->get_type_name());

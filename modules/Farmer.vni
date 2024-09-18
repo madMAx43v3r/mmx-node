@@ -4,8 +4,10 @@ module Farmer {
 	
 	vnx.TopicPtr input_info = "harvester.info";
 	vnx.TopicPtr input_proofs = "harvester.proof";
+	vnx.TopicPtr input_partials = "harvester.partials";
 	
 	vnx.TopicPtr output_proofs = "farmer.proof";
+	vnx.TopicPtr output_partials = "farmer.partials";
 	
 	uint harvester_timeout = 60;					// [sec]
 	
@@ -14,8 +16,15 @@ module Farmer {
 	
 	optional<addr_t> reward_addr;					// default = first address of first wallet
 	
+	optional<ulong> partial_diff;					// custom partial diff (if pool supports it)
+	optional<ulong> payout_threshold;				// custom payout threshold (if pool supports it)
+	
 	
 	vnx.Hash64 get_mac_addr() const;
+	
+	ulong get_partial_diff(addr_t plot_nft) const;
+	
+	map<addr_t, ulong> get_partial_diffs(vector<addr_t> plot_nfts) const;
 	
 	vector<pubkey_t> get_farmer_keys() const;
 	
@@ -26,5 +35,6 @@ module Farmer {
 	
 	void handle(FarmInfo sample);
 	void handle(ProofResponse sample);
+	void handle(Partial sample);
 	
 }

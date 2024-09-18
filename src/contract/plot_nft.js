@@ -28,6 +28,8 @@ function lock(target_, unlock_delay_, server_url_) public
 {
 	check_owner();
 	
+	unlock_delay_ = uint(unlock_delay_);		// make sure it's an integer
+	
 	if(is_locked()) {
 		fail("contract still locked", 2);
 	}

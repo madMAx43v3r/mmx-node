@@ -12,6 +12,7 @@
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/LookupInfo.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/utils.h>
 #include <vnx/vnx.h>
 
@@ -33,7 +34,9 @@ void Harvester::init()
 void Harvester::main()
 {
 	params = get_params();
-	host_name = vnx::get_host_name();
+	if(my_name.empty()) {
+		my_name = vnx::get_host_name();
+	}
 	{
 		vnx::File file(storage_path + "harvester_id.dat");
 		if(file.exists()) {
@@ -58,14 +61,18 @@ void Harvester::main()
 	}
 	node = std::make_shared<NodeClient>(node_server);
 	farmer = std::make_shared<FarmerClient>(farmer_server);
+	node_async = std::make_shared<NodeAsyncClient>(node_server);
+	node_async->vnx_set_non_blocking(true);
 
 	http = std::make_shared<vnx::addons::HttpInterface<Harvester>>(this, vnx_name);
 	add_async_client(http);
+	add_async_client(node_async);
 
 	threads = std::make_shared<vnx::ThreadPool>(num_threads, num_threads);
 	lookup_timer = add_timer(std::bind(&Harvester::check_queue, this));
 
 	set_timer_millis(10000, std::bind(&Harvester::update, this));
+	set_timer_millis(int64_t(nft_query_interval) * 1000, std::bind(&Harvester::update_nfts, this));
 
 	if(reload_interval > 0) {
 		set_timer_millis(int64_t(reload_interval) * 1000, std::bind(&Harvester::reload, this));
@@ -85,11 +92,11 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 	out->proof = proof;
 	out->request = request;
 	out->farmer_addr = farmer_addr;
-	out->harvester = host_name.substr(0, 256);
+	out->harvester = my_name.substr(0, 256);
 	out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin_ms;
 
 	const auto delay_sec = out->lookup_time_ms / 1e3;
-	log(INFO) << "[" << host_name << "] Found proof with score " << score << " for height " << request->height << ", delay " << delay_sec << " sec";
+	log(INFO) << "[" << my_name << "] Found proof with score " << score << " for height " << request->height << ", delay " << delay_sec << " sec";
 
 	out->hash = out->calc_hash();
 	out->content_hash = out->calc_hash(true);
@@ -106,7 +113,7 @@ void Harvester::check_queue()
 		const auto delay_sec = (now_ms - entry.recv_time_ms) / 1e3;
 
 		if(delay_sec > params->block_time * entry.request->max_delay) {
-			log(WARN) << "[" << host_name << "] Missed deadline for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
+			log(WARN) << "[" << my_name << "] Missed deadline for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
 			iter = lookup_queue.erase(iter);
 		} else {
 			iter++;
@@ -136,8 +143,33 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	lookup_timer->set_millis(10);
 }
 
+std::vector<uint32_t> Harvester::fetch_full_proof(
+		std::shared_ptr<pos::Prover> prover, const hash_t& challenge, const uint64_t index) const
+{
+	// Note: NEEDS TO BE THREAD SAFE
+	try {
+		const auto time_begin = vnx::get_wall_time_millis();
+		const auto data = prover->get_full_proof(challenge, index);
+		if(data.valid) {
+			const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+			log(elapsed > 20 ? WARN : DEBUG) << "[" << my_name << "] Fetching full proof took " << elapsed << " sec (" << prover->get_file_path() << ")";
+			return data.proof;
+		} else {
+			throw std::runtime_error(data.error_msg);
+		}
+	} catch(const std::exception& ex) {
+		log(WARN) << "[" << my_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
+		throw;
+	}
+}
+
 void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const
 {
+	struct pool_conf_t {
+		uint64_t difficulty = 0;
+		std::string server_url;
+		addr_t owner;
+	};
 	struct lookup_job_t {
 		std::mutex mutex;
 		std::condition_variable signal;
@@ -148,6 +180,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		std::string slow_plot;
 		pos::proof_data_t best_proof;
 		std::shared_ptr<pos::Prover> best_plot;
+		std::unordered_map<addr_t, pool_conf_t> pool_config;
 		std::atomic<uint64_t> num_left {0};
 		std::atomic<uint64_t> num_passed {0};
 	};
@@ -155,6 +188,19 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	job->total_plots = id_map.size();
 	job->num_left = job->total_plots;
 	job->time_begin = vnx::get_wall_time_millis();
+
+	for(const auto& entry : plot_nfts) {
+		const auto& info = entry.second;
+		if(info.is_locked && info.server_url) {
+			const auto server_url = *info.server_url;
+			const auto iter = partial_diff.find(info.address);
+			if(iter != partial_diff.end() && iter->second > 0) {
+				job->pool_config[info.address] = {iter->second, server_url, info.owner};
+			} else {
+				log(WARN) << "Waiting on partial difficulty for pool: " + server_url;
+			}
+		}
+	}
 
 	const auto max_delay_sec = params->block_time * (double(value->max_delay) - 0.5);
 	const auto deadline_ms = recv_time_ms + int64_t(max_delay_sec * 1000);
@@ -172,21 +218,59 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 
 		threads->add_task([this, plot_id, prover, value, job, recv_time_ms, deadline_ms]()
 		{
+			const auto header = prover->get_header();
 			const bool passed = check_plot_filter(params, value->challenge, plot_id);
 			const auto time_begin = vnx::get_wall_time_millis();
 			const bool expired = time_begin > deadline_ms;
 
-			if(passed && !expired) try {
+			const pool_conf_t* pool_config = nullptr;
+			if(auto contract = header->contract) {
+				auto iter = job->pool_config.find(*contract);
+				if(iter != job->pool_config.end()) {
+					pool_config = &iter->second;
+				}
+			}
+
+			if(passed && !expired) try
+			{
 				const auto challenge = get_plot_challenge(value->challenge, plot_id);
 				const auto qualities = prover->get_qualities(challenge, params->plot_filter);
 
 				for(const auto& res : qualities)
 				{
 					if(!res.valid) {
-						log(WARN) << "[" << host_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
+						log(WARN) << "[" << my_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
 						continue;
 					}
-					const auto score = calc_proof_score(params, prover->get_ksize(), res.quality, value->space_diff);
+					if(pool_config) try {
+						const auto score = calc_proof_score(params, header->ksize, res.quality, pool_config->difficulty);
+						if(score < get_partial_score_threshold(params))
+						{
+							auto proof = std::make_shared<ProofOfSpaceNFT>();
+							proof->seed = header->seed;
+							proof->ksize = header->ksize;
+							proof->contract = *header->contract;
+							if(res.proof.size()) {
+								proof->proof_xs = res.proof;
+							} else {
+								proof->proof_xs = fetch_full_proof(prover, challenge, res.index);
+							}
+							auto out = Partial::create();
+							out->height = value->height;
+							out->challenge = value->challenge;
+							out->account = pool_config->owner;
+							out->pool_url = pool_config->server_url;
+							out->partial_diff = pool_config->difficulty;
+							out->proof = proof;
+							out->harvester = my_name;
+							out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin;
+							publish(out, output_partials);
+						}
+					} catch(const std::exception& ex) {
+						log(WARN) << "[" << my_name << "] Failed to create partial: " << ex.what() << " (" << prover->get_file_path() << ")";
+					}
+
+					const auto score = calc_proof_score(params, header->ksize, res.quality, value->space_diff);
 					if(score < params->score_threshold)
 					{
 						std::lock_guard<std::mutex> lock(job->mutex);
@@ -200,8 +284,9 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 					}
 				}
 			} catch(const std::exception& ex) {
-				log(WARN) << "[" << host_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
+				log(WARN) << "[" << my_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
 			}
+
 			if(passed && expired) {
 				log(DEBUG) << "Skipping quality lookup for height " << value->height << " due to deadline overshoot";
 			}
@@ -227,7 +312,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		while(job->num_left) {
 			const int64_t timeout_ms = deadline_ms - vnx::get_wall_time_millis();
 			if(job->signal.wait_for(lock, std::chrono::milliseconds(timeout_ms)) == std::cv_status::timeout) {
-				log(WARN) << "[" << host_name << "] Lookup for height " << value->height << " took longer than allowable delay of " << max_delay_sec << " sec";
+				log(WARN) << "[" << my_name << "] Lookup for height " << value->height << " took longer than allowable delay of " << max_delay_sec << " sec";
 				break;
 			}
 		}
@@ -243,12 +328,12 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 					if(data.valid) {
 						proof_xs = data.proof;
 						const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
-						log(elapsed > 20 ? WARN : DEBUG) << "[" << host_name << "] Fetching full proof took " << elapsed << " sec (" << prover->get_file_path() << ")";
+						log(elapsed > 20 ? WARN : DEBUG) << "[" << my_name << "] Fetching full proof took " << elapsed << " sec (" << prover->get_file_path() << ")";
 					} else {
 						throw std::runtime_error(data.error_msg);
 					}
 				} catch(const std::exception& ex) {
-					log(WARN) << "[" << host_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
+					log(WARN) << "[" << my_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
 				}
 			}
 			if(!proof_xs.empty()) {
@@ -279,7 +364,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		{
 			auto out = LookupInfo::create();
 			out->id = harvester_id;
-			out->name = host_name;
+			out->name = my_name;
 			out->height = value->height;
 			out->num_total = job->total_plots;
 			out->num_passed = job->num_passed;
@@ -294,10 +379,10 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		if(job->total_plots) {
 			const auto slow_time = job->slow_time_ms / 1e3;
 			if(job->num_passed) {
-				log(slow_time > 20 ? WARN : DEBUG) << "[" << host_name << "] Slowest plot took " << slow_time << " sec (" << job->slow_plot << ")";
+				log(slow_time > 20 ? WARN : DEBUG) << "[" << my_name << "] Slowest plot took " << slow_time << " sec (" << job->slow_plot << ")";
 			}
 			const auto delay_sec = (time_end - recv_time_ms) / 1e3;
-			log(INFO) << "[" << host_name << "] " << job->num_passed << " / " << job->total_plots
+			log(INFO) << "[" << my_name << "] " << job->num_passed << " / " << job->total_plots
 					<< " plots were eligible for height " << value->height << ", max lookup " << slow_time << " sec, delay " << delay_sec << " sec";
 		}
 	});
@@ -316,12 +401,12 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				}
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << "[" << host_name << "] Failed to check virtual plot: " << ex.what() << " (" << entry.first << ")";
+			log(WARN) << "[" << my_name << "] Failed to check virtual plot: " << ex.what() << " (" << entry.first << ")";
 		}
 	}
 	const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
 	if(delay_sec > max_delay_sec) {
-		log(WARN) << "[" << host_name << "] Virtual plots check for height " << value->height << " took longer than allowable delay: " << delay_sec << " sec";
+		log(WARN) << "[" << my_name << "] Virtual plots check for height " << value->height << " took longer than allowable delay: " << delay_sec << " sec";
 	}
 
 	lookup_timer->set_millis(0);
@@ -335,7 +420,7 @@ uint64_t Harvester::get_total_bytes() const
 std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 {
 	auto info = FarmInfo::create();
-	info->harvester = host_name;
+	info->harvester = my_name;
 	info->harvester_id = harvester_id;
 	info->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
 	info->total_bytes = total_bytes;
@@ -347,6 +432,27 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 	}
 	for(const auto& entry : virtual_map) {
 		info->total_balance += entry.second.balance;
+	}
+	for(const auto& entry : plot_nfts) {
+		const auto& nft = entry.second;
+		auto& pool_info = info->pool_info[nft.address];
+		pool_info.contract = nft.address;
+		if(nft.is_locked) {
+			pool_info.server_url = nft.server_url;
+			pool_info.pool_target = nft.target;
+		}
+		{
+			auto iter = partial_diff.find(nft.address);
+			if(iter != partial_diff.end()) {
+				pool_info.partial_diff = iter->second;
+			}
+		}
+		{
+			auto iter = plot_contract_set.find(nft.address);
+			if(iter != plot_contract_set.end()) {
+				pool_info.plot_count = iter->second;
+			}
+		}
 	}
 	return info;
 }
@@ -376,7 +482,7 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 				}
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << "[" << host_name << "] " << ex.what();
+			log(WARN) << "[" << my_name << "] " << ex.what();
 		}
 	}
 	if(!sub_dirs.empty()) {
@@ -424,7 +530,7 @@ void Harvester::reload()
 					}
 				}
 			} catch(const std::exception& ex) {
-				log(WARN) << "[" << host_name << "] " << ex.what();
+				log(WARN) << "[" << my_name << "] " << ex.what();
 			}
 		});
 	}
@@ -443,9 +549,9 @@ void Harvester::reload()
 					plots.emplace_back(file_path, prover);
 				}
 			} catch(const std::exception& ex) {
-				log(WARN) << "[" << host_name << "] Failed to load plot '" << file_path << "' due to: " << ex.what();
+				log(WARN) << "[" << my_name << "] Failed to load plot '" << file_path << "' due to: " << ex.what();
 			} catch(...) {
-				log(WARN) << "[" << host_name << "] Failed to load plot '" << file_path << "'";
+				log(WARN) << "[" << my_name << "] Failed to load plot '" << file_path << "'";
 			}
 		});
 	}
@@ -457,10 +563,10 @@ void Harvester::reload()
 	}
 
 	if(missing.size()) {
-		log(INFO) << "[" << host_name << "] Lost " << missing.size() << " plots";
+		log(INFO) << "[" << my_name << "] Lost " << missing.size() << " plots";
 	}
 	if(plots.size() && plot_map.size()) {
-		log(INFO) << "[" << host_name << "] Found " << plots.size() << " new plots";
+		log(INFO) << "[" << my_name << "] Found " << plots.size() << " new plots";
 	}
 
 	std::set<pubkey_t> farmer_keys;
@@ -480,7 +586,7 @@ void Harvester::reload()
 			plot_map.insert(entry);
 		}
 		catch(const std::exception& ex) {
-			log(WARN) << "[" << host_name << "] Invalid plot: " << entry.first << " (" << ex.what() << ")";
+			log(WARN) << "[" << my_name << "] Invalid plot: " << entry.first << " (" << ex.what() << ")";
 		}
 	}
 
@@ -493,7 +599,7 @@ void Harvester::reload()
 		const auto& plot_id = prover->get_plot_id();
 
 		if(!id_map.emplace(plot_id, file_name).second) {
-			log(WARN) << "[" << host_name << "] Duplicate plot: " << entry.first << " (already have: " << id_map[plot_id] << ")";
+			log(WARN) << "[" << my_name << "] Duplicate plot: " << entry.first << " (already have: " << id_map[plot_id] << ")";
 		}
 		total_bytes += vnx::File(file_name).file_size();
 		total_bytes_effective += get_effective_plot_size(prover->get_ksize());
@@ -511,13 +617,27 @@ void Harvester::reload()
 		}
 	}
 
+	// gather plot NFTs
+	plot_contract_set.clear();
+	for(const auto& entry : virtual_map) {
+		if(const auto& addr = entry.second.reward_address) {
+			plot_contract_set[*addr]++;
+		}
+	}
+	for(const auto& entry : plot_map) {
+		if(auto contract = entry.second->get_contract()) {
+			plot_contract_set[*contract]++;
+		}
+	}
+
 	update();
+	update_nfts();
 
 	// check challenges again for new plots
 	if(plots.size()) {
 		already_checked.clear();
 	}
-	log(INFO) << "[" << host_name << "] Loaded " << plot_map.size() << " plots, "
+	log(INFO) << "[" << my_name << "] Loaded " << plot_map.size() << " plots, "
 			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe, "
 			<< virtual_map.size() << " virtual plots, " << total_balance / pow(10, params->decimals) << " MMX total, took "
 			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
@@ -561,11 +681,52 @@ void Harvester::update()
 {
 	try {
 		farmer_addr = farmer->get_mac_addr();
+
+		std::vector<addr_t> list;
+		for(const auto& entry : plot_nfts) {
+			list.push_back(entry.first);
+		}
+		const auto new_diff = farmer->get_partial_diffs(list);
+		for(const auto& entry : new_diff) {
+			if(entry.second != partial_diff[entry.first]) {
+				log(INFO) << "New partial difficulty: " << entry.second << " (" << entry.first << ")";
+			}
+		}
+		partial_diff = new_diff;
 	}
 	catch(const std::exception& ex) {
 		log(WARN) << "Failed to contact farmer: " << ex.what();
 	}
 	publish(get_farm_info(), output_info);
+}
+
+void Harvester::update_nfts()
+{
+	std::set<addr_t> missing;
+	for(const auto& entry : plot_nfts) {
+		missing.insert(entry.first);
+	}
+	for(const auto& entry : plot_contract_set) {
+		const auto& address = entry.first;
+		node_async->get_plot_nft_info(address,
+			[this, address](const vnx::optional<plot_nft_info_t>& info) {
+				if(info) {
+					if(!plot_nfts.count(address)) {
+						log(INFO) << "Found plot NFT " << info->address.to_string()
+								<< ": is_locked = " << vnx::to_string(info->is_locked)
+								<< ", server_url = " << vnx::to_string(info->server_url);
+					}
+					plot_nfts[address] = *info;
+				}
+			},
+			[this, address](const std::exception& ex) {
+				log(WARN) << "Failed to query plot NFT " << address.to_string() << " due to: " << ex.what();
+			});
+		missing.erase(address);
+	}
+	for(const auto& address : missing) {
+		plot_nfts.erase(address);
+	}
 }
 
 void Harvester::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,

@@ -207,6 +207,9 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, ulong>> deposit) const;
 	
 	@Permission(permission_e.PUBLIC)
+	optional<plot_nft_info_t> get_plot_nft_info(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;
 	
 	@Permission(permission_e.PUBLIC)
@@ -277,6 +280,11 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	vector<pair<pubkey_t, uint>> get_farmer_ranking(int limit = -1) const;
+	
+	@Permission(permission_e.PUBLIC)
+	tuple<pooling_error_e, string> verify_plot_nft_target(addr_t address, addr_t pool_target) const;
+	
+	tuple<pooling_error_e, string> verify_partial(Partial* value, optional<addr_t> pool_target) const;
 	
 	void start_sync(bool force);
 	

@@ -11,6 +11,7 @@
 #include <mmx/HarvesterBase.hxx>
 #include <mmx/FarmerClient.hxx>
 #include <mmx/NodeClient.hxx>
+#include <mmx/NodeAsyncClient.hxx>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/pos/Prover.h>
@@ -50,8 +51,12 @@ protected:
 
 private:
 	void update();
+	void update_nfts();
 
 	void check_queue();
+
+	std::vector<uint32_t> fetch_full_proof(
+			std::shared_ptr<pos::Prover> prover, const hash_t& challenge, const uint64_t index) const;
 
 	void lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const;
 
@@ -63,7 +68,6 @@ private:
 
 private:
 	hash_t harvester_id;
-	std::string host_name;
 	uint64_t total_bytes = 0;
 	uint64_t total_bytes_effective = 0;
 	uint64_t total_balance = 0;
@@ -71,6 +75,7 @@ private:
 	vnx::Hash64 farmer_addr;
 	std::shared_ptr<NodeClient> node;
 	std::shared_ptr<FarmerClient> farmer;
+	std::shared_ptr<NodeAsyncClient> node_async;
 	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<const ChainParams> params;
 
@@ -78,6 +83,10 @@ private:
 	std::unordered_map<hash_t, std::string> id_map;
 	std::unordered_map<std::string, std::shared_ptr<pos::Prover>> plot_map;
 	std::unordered_map<addr_t, virtual_plot_info_t> virtual_map;
+
+	std::map<addr_t, uint32_t> plot_contract_set;
+	std::map<addr_t, plot_nft_info_t> plot_nfts;
+	std::map<addr_t, uint64_t> partial_diff;
 
 	struct lookup_t {
 		int64_t recv_time_ms = 0;

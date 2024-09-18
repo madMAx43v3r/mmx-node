@@ -150,6 +150,8 @@ protected:
 
 	uint128 get_total_supply(const addr_t& currency) const override;
 
+	vnx::optional<plot_nft_info_t> get_plot_nft_info(const addr_t& address) const override;
+
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots_for(const pubkey_t& farmer_key) const override;
@@ -201,6 +203,11 @@ protected:
 	farmed_block_summary_t get_farmed_block_summary(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since = 0) const override;
 
 	std::vector<std::pair<pubkey_t, uint32_t>> get_farmer_ranking(const int32_t& limit) const override;
+
+	std::tuple<pooling_error_e, std::string> verify_plot_nft_target(const addr_t& address, const addr_t& pool_target) const override;
+
+	std::tuple<pooling_error_e, std::string> verify_partial(
+			std::shared_ptr<const Partial> value, const vnx::optional<addr_t>& pool_target) const override;
 
 	void on_stuck_timeout();
 
@@ -388,10 +395,12 @@ private:
 	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) const;
 
 	template<typename T>
-	uint256_t verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge,
-								std::shared_ptr<const BlockHeader> diff_block) const;
+	uint256_t verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
-	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
+	void verify_proof(
+			std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge,
+			std::shared_ptr<const BlockHeader> diff_block,
+			const vnx::optional<uint64_t>& space_diff = nullptr) const;
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof) const;
 

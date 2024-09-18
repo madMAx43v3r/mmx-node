@@ -7,6 +7,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	vnx.TopicPtr output_info = "harvester.info";
 	vnx.TopicPtr output_proofs = "harvester.proof";
 	vnx.TopicPtr output_lookups = "harvester.lookups";
+	vnx.TopicPtr output_partials = "harvester.partials";
 	
 	set<string> plot_dirs;
 	set<string> dir_blacklist;
@@ -16,9 +17,12 @@ module Harvester implements vnx.addons.HttpComponent {
 	string config_path;
 	string storage_path;
 	
+	string my_name;							// custom harvester name
+	
 	int max_queue_ms = 10000;				// [ms]
 	
 	int reload_interval = 3600;				// (0 to disable) [sec]
+	int nft_query_interval = 60;			// [sec]
 	
 	uint num_threads = 32;					// for plot lookups
 	uint max_recursion = 4;					// for recursive_search

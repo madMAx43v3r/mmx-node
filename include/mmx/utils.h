@@ -139,6 +139,12 @@ uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
+uint32_t get_partial_score_threshold(std::shared_ptr<const ChainParams> params)
+{
+	return params->score_target * 2;
+}
+
+inline
 uint256_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
 							const uint8_t ksize, const hash_t& quality, const uint64_t space_diff)
 {

@@ -157,6 +157,7 @@ add_library(mmx_iface SHARED
 	src/offer_data_t.cpp
 	src/account_info_t.cpp
 	src/VDF_Point.cpp
+	src/Partial.cpp
 )
 
 add_library(mmx_vm SHARED

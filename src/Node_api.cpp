@@ -9,6 +9,8 @@
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
+#include <mmx/ProofOfSpaceNFT.hxx>
+#include <mmx/ProofOfStake.hxx>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 
@@ -73,6 +75,8 @@
 #include <mmx/Node_get_farmer_ranking.hxx>
 #include <mmx/Node_get_farmed_block_summary.hxx>
 #include <mmx/Node_validate.hxx>
+#include <mmx/Node_verify_plot_nft_target.hxx>
+#include <mmx/Node_verify_partial.hxx>
 
 #include <vnx/vnx.h>
 #include <vnx/InternalError.hxx>
@@ -804,6 +808,36 @@ uint128 Node::get_total_supply(const addr_t& currency) const
 	return total;
 }
 
+vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) const
+{
+	if(auto exec = get_contract_as<contract::Executable>(address)) {
+		if(exec->binary == params->plot_nft_binary) {
+			plot_nft_info_t info;
+			info.owner = to_addr(read_storage_field(address, "owner").first);
+			info.address = address;
+
+			const auto unlock_height = read_storage_field(address, "unlock_height").first;
+			if(unlock_height && unlock_height->type == vm::TYPE_UINT) {
+				const uint32_t unlock_at = to_uint(unlock_height);
+				info.unlock_height = unlock_at;
+				info.is_locked = get_height() < unlock_at;
+			} else {
+				info.is_locked = true;
+			}
+			if(info.is_locked) {
+				info.target = to_addr(read_storage_field(address, "target").first);
+				info.unlock_delay = to_uint(read_storage_field(address, "unlock_delay").first);
+			}
+			const auto server_url = read_storage_field(address, "server_url").first;
+			if(server_url && server_url->type == vm::TYPE_STRING) {
+				info.server_url = to_string_value(server_url);
+			}
+			return info;
+		}
+	}
+	return nullptr;
+}
+
 std::vector<virtual_plot_info_t> Node::get_virtual_plots(const std::vector<addr_t>& addresses) const
 {
 	std::vector<virtual_plot_info_t> result;
@@ -1376,6 +1410,97 @@ std::vector<std::pair<pubkey_t, uint32_t>> Node::get_farmer_ranking(const int32_
 	return out;
 }
 
+std::tuple<pooling_error_e, std::string> Node::verify_plot_nft_target(const addr_t& address, const addr_t& pool_target) const
+{
+	if(auto info = get_plot_nft_info(address)) {
+		if(!info->is_locked) {
+			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT is not locked"};
+		}
+		if(!info->target) {
+			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT has no target"};
+		}
+		if((*info->target) != pool_target) {
+			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT not pointing at pool target: " + pool_target.to_string()};
+		}
+	} else {
+		return {pooling_error_e::INVALID_CONTRACT, "Not a plot NFT: " + address.to_string()};
+	}
+	return {pooling_error_e::NONE, ""};
+}
+
+std::tuple<pooling_error_e, std::string> Node::verify_partial(
+		std::shared_ptr<const Partial> value, const vnx::optional<addr_t>& pool_target) const
+{
+	if(!is_synced) {
+		throw std::logic_error("out of sync");
+	}
+	if(!value->proof) {
+		return {pooling_error_e::INVALID_PROOF, "Partial has no proof"};
+	}
+	if(value->hash != value->calc_hash()) {
+		return {pooling_error_e::INVALID_SIGNATURE, "Message hash mismatch"};
+	}
+	if(!value->farmer_sig) {
+		return {pooling_error_e::INVALID_SIGNATURE, "Missing signature"};
+	}
+	if(!value->farmer_sig->verify(value->proof->farmer_key, value->hash)) {
+		return {pooling_error_e::INVALID_SIGNATURE, "Signature validation failed"};
+	}
+
+	const auto vdf_height = value->height - params->challenge_delay;
+	const auto vdf_block = get_header_at(vdf_height);
+	if(!vdf_block) {
+		return {pooling_error_e::CHALLENGE_NOT_FOUND,
+			"Could not find VDF block at height " + std::to_string(vdf_height)};
+	}
+	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
+
+	const auto challenge = vdf_block->vdf_output[1];
+	if(value->challenge != challenge) {
+		return {pooling_error_e::CHALLENGE_REVERTED,
+			"Challenge mismatch, expected " + challenge.to_string() + " for height " + std::to_string(vdf_height)};
+	}
+
+	try {
+		verify_proof(value->proof, challenge, diff_block, value->partial_diff);
+	} catch(const std::exception& ex) {
+		return {pooling_error_e::INVALID_PROOF,
+			"Invalid partial proof: " + std::string(ex.what())};
+	}
+	if(value->proof->score >= get_partial_score_threshold(params)) {
+		return {pooling_error_e::PROOF_NOT_GOOD_ENOUGH,
+			"Proof score too high: " + std::to_string(value->proof->score)};
+	}
+
+	if(pool_target) {
+		if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(value->proof))
+		{
+			const auto ret = verify_plot_nft_target(nft->contract, *pool_target);
+			if(std::get<0>(ret) != pooling_error_e::NONE) {
+				return ret;
+			}
+		}
+		else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(value->proof))
+		{
+			if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
+				if(!plot->reward_address) {
+					return {pooling_error_e::INVALID_CONTRACT, "VirtualPlot has no fixed reward address"};
+				}
+				const auto ret = verify_plot_nft_target(*plot->reward_address, *pool_target);
+				if(std::get<0>(ret) != pooling_error_e::NONE) {
+					return ret;
+				}
+			} else {
+				return {pooling_error_e::INVALID_CONTRACT, "No such VirtualPlot: " + stake->plot_id.to_string()};
+			}
+		}
+		else {
+			return {pooling_error_e::INVALID_CONTRACT, "Invalid proof type: " + value->proof->get_type_name()};
+		}
+	}
+	return {pooling_error_e::NONE, ""};
+}
+
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
@@ -1413,7 +1538,6 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		// Note: NOT thread-safe:
 		// - http_request()
 		// - get_network_info()
-		// - get_synced_height()
 		case Node_get_block::VNX_TYPE_ID:
 		case Node_get_block_at::VNX_TYPE_ID:
 		case Node_get_header::VNX_TYPE_ID:
@@ -1475,6 +1599,8 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case Node_get_farmer_ranking::VNX_TYPE_ID:
 		case Node_get_farmed_block_summary::VNX_TYPE_ID:
 		case Node_validate::VNX_TYPE_ID:
+		case Node_verify_plot_nft_target::VNX_TYPE_ID:
+		case Node_verify_partial::VNX_TYPE_ID:
 			api_threads->add_task(std::bind(&Node::async_api_call, this, method, request_id));
 			return nullptr;
 		default:

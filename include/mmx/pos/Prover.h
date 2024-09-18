@@ -56,6 +56,10 @@ public:
 		return header->farmer_key;
 	}
 
+	const vnx::optional<addr_t> get_contract() const {
+		return header->contract;
+	}
+
 	int get_ksize() const {
 		return header->ksize;
 	}

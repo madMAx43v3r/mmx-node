@@ -26,7 +26,8 @@ void Farmer::init()
 	vnx::open_pipe(vnx_get_id(), this, 1000);
 
 	subscribe(input_info, 1000);
-	subscribe(input_proofs, 1000);
+	subscribe(input_proofs, 10000);
+	subscribe(input_partials, 10000);
 }
 
 void Farmer::main()
@@ -56,6 +57,21 @@ vnx::Hash64 Farmer::get_mac_addr() const
 	return vnx_get_id();
 }
 
+uint64_t Farmer::get_partial_diff(const addr_t& plot_nft) const
+{
+	// TODO
+	return 1;
+}
+
+std::map<addr_t, uint64_t> Farmer::get_partial_diffs(const std::vector<addr_t>& plot_nfts) const
+{
+	std::map<addr_t, uint64_t> out;
+	for(const auto& addr : plot_nfts) {
+		out[addr] = get_partial_diff(addr);
+	}
+	return out;
+}
+
 std::vector<pubkey_t> Farmer::get_farmer_keys() const
 {
 	std::vector<pubkey_t> out;
@@ -80,6 +96,13 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 			}
 			for(const auto& dir : value->plot_dirs) {
 				info->plot_dirs.push_back((value->harvester ? *value->harvester + ":" : "") + dir);
+			}
+			for(const auto& entry : value->pool_info) {
+				auto& dst = info->pool_info[entry.first];
+				const auto prev_count = dst.plot_count;
+				dst = entry.second;
+				dst.plot_count += prev_count;
+				dst.partial_diff = get_partial_diff(dst.contract);
 			}
 			info->total_bytes += value->total_bytes;
 			info->total_bytes_effective += value->total_bytes_effective;
@@ -149,22 +172,44 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 	}
 }
 
-void Farmer::handle(std::shared_ptr<const ProofResponse> value)
+void Farmer::handle(std::shared_ptr<const ProofResponse> value) try
 {
-	try {
-		if(!value->is_valid()) {
-			throw std::logic_error("invalid proof");
-		}
-		const skey_t farmer_sk = get_skey(value->proof->farmer_key);
+	if(!value->is_valid()) {
+		throw std::logic_error("invalid proof");
+	}
+	const skey_t farmer_sk = get_skey(value->proof->farmer_key);
 
-		auto out = vnx::clone(value);
-		out->farmer_sig = signature_t::sign(farmer_sk, value->hash);
-		out->content_hash = out->calc_hash(true);
-		publish(out, output_proofs);
+	auto out = vnx::clone(value);
+	out->farmer_sig = signature_t::sign(farmer_sk, value->hash);
+	out->content_hash = out->calc_hash(true);
+	publish(out, output_proofs);
+}
+catch(const std::exception& ex) {
+	log(WARN) << "Failed to sign proof from harvester '" << value->harvester << "' due to: " << ex.what();
+}
+
+void Farmer::handle(std::shared_ptr<const Partial> value) try
+{
+	if(!value->proof) {
+		return;
 	}
-	catch(const std::exception& ex) {
-		log(ERROR) << "Failed to sign proof from harvester '" << value->harvester << "' due to: " << ex.what();
+	auto out = vnx::clone(value);
+	if(reward_addr) {
+		out->account = *reward_addr;
+	} else {
+		log(WARN) << "Using plot NFT owner as fallback payout address: " << out->account.to_string();
 	}
+	out->hash = out->calc_hash();
+
+	const auto farmer_sk = get_skey(value->proof->farmer_key);
+	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
+
+	// TODO: send request
+
+	publish(out, output_partials);
+}
+catch(const std::exception& ex) {
+	log(WARN) << "Failed to process partial from harvester '" << value->harvester << "' due to: " << ex.what();
 }
 
 skey_t Farmer::get_skey(const pubkey_t& pubkey) const
