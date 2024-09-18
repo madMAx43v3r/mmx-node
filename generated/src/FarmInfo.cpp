@@ -3,7 +3,9 @@
 
 #include <mmx/package.hxx>
 #include <mmx/FarmInfo.hxx>
+#include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/pooling_info_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -13,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmInfo::VNX_TYPE_HASH(0xa2701372b9137f0eull);
-const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0x6064790a0d1e894full);
+const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0x5c414c2534067a90ull);
 
 vnx::Hash64 FarmInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,11 +51,12 @@ void FarmInfo::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, plot_dirs);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, plot_count);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, harvester_bytes);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, total_bytes);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, total_bytes_effective);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, total_balance);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, harvester);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, harvester_id);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, pool_info);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, total_bytes);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, total_bytes_effective);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, total_balance);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, harvester);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, harvester_id);
 	_visitor.type_end(*_type_code);
 }
 
@@ -62,6 +65,7 @@ void FarmInfo::write(std::ostream& _out) const {
 	_out << ", \"plot_dirs\": "; vnx::write(_out, plot_dirs);
 	_out << ", \"plot_count\": "; vnx::write(_out, plot_count);
 	_out << ", \"harvester_bytes\": "; vnx::write(_out, harvester_bytes);
+	_out << ", \"pool_info\": "; vnx::write(_out, pool_info);
 	_out << ", \"total_bytes\": "; vnx::write(_out, total_bytes);
 	_out << ", \"total_bytes_effective\": "; vnx::write(_out, total_bytes_effective);
 	_out << ", \"total_balance\": "; vnx::write(_out, total_balance);
@@ -82,6 +86,7 @@ vnx::Object FarmInfo::to_object() const {
 	_object["plot_dirs"] = plot_dirs;
 	_object["plot_count"] = plot_count;
 	_object["harvester_bytes"] = harvester_bytes;
+	_object["pool_info"] = pool_info;
 	_object["total_bytes"] = total_bytes;
 	_object["total_bytes_effective"] = total_bytes_effective;
 	_object["total_balance"] = total_balance;
@@ -102,6 +107,8 @@ void FarmInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(plot_count);
 		} else if(_entry.first == "plot_dirs") {
 			_entry.second.to(plot_dirs);
+		} else if(_entry.first == "pool_info") {
+			_entry.second.to(pool_info);
 		} else if(_entry.first == "total_balance") {
 			_entry.second.to(total_balance);
 		} else if(_entry.first == "total_bytes") {
@@ -121,6 +128,9 @@ vnx::Variant FarmInfo::get_field(const std::string& _name) const {
 	}
 	if(_name == "harvester_bytes") {
 		return vnx::Variant(harvester_bytes);
+	}
+	if(_name == "pool_info") {
+		return vnx::Variant(pool_info);
 	}
 	if(_name == "total_bytes") {
 		return vnx::Variant(total_bytes);
@@ -147,6 +157,8 @@ void FarmInfo::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(plot_count);
 	} else if(_name == "harvester_bytes") {
 		_value.to(harvester_bytes);
+	} else if(_name == "pool_info") {
+		_value.to(pool_info);
 	} else if(_name == "total_bytes") {
 		_value.to(total_bytes);
 	} else if(_name == "total_bytes_effective") {
@@ -184,12 +196,14 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.FarmInfo";
 	type_code->type_hash = vnx::Hash64(0xa2701372b9137f0eull);
-	type_code->code_hash = vnx::Hash64(0x6064790a0d1e894full);
+	type_code->code_hash = vnx::Hash64(0x5c414c2534067a90ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::FarmInfo);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<FarmInfo>(); };
-	type_code->fields.resize(8);
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::pooling_info_t::static_get_type_code();
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -210,30 +224,36 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[3];
+		field.is_extended = true;
+		field.name = "pool_info";
+		field.code = {13, 5, 11, 32, 1, 19, 0};
+	}
+	{
+		auto& field = type_code->fields[4];
 		field.data_size = 8;
 		field.name = "total_bytes";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[5];
 		field.data_size = 8;
 		field.name = "total_bytes_effective";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[6];
 		field.data_size = 8;
 		field.name = "total_balance";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "harvester";
 		field.code = {33, 32};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "harvester_id";
 		field.code = {33, 11, 32, 1};
@@ -286,13 +306,13 @@ void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, cons
 	}
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[3]) {
+		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.total_bytes, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[4]) {
+		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.total_bytes_effective, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[5]) {
+		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.total_balance, _field->code.data());
 		}
 	}
@@ -301,8 +321,9 @@ void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, cons
 			case 0: vnx::read(in, value.plot_dirs, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.plot_count, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.harvester_bytes, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.harvester, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.harvester_id, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.pool_info, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.harvester, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.harvester_id, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -328,8 +349,9 @@ void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_c
 	vnx::write(out, value.plot_dirs, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.plot_count, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.harvester_bytes, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.harvester, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.harvester_id, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.pool_info, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.harvester, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.harvester_id, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::FarmInfo& value) {

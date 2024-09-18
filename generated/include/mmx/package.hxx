@@ -37,6 +37,10 @@ class Farmer_get_farmer_keys;
 class Farmer_get_farmer_keys_return;
 class Farmer_get_mac_addr;
 class Farmer_get_mac_addr_return;
+class Farmer_get_partial_diff;
+class Farmer_get_partial_diff_return;
+class Farmer_get_partial_diffs;
+class Farmer_get_partial_diffs_return;
 class Farmer_sign_block;
 class Farmer_sign_block_return;
 class HarvesterBase;
@@ -121,6 +125,8 @@ class Node_get_offers_by;
 class Node_get_offers_by_return;
 class Node_get_params;
 class Node_get_params_return;
+class Node_get_plot_nft_info;
+class Node_get_plot_nft_info_return;
 class Node_get_recent_offers;
 class Node_get_recent_offers_return;
 class Node_get_recent_offers_for;
@@ -201,7 +207,12 @@ class Node_start_sync;
 class Node_start_sync_return;
 class Node_validate;
 class Node_validate_return;
+class Node_verify_partial;
+class Node_verify_partial_return;
+class Node_verify_plot_nft_target;
+class Node_verify_plot_nft_target_return;
 class Operation;
+class Partial;
 class PeerInfo;
 class PlotHeader;
 class ProofOfSpace;
@@ -386,6 +397,8 @@ struct offer_data_t;
 struct peer_info_t;
 struct permission_e;
 struct plot_nft_info_t;
+struct pooling_error_e;
+struct pooling_info_t;
 class pubkey_t;
 class signature_t;
 class skey_t;
@@ -424,6 +437,10 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_far
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_farmer_keys_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_mac_addr_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_partial_diff; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_partial_diff_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_partial_diffs; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_partial_diffs_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_HarvesterBase; ///< \private
@@ -508,6 +525,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_offer
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_offers_by_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_info; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_info_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_for; ///< \private
@@ -588,7 +607,12 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_syn
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_start_sync_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_validate; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_validate_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_verify_partial; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_verify_partial_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_verify_plot_nft_target; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_verify_plot_nft_target_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Operation; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Partial; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PeerInfo; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotHeader; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace; ///< \private
@@ -769,6 +793,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_offer_data_t; 
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_peer_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_permission_e; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_plot_nft_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_pooling_error_e; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_pooling_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_spend_options_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_info_t; ///< \private
@@ -808,6 +834,10 @@ void read(TypeInput& in, ::mmx::Farmer_get_farmer_keys& value, const TypeCode* t
 void read(TypeInput& in, ::mmx::Farmer_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_mac_addr& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_get_mac_addr_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_get_partial_diff& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_get_partial_diff_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_get_partial_diffs& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_get_partial_diffs_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_sign_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_sign_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::HarvesterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -892,6 +922,8 @@ void read(TypeInput& in, ::mmx::Node_get_offers_by& value, const TypeCode* type_
 void read(TypeInput& in, ::mmx::Node_get_offers_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_params& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_params_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_plot_nft_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_plot_nft_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_recent_offers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -972,7 +1004,12 @@ void read(TypeInput& in, ::mmx::Node_start_sync& value, const TypeCode* type_cod
 void read(TypeInput& in, ::mmx::Node_start_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_verify_partial& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_verify_partial_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_verify_plot_nft_target& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_verify_plot_nft_target_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Partial& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::PeerInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::PlotHeader& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfSpace& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1157,6 +1194,8 @@ void read(TypeInput& in, ::mmx::offer_data_t& value, const TypeCode* type_code, 
 void read(TypeInput& in, ::mmx::peer_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::permission_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::plot_nft_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::pooling_error_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::pooling_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::pubkey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::skey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1195,6 +1234,10 @@ void write(TypeOutput& out, const ::mmx::Farmer_get_farmer_keys& value, const Ty
 void write(TypeOutput& out, const ::mmx::Farmer_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_mac_addr& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_get_mac_addr_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diff& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diff_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diffs& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diffs_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_sign_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_sign_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::HarvesterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1279,6 +1322,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_offers_by& value, const TypeCo
 void write(TypeOutput& out, const ::mmx::Node_get_offers_by_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_params& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_params_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1359,7 +1404,12 @@ void write(TypeOutput& out, const ::mmx::Node_start_sync& value, const TypeCode*
 void write(TypeOutput& out, const ::mmx::Node_start_sync_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_validate& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_validate_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_verify_partial& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_verify_partial_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_verify_plot_nft_target& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_verify_plot_nft_target_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Partial& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::PeerInfo& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::PlotHeader& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfSpace& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1544,6 +1594,8 @@ void write(TypeOutput& out, const ::mmx::offer_data_t& value, const TypeCode* ty
 void write(TypeOutput& out, const ::mmx::peer_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::permission_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::plot_nft_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::pooling_error_e& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::pooling_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::pubkey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::skey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1582,6 +1634,10 @@ void read(std::istream& in, ::mmx::Farmer_get_farmer_keys& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_farmer_keys_return& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_mac_addr& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_get_mac_addr_return& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_get_partial_diff& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_get_partial_diff_return& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_get_partial_diffs& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_get_partial_diffs_return& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_sign_block& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_sign_block_return& value); ///< \private
 void read(std::istream& in, ::mmx::HarvesterBase& value); ///< \private
@@ -1666,6 +1722,8 @@ void read(std::istream& in, ::mmx::Node_get_offers_by& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_offers_by_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_params& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_params_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_plot_nft_info& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_plot_nft_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers_for& value); ///< \private
@@ -1746,7 +1804,12 @@ void read(std::istream& in, ::mmx::Node_start_sync& value); ///< \private
 void read(std::istream& in, ::mmx::Node_start_sync_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_validate& value); ///< \private
 void read(std::istream& in, ::mmx::Node_validate_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_verify_partial& value); ///< \private
+void read(std::istream& in, ::mmx::Node_verify_partial_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_verify_plot_nft_target& value); ///< \private
+void read(std::istream& in, ::mmx::Node_verify_plot_nft_target_return& value); ///< \private
 void read(std::istream& in, ::mmx::Operation& value); ///< \private
+void read(std::istream& in, ::mmx::Partial& value); ///< \private
 void read(std::istream& in, ::mmx::PeerInfo& value); ///< \private
 void read(std::istream& in, ::mmx::PlotHeader& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpace& value); ///< \private
@@ -1931,6 +1994,8 @@ void read(std::istream& in, ::mmx::offer_data_t& value); ///< \private
 void read(std::istream& in, ::mmx::peer_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::permission_e& value); ///< \private
 void read(std::istream& in, ::mmx::plot_nft_info_t& value); ///< \private
+void read(std::istream& in, ::mmx::pooling_error_e& value); ///< \private
+void read(std::istream& in, ::mmx::pooling_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::pubkey_t& value); ///< \private
 void read(std::istream& in, ::mmx::signature_t& value); ///< \private
 void read(std::istream& in, ::mmx::skey_t& value); ///< \private
@@ -1969,6 +2034,10 @@ void write(std::ostream& out, const ::mmx::Farmer_get_farmer_keys& value); ///< 
 void write(std::ostream& out, const ::mmx::Farmer_get_farmer_keys_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_mac_addr& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_get_mac_addr_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_get_partial_diff& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_get_partial_diff_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_get_partial_diffs& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_get_partial_diffs_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_sign_block& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_sign_block_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::HarvesterBase& value); ///< \private
@@ -2053,6 +2122,8 @@ void write(std::ostream& out, const ::mmx::Node_get_offers_by& value); ///< \pri
 void write(std::ostream& out, const ::mmx::Node_get_offers_by_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_params& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_params_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_plot_nft_info& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_plot_nft_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers_for& value); ///< \private
@@ -2133,7 +2204,12 @@ void write(std::ostream& out, const ::mmx::Node_start_sync& value); ///< \privat
 void write(std::ostream& out, const ::mmx::Node_start_sync_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_validate& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_validate_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_verify_partial& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_verify_partial_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_verify_plot_nft_target& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_verify_plot_nft_target_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Operation& value); ///< \private
+void write(std::ostream& out, const ::mmx::Partial& value); ///< \private
 void write(std::ostream& out, const ::mmx::PeerInfo& value); ///< \private
 void write(std::ostream& out, const ::mmx::PlotHeader& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfSpace& value); ///< \private
@@ -2318,6 +2394,8 @@ void write(std::ostream& out, const ::mmx::offer_data_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::peer_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::permission_e& value); ///< \private
 void write(std::ostream& out, const ::mmx::plot_nft_info_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::pooling_error_e& value); ///< \private
+void write(std::ostream& out, const ::mmx::pooling_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::pubkey_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::signature_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::skey_t& value); ///< \private
@@ -2356,6 +2434,10 @@ void accept(Visitor& visitor, const ::mmx::Farmer_get_farmer_keys& value); ///< 
 void accept(Visitor& visitor, const ::mmx::Farmer_get_farmer_keys_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_get_mac_addr_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diff& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diff_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diffs& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diffs_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_sign_block& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_sign_block_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::HarvesterBase& value); ///< \private
@@ -2440,6 +2522,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_offers_by& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::Node_get_offers_by_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_params& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_params_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_info& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_for& value); ///< \private
@@ -2520,7 +2604,12 @@ void accept(Visitor& visitor, const ::mmx::Node_start_sync& value); ///< \privat
 void accept(Visitor& visitor, const ::mmx::Node_start_sync_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_validate& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_validate_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_verify_partial& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_verify_partial_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_verify_plot_nft_target& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_verify_plot_nft_target_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Operation& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Partial& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::PeerInfo& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::PlotHeader& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfSpace& value); ///< \private
@@ -2705,6 +2794,8 @@ void accept(Visitor& visitor, const ::mmx::offer_data_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::peer_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::permission_e& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::plot_nft_info_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::pooling_error_e& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::pooling_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::pubkey_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::signature_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::skey_t& value); ///< \private
@@ -3024,6 +3115,98 @@ struct type<::mmx::Farmer_get_mac_addr_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_mac_addr_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_get_partial_diff> {
+	void read(TypeInput& in, ::mmx::Farmer_get_partial_diff& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diff& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_get_partial_diff& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_get_partial_diff& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diff& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_partial_diff& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_get_partial_diff_return> {
+	void read(TypeInput& in, ::mmx::Farmer_get_partial_diff_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diff_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_get_partial_diff_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_get_partial_diff_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diff_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_partial_diff_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_get_partial_diffs> {
+	void read(TypeInput& in, ::mmx::Farmer_get_partial_diffs& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diffs& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_get_partial_diffs& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_get_partial_diffs& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diffs& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_partial_diffs& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_get_partial_diffs_return> {
+	void read(TypeInput& in, ::mmx::Farmer_get_partial_diffs_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diffs_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_get_partial_diffs_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_get_partial_diffs_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diffs_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_get_partial_diffs_return& value, bool special = false);
 };
 
 /// \private
@@ -4954,6 +5137,52 @@ struct type<::mmx::Node_get_params_return> {
 
 /// \private
 template<>
+struct type<::mmx::Node_get_plot_nft_info> {
+	void read(TypeInput& in, ::mmx::Node_get_plot_nft_info& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_info& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_plot_nft_info& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_plot_nft_info& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_info& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_plot_nft_info& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_plot_nft_info_return> {
+	void read(TypeInput& in, ::mmx::Node_get_plot_nft_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_plot_nft_info_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_plot_nft_info_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_info_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_plot_nft_info_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::Node_get_recent_offers> {
 	void read(TypeInput& in, ::mmx::Node_get_recent_offers& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -6794,6 +7023,98 @@ struct type<::mmx::Node_validate_return> {
 
 /// \private
 template<>
+struct type<::mmx::Node_verify_partial> {
+	void read(TypeInput& in, ::mmx::Node_verify_partial& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_verify_partial& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_verify_partial& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_verify_partial& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_verify_partial& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_verify_partial& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_verify_partial_return> {
+	void read(TypeInput& in, ::mmx::Node_verify_partial_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_verify_partial_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_verify_partial_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_verify_partial_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_verify_partial_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_verify_partial_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_verify_plot_nft_target> {
+	void read(TypeInput& in, ::mmx::Node_verify_plot_nft_target& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_verify_plot_nft_target& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_verify_plot_nft_target& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_verify_plot_nft_target& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_verify_plot_nft_target& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_verify_plot_nft_target& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_verify_plot_nft_target_return> {
+	void read(TypeInput& in, ::mmx::Node_verify_plot_nft_target_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_verify_plot_nft_target_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_verify_plot_nft_target_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_verify_plot_nft_target_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_verify_plot_nft_target_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_verify_plot_nft_target_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::Operation> {
 	void read(TypeInput& in, ::mmx::Operation& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -6813,6 +7134,29 @@ struct type<::mmx::Operation> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Operation& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Partial> {
+	void read(TypeInput& in, ::mmx::Partial& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Partial& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Partial& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Partial& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Partial& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Partial& value, bool special = false);
 };
 
 /// \private
@@ -11033,6 +11377,52 @@ struct type<::mmx::plot_nft_info_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::plot_nft_info_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::pooling_error_e> {
+	void read(TypeInput& in, ::mmx::pooling_error_e& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::pooling_error_e& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::pooling_error_e& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::pooling_error_e& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::pooling_error_e& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::pooling_error_e& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::pooling_info_t> {
+	void read(TypeInput& in, ::mmx::pooling_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::pooling_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::pooling_info_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::pooling_info_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::pooling_info_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::pooling_info_t& value, bool special = false);
 };
 
 /// \private

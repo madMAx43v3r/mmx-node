@@ -7,6 +7,7 @@
 #include <vnx/Client.h>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/FarmInfo.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
@@ -24,6 +25,10 @@ public:
 	FarmerClient(vnx::Hash64 service_addr);
 	
 	::vnx::Hash64 get_mac_addr();
+	
+	uint64_t get_partial_diff(const ::mmx::addr_t& plot_nft = ::mmx::addr_t());
+	
+	std::map<::mmx::addr_t, uint64_t> get_partial_diffs(const std::vector<::mmx::addr_t>& plot_nfts = {});
 	
 	std::vector<::mmx::pubkey_t> get_farmer_keys();
 	

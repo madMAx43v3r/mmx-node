@@ -10,6 +10,7 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/NetworkInfo.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
@@ -21,6 +22,8 @@
 #include <mmx/farmed_block_summary_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/plot_nft_info_t.hxx>
+#include <mmx/pooling_error_e.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
@@ -235,6 +238,10 @@ public:
 			const std::function<void(const ::vnx::Variant&)>& _callback = std::function<void(const ::vnx::Variant&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
+	uint64_t get_plot_nft_info(const ::mmx::addr_t& address = ::mmx::addr_t(), 
+			const std::function<void(const vnx::optional<::mmx::plot_nft_info_t>&)>& _callback = std::function<void(const vnx::optional<::mmx::plot_nft_info_t>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
 	uint64_t get_virtual_plots(const std::vector<::mmx::addr_t>& addresses = {}, 
 			const std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -329,6 +336,14 @@ public:
 	
 	uint64_t get_farmer_ranking(const int32_t& limit = -1, 
 			const std::function<void(const std::vector<std::pair<::mmx::pubkey_t, uint32_t>>&)>& _callback = std::function<void(const std::vector<std::pair<::mmx::pubkey_t, uint32_t>>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t verify_plot_nft_target(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& pool_target = ::mmx::addr_t(), 
+			const std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>& _callback = std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t verify_partial(std::shared_ptr<const ::mmx::Partial> value = nullptr, const vnx::optional<::mmx::addr_t>& pool_target = nullptr, 
+			const std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>& _callback = std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t start_sync(const vnx::bool_t& force = 0, 
@@ -436,6 +451,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_map;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_read_storage_object;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Variant&)>, std::function<void(const vnx::exception&)>>> vnx_queue_call_contract;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const vnx::optional<::mmx::plot_nft_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_plot_nft_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plots;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plots_for;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::virtual_plot_info_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_virtual_plots_owned_by;
@@ -460,6 +476,8 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::shared_ptr<const ::mmx::BlockHeader>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmed_blocks;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::farmed_block_summary_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmed_block_summary;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::pair<::mmx::pubkey_t, uint32_t>>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_ranking;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_verify_plot_nft_target;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_verify_partial;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_start_sync;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_revert_sync;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::vnx::addons::HttpResponse>)>, std::function<void(const vnx::exception&)>>> vnx_queue_http_request;

@@ -10,6 +10,7 @@
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/NetworkInfo.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
@@ -21,6 +22,8 @@
 #include <mmx/farmed_block_summary_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/plot_nft_info_t.hxx>
+#include <mmx/pooling_error_e.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
@@ -75,6 +78,7 @@ public:
 	uint32_t replay_height = -1;
 	uint32_t num_threads = 24;
 	uint32_t num_db_threads = 8;
+	uint32_t num_api_threads = 8;
 	uint32_t num_vdf_threads = 8;
 	uint32_t vdf_check_divider = 5000;
 	uint32_t vdf_verify_divider = 1;
@@ -175,6 +179,7 @@ protected:
 	virtual std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> read_storage_map(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage_object(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit) const = 0;
+	virtual vnx::optional<::mmx::plot_nft_info_t> get_plot_nft_info(const ::mmx::addr_t& address) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<::mmx::addr_t>& addresses) const = 0;
@@ -199,6 +204,8 @@ protected:
 	virtual std::vector<std::shared_ptr<const ::mmx::BlockHeader>> get_farmed_blocks(const std::vector<::mmx::pubkey_t>& farmer_keys, const vnx::bool_t& full_blocks, const uint32_t& since, const int32_t& limit) const = 0;
 	virtual ::mmx::farmed_block_summary_t get_farmed_block_summary(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since) const = 0;
 	virtual std::vector<std::pair<::mmx::pubkey_t, uint32_t>> get_farmer_ranking(const int32_t& limit) const = 0;
+	virtual std::tuple<::mmx::pooling_error_e, std::string> verify_plot_nft_target(const ::mmx::addr_t& address, const ::mmx::addr_t& pool_target) const = 0;
+	virtual std::tuple<::mmx::pooling_error_e, std::string> verify_partial(std::shared_ptr<const ::mmx::Partial> value, const vnx::optional<::mmx::addr_t>& pool_target) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
 	virtual void revert_sync(const uint32_t& height) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}
@@ -218,7 +225,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(48);
+	_visitor.template type_begin<NodeBase>(49);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -250,24 +257,25 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("replay_height", 28); _visitor.accept(replay_height);
 	_visitor.type_field("num_threads", 29); _visitor.accept(num_threads);
 	_visitor.type_field("num_db_threads", 30); _visitor.accept(num_db_threads);
-	_visitor.type_field("num_vdf_threads", 31); _visitor.accept(num_vdf_threads);
-	_visitor.type_field("vdf_check_divider", 32); _visitor.accept(vdf_check_divider);
-	_visitor.type_field("vdf_verify_divider", 33); _visitor.accept(vdf_verify_divider);
-	_visitor.type_field("opencl_device", 34); _visitor.accept(opencl_device);
-	_visitor.type_field("do_sync", 35); _visitor.accept(do_sync);
-	_visitor.type_field("db_replay", 36); _visitor.accept(db_replay);
-	_visitor.type_field("show_warnings", 37); _visitor.accept(show_warnings);
-	_visitor.type_field("vdf_slave_mode", 38); _visitor.accept(vdf_slave_mode);
-	_visitor.type_field("verify_vdf_cpuopencl", 39); _visitor.accept(verify_vdf_cpuopencl);
-	_visitor.type_field("verify_vdf_rewards", 40); _visitor.accept(verify_vdf_rewards);
-	_visitor.type_field("debug_exec_fails", 41); _visitor.accept(debug_exec_fails);
-	_visitor.type_field("storage_path", 42); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 43); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 44); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 45); _visitor.accept(timelord_name);
-	_visitor.type_field("mmx_usd_swap_addr", 46); _visitor.accept(mmx_usd_swap_addr);
-	_visitor.type_field("metalsdev_api_key", 47); _visitor.accept(metalsdev_api_key);
-	_visitor.template type_end<NodeBase>(48);
+	_visitor.type_field("num_api_threads", 31); _visitor.accept(num_api_threads);
+	_visitor.type_field("num_vdf_threads", 32); _visitor.accept(num_vdf_threads);
+	_visitor.type_field("vdf_check_divider", 33); _visitor.accept(vdf_check_divider);
+	_visitor.type_field("vdf_verify_divider", 34); _visitor.accept(vdf_verify_divider);
+	_visitor.type_field("opencl_device", 35); _visitor.accept(opencl_device);
+	_visitor.type_field("do_sync", 36); _visitor.accept(do_sync);
+	_visitor.type_field("db_replay", 37); _visitor.accept(db_replay);
+	_visitor.type_field("show_warnings", 38); _visitor.accept(show_warnings);
+	_visitor.type_field("vdf_slave_mode", 39); _visitor.accept(vdf_slave_mode);
+	_visitor.type_field("verify_vdf_cpuopencl", 40); _visitor.accept(verify_vdf_cpuopencl);
+	_visitor.type_field("verify_vdf_rewards", 41); _visitor.accept(verify_vdf_rewards);
+	_visitor.type_field("debug_exec_fails", 42); _visitor.accept(debug_exec_fails);
+	_visitor.type_field("storage_path", 43); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 44); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 45); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 46); _visitor.accept(timelord_name);
+	_visitor.type_field("mmx_usd_swap_addr", 47); _visitor.accept(mmx_usd_swap_addr);
+	_visitor.type_field("metalsdev_api_key", 48); _visitor.accept(metalsdev_api_key);
+	_visitor.template type_end<NodeBase>(49);
 }
 
 

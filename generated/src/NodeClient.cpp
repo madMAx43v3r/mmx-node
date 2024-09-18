@@ -74,6 +74,8 @@
 #include <mmx/Node_get_offers_by_return.hxx>
 #include <mmx/Node_get_params.hxx>
 #include <mmx/Node_get_params_return.hxx>
+#include <mmx/Node_get_plot_nft_info.hxx>
+#include <mmx/Node_get_plot_nft_info_return.hxx>
 #include <mmx/Node_get_recent_offers.hxx>
 #include <mmx/Node_get_recent_offers_return.hxx>
 #include <mmx/Node_get_recent_offers_for.hxx>
@@ -154,6 +156,11 @@
 #include <mmx/Node_start_sync_return.hxx>
 #include <mmx/Node_validate.hxx>
 #include <mmx/Node_validate_return.hxx>
+#include <mmx/Node_verify_partial.hxx>
+#include <mmx/Node_verify_partial_return.hxx>
+#include <mmx/Node_verify_plot_nft_target.hxx>
+#include <mmx/Node_verify_plot_nft_target_return.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
@@ -165,6 +172,8 @@
 #include <mmx/farmed_block_summary_t.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
+#include <mmx/plot_nft_info_t.hxx>
+#include <mmx/pooling_error_e.hxx>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
@@ -863,6 +872,19 @@ std::map<std::string, ::mmx::vm::varptr_t> NodeClient::read_storage_object(const
 	}
 }
 
+vnx::optional<::mmx::plot_nft_info_t> NodeClient::get_plot_nft_info(const ::mmx::addr_t& address) {
+	auto _method = ::mmx::Node_get_plot_nft_info::create();
+	_method->address = address;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_plot_nft_info_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::plot_nft_info_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
 std::vector<::mmx::virtual_plot_info_t> NodeClient::get_virtual_plots(const std::vector<::mmx::addr_t>& addresses) {
 	auto _method = ::mmx::Node_get_virtual_plots::create();
 	_method->addresses = addresses;
@@ -1197,6 +1219,34 @@ std::vector<std::pair<::mmx::pubkey_t, uint32_t>> NodeClient::get_farmer_ranking
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<std::vector<std::pair<::mmx::pubkey_t, uint32_t>>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::tuple<::mmx::pooling_error_e, std::string> NodeClient::verify_plot_nft_target(const ::mmx::addr_t& address, const ::mmx::addr_t& pool_target) {
+	auto _method = ::mmx::Node_verify_plot_nft_target::create();
+	_method->address = address;
+	_method->pool_target = pool_target;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_verify_plot_nft_target_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::tuple<::mmx::pooling_error_e, std::string>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+std::tuple<::mmx::pooling_error_e, std::string> NodeClient::verify_partial(std::shared_ptr<const ::mmx::Partial> value, const vnx::optional<::mmx::addr_t>& pool_target) {
+	auto _method = ::mmx::Node_verify_partial::create();
+	_method->value = value;
+	_method->pool_target = pool_target;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_verify_partial_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::tuple<::mmx::pooling_error_e, std::string>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}

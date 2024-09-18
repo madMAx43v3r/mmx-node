@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/FarmInfo.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
@@ -22,11 +23,15 @@ public:
 	
 	::vnx::TopicPtr input_info = "harvester.info";
 	::vnx::TopicPtr input_proofs = "harvester.proof";
+	::vnx::TopicPtr input_partials = "harvester.partials";
 	::vnx::TopicPtr output_proofs = "farmer.proof";
+	::vnx::TopicPtr output_partials = "farmer.partials";
 	uint32_t harvester_timeout = 60;
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	vnx::optional<::mmx::addr_t> reward_addr;
+	vnx::optional<uint64_t> partial_diff;
+	vnx::optional<uint64_t> payout_threshold;
 	
 	typedef ::vnx::Module Super;
 	
@@ -64,11 +69,14 @@ protected:
 	using Super::handle;
 	
 	virtual ::vnx::Hash64 get_mac_addr() const = 0;
+	virtual uint64_t get_partial_diff(const ::mmx::addr_t& plot_nft) const = 0;
+	virtual std::map<::mmx::addr_t, uint64_t> get_partial_diffs(const std::vector<::mmx::addr_t>& plot_nfts) const = 0;
 	virtual std::vector<::mmx::pubkey_t> get_farmer_keys() const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block) const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::FarmInfo> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::ProofResponse> _value) {}
+	virtual void handle(std::shared_ptr<const ::mmx::Partial> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> _method, const vnx::request_id_t& _request_id) override;
@@ -77,15 +85,19 @@ protected:
 
 template<typename T>
 void FarmerBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmerBase>(7);
+	_visitor.template type_begin<FarmerBase>(11);
 	_visitor.type_field("input_info", 0); _visitor.accept(input_info);
 	_visitor.type_field("input_proofs", 1); _visitor.accept(input_proofs);
-	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
-	_visitor.type_field("harvester_timeout", 3); _visitor.accept(harvester_timeout);
-	_visitor.type_field("node_server", 4); _visitor.accept(node_server);
-	_visitor.type_field("wallet_server", 5); _visitor.accept(wallet_server);
-	_visitor.type_field("reward_addr", 6); _visitor.accept(reward_addr);
-	_visitor.template type_end<FarmerBase>(7);
+	_visitor.type_field("input_partials", 2); _visitor.accept(input_partials);
+	_visitor.type_field("output_proofs", 3); _visitor.accept(output_proofs);
+	_visitor.type_field("output_partials", 4); _visitor.accept(output_partials);
+	_visitor.type_field("harvester_timeout", 5); _visitor.accept(harvester_timeout);
+	_visitor.type_field("node_server", 6); _visitor.accept(node_server);
+	_visitor.type_field("wallet_server", 7); _visitor.accept(wallet_server);
+	_visitor.type_field("reward_addr", 8); _visitor.accept(reward_addr);
+	_visitor.type_field("partial_diff", 9); _visitor.accept(partial_diff);
+	_visitor.type_field("payout_threshold", 10); _visitor.accept(payout_threshold);
+	_visitor.template type_end<FarmerBase>(11);
 }
 
 
