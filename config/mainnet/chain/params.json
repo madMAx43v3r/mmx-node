@@ -1,5 +1,7 @@
 {
 	"port": 11337,
 	"network": "mainnet",
-	"reward_adjust_div": 1000000
+	"reward_adjust_div": 100000,
+	"initial_space_diff": 1,
+	"space_diff_constant": 100000000000
 }
