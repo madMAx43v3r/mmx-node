@@ -227,7 +227,9 @@ public:
 
 	template<typename T>
 	void type_begin(int num_fields) {
-		object["__type"] = T::static_get_type_code()->name;
+		if(auto type_code = T::static_get_type_code()) {
+			object["__type"] = type_code->name;
+		}
 	}
 
 	template<typename T>
@@ -244,7 +246,11 @@ public:
 
 	template<typename T>
 	void accept(const T& value) {
-		set(value);
+		if constexpr(std::is_base_of<vnx::struct_t, T>::value || std::is_base_of<vnx::Value, T>::value) {
+			set(render(value));
+		} else {
+			set(value);
+		}
 	}
 
 	template<size_t N>
@@ -691,15 +697,6 @@ vnx::Variant render_value(const T& value, std::shared_ptr<const RenderContext> c
 	Render visitor(context);
 	visitor.accept(value);
 	return std::move(visitor.result);
-}
-
-template<typename T>
-vnx::Variant render_list(const std::vector<T>& list, std::shared_ptr<const RenderContext> context = nullptr) {
-	std::vector<vnx::Object> tmp;
-	for(const auto& entry : list) {
-		tmp.push_back(render(entry, context));
-	}
-	return vnx::Variant(tmp);
 }
 
 template<typename T>
@@ -1722,7 +1719,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/wallet/accounts") {
 		wallet->get_all_accounts(
 			[this, request_id](const std::vector<account_info_t>& list) {
-				respond(request_id, render_list(list));
+				respond(request_id, render_value(list));
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
