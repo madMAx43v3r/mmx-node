@@ -26,6 +26,11 @@
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/vm_interface.h>
 
+#include <mmx/accept_generic.hxx>
+#include <mmx/contract/accept_generic.hxx>
+#include <mmx/solution/accept_generic.hxx>
+#include <mmx/operation/accept_generic.hxx>
+
 #include <vnx/vnx.h>
 #include <vnx/ProcessClient.hxx>
 
@@ -233,7 +238,9 @@ public:
 	}
 
 	template<typename T>
-	void type_end(int num_fields) {}
+	void type_end(int num_fields) {
+		result = vnx::Variant(object);
+	}
 
 	void type_field(const std::string& name, const size_t index) {
 		p_value = &object[name];
@@ -246,8 +253,8 @@ public:
 
 	template<typename T>
 	void accept(const T& value) {
-		if constexpr(std::is_base_of<vnx::struct_t, T>::value || std::is_base_of<vnx::Value, T>::value) {
-			set(render(value));
+		if constexpr(vnx::is_object<T>()) {
+			set(render(value, context));
 		} else {
 			set(value);
 		}
@@ -338,6 +345,11 @@ public:
 
 	void accept(const std::vector<uint8_t>& value) {
 		set(vnx::to_hex_string(value.data(), value.size()));
+	}
+
+	template<typename T>
+	void accept(std::shared_ptr<const T> value) {
+		set(render(value, context));
 	}
 
 	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint128_t amount) {
@@ -569,17 +581,17 @@ public:
 		set(tmp);
 	}
 
-	void accept(std::shared_ptr<const Transaction> value) {
-		set(render(value, context));
-	}
+//	void accept(std::shared_ptr<const Transaction> value) {
+//		set(render(value, context));
+//	}
 
-	void accept(std::shared_ptr<const TransactionBase> base) {
-		if(auto value = std::dynamic_pointer_cast<const Transaction>(base)) {
-			set(render(value, context));
-		} else {
-			set(base);
-		}
-	}
+//	void accept(std::shared_ptr<const TransactionBase> base) {
+//		if(auto value = std::dynamic_pointer_cast<const Transaction>(base)) {
+//			set(render(value, context));
+//		} else {
+//			set(base);
+//		}
+//	}
 
 	void accept(std::shared_ptr<const Operation> base) {
 		if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
@@ -606,11 +618,17 @@ public:
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
-			set(render(value, context));
+//		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
+//			set(render(value, context));
+//		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
+//			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::TokenBase>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::Binary>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::PubKey>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::WebData>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
@@ -618,17 +636,22 @@ public:
 	}
 
 	void accept(std::shared_ptr<const ProofOfSpace> base) {
-		if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceOG>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const ProofOfStake>(base)) {
-			auto tmp = render(*value, context);
-			tmp["ksize"] = "VP";
-			set(tmp);
+//		if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceOG>(base)) {
+//			set(render(value, context));
+//		} else if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(base)) {
+//			set(render(value, context));
+//		} else
+		if(auto value = std::dynamic_pointer_cast<const ProofOfStake>(base)) {
+			accept(value);
 		} else {
 			set(render(base, context));
 		}
+	}
+
+	void accept(std::shared_ptr<const ProofOfStake> value) {
+		auto tmp = render(*value, context);
+		tmp["ksize"] = "VP";
+		set(tmp);
 	}
 
 	void augment_block_header(vnx::Object& tmp, std::shared_ptr<const BlockHeader> value) {
@@ -686,10 +709,9 @@ vnx::Object render(const T& value, std::shared_ptr<const RenderContext> context)
 
 template<typename T>
 vnx::Variant render(std::shared_ptr<const T> value, std::shared_ptr<const RenderContext> context) {
-	if(value) {
-		return vnx::Variant(render(*value, context));
-	}
-	return vnx::Variant(nullptr);
+	Render visitor;
+	vnx::accept_generic(visitor, std::shared_ptr<const T>(value));
+	return std::move(visitor.result);
 }
 
 template<typename T>
