@@ -11,6 +11,9 @@
 #include <mmx/FarmerBase.hxx>
 #include <mmx/WalletAsyncClient.hxx>
 
+#include <vnx/addons/HttpClient.h>
+#include <vnx/addons/HttpClientAsyncClient.hxx>
+
 
 namespace mmx {
 
@@ -44,15 +47,24 @@ protected:
 private:
 	void update();
 
+	void update_difficulty();
+
+	void query_difficulty(const addr_t& contract, const std::string& url);
+
 	skey_t get_skey(const pubkey_t& pubkey) const;
 
 private:
 	std::shared_ptr<vnx::Pipe> pipe;
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<WalletAsyncClient> wallet;
+	std::shared_ptr<vnx::addons::HttpClientAsyncClient> http_async;
 
 	mutable std::unordered_map<pubkey_t, skey_t> key_map;
 	std::map<hash_t, std::shared_ptr<const vnx::Sample>> info_map;
+
+	std::map<addr_t, pooling_stats_t> nft_stats;
+
+	vnx::Handle<vnx::addons::HttpClient> http_client;
 
 };
 

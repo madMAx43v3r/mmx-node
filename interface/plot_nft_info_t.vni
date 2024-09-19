@@ -2,6 +2,8 @@ package mmx;
 
 struct plot_nft_info_t {
 	
+	string name;
+	
 	addr_t owner;
 	addr_t address;
 	

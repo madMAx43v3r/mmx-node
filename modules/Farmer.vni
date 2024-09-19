@@ -10,6 +10,7 @@ module Farmer {
 	vnx.TopicPtr output_partials = "farmer.partials";
 	
 	uint harvester_timeout = 60;					// [sec]
+	uint difficulty_interval = 300;					// [sec]
 	
 	string node_server = "Node";
 	string wallet_server = "Wallet";

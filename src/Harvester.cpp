@@ -166,9 +166,9 @@ std::vector<uint32_t> Harvester::fetch_full_proof(
 void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const
 {
 	struct pool_conf_t {
+		addr_t owner;
 		uint64_t difficulty = 0;
 		std::string server_url;
-		addr_t owner;
 	};
 	struct lookup_job_t {
 		std::mutex mutex;
@@ -195,7 +195,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 			const auto server_url = *info.server_url;
 			const auto iter = partial_diff.find(info.address);
 			if(iter != partial_diff.end() && iter->second > 0) {
-				job->pool_config[info.address] = {iter->second, server_url, info.owner};
+				job->pool_config[info.address] = {info.owner, iter->second, server_url};
 			} else {
 				log(WARN) << "Waiting on partial difficulty for pool: " + server_url;
 			}
@@ -249,7 +249,10 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 							auto proof = std::make_shared<ProofOfSpaceNFT>();
 							proof->seed = header->seed;
 							proof->ksize = header->ksize;
+							proof->plot_id = header->plot_id;
+							proof->farmer_key = header->farmer_key;
 							proof->contract = *header->contract;
+							proof->score = score;
 							if(res.proof.size()) {
 								proof->proof_xs = res.proof;
 							} else {
@@ -258,6 +261,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 							auto out = Partial::create();
 							out->height = value->height;
 							out->challenge = value->challenge;
+							out->contract = *header->contract;
 							out->account = pool_config->owner;
 							out->pool_url = pool_config->server_url;
 							out->partial_diff = pool_config->difficulty;
@@ -391,6 +395,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		try {
 			const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
 			if(balance) {
+				// TODO: partials
 				const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
 				if(score < params->score_threshold) {
 					auto proof = std::make_shared<ProofOfStake>();
@@ -712,7 +717,7 @@ void Harvester::update_nfts()
 			[this, address](const vnx::optional<plot_nft_info_t>& info) {
 				if(info) {
 					if(!plot_nfts.count(address)) {
-						log(INFO) << "Found plot NFT " << info->address.to_string()
+						log(INFO) << "Found plot NFT " << (info->name.empty() ? info->address.to_string() : "'" + info->name + "'")
 								<< ": is_locked = " << vnx::to_string(info->is_locked)
 								<< ", server_url = " << vnx::to_string(info->server_url);
 					}

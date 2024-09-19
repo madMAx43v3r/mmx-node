@@ -1,0 +1,14 @@
+package mmx;
+
+struct pooling_stats_t {
+	
+	string server_url;
+	
+	ulong partial_diff;
+	
+	ulong valid_points;
+	ulong failed_points;
+	
+	map<pooling_error_e, uint> error_count;
+	
+}

@@ -24,6 +24,7 @@ Payload: Object
 - `partial_diff`: Partial difficulty used when performing lookup (might be different than current setting)
 - `lookup_time_ms`: Harvester lookup time (ms)
 - `farmer_sig`: Farmer signature based on `hash` and `proof.farmer_key`
+- `__type`: `mmx.Partial`
 
 The `proof` is an object as follows:
 - `__type`: Proof type (`mmx.ProofOfSpaceNFT` or `mmx.ProofOfStake`)
@@ -48,6 +49,8 @@ On error returns status 400 with `application/json` object as follows:
 Returns current partial difficulty.
 If farmer account does not exist yet, it will return a default starting difficulty.
 
+Will be polled by farmers every 60 sec by default.
+
 Query parameters:
 - `account`: Farmer account address (payout address)
 
@@ -68,8 +71,6 @@ Payload: Object
 - `time`: POSIX timestamp in seconds
 - `public_key`: Public key for account address
 - `signature`: Signature for message and `public_key`
-
-The message hash is computed
 
 On success returns status 200 without payload.
 
@@ -97,7 +98,8 @@ Endpoint to verify a partial, optionally with plot NFT verification.
 
 Note:
 Partials should be verfied after a certain delay, for example once the height of the partial has been reached on-chain.
-Partials can be received up to 6 blocks in advance, so waiting until the partial's height has been reached will give 6 blocks security.
+Partials are computed 6 blocks in advance, so waiting until the partial's height has been reached will give 6 blocks security.
+Even in case of a re-org larger than 6 blocks, the chance a partial won't be valid anymore is only ~5%.
 
 Content-Type: `application/json`
 
@@ -116,7 +118,7 @@ When the node is not synced will return status 500 with error text.
 
 ### POST /wapi/node/verify_plot_nft_target
 
-Endpoint to verify that a plot NFT is locked and pointed to the given target address, at the current blockchain height.
+Endpoint to verify that a plot NFT is locked and pointed to the given target address at the current blockchain height.
 
 Content-Type: `application/json`
 
@@ -139,9 +141,10 @@ A string is generated for JSON objects as follows:
 - First the `__type` field is added, followed with `/`
 - Then for each field in the specified order:
 	- The field name is added, followed with a `:`
-	- The field value is added
+	- The field value is added (floating point values are floored first)
+- For any nested objects, the same scheme is followed.
 
-
+The final string is hashed via `SHA2-256`.
 
 
 

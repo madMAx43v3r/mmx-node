@@ -8,8 +8,8 @@ struct pooling_info_t {
 	
 	optional<addr_t> pool_target;
 	
-	uint plot_count;
-	
 	ulong partial_diff;
+	
+	uint plot_count;
 	
 }

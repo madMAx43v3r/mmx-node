@@ -813,6 +813,7 @@ vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) co
 	if(auto exec = get_contract_as<contract::Executable>(address)) {
 		if(exec->binary == params->plot_nft_binary) {
 			plot_nft_info_t info;
+			info.name = exec->name;
 			info.owner = to_addr(read_storage_field(address, "owner").first);
 			info.address = address;
 
@@ -1471,7 +1472,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 			"Invalid partial proof: " + std::string(ex.what())};
 	}
 	if(value->proof->score >= get_partial_score_threshold(params)) {
-		return {pooling_error_e::PROOF_NOT_GOOD_ENOUGH,
+		return {pooling_error_e::PARTIAL_NOT_GOOD_ENOUGH,
 			"Proof score too high: " + std::to_string(value->proof->score)};
 	}
 
