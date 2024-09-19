@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT swap_pool_info_t {
+struct MMX_EXPORT swap_pool_info_t : vnx::struct_t {
 	
 	
 	std::array<::mmx::uint128, 2> balance = {};

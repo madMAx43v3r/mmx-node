@@ -27,6 +27,7 @@ public:
 	::vnx::TopicPtr output_proofs = "farmer.proof";
 	::vnx::TopicPtr output_partials = "farmer.partials";
 	uint32_t harvester_timeout = 60;
+	uint32_t difficulty_interval = 300;
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	vnx::optional<::mmx::addr_t> reward_addr;
@@ -85,19 +86,20 @@ protected:
 
 template<typename T>
 void FarmerBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmerBase>(11);
+	_visitor.template type_begin<FarmerBase>(12);
 	_visitor.type_field("input_info", 0); _visitor.accept(input_info);
 	_visitor.type_field("input_proofs", 1); _visitor.accept(input_proofs);
 	_visitor.type_field("input_partials", 2); _visitor.accept(input_partials);
 	_visitor.type_field("output_proofs", 3); _visitor.accept(output_proofs);
 	_visitor.type_field("output_partials", 4); _visitor.accept(output_partials);
 	_visitor.type_field("harvester_timeout", 5); _visitor.accept(harvester_timeout);
-	_visitor.type_field("node_server", 6); _visitor.accept(node_server);
-	_visitor.type_field("wallet_server", 7); _visitor.accept(wallet_server);
-	_visitor.type_field("reward_addr", 8); _visitor.accept(reward_addr);
-	_visitor.type_field("partial_diff", 9); _visitor.accept(partial_diff);
-	_visitor.type_field("payout_threshold", 10); _visitor.accept(payout_threshold);
-	_visitor.template type_end<FarmerBase>(11);
+	_visitor.type_field("difficulty_interval", 6); _visitor.accept(difficulty_interval);
+	_visitor.type_field("node_server", 7); _visitor.accept(node_server);
+	_visitor.type_field("wallet_server", 8); _visitor.accept(wallet_server);
+	_visitor.type_field("reward_addr", 9); _visitor.accept(reward_addr);
+	_visitor.type_field("partial_diff", 10); _visitor.accept(partial_diff);
+	_visitor.type_field("payout_threshold", 11); _visitor.accept(payout_threshold);
+	_visitor.template type_end<FarmerBase>(12);
 }
 
 

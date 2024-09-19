@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT swap_info_t {
+struct MMX_EXPORT swap_info_t : vnx::struct_t {
 	
 	
 	std::string name;

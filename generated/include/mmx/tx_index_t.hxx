@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT tx_index_t {
+struct MMX_EXPORT tx_index_t : vnx::struct_t {
 	
 	
 	uint32_t height = 0;

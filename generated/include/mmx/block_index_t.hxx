@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT block_index_t {
+struct MMX_EXPORT block_index_t : vnx::struct_t {
 	
 	
 	::mmx::hash_t hash;

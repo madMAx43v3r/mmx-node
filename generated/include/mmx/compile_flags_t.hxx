@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT compile_flags_t {
+struct MMX_EXPORT compile_flags_t : vnx::struct_t {
 	
 	
 	int32_t verbose = 0;

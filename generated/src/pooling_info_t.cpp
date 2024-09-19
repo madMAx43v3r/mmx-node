@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 pooling_info_t::VNX_TYPE_HASH(0xbddcc977498f516full);
-const vnx::Hash64 pooling_info_t::VNX_CODE_HASH(0xa9f0b8c45df33ab0ull);
+const vnx::Hash64 pooling_info_t::VNX_CODE_HASH(0x7f89f666fdedd31full);
 
 vnx::Hash64 pooling_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,8 +48,8 @@ void pooling_info_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, contract);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, server_url);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, pool_target);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, plot_count);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, partial_diff);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, partial_diff);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, plot_count);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,8 +58,8 @@ void pooling_info_t::write(std::ostream& _out) const {
 	_out << "\"contract\": "; vnx::write(_out, contract);
 	_out << ", \"server_url\": "; vnx::write(_out, server_url);
 	_out << ", \"pool_target\": "; vnx::write(_out, pool_target);
-	_out << ", \"plot_count\": "; vnx::write(_out, plot_count);
 	_out << ", \"partial_diff\": "; vnx::write(_out, partial_diff);
+	_out << ", \"plot_count\": "; vnx::write(_out, plot_count);
 	_out << "}";
 }
 
@@ -75,8 +75,8 @@ vnx::Object pooling_info_t::to_object() const {
 	_object["contract"] = contract;
 	_object["server_url"] = server_url;
 	_object["pool_target"] = pool_target;
-	_object["plot_count"] = plot_count;
 	_object["partial_diff"] = partial_diff;
+	_object["plot_count"] = plot_count;
 	return _object;
 }
 
@@ -106,11 +106,11 @@ vnx::Variant pooling_info_t::get_field(const std::string& _name) const {
 	if(_name == "pool_target") {
 		return vnx::Variant(pool_target);
 	}
-	if(_name == "plot_count") {
-		return vnx::Variant(plot_count);
-	}
 	if(_name == "partial_diff") {
 		return vnx::Variant(partial_diff);
+	}
+	if(_name == "plot_count") {
+		return vnx::Variant(plot_count);
 	}
 	return vnx::Variant();
 }
@@ -122,10 +122,10 @@ void pooling_info_t::set_field(const std::string& _name, const vnx::Variant& _va
 		_value.to(server_url);
 	} else if(_name == "pool_target") {
 		_value.to(pool_target);
-	} else if(_name == "plot_count") {
-		_value.to(plot_count);
 	} else if(_name == "partial_diff") {
 		_value.to(partial_diff);
+	} else if(_name == "plot_count") {
+		_value.to(plot_count);
 	}
 }
 
@@ -153,7 +153,7 @@ std::shared_ptr<vnx::TypeCode> pooling_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.pooling_info_t";
 	type_code->type_hash = vnx::Hash64(0xbddcc977498f516full);
-	type_code->code_hash = vnx::Hash64(0xa9f0b8c45df33ab0ull);
+	type_code->code_hash = vnx::Hash64(0x7f89f666fdedd31full);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::pooling_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<pooling_info_t>>(); };
@@ -178,15 +178,15 @@ std::shared_ptr<vnx::TypeCode> pooling_info_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[3];
-		field.data_size = 4;
-		field.name = "plot_count";
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[4];
 		field.data_size = 8;
 		field.name = "partial_diff";
 		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.data_size = 4;
+		field.name = "plot_count";
+		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -231,10 +231,10 @@ void read(TypeInput& in, ::mmx::pooling_info_t& value, const TypeCode* type_code
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.plot_count, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.partial_diff, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[4]) {
-			vnx::read_value(_buf + _field->offset, value.partial_diff, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.plot_count, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
@@ -261,8 +261,8 @@ void write(TypeOutput& out, const ::mmx::pooling_info_t& value, const TypeCode* 
 		type_code = type_code->depends[code[1]];
 	}
 	auto* const _buf = out.write(12);
-	vnx::write_value(_buf + 0, value.plot_count);
-	vnx::write_value(_buf + 4, value.partial_diff);
+	vnx::write_value(_buf + 0, value.partial_diff);
+	vnx::write_value(_buf + 8, value.plot_count);
 	vnx::write(out, value.contract, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.server_url, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.pool_target, type_code, type_code->fields[2].code.data());

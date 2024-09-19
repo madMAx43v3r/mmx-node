@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT virtual_plot_info_t {
+struct MMX_EXPORT virtual_plot_info_t : vnx::struct_t {
 	
 	
 	::mmx::addr_t address;

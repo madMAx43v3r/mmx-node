@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT spend_options_t {
+struct MMX_EXPORT spend_options_t : vnx::struct_t {
 	
 	
 	vnx::bool_t auto_send = true;

@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT txio_t {
+struct MMX_EXPORT txio_t : vnx::struct_t {
 	
 	static const uint32_t MAX_MEMO_SIZE = 64;
 	

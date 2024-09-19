@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT offer_data_t {
+struct MMX_EXPORT offer_data_t : vnx::struct_t {
 	
 	
 	uint32_t height = 0;

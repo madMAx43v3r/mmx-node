@@ -10,7 +10,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT ulong_fraction_t {
+struct MMX_EXPORT ulong_fraction_t : vnx::struct_t {
 	
 	
 	uint64_t value = 0;

@@ -51,6 +51,11 @@ void write(std::ostream& out, const ::mmx::solution::PubKey& value); ///< \priva
 void accept(Visitor& visitor, const ::mmx::solution::MultiSig& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::solution::PubKey& value); ///< \private
 
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::solution::MultiSig> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::solution::PubKey> value); ///< \private
+
 /// \private
 template<>
 struct type<::mmx::solution::MultiSig> {

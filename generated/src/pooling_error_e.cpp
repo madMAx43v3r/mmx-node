@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 pooling_error_e::VNX_TYPE_HASH(0xec786b877a93f17ull);
-const vnx::Hash64 pooling_error_e::VNX_CODE_HASH(0xc3a8ce76ebfdfac5ull);
+const vnx::Hash64 pooling_error_e::VNX_CODE_HASH(0x74f59c12eea74ecdull);
 
 vnx::Hash64 pooling_error_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -53,9 +53,9 @@ vnx::bool_t pooling_error_e::is_valid() const {
 		case INVALID_SIGNATURE: return true;
 		case INVALID_TIMESTAMP: return true;
 		case NONE: return true;
+		case PARTIAL_NOT_GOOD_ENOUGH: return true;
 		case PARTIAL_TOO_LATE: return true;
 		case POOL_LOST_SYNC: return true;
-		case PROOF_NOT_GOOD_ENOUGH: return true;
 		case SERVER_ERROR: return true;
 		case UNKNOWN_FARMER: return true;
 	}
@@ -74,9 +74,9 @@ std::string pooling_error_e::to_string() const {
 		case INVALID_SIGNATURE: return "\"INVALID_SIGNATURE\"";
 		case INVALID_TIMESTAMP: return "\"INVALID_TIMESTAMP\"";
 		case NONE: return "\"NONE\"";
+		case PARTIAL_NOT_GOOD_ENOUGH: return "\"PARTIAL_NOT_GOOD_ENOUGH\"";
 		case PARTIAL_TOO_LATE: return "\"PARTIAL_TOO_LATE\"";
 		case POOL_LOST_SYNC: return "\"POOL_LOST_SYNC\"";
-		case PROOF_NOT_GOOD_ENOUGH: return "\"PROOF_NOT_GOOD_ENOUGH\"";
 		case SERVER_ERROR: return "\"SERVER_ERROR\"";
 		case UNKNOWN_FARMER: return "\"UNKNOWN_FARMER\"";
 	}
@@ -95,9 +95,9 @@ std::string pooling_error_e::to_string_value() const {
 		case INVALID_SIGNATURE: return "INVALID_SIGNATURE";
 		case INVALID_TIMESTAMP: return "INVALID_TIMESTAMP";
 		case NONE: return "NONE";
+		case PARTIAL_NOT_GOOD_ENOUGH: return "PARTIAL_NOT_GOOD_ENOUGH";
 		case PARTIAL_TOO_LATE: return "PARTIAL_TOO_LATE";
 		case POOL_LOST_SYNC: return "POOL_LOST_SYNC";
-		case PROOF_NOT_GOOD_ENOUGH: return "PROOF_NOT_GOOD_ENOUGH";
 		case SERVER_ERROR: return "SERVER_ERROR";
 		case UNKNOWN_FARMER: return "UNKNOWN_FARMER";
 	}
@@ -116,9 +116,9 @@ std::string pooling_error_e::to_string_value_full() const {
 		case INVALID_SIGNATURE: return "mmx.pooling_error_e.INVALID_SIGNATURE";
 		case INVALID_TIMESTAMP: return "mmx.pooling_error_e.INVALID_TIMESTAMP";
 		case NONE: return "mmx.pooling_error_e.NONE";
+		case PARTIAL_NOT_GOOD_ENOUGH: return "mmx.pooling_error_e.PARTIAL_NOT_GOOD_ENOUGH";
 		case PARTIAL_TOO_LATE: return "mmx.pooling_error_e.PARTIAL_TOO_LATE";
 		case POOL_LOST_SYNC: return "mmx.pooling_error_e.POOL_LOST_SYNC";
-		case PROOF_NOT_GOOD_ENOUGH: return "mmx.pooling_error_e.PROOF_NOT_GOOD_ENOUGH";
 		case SERVER_ERROR: return "mmx.pooling_error_e.SERVER_ERROR";
 		case UNKNOWN_FARMER: return "mmx.pooling_error_e.UNKNOWN_FARMER";
 	}
@@ -145,9 +145,9 @@ void pooling_error_e::from_string_value(const std::string& _name) {
 		else if(_name == "INVALID_SIGNATURE") value = INVALID_SIGNATURE;
 		else if(_name == "INVALID_TIMESTAMP") value = INVALID_TIMESTAMP;
 		else if(_name == "NONE") value = NONE;
+		else if(_name == "PARTIAL_NOT_GOOD_ENOUGH") value = PARTIAL_NOT_GOOD_ENOUGH;
 		else if(_name == "PARTIAL_TOO_LATE") value = PARTIAL_TOO_LATE;
 		else if(_name == "POOL_LOST_SYNC") value = POOL_LOST_SYNC;
-		else if(_name == "PROOF_NOT_GOOD_ENOUGH") value = PROOF_NOT_GOOD_ENOUGH;
 		else if(_name == "SERVER_ERROR") value = SERVER_ERROR;
 		else if(_name == "UNKNOWN_FARMER") value = UNKNOWN_FARMER;
 		else value = enum_t(vnx::hash64(_name));
@@ -169,9 +169,9 @@ void pooling_error_e::accept(vnx::Visitor& _visitor) const {
 		case INVALID_SIGNATURE: _name = "INVALID_SIGNATURE"; break;
 		case INVALID_TIMESTAMP: _name = "INVALID_TIMESTAMP"; break;
 		case NONE: _name = "NONE"; break;
+		case PARTIAL_NOT_GOOD_ENOUGH: _name = "PARTIAL_NOT_GOOD_ENOUGH"; break;
 		case PARTIAL_TOO_LATE: _name = "PARTIAL_TOO_LATE"; break;
 		case POOL_LOST_SYNC: _name = "POOL_LOST_SYNC"; break;
-		case PROOF_NOT_GOOD_ENOUGH: _name = "PROOF_NOT_GOOD_ENOUGH"; break;
 		case SERVER_ERROR: _name = "SERVER_ERROR"; break;
 		case UNKNOWN_FARMER: _name = "UNKNOWN_FARMER"; break;
 	}
@@ -190,9 +190,9 @@ void pooling_error_e::write(std::ostream& _out) const {
 		case INVALID_SIGNATURE: _out << "\"INVALID_SIGNATURE\""; break;
 		case INVALID_TIMESTAMP: _out << "\"INVALID_TIMESTAMP\""; break;
 		case NONE: _out << "\"NONE\""; break;
+		case PARTIAL_NOT_GOOD_ENOUGH: _out << "\"PARTIAL_NOT_GOOD_ENOUGH\""; break;
 		case PARTIAL_TOO_LATE: _out << "\"PARTIAL_TOO_LATE\""; break;
 		case POOL_LOST_SYNC: _out << "\"POOL_LOST_SYNC\""; break;
-		case PROOF_NOT_GOOD_ENOUGH: _out << "\"PROOF_NOT_GOOD_ENOUGH\""; break;
 		case SERVER_ERROR: _out << "\"SERVER_ERROR\""; break;
 		case UNKNOWN_FARMER: _out << "\"UNKNOWN_FARMER\""; break;
 		default: _out << value;
@@ -255,7 +255,7 @@ std::shared_ptr<vnx::TypeCode> pooling_error_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.pooling_error_e";
 	type_code->type_hash = vnx::Hash64(0xec786b877a93f17ull);
-	type_code->code_hash = vnx::Hash64(0xc3a8ce76ebfdfac5ull);
+	type_code->code_hash = vnx::Hash64(0x74f59c12eea74ecdull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::pooling_error_e);
@@ -277,9 +277,9 @@ std::shared_ptr<vnx::TypeCode> pooling_error_e::static_create_type_code() {
 	type_code->enum_map[7] = "INVALID_SIGNATURE";
 	type_code->enum_map[15] = "INVALID_TIMESTAMP";
 	type_code->enum_map[0] = "NONE";
+	type_code->enum_map[5] = "PARTIAL_NOT_GOOD_ENOUGH";
 	type_code->enum_map[2] = "PARTIAL_TOO_LATE";
 	type_code->enum_map[16] = "POOL_LOST_SYNC";
-	type_code->enum_map[5] = "PROOF_NOT_GOOD_ENOUGH";
 	type_code->enum_map[8] = "SERVER_ERROR";
 	type_code->enum_map[10] = "UNKNOWN_FARMER";
 	type_code->build();
