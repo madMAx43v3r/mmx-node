@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 pooling_error_e::VNX_TYPE_HASH(0xec786b877a93f17ull);
-const vnx::Hash64 pooling_error_e::VNX_CODE_HASH(0xbcf2569e7ac5f81eull);
+const vnx::Hash64 pooling_error_e::VNX_CODE_HASH(0x67403d1659447023ull);
 
 vnx::Hash64 pooling_error_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,6 +50,7 @@ vnx::bool_t pooling_error_e::is_valid() const {
 		case INVALID_AUTH_KEY: return true;
 		case INVALID_CONTRACT: return true;
 		case INVALID_DIFFICULTY: return true;
+		case INVALID_PARTIAL: return true;
 		case INVALID_PROOF: return true;
 		case INVALID_SIGNATURE: return true;
 		case INVALID_TIMESTAMP: return true;
@@ -58,7 +59,6 @@ vnx::bool_t pooling_error_e::is_valid() const {
 		case PARTIAL_TOO_LATE: return true;
 		case POOL_LOST_SYNC: return true;
 		case SERVER_ERROR: return true;
-		case UNKNOWN_FARMER: return true;
 	}
 	return false;
 }
@@ -72,6 +72,7 @@ std::string pooling_error_e::to_string() const {
 		case INVALID_AUTH_KEY: return "\"INVALID_AUTH_KEY\"";
 		case INVALID_CONTRACT: return "\"INVALID_CONTRACT\"";
 		case INVALID_DIFFICULTY: return "\"INVALID_DIFFICULTY\"";
+		case INVALID_PARTIAL: return "\"INVALID_PARTIAL\"";
 		case INVALID_PROOF: return "\"INVALID_PROOF\"";
 		case INVALID_SIGNATURE: return "\"INVALID_SIGNATURE\"";
 		case INVALID_TIMESTAMP: return "\"INVALID_TIMESTAMP\"";
@@ -80,7 +81,6 @@ std::string pooling_error_e::to_string() const {
 		case PARTIAL_TOO_LATE: return "\"PARTIAL_TOO_LATE\"";
 		case POOL_LOST_SYNC: return "\"POOL_LOST_SYNC\"";
 		case SERVER_ERROR: return "\"SERVER_ERROR\"";
-		case UNKNOWN_FARMER: return "\"UNKNOWN_FARMER\"";
 	}
 	return std::to_string(value);
 }
@@ -94,6 +94,7 @@ std::string pooling_error_e::to_string_value() const {
 		case INVALID_AUTH_KEY: return "INVALID_AUTH_KEY";
 		case INVALID_CONTRACT: return "INVALID_CONTRACT";
 		case INVALID_DIFFICULTY: return "INVALID_DIFFICULTY";
+		case INVALID_PARTIAL: return "INVALID_PARTIAL";
 		case INVALID_PROOF: return "INVALID_PROOF";
 		case INVALID_SIGNATURE: return "INVALID_SIGNATURE";
 		case INVALID_TIMESTAMP: return "INVALID_TIMESTAMP";
@@ -102,7 +103,6 @@ std::string pooling_error_e::to_string_value() const {
 		case PARTIAL_TOO_LATE: return "PARTIAL_TOO_LATE";
 		case POOL_LOST_SYNC: return "POOL_LOST_SYNC";
 		case SERVER_ERROR: return "SERVER_ERROR";
-		case UNKNOWN_FARMER: return "UNKNOWN_FARMER";
 	}
 	return std::to_string(value);
 }
@@ -116,6 +116,7 @@ std::string pooling_error_e::to_string_value_full() const {
 		case INVALID_AUTH_KEY: return "mmx.pooling_error_e.INVALID_AUTH_KEY";
 		case INVALID_CONTRACT: return "mmx.pooling_error_e.INVALID_CONTRACT";
 		case INVALID_DIFFICULTY: return "mmx.pooling_error_e.INVALID_DIFFICULTY";
+		case INVALID_PARTIAL: return "mmx.pooling_error_e.INVALID_PARTIAL";
 		case INVALID_PROOF: return "mmx.pooling_error_e.INVALID_PROOF";
 		case INVALID_SIGNATURE: return "mmx.pooling_error_e.INVALID_SIGNATURE";
 		case INVALID_TIMESTAMP: return "mmx.pooling_error_e.INVALID_TIMESTAMP";
@@ -124,7 +125,6 @@ std::string pooling_error_e::to_string_value_full() const {
 		case PARTIAL_TOO_LATE: return "mmx.pooling_error_e.PARTIAL_TOO_LATE";
 		case POOL_LOST_SYNC: return "mmx.pooling_error_e.POOL_LOST_SYNC";
 		case SERVER_ERROR: return "mmx.pooling_error_e.SERVER_ERROR";
-		case UNKNOWN_FARMER: return "mmx.pooling_error_e.UNKNOWN_FARMER";
 	}
 	return std::to_string(value);
 }
@@ -146,6 +146,7 @@ void pooling_error_e::from_string_value(const std::string& _name) {
 		else if(_name == "INVALID_AUTH_KEY") value = INVALID_AUTH_KEY;
 		else if(_name == "INVALID_CONTRACT") value = INVALID_CONTRACT;
 		else if(_name == "INVALID_DIFFICULTY") value = INVALID_DIFFICULTY;
+		else if(_name == "INVALID_PARTIAL") value = INVALID_PARTIAL;
 		else if(_name == "INVALID_PROOF") value = INVALID_PROOF;
 		else if(_name == "INVALID_SIGNATURE") value = INVALID_SIGNATURE;
 		else if(_name == "INVALID_TIMESTAMP") value = INVALID_TIMESTAMP;
@@ -154,7 +155,6 @@ void pooling_error_e::from_string_value(const std::string& _name) {
 		else if(_name == "PARTIAL_TOO_LATE") value = PARTIAL_TOO_LATE;
 		else if(_name == "POOL_LOST_SYNC") value = POOL_LOST_SYNC;
 		else if(_name == "SERVER_ERROR") value = SERVER_ERROR;
-		else if(_name == "UNKNOWN_FARMER") value = UNKNOWN_FARMER;
 		else value = enum_t(vnx::hash64(_name));
 	} else {
 		value = enum_t(std::stoul(_name.c_str(), nullptr, 0));
@@ -171,6 +171,7 @@ void pooling_error_e::accept(vnx::Visitor& _visitor) const {
 		case INVALID_AUTH_KEY: _name = "INVALID_AUTH_KEY"; break;
 		case INVALID_CONTRACT: _name = "INVALID_CONTRACT"; break;
 		case INVALID_DIFFICULTY: _name = "INVALID_DIFFICULTY"; break;
+		case INVALID_PARTIAL: _name = "INVALID_PARTIAL"; break;
 		case INVALID_PROOF: _name = "INVALID_PROOF"; break;
 		case INVALID_SIGNATURE: _name = "INVALID_SIGNATURE"; break;
 		case INVALID_TIMESTAMP: _name = "INVALID_TIMESTAMP"; break;
@@ -179,7 +180,6 @@ void pooling_error_e::accept(vnx::Visitor& _visitor) const {
 		case PARTIAL_TOO_LATE: _name = "PARTIAL_TOO_LATE"; break;
 		case POOL_LOST_SYNC: _name = "POOL_LOST_SYNC"; break;
 		case SERVER_ERROR: _name = "SERVER_ERROR"; break;
-		case UNKNOWN_FARMER: _name = "UNKNOWN_FARMER"; break;
 	}
 	_visitor.enum_value(value, _name);
 }
@@ -193,6 +193,7 @@ void pooling_error_e::write(std::ostream& _out) const {
 		case INVALID_AUTH_KEY: _out << "\"INVALID_AUTH_KEY\""; break;
 		case INVALID_CONTRACT: _out << "\"INVALID_CONTRACT\""; break;
 		case INVALID_DIFFICULTY: _out << "\"INVALID_DIFFICULTY\""; break;
+		case INVALID_PARTIAL: _out << "\"INVALID_PARTIAL\""; break;
 		case INVALID_PROOF: _out << "\"INVALID_PROOF\""; break;
 		case INVALID_SIGNATURE: _out << "\"INVALID_SIGNATURE\""; break;
 		case INVALID_TIMESTAMP: _out << "\"INVALID_TIMESTAMP\""; break;
@@ -201,7 +202,6 @@ void pooling_error_e::write(std::ostream& _out) const {
 		case PARTIAL_TOO_LATE: _out << "\"PARTIAL_TOO_LATE\""; break;
 		case POOL_LOST_SYNC: _out << "\"POOL_LOST_SYNC\""; break;
 		case SERVER_ERROR: _out << "\"SERVER_ERROR\""; break;
-		case UNKNOWN_FARMER: _out << "\"UNKNOWN_FARMER\""; break;
 		default: _out << value;
 	}
 }
@@ -262,7 +262,7 @@ std::shared_ptr<vnx::TypeCode> pooling_error_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.pooling_error_e";
 	type_code->type_hash = vnx::Hash64(0xec786b877a93f17ull);
-	type_code->code_hash = vnx::Hash64(0xbcf2569e7ac5f81eull);
+	type_code->code_hash = vnx::Hash64(0x67403d1659447023ull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::pooling_error_e);
@@ -274,22 +274,22 @@ std::shared_ptr<vnx::TypeCode> pooling_error_e::static_create_type_code() {
 		field.name = "value";
 		field.code = {3};
 	}
-	type_code->enum_map[3] = "CHALLENGE_NOT_FOUND";
-	type_code->enum_map[1] = "CHALLENGE_REVERTED";
-	type_code->enum_map[17] = "DUPLICATE_PARTIAL";
-	type_code->enum_map[13] = "INVALID_ACCOUNT";
-	type_code->enum_map[12] = "INVALID_AUTH_KEY";
-	type_code->enum_map[9] = "INVALID_CONTRACT";
-	type_code->enum_map[6] = "INVALID_DIFFICULTY";
-	type_code->enum_map[4] = "INVALID_PROOF";
-	type_code->enum_map[7] = "INVALID_SIGNATURE";
-	type_code->enum_map[15] = "INVALID_TIMESTAMP";
+	type_code->enum_map[471927302] = "CHALLENGE_NOT_FOUND";
+	type_code->enum_map[1760085717] = "CHALLENGE_REVERTED";
+	type_code->enum_map[271202490] = "DUPLICATE_PARTIAL";
+	type_code->enum_map[3369359198] = "INVALID_ACCOUNT";
+	type_code->enum_map[1953340654] = "INVALID_AUTH_KEY";
+	type_code->enum_map[914919857] = "INVALID_CONTRACT";
+	type_code->enum_map[1883406896] = "INVALID_DIFFICULTY";
+	type_code->enum_map[405897781] = "INVALID_PARTIAL";
+	type_code->enum_map[3117556933] = "INVALID_PROOF";
+	type_code->enum_map[3529800621] = "INVALID_SIGNATURE";
+	type_code->enum_map[2157722321] = "INVALID_TIMESTAMP";
 	type_code->enum_map[0] = "NONE";
-	type_code->enum_map[5] = "PARTIAL_NOT_GOOD_ENOUGH";
-	type_code->enum_map[2] = "PARTIAL_TOO_LATE";
-	type_code->enum_map[16] = "POOL_LOST_SYNC";
-	type_code->enum_map[8] = "SERVER_ERROR";
-	type_code->enum_map[10] = "UNKNOWN_FARMER";
+	type_code->enum_map[1161496011] = "PARTIAL_NOT_GOOD_ENOUGH";
+	type_code->enum_map[2832488076] = "PARTIAL_TOO_LATE";
+	type_code->enum_map[1324712875] = "POOL_LOST_SYNC";
+	type_code->enum_map[2095599592] = "SERVER_ERROR";
 	type_code->build();
 	return type_code;
 }

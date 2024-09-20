@@ -18,6 +18,8 @@ struct MMX_EXPORT pooling_stats_t : vnx::struct_t {
 	uint64_t partial_diff = 0;
 	uint64_t valid_points = 0;
 	uint64_t failed_points = 0;
+	uint32_t total_partials = 0;
+	int64_t total_response_time = 0;
 	std::map<::mmx::pooling_error_e, uint32_t> error_count;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -60,13 +62,15 @@ struct MMX_EXPORT pooling_stats_t : vnx::struct_t {
 
 template<typename T>
 void pooling_stats_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<pooling_stats_t>(5);
+	_visitor.template type_begin<pooling_stats_t>(7);
 	_visitor.type_field("server_url", 0); _visitor.accept(server_url);
 	_visitor.type_field("partial_diff", 1); _visitor.accept(partial_diff);
 	_visitor.type_field("valid_points", 2); _visitor.accept(valid_points);
 	_visitor.type_field("failed_points", 3); _visitor.accept(failed_points);
-	_visitor.type_field("error_count", 4); _visitor.accept(error_count);
-	_visitor.template type_end<pooling_stats_t>(5);
+	_visitor.type_field("total_partials", 4); _visitor.accept(total_partials);
+	_visitor.type_field("total_response_time", 5); _visitor.accept(total_response_time);
+	_visitor.type_field("error_count", 6); _visitor.accept(error_count);
+	_visitor.template type_end<pooling_stats_t>(7);
 }
 
 
