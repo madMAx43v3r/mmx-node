@@ -204,6 +204,9 @@ void Node::verify_proof(	std::shared_ptr<const ProofOfSpace> proof, const hash_t
 
 	const uint64_t space_diff = space_diff_ ? *space_diff_ : diff_block->space_diff;
 
+	if(space_diff <= 0) {
+		throw std::logic_error("invalid space difficulty");
+	}
 	if(!stake) {
 		if(!check_plot_filter(params, challenge, proof->plot_id)) {
 			throw std::logic_error("plot filter failed");

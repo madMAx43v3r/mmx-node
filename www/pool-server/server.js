@@ -35,10 +35,12 @@ app.get('/difficulty', max_age_cache(30), async (req, res) =>
 app.post('/partial', no_cache, async (req, res, next) =>
 {
     try {
-        const out = {};
         const now = Date.now();
         const partial = req.body;
-
+        
+        const out = {
+            valid: false
+        };
         let is_valid = true;
         let response_time = null;
 
@@ -47,12 +49,12 @@ app.post('/partial', no_cache, async (req, res, next) =>
 
             if(response_time > config.max_response_time) {
                 is_valid = false;
-                out.error_code = 2;
+                out.error_code = 'PARTIAL_TOO_LATE';
                 out.error_message = 'Partial received too late: ' + response_time / 1e3 + ' sec';
             }
         } else {
             is_valid = false;
-            out.error_code = 16;
+            out.error_code = 'POOL_LOST_SYNC';
             out.error_message = 'Pool lost sync with blockchain';
         }
         out.response_time = response_time;
@@ -60,10 +62,54 @@ app.post('/partial', no_cache, async (req, res, next) =>
         console.log('/partial', 'height', partial.height, 'diff', partial.difficulty,
             'response', response_time / 1e3, 'time', now, 'account', partial.account, 'hash', partial.hash);
 
+        if(partial.height < 0 || partial.height > 4294967295
+            || partial.lookup_time_ms < 0 || partial.lookup_time_ms > 4294967295)
+        {
+            out.error_code = 'INVALID_PARTIAL';
+            out.error_message = 'Invalid numeric value for height or lookup_time_ms';
+            res.json(out);
+            return;
+        }
+        if(!partial.proof) {
+            out.error_code = 'INVALID_PROOF';
+            out.error_message = 'Missing proof';
+            res.json(out);
+            return;
+        }
+        if(partial.proof.__type == 'mmx.ProofOfSpaceNFT') {
+            const ksize = partial.proof.ksize;
+            const proof_xs = partial.proof.proof_xs;
+            if(ksize < 0 || ksize > 255) {
+                out.error_code = 'INVALID_PROOF';
+                out.error_message = 'Invalid proof ksize';
+                res.json(out);
+                return;
+            }
+            if(!Array.isArray(proof_xs) || proof_xs.length > 1024) {
+                out.error_code = 'INVALID_PROOF';
+                out.error_message = 'Invalid proof proof_xs';
+                res.json(out);
+                return;
+            }
+            for(const x of proof_xs) {
+                if(x < 0 || x > 4294967295) {
+                    out.error_code = 'INVALID_PROOF';
+                    out.error_message = 'Proof value out of range';
+                    res.json(out);
+                    return;
+                }
+            }
+        }
+        if(partial.difficulty < 1 || partial.difficulty > 4503599627370495) {
+            out.error_code = 'INVALID_DIFFICULTY';
+            out.error_message = 'Invalid numeric value for difficulty';
+            res.json(out);
+            return;
+        }
         if(await dbs.Partial.exists({hash: partial.hash})) {
-            out.error_code = 17;
+            out.error_code = 'DUPLICATE_PARTIAL';
             out.error_message = 'Duplicate partial';
-            res.status(400).json(out);
+            res.json(out);
             return;
         }
 
@@ -89,7 +135,8 @@ app.post('/partial', no_cache, async (req, res, next) =>
         }
         await entry.save();
 
-        res.status(is_valid ? 200 : 400).json(out);
+        out.valid = is_valid;
+        res.json(out);
     } catch(e) {
         next(e);
     }
@@ -108,7 +155,7 @@ async function update_height()
         const now = Date.now();
         const res = await axios.get(config.node_url + '/api/node/get_synced_height');
         const value = res.data;
-        if(res.status == 200 && value) {
+        if(value) {
             if(!sync_height) {
                 console.log("Node synced at height " + value);
             }

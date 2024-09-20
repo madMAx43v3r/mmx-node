@@ -1482,6 +1482,9 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 	if(pool_target) {
 		if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(partial->proof))
 		{
+			if(partial->contract != nft->contract) {
+				return {pooling_error_e::INVALID_CONTRACT, "Partial 'contract' does not match proof of space"};
+			}
 			const auto ret = verify_plot_nft_target(nft->contract, *pool_target);
 			if(std::get<0>(ret) != pooling_error_e::NONE) {
 				return ret;
@@ -1493,7 +1496,12 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 				if(!plot->reward_address) {
 					return {pooling_error_e::INVALID_CONTRACT, "VirtualPlot has no fixed reward address"};
 				}
-				const auto ret = verify_plot_nft_target(*plot->reward_address, *pool_target);
+				const auto contract = *plot->reward_address;
+
+				if(partial->contract != contract) {
+					return {pooling_error_e::INVALID_CONTRACT, "Partial 'contract' does not match virtual plot"};
+				}
+				const auto ret = verify_plot_nft_target(contract, *pool_target);
 				if(std::get<0>(ret) != pooling_error_e::NONE) {
 					return ret;
 				}

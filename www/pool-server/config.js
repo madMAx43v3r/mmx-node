@@ -3,6 +3,7 @@ const config = {};
 config.challenge_delay = 6;                 // [blocks]
 config.block_interval = 10 * 1000;          // [ms]
 config.max_response_time = 55 * 1000;       // [ms]
+config.partial_expiry = 100;                // [blocks]
 
 config.server_port = 8080;
 config.node_url = "http://localhost:11380";

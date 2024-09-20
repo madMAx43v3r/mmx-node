@@ -9,6 +9,9 @@ struct pooling_stats_t {
 	ulong valid_points;
 	ulong failed_points;
 	
+	uint total_partials;			// valid only
+	long total_response_time;		// [ms]
+	
 	map<pooling_error_e, uint> error_count;
 	
 }

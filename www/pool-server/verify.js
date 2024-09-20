@@ -5,19 +5,35 @@ const config = require('./config.js');
 const axios = require("axios");
 
 var db = null;
+var first_sync = null;
 
-async function verify(partial)
+async function verify(partial, sync_height)
 {
     try {
+        if(sync_height > partial.height + config.partial_expiry)
+        {
+            if(partial.height < first_sync) {
+                partial.error_code = 'POOL_LOST_SYNC';
+                partial.error_message = 'Pool server lost sync with blockchain or was offline';
+            } else {
+                partial.error_code = 'SERVER_ERROR';
+                partial.error_message = 'Partial expired for some reason';
+            }
+            partial.data = null;
+            partial.valid = false;
+            partial.pending = false;
+            await partial.save();
+
+            console.log("Partial", partial.hash, "expired at height", sync_height, 'due to', partial.error_code, '(' + partial.error_message + ')');
+            return;
+        }
+
         const res = await axios.post(config.node_url + '/api/node/verify_partial', {
             partial: partial.data,
             pool_target: config.pool_target
         }, {
             headers: {'x-api-token': config.api_token}
         });
-        if(res.status != 200) {
-            throw new Error("Failed to verify partial: HTTP " + res.status + " (" + res.data + ")");
-        }
         const [code, message] = res.data;
 
         console.log("Partial", partial.hash, "verified with code", code, '(' + message + ')');
@@ -35,7 +51,7 @@ async function verify(partial)
         partial.pending = false;
         await partial.save();
     } catch(e) {
-        console.log("Failed to verify partial", partial.hash, ":", e.message);
+        console.log("Failed to verify partial", partial.hash, ":", e.message, '(' + e.response.data + ')');
     }
 }
 
@@ -55,6 +71,9 @@ async function verify_all()
         console.log("Failed to query sync height:", e.message);
         return;
     }
+    if(!first_sync) {
+        first_sync = sync_height;
+    }
 
     if(verify_lock) {
         return;
@@ -66,7 +85,7 @@ async function verify_all()
         let res = [];
         let total = 0;
         for await(const partial of list) {
-            res.push(verify(partial));
+            res.push(verify(partial, sync_height));
             total++;
         }
         await Promise.all(res);

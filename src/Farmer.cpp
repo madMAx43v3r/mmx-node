@@ -273,29 +273,38 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 	http_async->post_json(out->pool_url + "/partial", payload, {},
 		[this, out](std::shared_ptr<const vnx::addons::HttpResponse> response) {
 			auto& stats = nft_stats[out->contract];
-			if(response->status == 200) {
-				stats.valid_points += out->difficulty;
-				log(INFO) << "[" << out->harvester << "] Partial accepted: points = " << out->difficulty << " (" << out->pool_url << ")";
-			} else {
-				bool have_error = false;
-				if(response->is_json()) {
-					const auto value = response->parse_json();
-					if(value.is_object()) {
-						const auto res = value.to_object();
+			bool is_valid = false;
+			bool have_error = false;
+			if(response->is_json()) {
+				const auto value = response->parse_json();
+				if(value.is_object()) {
+					const auto res = value.to_object();
+					is_valid = res["valid"].to<bool>();
+					if(is_valid) {
+						const auto response_ms = res["response_time"].to<int64_t>();
+						stats.valid_points += out->difficulty;
+						stats.total_partials++;
+						stats.total_response_time += response_ms;
+						log(INFO) << "Partial accepted: points = " << out->difficulty
+								<< ", response = " << response_ms / 1e3
+								<< " sec [" << out->harvester << "] (" << out->pool_url << ")";
+					} else {
 						const auto code = res["error_code"].to<pooling_error_e>();
-						if(code) {
+						if(code != pooling_error_e::NONE) {
+							have_error = true;
 							const auto message = res["error_message"].to_string_value();
 							stats.error_count[code]++;
-							log(WARN) << "[" << out->harvester << "] Partial was rejected due to: "
-									<< code.to_string_value() << ": " << (message.empty() ? "???" : message) << " (" << out->pool_url << ")";
-							have_error = true;
+							log(WARN) << "Partial was rejected due to: "
+									<< code.to_string_value() << ": " << (message.empty() ? "???" : message)
+									<< " [" << out->harvester << "] (" << out->pool_url << ")";
 						}
 					}
 				}
+			}
+			if(!is_valid) {
 				if(!have_error) {
 					stats.error_count[pooling_error_e::SERVER_ERROR]++;
-					log(WARN) << "[" << out->harvester << "] Partial failed due to: HTTP status "
-							<< response->status << " (" << out->pool_url << ")";
+					log(WARN) << "Partial failed due to: unknown error [" << out->harvester << "] (" << out->pool_url << ")";
 				}
 				stats.failed_points += out->difficulty;
 			}
