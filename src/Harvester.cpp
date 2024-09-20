@@ -264,7 +264,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 							out->contract = *header->contract;
 							out->account = pool_config->owner;
 							out->pool_url = pool_config->server_url;
-							out->partial_diff = pool_config->difficulty;
+							out->difficulty = pool_config->difficulty;
 							out->proof = proof;
 							out->harvester = my_name;
 							out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin;

@@ -21,7 +21,7 @@ Payload: Object
 - `proof`: Proof, can be Proof of Space or Proof of Stake (see below)
 - `pool_url`: The base URL used to make this request
 - `harvester`: Harvester name, usually hostname
-- `partial_diff`: Partial difficulty used when performing lookup (might be different than current setting)
+- `difficulty`: Partial difficulty used when performing lookup (might be different than current setting)
 - `lookup_time_ms`: Harvester lookup time (ms)
 - `farmer_sig`: Farmer signature based on `hash` and `proof.farmer_key`
 - `__type`: `mmx.Partial`
@@ -44,12 +44,42 @@ On error returns status 400 with `application/json` object as follows:
 - `error_code`: Integer error code (see below)
 - `error_message`: Message string
 
+#### Example partial
+```
+{
+  __type: 'mmx.Partial',
+  account: 'mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z',
+  challenge: 'CA98DB6504B2C85D876BEC1881F41E805D49FDE33DFE548A26C3277CFAE7EFF9',
+  contract: 'mmx19hxc7mfkdalx0khe5nr4r50t338z8sg4avn7vqu7ts4mpkxeg0lqhesvzl',
+  farmer_sig: '3CDCD57B151254835100F47F16834F91ED87838F5C68E113F236FD88169133643D06A4D50B6FB96859BECB73A73CE0E449262717B9907E70F05659F487C14F4B',
+  harvester: 'prime',
+  hash: 'B7269935091572E1004B48C327EEF2070DA0176A94AE2129AD8E68A9059FD95F',
+  height: 845490,
+  lookup_time_ms: 82,
+  difficulty: 1,
+  pool_url: 'http://localhost:8080',
+  proof: {
+    __type: 'mmx.ProofOfSpaceNFT',
+    contract: 'mmx19hxc7mfkdalx0khe5nr4r50t338z8sg4avn7vqu7ts4mpkxeg0lqhesvzl',
+    farmer_key: '027D7562FB5A8967E57A22F876302F75BA3AE3980607FB32E4439681F820AE398F',
+    ksize: 26,
+    plot_id: '22F0CA184633E07F32C5289B0ACF39597637CD6685D3CD4E7CD87CD56FAF8761',
+    proof_xs: [
+      61796699, 13346431, 24374059, 22439072, 65129000, 58802027,
+      ... 250 more items
+    ],
+    score: 25993,
+    seed: '091B11F9A066A9120AAD4BF8D30D933E4CED2EB3BF2CCA1DA72D8BA8E68BDA96'
+  }
+}
+```
+
 ### GET /difficulty
 
 Returns current partial difficulty.
-If farmer account does not exist yet, it will return a default starting difficulty.
+If farmer account does not exist yet, it should return a default starting difficulty.
 
-Will be polled by farmers every 60 sec by default.
+Will be polled by farmers every 300 sec by default.
 
 Query parameters:
 - `account`: Farmer account address (payout address)

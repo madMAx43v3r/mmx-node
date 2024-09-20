@@ -27,6 +27,8 @@ class BlockHeader {
 	
 	ulong reward_amount;
 	optional<addr_t> reward_addr;
+	// TODO: optional<addr_t> reward_contract;		// plot NFT address
+	// TODO: optional<addr_t> reward_account;		// farmer account
 	
 	char reward_vote;					// 0 = unchanged, 1 = up, -1 = down
 	ulong next_base_reward;

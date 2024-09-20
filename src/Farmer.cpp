@@ -270,14 +270,12 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 
 	const auto payload = vnx::to_pretty_string(web_render(out));
 
-	log(INFO) << payload;
-
 	http_async->post_json(out->pool_url + "/partial", payload, {},
 		[this, out](std::shared_ptr<const vnx::addons::HttpResponse> response) {
 			auto& stats = nft_stats[out->contract];
 			if(response->status == 200) {
-				stats.valid_points += out->partial_diff;
-				log(INFO) << "[" << out->harvester << "] Partial accepted: points = " << out->partial_diff << " (" << out->pool_url << ")";
+				stats.valid_points += out->difficulty;
+				log(INFO) << "[" << out->harvester << "] Partial accepted: points = " << out->difficulty << " (" << out->pool_url << ")";
 			} else {
 				bool have_error = false;
 				if(response->is_json()) {
@@ -299,12 +297,12 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 					log(WARN) << "[" << out->harvester << "] Partial failed due to: HTTP status "
 							<< response->status << " (" << out->pool_url << ")";
 				}
-				stats.failed_points += out->partial_diff;
+				stats.failed_points += out->difficulty;
 			}
 		},
 		[this, out](const std::exception& ex) {
 			auto& stats = nft_stats[out->contract];
-			stats.failed_points += out->partial_diff;
+			stats.failed_points += out->difficulty;
 			stats.error_count[pooling_error_e::SERVER_ERROR]++;
 			log(WARN) << "Failed to send partial to " << out->pool_url << " due to: " << ex.what();
 		});

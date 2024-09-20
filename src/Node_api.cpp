@@ -1466,7 +1466,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 	}
 
 	try {
-		verify_proof(value->proof, challenge, diff_block, value->partial_diff);
+		verify_proof(value->proof, challenge, diff_block, value->difficulty);
 	} catch(const std::exception& ex) {
 		return {pooling_error_e::INVALID_PROOF,
 			"Invalid partial proof: " + std::string(ex.what())};

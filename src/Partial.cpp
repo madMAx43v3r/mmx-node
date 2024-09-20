@@ -8,6 +8,7 @@
 #include <mmx/Partial.hxx>
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
+
 #include <vnx/vnx.h>
 
 
@@ -18,7 +19,12 @@ hash_t Partial::calc_hash() const
 	std::string tmp = get_type_name() + "/";
 	tmp += "height:" + std::to_string(height);
 	tmp += "challenge:" + challenge.to_string();
+	tmp += "contract:" + contract.to_string();
 	tmp += "account:" + account.to_string();
+	tmp += "pool_url:" + pool_url;
+	tmp += "harvester:" + harvester;
+	tmp += "difficulty:" + std::to_string(difficulty);
+	tmp += "lookup_time_ms:" + std::to_string(lookup_time_ms);
 	tmp += "proof:";
 
 	if(proof) {
@@ -37,10 +43,6 @@ hash_t Partial::calc_hash() const
 		}
 		tmp += "contract:" + nft->contract.to_string();
 	}
-	tmp += "pool_url:" + pool_url;
-	tmp += "harvester:" + harvester;
-	tmp += "partial_diff:" + std::to_string(partial_diff);
-	tmp += "lookup_time_ms:" + std::to_string(lookup_time_ms);
 	return hash_t(tmp);
 }
 

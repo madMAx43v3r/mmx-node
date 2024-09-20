@@ -8,8 +8,6 @@ class Partial {
 	
 	hash_t challenge;
 	
-	ProofOfSpace* proof;
-	
 	addr_t contract;					// plot NFT
 	
 	addr_t account;						// payout address
@@ -18,9 +16,11 @@ class Partial {
 	
 	string harvester;					// name (defaults to hostname)
 	
-	ulong partial_diff;
+	ulong difficulty;					// partial diff used
 	
 	uint lookup_time_ms;
+	
+	ProofOfSpace* proof;
 	
 	optional<signature_t> farmer_sig;
 	
