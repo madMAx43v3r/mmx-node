@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "axios": "^1.7.7",
+    "express": "^4.21.0",
+    "mongoose": "^8.6.3"
+  }
+}
