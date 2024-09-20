@@ -43,6 +43,7 @@ void Farmer::main()
 	params = get_params();
 
 	http_client = new vnx::addons::HttpClient(vnx_name + ".HttpClient");
+	http_client->output_response = "farmer.http_response";
 	http_client.start();
 
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
@@ -193,8 +194,8 @@ void Farmer::query_difficulty(const addr_t& contract, const std::string& url)
 	http_async->get_json(url + "/difficulty", {},
 		[this, url, contract](const vnx::Variant& value) {
 			const auto res = value.to_object();
-			if(auto value = res["difficulty"]) {
-				const auto diff = value.to<uint64_t>();
+			if(auto field = res["difficulty"]) {
+				const auto diff = field.to<uint64_t>();
 				if(diff > 0) {
 					auto& stats = nft_stats[contract];
 					if(stats.partial_diff <= 0) {
@@ -205,7 +206,7 @@ void Farmer::query_difficulty(const addr_t& contract, const std::string& url)
 					log(WARN) << "Got invalid partial difficulty: " << diff << " (" << url << ")";
 				}
 			} else {
-				log(WARN) << "Failed to query partial difficulty from " << url;
+				log(WARN) << "Failed to query partial difficulty from " << url << ": " << value.to_string();
 			}
 		},
 		[this, url](const std::exception& ex) {
