@@ -15,6 +15,7 @@ struct MMX_EXPORT pooling_error_e {
 	enum enum_t : uint32_t {
 		CHALLENGE_NOT_FOUND = 3l,
 		CHALLENGE_REVERTED = 1l,
+		DUPLICATE_PARTIAL = 17l,
 		INVALID_ACCOUNT = 13l,
 		INVALID_AUTH_KEY = 12l,
 		INVALID_CONTRACT = 9l,

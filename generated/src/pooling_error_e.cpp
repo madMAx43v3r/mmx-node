@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 pooling_error_e::VNX_TYPE_HASH(0xec786b877a93f17ull);
-const vnx::Hash64 pooling_error_e::VNX_CODE_HASH(0x74f59c12eea74ecdull);
+const vnx::Hash64 pooling_error_e::VNX_CODE_HASH(0xbcf2569e7ac5f81eull);
 
 vnx::Hash64 pooling_error_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -45,6 +45,7 @@ vnx::bool_t pooling_error_e::is_valid() const {
 	switch(value) {
 		case CHALLENGE_NOT_FOUND: return true;
 		case CHALLENGE_REVERTED: return true;
+		case DUPLICATE_PARTIAL: return true;
 		case INVALID_ACCOUNT: return true;
 		case INVALID_AUTH_KEY: return true;
 		case INVALID_CONTRACT: return true;
@@ -66,6 +67,7 @@ std::string pooling_error_e::to_string() const {
 	switch(value) {
 		case CHALLENGE_NOT_FOUND: return "\"CHALLENGE_NOT_FOUND\"";
 		case CHALLENGE_REVERTED: return "\"CHALLENGE_REVERTED\"";
+		case DUPLICATE_PARTIAL: return "\"DUPLICATE_PARTIAL\"";
 		case INVALID_ACCOUNT: return "\"INVALID_ACCOUNT\"";
 		case INVALID_AUTH_KEY: return "\"INVALID_AUTH_KEY\"";
 		case INVALID_CONTRACT: return "\"INVALID_CONTRACT\"";
@@ -87,6 +89,7 @@ std::string pooling_error_e::to_string_value() const {
 	switch(value) {
 		case CHALLENGE_NOT_FOUND: return "CHALLENGE_NOT_FOUND";
 		case CHALLENGE_REVERTED: return "CHALLENGE_REVERTED";
+		case DUPLICATE_PARTIAL: return "DUPLICATE_PARTIAL";
 		case INVALID_ACCOUNT: return "INVALID_ACCOUNT";
 		case INVALID_AUTH_KEY: return "INVALID_AUTH_KEY";
 		case INVALID_CONTRACT: return "INVALID_CONTRACT";
@@ -108,6 +111,7 @@ std::string pooling_error_e::to_string_value_full() const {
 	switch(value) {
 		case CHALLENGE_NOT_FOUND: return "mmx.pooling_error_e.CHALLENGE_NOT_FOUND";
 		case CHALLENGE_REVERTED: return "mmx.pooling_error_e.CHALLENGE_REVERTED";
+		case DUPLICATE_PARTIAL: return "mmx.pooling_error_e.DUPLICATE_PARTIAL";
 		case INVALID_ACCOUNT: return "mmx.pooling_error_e.INVALID_ACCOUNT";
 		case INVALID_AUTH_KEY: return "mmx.pooling_error_e.INVALID_AUTH_KEY";
 		case INVALID_CONTRACT: return "mmx.pooling_error_e.INVALID_CONTRACT";
@@ -137,6 +141,7 @@ void pooling_error_e::from_string_value(const std::string& _name) {
 	if(var.is_string()) {
 		if(_name == "CHALLENGE_NOT_FOUND") value = CHALLENGE_NOT_FOUND;
 		else if(_name == "CHALLENGE_REVERTED") value = CHALLENGE_REVERTED;
+		else if(_name == "DUPLICATE_PARTIAL") value = DUPLICATE_PARTIAL;
 		else if(_name == "INVALID_ACCOUNT") value = INVALID_ACCOUNT;
 		else if(_name == "INVALID_AUTH_KEY") value = INVALID_AUTH_KEY;
 		else if(_name == "INVALID_CONTRACT") value = INVALID_CONTRACT;
@@ -161,6 +166,7 @@ void pooling_error_e::accept(vnx::Visitor& _visitor) const {
 	switch(value) {
 		case CHALLENGE_NOT_FOUND: _name = "CHALLENGE_NOT_FOUND"; break;
 		case CHALLENGE_REVERTED: _name = "CHALLENGE_REVERTED"; break;
+		case DUPLICATE_PARTIAL: _name = "DUPLICATE_PARTIAL"; break;
 		case INVALID_ACCOUNT: _name = "INVALID_ACCOUNT"; break;
 		case INVALID_AUTH_KEY: _name = "INVALID_AUTH_KEY"; break;
 		case INVALID_CONTRACT: _name = "INVALID_CONTRACT"; break;
@@ -182,6 +188,7 @@ void pooling_error_e::write(std::ostream& _out) const {
 	switch(value) {
 		case CHALLENGE_NOT_FOUND: _out << "\"CHALLENGE_NOT_FOUND\""; break;
 		case CHALLENGE_REVERTED: _out << "\"CHALLENGE_REVERTED\""; break;
+		case DUPLICATE_PARTIAL: _out << "\"DUPLICATE_PARTIAL\""; break;
 		case INVALID_ACCOUNT: _out << "\"INVALID_ACCOUNT\""; break;
 		case INVALID_AUTH_KEY: _out << "\"INVALID_AUTH_KEY\""; break;
 		case INVALID_CONTRACT: _out << "\"INVALID_CONTRACT\""; break;
@@ -255,7 +262,7 @@ std::shared_ptr<vnx::TypeCode> pooling_error_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.pooling_error_e";
 	type_code->type_hash = vnx::Hash64(0xec786b877a93f17ull);
-	type_code->code_hash = vnx::Hash64(0x74f59c12eea74ecdull);
+	type_code->code_hash = vnx::Hash64(0xbcf2569e7ac5f81eull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::pooling_error_e);
@@ -269,6 +276,7 @@ std::shared_ptr<vnx::TypeCode> pooling_error_e::static_create_type_code() {
 	}
 	type_code->enum_map[3] = "CHALLENGE_NOT_FOUND";
 	type_code->enum_map[1] = "CHALLENGE_REVERTED";
+	type_code->enum_map[17] = "DUPLICATE_PARTIAL";
 	type_code->enum_map[13] = "INVALID_ACCOUNT";
 	type_code->enum_map[12] = "INVALID_AUTH_KEY";
 	type_code->enum_map[9] = "INVALID_CONTRACT";

@@ -20,13 +20,13 @@ public:
 	uint32_t height = 0;
 	::mmx::hash_t hash;
 	::mmx::hash_t challenge;
-	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	::mmx::addr_t contract;
 	::mmx::addr_t account;
 	std::string pool_url;
 	std::string harvester;
-	uint64_t partial_diff = 0;
+	uint64_t difficulty = 0;
 	uint32_t lookup_time_ms = 0;
+	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	vnx::optional<::mmx::signature_t> farmer_sig;
 	
 	typedef ::vnx::Value Super;
@@ -80,13 +80,13 @@ void Partial::accept_generic(T& _visitor) const {
 	_visitor.type_field("height", 0); _visitor.accept(height);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("challenge", 2); _visitor.accept(challenge);
-	_visitor.type_field("proof", 3); _visitor.accept(proof);
-	_visitor.type_field("contract", 4); _visitor.accept(contract);
-	_visitor.type_field("account", 5); _visitor.accept(account);
-	_visitor.type_field("pool_url", 6); _visitor.accept(pool_url);
-	_visitor.type_field("harvester", 7); _visitor.accept(harvester);
-	_visitor.type_field("partial_diff", 8); _visitor.accept(partial_diff);
-	_visitor.type_field("lookup_time_ms", 9); _visitor.accept(lookup_time_ms);
+	_visitor.type_field("contract", 3); _visitor.accept(contract);
+	_visitor.type_field("account", 4); _visitor.accept(account);
+	_visitor.type_field("pool_url", 5); _visitor.accept(pool_url);
+	_visitor.type_field("harvester", 6); _visitor.accept(harvester);
+	_visitor.type_field("difficulty", 7); _visitor.accept(difficulty);
+	_visitor.type_field("lookup_time_ms", 8); _visitor.accept(lookup_time_ms);
+	_visitor.type_field("proof", 9); _visitor.accept(proof);
 	_visitor.type_field("farmer_sig", 10); _visitor.accept(farmer_sig);
 	_visitor.template type_end<Partial>(11);
 }

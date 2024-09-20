@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_verify_plot_nft_target_return::VNX_TYPE_HASH(0x82f0f6ed43a0c4bull);
-const vnx::Hash64 Node_verify_plot_nft_target_return::VNX_CODE_HASH(0xbe88c86801c78b71ull);
+const vnx::Hash64 Node_verify_plot_nft_target_return::VNX_CODE_HASH(0xdbc661f33fe94daeull);
 
 vnx::Hash64 Node_verify_plot_nft_target_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_verify_plot_nft_target_return::static_create
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.verify_plot_nft_target.return";
 	type_code->type_hash = vnx::Hash64(0x82f0f6ed43a0c4bull);
-	type_code->code_hash = vnx::Hash64(0xbe88c86801c78b71ull);
+	type_code->code_hash = vnx::Hash64(0xdbc661f33fe94daeull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

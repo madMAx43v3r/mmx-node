@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_verify_partial_return::VNX_TYPE_HASH(0xb64fb769c6ffcf36ull);
-const vnx::Hash64 Node_verify_partial_return::VNX_CODE_HASH(0xf14e4467396207efull);
+const vnx::Hash64 Node_verify_partial_return::VNX_CODE_HASH(0x9400edfc074cc130ull);
 
 vnx::Hash64 Node_verify_partial_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_verify_partial_return::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.verify_partial.return";
 	type_code->type_hash = vnx::Hash64(0xb64fb769c6ffcf36ull);
-	type_code->code_hash = vnx::Hash64(0xf14e4467396207efull);
+	type_code->code_hash = vnx::Hash64(0x9400edfc074cc130ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
