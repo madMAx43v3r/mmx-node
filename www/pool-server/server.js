@@ -44,7 +44,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
 
         if(sync_height) {
             response_time = (config.challenge_delay - (partial.height - sync_height)) * config.block_interval + (now - sync_time);
-            
+
             if(response_time > config.max_response_time) {
                 is_valid = false;
                 out.error_code = 2;
@@ -58,7 +58,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
         out.response_time = response_time;
 
         console.log('/partial', 'height', partial.height, 'diff', partial.difficulty,
-            'response', response_time / 1e3, 'account', partial.account, 'hash', partial.hash);
+            'response', response_time / 1e3, 'time', now, 'account', partial.account, 'hash', partial.hash);
 
         if(await dbs.Partial.exists({hash: partial.hash})) {
             out.error_code = 17;
@@ -108,7 +108,7 @@ async function update_height()
         const now = Date.now();
         const res = await axios.get(config.node_url + '/api/node/get_synced_height');
         const value = res.data;
-        if(value) {
+        if(res.status == 200 && value) {
             if(!sync_height) {
                 console.log("Node synced at height " + value);
             }
@@ -125,7 +125,7 @@ async function update_height()
         }
     } catch(e) {
         if(sync_height != null) {
-            console.error("Failed to get current height:", e.cause ? e.cause.code : '???');
+            console.error("Failed to get current height:", e.message);
         }
         sync_height = null;
     }

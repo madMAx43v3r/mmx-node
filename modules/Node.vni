@@ -285,7 +285,7 @@ module Node implements vnx.addons.HttpComponent {
 	@Permission(permission_e.PUBLIC)
 	tuple<pooling_error_e, string> verify_plot_nft_target(addr_t address, addr_t pool_target) const;
 	
-	tuple<pooling_error_e, string> verify_partial(Partial* value, optional<addr_t> pool_target) const;
+	tuple<pooling_error_e, string> verify_partial(Partial* partial, optional<addr_t> pool_target) const;
 	
 	void start_sync(bool force);
 	

@@ -207,7 +207,7 @@ protected:
 	std::tuple<pooling_error_e, std::string> verify_plot_nft_target(const addr_t& address, const addr_t& pool_target) const override;
 
 	std::tuple<pooling_error_e, std::string> verify_partial(
-			std::shared_ptr<const Partial> value, const vnx::optional<addr_t>& pool_target) const override;
+			std::shared_ptr<const Partial> partial, const vnx::optional<addr_t>& pool_target) const override;
 
 	void on_stuck_timeout();
 

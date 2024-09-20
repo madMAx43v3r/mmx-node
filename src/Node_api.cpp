@@ -1433,25 +1433,28 @@ std::tuple<pooling_error_e, std::string> Node::verify_plot_nft_target(const addr
 }
 
 std::tuple<pooling_error_e, std::string> Node::verify_partial(
-		std::shared_ptr<const Partial> value, const vnx::optional<addr_t>& pool_target) const
+		std::shared_ptr<const Partial> partial, const vnx::optional<addr_t>& pool_target) const
 {
 	if(!is_synced) {
 		throw std::logic_error("out of sync");
 	}
-	if(!value->proof) {
+	if(!partial) {
+		throw std::logic_error("partial == null");
+	}
+	if(!partial->proof) {
 		return {pooling_error_e::INVALID_PROOF, "Partial has no proof"};
 	}
-	if(value->hash != value->calc_hash()) {
+	if(partial->hash != partial->calc_hash()) {
 		return {pooling_error_e::INVALID_SIGNATURE, "Message hash mismatch"};
 	}
-	if(!value->farmer_sig) {
+	if(!partial->farmer_sig) {
 		return {pooling_error_e::INVALID_SIGNATURE, "Missing signature"};
 	}
-	if(!value->farmer_sig->verify(value->proof->farmer_key, value->hash)) {
+	if(!partial->farmer_sig->verify(partial->proof->farmer_key, partial->hash)) {
 		return {pooling_error_e::INVALID_SIGNATURE, "Signature validation failed"};
 	}
 
-	const auto vdf_height = value->height - params->challenge_delay;
+	const auto vdf_height = partial->height - params->challenge_delay;
 	const auto vdf_block = get_header_at(vdf_height);
 	if(!vdf_block) {
 		return {pooling_error_e::CHALLENGE_NOT_FOUND,
@@ -1460,31 +1463,31 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
 
 	const auto challenge = vdf_block->vdf_output[1];
-	if(value->challenge != challenge) {
+	if(partial->challenge != challenge) {
 		return {pooling_error_e::CHALLENGE_REVERTED,
 			"Challenge mismatch, expected " + challenge.to_string() + " for height " + std::to_string(vdf_height)};
 	}
 
 	try {
-		verify_proof(value->proof, challenge, diff_block, value->difficulty);
+		verify_proof(partial->proof, challenge, diff_block, partial->difficulty);
 	} catch(const std::exception& ex) {
 		return {pooling_error_e::INVALID_PROOF,
 			"Invalid partial proof: " + std::string(ex.what())};
 	}
-	if(value->proof->score >= get_partial_score_threshold(params)) {
+	if(partial->proof->score >= get_partial_score_threshold(params)) {
 		return {pooling_error_e::PARTIAL_NOT_GOOD_ENOUGH,
-			"Proof score too high: " + std::to_string(value->proof->score)};
+			"Proof score too high: " + std::to_string(partial->proof->score)};
 	}
 
 	if(pool_target) {
-		if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(value->proof))
+		if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(partial->proof))
 		{
 			const auto ret = verify_plot_nft_target(nft->contract, *pool_target);
 			if(std::get<0>(ret) != pooling_error_e::NONE) {
 				return ret;
 			}
 		}
-		else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(value->proof))
+		else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(partial->proof))
 		{
 			if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
 				if(!plot->reward_address) {
@@ -1499,7 +1502,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 			}
 		}
 		else {
-			return {pooling_error_e::INVALID_CONTRACT, "Invalid proof type: " + value->proof->get_type_name()};
+			return {pooling_error_e::INVALID_CONTRACT, "Invalid proof type: " + partial->proof->get_type_name()};
 		}
 	}
 	return {pooling_error_e::NONE, ""};

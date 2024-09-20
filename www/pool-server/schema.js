@@ -10,11 +10,11 @@ const partial = new mongoose.Schema({
     difficulty: Number,
     lookup_time: Number,
     response_time: Number,
-    time: Date,
+    time: {type: Date, index: true},
     data: Object,
     pending: {type: Boolean, default: true, index: true},
     valid: {type: Boolean, index: true},
-    error_code: {type: Number, index: true},
+    error_code: {type: String, index: true},
     error_message: String,
 });
 
