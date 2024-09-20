@@ -11,12 +11,11 @@ const https = require('https');
 const http = require('http');
 const fs = require('fs');
 
-var remotes = JSON.parse(fs.readFileSync('remotes.json', 'utf8'));
+const remotes = require('./remotes.json');
 
 var targets = ['http://localhost:11380/wapi'].concat(remotes);
 
-console.log("Targets:");
-console.log(targets);
+console.log("Targets:", targets);
 
 var servers = [];
 for(const entry of targets) {
