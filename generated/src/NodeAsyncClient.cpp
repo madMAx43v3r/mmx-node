@@ -1239,9 +1239,9 @@ uint64_t NodeAsyncClient::verify_plot_nft_target(const ::mmx::addr_t& address, c
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::verify_partial(std::shared_ptr<const ::mmx::Partial> value, const vnx::optional<::mmx::addr_t>& pool_target, const std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::verify_partial(std::shared_ptr<const ::mmx::Partial> partial, const vnx::optional<::mmx::addr_t>& pool_target, const std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_verify_partial::create();
-	_method->value = value;
+	_method->partial = partial;
 	_method->pool_target = pool_target;
 	const auto _request_id = ++vnx_next_id;
 	{

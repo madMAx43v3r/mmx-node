@@ -205,7 +205,7 @@ protected:
 	virtual ::mmx::farmed_block_summary_t get_farmed_block_summary(const std::vector<::mmx::pubkey_t>& farmer_keys, const uint32_t& since) const = 0;
 	virtual std::vector<std::pair<::mmx::pubkey_t, uint32_t>> get_farmer_ranking(const int32_t& limit) const = 0;
 	virtual std::tuple<::mmx::pooling_error_e, std::string> verify_plot_nft_target(const ::mmx::addr_t& address, const ::mmx::addr_t& pool_target) const = 0;
-	virtual std::tuple<::mmx::pooling_error_e, std::string> verify_partial(std::shared_ptr<const ::mmx::Partial> value, const vnx::optional<::mmx::addr_t>& pool_target) const = 0;
+	virtual std::tuple<::mmx::pooling_error_e, std::string> verify_partial(std::shared_ptr<const ::mmx::Partial> partial, const vnx::optional<::mmx::addr_t>& pool_target) const = 0;
 	virtual void start_sync(const vnx::bool_t& force) = 0;
 	virtual void revert_sync(const uint32_t& height) = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::Block> _value) {}

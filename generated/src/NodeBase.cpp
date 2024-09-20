@@ -1751,7 +1751,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0xeb15396685387f88ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_verify_partial>(_method);
 			auto _return_value = ::mmx::Node_verify_partial_return::create();
-			_return_value->_ret_0 = verify_partial(_args->value, _args->pool_target);
+			_return_value->_ret_0 = verify_partial(_args->partial, _args->pool_target);
 			return _return_value;
 		}
 		case 0xf3ac786edcae50e1ull: {

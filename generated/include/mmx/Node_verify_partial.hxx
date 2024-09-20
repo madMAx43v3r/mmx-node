@@ -15,7 +15,7 @@ namespace mmx {
 class MMX_EXPORT Node_verify_partial : public ::vnx::Value {
 public:
 	
-	std::shared_ptr<const ::mmx::Partial> value;
+	std::shared_ptr<const ::mmx::Partial> partial;
 	vnx::optional<::mmx::addr_t> pool_target;
 	
 	typedef ::vnx::Value Super;
@@ -61,7 +61,7 @@ public:
 template<typename T>
 void Node_verify_partial::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Node_verify_partial>(2);
-	_visitor.type_field("value", 0); _visitor.accept(value);
+	_visitor.type_field("partial", 0); _visitor.accept(partial);
 	_visitor.type_field("pool_target", 1); _visitor.accept(pool_target);
 	_visitor.template type_end<Node_verify_partial>(2);
 }

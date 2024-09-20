@@ -200,7 +200,7 @@ public:
 	
 	std::tuple<::mmx::pooling_error_e, std::string> verify_plot_nft_target(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& pool_target = ::mmx::addr_t());
 	
-	std::tuple<::mmx::pooling_error_e, std::string> verify_partial(std::shared_ptr<const ::mmx::Partial> value = nullptr, const vnx::optional<::mmx::addr_t>& pool_target = nullptr);
+	std::tuple<::mmx::pooling_error_e, std::string> verify_partial(std::shared_ptr<const ::mmx::Partial> partial = nullptr, const vnx::optional<::mmx::addr_t>& pool_target = nullptr);
 	
 	void start_sync(const vnx::bool_t& force = 0);
 	

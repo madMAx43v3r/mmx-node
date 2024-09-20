@@ -1238,9 +1238,9 @@ std::tuple<::mmx::pooling_error_e, std::string> NodeClient::verify_plot_nft_targ
 	}
 }
 
-std::tuple<::mmx::pooling_error_e, std::string> NodeClient::verify_partial(std::shared_ptr<const ::mmx::Partial> value, const vnx::optional<::mmx::addr_t>& pool_target) {
+std::tuple<::mmx::pooling_error_e, std::string> NodeClient::verify_partial(std::shared_ptr<const ::mmx::Partial> partial, const vnx::optional<::mmx::addr_t>& pool_target) {
 	auto _method = ::mmx::Node_verify_partial::create();
-	_method->value = value;
+	_method->partial = partial;
 	_method->pool_target = pool_target;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_verify_partial_return>(_return_value)) {

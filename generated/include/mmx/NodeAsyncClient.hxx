@@ -342,7 +342,7 @@ public:
 			const std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>& _callback = std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t verify_partial(std::shared_ptr<const ::mmx::Partial> value = nullptr, const vnx::optional<::mmx::addr_t>& pool_target = nullptr, 
+	uint64_t verify_partial(std::shared_ptr<const ::mmx::Partial> partial = nullptr, const vnx::optional<::mmx::addr_t>& pool_target = nullptr, 
 			const std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>& _callback = std::function<void(const std::tuple<::mmx::pooling_error_e, std::string>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

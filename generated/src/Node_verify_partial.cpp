@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_verify_partial::VNX_TYPE_HASH(0xeb15396685387f88ull);
-const vnx::Hash64 Node_verify_partial::VNX_CODE_HASH(0xb1999e9747259a54ull);
+const vnx::Hash64 Node_verify_partial::VNX_CODE_HASH(0xd1cc40cb65850bf9ull);
 
 vnx::Hash64 Node_verify_partial::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,14 +48,14 @@ void Node_verify_partial::write(vnx::TypeOutput& _out, const vnx::TypeCode* _typ
 void Node_verify_partial::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_verify_partial;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, value);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, partial);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, pool_target);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_verify_partial::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.verify_partial\"";
-	_out << ", \"value\": "; vnx::write(_out, value);
+	_out << ", \"partial\": "; vnx::write(_out, partial);
 	_out << ", \"pool_target\": "; vnx::write(_out, pool_target);
 	_out << "}";
 }
@@ -69,24 +69,24 @@ void Node_verify_partial::read(std::istream& _in) {
 vnx::Object Node_verify_partial::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.verify_partial";
-	_object["value"] = value;
+	_object["partial"] = partial;
 	_object["pool_target"] = pool_target;
 	return _object;
 }
 
 void Node_verify_partial::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "pool_target") {
+		if(_entry.first == "partial") {
+			_entry.second.to(partial);
+		} else if(_entry.first == "pool_target") {
 			_entry.second.to(pool_target);
-		} else if(_entry.first == "value") {
-			_entry.second.to(value);
 		}
 	}
 }
 
 vnx::Variant Node_verify_partial::get_field(const std::string& _name) const {
-	if(_name == "value") {
-		return vnx::Variant(value);
+	if(_name == "partial") {
+		return vnx::Variant(partial);
 	}
 	if(_name == "pool_target") {
 		return vnx::Variant(pool_target);
@@ -95,8 +95,8 @@ vnx::Variant Node_verify_partial::get_field(const std::string& _name) const {
 }
 
 void Node_verify_partial::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "value") {
-		_value.to(value);
+	if(_name == "partial") {
+		_value.to(partial);
 	} else if(_name == "pool_target") {
 		_value.to(pool_target);
 	}
@@ -126,7 +126,7 @@ std::shared_ptr<vnx::TypeCode> Node_verify_partial::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.verify_partial";
 	type_code->type_hash = vnx::Hash64(0xeb15396685387f88ull);
-	type_code->code_hash = vnx::Hash64(0xb1999e9747259a54ull);
+	type_code->code_hash = vnx::Hash64(0xd1cc40cb65850bf9ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -138,7 +138,7 @@ std::shared_ptr<vnx::TypeCode> Node_verify_partial::static_create_type_code() {
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
-		field.name = "value";
+		field.name = "partial";
 		field.code = {16};
 	}
 	{
@@ -192,7 +192,7 @@ void read(TypeInput& in, ::mmx::Node_verify_partial& value, const TypeCode* type
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.value, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.partial, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.pool_target, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
@@ -212,7 +212,7 @@ void write(TypeOutput& out, const ::mmx::Node_verify_partial& value, const TypeC
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	vnx::write(out, value.value, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.partial, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.pool_target, type_code, type_code->fields[1].code.data());
 }
 
