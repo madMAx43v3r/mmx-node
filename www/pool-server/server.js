@@ -4,6 +4,7 @@ const express = require('express');
 const http = require('http');
 const axios = require("axios");
 const dbs = require('./schema.js');
+const utils = require('./utils.js');
 const config = require('./config.js');
 
 var db = null;
@@ -37,7 +38,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
     try {
         const now = Date.now();
         const partial = req.body;
-        
+
         const out = {
             valid: false
         };
@@ -112,6 +113,17 @@ app.post('/partial', no_cache, async (req, res, next) =>
             res.json(out);
             return;
         }
+        let difficulty = config.default_difficulty;
+
+        const account = await dbs.Account.findOne({address: partial.account}, {difficulty: 1});
+        if(account) {
+            difficulty = Math.round(account.difficulty);
+        }
+        if(partial.difficulty < difficulty) {
+            is_valid = false;
+            out.error_code = 'PARTIAL_NOT_GOOD_ENOUGH';
+            out.error_message = 'Partial difficulty too low: ' + partial.difficulty + ' < ' + difficulty;
+        }
 
         const entry = new dbs.Partial({
             hash: partial.hash,
@@ -127,15 +139,18 @@ app.post('/partial', no_cache, async (req, res, next) =>
 
         if(is_valid) {
             entry.data = partial;
+            entry.points = difficulty;      // need to use current difficulty to avoid cheating
         } else {
             entry.valid = false;
             entry.pending = false;
+            entry.points = 0;
             entry.error_code = out.error_code;
             entry.error_message = out.error_message;
         }
         await entry.save();
 
         out.valid = is_valid;
+        out.points = entry.points;
         res.json(out);
     } catch(e) {
         next(e);
@@ -153,8 +168,7 @@ async function update_height()
 {
     try {
         const now = Date.now();
-        const res = await axios.get(config.node_url + '/api/node/get_synced_height');
-        const value = res.data;
+        const value = await utils.get_synced_height();
         if(value) {
             if(!sync_height) {
                 console.log("Node synced at height " + value);

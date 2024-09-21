@@ -281,11 +281,12 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 					const auto res = value.to_object();
 					is_valid = res["valid"].to<bool>();
 					if(is_valid) {
+						const auto points = res["points"].to<int64_t>();
 						const auto response_ms = res["response_time"].to<int64_t>();
-						stats.valid_points += out->difficulty;
+						stats.valid_points += (points > 0 ? points : out->difficulty);
 						stats.total_partials++;
 						stats.total_response_time += response_ms;
-						log(INFO) << "Partial accepted: points = " << out->difficulty
+						log(INFO) << "Partial accepted: points = " << points
 								<< ", response = " << response_ms / 1e3
 								<< " sec [" << out->harvester << "] (" << out->pool_url << ")";
 					} else {

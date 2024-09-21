@@ -1,8 +1,9 @@
 
 const mongoose = require('mongoose');
-const dbs = require('./schema.js');
-const config = require('./config.js');
 const axios = require("axios");
+const dbs = require('./schema.js');
+const utils = require('./utils.js');
+const config = require('./config.js');
 
 var db = null;
 var first_sync = null;
@@ -36,7 +37,7 @@ async function verify(partial, sync_height)
         });
         const [code, message] = res.data;
 
-        console.log("Partial", partial.hash, "verified with code", code, '(' + message + ')');
+        // console.log("Partial", partial.hash, "verified with code", code, '(' + message + ')');
 
         if(code == 'NONE') {
             partial.valid = true;
@@ -53,6 +54,22 @@ async function verify(partial, sync_height)
     } catch(e) {
         console.log("Failed to verify partial", partial.hash, ":", e.message, '(' + e.response.data + ')');
     }
+
+    try {
+        if(partial.valid) {
+            let account = await dbs.Account.findOne({address: partial.account});
+            if(!account) {
+                account = new dbs.Account({
+                    address: partial.account
+                });
+                await account.save();
+
+                console.log("Created new account for", partial.account);
+            }
+        }
+    } catch(e) {
+        console.log("Failed to create account:", e.message);
+    }
 }
 
 var verify_lock = false;
@@ -61,9 +78,8 @@ async function verify_all()
 {
     let sync_height = null;
     try {
-        const res = await axios.get(config.node_url + '/api/node/get_synced_height');
-        sync_height = res.data;
-        if(res.status != 200 || !sync_height) {
+        sync_height = await utils.get_synced_height();
+        if(!sync_height) {
             console.log('Waiting for node sync ...');
             return;
         }
