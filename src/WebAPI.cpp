@@ -674,7 +674,7 @@ public:
 	void accept(std::shared_ptr<const BlockHeader> value) {
 		if(auto block = std::dynamic_pointer_cast<const Block>(value)) {
 			accept(block);
-		} else if(value && context) {
+		} else if(value) {
 			auto tmp = render(*value, context);
 			augment_block_header(tmp, value);
 			set(tmp);
@@ -684,7 +684,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Block> value) {
-		if(value && context) {
+		if(value) {
 			auto tmp = render(*value, context);
 			augment_block_header(tmp, value);
 			set(tmp);
@@ -709,8 +709,8 @@ vnx::Object render(const T& value, std::shared_ptr<const RenderContext> context)
 
 template<typename T>
 vnx::Variant render(std::shared_ptr<const T> value, std::shared_ptr<const RenderContext> context) {
-	Render visitor;
-	vnx::accept_generic(visitor, std::shared_ptr<const T>(value));
+	Render visitor(context);
+	vnx::accept_generic(visitor, value);
 	return std::move(visitor.result);
 }
 
