@@ -190,7 +190,7 @@ public:
 			const std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>& _callback = std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = 0, const vnx::bool_t& recent = 0, 
+	uint64_t get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = -1, const vnx::bool_t& recent = 0, 
 			const std::function<void(const std::vector<::mmx::exec_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::exec_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
