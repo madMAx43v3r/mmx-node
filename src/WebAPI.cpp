@@ -1666,10 +1666,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_until = query.find("until");
 		if(iter_id != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
-			const uint32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
+			const  int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			const uint32_t until = iter_until != query.end() ? vnx::from_string<int64_t>(iter_until->second) : -1;
-			if(is_public && limit > 200) {
+			if(is_public && (limit > 200 || limit < 0)) {
 				throw std::logic_error("limit > 200");
 			}
 			node->get_history({address}, since, until, limit,
