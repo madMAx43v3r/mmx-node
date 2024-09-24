@@ -50,7 +50,7 @@ const pool = new mongoose.Schema({
     farmers: {type: Number, default: 0},
     points_rate: {type: Number, default: 0},
     partial_rate: {type: Number, default: 0},
-    partial_errors: Object,
+    partial_errors: {type: Object, minimize: false},
     last_update: {type: Number, default: 0},
 });
 
