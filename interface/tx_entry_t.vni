@@ -4,7 +4,7 @@ struct tx_entry_t {
 	
 	uint height;
 	
-	hash_t txid;
+	hash_t txid;			// block hash in case type == REWARD
 	
 	tx_type_e type;
 	
