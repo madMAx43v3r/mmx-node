@@ -1474,10 +1474,6 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 		return {pooling_error_e::INVALID_PROOF,
 			"Invalid partial proof: " + std::string(ex.what())};
 	}
-	if(partial->proof->score >= get_partial_score_threshold(params)) {
-		return {pooling_error_e::PARTIAL_NOT_GOOD_ENOUGH,
-			"Proof score too high: " + std::to_string(partial->proof->score)};
-	}
 
 	if(pool_target) {
 		if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(partial->proof))

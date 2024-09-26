@@ -244,7 +244,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 					}
 					if(pool_config) try {
 						const auto score = calc_proof_score(params, header->ksize, res.quality, pool_config->difficulty);
-						if(score < get_partial_score_threshold(params))
+						if(score < params->score_threshold)
 						{
 							auto proof = std::make_shared<ProofOfSpaceNFT>();
 							proof->seed = header->seed;
