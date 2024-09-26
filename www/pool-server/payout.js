@@ -39,7 +39,7 @@ async function check()
                     payout.tx_fee = tx.fee.value;
                 }
             } catch(e) {
-                if(height - payout.height > config.payout_tx_expire + config.account_delay) {
+                if(height - payout.height > config.payout_tx_expire + 100) {
                     failed = true;
                     console.log("Payout transaction expired:", "height", payout.height, "txid", payout.txid);
                 }
@@ -58,11 +58,21 @@ async function check()
                     await conn.startTransaction();
                     const opt = {session: conn};
 
-                    // TODO: rollback balances minus tx fee
-
+                    // revert balances
+                    for(const entry of payout.amounts) {
+                        const account = await dbs.Account.findOne({address: entry[0]});
+                        if(!account) {
+                            throw new Error("Account not found: " + entry[0]);
+                        }
+                        account.balance += entry[1];
+                        await account.save(opt);
+                    }
                     payout.valid = false;
                     payout.pending = false;
-                    await payout.save();
+                    await payout.save(opt);
+
+                    await conn.commitTransaction();
+
                     console.log("Payout failed:", "height", payout.height, "txid", payout.txid);
                 } catch(e) {
                     await conn.abortTransaction();
