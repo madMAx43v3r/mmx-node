@@ -143,6 +143,7 @@ async function update()
                 await account.save(opt);
             }
 
+            // Distribute rewards and update account stats
             let res = [];
             for(const entry of result) {
                 const pool_share = entry.points / total_points;

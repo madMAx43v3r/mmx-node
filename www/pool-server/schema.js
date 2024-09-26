@@ -22,7 +22,7 @@ const partial = new mongoose.Schema({
 const account = new mongoose.Schema({
     address: {type: String, unique: true},
     balance: {type: Number, default: 0, index: true},
-    total_paid: {type: String, default: '0', index: true},
+    total_paid: {type: Number, default: 0, index: true},
     difficulty: {type: Number, default: 1, index: true},
     pool_share: {type: Number, default: 0, index: true},
     points_rate: {type: Number, default: 0, index: true},
@@ -45,16 +45,40 @@ const block = new mongoose.Schema({
     valid: {type: Boolean, index: true},
 });
 
+const payout = new mongoose.Schema({
+    txid: {type: String, unique: true},
+    total_amount: Number,
+    tx_fee: Number,
+    amounts: Array,     // [[account, amount], ...]
+    count: Number,
+    time: Date,
+    height: {type: Number, index: true},
+    pending: {type: Boolean, default: true, index: true},
+    valid: {type: Boolean, index: true},
+});
+
+const user_payout = new mongoose.Schema({
+    account: {type: String, index: true},
+    height: {type: Number, index: true},
+    amount: Number,
+    txid: String,
+});
+
 const pool = new mongoose.Schema({
     id: {type: String, unique: true},
     farmers: {type: Number, default: 0},
     points_rate: {type: Number, default: 0},
     partial_rate: {type: Number, default: 0},
-    partial_errors: {type: Object, minimize: false},
+    partial_errors: {type: Object},
     last_update: {type: Number, default: 0},
+    last_payout: {type: Number, default: 0},
+}, {
+    minimize: false,
 });
 
 exports.Partial = mongoose.model('Partial', partial);
 exports.Account = mongoose.model('Account', account);
 exports.Block = mongoose.model('Block', block);
+exports.Payout = mongoose.model('Payout', payout);
+exports.UserPayout = mongoose.model('UserPayout', user_payout);
 exports.Pool = mongoose.model('Pool', pool);
