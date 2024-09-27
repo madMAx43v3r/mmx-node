@@ -69,4 +69,7 @@ class ChainParams {
 	uint reward_activation = 50000;
 	uint transaction_activation = 100000;
 	
+	
+	double get_block_time() const;			// [sec]
+	
 }

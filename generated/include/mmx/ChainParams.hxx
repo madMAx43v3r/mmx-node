@@ -80,6 +80,8 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual vnx::float64_t get_block_time() const;
+	
 	static std::shared_ptr<ChainParams> create();
 	std::shared_ptr<vnx::Value> clone() const override;
 	
