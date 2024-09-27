@@ -1972,11 +1972,14 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
 					try {
 						uint64_t amount = 0;
-						const auto value = args["amount"].to<fixed128>();
-						if(auto token = context->find_currency(currency)) {
-							amount = to_amount(value, token->decimals);
+						if(args["raw_mode"].to<bool>()) {
+							args["amount"].to(amount);
 						} else {
-							throw std::logic_error("invalid currency");
+							if(auto token = context->find_currency(currency)) {
+								amount = to_amount(args["amount"].to<fixed128>(), token->decimals);
+							} else {
+								throw std::logic_error("invalid currency");
+							}
 						}
 						const auto index = args["index"].to<uint32_t>();
 						const auto dst_addr = args["dst_addr"].to<addr_t>();
@@ -2000,7 +2003,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 400, "POST wallet/send {index, amount, currency, dst_addr, [src_addr]}");
+			respond_status(request_id, 400, "POST wallet/send {index, amount, currency, dst_addr, [src_addr], [raw_mode]}");
 		}
 	}
 	else if(sub_path == "/wallet/send_many") {
@@ -2012,13 +2015,17 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			get_context({currency}, request_id,
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
 					try {
-						const auto token = context->find_currency(currency);
-						if(!token) {
-							throw std::logic_error("invalid currency");
-						}
 						std::vector<std::pair<addr_t, uint64_t>> amounts;
-						for(const auto& entry : args["amounts"].to<std::vector<std::pair<addr_t, fixed128>>>()) {
-							amounts.emplace_back(entry.first, to_amount(entry.second, token->decimals));
+						if(args["raw_mode"].to<bool>()) {
+							args["amounts"].to(amounts);
+						} else {
+							if(auto token = context->find_currency(currency)) {
+								for(const auto& entry : args["amounts"].to<std::vector<std::pair<addr_t, fixed128>>>()) {
+									amounts.emplace_back(entry.first, to_amount(entry.second, token->decimals));
+								}
+							} else {
+								throw std::logic_error("invalid currency");
+							}
 						}
 						const auto index = args["index"].to<uint32_t>();
 						const auto options = args["options"].to<spend_options_t>();
@@ -2032,7 +2039,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 400, "POST wallet/send_many {index, amounts, currency, options}");
+			respond_status(request_id, 400, "POST wallet/send_many {index, amounts, currency, options, [raw_mode]}");
 		}
 	}
 	else if(sub_path == "/wallet/send_off") {
