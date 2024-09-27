@@ -2016,9 +2016,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						if(!token) {
 							throw std::logic_error("invalid currency");
 						}
-						std::map<addr_t, uint64_t> amounts;
-						for(const auto& entry : args["amounts"].to<std::map<addr_t, fixed128>>()) {
-							amounts[entry.first] = to_amount(entry.second, token->decimals);
+						std::vector<std::pair<addr_t, uint64_t>> amounts;
+						for(const auto& entry : args["amounts"].to<std::vector<std::pair<addr_t, fixed128>>>()) {
+							amounts.emplace_back(entry.first, to_amount(entry.second, token->decimals));
 						}
 						const auto index = args["index"].to<uint32_t>();
 						const auto options = args["options"].to<spend_options_t>();

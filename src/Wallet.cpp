@@ -129,7 +129,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 }
 
 std::shared_ptr<const Transaction>
-Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amounts,
+Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, uint64_t>>& amounts,
 					const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
