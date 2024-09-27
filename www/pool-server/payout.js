@@ -101,7 +101,8 @@ async function make_payout(height, amounts, opt)
     try {
         const res = await axios.post(config.node_url + '/wapi/wallet/send_many', {
             index: config.wallet_index,
-            amounts: amounts,
+            raw_mode: true,
+            amounts: values,
             currency: "MMX",
             options: options,
         }, {
