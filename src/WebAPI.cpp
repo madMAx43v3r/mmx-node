@@ -2000,7 +2000,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 400, "POST wallet/send {...}");
+			respond_status(request_id, 400, "POST wallet/send {index, amount, currency, dst_addr, [src_addr]}");
 		}
 	}
 	else if(sub_path == "/wallet/send_many") {
@@ -2032,7 +2032,23 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 400, "POST wallet/send_many {...}");
+			respond_status(request_id, 400, "POST wallet/send_many {index, amounts, currency, options}");
+		}
+	}
+	else if(sub_path == "/wallet/send_off") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto tx = args["tx"].to<std::shared_ptr<const Transaction>>();
+			wallet->send_off(index, tx,
+				[this, request_id]() {
+					respond_status(request_id, 200);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 400, "POST wallet/send_off {index, tx}");
 		}
 	}
 	else if(sub_path == "/wallet/deploy") {
@@ -2710,8 +2726,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		std::vector<std::string> options = {
 			"config/get", "config/set", "farmer", "farmers",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
-			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins",
-			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
+			"address/history", "wallet/balance", "wallet/contracts", "wallet/address"
+			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/send_many", "wallet/send_off",
+			"wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid", "wallet/accounts", "wallet/account",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
