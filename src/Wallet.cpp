@@ -125,6 +125,9 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 			tx->exec_result = node->validate(tx);
 		}
 	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
+	}
 	return tx;
 }
 
@@ -156,6 +159,9 @@ Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, ui
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -198,6 +204,9 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 			tx->exec_result = node->validate(tx);
 		}
 	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
+	}
 	return tx;
 }
 
@@ -226,6 +235,9 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -256,6 +268,9 @@ std::shared_ptr<const Transaction> Wallet::execute(
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -288,6 +303,9 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -330,6 +348,9 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -441,6 +462,9 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 			tx->exec_result = node->validate(tx);
 		}
 	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
+	}
 	return tx;
 }
 
@@ -478,6 +502,9 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }

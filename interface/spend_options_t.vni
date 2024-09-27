@@ -3,6 +3,7 @@ package mmx;
 struct spend_options_t {
 	
 	bool auto_send = true;
+	bool mark_spent = false;
 	
 	uint fee_ratio = 1024;
 	
