@@ -16,7 +16,7 @@ class MMX_EXPORT Wallet_send_many : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	std::map<::mmx::addr_t, uint64_t> amounts;
+	std::vector<std::pair<::mmx::addr_t, uint64_t>> amounts;
 	::mmx::addr_t currency;
 	::mmx::spend_options_t options;
 	

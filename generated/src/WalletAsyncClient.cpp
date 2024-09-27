@@ -199,7 +199,7 @@ uint64_t WalletAsyncClient::send(const uint32_t& index, const uint64_t& amount, 
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::send_many(const uint32_t& index, const std::map<::mmx::addr_t, uint64_t>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::send_many(const uint32_t& index, const std::vector<std::pair<::mmx::addr_t, uint64_t>>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_send_many::create();
 	_method->index = index;
 	_method->amounts = amounts;
