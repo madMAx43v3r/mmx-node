@@ -7,7 +7,7 @@ function init(creator_)
 	creator = bech32(creator_);
 }
 
-function add(serial, creator_key, signature)
+function add(serial, creator_key, signature) public
 {
 	if(serial == 0 || typeof(serial) != 4) {
 		fail("invalid serial", 1);
