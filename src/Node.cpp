@@ -326,8 +326,8 @@ void Node::main()
 		block->time_stamp = int64_t(1729230897) * 1000;		// TODO
 		block->time_diff = params->initial_time_diff;
 		block->space_diff = params->initial_space_diff;
-		block->vdf_output[0] = hash_t(params->network);
-		block->vdf_output[1] = hash_t(params->network);
+		block->vdf_output[0] = hash_t("MMX/" + params->network + "/vdf/0");
+		block->vdf_output[1] = hash_t("MMX/" + params->network + "/vdf/1");
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
