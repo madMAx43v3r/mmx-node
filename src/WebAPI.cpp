@@ -26,6 +26,11 @@
 #include <mmx/ProofOfStake.hxx>
 #include <mmx/vm_interface.h>
 
+#include <mmx/accept_generic.hxx>
+#include <mmx/contract/accept_generic.hxx>
+#include <mmx/solution/accept_generic.hxx>
+#include <mmx/operation/accept_generic.hxx>
+
 #include <vnx/vnx.h>
 #include <vnx/ProcessClient.hxx>
 
@@ -143,6 +148,9 @@ void WebAPI::update()
 		});
 	node->get_synced_height(
 		[this](const vnx::optional<uint32_t>& height) {
+			if(!is_synced && height) {
+				synced_since = *height;
+			}
 			is_synced = height;
 		});
 }
@@ -216,11 +224,15 @@ public:
 
 	template<typename T>
 	void type_begin(int num_fields) {
-		object["__type"] = T::static_get_type_code()->name;
+		if(auto type_code = T::static_get_type_code()) {
+			object["__type"] = type_code->name;
+		}
 	}
 
 	template<typename T>
-	void type_end(int num_fields) {}
+	void type_end(int num_fields) {
+		result = vnx::Variant(object);
+	}
 
 	void type_field(const std::string& name, const size_t index) {
 		p_value = &object[name];
@@ -233,7 +245,11 @@ public:
 
 	template<typename T>
 	void accept(const T& value) {
-		set(value);
+		if constexpr(vnx::is_object<T>()) {
+			set(render(value, context));
+		} else {
+			set(value);
+		}
 	}
 
 	template<size_t N>
@@ -321,6 +337,11 @@ public:
 
 	void accept(const std::vector<uint8_t>& value) {
 		set(vnx::to_hex_string(value.data(), value.size()));
+	}
+
+	template<typename T>
+	void accept(std::shared_ptr<const T> value) {
+		set(render(value, context));
 	}
 
 	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint128_t amount) {
@@ -552,17 +573,17 @@ public:
 		set(tmp);
 	}
 
-	void accept(std::shared_ptr<const Transaction> value) {
-		set(render(value, context));
-	}
+//	void accept(std::shared_ptr<const Transaction> value) {
+//		set(render(value, context));
+//	}
 
-	void accept(std::shared_ptr<const TransactionBase> base) {
-		if(auto value = std::dynamic_pointer_cast<const Transaction>(base)) {
-			set(render(value, context));
-		} else {
-			set(base);
-		}
-	}
+//	void accept(std::shared_ptr<const TransactionBase> base) {
+//		if(auto value = std::dynamic_pointer_cast<const Transaction>(base)) {
+//			set(render(value, context));
+//		} else {
+//			set(base);
+//		}
+//	}
 
 	void accept(std::shared_ptr<const Operation> base) {
 		if(auto value = std::dynamic_pointer_cast<const operation::Deposit>(base)) {
@@ -589,11 +610,17 @@ public:
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
-			set(render(value, context));
+//		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
+//			set(render(value, context));
+//		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
+//			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::TokenBase>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::Binary>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::PubKey>(base)) {
+			set(render(value, context));
+		} else if(auto value = std::dynamic_pointer_cast<const contract::WebData>(base)) {
 			set(render(value, context));
 		} else {
 			set(base);
@@ -601,17 +628,22 @@ public:
 	}
 
 	void accept(std::shared_ptr<const ProofOfSpace> base) {
-		if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceOG>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(base)) {
-			set(render(value, context));
-		} else if(auto value = std::dynamic_pointer_cast<const ProofOfStake>(base)) {
-			auto tmp = render(*value, context);
-			tmp["ksize"] = "VP";
-			set(tmp);
+//		if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceOG>(base)) {
+//			set(render(value, context));
+//		} else if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(base)) {
+//			set(render(value, context));
+//		} else
+		if(auto value = std::dynamic_pointer_cast<const ProofOfStake>(base)) {
+			accept(value);
 		} else {
 			set(render(base, context));
 		}
+	}
+
+	void accept(std::shared_ptr<const ProofOfStake> value) {
+		auto tmp = render(*value, context);
+		tmp["ksize"] = "VP";
+		set(tmp);
 	}
 
 	void augment_block_header(vnx::Object& tmp, std::shared_ptr<const BlockHeader> value) {
@@ -635,7 +667,7 @@ public:
 	void accept(std::shared_ptr<const BlockHeader> value) {
 		if(auto block = std::dynamic_pointer_cast<const Block>(value)) {
 			accept(block);
-		} else if(value && context) {
+		} else if(value) {
 			auto tmp = render(*value, context);
 			augment_block_header(tmp, value);
 			set(tmp);
@@ -645,7 +677,7 @@ public:
 	}
 
 	void accept(std::shared_ptr<const Block> value) {
-		if(value && context) {
+		if(value) {
 			auto tmp = render(*value, context);
 			augment_block_header(tmp, value);
 			set(tmp);
@@ -670,10 +702,9 @@ vnx::Object render(const T& value, std::shared_ptr<const RenderContext> context)
 
 template<typename T>
 vnx::Variant render(std::shared_ptr<const T> value, std::shared_ptr<const RenderContext> context) {
-	if(value) {
-		return vnx::Variant(render(*value, context));
-	}
-	return vnx::Variant(nullptr);
+	Render visitor(context);
+	vnx::accept_generic(visitor, value);
+	return std::move(visitor.result);
 }
 
 template<typename T>
@@ -681,15 +712,6 @@ vnx::Variant render_value(const T& value, std::shared_ptr<const RenderContext> c
 	Render visitor(context);
 	visitor.accept(value);
 	return std::move(visitor.result);
-}
-
-template<typename T>
-vnx::Variant render_list(const std::vector<T>& list, std::shared_ptr<const RenderContext> context = nullptr) {
-	std::vector<vnx::Object> tmp;
-	for(const auto& entry : list) {
-		tmp.push_back(render(entry, context));
-	}
-	return vnx::Variant(tmp);
 }
 
 template<typename T>
@@ -1078,7 +1100,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	const bool is_public = !is_private;
 
 	if(is_public) {
-		if(!is_synced) {
+		if(!is_synced || curr_height - synced_since < sync_delay) {
 			respond_status(request_id, 503, "lost sync with network");
 			return;
 		}
@@ -1636,10 +1658,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto iter_until = query.find("until");
 		if(iter_id != query.end()) {
 			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
-			const uint32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
+			const  int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 			const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 			const uint32_t until = iter_until != query.end() ? vnx::from_string<int64_t>(iter_until->second) : -1;
-			if(is_public && limit > 200) {
+			if(is_public && (limit > 200 || limit < 0)) {
 				throw std::logic_error("limit > 200");
 			}
 			node->get_history({address}, since, until, limit,
@@ -1711,7 +1733,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/wallet/accounts") {
 		wallet->get_all_accounts(
 			[this, request_id](const std::vector<account_info_t>& list) {
-				respond(request_id, render_list(list));
+				respond(request_id, render_value(list));
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
@@ -1942,11 +1964,14 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
 					try {
 						uint64_t amount = 0;
-						const auto value = args["amount"].to<fixed128>();
-						if(auto token = context->find_currency(currency)) {
-							amount = to_amount(value, token->decimals);
+						if(args["raw_mode"].to<bool>()) {
+							args["amount"].to(amount);
 						} else {
-							throw std::logic_error("invalid currency");
+							if(auto token = context->find_currency(currency)) {
+								amount = to_amount(args["amount"].to<fixed128>(), token->decimals);
+							} else {
+								throw std::logic_error("invalid currency");
+							}
 						}
 						const auto index = args["index"].to<uint32_t>();
 						const auto dst_addr = args["dst_addr"].to<addr_t>();
@@ -1970,7 +1995,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 400, "POST wallet/send {...}");
+			respond_status(request_id, 400, "POST wallet/send {index, amount, currency, dst_addr, [src_addr], [raw_mode]}");
 		}
 	}
 	else if(sub_path == "/wallet/send_many") {
@@ -1982,13 +2007,17 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			get_context({currency}, request_id,
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
 					try {
-						const auto token = context->find_currency(currency);
-						if(!token) {
-							throw std::logic_error("invalid currency");
-						}
-						std::map<addr_t, uint64_t> amounts;
-						for(const auto& entry : args["amounts"].to<std::map<addr_t, fixed128>>()) {
-							amounts[entry.first] = to_amount(entry.second, token->decimals);
+						std::vector<std::pair<addr_t, uint64_t>> amounts;
+						if(args["raw_mode"].to<bool>()) {
+							args["amounts"].to(amounts);
+						} else {
+							if(auto token = context->find_currency(currency)) {
+								for(const auto& entry : args["amounts"].to<std::vector<std::pair<addr_t, fixed128>>>()) {
+									amounts.emplace_back(entry.first, to_amount(entry.second, token->decimals));
+								}
+							} else {
+								throw std::logic_error("invalid currency");
+							}
 						}
 						const auto index = args["index"].to<uint32_t>();
 						const auto options = args["options"].to<spend_options_t>();
@@ -2002,7 +2031,23 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 400, "POST wallet/send_many {...}");
+			respond_status(request_id, 400, "POST wallet/send_many {index, amounts, currency, options, [raw_mode]}");
+		}
+	}
+	else if(sub_path == "/wallet/send_off") {
+		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
+		if(request->payload.size()) {
+			vnx::Object args;
+			vnx::from_string(request->payload.as_string(), args);
+			const auto index = args["index"].to<uint32_t>();
+			const auto tx = args["tx"].to<std::shared_ptr<const Transaction>>();
+			wallet->send_off(index, tx,
+				[this, request_id]() {
+					respond_status(request_id, 200);
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 400, "POST wallet/send_off {index, tx}");
 		}
 	}
 	else if(sub_path == "/wallet/deploy") {
@@ -2338,7 +2383,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 400, "POST wallet/swap/switch_pool {...}");
+			respond_status(request_id, 400, "POST wallet/swap/rem_all_liquid {...}");
 		}
 	}
 	else if(sub_path == "/farmer/info") {
@@ -2544,7 +2589,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 
 					for(const auto& entry : ret) {
 						const auto key = entry.first;
-						resolve_vm_varptr(contract, entry.second, request_id,
+						resolve_vm_varptr(contract, entry.second, request_id, 0,
 							[this, request_id, job, count, key](const vnx::Variant& value) {
 								job->out[key] = value;
 								if(++(job->k) == count) {
@@ -2570,7 +2615,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			node->read_storage_field(contract, name, -1,
 				[this, request_id, contract](const std::pair<vm::varptr_t, uint64_t>& ret) {
 					const auto addr = ret.second;
-					resolve_vm_varptr(contract, ret.first, request_id,
+					resolve_vm_varptr(contract, ret.first, request_id, 0,
 						[this, request_id, addr](const vnx::Variant& value) {
 							vnx::Object out;
 							out["address"] = addr;
@@ -2598,7 +2643,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						const auto addr = std::get<1>(ret);
 						const auto key = std::get<2>(ret);
 						log(INFO) << "value = " << vm::to_string(std::get<0>(ret));
-						resolve_vm_varptr(contract, std::get<0>(ret), request_id,
+						resolve_vm_varptr(contract, std::get<0>(ret), request_id, 0,
 							[this, request_id, addr, key](const vnx::Variant& value) {
 								vnx::Object out;
 								out["address"] = addr;
@@ -2614,7 +2659,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					[this, request_id, contract](const std::tuple<vm::varptr_t, uint64_t, uint64_t>& ret) {
 						const auto addr = std::get<1>(ret);
 						const auto key = std::get<2>(ret);
-						resolve_vm_varptr(contract, std::get<0>(ret), request_id,
+						resolve_vm_varptr(contract, std::get<0>(ret), request_id, 0,
 							[this, request_id, addr, key](const vnx::Variant& value) {
 								vnx::Object out;
 								out["address"] = addr;
@@ -2680,8 +2725,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		std::vector<std::string> options = {
 			"config/get", "config/set", "farmer", "farmers",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
-			"address/history", "wallet/balance", "wallet/contracts", "wallet/address", "wallet/coins",
-			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
+			"address/history", "wallet/balance", "wallet/contracts", "wallet/address"
+			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/send_many", "wallet/send_off",
+			"wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid", "wallet/accounts", "wallet/account",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
@@ -2719,23 +2765,33 @@ void WebAPI::get_context(	const std::unordered_set<addr_t>& addr_set, const vnx:
 		std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 }
 
-void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
-								const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const
+void WebAPI::resolve_vm_varptr(	const addr_t& contract,
+								const vm::varptr_t& var,
+								const vnx::request_id_t& request_id,
+								const uint32_t call_depth,
+								const std::function<void(const vnx::Variant&)>& callback) const
 {
 	if(!var) {
 		callback(vnx::Variant());
 		return;
 	}
+	if(call_depth > max_recursion) {
+		vnx::Object err;
+		err["__type"] = "mmx.Exception";
+		err["message"] = "Maximum recursion limit reached: " + std::to_string(max_recursion);
+		callback(vnx::Variant(err));
+		return;
+	}
 	switch(var->type) {
 		case vm::TYPE_REF: {
 			node->read_storage_var(contract, vm::to_ref(var), -1,
-					std::bind(&WebAPI::resolve_vm_varptr, this, contract, std::placeholders::_1, request_id, callback),
+					std::bind(&WebAPI::resolve_vm_varptr, this, contract, std::placeholders::_1, request_id, call_depth + 1, callback),
 					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 			break;
 		}
 		case vm::TYPE_ARRAY:
 			node->read_storage_array(contract, vm::to_ref(var), -1,
-				[this, contract, request_id, callback](const std::vector<vm::varptr_t>& ret) {
+				[this, contract, request_id, callback, call_depth](const std::vector<vm::varptr_t>& ret) {
 					struct job_t {
 						size_t k = 0;
 						std::vector<vnx::Variant> out;
@@ -2745,7 +2801,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 					job->out.resize(count);
 
 					for(size_t i = 0; i < count; ++i) {
-						resolve_vm_varptr(contract, ret[i], request_id,
+						resolve_vm_varptr(contract, ret[i], request_id, call_depth + 1,
 							[this, job, callback, count, i](const vnx::Variant& value) {
 								job->out[i] = value;
 								if(++(job->k) == count) {
@@ -2761,7 +2817,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 			break;
 		case vm::TYPE_MAP:
 			node->read_storage_map(contract, vm::to_ref(var), -1,
-				[this, contract, request_id, callback](const std::map<vm::varptr_t, vm::varptr_t>& ret) {
+				[this, contract, request_id, callback, call_depth](const std::map<vm::varptr_t, vm::varptr_t>& ret) {
 					struct job_t {
 						size_t k = 0;
 						vnx::Object out;
@@ -2782,7 +2838,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
 								default:				key = vm::to_string(var);
 							}
 						}
-						resolve_vm_varptr(contract, entry.second, request_id,
+						resolve_vm_varptr(contract, entry.second, request_id, call_depth + 1,
 							[this, job, callback, count, key](const vnx::Variant& value) {
 								job->out[key] = value;
 								if(++(job->k) == count) {

@@ -12,8 +12,13 @@
 #include <mmx/Farmer_get_farmer_keys_return.hxx>
 #include <mmx/Farmer_get_mac_addr.hxx>
 #include <mmx/Farmer_get_mac_addr_return.hxx>
+#include <mmx/Farmer_get_partial_diff.hxx>
+#include <mmx/Farmer_get_partial_diff_return.hxx>
+#include <mmx/Farmer_get_partial_diffs.hxx>
+#include <mmx/Farmer_get_partial_diffs_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
 #include <mmx/Farmer_sign_block_return.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
@@ -46,18 +51,23 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmerBase::VNX_TYPE_HASH(0xff732ba14d9d1abull);
-const vnx::Hash64 FarmerBase::VNX_CODE_HASH(0x67faaf7d4335ccf6ull);
+const vnx::Hash64 FarmerBase::VNX_CODE_HASH(0x4183adfd55745a8dull);
 
 FarmerBase::FarmerBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
 {
 	vnx::read_config(vnx_name + ".input_info", input_info);
 	vnx::read_config(vnx_name + ".input_proofs", input_proofs);
+	vnx::read_config(vnx_name + ".input_partials", input_partials);
 	vnx::read_config(vnx_name + ".output_proofs", output_proofs);
+	vnx::read_config(vnx_name + ".output_partials", output_partials);
 	vnx::read_config(vnx_name + ".harvester_timeout", harvester_timeout);
+	vnx::read_config(vnx_name + ".difficulty_interval", difficulty_interval);
 	vnx::read_config(vnx_name + ".node_server", node_server);
 	vnx::read_config(vnx_name + ".wallet_server", wallet_server);
 	vnx::read_config(vnx_name + ".reward_addr", reward_addr);
+	vnx::read_config(vnx_name + ".partial_diff", partial_diff);
+	vnx::read_config(vnx_name + ".payout_threshold", payout_threshold);
 }
 
 vnx::Hash64 FarmerBase::get_type_hash() const {
@@ -77,11 +87,16 @@ void FarmerBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, input_info);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, input_proofs);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, output_proofs);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, harvester_timeout);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, node_server);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, wallet_server);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, reward_addr);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, input_partials);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, output_proofs);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, output_partials);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, harvester_timeout);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, difficulty_interval);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, node_server);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, wallet_server);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, reward_addr);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, partial_diff);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, payout_threshold);
 	_visitor.type_end(*_type_code);
 }
 
@@ -89,11 +104,16 @@ void FarmerBase::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"input_info\": "; vnx::write(_out, input_info);
 	_out << ", \"input_proofs\": "; vnx::write(_out, input_proofs);
+	_out << ", \"input_partials\": "; vnx::write(_out, input_partials);
 	_out << ", \"output_proofs\": "; vnx::write(_out, output_proofs);
+	_out << ", \"output_partials\": "; vnx::write(_out, output_partials);
 	_out << ", \"harvester_timeout\": "; vnx::write(_out, harvester_timeout);
+	_out << ", \"difficulty_interval\": "; vnx::write(_out, difficulty_interval);
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << ", \"wallet_server\": "; vnx::write(_out, wallet_server);
 	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
+	_out << ", \"partial_diff\": "; vnx::write(_out, partial_diff);
+	_out << ", \"payout_threshold\": "; vnx::write(_out, payout_threshold);
 	_out << "}";
 }
 
@@ -108,26 +128,41 @@ vnx::Object FarmerBase::to_object() const {
 	_object["__type"] = "mmx.Farmer";
 	_object["input_info"] = input_info;
 	_object["input_proofs"] = input_proofs;
+	_object["input_partials"] = input_partials;
 	_object["output_proofs"] = output_proofs;
+	_object["output_partials"] = output_partials;
 	_object["harvester_timeout"] = harvester_timeout;
+	_object["difficulty_interval"] = difficulty_interval;
 	_object["node_server"] = node_server;
 	_object["wallet_server"] = wallet_server;
 	_object["reward_addr"] = reward_addr;
+	_object["partial_diff"] = partial_diff;
+	_object["payout_threshold"] = payout_threshold;
 	return _object;
 }
 
 void FarmerBase::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "harvester_timeout") {
+		if(_entry.first == "difficulty_interval") {
+			_entry.second.to(difficulty_interval);
+		} else if(_entry.first == "harvester_timeout") {
 			_entry.second.to(harvester_timeout);
 		} else if(_entry.first == "input_info") {
 			_entry.second.to(input_info);
+		} else if(_entry.first == "input_partials") {
+			_entry.second.to(input_partials);
 		} else if(_entry.first == "input_proofs") {
 			_entry.second.to(input_proofs);
 		} else if(_entry.first == "node_server") {
 			_entry.second.to(node_server);
+		} else if(_entry.first == "output_partials") {
+			_entry.second.to(output_partials);
 		} else if(_entry.first == "output_proofs") {
 			_entry.second.to(output_proofs);
+		} else if(_entry.first == "partial_diff") {
+			_entry.second.to(partial_diff);
+		} else if(_entry.first == "payout_threshold") {
+			_entry.second.to(payout_threshold);
 		} else if(_entry.first == "reward_addr") {
 			_entry.second.to(reward_addr);
 		} else if(_entry.first == "wallet_server") {
@@ -143,11 +178,20 @@ vnx::Variant FarmerBase::get_field(const std::string& _name) const {
 	if(_name == "input_proofs") {
 		return vnx::Variant(input_proofs);
 	}
+	if(_name == "input_partials") {
+		return vnx::Variant(input_partials);
+	}
 	if(_name == "output_proofs") {
 		return vnx::Variant(output_proofs);
 	}
+	if(_name == "output_partials") {
+		return vnx::Variant(output_partials);
+	}
 	if(_name == "harvester_timeout") {
 		return vnx::Variant(harvester_timeout);
+	}
+	if(_name == "difficulty_interval") {
+		return vnx::Variant(difficulty_interval);
 	}
 	if(_name == "node_server") {
 		return vnx::Variant(node_server);
@@ -158,6 +202,12 @@ vnx::Variant FarmerBase::get_field(const std::string& _name) const {
 	if(_name == "reward_addr") {
 		return vnx::Variant(reward_addr);
 	}
+	if(_name == "partial_diff") {
+		return vnx::Variant(partial_diff);
+	}
+	if(_name == "payout_threshold") {
+		return vnx::Variant(payout_threshold);
+	}
 	return vnx::Variant();
 }
 
@@ -166,16 +216,26 @@ void FarmerBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(input_info);
 	} else if(_name == "input_proofs") {
 		_value.to(input_proofs);
+	} else if(_name == "input_partials") {
+		_value.to(input_partials);
 	} else if(_name == "output_proofs") {
 		_value.to(output_proofs);
+	} else if(_name == "output_partials") {
+		_value.to(output_partials);
 	} else if(_name == "harvester_timeout") {
 		_value.to(harvester_timeout);
+	} else if(_name == "difficulty_interval") {
+		_value.to(difficulty_interval);
 	} else if(_name == "node_server") {
 		_value.to(node_server);
 	} else if(_name == "wallet_server") {
 		_value.to(wallet_server);
 	} else if(_name == "reward_addr") {
 		_value.to(reward_addr);
+	} else if(_name == "partial_diff") {
+		_value.to(partial_diff);
+	} else if(_name == "payout_threshold") {
+		_value.to(payout_threshold);
 	}
 }
 
@@ -203,24 +263,26 @@ std::shared_ptr<vnx::TypeCode> FarmerBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Farmer";
 	type_code->type_hash = vnx::Hash64(0xff732ba14d9d1abull);
-	type_code->code_hash = vnx::Hash64(0x67faaf7d4335ccf6ull);
+	type_code->code_hash = vnx::Hash64(0x4183adfd55745a8dull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::FarmerBase);
-	type_code->methods.resize(13);
+	type_code->methods.resize(15);
 	type_code->methods[0] = ::mmx::Farmer_get_farm_info::static_get_type_code();
 	type_code->methods[1] = ::mmx::Farmer_get_farmer_keys::static_get_type_code();
 	type_code->methods[2] = ::mmx::Farmer_get_mac_addr::static_get_type_code();
-	type_code->methods[3] = ::mmx::Farmer_sign_block::static_get_type_code();
-	type_code->methods[4] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[5] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[6] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[7] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[8] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[9] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[10] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[11] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[12] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->fields.resize(7);
+	type_code->methods[3] = ::mmx::Farmer_get_partial_diff::static_get_type_code();
+	type_code->methods[4] = ::mmx::Farmer_get_partial_diffs::static_get_type_code();
+	type_code->methods[5] = ::mmx::Farmer_sign_block::static_get_type_code();
+	type_code->methods[6] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[7] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[8] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[9] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[10] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[11] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[12] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[13] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[14] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->fields.resize(12);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -238,36 +300,69 @@ std::shared_ptr<vnx::TypeCode> FarmerBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
+		field.name = "input_partials";
+		field.value = vnx::to_string("harvester.partials");
+		field.code = {12, 5};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.is_extended = true;
 		field.name = "output_proofs";
 		field.value = vnx::to_string("farmer.proof");
 		field.code = {12, 5};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "output_partials";
+		field.value = vnx::to_string("farmer.partials");
+		field.code = {12, 5};
+	}
+	{
+		auto& field = type_code->fields[5];
 		field.data_size = 4;
 		field.name = "harvester_timeout";
 		field.value = vnx::to_string(60);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[6];
+		field.data_size = 4;
+		field.name = "difficulty_interval";
+		field.value = vnx::to_string(300);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "node_server";
 		field.value = vnx::to_string("Node");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "wallet_server";
 		field.value = vnx::to_string("Wallet");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[9];
 		field.is_extended = true;
 		field.name = "reward_addr";
 		field.code = {33, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[10];
+		field.is_extended = true;
+		field.name = "partial_diff";
+		field.code = {33, 4};
+	}
+	{
+		auto& field = type_code->fields[11];
+		field.is_extended = true;
+		field.name = "payout_threshold";
+		field.code = {33, 4};
 	}
 	type_code->build();
 	return type_code;
@@ -279,6 +374,9 @@ void FarmerBase::vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) {
 		switch(_type_code->type_hash) {
 			case 0xa2701372b9137f0eull:
 				handle(std::static_pointer_cast<const ::mmx::FarmInfo>(_value));
+				return;
+			case 0x2c849b13a7efd71aull:
+				handle(std::static_pointer_cast<const ::mmx::Partial>(_value));
 				return;
 			case 0x816e898b36befae0ull:
 				handle(std::static_pointer_cast<const ::mmx::ProofResponse>(_value));
@@ -308,6 +406,18 @@ std::shared_ptr<vnx::Value> FarmerBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Farmer_get_mac_addr>(_method);
 			auto _return_value = ::mmx::Farmer_get_mac_addr_return::create();
 			_return_value->_ret_0 = get_mac_addr();
+			return _return_value;
+		}
+		case 0x40f08b90e2eb4ca0ull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Farmer_get_partial_diff>(_method);
+			auto _return_value = ::mmx::Farmer_get_partial_diff_return::create();
+			_return_value->_ret_0 = get_partial_diff(_args->plot_nft);
+			return _return_value;
+		}
+		case 0x8806f6763215c58bull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Farmer_get_partial_diffs>(_method);
+			auto _return_value = ::mmx::Farmer_get_partial_diffs_return::create();
+			_return_value->_ret_0 = get_partial_diffs(_args->plot_nfts);
 			return _return_value;
 		}
 		case 0x6924b10f345eb316ull: {
@@ -414,18 +524,25 @@ void read(TypeInput& in, ::mmx::FarmerBase& value, const TypeCode* type_code, co
 	}
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[3]) {
+		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.harvester_timeout, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[6]) {
+			vnx::read_value(_buf + _field->offset, value.difficulty_interval, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.input_info, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.input_proofs, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.output_proofs, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.wallet_server, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.input_partials, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.output_proofs, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.output_partials, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.wallet_server, type_code, _field->code.data()); break;
+			case 9: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
+			case 10: vnx::read(in, value.partial_diff, type_code, _field->code.data()); break;
+			case 11: vnx::read(in, value.payout_threshold, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -444,14 +561,19 @@ void write(TypeOutput& out, const ::mmx::FarmerBase& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(4);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.harvester_timeout);
+	vnx::write_value(_buf + 4, value.difficulty_interval);
 	vnx::write(out, value.input_info, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_proofs, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.output_proofs, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.node_server, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.wallet_server, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.reward_addr, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.input_partials, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.output_proofs, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.output_partials, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.node_server, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.wallet_server, type_code, type_code->fields[8].code.data());
+	vnx::write(out, value.reward_addr, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.partial_diff, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.payout_threshold, type_code, type_code->fields[11].code.data());
 }
 
 void read(std::istream& in, ::mmx::FarmerBase& value) {

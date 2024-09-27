@@ -11,6 +11,9 @@
 #include <mmx/FarmerBase.hxx>
 #include <mmx/WalletAsyncClient.hxx>
 
+#include <vnx/addons/HttpClient.h>
+#include <vnx/addons/HttpClientAsyncClient.hxx>
+
 
 namespace mmx {
 
@@ -25,6 +28,10 @@ protected:
 
 	vnx::Hash64 get_mac_addr() const override;
 
+	uint64_t get_partial_diff(const addr_t& plot_nft) const override;
+
+	std::map<addr_t, uint64_t> get_partial_diffs(const std::vector<addr_t>& plot_nfts) const override;
+
 	std::vector<pubkey_t> get_farmer_keys() const override;
 
 	std::shared_ptr<const FarmInfo> get_farm_info() const override;
@@ -35,8 +42,14 @@ protected:
 
 	void handle(std::shared_ptr<const ProofResponse> value) override;
 
+	void handle(std::shared_ptr<const Partial> value) override;
+
 private:
 	void update();
+
+	void update_difficulty();
+
+	void query_difficulty(const addr_t& contract, const std::string& url);
 
 	skey_t get_skey(const pubkey_t& pubkey) const;
 
@@ -44,9 +57,14 @@ private:
 	std::shared_ptr<vnx::Pipe> pipe;
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<WalletAsyncClient> wallet;
+	std::shared_ptr<vnx::addons::HttpClientAsyncClient> http_async;
 
 	mutable std::unordered_map<pubkey_t, skey_t> key_map;
 	std::map<hash_t, std::shared_ptr<const vnx::Sample>> info_map;
+
+	std::map<addr_t, pooling_stats_t> nft_stats;
+
+	vnx::Handle<vnx::addons::HttpClient> http_client;
 
 };
 

@@ -33,7 +33,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid() const;
-	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = false) const;
+	virtual ::mmx::hash_t calc_hash() const;
 	virtual void validate() const;
 	
 	static std::shared_ptr<ProofOfSpace> create();

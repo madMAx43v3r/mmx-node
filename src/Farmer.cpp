@@ -8,6 +8,7 @@
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
+#include <mmx/WebRender.h>
 #include <mmx/utils.h>
 
 
@@ -26,7 +27,8 @@ void Farmer::init()
 	vnx::open_pipe(vnx_get_id(), this, 1000);
 
 	subscribe(input_info, 1000);
-	subscribe(input_proofs, 1000);
+	subscribe(input_proofs, 10000);
+	subscribe(input_partials, 10000);
 }
 
 void Farmer::main()
@@ -40,11 +42,22 @@ void Farmer::main()
 	}
 	params = get_params();
 
+	http_client = new vnx::addons::HttpClient(vnx_name + ".HttpClient");
+	http_client->output_response = "farmer.http_response";
+	http_client.start();
+
 	wallet = std::make_shared<WalletAsyncClient>(wallet_server);
+	http_async = std::make_shared<vnx::addons::HttpClientAsyncClient>(http_client.get_id());
+
 	wallet->vnx_set_non_blocking(true);
+	http_async->vnx_set_non_blocking(true);
+
 	add_async_client(wallet);
+	add_async_client(http_async);
 
 	set_timer_millis(60 * 1000, std::bind(&Farmer::update, this));
+
+	set_timer_millis(int64_t(difficulty_interval) * 1000, std::bind(&Farmer::update_difficulty, this));
 
 	update();
 
@@ -54,6 +67,27 @@ void Farmer::main()
 vnx::Hash64 Farmer::get_mac_addr() const
 {
 	return vnx_get_id();
+}
+
+uint64_t Farmer::get_partial_diff(const addr_t& plot_nft) const
+{
+	auto iter = nft_stats.find(plot_nft);
+	if(iter != nft_stats.end()) {
+		const auto& stats = iter->second;
+		if(stats.partial_diff > 0) {
+			return stats.partial_diff;
+		}
+	}
+	return 1;
+}
+
+std::map<addr_t, uint64_t> Farmer::get_partial_diffs(const std::vector<addr_t>& plot_nfts) const
+{
+	std::map<addr_t, uint64_t> out;
+	for(const auto& addr : plot_nfts) {
+		out[addr] = get_partial_diff(addr);
+	}
+	return out;
 }
 
 std::vector<pubkey_t> Farmer::get_farmer_keys() const
@@ -81,11 +115,21 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 			for(const auto& dir : value->plot_dirs) {
 				info->plot_dirs.push_back((value->harvester ? *value->harvester + ":" : "") + dir);
 			}
+			for(const auto& entry : value->pool_info) {
+				auto& dst = info->pool_info[entry.first];
+				const auto prev_count = dst.plot_count;
+				dst = entry.second;
+				dst.plot_count += prev_count;
+			}
 			info->total_bytes += value->total_bytes;
 			info->total_bytes_effective += value->total_bytes_effective;
 			info->total_balance += value->total_balance;
 		}
 	}
+	for(auto& entry : info->pool_info) {
+		entry.second.partial_diff = get_partial_diff(entry.first);
+	}
+	info->pool_stats = nft_stats;
 	return info;
 }
 
@@ -138,6 +182,38 @@ void Farmer::update()
 	}
 }
 
+void Farmer::update_difficulty()
+{
+	for(const auto& entry : nft_stats) {
+		query_difficulty(entry.first, entry.second.server_url);
+	}
+}
+
+void Farmer::query_difficulty(const addr_t& contract, const std::string& url)
+{
+	http_async->get_json(url + "/difficulty", {},
+		[this, url, contract](const vnx::Variant& value) {
+			const auto res = value.to_object();
+			if(auto field = res["difficulty"]) {
+				const auto diff = field.to<uint64_t>();
+				if(diff > 0) {
+					auto& stats = nft_stats[contract];
+					if(stats.partial_diff <= 0) {
+						log(INFO) << "Got partial difficulty: " << diff << " (" << url << ")";
+					}
+					stats.partial_diff = diff;
+				} else {
+					log(WARN) << "Got invalid partial difficulty: " << diff << " (" << url << ")";
+				}
+			} else {
+				log(WARN) << "Failed to query partial difficulty from " << url << ": " << value.to_string();
+			}
+		},
+		[this, url](const std::exception& ex) {
+			log(WARN) << "Failed to query partial difficulty from " << url << " due to: " << ex.what();
+		});
+}
+
 void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 {
 	if(auto sample = vnx_sample) {
@@ -147,24 +223,104 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 			info_map[hash_t(*value->harvester)] = sample;
 		}
 	}
+	for(const auto& entry : value->pool_info) {
+		if(!nft_stats.count(entry.first)) {
+			const auto& info = entry.second;
+			if(auto url = info.server_url) {
+				if(url->size()) {
+					query_difficulty(info.contract, *url);
+					nft_stats[info.contract].server_url = *url;
+				}
+			}
+		}
+	}
 }
 
-void Farmer::handle(std::shared_ptr<const ProofResponse> value)
+void Farmer::handle(std::shared_ptr<const ProofResponse> value) try
 {
-	try {
-		if(!value->is_valid()) {
-			throw std::logic_error("invalid proof");
-		}
-		const skey_t farmer_sk = get_skey(value->proof->farmer_key);
+	if(!value->is_valid()) {
+		throw std::logic_error("invalid proof");
+	}
+	const skey_t farmer_sk = get_skey(value->proof->farmer_key);
 
-		auto out = vnx::clone(value);
-		out->farmer_sig = signature_t::sign(farmer_sk, value->hash);
-		out->content_hash = out->calc_hash(true);
-		publish(out, output_proofs);
+	auto out = vnx::clone(value);
+	out->farmer_sig = signature_t::sign(farmer_sk, value->hash);
+	out->content_hash = out->calc_hash(true);
+	publish(out, output_proofs);
+}
+catch(const std::exception& ex) {
+	log(WARN) << "Failed to sign proof from harvester '" << value->harvester << "' due to: " << ex.what();
+}
+
+void Farmer::handle(std::shared_ptr<const Partial> value) try
+{
+	if(!value->proof) {
+		return;
 	}
-	catch(const std::exception& ex) {
-		log(ERROR) << "Failed to sign proof from harvester '" << value->harvester << "' due to: " << ex.what();
+	auto out = vnx::clone(value);
+	if(reward_addr) {
+		out->account = *reward_addr;
+	} else {
+		log(WARN) << "Using plot NFT owner as fallback payout address: " << out->account.to_string();
 	}
+	out->hash = out->calc_hash();
+
+	const auto farmer_sk = get_skey(value->proof->farmer_key);
+	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
+
+	const auto payload = vnx::to_pretty_string(web_render(out));
+
+	http_async->post_json(out->pool_url + "/partial", payload, {},
+		[this, out](std::shared_ptr<const vnx::addons::HttpResponse> response) {
+			auto& stats = nft_stats[out->contract];
+			bool is_valid = false;
+			bool have_error = false;
+			if(response->is_json()) {
+				const auto value = response->parse_json();
+				if(value.is_object()) {
+					const auto res = value.to_object();
+					is_valid = res["valid"].to<bool>();
+					if(is_valid) {
+						const auto points = res["points"].to<int64_t>();
+						const auto response_ms = res["response_time"].to<int64_t>();
+						stats.valid_points += (points > 0 ? points : out->difficulty);
+						stats.total_partials++;
+						stats.total_response_time += response_ms;
+						log(INFO) << "Partial accepted: points = " << points
+								<< ", response = " << response_ms / 1e3
+								<< " sec [" << out->harvester << "] (" << out->pool_url << ")";
+					} else {
+						const auto code = res["error_code"].to<pooling_error_e>();
+						if(code != pooling_error_e::NONE) {
+							have_error = true;
+							const auto message = res["error_message"].to_string_value();
+							stats.error_count[code]++;
+							log(WARN) << "Partial was rejected due to: "
+									<< code.to_string_value() << ": " << (message.empty() ? "???" : message)
+									<< " [" << out->harvester << "] (" << out->pool_url << ")";
+						}
+					}
+				}
+			}
+			if(!is_valid) {
+				if(!have_error) {
+					stats.error_count[pooling_error_e::SERVER_ERROR]++;
+					log(WARN) << "Partial failed due to: unknown error [" << out->harvester << "] (" << out->pool_url << ")";
+				}
+				stats.failed_points += out->difficulty;
+			}
+		},
+		[this, out](const std::exception& ex) {
+			auto& stats = nft_stats[out->contract];
+			stats.failed_points += out->difficulty;
+			stats.error_count[pooling_error_e::SERVER_ERROR]++;
+			log(WARN) << "Failed to send partial to " << out->pool_url << " due to: " << ex.what();
+		});
+
+	publish(out, output_partials);
+}
+catch(const std::exception& ex) {
+	log(WARN) << "Failed to process partial from harvester '" << value->harvester << "' due to: " << ex.what();
 }
 
 skey_t Farmer::get_skey(const pubkey_t& pubkey) const

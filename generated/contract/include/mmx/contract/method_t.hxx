@@ -11,7 +11,7 @@
 namespace mmx {
 namespace contract {
 
-struct MMX_CONTRACT_EXPORT method_t {
+struct MMX_CONTRACT_EXPORT method_t : vnx::struct_t {
 	
 	
 	std::string name;

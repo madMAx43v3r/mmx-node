@@ -212,6 +212,9 @@ public:
 
 	void update_from(std::shared_ptr<const Transaction> tx)
 	{
+		if(pending_tx.count(tx->id)) {
+			return;
+		}
 		if(tx->sender) {
 			const auto key = std::make_pair(*tx->sender, addr_t());
 			const auto static_fee = cost_to_fee<std::logic_error>(tx->static_cost, tx->fee_ratio);

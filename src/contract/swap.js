@@ -14,6 +14,10 @@ var tokens = [];
 var volume = [0, 0];
 var users = {};
 
+// common variables:
+// `i`: index of deposited token, 0 = token, 1 = currency
+// `k`: index of token to be traded for, the opposite of `i` ((i == 0 && k == 1) || (i == 1 && k == 0))
+
 function init(token, currency)
 {
 	push(tokens, bech32(token));

@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT tx_log_entry_t {
+struct MMX_EXPORT tx_log_entry_t : vnx::struct_t {
 	
 	
 	int64_t time = 0;

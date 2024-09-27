@@ -49,7 +49,7 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "vdf_iters", 	vdf_iters);
 	write_field(out, "vdf_output", 	vdf_output);
 	write_field(out, "vdf_reward_addr", vdf_reward_addr);
-	write_field(out, "proof", 		proof ? proof->calc_hash(true) : hash_t());
+	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
 	write_field(out, "reward_amount", reward_amount);
 	write_field(out, "reward_addr", reward_addr);
 	write_field(out, "reward_vote", reward_vote);

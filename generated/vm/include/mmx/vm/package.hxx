@@ -41,6 +41,7 @@ void write(std::ostream& out, const ::mmx::vm::varptr_t& value); ///< \private
 
 void accept(Visitor& visitor, const ::mmx::vm::varptr_t& value); ///< \private
 
+
 /// \private
 template<>
 struct type<::mmx::vm::varptr_t> {

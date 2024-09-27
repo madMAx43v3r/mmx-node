@@ -6,7 +6,7 @@ struct tx_entry_t {
 	
 	long time_stamp;		// UNIX [ms]
 	
-	hash_t txid;
+	hash_t txid;			// block hash in case type == REWARD
 	
 	tx_type_e type;
 	

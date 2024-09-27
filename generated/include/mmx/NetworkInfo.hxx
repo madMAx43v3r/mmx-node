@@ -16,6 +16,7 @@ public:
 	
 	vnx::bool_t is_synced = 0;
 	uint32_t height = 0;
+	uint32_t synced_since = 0;
 	int64_t time_stamp = 0;
 	uint64_t time_diff = 0;
 	uint64_t space_diff = 0;
@@ -75,23 +76,24 @@ protected:
 
 template<typename T>
 void NetworkInfo::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NetworkInfo>(15);
+	_visitor.template type_begin<NetworkInfo>(16);
 	_visitor.type_field("is_synced", 0); _visitor.accept(is_synced);
 	_visitor.type_field("height", 1); _visitor.accept(height);
-	_visitor.type_field("time_stamp", 2); _visitor.accept(time_stamp);
-	_visitor.type_field("time_diff", 3); _visitor.accept(time_diff);
-	_visitor.type_field("space_diff", 4); _visitor.accept(space_diff);
-	_visitor.type_field("block_reward", 5); _visitor.accept(block_reward);
-	_visitor.type_field("total_space", 6); _visitor.accept(total_space);
-	_visitor.type_field("total_supply", 7); _visitor.accept(total_supply);
-	_visitor.type_field("address_count", 8); _visitor.accept(address_count);
-	_visitor.type_field("vdf_speed", 9); _visitor.accept(vdf_speed);
-	_visitor.type_field("block_size", 10); _visitor.accept(block_size);
-	_visitor.type_field("netspace_ratio", 11); _visitor.accept(netspace_ratio);
-	_visitor.type_field("average_txfee", 12); _visitor.accept(average_txfee);
-	_visitor.type_field("genesis_hash", 13); _visitor.accept(genesis_hash);
-	_visitor.type_field("name", 14); _visitor.accept(name);
-	_visitor.template type_end<NetworkInfo>(15);
+	_visitor.type_field("synced_since", 2); _visitor.accept(synced_since);
+	_visitor.type_field("time_stamp", 3); _visitor.accept(time_stamp);
+	_visitor.type_field("time_diff", 4); _visitor.accept(time_diff);
+	_visitor.type_field("space_diff", 5); _visitor.accept(space_diff);
+	_visitor.type_field("block_reward", 6); _visitor.accept(block_reward);
+	_visitor.type_field("total_space", 7); _visitor.accept(total_space);
+	_visitor.type_field("total_supply", 8); _visitor.accept(total_supply);
+	_visitor.type_field("address_count", 9); _visitor.accept(address_count);
+	_visitor.type_field("vdf_speed", 10); _visitor.accept(vdf_speed);
+	_visitor.type_field("block_size", 11); _visitor.accept(block_size);
+	_visitor.type_field("netspace_ratio", 12); _visitor.accept(netspace_ratio);
+	_visitor.type_field("average_txfee", 13); _visitor.accept(average_txfee);
+	_visitor.type_field("genesis_hash", 14); _visitor.accept(genesis_hash);
+	_visitor.type_field("name", 15); _visitor.accept(name);
+	_visitor.template type_end<NetworkInfo>(16);
 }
 
 

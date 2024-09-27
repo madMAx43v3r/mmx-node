@@ -107,6 +107,25 @@ void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot& value); ///< \
 void accept(Visitor& visitor, const ::mmx::contract::WebData& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::method_t& value); ///< \private
 
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::Binary> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::Data> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::Executable> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::Identity> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::MultiSig> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::PubKey> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::TokenBase> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::VirtualPlot> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::WebData> value); ///< \private
+
 /// \private
 template<>
 struct type<::mmx::contract::Binary> {

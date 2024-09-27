@@ -199,7 +199,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::send(const uint32_t& ind
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::send_many(const uint32_t& index, const std::map<::mmx::addr_t, uint64_t>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::send_many(const uint32_t& index, const std::vector<std::pair<::mmx::addr_t, uint64_t>>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_send_many::create();
 	_method->index = index;
 	_method->amounts = amounts;

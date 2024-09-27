@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT balance_t {
+struct MMX_EXPORT balance_t : vnx::struct_t {
 	
 	
 	::mmx::uint128 spendable;

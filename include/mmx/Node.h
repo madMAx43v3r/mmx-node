@@ -150,6 +150,8 @@ protected:
 
 	uint128 get_total_supply(const addr_t& currency) const override;
 
+	vnx::optional<plot_nft_info_t> get_plot_nft_info(const addr_t& address) const override;
+
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots_for(const pubkey_t& farmer_key) const override;
@@ -202,6 +204,11 @@ protected:
 
 	std::vector<std::pair<pubkey_t, uint32_t>> get_farmer_ranking(const int32_t& limit) const override;
 
+	std::tuple<pooling_error_e, std::string> verify_plot_nft_target(const addr_t& address, const addr_t& pool_target) const override;
+
+	std::tuple<pooling_error_e, std::string> verify_partial(
+			std::shared_ptr<const Partial> partial, const vnx::optional<addr_t>& pool_target) const override;
+
 	void on_stuck_timeout();
 
 	void start_sync(const vnx::bool_t& force) override;
@@ -236,9 +243,9 @@ private:
 	struct execution_context_t {
 		uint32_t height = 0;
 		std::shared_ptr<vm::StorageCache> storage;
-		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;
-		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;
-		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;
+		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;				// [contract => TX ids]
+		std::unordered_map<hash_t, std::unordered_set<hash_t>> wait_map;		// [TX id => TX ids]
+		std::unordered_map<hash_t, std::shared_ptr<waitcond_t>> signal_map;		// [TX id => condition]
 		void wait(const hash_t& txid) const;
 		void signal(const hash_t& txid) const;
 		void setup_wait(const hash_t& txid, const addr_t& address);
@@ -388,10 +395,12 @@ private:
 	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) const;
 
 	template<typename T>
-	uint256_t verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge,
-								std::shared_ptr<const BlockHeader> diff_block) const;
+	uint256_t verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
-	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, std::shared_ptr<const BlockHeader> diff_block) const;
+	void verify_proof(
+			std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge,
+			std::shared_ptr<const BlockHeader> diff_block,
+			const vnx::optional<uint64_t>& space_diff = nullptr) const;
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof) const;
 
@@ -514,6 +523,7 @@ private:
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
+	uint32_t synced_since = 0;								// height of last sync done
 	int64_t sync_finish_ms = 0;								// when peak was reached
 	double max_sync_pending = 0;
 	std::set<uint32_t> sync_pending;						// set of heights

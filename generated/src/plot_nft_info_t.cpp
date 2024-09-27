@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 plot_nft_info_t::VNX_TYPE_HASH(0xf8e0b44f3c0a54aeull);
-const vnx::Hash64 plot_nft_info_t::VNX_CODE_HASH(0x355b43a932bc2c3aull);
+const vnx::Hash64 plot_nft_info_t::VNX_CODE_HASH(0xf96767629f820ffaull);
 
 vnx::Hash64 plot_nft_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -45,22 +45,24 @@ void plot_nft_info_t::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_co
 void plot_nft_info_t::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_plot_nft_info_t;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, owner);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, target);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, name);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, owner);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, is_locked);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, unlock_height);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, unlock_delay);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, server_url);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, target);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, unlock_height);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, unlock_delay);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, server_url);
 	_visitor.type_end(*_type_code);
 }
 
 void plot_nft_info_t::write(std::ostream& _out) const {
 	_out << "{";
-	_out << "\"owner\": "; vnx::write(_out, owner);
-	_out << ", \"target\": "; vnx::write(_out, target);
+	_out << "\"name\": "; vnx::write(_out, name);
+	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"is_locked\": "; vnx::write(_out, is_locked);
+	_out << ", \"target\": "; vnx::write(_out, target);
 	_out << ", \"unlock_height\": "; vnx::write(_out, unlock_height);
 	_out << ", \"unlock_delay\": "; vnx::write(_out, unlock_delay);
 	_out << ", \"server_url\": "; vnx::write(_out, server_url);
@@ -76,10 +78,11 @@ void plot_nft_info_t::read(std::istream& _in) {
 vnx::Object plot_nft_info_t::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.plot_nft_info_t";
+	_object["name"] = name;
 	_object["owner"] = owner;
-	_object["target"] = target;
 	_object["address"] = address;
 	_object["is_locked"] = is_locked;
+	_object["target"] = target;
 	_object["unlock_height"] = unlock_height;
 	_object["unlock_delay"] = unlock_delay;
 	_object["server_url"] = server_url;
@@ -92,6 +95,8 @@ void plot_nft_info_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(address);
 		} else if(_entry.first == "is_locked") {
 			_entry.second.to(is_locked);
+		} else if(_entry.first == "name") {
+			_entry.second.to(name);
 		} else if(_entry.first == "owner") {
 			_entry.second.to(owner);
 		} else if(_entry.first == "server_url") {
@@ -107,17 +112,20 @@ void plot_nft_info_t::from_object(const vnx::Object& _object) {
 }
 
 vnx::Variant plot_nft_info_t::get_field(const std::string& _name) const {
+	if(_name == "name") {
+		return vnx::Variant(name);
+	}
 	if(_name == "owner") {
 		return vnx::Variant(owner);
-	}
-	if(_name == "target") {
-		return vnx::Variant(target);
 	}
 	if(_name == "address") {
 		return vnx::Variant(address);
 	}
 	if(_name == "is_locked") {
 		return vnx::Variant(is_locked);
+	}
+	if(_name == "target") {
+		return vnx::Variant(target);
 	}
 	if(_name == "unlock_height") {
 		return vnx::Variant(unlock_height);
@@ -132,14 +140,16 @@ vnx::Variant plot_nft_info_t::get_field(const std::string& _name) const {
 }
 
 void plot_nft_info_t::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "owner") {
+	if(_name == "name") {
+		_value.to(name);
+	} else if(_name == "owner") {
 		_value.to(owner);
-	} else if(_name == "target") {
-		_value.to(target);
 	} else if(_name == "address") {
 		_value.to(address);
 	} else if(_name == "is_locked") {
 		_value.to(is_locked);
+	} else if(_name == "target") {
+		_value.to(target);
 	} else if(_name == "unlock_height") {
 		_value.to(unlock_height);
 	} else if(_name == "unlock_delay") {
@@ -173,21 +183,21 @@ std::shared_ptr<vnx::TypeCode> plot_nft_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.plot_nft_info_t";
 	type_code->type_hash = vnx::Hash64(0xf8e0b44f3c0a54aeull);
-	type_code->code_hash = vnx::Hash64(0x355b43a932bc2c3aull);
+	type_code->code_hash = vnx::Hash64(0xf96767629f820ffaull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::plot_nft_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<plot_nft_info_t>>(); };
-	type_code->fields.resize(7);
+	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
-		field.name = "owner";
-		field.code = {11, 32, 1};
+		field.name = "name";
+		field.code = {32};
 	}
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "target";
+		field.name = "owner";
 		field.code = {11, 32, 1};
 	}
 	{
@@ -204,21 +214,27 @@ std::shared_ptr<vnx::TypeCode> plot_nft_info_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[4];
-		field.data_size = 4;
-		field.name = "unlock_height";
-		field.code = {3};
+		field.is_extended = true;
+		field.name = "target";
+		field.code = {33, 11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[5];
-		field.data_size = 4;
-		field.name = "unlock_delay";
-		field.code = {3};
+		field.is_extended = true;
+		field.name = "unlock_height";
+		field.code = {33, 3};
 	}
 	{
 		auto& field = type_code->fields[6];
 		field.is_extended = true;
+		field.name = "unlock_delay";
+		field.code = {33, 3};
+	}
+	{
+		auto& field = type_code->fields[7];
+		field.is_extended = true;
 		field.name = "server_url";
-		field.code = {32};
+		field.code = {33, 32};
 	}
 	type_code->build();
 	return type_code;
@@ -265,19 +281,16 @@ void read(TypeInput& in, ::mmx::plot_nft_info_t& value, const TypeCode* type_cod
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.is_locked, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[4]) {
-			vnx::read_value(_buf + _field->offset, value.unlock_height, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[5]) {
-			vnx::read_value(_buf + _field->offset, value.unlock_delay, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.owner, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.target, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.name, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.owner, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.address, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.server_url, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.target, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.unlock_height, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.unlock_delay, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.server_url, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -296,14 +309,15 @@ void write(TypeOutput& out, const ::mmx::plot_nft_info_t& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(9);
+	auto* const _buf = out.write(1);
 	vnx::write_value(_buf + 0, value.is_locked);
-	vnx::write_value(_buf + 1, value.unlock_height);
-	vnx::write_value(_buf + 5, value.unlock_delay);
-	vnx::write(out, value.owner, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.target, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.name, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.owner, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.address, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.server_url, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.target, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.unlock_height, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.unlock_delay, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.server_url, type_code, type_code->fields[7].code.data());
 }
 
 void read(std::istream& in, ::mmx::plot_nft_info_t& value) {

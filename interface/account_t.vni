@@ -14,4 +14,6 @@ struct account_t {
 	
 	bool with_passphrase;
 	
+	bool is_hidden;
+	
 }

@@ -23,6 +23,12 @@
 
 namespace mmx {
 
+static std::string get_info_file_name(const account_t& config)
+{
+	const auto suffix = config.index ? "_" + std::to_string(config.index) : "";
+	return "info_" + config.finger_print + suffix + ".dat";
+}
+
 Wallet::Wallet(const std::string& _vnx_name)
 	:	WalletBase(_vnx_name)
 {
@@ -70,7 +76,9 @@ void Wallet::main()
 	}
 	for(size_t i = 0; i < accounts.size(); ++i) {
 		try {
-			add_account(max_key_files + i, accounts[i], nullptr);
+			if(!accounts[i].is_hidden) {
+				add_account(max_key_files + i, accounts[i], nullptr);
+			}
 		} catch(const std::exception& ex) {
 			log(WARN) << ex.what();
 		}
@@ -117,11 +125,14 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 			tx->exec_result = node->validate(tx);
 		}
 	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
+	}
 	return tx;
 }
 
 std::shared_ptr<const Transaction>
-Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amounts,
+Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, uint64_t>>& amounts,
 					const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
@@ -148,6 +159,9 @@ Wallet::send_many(	const uint32_t& index, const std::map<addr_t, uint64_t>& amou
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -190,6 +204,9 @@ Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
 			tx->exec_result = node->validate(tx);
 		}
 	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
+	}
 	return tx;
 }
 
@@ -218,6 +235,9 @@ Wallet::deploy(const uint32_t& index, std::shared_ptr<const Contract> contract, 
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -248,6 +268,9 @@ std::shared_ptr<const Transaction> Wallet::execute(
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -280,6 +303,9 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -322,6 +348,9 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -433,6 +462,9 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 			tx->exec_result = node->validate(tx);
 		}
 	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
+	}
 	return tx;
 }
 
@@ -470,6 +502,9 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 		} else {
 			tx->exec_result = node->validate(tx);
 		}
+	}
+	if(options.mark_spent) {
+		wallet->update_from(tx);
 	}
 	return tx;
 }
@@ -868,7 +903,7 @@ void Wallet::unlock(const uint32_t& index, const std::string& passphrase)
 		try {
 			auto info = WalletFile::create();
 			info->addresses = wallet->get_all_addresses();
-			vnx::write_to_file(database_path + "info_" + wallet->config.finger_print + ".dat", info);
+			vnx::write_to_file(database_path + get_info_file_name(wallet->config), info);
 		} catch(const std::exception& ex) {
 			log(ERROR) << "Failed to store wallet info: " << ex.what();
 		}
@@ -887,7 +922,7 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 	if(auto key_file = vnx::read_from_file<KeyFile>(key_path)) {
 		std::shared_ptr<ECDSA_Wallet> wallet;
 		if(config.with_passphrase && !passphrase) {
-			const auto info_path = database_path + "info_" + config.finger_print + ".dat";
+			const auto info_path = database_path + get_info_file_name(config);
 			const auto info = vnx::read_from_file<WalletFile>(info_path);
 			if(!info) {
 				log(WARN) << "Missing info file: " << info_path;
@@ -1003,26 +1038,26 @@ std::shared_ptr<const KeyFile> Wallet::export_wallet(const uint32_t& index) cons
 
 void Wallet::remove_account(const uint32_t& index, const uint32_t& account)
 {
+	if(index < 100) {
+		throw std::logic_error("cannot remove wallet");
+	}
 	const auto wallet = get_wallet(index);
 
 	const std::string path = config_path + vnx_name + ".json";
 	{
 		auto object = vnx::read_config_file(path);
 		auto& accounts = object["accounts+"];
-		std::vector<account_t> list;
-		for(const auto& entry : accounts.to<std::vector<account_t>>()) {
-			if(entry.finger_print != wallet->config.finger_print || entry.index != account) {
-				list.push_back(entry);
-			}
+		auto list = accounts.to<std::vector<account_t>>();
+		const auto offset = index - 100;
+		if(offset < list.size()) {
+			list[offset].is_hidden = true;
+		} else {
+			throw std::logic_error("cannot remove wallet");
 		}
 		accounts = list;
 		vnx::write_config_file(path, object);
 	}
-	if(index + 1 == wallets.size()) {
-		wallets.resize(index);
-	} else {
-		wallets[index] = nullptr;
-	}
+	wallets[index] = nullptr;
 }
 
 std::set<addr_t> Wallet::get_token_list() const

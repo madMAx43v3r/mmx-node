@@ -16,7 +16,7 @@ vnx::bool_t ProofOfSpaceOG::is_valid() const
 	return Super::is_valid() && ksize > 0 && proof_xs.size() <= 1024;
 }
 
-mmx::hash_t ProofOfSpaceOG::calc_hash(const vnx::bool_t& full_hash) const
+mmx::hash_t ProofOfSpaceOG::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);

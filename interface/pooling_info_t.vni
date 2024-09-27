@@ -1,0 +1,15 @@
+package mmx;
+
+struct pooling_info_t {
+	
+	addr_t contract;
+	
+	optional<string> server_url;
+	
+	optional<addr_t> pool_target;
+	
+	ulong partial_diff;
+	
+	uint plot_count;
+	
+}

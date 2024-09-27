@@ -16,7 +16,7 @@ vnx::bool_t ProofOfSpace::is_valid() const
 	return true;
 }
 
-mmx::hash_t ProofOfSpace::calc_hash(const vnx::bool_t& full_hash) const
+mmx::hash_t ProofOfSpace::calc_hash() const
 {
 	throw std::logic_error("not implemented");
 }

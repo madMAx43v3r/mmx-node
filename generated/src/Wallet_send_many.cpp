@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_send_many::VNX_TYPE_HASH(0x4f35769a1b4c6786ull);
-const vnx::Hash64 Wallet_send_many::VNX_CODE_HASH(0x5bd809c5c0e7e7f2ull);
+const vnx::Hash64 Wallet_send_many::VNX_CODE_HASH(0x9ea164bdcd84a54dull);
 
 vnx::Hash64 Wallet_send_many::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -146,7 +146,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_send_many::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.send_many";
 	type_code->type_hash = vnx::Hash64(0x4f35769a1b4c6786ull);
-	type_code->code_hash = vnx::Hash64(0x5bd809c5c0e7e7f2ull);
+	type_code->code_hash = vnx::Hash64(0x9ea164bdcd84a54dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -167,7 +167,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_send_many::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "amounts";
-		field.code = {13, 5, 11, 32, 1, 4};
+		field.code = {12, 23, 2, 4, 7, 11, 32, 1, 4};
 	}
 	{
 		auto& field = type_code->fields[2];

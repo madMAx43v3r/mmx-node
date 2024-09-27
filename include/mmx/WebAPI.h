@@ -74,8 +74,8 @@ private:
 	void get_context(	const std::unordered_set<addr_t>& addr_set, const vnx::request_id_t& request_id,
 						const std::function<void(std::shared_ptr<RenderContext>)>& callback) const;
 
-	void resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var,
-							const vnx::request_id_t& request_id, const std::function<void(const vnx::Variant&)>& callback) const;
+	void resolve_vm_varptr(	const addr_t& contract, const vm::varptr_t& var, const vnx::request_id_t& request_id,
+							const uint32_t call_depth, const std::function<void(const vnx::Variant&)>& callback) const;
 
 	void respond(const vnx::request_id_t& request_id, std::shared_ptr<const vnx::addons::HttpResponse> response) const;
 
@@ -99,6 +99,7 @@ private:
 	bool is_synced = false;
 	int64_t time_offset = 0;		// [sec]
 	uint32_t curr_height = 0;
+	uint32_t synced_since = 0;
 	uint64_t log_counter = 0;
 	uint64_t proof_counter = 0;
 

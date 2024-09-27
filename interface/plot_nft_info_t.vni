@@ -2,13 +2,17 @@ package mmx;
 
 struct plot_nft_info_t {
 	
+	string name;
+	
 	addr_t owner;
-	addr_t target;
 	addr_t address;
 	
 	bool is_locked;
-	uint unlock_height;
-	uint unlock_delay;
-	string server_url;
+	
+	optional<addr_t> target;
+	optional<uint> unlock_height;
+	optional<uint> unlock_delay;
+	
+	optional<string> server_url;
 	
 }

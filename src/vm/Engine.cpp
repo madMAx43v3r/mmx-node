@@ -1068,7 +1068,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 					write(dst, var_t(TYPE_TRUE));
 					break;
 				default:
-					throw std::logic_error("invalid conversion: " + to_hex(svar.type) + " to " + to_hex(dflags));
+					throw std::logic_error("invalid conversion: " + to_hex(uint32_t(svar.type)) + " to " + to_hex(dflags));
 			}
 	}
 }

@@ -112,7 +112,7 @@ void Node::main()
 #endif
 
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
-	api_threads = std::make_shared<vnx::ThreadPool>(num_threads);
+	api_threads = std::make_shared<vnx::ThreadPool>(num_api_threads);
 	vdf_threads = std::make_shared<vnx::ThreadPool>(num_vdf_threads);
 	fetch_threads = std::make_shared<vnx::ThreadPool>(2);
 
@@ -576,7 +576,10 @@ void Node::start_sync(const vnx::bool_t& force)
 	if((!is_synced || !do_sync) && !force) {
 		return;
 	}
-	is_synced = false;
+	{
+		std::unique_lock lock(db_mutex);
+		is_synced = false;
+	}
 	sync_pos = 0;
 	sync_peak = nullptr;
 	sync_retry = 0;
@@ -998,6 +1001,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			if(auto balance = balance_cache.find(in.address, in.contract)) {
 				clamped_sub_assign(*balance, in.amount);
 			}
+			// TODO: memo_log
 			spend_log.insert(std::make_tuple(in.address, block->height, counter++), in);
 		}
 		for(const auto& tx : block->get_transactions()) {

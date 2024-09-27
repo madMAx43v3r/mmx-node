@@ -44,7 +44,7 @@ namespace mmx {
 
 
 const vnx::Hash64 WebAPIBase::VNX_TYPE_HASH(0xfe90ce601fcc0cc6ull);
-const vnx::Hash64 WebAPIBase::VNX_CODE_HASH(0x8205a34e5a89b37bull);
+const vnx::Hash64 WebAPIBase::VNX_CODE_HASH(0xed61ac1e8ca7f4c6ull);
 
 WebAPIBase::WebAPIBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -56,7 +56,9 @@ WebAPIBase::WebAPIBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".farmer_server", farmer_server);
 	vnx::read_config(vnx_name + ".exchange_server", exchange_server);
 	vnx::read_config(vnx_name + ".config_path", config_path);
+	vnx::read_config(vnx_name + ".max_recursion", max_recursion);
 	vnx::read_config(vnx_name + ".max_log_history", max_log_history);
+	vnx::read_config(vnx_name + ".sync_delay", sync_delay);
 	vnx::read_config(vnx_name + ".cache_max_age", cache_max_age);
 }
 
@@ -82,8 +84,10 @@ void WebAPIBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, farmer_server);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, exchange_server);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, config_path);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, max_log_history);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, cache_max_age);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, max_recursion);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, max_log_history);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, sync_delay);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, cache_max_age);
 	_visitor.type_end(*_type_code);
 }
 
@@ -96,7 +100,9 @@ void WebAPIBase::write(std::ostream& _out) const {
 	_out << ", \"farmer_server\": "; vnx::write(_out, farmer_server);
 	_out << ", \"exchange_server\": "; vnx::write(_out, exchange_server);
 	_out << ", \"config_path\": "; vnx::write(_out, config_path);
+	_out << ", \"max_recursion\": "; vnx::write(_out, max_recursion);
 	_out << ", \"max_log_history\": "; vnx::write(_out, max_log_history);
+	_out << ", \"sync_delay\": "; vnx::write(_out, sync_delay);
 	_out << ", \"cache_max_age\": "; vnx::write(_out, cache_max_age);
 	_out << "}";
 }
@@ -117,7 +123,9 @@ vnx::Object WebAPIBase::to_object() const {
 	_object["farmer_server"] = farmer_server;
 	_object["exchange_server"] = exchange_server;
 	_object["config_path"] = config_path;
+	_object["max_recursion"] = max_recursion;
 	_object["max_log_history"] = max_log_history;
+	_object["sync_delay"] = sync_delay;
 	_object["cache_max_age"] = cache_max_age;
 	return _object;
 }
@@ -138,8 +146,12 @@ void WebAPIBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(input_proofs);
 		} else if(_entry.first == "max_log_history") {
 			_entry.second.to(max_log_history);
+		} else if(_entry.first == "max_recursion") {
+			_entry.second.to(max_recursion);
 		} else if(_entry.first == "node_server") {
 			_entry.second.to(node_server);
+		} else if(_entry.first == "sync_delay") {
+			_entry.second.to(sync_delay);
 		} else if(_entry.first == "wallet_server") {
 			_entry.second.to(wallet_server);
 		}
@@ -168,8 +180,14 @@ vnx::Variant WebAPIBase::get_field(const std::string& _name) const {
 	if(_name == "config_path") {
 		return vnx::Variant(config_path);
 	}
+	if(_name == "max_recursion") {
+		return vnx::Variant(max_recursion);
+	}
 	if(_name == "max_log_history") {
 		return vnx::Variant(max_log_history);
+	}
+	if(_name == "sync_delay") {
+		return vnx::Variant(sync_delay);
 	}
 	if(_name == "cache_max_age") {
 		return vnx::Variant(cache_max_age);
@@ -192,8 +210,12 @@ void WebAPIBase::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(exchange_server);
 	} else if(_name == "config_path") {
 		_value.to(config_path);
+	} else if(_name == "max_recursion") {
+		_value.to(max_recursion);
 	} else if(_name == "max_log_history") {
 		_value.to(max_log_history);
+	} else if(_name == "sync_delay") {
+		_value.to(sync_delay);
 	} else if(_name == "cache_max_age") {
 		_value.to(cache_max_age);
 	}
@@ -223,7 +245,7 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.WebAPI";
 	type_code->type_hash = vnx::Hash64(0xfe90ce601fcc0cc6ull);
-	type_code->code_hash = vnx::Hash64(0x8205a34e5a89b37bull);
+	type_code->code_hash = vnx::Hash64(0xed61ac1e8ca7f4c6ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::WebAPIBase);
 	type_code->methods.resize(12);
@@ -239,7 +261,7 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	type_code->methods[9] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[10] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[11] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(9);
+	type_code->fields.resize(11);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -291,12 +313,26 @@ std::shared_ptr<vnx::TypeCode> WebAPIBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[7];
 		field.data_size = 4;
+		field.name = "max_recursion";
+		field.value = vnx::to_string(100);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[8];
+		field.data_size = 4;
 		field.name = "max_log_history";
 		field.value = vnx::to_string(10000);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[8];
+		auto& field = type_code->fields[9];
+		field.data_size = 4;
+		field.name = "sync_delay";
+		field.value = vnx::to_string(18);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[10];
 		field.data_size = 4;
 		field.name = "cache_max_age";
 		field.value = vnx::to_string(0);
@@ -455,9 +491,15 @@ void read(TypeInput& in, ::mmx::WebAPIBase& value, const TypeCode* type_code, co
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[7]) {
-			vnx::read_value(_buf + _field->offset, value.max_log_history, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.max_recursion, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[8]) {
+			vnx::read_value(_buf + _field->offset, value.max_log_history, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[9]) {
+			vnx::read_value(_buf + _field->offset, value.sync_delay, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[10]) {
 			vnx::read_value(_buf + _field->offset, value.cache_max_age, _field->code.data());
 		}
 	}
@@ -488,9 +530,11 @@ void write(TypeOutput& out, const ::mmx::WebAPIBase& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(8);
-	vnx::write_value(_buf + 0, value.max_log_history);
-	vnx::write_value(_buf + 4, value.cache_max_age);
+	auto* const _buf = out.write(16);
+	vnx::write_value(_buf + 0, value.max_recursion);
+	vnx::write_value(_buf + 4, value.max_log_history);
+	vnx::write_value(_buf + 8, value.sync_delay);
+	vnx::write_value(_buf + 12, value.cache_max_age);
 	vnx::write(out, value.input_blocks, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_proofs, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.node_server, type_code, type_code->fields[2].code.data());

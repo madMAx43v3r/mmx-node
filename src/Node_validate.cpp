@@ -78,6 +78,9 @@ std::shared_ptr<Node::execution_context_t> Node::new_exec_context(const uint32_t
 void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const
 {
 	std::unordered_set<addr_t> mutate_set;
+	if(tx->deploy) {
+		mutate_set.insert(tx->id);
+	}
 	for(const auto& op : tx->get_operations()) {
 		mutate_set.insert(op->address == addr_t() ? tx->id : op->address);
 	}
@@ -86,7 +89,7 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 		while(!list.empty()) {
 			std::vector<addr_t> more;
 			for(const auto& address : list) {
-				auto contract = (address == tx->id ? tx->deploy : get_contract(address));
+				const auto contract = (address == tx->id ? tx->deploy : get_contract(address));
 				if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
 					for(const auto& entry : exec->depends) {
 						if(mutate_set.insert(entry.second).second) {
@@ -412,6 +415,16 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					const std::string& method_name,
 					exec_error_t& error, const bool is_public) const
 {
+	{
+		auto iter = context->mutate_map.find(engine->contract);
+		if(iter == context->mutate_map.end()) {
+			throw std::logic_error("contract not locked");
+		}
+		const auto& list = iter->second;
+		if(std::find(list.begin(), list.end(), tx->id) == list.end()) {
+			throw std::logic_error("transaction did not lock contract: " + engine->contract.to_string());
+		}
+	}
 	const auto binary = get_contract_as<contract::Binary>(executable->binary, &engine->gas_used, engine->gas_limit);
 	if(!binary) {
 		throw std::logic_error("no such binary: " + executable->binary.to_string());

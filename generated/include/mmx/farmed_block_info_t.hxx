@@ -11,7 +11,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT farmed_block_info_t {
+struct MMX_EXPORT farmed_block_info_t : vnx::struct_t {
 	
 	
 	uint32_t height = 0;

@@ -62,6 +62,7 @@ int main(int argc, char** argv)
 		proxy->export_list.push_back(module->output_info);
 		proxy->export_list.push_back(module->output_proofs);
 		proxy->export_list.push_back(module->output_lookups);
+		proxy->export_list.push_back(module->output_partials);
 		module.start_detached();
 	}
 

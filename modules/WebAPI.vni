@@ -12,7 +12,10 @@ module WebAPI implements vnx.addons.HttpComponent {
 	
 	string config_path;
 	
+	uint max_recursion = 100;
 	uint max_log_history = 10000;
+	
+	uint sync_delay = 18;					// blocks after sync for public service
 	
 	uint cache_max_age = 0;					// 0 = no-cache
 	

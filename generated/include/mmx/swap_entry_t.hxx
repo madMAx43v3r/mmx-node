@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT swap_entry_t {
+struct MMX_EXPORT swap_entry_t : vnx::struct_t {
 	
 	
 	uint32_t height = 0;

@@ -5,6 +5,7 @@ class NetworkInfo {
 	bool is_synced;
 	
 	uint height;
+	uint synced_since;
 	
 	long time_stamp;			// UNIX [ms]
 	

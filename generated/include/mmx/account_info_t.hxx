@@ -61,16 +61,17 @@ struct MMX_EXPORT account_info_t : ::mmx::account_t {
 
 template<typename T>
 void account_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<account_info_t>(8);
+	_visitor.template type_begin<account_info_t>(9);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("num_addresses", 1); _visitor.accept(num_addresses);
 	_visitor.type_field("name", 2); _visitor.accept(name);
 	_visitor.type_field("key_file", 3); _visitor.accept(key_file);
 	_visitor.type_field("finger_print", 4); _visitor.accept(finger_print);
 	_visitor.type_field("with_passphrase", 5); _visitor.accept(with_passphrase);
-	_visitor.type_field("address", 6); _visitor.accept(address);
-	_visitor.type_field("account", 7); _visitor.accept(account);
-	_visitor.template type_end<account_info_t>(8);
+	_visitor.type_field("is_hidden", 6); _visitor.accept(is_hidden);
+	_visitor.type_field("address", 7); _visitor.accept(address);
+	_visitor.type_field("account", 8); _visitor.accept(account);
+	_visitor.template type_end<account_info_t>(9);
 }
 
 

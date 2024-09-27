@@ -51,6 +51,11 @@ void write(std::ostream& out, const ::mmx::operation::Execute& value); ///< \pri
 void accept(Visitor& visitor, const ::mmx::operation::Deposit& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::operation::Execute& value); ///< \private
 
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::operation::Deposit> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::operation::Execute> value); ///< \private
+
 /// \private
 template<>
 struct type<::mmx::operation::Deposit> {

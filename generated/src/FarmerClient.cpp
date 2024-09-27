@@ -11,8 +11,13 @@
 #include <mmx/Farmer_get_farmer_keys_return.hxx>
 #include <mmx/Farmer_get_mac_addr.hxx>
 #include <mmx/Farmer_get_mac_addr_return.hxx>
+#include <mmx/Farmer_get_partial_diff.hxx>
+#include <mmx/Farmer_get_partial_diff_return.hxx>
+#include <mmx/Farmer_get_partial_diffs.hxx>
+#include <mmx/Farmer_get_partial_diffs_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
 #include <mmx/Farmer_sign_block_return.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
@@ -61,6 +66,32 @@ FarmerClient::FarmerClient(vnx::Hash64 service_addr)
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<::vnx::Hash64>();
+	} else {
+		throw std::logic_error("FarmerClient: invalid return value");
+	}
+}
+
+uint64_t FarmerClient::get_partial_diff(const ::mmx::addr_t& plot_nft) {
+	auto _method = ::mmx::Farmer_get_partial_diff::create();
+	_method->plot_nft = plot_nft;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_partial_diff_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<uint64_t>();
+	} else {
+		throw std::logic_error("FarmerClient: invalid return value");
+	}
+}
+
+std::map<::mmx::addr_t, uint64_t> FarmerClient::get_partial_diffs(const std::vector<::mmx::addr_t>& plot_nfts) {
+	auto _method = ::mmx::Farmer_get_partial_diffs::create();
+	_method->plot_nfts = plot_nfts;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Farmer_get_partial_diffs_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::map<::mmx::addr_t, uint64_t>>();
 	} else {
 		throw std::logic_error("FarmerClient: invalid return value");
 	}

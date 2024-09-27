@@ -15,7 +15,7 @@
 
 namespace mmx {
 
-struct MMX_EXPORT exec_result_t {
+struct MMX_EXPORT exec_result_t : vnx::struct_t {
 	
 	
 	vnx::bool_t did_fail = 0;

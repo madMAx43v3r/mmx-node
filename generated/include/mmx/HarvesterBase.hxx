@@ -23,14 +23,17 @@ public:
 	::vnx::TopicPtr output_info = "harvester.info";
 	::vnx::TopicPtr output_proofs = "harvester.proof";
 	::vnx::TopicPtr output_lookups = "harvester.lookups";
+	::vnx::TopicPtr output_partials = "harvester.partials";
 	std::set<std::string> plot_dirs;
 	std::set<std::string> dir_blacklist;
 	std::string node_server = "Node";
 	std::string farmer_server = "Farmer";
 	std::string config_path;
 	std::string storage_path;
+	std::string my_name;
 	int32_t max_queue_ms = 10000;
 	int32_t reload_interval = 3600;
+	int32_t nft_query_interval = 60;
 	uint32_t num_threads = 32;
 	uint32_t max_recursion = 4;
 	vnx::bool_t recursive_search = true;
@@ -89,24 +92,27 @@ protected:
 
 template<typename T>
 void HarvesterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<HarvesterBase>(16);
+	_visitor.template type_begin<HarvesterBase>(19);
 	_visitor.type_field("input_challenges", 0); _visitor.accept(input_challenges);
 	_visitor.type_field("output_info", 1); _visitor.accept(output_info);
 	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
 	_visitor.type_field("output_lookups", 3); _visitor.accept(output_lookups);
-	_visitor.type_field("plot_dirs", 4); _visitor.accept(plot_dirs);
-	_visitor.type_field("dir_blacklist", 5); _visitor.accept(dir_blacklist);
-	_visitor.type_field("node_server", 6); _visitor.accept(node_server);
-	_visitor.type_field("farmer_server", 7); _visitor.accept(farmer_server);
-	_visitor.type_field("config_path", 8); _visitor.accept(config_path);
-	_visitor.type_field("storage_path", 9); _visitor.accept(storage_path);
-	_visitor.type_field("max_queue_ms", 10); _visitor.accept(max_queue_ms);
-	_visitor.type_field("reload_interval", 11); _visitor.accept(reload_interval);
-	_visitor.type_field("num_threads", 12); _visitor.accept(num_threads);
-	_visitor.type_field("max_recursion", 13); _visitor.accept(max_recursion);
-	_visitor.type_field("recursive_search", 14); _visitor.accept(recursive_search);
-	_visitor.type_field("farm_virtual_plots", 15); _visitor.accept(farm_virtual_plots);
-	_visitor.template type_end<HarvesterBase>(16);
+	_visitor.type_field("output_partials", 4); _visitor.accept(output_partials);
+	_visitor.type_field("plot_dirs", 5); _visitor.accept(plot_dirs);
+	_visitor.type_field("dir_blacklist", 6); _visitor.accept(dir_blacklist);
+	_visitor.type_field("node_server", 7); _visitor.accept(node_server);
+	_visitor.type_field("farmer_server", 8); _visitor.accept(farmer_server);
+	_visitor.type_field("config_path", 9); _visitor.accept(config_path);
+	_visitor.type_field("storage_path", 10); _visitor.accept(storage_path);
+	_visitor.type_field("my_name", 11); _visitor.accept(my_name);
+	_visitor.type_field("max_queue_ms", 12); _visitor.accept(max_queue_ms);
+	_visitor.type_field("reload_interval", 13); _visitor.accept(reload_interval);
+	_visitor.type_field("nft_query_interval", 14); _visitor.accept(nft_query_interval);
+	_visitor.type_field("num_threads", 15); _visitor.accept(num_threads);
+	_visitor.type_field("max_recursion", 16); _visitor.accept(max_recursion);
+	_visitor.type_field("recursive_search", 17); _visitor.accept(recursive_search);
+	_visitor.type_field("farm_virtual_plots", 18); _visitor.accept(farm_virtual_plots);
+	_visitor.template type_end<HarvesterBase>(19);
 }
 
 

@@ -1,4 +1,5 @@
 
+var serial;
 var creator;
 var mint_height;
 
@@ -8,6 +9,17 @@ function init(creator_)
 		fail("decimals not zero");
 	}
 	creator = bech32(creator_);
+}
+
+function init_ex(serial_, creator_key, signature) static
+{
+	if(read("decimals") != 0) {
+		fail("decimals not zero");
+	}
+	rcall("template", "add", serial_, creator_key, signature);
+	
+	serial = serial_;
+	creator = sha256(creator_key);
 }
 
 function mint_to(address) public

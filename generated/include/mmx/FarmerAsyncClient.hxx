@@ -7,6 +7,7 @@
 #include <vnx/AsyncClient.h>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/FarmInfo.hxx>
+#include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
@@ -25,6 +26,14 @@ public:
 	
 	uint64_t get_mac_addr(
 			const std::function<void(const ::vnx::Hash64&)>& _callback = std::function<void(const ::vnx::Hash64&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_partial_diff(const ::mmx::addr_t& plot_nft = ::mmx::addr_t(), 
+			const std::function<void(const uint64_t&)>& _callback = std::function<void(const uint64_t&)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t get_partial_diffs(const std::vector<::mmx::addr_t>& plot_nfts = {}, 
+			const std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_farmer_keys(
@@ -82,6 +91,8 @@ protected:
 	
 private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Hash64&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_mac_addr;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const uint64_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_partial_diff;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const std::map<::mmx::addr_t, uint64_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_partial_diffs;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::pubkey_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_keys;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farm_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_block;

@@ -562,7 +562,7 @@ Vue.component('account-history-form', {
 					<v-row>
 						<v-col cols="3">
 							<v-select v-model="type" :label="$t('account_history.type')"
-								:items="select_types" item-text="text" item-value="value" :disabled="memo">
+								:items="select_types" item-text="text" item-value="value" :disabled="memo?.length>0">
 							</v-select>
 						</v-col>
 						<v-col>
@@ -695,7 +695,7 @@ Vue.component('account-contract-summary', {
 					<v-btn outlined @click="withdraw">{{ $t('account_contract_summary.withdraw') }}</v-btn>
 				</div>
 			</v-card-text>
-		</div>
+		</v-card>
 		`
 })
 
@@ -1495,8 +1495,8 @@ Vue.component('passphrase-dialog', {
 Vue.component('account-send-form', {
 	props: {
 		index: Number,
-		target_: String,
-		source_: String
+		target_: String,		// fixed destination address (optional)
+		source_: String,		// withdraw from contract (optional)
 	},
 	data() {
 		return {
@@ -1509,8 +1509,9 @@ Vue.component('account-send-form', {
 			address: "",
 			currency: null,
 			fee_ratio: 1024,
-			fee_amount: 0.05,
+			fee_amount: null,
 			confirmed: false,
+			is_locked: false,
 			result: null,
 			error: null,
 			passphrase_dialog: false
@@ -1521,6 +1522,9 @@ Vue.component('account-send-form', {
 			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
 				.then(data => this.accounts = data);
+			fetch('/api/wallet/is_locked?index=' + this.index)
+				.then(response => response.json())
+				.then(data => this.is_locked = data);
 			if(this.source) {
 				fetch('/wapi/address?id=' + this.source)
 					.then(response => response.json())
@@ -1532,27 +1536,23 @@ Vue.component('account-send-form', {
 			}
 		},
 		update_fee() {
-			var amount = this.memo ? (this.memo.length > 32 ? 0.06 : 0.055) : 0.05;
-			amount *= (this.fee_ratio / 1024);
-			this.fee_amount = parseFloat(amount.toFixed(3));
-		},
-		submit() {
-			fetch('/api/wallet/is_locked?index=' + this.index)
-				.then(response => response.json())
-				.then(data => {
-					if(data) {
-						this.passphrase_dialog = true;
+			if(this.is_locked || !this.is_valid()) {
+				this.fee_amount = "?";
+				return;
+			}
+			const req = this.create_request();
+			req.options.auto_send = false;
+			
+			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						response.json().then(tx => this.fee_amount = tx.exec_result.total_fee_value);
 					} else {
-						this.submit_ex(null);
+						this.fee_amount = "?";
 					}
 				});
 		},
-		submit_ex(passphrase) {
-			this.confirmed = false;
-			if(!validate_address(this.target)) {
-				this.error = "invalid destination address";
-				return;
-			}
+		create_request() {
 			const req = {options: {}};
 			req.index = this.index;
 			req.amount = this.amount;
@@ -1563,6 +1563,22 @@ Vue.component('account-send-form', {
 			req.dst_addr = this.target;
 			req.options.memo = this.memo ? this.memo : null;
 			req.options.fee_ratio = this.fee_ratio;
+			return req;
+		},
+		submit() {
+			if(this.is_locked) {
+				this.passphrase_dialog = true;
+			} else {
+				this.submit_ex(null);
+			}
+		},
+		submit_ex(passphrase) {
+			this.confirmed = false;
+			if(!validate_address(this.target)) {
+				this.error = "invalid destination address";
+				return;
+			}
+			const req = this.create_request();
 			req.options.passphrase = passphrase;
 			
 			fetch('/wapi/wallet/send', {body: JSON.stringify(req), method: "post"})
@@ -1584,7 +1600,7 @@ Vue.component('account-send-form', {
 			return true;
 		},
 		is_valid() {
-			return this.confirmed && this.target && this.currency && validate_amount(this.amount) == true;
+			return this.target && this.currency && validate_amount(this.amount) == true;
 		}
 	},
 	created() {
@@ -1616,10 +1632,19 @@ Vue.component('account-send-form', {
 			this.confirmed = false;
 		},
 		memo() {
-			this.update_fee();
+			this.confirmed = false;
 		},
 		fee_ratio() {
-			this.update_fee();
+			if(this.confirmed) {
+				this.update_fee();
+			}
+		},
+		confirmed(value) {
+			if(value) {
+				this.update_fee();
+			} else {
+				this.fee_amount = null;
+			}
 		},
 		result(value) {
 			if(value) {
@@ -1724,7 +1749,7 @@ Vue.component('account-send-form', {
 					<v-card-actions class="py-0">
 						<v-spacer></v-spacer>
 						<v-switch v-model="confirmed" :label="$t('account_offer_form.confirm')" class="d-inline-block" style="margin-right: 50px"></v-switch>
-						<v-btn @click="submit" outlined color="primary" :disabled="!is_valid()">{{ $t('account_send_form.send') }}</v-btn>
+						<v-btn @click="submit" outlined color="primary" :disabled="!this.confirmed || !is_valid()">{{ $t('account_send_form.send') }}</v-btn>
 					</v-card-actions>
 				</v-card-text>
 			</v-card>
@@ -2067,10 +2092,8 @@ Vue.component('account-offers', {
 			args.index = this.index;
 			args.currency = item.bid_currency;
 			args.dst_addr = item.address;
-			args.amount = 1;
 			this.request = args;
 			this.request_url = '/wapi/wallet/send';
-			this.update_fee();
 			
 			this.dialog_item = item;
 			this.deposit_amount = null;
@@ -2118,6 +2141,7 @@ Vue.component('account-offers', {
 		deposit_amount(value) {
 			if(this.request) {
 				this.request.amount = value;
+				this.update_fee();
 			}
 		},
 		result(value) {
@@ -2330,7 +2354,7 @@ Vue.component('create-locked-contract', {
 		submit() {
 			// TODO
 		},
-		submit_ex(passhprase) {
+		submit_ex(passphrase) {
 			this.confirmed = false;
 			const contract = {};
 			contract.__type = "mmx.contract.Executable";
@@ -2340,7 +2364,7 @@ Vue.component('create-locked-contract', {
 			const req = {};
 			req.index = this.index;
 			req.payload = contract;
-			req.options = {passhprase: passhprase};
+			req.options = {passphrase: passphrase};
 			fetch('/wapi/wallet/deploy', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
