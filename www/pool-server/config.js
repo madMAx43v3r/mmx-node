@@ -16,6 +16,7 @@ config.space_diff_constant = 10000000000;
 config.payout_interval = 8640;              // [blocks]
 config.payout_tx_expire = 1000;             // [blocks]
 config.payout_threshold = 5;                // [MMX]
+config.tx_output_cost = 0.01;               // [MMX]
 config.max_payout_count = 2000;
 
 config.server_port = 8080;

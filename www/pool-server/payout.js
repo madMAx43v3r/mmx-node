@@ -89,17 +89,32 @@ async function check()
     }
 }
 
-async function make_payout(height, outputs, opt)
+async function make_payout(height, amounts, opt)
 {
     const options = {
         auto_send: false,
+        mark_spent: true,
         expire_at: height + config.payout_tx_expire,
     };
+
     let tx = null;
-    // TODO: create tx
+    try {
+        const res = await axios.post(config.node_url + '/wapi/wallet/send_many', {
+            index: config.wallet_index,
+            amounts: amounts,
+            currency: "MMX",
+            options: options,
+        }, {
+            headers: {'x-api-token': config.api_token}
+        });
+        tx = res.data;
+    } catch(e) {
+        throw new Error("Failed to create payout transaction: "
+            + e.message + " (" + (e.response ? e.response.data : "???") + ")");
+    }
 
     let total_amount = 0;
-    for(const entry of outputs) {
+    for(const entry of amounts) {
         const payout = new dbs.UserPayout({
             account: entry[0],
             height: height,
@@ -112,13 +127,15 @@ async function make_payout(height, outputs, opt)
     const payout = new dbs.Payout({
         txid: tx.id,
         total_amount: total_amount,
-        amounts: outputs,
-        count: outputs.length,
+        amounts: amounts,
+        count: amounts.length,
         time: Date.now(),
         height: height,
         pending: true,
     });
     await payout.save(opt);
+
+    console.log("Payout transaction created:", tx.id, "total_amount", total_amount, "count", amounts.length);
     return tx;
 }
 
@@ -150,13 +167,23 @@ async function payout()
 
             const list = dbs.Account.find({balance: {$gt: config.payout_threshold}});
 
+            // reserve for tx fees
+            const reserve = (list.length * config.tx_output_cost + 1) * config.mmx_divider;
+
             let total_amount = 0;
             let outputs = [];
             let tx_list = [];
 
             for await(const account of list)
             {
-                const amount = Math.floor(account.balance);
+                let amount = Math.floor(account.balance);
+
+                if(account.address == config.fee_account) {
+                    amount = Math.floor(amount - reserve);
+                    if(amount < config.payout_threshold) {
+                        continue;
+                    }
+                }
                 account.balance -= amount;
                 await account.save(opt);
 
@@ -178,7 +205,20 @@ async function payout()
 
             await conn.commitTransaction();
 
-            // TODO: send all tx
+            for(const tx of tx_list) {
+                try {
+                    await axios.post(config.node_url + '/wapi/wallet/send_off', {
+                        index: config.wallet_index,
+                        tx: tx,
+                    }, {
+                        headers: {'x-api-token': config.api_token}
+                    });
+                    console.log("Payout transaction sent:", tx.id);
+                } catch(e) {
+                    console.log("Failed to send payout transaction:",
+                        e.message, "txid", tx.id, "response", e.response ? e.response.data : "???");
+                }
+            }
         } catch(e) {
             await conn.abortTransaction();
             throw e;
