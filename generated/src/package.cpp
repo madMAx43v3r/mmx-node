@@ -104,6 +104,8 @@
 #include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_plot_nft_info.hxx>
 #include <mmx/Node_get_plot_nft_info_return.hxx>
+#include <mmx/Node_get_plot_nft_target.hxx>
+#include <mmx/Node_get_plot_nft_target_return.hxx>
 #include <mmx/Node_get_recent_offers.hxx>
 #include <mmx/Node_get_recent_offers_return.hxx>
 #include <mmx/Node_get_recent_offers_for.hxx>
@@ -1606,6 +1608,30 @@ void type<::mmx::Node_get_plot_nft_info_return>::create_dynamic_code(std::vector
 }
 
 void type<::mmx::Node_get_plot_nft_info_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_plot_nft_info_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_plot_nft_target>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_plot_nft_target;
+}
+
+void type<::mmx::Node_get_plot_nft_target>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_plot_nft_target());
+}
+
+void type<::mmx::Node_get_plot_nft_target>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_plot_nft_target& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_plot_nft_target_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_plot_nft_target_return;
+}
+
+void type<::mmx::Node_get_plot_nft_target_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_plot_nft_target_return());
+}
+
+void type<::mmx::Node_get_plot_nft_target_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_plot_nft_target_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5260,6 +5286,8 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_params_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_plot_nft_info::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_plot_nft_info_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_plot_nft_target::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_plot_nft_target_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_recent_offers::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_recent_offers_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_recent_offers_for::static_create_type_code());
@@ -5660,6 +5688,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_params = vnx::get_type_
 const vnx::TypeCode* const vnx_native_type_code_Node_get_params_return = vnx::get_type_code(vnx::Hash64(0xd0a614f2ed037180ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_info = vnx::get_type_code(vnx::Hash64(0x23efbfd355a3741full));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_info_return = vnx::get_type_code(vnx::Hash64(0x4d3661c719d8496bull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_target = vnx::get_type_code(vnx::Hash64(0x14dfd6e2b1f3282eull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_target_return = vnx::get_type_code(vnx::Hash64(0x6d6444fd1b89732ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers = vnx::get_type_code(vnx::Hash64(0xfcd729efd0504fdeull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_return = vnx::get_type_code(vnx::Hash64(0x15933813d284d584ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_for = vnx::get_type_code(vnx::Hash64(0xd89f845556eb17a0ull));
