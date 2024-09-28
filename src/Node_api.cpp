@@ -108,7 +108,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->vdf_speed = get_vdf_speed(params, peak->time_diff) / 1e6;
 			const auto avg_txfee = calc_min_reward_deduction(params, peak->txfee_buffer);
 			info->block_reward = (peak->height >= params->reward_activation ?
-					(peak->next_base_reward + std::max<int64_t>(params->min_reward - avg_txfee, 0)) : 0);
+					(peak->base_reward + std::max<int64_t>(params->min_reward - avg_txfee, 0)) : 0);
 			info->total_space = calc_total_netspace(params, peak->space_diff);
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = mmx_address_count;

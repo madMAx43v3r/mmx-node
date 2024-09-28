@@ -184,14 +184,14 @@ uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, cons
 }
 
 inline
-uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const int8_t vote)
+uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const int32_t vote_sum)
 {
-	const auto step_size = std::max<int64_t>(base_reward / params->reward_adjust_div, 1);
+	const auto step_size = std::max<int64_t>(base_reward / params->reward_adjust_div, params->min_reward_adjust);
 
 	int64_t reward = base_reward;
-	if(vote > 0) {
+	if(vote_sum > 0) {
 		reward += step_size;
-	} else if(vote < 0) {
+	} else if(vote_sum < 0) {
 		reward -= step_size;
 	}
 	return std::max<int64_t>(std::min<int64_t>(reward, 4200000000000ll), 0);

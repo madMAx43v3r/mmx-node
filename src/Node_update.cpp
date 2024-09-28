@@ -167,12 +167,12 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->weight = calc_block_weight(params, diff_block, block);
 		block->total_weight = prev->total_weight + block->weight;
 		block->netspace_ratio = prev->netspace_ratio;
-		block->next_base_reward = prev->next_base_reward;
 		block->txfee_buffer = prev->txfee_buffer;
 
 		if(block->height % params->vdf_reward_interval == 0) {
 			block->vdf_reward_addr = get_vdf_reward_addr(block);
 		}
+		block->set_base_reward(params, prev);
 		block->finalize();
 		add_block(block);
 	}
@@ -784,16 +784,19 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->height = prev->height + 1;
 	block->time_diff = prev->time_diff;
 	block->space_diff = prev->space_diff;
+	block->proof = proof.proof;
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
-	block->proof = proof.proof;
+	block->vdf_reward_vote = vdf_point->reward_addr;
+	block->reward_vote = reward_vote;
+	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
 	block->netspace_ratio = calc_new_netspace_ratio(
 			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
-	block->vdf_reward_vote = vdf_point->reward_addr;
 
 	if(block->height % params->vdf_reward_interval == 0) {
 		block->vdf_reward_addr = get_vdf_reward_addr(block);
 	}
+	block->set_base_reward(params, prev);
 
 	if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
 		block->reward_contract = nft->contract;
@@ -817,7 +820,6 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 			total_fees += entry.fee;
 		}
 	}
-	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
 
 	// set time stamp
 	{
@@ -856,8 +858,6 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		block->total_weight = prev->total_weight + block->weight;
 	}
 	block->reward_amount = calc_block_reward(block, total_fees);
-	block->next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
-	block->reward_vote = reward_vote;
 	block->finalize();
 
 	FarmerClient farmer(proof.farmer_mac);

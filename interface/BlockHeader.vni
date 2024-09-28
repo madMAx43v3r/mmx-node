@@ -33,7 +33,8 @@ class BlockHeader {
 	optional<addr_t> reward_account;		// farmer account
 	
 	char reward_vote;					// 0 = unchanged, 1 = up, -1 = down
-	ulong next_base_reward;
+	int  reward_vote_sum;
+	ulong base_reward;
 	
 	ulong static_cost;
 	ulong total_cost;
@@ -57,5 +58,7 @@ class BlockHeader {
 	BlockHeader* get_header() const;
 	
 	block_index_t get_block_index(long file_offset) const;
+	
+	void set_base_reward(ChainParams* params, BlockHeader* prev);
 	
 }

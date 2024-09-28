@@ -412,8 +412,12 @@ Vue.component('block-view', {
 										<td>{{data.reward_vote}}</td>
 									</tr>
 									<tr>
+										<td class="key-cell">Reward Vote Sum</td>
+										<td>{{data.reward_vote_sum}}</td>
+									</tr>
+									<tr>
 										<td class="key-cell">Base Reward</td>
-										<td><b>{{data.next_base_reward.value}}</b>&nbsp; MMX</td>
+										<td><b>{{data.base_reward.value}}</b>&nbsp; MMX</td>
 									</tr>
 									<tr>
 										<td class="key-cell">Avg. TX Fee</td>

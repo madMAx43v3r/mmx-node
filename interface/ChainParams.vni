@@ -24,10 +24,13 @@ class ChainParams {
 	
 	uint target_mmx_gold_price = 2000;		// [MMX / ounce]
 	
+	ulong min_reward = 200000;
 	ulong vdf_reward = 500000;				// per vdf_reward_interval
 	uint  vdf_reward_interval = 50;
-	ulong min_reward = 200000;
-	ulong reward_adjust_div = 1000000;		// relative adjustment per block
+	
+	uint reward_adjust_div = 100;			// relative adjustment per reward_adjust_interval
+	uint reward_adjust_interval = 8640;
+	uint min_reward_adjust = 10000;
 	
 	ulong time_diff_constant = 1000;
 	ulong space_diff_constant = 100000000;

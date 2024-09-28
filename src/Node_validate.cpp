@@ -160,10 +160,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->txfee_buffer != txfee_buffer) {
 			throw std::logic_error("invalid txfee_buffer: " + std::to_string(block->txfee_buffer) + " != " + std::to_string(txfee_buffer));
 		}
-		const auto next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
-		if(block->next_base_reward != next_base_reward) {
-			throw std::logic_error("invalid next_base_reward: " + std::to_string(block->next_base_reward) + " != " + std::to_string(next_base_reward));
-		}
 		if(block->reward_vote > 1 || block->reward_vote < -1) {
 			throw std::logic_error("invalid reward_vote: " + std::to_string(block->reward_vote));
 		}
@@ -176,9 +172,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 		if(block->txfee_buffer != prev->txfee_buffer) {
 			throw std::logic_error("invalid txfee_buffer change");
-		}
-		if(block->next_base_reward != prev->next_base_reward) {
-			throw std::logic_error("invalid next_base_reward adjust");
 		}
 		if(block->reward_addr) {
 			throw std::logic_error("invalid reward_addr");
@@ -214,7 +207,8 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 	}
 
-	if(block->height % params->vdf_reward_interval == 0) {
+	if(block->height % params->vdf_reward_interval == 0)
+	{
 		const auto address = get_vdf_reward_addr(block);
 		// Note: `vdf_reward_addr` and `address` are both optional
 		if(block->vdf_reward_addr != address) {
@@ -223,6 +217,25 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	} else {
 		if(block->vdf_reward_addr) {
 			throw std::logic_error("invalid vdf_reward_addr");
+		}
+	}
+	const auto reward_vote_sum = prev->reward_vote_sum + prev->reward_vote;
+
+	if(block->height % params->reward_adjust_interval == 0)
+	{
+		const auto base_reward = calc_next_base_reward(params, prev->base_reward, reward_vote_sum);
+		if(block->base_reward != base_reward) {
+			throw std::logic_error("invalid base_reward: " + std::to_string(block->base_reward) + " != " + std::to_string(base_reward));
+		}
+		if(block->reward_vote_sum) {
+			throw std::logic_error("invalid reward_vote_sum");
+		}
+	} else {
+		if(block->base_reward != prev->base_reward) {
+			throw std::logic_error("invalid base_reward");
+		}
+		if(block->reward_vote_sum != reward_vote_sum) {
+			throw std::logic_error("invalid reward_vote_sum");
 		}
 	}
 

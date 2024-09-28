@@ -653,7 +653,7 @@ public:
 			tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
 			tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
 			tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
-			tmp["next_base_reward"] = to_amount_object(value->next_base_reward, context->params->decimals);
+			tmp["base_reward"] = to_amount_object(value->base_reward, context->params->decimals);
 			tmp["vdf_reward"] = to_amount_object(value->vdf_reward_addr ? context->params->vdf_reward : 0, context->params->decimals);
 			tmp["project_reward"] = to_amount_object(calc_project_reward(context->params, value->tx_fees), context->params->decimals);
 			tmp["project_reward_addr"] = context->params->project_addr.to_string();
@@ -794,7 +794,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					}
 					out["reward"] = to_value(block->reward_amount, params->decimals);
 					out["tx_fees"] = to_value(block->tx_fees, params->decimals);
-					out["base_reward"] = to_value(block->next_base_reward, params->decimals);
+					out["base_reward"] = to_value(block->base_reward, params->decimals);
 				}
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));

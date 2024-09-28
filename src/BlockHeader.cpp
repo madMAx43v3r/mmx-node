@@ -7,6 +7,7 @@
 
 #include <mmx/BlockHeader.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -56,7 +57,8 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "reward_contract", reward_contract);
 	write_field(out, "reward_account", reward_account);
 	write_field(out, "reward_vote", reward_vote);
-	write_field(out, "next_base_reward", next_base_reward);
+	write_field(out, "reward_vote_sum", reward_vote_sum);
+	write_field(out, "base_reward", base_reward);
 	write_field(out, "static_cost", static_cost);
 	write_field(out, "total_cost", 	total_cost);
 	write_field(out, "tx_count", 	tx_count);
@@ -99,6 +101,19 @@ block_index_t BlockHeader::get_block_index(const int64_t& file_offset) const
 	index.total_cost = total_cost;
 	index.file_offset = file_offset;
 	return index;
+}
+
+void BlockHeader::set_base_reward(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
+{
+	const auto vote_sum = prev->reward_vote_sum + prev->reward_vote;
+
+	if(height % params->reward_adjust_interval == 0) {
+		base_reward = calc_next_base_reward(params, prev->base_reward, vote_sum);
+		reward_vote_sum = 0;
+	} else {
+		base_reward = prev->base_reward;
+		reward_vote_sum = vote_sum;
+	}
 }
 
 

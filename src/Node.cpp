@@ -1359,7 +1359,7 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	uint64_t base_reward = 0;
 	uint64_t reward_deduction = 0;
 	if(auto prev = find_prev_header(block, 1)) {
-		base_reward = prev->next_base_reward;
+		base_reward = prev->base_reward;
 		reward_deduction = calc_min_reward_deduction(params, prev->txfee_buffer);
 	}
 	uint64_t reward = base_reward;
