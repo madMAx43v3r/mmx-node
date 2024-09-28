@@ -1,6 +1,6 @@
 {
-	"port": 11337,
-	"network": "mainnet",
+	"port": 10337,
+	"network": "mainnet-rc",
 	"reward_adjust_div": 100000,
 	"initial_space_diff": 1,
 	"space_diff_constant": 100000000000
