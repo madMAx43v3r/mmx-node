@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_BlockHeader_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/ChainParams.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/block_index_t.hxx>
@@ -41,7 +42,8 @@ public:
 	vnx::optional<::mmx::addr_t> reward_contract;
 	vnx::optional<::mmx::addr_t> reward_account;
 	int8_t reward_vote = 0;
-	uint64_t next_base_reward = 0;
+	int32_t reward_vote_sum = 0;
+	uint64_t base_reward = 0;
 	uint64_t static_cost = 0;
 	uint64_t total_cost = 0;
 	uint32_t tx_count = 0;
@@ -68,6 +70,7 @@ public:
 	virtual void validate() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;
 	virtual ::mmx::block_index_t get_block_index(const int64_t& file_offset = 0) const;
+	virtual void set_base_reward(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, std::shared_ptr<const ::mmx::BlockHeader> prev = nullptr);
 	
 	static std::shared_ptr<BlockHeader> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -101,7 +104,7 @@ protected:
 
 template<typename T>
 void BlockHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<BlockHeader>(30);
+	_visitor.template type_begin<BlockHeader>(31);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
@@ -124,15 +127,16 @@ void BlockHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("reward_contract", 19); _visitor.accept(reward_contract);
 	_visitor.type_field("reward_account", 20); _visitor.accept(reward_account);
 	_visitor.type_field("reward_vote", 21); _visitor.accept(reward_vote);
-	_visitor.type_field("next_base_reward", 22); _visitor.accept(next_base_reward);
-	_visitor.type_field("static_cost", 23); _visitor.accept(static_cost);
-	_visitor.type_field("total_cost", 24); _visitor.accept(total_cost);
-	_visitor.type_field("tx_count", 25); _visitor.accept(tx_count);
-	_visitor.type_field("tx_fees", 26); _visitor.accept(tx_fees);
-	_visitor.type_field("tx_hash", 27); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 28); _visitor.accept(farmer_sig);
-	_visitor.type_field("content_hash", 29); _visitor.accept(content_hash);
-	_visitor.template type_end<BlockHeader>(30);
+	_visitor.type_field("reward_vote_sum", 22); _visitor.accept(reward_vote_sum);
+	_visitor.type_field("base_reward", 23); _visitor.accept(base_reward);
+	_visitor.type_field("static_cost", 24); _visitor.accept(static_cost);
+	_visitor.type_field("total_cost", 25); _visitor.accept(total_cost);
+	_visitor.type_field("tx_count", 26); _visitor.accept(tx_count);
+	_visitor.type_field("tx_fees", 27); _visitor.accept(tx_fees);
+	_visitor.type_field("tx_hash", 28); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 29); _visitor.accept(farmer_sig);
+	_visitor.type_field("content_hash", 30); _visitor.accept(content_hash);
+	_visitor.template type_end<BlockHeader>(31);
 }
 
 
