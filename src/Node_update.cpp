@@ -787,12 +787,16 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
 	block->vdf_reward_addr = vdf_point->reward_addr;
 
+	if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+		block->reward_contract = nft->contract;
+	}
 	if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
 		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
-			block->reward_addr = plot->reward_address;
+			block->reward_contract = plot->reward_address;
 		}
-	} else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
-		block->reward_addr = nft_proof->contract;
+	}
+	if(block->reward_contract) {
+		block->reward_addr = get_plot_nft_target(*block->reward_contract);
 	}
 
 	uint64_t total_fees = 0;

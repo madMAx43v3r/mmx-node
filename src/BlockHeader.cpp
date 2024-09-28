@@ -52,6 +52,8 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
 	write_field(out, "reward_amount", reward_amount);
 	write_field(out, "reward_addr", reward_addr);
+	write_field(out, "reward_contract", reward_contract);
+	write_field(out, "reward_account", reward_account);
 	write_field(out, "reward_vote", reward_vote);
 	write_field(out, "next_base_reward", next_base_reward);
 	write_field(out, "static_cost", static_cost);

@@ -74,6 +74,8 @@
 #include <mmx/Node_get_farmed_blocks.hxx>
 #include <mmx/Node_get_farmer_ranking.hxx>
 #include <mmx/Node_get_farmed_block_summary.hxx>
+#include <mmx/Node_get_plot_nft_info.hxx>
+#include <mmx/Node_get_plot_nft_target.hxx>
 #include <mmx/Node_validate.hxx>
 #include <mmx/Node_verify_plot_nft_target.hxx>
 #include <mmx/Node_verify_partial.hxx>
@@ -821,6 +823,7 @@ uint128 Node::get_total_supply(const addr_t& currency) const
 
 vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) const
 {
+	// Note: consensus relevant
 	if(auto exec = get_contract_as<contract::Executable>(address)) {
 		if(exec->binary == params->plot_nft_binary) {
 			plot_nft_info_t info;
@@ -848,6 +851,19 @@ vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) co
 		}
 	}
 	return nullptr;
+}
+
+addr_t Node::get_plot_nft_target(const addr_t& address) const
+{
+	// Note: consensus relevant
+	if(auto info = get_plot_nft_info(address)) {
+		if(info->is_locked && info->target) {
+			return *info->target;
+		} else {
+			return info->owner;
+		}
+	}
+	return address;
 }
 
 std::vector<virtual_plot_info_t> Node::get_virtual_plots(const std::vector<addr_t>& addresses) const
@@ -1441,7 +1457,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_plot_nft_target(const addr
 			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT has no target"};
 		}
 		if((*info->target) != pool_target) {
-			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT not pointing at pool target: " + pool_target.to_string()};
+			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT not pointing at expected pool target: " + pool_target.to_string()};
 		}
 	} else {
 		return {pooling_error_e::INVALID_CONTRACT, "Not a plot NFT: " + address.to_string()};
@@ -1626,6 +1642,8 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case Node_get_farmed_blocks::VNX_TYPE_ID:
 		case Node_get_farmer_ranking::VNX_TYPE_ID:
 		case Node_get_farmed_block_summary::VNX_TYPE_ID:
+		case Node_get_plot_nft_info::VNX_TYPE_ID:
+		case Node_get_plot_nft_target::VNX_TYPE_ID:
 		case Node_validate::VNX_TYPE_ID:
 		case Node_verify_plot_nft_target::VNX_TYPE_ID:
 		case Node_verify_partial::VNX_TYPE_ID:

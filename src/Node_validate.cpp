@@ -180,26 +180,40 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->next_base_reward != prev->next_base_reward) {
 			throw std::logic_error("invalid next_base_reward adjust");
 		}
+		if(block->reward_addr) {
+			throw std::logic_error("invalid reward_addr");
+		}
+		if(block->reward_contract) {
+			throw std::logic_error("invalid reward_contract");
+		}
+		if(block->reward_account) {
+			throw std::logic_error("invalid reward_account");
+		}
 		if(block->reward_vote) {
 			throw std::logic_error("invalid reward_vote");
 		}
 	}
+	vnx::optional<addr_t> reward_contract;
+
 	if(block->reward_addr) {
 		if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
-			if(*block->reward_addr != proof->contract) {
-				throw std::logic_error("invalid reward_addr for NFT proof");
-			}
+			reward_contract = proof->contract;
 		}
 		if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
 			if(auto plot = get_contract_as<contract::VirtualPlot>(proof->plot_id)) {
-				if(plot->reward_address) {
-					if(*block->reward_addr != *plot->reward_address) {
-						throw std::logic_error("invalid reward_addr for stake proof");
-					}
-				}
+				reward_contract = plot->reward_address;
 			}
 		}
 	}
+	if(block->reward_contract != reward_contract) {
+		throw std::logic_error("invalid reward_contract");
+	}
+	if(reward_contract) {
+		if(!block->reward_addr || (*block->reward_addr) != get_plot_nft_target(*reward_contract)) {
+			throw std::logic_error("invalid reward_addr for reward_contract");
+		}
+	}
+
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
 	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
 		throw std::logic_error("invalid space_diff adjust");
@@ -324,7 +338,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		const auto amount = calc_block_reward(block, block->tx_fees);
 		if(block->reward_amount != amount) {
 			throw std::logic_error("invalid reward_amount: "
-					+ std::to_string(block->reward_amount) + " > " + std::to_string(amount));
+					+ std::to_string(block->reward_amount) + " != " + std::to_string(amount));
 		}
 	} else {
 		if(block->reward_amount) {

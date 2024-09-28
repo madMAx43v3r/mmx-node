@@ -348,6 +348,8 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 
 	if(!out->reward_addr || std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
 		out->reward_addr = reward_addr;
+	} else {
+		out->reward_account = reward_addr;
 	}
 	out->hash = out->calc_hash().first;
 	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
