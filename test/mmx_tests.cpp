@@ -37,6 +37,18 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
+	VNX_TEST_BEGIN("hash_t")
+	{
+		vnx::test::expect(hash_t().to_string(), "0000000000000000000000000000000000000000000000000000000000000000");
+		vnx::test::expect(hash_t() < hash_t(), false);
+		vnx::test::expect(hash_t() > hash_t(), false);
+		vnx::test::expect(hash_t() < hash_t("1"), true);
+		vnx::test::expect(hash_t() > hash_t("1"), false);
+		vnx::test::expect(hash_t("1") > hash_t(), true);
+		vnx::test::expect(hash_t("1") < hash_t(), false);
+	}
+	VNX_TEST_END()
+
 	VNX_TEST_BEGIN("addr_t")
 	{
 		std::map<std::pair<addr_t, addr_t>, uint128> balance;

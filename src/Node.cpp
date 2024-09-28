@@ -1372,6 +1372,37 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	return mmx::calc_final_block_reward(params, reward, total_fees);
 }
 
+vnx::optional<addr_t> Node::get_vdf_reward_addr(std::shared_ptr<const BlockHeader> block) const
+{
+	std::map<addr_t, uint32_t> count;
+	for(uint32_t i = 0; i < params->vdf_reward_interval; ++i) {
+		if(auto prev = find_prev_header(block)) {
+			if(auto vote = prev->vdf_reward_vote) {
+				count[*vote]++;
+			}
+			block = prev;
+		} else {
+			break;
+		}
+	}
+	hash_t max_hash;
+	uint32_t max_vote = 0;
+	vnx::optional<addr_t> out;
+
+	for(const auto& entry : count) {
+		hash_t hash;
+		if(entry.second == max_vote) {
+			hash = hash_t(entry.first + block->prev);
+		}
+		if(entry.second > max_vote || hash > max_hash) {
+			out = entry.first;
+			max_vote = entry.second;
+			max_hash = hash;
+		}
+	}
+	return out;
+}
+
 std::shared_ptr<const BlockHeader> Node::read_block(
 		vnx::File& file, bool full_block, int64_t* block_offset, std::vector<int64_t>* tx_offsets) const
 {

@@ -1,6 +1,8 @@
 {
 	"port": 10337,
 	"network": "mainnet-rc",
+	"vdf_reward": 500000,
+	"vdf_reward_interval": 50,
 	"reward_adjust_div": 100000,
 	"initial_space_diff": 1,
 	"space_diff_constant": 100000000000

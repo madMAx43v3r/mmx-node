@@ -23,6 +23,7 @@ class BlockHeader {
 	ulong vdf_iters;
 	hash_t vdf_output[2];
 	optional<addr_t> vdf_reward_addr;
+	optional<addr_t> vdf_reward_vote;
 	
 	ProofOfSpace* proof;
 	

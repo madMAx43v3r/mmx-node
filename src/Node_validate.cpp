@@ -183,14 +183,14 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->reward_addr) {
 			throw std::logic_error("invalid reward_addr");
 		}
-		if(block->reward_contract) {
-			throw std::logic_error("invalid reward_contract");
-		}
 		if(block->reward_account) {
 			throw std::logic_error("invalid reward_account");
 		}
 		if(block->reward_vote) {
 			throw std::logic_error("invalid reward_vote");
+		}
+		if(block->vdf_reward_vote) {
+			throw std::logic_error("invalid vdf_reward_vote");
 		}
 	}
 	vnx::optional<addr_t> reward_contract;
@@ -211,6 +211,18 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(reward_contract) {
 		if(!block->reward_addr || (*block->reward_addr) != get_plot_nft_target(*reward_contract)) {
 			throw std::logic_error("invalid reward_addr for reward_contract");
+		}
+	}
+
+	if(block->height % params->vdf_reward_interval == 0) {
+		const auto address = get_vdf_reward_addr(block);
+		// Note: `vdf_reward_addr` and `address` are both optional
+		if(block->vdf_reward_addr != address) {
+			throw std::logic_error("invalid vdf_reward_addr");
+		}
+	} else {
+		if(block->vdf_reward_addr) {
+			throw std::logic_error("invalid vdf_reward_addr");
 		}
 	}
 

@@ -169,6 +169,10 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->netspace_ratio = prev->netspace_ratio;
 		block->next_base_reward = prev->next_base_reward;
 		block->txfee_buffer = prev->txfee_buffer;
+
+		if(block->height % params->vdf_reward_interval == 0) {
+			block->vdf_reward_addr = get_vdf_reward_addr(block);
+		}
 		block->finalize();
 		add_block(block);
 	}
@@ -785,7 +789,11 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->proof = proof.proof;
 	block->netspace_ratio = calc_new_netspace_ratio(
 			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
-	block->vdf_reward_addr = vdf_point->reward_addr;
+	block->vdf_reward_vote = vdf_point->reward_addr;
+
+	if(block->height % params->vdf_reward_interval == 0) {
+		block->vdf_reward_addr = get_vdf_reward_addr(block);
+	}
 
 	if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
 		block->reward_contract = nft->contract;

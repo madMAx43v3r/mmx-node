@@ -455,6 +455,8 @@ private:
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const;
 
+	vnx::optional<addr_t> get_vdf_reward_addr(std::shared_ptr<const BlockHeader> block) const;
+
 	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
 			int64_t* block_offset = nullptr, std::vector<int64_t>* tx_offsets = nullptr) const;
 

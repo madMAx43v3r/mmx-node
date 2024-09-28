@@ -423,9 +423,15 @@ Vue.component('block-view', {
 										<td class="key-cell">{{ $t('block_view.vdf_iterations') }}</td>
 										<td>{{data.vdf_iters}}</td>
 									</tr>
+									<template v-if="data.vdf_reward_vote">
+										<tr>
+											<td class="key-cell">Timelord Vote</td>
+											<td><router-link :to="'/explore/address/' + data.vdf_reward_vote">{{data.vdf_reward_vote}}</router-link></td>
+										</tr>
+									</template>
 									<template v-if="data.vdf_reward_addr">
 										<tr>
-											<td class="key-cell">Timelord Address</td>
+											<td class="key-cell">Timelord Reward</td>
 											<td><router-link :to="'/explore/address/' + data.vdf_reward_addr">{{data.vdf_reward_addr}}</router-link></td>
 										</tr>
 									</template>
