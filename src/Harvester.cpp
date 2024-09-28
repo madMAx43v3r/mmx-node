@@ -548,7 +548,11 @@ void Harvester::reload()
 		threads->add_task([this, file_path, &plots, &mutex]()
 		{
 			try {
-				auto prover = std::make_shared<pos::Prover>(file_path);
+				const auto prover = std::make_shared<pos::Prover>(file_path);
+				const auto ksize = uint32_t(prover->get_ksize());
+				if(ksize < params->min_ksize || ksize > params->max_ksize) {
+					throw std::logic_error("invalid ksize: " + std::to_string(ksize));
+				}
 				{
 					std::lock_guard<std::mutex> lock(mutex);
 					plots.emplace_back(file_path, prover);
