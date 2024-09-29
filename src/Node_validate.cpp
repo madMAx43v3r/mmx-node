@@ -164,6 +164,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			throw std::logic_error("invalid reward_vote: " + std::to_string(block->reward_vote));
 		}
 	} else {
+		if(block->time_stamp != prev->time_stamp + params->block_interval_ms) {
+			throw std::logic_error("invalid time_stamp");
+		}
 		if(block->time_diff != prev->time_diff) {
 			throw std::logic_error("invalid time_diff adjust");
 		}
