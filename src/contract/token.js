@@ -19,6 +19,8 @@ function mint_to(address, amount, memo) public
 	
 	if(memo == null) {
 		memo = "mmx_token_mint";
+	} else if(memo == false) {
+		memo = null;
 	}
 	mint(bech32(address), amount, memo);
 }

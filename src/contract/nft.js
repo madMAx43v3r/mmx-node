@@ -22,7 +22,7 @@ function init_ex(serial_, creator_key, signature) static
 	creator = sha256(creator_key);
 }
 
-function mint_to(address) public
+function mint_to(address, memo) public
 {
 	if(this.user != creator) {
 		fail("user != creator", 1);
@@ -32,7 +32,12 @@ function mint_to(address) public
 	}
 	mint_height = this.height;
 	
-	mint(bech32(address), 1, "mmx_nft_mint");
+	if(memo == null) {
+		memo = "mmx_nft_mint";
+	} else if(memo == false) {
+		memo = null;
+	}
+	mint(bech32(address), 1, memo);
 }
 
 function get_creator() const public
