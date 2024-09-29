@@ -25,3 +25,5 @@ Mainnet
 - Timestamp delta adjustment (limited to +- 1 sec per block)
 - Remove proofs in /wapi/headers
 - Require one valid VDF before reaching sync
+- Dynamically load contract balances + read fee
+- Binary source_info
