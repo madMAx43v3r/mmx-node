@@ -149,6 +149,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	if(block->farmer_sig) {
 		// Note: farmer_sig already verified together with proof
+
 		validate_diff_adjust(block->time_diff, prev->time_diff);
 
 		const auto netspace_ratio = calc_new_netspace_ratio(
@@ -219,33 +220,47 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 	} else {
 		if(block->vdf_reward_addr) {
-			throw std::logic_error("invalid vdf_reward_addr");
+			throw std::logic_error("invalid vdf_reward_addr (must be null)");
 		}
 	}
-	const auto reward_vote_sum = prev->reward_vote_sum + prev->reward_vote;
 
 	if(block->height % params->reward_adjust_interval == 0)
 	{
-		const auto base_reward = calc_next_base_reward(params, prev->base_reward, reward_vote_sum);
+		const auto base_reward = calc_new_base_reward(params, prev);
 		if(block->base_reward != base_reward) {
 			throw std::logic_error("invalid base_reward: " + std::to_string(block->base_reward) + " != " + std::to_string(base_reward));
 		}
-		if(block->reward_vote_sum) {
+		if(block->reward_vote_sum != block->reward_vote) {
 			throw std::logic_error("invalid reward_vote_sum");
 		}
 	} else {
 		if(block->base_reward != prev->base_reward) {
 			throw std::logic_error("invalid base_reward");
 		}
-		if(block->reward_vote_sum != reward_vote_sum) {
+		if(block->reward_vote_sum != prev->reward_vote_sum + block->reward_vote) {
 			throw std::logic_error("invalid reward_vote_sum");
 		}
 	}
-
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
-	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
-		throw std::logic_error("invalid space_diff adjust");
+
+	if(block->height % params->challenge_interval == 0)
+	{
+		const auto space_diff = calc_new_space_diff(params, prev);
+		if(block->space_diff != space_diff) {
+			throw std::logic_error("invalid space_diff: " + std::to_string(block->space_diff) + " != " + std::to_string(space_diff));
+		}
+		if(block->proof_score_sum != proof_score) {
+			throw std::logic_error("invalid proof_score_sum");
+		}
+	} else {
+		if(block->space_diff != prev->space_diff) {
+			throw std::logic_error("invalid space_diff");
+		}
+		if(block->proof_score_sum != prev->proof_score_sum + proof_score) {
+			throw std::logic_error("invalid proof_score_sum");
+		}
 	}
+
 	const auto diff_block = get_diff_header(block);
 	const auto weight = calc_block_weight(params, diff_block, block);
 	const auto total_weight = prev->total_weight + block->weight;

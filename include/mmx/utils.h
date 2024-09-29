@@ -184,8 +184,11 @@ uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, cons
 }
 
 inline
-uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const int32_t vote_sum)
+uint64_t calc_new_base_reward(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
+	const auto& base_reward = prev->base_reward;
+	const auto& vote_sum = prev->reward_vote_sum;
+
 	const auto step_size = std::max<int64_t>(base_reward / params->reward_adjust_div, params->min_reward_adjust);
 
 	int64_t reward = base_reward;
@@ -210,15 +213,27 @@ uint64_t get_virtual_plot_size(std::shared_ptr<const ChainParams> params, const 
 }
 
 inline
-uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const uint64_t prev_diff, const uint32_t proof_score)
+uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
-	int64_t delta = prev_diff * (int64_t(params->score_target) - proof_score);
-	delta /= params->score_target;
-	delta >>= params->max_diff_adjust;
-	if(delta == 0) {
-		delta = 1;
+	const uint64_t diff = prev->space_diff;
+	if(diff >> 60) {
+		return diff - (diff / 256);
 	}
-	return std::max<int64_t>(int64_t(prev_diff) + delta, 1);
+	const uint32_t avg_score = prev->proof_score_sum / params->challenge_interval;
+
+	int64_t delta = 0;
+	if(avg_score < params->score_target / 2) {
+		delta = diff;
+	} else {
+		const uint64_t new_diff = (uint128_t(diff) * params->score_target) / avg_score;
+		delta = new_diff - diff;
+	}
+	delta /= 16;
+
+	if(delta == 0) {
+		delta = (avg_score < params->score_target ? 1 : -1);
+	}
+	return std::max<int64_t>(diff + delta, 1);
 }
 
 inline

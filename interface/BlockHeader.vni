@@ -27,6 +27,8 @@ class BlockHeader {
 	
 	ProofOfSpace* proof;
 	
+	uint proof_score_sum;
+	
 	ulong reward_amount;
 	optional<addr_t> reward_addr;
 	optional<addr_t> reward_contract;		// plot NFT address
@@ -58,6 +60,8 @@ class BlockHeader {
 	BlockHeader* get_header() const;
 	
 	block_index_t get_block_index(long file_offset) const;
+	
+	void set_space_diff(ChainParams* params, BlockHeader* prev);
 	
 	void set_base_reward(ChainParams* params, BlockHeader* prev);
 	

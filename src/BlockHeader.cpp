@@ -52,6 +52,7 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "vdf_reward_addr", vdf_reward_addr);
 	write_field(out, "vdf_reward_vote", vdf_reward_vote);
 	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
+	write_field(out, "proof_score_sum", proof_score_sum);
 	write_field(out, "reward_amount", reward_amount);
 	write_field(out, "reward_addr", reward_addr);
 	write_field(out, "reward_contract", reward_contract);
@@ -103,16 +104,27 @@ block_index_t BlockHeader::get_block_index(const int64_t& file_offset) const
 	return index;
 }
 
+void BlockHeader::set_space_diff(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
+{
+	const uint32_t proof_score = proof ? proof->score : params->score_threshold;
+
+	if(height % params->challenge_interval == 0) {
+		space_diff = calc_new_space_diff(params, prev);
+		proof_score_sum = proof_score;
+	} else {
+		space_diff = prev->space_diff;
+		proof_score_sum = prev->proof_score_sum + proof_score;
+	}
+}
+
 void BlockHeader::set_base_reward(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
-	const auto vote_sum = prev->reward_vote_sum + prev->reward_vote;
-
 	if(height % params->reward_adjust_interval == 0) {
-		base_reward = calc_next_base_reward(params, prev->base_reward, vote_sum);
-		reward_vote_sum = 0;
+		base_reward = calc_new_base_reward(params, prev);
+		reward_vote_sum = reward_vote;
 	} else {
 		base_reward = prev->base_reward;
-		reward_vote_sum = vote_sum;
+		reward_vote_sum = prev->reward_vote_sum + reward_vote;
 	}
 }
 

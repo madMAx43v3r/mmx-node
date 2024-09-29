@@ -161,7 +161,6 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		block->height = prev->height + 1;
 		block->time_stamp = prev->time_stamp + params->block_interval_ms;
 		block->time_diff = prev->time_diff;
-		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
 		block->vdf_iters = vdf_point->vdf_iters;
 		block->vdf_output = vdf_point->output;
 		block->weight = calc_block_weight(params, diff_block, block);
@@ -172,6 +171,7 @@ void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
 		if(block->height % params->vdf_reward_interval == 0) {
 			block->vdf_reward_addr = get_vdf_reward_addr(block);
 		}
+		block->set_space_diff(params, prev);
 		block->set_base_reward(params, prev);
 		block->finalize();
 		add_block(block);
@@ -795,7 +795,8 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 	return out;
 }
 
-std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block)
+std::shared_ptr<const Block> Node::make_block(
+		std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 
@@ -806,7 +807,6 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->prev = prev->hash;
 	block->height = prev->height + 1;
 	block->time_diff = prev->time_diff;
-	block->space_diff = prev->space_diff;
 	block->proof = proof.proof;
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
@@ -819,7 +819,6 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	if(block->height % params->vdf_reward_interval == 0) {
 		block->vdf_reward_addr = get_vdf_reward_addr(block);
 	}
-	block->set_base_reward(params, prev);
 
 	if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
 		block->reward_contract = nft->contract;
@@ -875,13 +874,14 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
 		block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
 	}
-	block->space_diff = calc_new_space_diff(params, prev->space_diff, block->proof->score);
 	{
 		const auto diff_block = get_diff_header(prev, 1);
 		block->weight = calc_block_weight(params, diff_block, block);
 		block->total_weight = prev->total_weight + block->weight;
 	}
 	block->reward_amount = calc_block_reward(block, total_fees);
+	block->set_space_diff(params, prev);
+	block->set_base_reward(params, prev);
 	block->finalize();
 
 	FarmerClient farmer(proof.farmer_mac);
