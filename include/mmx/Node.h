@@ -282,6 +282,7 @@ private:
 
 	struct tx_pool_t {
 		bool is_valid = false;
+		bool is_skipped = false;
 		uint32_t cost = 0;
 		uint32_t fee = 0;
 		uint32_t luck = 0;	// random value
@@ -324,7 +325,7 @@ private:
 
 	void on_sync_done(const uint32_t height);
 
-	std::vector<tx_pool_t> validate_for_block();
+	std::vector<tx_pool_t> validate_for_block(const int64_t deadline_ms);
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block);
 

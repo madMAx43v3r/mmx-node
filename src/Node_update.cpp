@@ -575,18 +575,23 @@ void Node::validate_new()
 			}
 		}
 	}
-
 	auto context = new_exec_context(peak->height + 1);
 
 	// prepare synchronization
 	for(const auto& entry : tx_list) {
 		prepare_context(context, entry.tx);
 	}
+	const auto deadline_ms = vnx::get_wall_time_millis() + validate_interval_ms;
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
-		threads->add_task([this, &entry, context]() {
+		threads->add_task([this, &entry, context, deadline_ms]() {
+			if(vnx::get_wall_time_millis() > deadline_ms) {
+				entry.is_skipped = true;
+				return;
+			}
 			entry.is_valid = false;
+
 			auto& tx = entry.tx;
 			if(tx->exec_result) {
 				auto tmp = vnx::clone(tx);
@@ -614,26 +619,33 @@ void Node::validate_new()
 
 	// update tx pool
 	for(const auto& entry : tx_list) {
-		const auto& tx = entry.tx;
-		if(entry.is_valid) {
-			if(tx_pool_update(entry)) {
-				publish(tx, output_verified_transactions);
+		if(!entry.is_skipped) {
+			const auto& tx = entry.tx;
+			if(entry.is_valid) {
+				if(tx_pool_update(entry)) {
+					publish(tx, output_verified_transactions);
+				}
 			}
+			tx_queue.erase(tx->content_hash);
 		}
-		tx_queue.erase(tx->content_hash);
 	}
 }
 
-std::vector<Node::tx_pool_t> Node::validate_for_block()
+std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 {
 	const auto peak = get_peak();
 	if(!peak) {
 		return {};
 	}
+	auto context = new_exec_context(peak->height + 1);
+
 	std::vector<tx_pool_t> all_tx;
 	all_tx.reserve(tx_pool.size());
 	for(const auto& entry : tx_pool) {
-		all_tx.push_back(entry.second);
+		const auto& pool = entry.second;
+		if(check_tx_inclusion(pool.tx->id, context->height)) {
+			all_tx.push_back(pool);
+		}
 	}
 
 	// sort transactions by fee ratio
@@ -642,18 +654,14 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
-	auto context = new_exec_context(peak->height + 1);
-
 	std::vector<tx_pool_t> tx_list;
 	uint64_t total_verify_cost = 0;
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(check_tx_inclusion(entry.tx->id, context->height)) {
-			if(total_verify_cost + entry.cost <= params->max_block_cost) {
-				tx_list.push_back(entry);
-				total_verify_cost += entry.cost;
-			}
+		if(total_verify_cost + entry.cost <= params->max_block_cost) {
+			tx_list.push_back(entry);
+			total_verify_cost += entry.cost;
 		}
 	}
 
@@ -664,8 +672,13 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
-		threads->add_task([this, &entry, context]() {
+		threads->add_task([this, &entry, context, deadline_ms]() {
+			if(vnx::get_wall_time_millis() > deadline_ms) {
+				entry.is_skipped = true;
+				return;
+			}
 			entry.is_valid = false;
+
 			auto& tx = entry.tx;
 			if(tx->exec_result) {
 				auto tmp = vnx::clone(tx);
@@ -696,6 +709,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	}
 	threads->sync();
 
+	uint32_t num_skipped = 0;
 	uint64_t total_cost = 0;
 	uint64_t static_cost = 0;
 	std::vector<tx_pool_t> result;
@@ -704,6 +718,10 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	// select final set of transactions
 	for(auto& entry : tx_list)
 	{
+		if(entry.is_skipped) {
+			num_skipped++;
+			continue;
+		}
 		if(!entry.is_valid) {
 			tx_pool_erase(entry.tx->id);
 			continue;
@@ -741,6 +759,9 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 		total_cost += entry.cost;
 		static_cost += tx->static_cost;
 		result.push_back(entry);
+	}
+	if(num_skipped) {
+		log(WARN) << "Skipped " << num_skipped << " transactions due to block creation deadline";
 	}
 
 	const uint32_t N = params->min_fee_ratio.size();
@@ -815,7 +836,8 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	uint64_t total_fees = 0;
 	if(full_block && block->height >= params->transaction_activation)
 	{
-		const auto tx_list = validate_for_block();
+		const auto deadline = (vdf_point->recv_time / 1000) + params->block_interval_ms - 1000;
+		const auto tx_list = validate_for_block(deadline);
 		// select transactions
 		for(const auto& entry : tx_list) {
 			block->tx_list.push_back(entry.tx);
