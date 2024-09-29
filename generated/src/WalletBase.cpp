@@ -579,7 +579,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x3299e81eb354b78full: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_accept_offer>(_method);
 			auto _return_value = ::mmx::Wallet_accept_offer_return::create();
-			_return_value->_ret_0 = accept_offer(_args->index, _args->address, _args->dst_addr, _args->options);
+			_return_value->_ret_0 = accept_offer(_args->index, _args->address, _args->dst_addr, _args->price, _args->options);
 			return _return_value;
 		}
 		case 0x92d2d3518d9c33aeull: {
@@ -813,7 +813,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x557a94a5a4887bf2ull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_offer_trade>(_method);
 			auto _return_value = ::mmx::Wallet_offer_trade_return::create();
-			_return_value->_ret_0 = offer_trade(_args->index, _args->address, _args->amount, _args->dst_addr, _args->options);
+			_return_value->_ret_0 = offer_trade(_args->index, _args->address, _args->amount, _args->dst_addr, _args->price, _args->options);
 			return _return_value;
 		}
 		case 0x790a334fbf5dd1e6ull: {

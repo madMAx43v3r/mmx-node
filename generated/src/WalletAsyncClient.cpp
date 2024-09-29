@@ -304,12 +304,13 @@ uint64_t WalletAsyncClient::make_offer(const uint32_t& index, const uint32_t& ow
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_offer_trade::create();
 	_method->index = index;
 	_method->address = address;
 	_method->amount = amount;
 	_method->dst_addr = dst_addr;
+	_method->price = price;
 	_method->options = options;
 	const auto _request_id = ++vnx_next_id;
 	{
@@ -336,11 +337,12 @@ uint64_t WalletAsyncClient::offer_withdraw(const uint32_t& index, const ::mmx::a
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options, const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_accept_offer::create();
 	_method->index = index;
 	_method->address = address;
 	_method->dst_addr = dst_addr;
+	_method->price = price;
 	_method->options = options;
 	const auto _request_id = ++vnx_next_id;
 	{

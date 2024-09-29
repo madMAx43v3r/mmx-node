@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -19,6 +20,7 @@ public:
 	::mmx::addr_t address;
 	uint64_t amount = 0;
 	uint32_t dst_addr = 0;
+	::mmx::uint128 price;
 	::mmx::spend_options_t options;
 	
 	typedef ::vnx::Value Super;
@@ -63,13 +65,14 @@ public:
 
 template<typename T>
 void Wallet_offer_trade::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_offer_trade>(5);
+	_visitor.template type_begin<Wallet_offer_trade>(6);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("address", 1); _visitor.accept(address);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
 	_visitor.type_field("dst_addr", 3); _visitor.accept(dst_addr);
-	_visitor.type_field("options", 4); _visitor.accept(options);
-	_visitor.template type_end<Wallet_offer_trade>(5);
+	_visitor.type_field("price", 4); _visitor.accept(price);
+	_visitor.type_field("options", 5); _visitor.accept(options);
+	_visitor.template type_end<Wallet_offer_trade>(6);
 }
 
 

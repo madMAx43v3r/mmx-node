@@ -304,12 +304,13 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_offer_trade::create();
 	_method->index = index;
 	_method->address = address;
 	_method->amount = amount;
 	_method->dst_addr = dst_addr;
+	_method->price = price;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_offer_trade_return>(_return_value)) {
@@ -336,11 +337,12 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::offer_withdraw(const uin
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_accept_offer::create();
 	_method->index = index;
 	_method->address = address;
 	_method->dst_addr = dst_addr;
+	_method->price = price;
 	_method->options = options;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_accept_offer_return>(_return_value)) {

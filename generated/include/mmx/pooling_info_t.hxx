@@ -19,6 +19,7 @@ struct MMX_EXPORT pooling_info_t : vnx::struct_t {
 	vnx::optional<::mmx::addr_t> pool_target;
 	uint64_t partial_diff = 0;
 	uint32_t plot_count = 0;
+	vnx::bool_t is_plot_nft = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -60,13 +61,14 @@ struct MMX_EXPORT pooling_info_t : vnx::struct_t {
 
 template<typename T>
 void pooling_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<pooling_info_t>(5);
+	_visitor.template type_begin<pooling_info_t>(6);
 	_visitor.type_field("contract", 0); _visitor.accept(contract);
 	_visitor.type_field("server_url", 1); _visitor.accept(server_url);
 	_visitor.type_field("pool_target", 2); _visitor.accept(pool_target);
 	_visitor.type_field("partial_diff", 3); _visitor.accept(partial_diff);
 	_visitor.type_field("plot_count", 4); _visitor.accept(plot_count);
-	_visitor.template type_end<pooling_info_t>(5);
+	_visitor.type_field("is_plot_nft", 5); _visitor.accept(is_plot_nft);
+	_visitor.template type_end<pooling_info_t>(6);
 }
 
 
