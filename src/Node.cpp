@@ -334,12 +334,16 @@ void Node::main()
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_token_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_nft_binary.dat"));
-		// TODO: nft + template
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_nft_binary.dat"));
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_template_binary.dat"));
 		// TODO: testnet rewards
 
 		for(auto tx : block->tx_list) {
 			if(!tx) {
-				throw std::logic_error("failed to load genesis transactions");
+				throw std::logic_error("failed to load genesis transaction");
+			}
+			if(tx->network != params->network) {
+				throw std::logic_error("invalid genesis transaction");
 			}
 		}
 		block->finalize();
