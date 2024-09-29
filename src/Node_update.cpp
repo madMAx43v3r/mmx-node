@@ -445,6 +445,9 @@ void Node::on_sync_done(const uint32_t height)
 
 bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
 {
+	if(entry.is_skipped) {
+		throw std::logic_error("tx_pool_update(): entry is_skipped");
+	}
 	if(const auto& tx = entry.tx) {
 		if(tx->sender) {
 			const auto& sender = *tx->sender;
