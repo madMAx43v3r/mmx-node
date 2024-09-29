@@ -1065,7 +1065,16 @@ void Wallet::remove_account(const uint32_t& index, const uint32_t& account)
 
 std::set<addr_t> Wallet::get_token_list() const
 {
-	return token_whitelist;
+	const std::vector<addr_t> addresses(token_whitelist.begin(), token_whitelist.end());
+	const auto list = node->get_contracts(addresses);
+
+	std::set<addr_t> out {addr_t()};
+	for(size_t i = 0; i < list.size(); ++i) {
+		if(std::dynamic_pointer_cast<const contract::TokenBase>(list[i])) {
+			out.insert(addresses[i]);
+		}
+	}
+	return out;
 }
 
 void Wallet::add_token(const addr_t& address)
