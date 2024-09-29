@@ -356,13 +356,15 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 }
 
 std::shared_ptr<const Transaction> Wallet::offer_trade(
-			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const
+			const uint32_t& index, const addr_t& address, const uint64_t& amount,
+			const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	const auto offer = node->get_offer(address);
 
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
+	args.emplace_back(price.to_hex_string());
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;
@@ -370,14 +372,15 @@ std::shared_ptr<const Transaction> Wallet::offer_trade(
 }
 
 std::shared_ptr<const Transaction> Wallet::accept_offer(
-			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const
+			const uint32_t& index, const addr_t& address,
+			const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	const auto offer = node->get_offer(address);
 
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
-	args.emplace_back(offer.bid_balance);
+	args.emplace_back(price.to_hex_string());
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;

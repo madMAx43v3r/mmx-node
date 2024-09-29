@@ -143,6 +143,7 @@ void Node::main()
 		db->open_async(offer_bid_map, database_path + "offer_bid_map");
 		db->open_async(offer_ask_map, database_path + "offer_ask_map");
 		db->open_async(trade_log, database_path + "trade_log");
+		db->open_async(trade_index, database_path + "trade_index");
 		db->open_async(swap_liquid_map, database_path + "swap_liquid_map");
 
 		db->open_async(tx_log, database_path + "tx_log");
@@ -1180,7 +1181,22 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				}
 				if(executable->binary == params->offer_binary) {
 					if((exec->method == "trade" || exec->method == "accept") && deposit) {
-						trade_log.insert(std::make_pair(block->height, ticket), std::make_tuple(address, tx->id, block->time_stamp, deposit->amount));
+						trade_log_t log;
+						log.time_stamp = block->time_stamp;
+						log.txid = tx->id;
+						log.address = address;
+						log.ask_amount = deposit->amount;
+						exec->get_arg(1).to(log.inv_price);
+						trade_log.insert(std::make_pair(block->height, ticket), log);
+						try {
+							const auto ask_currency = deposit->currency;
+							const auto bid_currency = to_addr(read_storage_field(address, "bid_currency").first);
+							trade_index.insert(std::make_tuple(hash_t(ask_currency + "ANY"), block->height, ticket), true);
+							trade_index.insert(std::make_tuple(hash_t("ANY" + bid_currency), block->height, ticket), true);
+							trade_index.insert(std::make_tuple(hash_t(ask_currency + bid_currency), block->height, ticket), true);
+						} catch(...) {
+							// ignore
+						}
 					}
 				}
 			}

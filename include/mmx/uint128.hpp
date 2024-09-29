@@ -34,8 +34,20 @@ public:
 
 	uint128(const uint256_t& value) : uint128_t(value.lower()) {}
 
+	uint128(const std::string& str) {
+		if(str.substr(0, 2) == "0x") {
+			*this = uint128_t(str.substr(2), 16);
+		} else {
+			*this = uint128_t(str, 10);
+		}
+	}
+
 	std::string to_string() const {
 		return str(10);
+	}
+
+	std::string to_hex_string() const {
+		return "0x" + str(16);
 	}
 
 	double to_double() const {

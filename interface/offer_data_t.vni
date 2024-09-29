@@ -4,6 +4,8 @@ struct offer_data_t {
 	
 	uint height;
 	
+	uint last_update;			// height
+	
 	long time_stamp;			// UNIX [ms]
 	
 	addr_t owner;
@@ -25,6 +27,8 @@ struct offer_data_t {
 	bool is_scam() const;
 	
 	bool is_open() const;
+	
+	double get_price() const;	// [ask / bid]
 	
 	ulong get_bid_amount(ulong ask_amount) const;
 	

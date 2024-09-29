@@ -20,6 +20,7 @@
 #include <mmx/uint128.hpp>
 #include <mmx/tx_index_t.hxx>
 #include <mmx/block_index_t.hxx>
+#include <mmx/trade_log_t.hxx>
 #include <mmx/table.h>
 #include <mmx/multi_table.h>
 #include <mmx/balance_cache_t.h>
@@ -329,6 +330,8 @@ private:
 
 	int get_offer_state(const addr_t& address) const;
 
+	trade_entry_t make_trade_entry(const uint32_t& height, const trade_log_t& log) const;
+
 	std::vector<offer_data_t> fetch_offers_for(
 			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
 			const bool state = false, const bool filter = false) const;
@@ -487,7 +490,8 @@ private:
 
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
-	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, int64_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, time, amount]]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, bool> trade_index;				// [hash(bid, ask), height, counter]
+	uint_uint_table<uint32_t, uint32_t, trade_log_t> trade_log;						// [[height, counter] => info]
 
 	balance_table_t<uint128> balance_table;										// [[address, currency] => balance]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]

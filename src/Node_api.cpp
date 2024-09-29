@@ -917,7 +917,8 @@ offer_data_t Node::get_offer(const addr_t& address) const
 	out.bid_balance = get_balance(address, out.bid_currency);
 	out.ask_balance = get_balance(address, out.ask_currency);
 	out.inv_price = to_uint(data["inv_price"]);
-	out.price = pow(2, 64) / out.inv_price.to_double();
+	out.last_update = to_uint(data["last_update"]);
+	out.price = out.get_price();
 	out.ask_amount = out.get_ask_amount(out.bid_balance);
 	return out;
 }
@@ -1081,25 +1082,29 @@ std::vector<offer_data_t> Node::get_recent_offers_for(
 	return result;
 }
 
+trade_entry_t Node::make_trade_entry(const uint32_t& height, const trade_log_t& log) const
+{
+	trade_entry_t out;
+	out.height = height;
+	out.time_stamp = log.time_stamp;
+	out.address = log.address;
+	out.txid = log.txid;
+	out.ask_amount = log.ask_amount;
+	out.bid_amount = log.get_bid_amount();
+	out.price = log.get_price();
+	out.bid_currency = to_addr(read_storage_field(log.address, "bid_currency").first);
+	out.ask_currency = to_addr(read_storage_field(log.address, "ask_currency").first);
+	return out;
+}
+
 std::vector<trade_entry_t> Node::get_trade_history(const int32_t& limit, const uint32_t& since) const
 {
-	std::vector<std::pair<std::pair<uint32_t, uint32_t>, std::tuple<addr_t, hash_t, int64_t, uint64_t>>> entries;
+	std::vector<std::pair<std::pair<uint32_t, uint32_t>, trade_log_t>> entries;
 	trade_log.find_last_range(std::make_pair(since, 0), std::make_pair(-1, -1), entries, limit);
 
 	std::vector<trade_entry_t> result;
 	for(const auto& entry : entries) {
-		trade_entry_t out;
-		out.height = entry.first.first;
-		out.time_stamp = std::get<2>(entry.second);
-		out.address = std::get<0>(entry.second);
-		out.txid = std::get<1>(entry.second);
-		out.ask_amount = std::get<3>(entry.second);
-		const auto data = get_offer(out.address);
-		out.bid_currency = data.bid_currency;
-		out.ask_currency = data.ask_currency;
-		out.bid_amount = (uint256_t(out.ask_amount) * data.inv_price) >> 64;
-		out.price = data.price;
-		result.push_back(out);
+		result.push_back(make_trade_entry(entry.first.first, entry.second));
 	}
 	return result;
 }
@@ -1107,12 +1112,27 @@ std::vector<trade_entry_t> Node::get_trade_history(const int32_t& limit, const u
 std::vector<trade_entry_t> Node::get_trade_history_for(
 			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since) const
 {
-	const auto entries = get_trade_history(limit > 0 && (bid || ask) ? limit * 10 : limit, since);
+	if(!bid && !ask) {
+		return get_trade_history(limit, since);
+	}
+	hash_t key;
+	if(bid && ask) {
+		key = hash_t((*ask) + (*bid));
+	} else if(bid) {
+		key = hash_t("ANY" + (*bid));
+	} else if(ask) {
+		key = hash_t((*ask) + "ANY");
+	}
+	std::vector<std::pair<std::tuple<hash_t, uint32_t, uint32_t>, bool>> entries;
+	trade_index.find_last_range(std::make_tuple(key, since, 0), std::make_tuple(key, -1, -1), entries, limit);
 
 	std::vector<trade_entry_t> result;
 	for(const auto& entry : entries) {
-		if((!bid || entry.bid_currency == *bid) && (!ask || entry.ask_currency == *ask)) {
-			result.push_back(entry);
+		const auto& height = std::get<1>(entry.first);
+		const auto& counter = std::get<2>(entry.first);
+		trade_log_t log;
+		if(trade_log.find(std::make_pair(height, counter), log)) {
+			result.push_back(make_trade_entry(height, log));
 		}
 	}
 	return result;

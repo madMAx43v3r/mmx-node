@@ -258,7 +258,7 @@ public:
 	}
 
 	void accept(const uint128& value) {
-		set(value.str(10));
+		set(value.to_string());
 	}
 
 	void accept(const fixed128& value) {
@@ -1570,6 +1570,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 									out["next_input"] = to_amount_object_str(amount + 1, ask_currency->decimals);
 								}
 							}
+							out["inv_price"] = info.inv_price.to_string();
 							respond(request_id, render_value(out));
 					});
 				},
@@ -2174,10 +2175,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							}
 							const auto index = args["index"].to<uint32_t>();
 							const auto value = args["amount"].to<fixed128>();
+							const auto price = args["price"].to<uint128>();
 							const auto options = args["options"].to<spend_options_t>();
 							const auto amount = to_amount(value, token->decimals);
 
-							wallet->offer_trade(index, address, amount, 0, options,
+							wallet->offer_trade(index, address, amount, 0, price, options,
 								[this, request_id, context](std::shared_ptr<const Transaction> tx) {
 									respond(request_id, render(tx, context));
 								},
@@ -2198,8 +2200,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			node->get_offer(address,
 				[this, request_id, address, args](const offer_data_t& offer) {
 					const auto index = args["index"].to<uint32_t>();
+					const auto price = args["price"].to<uint128>();
 					const auto options = args["options"].to<spend_options_t>();
-					wallet->accept_offer(index, address, 0, options,
+					wallet->accept_offer(index, address, 0, price, options,
 						[this, request_id](std::shared_ptr<const Transaction> tx) {
 							respond(request_id, render(tx, get_context()));
 						},

@@ -56,10 +56,10 @@ protected:
 			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> offer_trade(
-			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> accept_offer(
-			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> offer_withdraw(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;

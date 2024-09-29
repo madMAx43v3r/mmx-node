@@ -718,22 +718,27 @@ int main(int argc, char** argv)
 				mmx::addr_t address;
 				vnx::read_config("$3", address);
 
+				const auto height = node.get_height();
 				const auto data = node.get_offer(address);
 				const auto bid_token = get_token(node, data.bid_currency);
 				const auto ask_token = get_token(node, data.ask_currency);
 				const uint64_t ask_amount = mmx::to_amount(amount, ask_token->decimals);
-				const uint64_t bid_amount = (uint256_t(ask_amount) * data.inv_price) >> 64;
+				const uint64_t bid_amount = data.get_bid_amount(ask_amount);
 
-				std::cout << "You pay:     "
+				std::cout << "You send:    "
 						<< mmx::to_value(ask_amount, ask_token->decimals) << " " << ask_token->symbol << " [" << data.ask_currency << "]" << std::endl;
 				std::cout << "You receive: "
 						<< mmx::to_value(bid_amount, bid_token->decimals) << " " << bid_token->symbol << " [" << data.bid_currency << "]" << std::endl;
 
+				if(data.last_update > height || height - data.last_update < 100) {
+					pre_accept = false;
+					std::cout << "WARNING: Offer price has changed recently!" << std::endl;
+				}
 				if(pre_accept || accept_prompt()) {
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.offer_trade(index, address, ask_amount, offset, spend_options)) {
+					if(auto tx = wallet.offer_trade(index, address, ask_amount, offset, data.inv_price, spend_options)) {
 						std::cout << "Transaction ID: " << tx->id << std::endl;
 					}
 				}
@@ -743,6 +748,7 @@ int main(int argc, char** argv)
 				mmx::addr_t address;
 				vnx::read_config("$3", address);
 
+				const auto height = node.get_height();
 				const auto data = node.get_offer(address);
 				const auto bid_token = get_token(node, data.bid_currency);
 				const auto ask_token = get_token(node, data.ask_currency);
@@ -752,11 +758,15 @@ int main(int argc, char** argv)
 				std::cout << "You receive: "
 						<< mmx::to_value(data.bid_balance, bid_token->decimals) << " " << bid_token->symbol << " [" << data.bid_currency << "]" << std::endl;
 
+				if(data.last_update > height || height - data.last_update < 100) {
+					pre_accept = false;
+					std::cout << "WARNING: Offer price has changed recently!" << std::endl;
+				}
 				if(pre_accept || accept_prompt()) {
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.accept_offer(index, address, offset, spend_options)) {
+					if(auto tx = wallet.accept_offer(index, address, offset, data.inv_price, spend_options)) {
 						std::cout << "Transaction ID: " << tx->id << std::endl;
 					}
 				}

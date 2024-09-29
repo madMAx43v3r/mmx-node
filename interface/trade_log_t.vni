@@ -1,0 +1,20 @@
+package mmx;
+
+struct trade_log_t {
+	
+	long time_stamp;			// UNIX [ms]
+	
+	hash_t txid;
+	
+	addr_t address;				// offer
+	
+	uint128 inv_price;			// [bid / ask]
+	
+	ulong ask_amount;
+	
+	
+	ulong get_bid_amount() const;
+	
+	double get_price() const;
+	
+}
