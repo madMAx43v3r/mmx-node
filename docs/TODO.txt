@@ -22,6 +22,6 @@ Mainnet
 - mmx_test framework
 - 1000 commas for balances
 - Timestamp delta adjustment (limited to +- 1 sec per block)
-- Remove proof_xs in /wapi/headers
 - Dynamically load contract balances + read fee
 - Binary source_info
+- Explorer search by block hash
