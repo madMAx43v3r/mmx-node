@@ -453,6 +453,8 @@ private:
 	std::shared_ptr<const VDF_Point> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
 			const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const;
 
+	std::shared_ptr<const VDF_Point> find_vdf_point(std::shared_ptr<const BlockHeader> block) const;
+
 	std::shared_ptr<const VDF_Point> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
 
 	std::vector<proof_data_t> find_proof(const hash_t& challenge) const;
@@ -504,7 +506,7 @@ private:
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 
-	std::multimap<uint32_t, std::shared_ptr<const VDF_Point>> verified_vdfs;			// [height => output]
+	std::multimap<uint32_t, std::shared_ptr<const VDF_Point>> verified_vdfs;		// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]

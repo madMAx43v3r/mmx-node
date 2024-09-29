@@ -1341,6 +1341,16 @@ Node::find_vdf_point(	const uint32_t height, const uint64_t vdf_start, const uin
 	return nullptr;
 }
 
+std::shared_ptr<const VDF_Point>
+Node::find_vdf_point(std::shared_ptr<const BlockHeader> block) const
+{
+	const auto prev = find_prev_header(block);
+	if(!prev) {
+		return nullptr;
+	}
+	return find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output);
+}
+
 std::shared_ptr<const VDF_Point> Node::find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const
 {
 	if(auto diff_block = find_diff_header(block, 1))

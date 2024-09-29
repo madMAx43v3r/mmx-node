@@ -11,7 +11,6 @@ Mainnet
 - Check remaining in-source TODOs
 - Test mainnet-rc changes
 - Harvester latency graphs
-- Choose reward_adjust_div
 - GUI settings tabs
 - GUI option to increase wallet address count
 - Native Linux GUI
@@ -23,7 +22,6 @@ Mainnet
 - mmx_test framework
 - 1000 commas for balances
 - Timestamp delta adjustment (limited to +- 1 sec per block)
-- Remove proofs in /wapi/headers
-- Require one valid VDF before reaching sync
+- Remove proof_xs in /wapi/headers
 - Dynamically load contract balances + read fee
 - Binary source_info

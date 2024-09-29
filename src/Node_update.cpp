@@ -119,7 +119,7 @@ void Node::verify_block_proofs()
 		if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
 			continue;
 		}
-		if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
+		if(auto point = find_vdf_point(block)) {
 			fork->vdf_point = point;
 			fork->is_vdf_verified = true;
 		}
@@ -303,7 +303,7 @@ void Node::update()
 				sync_finish_ms = now_ms;
 				sync_retry++;
 			}
-		} else {
+		} else if(find_vdf_point(peak)) {
 			is_synced = true;
 			on_sync_done(peak->height);
 		}
