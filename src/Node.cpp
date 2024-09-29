@@ -459,9 +459,10 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 			throw std::runtime_error(res.get_error_msg());
 		}
 	}
-	// Note: tx->is_valid() already checked by Router
-	tx_queue[tx->content_hash] = tx;
-
+	if(tx_queue.size() < max_tx_queue) {
+		// Note: tx->is_valid() already checked by Router
+		tx_queue[tx->content_hash] = tx;
+	}
 	if(!vnx_sample) {
 		publish(tx, output_transactions);
 	}

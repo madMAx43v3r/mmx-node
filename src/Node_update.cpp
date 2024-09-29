@@ -563,6 +563,8 @@ void Node::validate_new()
 	// select non-overlapping set
 	std::vector<tx_pool_t> tx_list;
 	std::unordered_set<hash_t> tx_set;
+	tx_list.reserve(max_tx_queue);
+	tx_set.reserve(max_tx_queue);
 	for(const auto& entry : tx_queue) {
 		if(const auto& tx = entry.second) {
 			if(tx_set.insert(tx->id).second) {
