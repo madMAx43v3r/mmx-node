@@ -577,7 +577,8 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.execute(index, contract, "mint_to", {vnx::Variant(target.to_string()), vnx::Variant(mojo), vnx::Variant(memo)}, nullptr, spend_options);
+				const auto tx = wallet.execute(index, contract, "mint_to",
+						{vnx::Variant(target.to_string()), vnx::Variant(mojo), vnx::Variant(memo)}, nullptr, spend_options);
 				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
