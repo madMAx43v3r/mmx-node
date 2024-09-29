@@ -634,16 +634,12 @@ public:
 //			set(render(value, context));
 //		} else
 		if(auto value = std::dynamic_pointer_cast<const ProofOfStake>(base)) {
-			accept(value);
+			auto tmp = render(*value, context);
+			tmp["ksize"] = "VP";
+			set(tmp);
 		} else {
 			set(render(base, context));
 		}
-	}
-
-	void accept(std::shared_ptr<const ProofOfStake> value) {
-		auto tmp = render(*value, context);
-		tmp["ksize"] = "VP";
-		set(tmp);
 	}
 
 	void augment_block_header(vnx::Object& tmp, std::shared_ptr<const BlockHeader> value) {
