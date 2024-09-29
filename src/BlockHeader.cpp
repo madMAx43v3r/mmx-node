@@ -15,7 +15,7 @@ namespace mmx {
 vnx::bool_t BlockHeader::is_valid() const
 {
 	if(!farmer_sig && height) {
-		if(nonce || proof || vdf_reward_addr || reward_addr || reward_amount || tx_count) {
+		if(nonce || proof || tx_count) {
 			return false;
 		}
 	}
