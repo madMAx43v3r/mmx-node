@@ -424,42 +424,51 @@ uint64_t Harvester::get_total_bytes() const
 
 std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 {
-	auto info = FarmInfo::create();
-	info->harvester = my_name;
-	info->harvester_id = harvester_id;
-	info->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
-	info->total_bytes = total_bytes;
-	info->total_bytes_effective = total_bytes_effective;
+	auto out = FarmInfo::create();
+	out->harvester = my_name;
+	out->harvester_id = harvester_id;
+	out->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
+	out->total_bytes = total_bytes;
+	out->total_bytes_effective = total_bytes_effective;
 	for(const auto& entry : plot_map) {
-		if(auto prover = entry.second) {
-			info->plot_count[prover->get_ksize()]++;
+		if(const auto& prover = entry.second) {
+			out->plot_count[prover->get_ksize()]++;
 		}
 	}
 	for(const auto& entry : virtual_map) {
-		info->total_balance += entry.second.balance;
+		out->total_balance += entry.second.balance;
 	}
 	for(const auto& entry : plot_nfts) {
 		const auto& nft = entry.second;
-		auto& pool_info = info->pool_info[nft.address];
-		pool_info.contract = nft.address;
+		auto& info = out->pool_info[nft.address];
+		info.contract = nft.address;
+		info.is_plot_nft = true;
 		if(nft.is_locked) {
-			pool_info.server_url = nft.server_url;
-			pool_info.pool_target = nft.target;
+			info.server_url = nft.server_url;
+			info.pool_target = nft.target;
 		}
 		{
 			auto iter = partial_diff.find(nft.address);
 			if(iter != partial_diff.end()) {
-				pool_info.partial_diff = iter->second;
+				info.partial_diff = iter->second;
 			}
 		}
 		{
 			auto iter = plot_contract_set.find(nft.address);
 			if(iter != plot_contract_set.end()) {
-				pool_info.plot_count = iter->second;
+				info.plot_count = iter->second;
 			}
 		}
 	}
-	return info;
+	for(const auto& entry : plot_contract_set) {
+		if(!plot_nfts.count(entry.first)) {
+			auto& info = out->pool_info[entry.first];
+			info.contract = entry.first;
+			info.plot_count = entry.second;
+			info.pool_target = entry.first;
+		}
+	}
+	return out;
 }
 
 void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs, const size_t depth) const

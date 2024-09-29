@@ -12,4 +12,6 @@ struct pooling_info_t {
 	
 	uint plot_count;
 	
+	bool is_plot_nft;
+	
 }
