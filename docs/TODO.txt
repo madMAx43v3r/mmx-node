@@ -3,6 +3,7 @@ Mainnet
 - Multisig
 - Test remote calls again
 - unsafe_add() / unsafe_sub() / unsafe_mul()
+- is_uint() / is_string() / etc
 - Website
 - Linux packages
 - Double check msg hashes again
