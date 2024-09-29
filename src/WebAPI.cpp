@@ -85,6 +85,7 @@ public:
 		}
 	}
 
+	bool hide_proof = false;
 	uint32_t curr_height = 0;
 	std::shared_ptr<const ChainParams> params;
 	std::unordered_map<addr_t, currency_t> currency_map;
@@ -627,18 +628,18 @@ public:
 		}
 	}
 
-	void accept(std::shared_ptr<const ProofOfSpace> base) {
-//		if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceOG>(base)) {
-//			set(render(value, context));
-//		} else if(auto value = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(base)) {
-//			set(render(value, context));
-//		} else
-		if(auto value = std::dynamic_pointer_cast<const ProofOfStake>(base)) {
-			auto tmp = render(*value, context);
-			tmp["ksize"] = "VP";
+	void accept(std::shared_ptr<const ProofOfSpace> value) {
+		if(value) {
+			auto tmp = render(value, context).to_object();
+			if(std::dynamic_pointer_cast<const ProofOfStake>(value)) {
+				tmp["ksize"] = "VP";
+			}
+			if(context && context->hide_proof) {
+				tmp.erase("proof_xs");
+			}
 			set(tmp);
 		} else {
-			set(render(base, context));
+			set(render(value, context));
 		}
 	}
 
@@ -745,10 +746,13 @@ void WebAPI::render_headers(const vnx::request_id_t& request_id, size_t limit, c
 		respond(request_id, render_value(job->result));
 		return;
 	}
+	const auto context = get_context();
+	context->hide_proof = true;
+
 	for(size_t i = 0; i < limit; ++i) {
 		node->get_header_at(offset - i,
-			[this, job, i](std::shared_ptr<const BlockHeader> block) {
-				job->result[i] = render_value(block, get_context());
+			[this, job, context, i](std::shared_ptr<const BlockHeader> block) {
+				job->result[i] = render_value(block, context);
 				if(--job->num_left == 0) {
 					respond(job->request_id, render_value(job->result));
 				}
