@@ -17,7 +17,7 @@ template<typename T>
 std::shared_ptr<mmx::db_val_t> db_write(T value)
 {
 	auto out = std::make_shared<mmx::db_val_t>(sizeof(T));
-	vnx::write_value(out->data, vnx::flip_bytes(value));
+	vnx::write_value(out->data, vnx::to_big_endian(value));
 	return out;
 }
 
@@ -32,7 +32,7 @@ T db_read(std::shared_ptr<mmx::db_val_t> value)
 	}
 	T out = T();
 	::memcpy(&out, value->data, sizeof(T));
-	return vnx::flip_bytes(out);
+	return vnx::from_big_endian(out);
 }
 
 

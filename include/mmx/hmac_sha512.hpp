@@ -9,7 +9,7 @@
 #define INCLUDE_MMX_HMAC_SHA512_H_
 
 #include <mmx/hash_t.hpp>
-#include <vnx/Input.h>
+#include <vnx/Util.hpp>
 
 #include <hmac_sha512.h>
 #include <utility>
@@ -36,7 +36,7 @@ inline std::pair<hash_t, hash_t> hmac_sha512_n(const hash_t& seed, const hash_t&
 	HMAC_SHA512 func(key.data(), key.size());
 	func.Write(seed.data(), seed.size());
 	{
-		const auto bindex = vnx::flip_bytes(index);
+		const auto bindex = vnx::to_big_endian(index);
 		func.Write((const uint8_t*)&bindex, sizeof(bindex));
 	}
 	uint8_t tmp[64] = {};
