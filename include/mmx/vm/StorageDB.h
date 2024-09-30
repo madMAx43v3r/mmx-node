@@ -49,7 +49,7 @@ public:
 
 	void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) override;
 
-	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const override;
+	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) override;
 
 	std::function<void(const addr_t&, const addr_t&, const uint128&)> write_balance;
 

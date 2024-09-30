@@ -39,7 +39,7 @@ public:
 
 	void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) override;
 
-	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const override;
+	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) override;
 
 	const std::map<std::pair<addr_t, uint64_t>, std::unique_ptr<var_t>>& get_memory() const {
 		return memory;

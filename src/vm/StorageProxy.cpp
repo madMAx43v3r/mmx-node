@@ -167,7 +167,7 @@ uint64_t StorageProxy::lookup(const addr_t& contract, const var_t& value) const
 	return backend->lookup(contract, value);
 }
 
-std::unique_ptr<uint128> StorageProxy::get_balance(const addr_t& contract, const addr_t& currency) const
+std::unique_ptr<uint128> StorageProxy::get_balance(const addr_t& contract, const addr_t& currency)
 {
 	if(engine->do_trace) {
 		trace_t t;

@@ -57,7 +57,7 @@ public:
 		throw std::logic_error("not implemented");
 	}
 
-	virtual std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const {
+	virtual std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) {
 		throw std::logic_error("not implemented");
 	}
 

@@ -220,7 +220,7 @@ void StorageDB::set_balance(const addr_t& contract, const addr_t& currency, cons
 	}
 }
 
-std::unique_ptr<uint128> StorageDB::get_balance(const addr_t& contract, const addr_t& currency) const
+std::unique_ptr<uint128> StorageDB::get_balance(const addr_t& contract, const addr_t& currency)
 {
 	if(read_balance) {
 		return read_balance(contract, currency);

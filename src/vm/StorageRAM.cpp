@@ -98,7 +98,7 @@ void StorageRAM::set_balance(const addr_t& contract, const addr_t& currency, con
 	balance_map[contract][currency] = amount;
 }
 
-std::unique_ptr<uint128> StorageRAM::get_balance(const addr_t& contract, const addr_t& currency) const
+std::unique_ptr<uint128> StorageRAM::get_balance(const addr_t& contract, const addr_t& currency)
 {
 	std::lock_guard lock(mutex);
 

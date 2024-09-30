@@ -47,7 +47,7 @@ public:
 
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
 
-	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const override;
+	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) override;
 
 	using Storage::write;
 	using Storage::lookup;
