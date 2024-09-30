@@ -25,3 +25,4 @@ Mainnet
 - Dynamically load contract balances + read fee
 - Binary source_info
 - Explorer search by block hash
+- OP_BALANCE
