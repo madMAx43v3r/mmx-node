@@ -213,6 +213,21 @@ std::vector<varptr_t> StorageDB::read_array(
 	return out;
 }
 
+void StorageDB::set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount)
+{
+	if(write_balance) {
+		write_balance(contract, currency, amount);
+	}
+}
+
+std::unique_ptr<uint128> StorageDB::get_balance(const addr_t& contract, const addr_t& currency) const
+{
+	if(read_balance) {
+		return read_balance(contract, currency);
+	}
+	return nullptr;
+}
+
 
 } // vm
 } // mmx

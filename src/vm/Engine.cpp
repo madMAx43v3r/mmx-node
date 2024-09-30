@@ -17,10 +17,13 @@
 namespace mmx {
 namespace vm {
 
+const uint64_t MEM_EXTERN_BALANCE = MEM_EXTERN + EXTERN_BALANCE;
+
 Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only)
 	:	contract(contract),
 		storage(std::make_shared<StorageProxy>(this, backend, read_only))
 {
+	assign(MEM_EXTERN_BALANCE, std::make_unique<map_t>());
 }
 
 Engine::~Engine()
@@ -527,8 +530,10 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 			return (entries[mapkey] = std::move(var)).get();
 		}
 	}
-	if(src == MEM_EXTERN + EXTERN_BALANCE) {
-		return (entries[mapkey] = std::make_unique<uint_t>()).get();
+	if(src == MEM_EXTERN_BALANCE) {
+		const auto currency = to_addr(read_fail(key));
+		const auto value = storage->get_balance(contract, currency);
+		return (entries[mapkey] = std::make_unique<uint_t>(value ? *value : uint128())).get();
 	}
 	return nullptr;
 }
@@ -541,9 +546,14 @@ var_t& Engine::read_entry_fail(const uint64_t src, const uint64_t key)
 	throw std::logic_error("read fail at " + to_hex(src) + "[" + std::to_string(key) + "]");
 }
 
+bool Engine::is_read_only(const uint64_t src) const
+{
+	return src != MEM_EXTERN_BALANCE;
+}
+
 var_t* Engine::read_key(const uint64_t src, const uint64_t key)
 {
-	if(auto addr = lookup(key, true)) {
+	if(auto addr = lookup(key, is_read_only(src))) {
 		return read_entry(src, addr);
 	}
 	return nullptr;
@@ -551,7 +561,7 @@ var_t* Engine::read_key(const uint64_t src, const uint64_t key)
 
 var_t* Engine::read_key(const uint64_t src, const var_t& key)
 {
-	if(auto addr = lookup(key, true)) {
+	if(auto addr = lookup(key, is_read_only(src))) {
 		return read_entry(src, addr);
 	}
 	return nullptr;
@@ -559,7 +569,7 @@ var_t* Engine::read_key(const uint64_t src, const var_t& key)
 
 var_t* Engine::read_key(const uint64_t src, const varptr_t& key)
 {
-	if(auto addr = lookup(key, true)) {
+	if(auto addr = lookup(key, is_read_only(src))) {
 		return read_entry(src, addr);
 	}
 	return nullptr;
@@ -567,7 +577,7 @@ var_t* Engine::read_key(const uint64_t src, const varptr_t& key)
 
 var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 {
-	if(auto addr = lookup(key, true)) {
+	if(auto addr = lookup(key, is_read_only(src))) {
 		return read_entry_fail(src, addr);
 	}
 	throw std::logic_error("no such key at " + to_hex(src));
@@ -1121,7 +1131,7 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	if(currency == 0) {
 		throw std::runtime_error("send(): currency == null");
 	}
-	auto balance = read_key<uint_t>(MEM_EXTERN + EXTERN_BALANCE, currency, TYPE_UINT);
+	auto balance = read_key<uint_t>(MEM_EXTERN_BALANCE, currency, TYPE_UINT);
 	if(!balance || balance->value < value) {
 		throw std::runtime_error("send(): insufficient funds");
 	}

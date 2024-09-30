@@ -104,10 +104,6 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 	for(const auto& address : mutate_set) {
 		context->setup_wait(tx->id, address);
 		context->mutate_map[address].push_back(tx->id);
-
-		if(!context->storage->has_balances(address)) {
-			context->storage->set_balances(address, get_balances(address));
-		}
 	}
 	if(!mutate_set.empty()) {
 		context->signal_map.emplace(tx->id, std::make_shared<waitcond_t>());
@@ -550,8 +546,6 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->height));
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::to_binary(tx->id));
-
-	vm::set_balance(engine, storage_cache->get_balances(engine->contract));
 
 	try {
 		vm::execute(engine, *method);

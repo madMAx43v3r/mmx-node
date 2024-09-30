@@ -12,6 +12,8 @@
 #include <mmx/vm/varptr_t.hpp>
 #include <mmx/DataBase.h>
 
+#include <functional>
+
 
 namespace mmx {
 namespace vm {
@@ -45,15 +47,13 @@ public:
 	std::vector<varptr_t> read_array(
 			const addr_t& contract, const uint64_t address, const uint32_t height = -1) const;
 
-	void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) override {}
+	void set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount) override;
 
-	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const override {
-		return nullptr;
-	}
+	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) const override;
 
-	std::map<addr_t, uint128> get_balances(const addr_t& contract) const override {
-		return {};
-	}
+	std::function<void(const addr_t&, const addr_t&, const uint128&)> write_balance;
+
+	std::function<std::unique_ptr<uint128>(const addr_t&, const addr_t&)> read_balance;
 
 	using Storage::write;
 	using Storage::lookup;

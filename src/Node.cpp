@@ -158,6 +158,14 @@ void Node::main()
 	}
 	storage = std::make_shared<vm::StorageDB>(database_path, db);
 
+	storage->read_balance = [this](const addr_t& address, const addr_t& currency) -> std::unique_ptr<uint128> {
+		uint128 value = 0;
+		if(balance_table.find(std::make_pair(address, currency), value)) {
+			return std::make_unique<uint128>(value);
+		}
+		return nullptr;
+	};
+
 	if(db_replay) {
 		replay_height = 0;
 	}

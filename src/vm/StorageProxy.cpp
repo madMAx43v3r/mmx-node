@@ -104,6 +104,14 @@ uint64_t StorageProxy::lookup(const addr_t& contract, const var_t& value) const
 	return backend->lookup(contract, value);
 }
 
+std::unique_ptr<uint128> StorageProxy::get_balance(const addr_t& contract, const addr_t& currency) const
+{
+	engine->gas_used += STOR_READ_COST;
+	engine->check_gas();
+
+	return backend->get_balance(contract, currency);
+}
+
 
 } // vm
 } // mmx

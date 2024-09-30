@@ -214,6 +214,8 @@ private:
 	uint64_t deref_addr(uint32_t src, const bool flag);
 	uint64_t deref_value(uint32_t src, const bool flag);
 
+	bool is_read_only(const uint64_t src) const;
+
 private:
 	bool have_init = false;
 	std::shared_ptr<StorageProxy> storage;

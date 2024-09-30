@@ -61,11 +61,6 @@ public:
 		throw std::logic_error("not implemented");
 	}
 
-	virtual std::map<addr_t, uint128> get_balances(const addr_t& contract) const {
-		throw std::logic_error("not implemented");
-	}
-
-
 };
 
 

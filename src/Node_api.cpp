@@ -804,7 +804,6 @@ vnx::Variant Node::call_contract(
 			if(deposit) {
 				vm::set_deposit(engine, deposit->first, deposit->second);
 			}
-			vm::set_balance(engine, get_balances(address));
 			vm::set_args(engine, args);
 			vm::execute(engine, *func, true);
 			return vm::read(engine, vm::MEM_STACK);

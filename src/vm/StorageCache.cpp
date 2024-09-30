@@ -71,15 +71,6 @@ std::unique_ptr<uint128> StorageCache::get_balance(const addr_t& contract, const
 	return backend->get_balance(contract, currency);
 }
 
-std::map<addr_t, uint128> StorageCache::get_balances(const addr_t& contract) const
-{
-	auto out = backend->get_balances(contract);
-	for(const auto& entry : Super::get_balances(contract)) {
-		out[entry.first] = entry.second;
-	}
-	return out;
-}
-
 
 } // vm
 } // mmx
