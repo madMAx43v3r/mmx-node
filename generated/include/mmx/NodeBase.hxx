@@ -90,7 +90,9 @@ public:
 	vnx::bool_t vdf_slave_mode = false;
 	vnx::bool_t verify_vdf_cpuopencl = false;
 	vnx::bool_t verify_vdf_rewards = true;
-	vnx::bool_t debug_exec_fails = false;
+	vnx::bool_t exec_debug = false;
+	vnx::bool_t exec_profile = false;
+	vnx::bool_t exec_trace = false;
 	std::string storage_path;
 	std::string database_path = "db/";
 	std::string router_name = "Router";
@@ -227,7 +229,7 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(50);
+	_visitor.template type_begin<NodeBase>(52);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
 	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
 	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
@@ -271,14 +273,16 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("vdf_slave_mode", 40); _visitor.accept(vdf_slave_mode);
 	_visitor.type_field("verify_vdf_cpuopencl", 41); _visitor.accept(verify_vdf_cpuopencl);
 	_visitor.type_field("verify_vdf_rewards", 42); _visitor.accept(verify_vdf_rewards);
-	_visitor.type_field("debug_exec_fails", 43); _visitor.accept(debug_exec_fails);
-	_visitor.type_field("storage_path", 44); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 45); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 46); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 47); _visitor.accept(timelord_name);
-	_visitor.type_field("mmx_usd_swap_addr", 48); _visitor.accept(mmx_usd_swap_addr);
-	_visitor.type_field("metalsdev_api_key", 49); _visitor.accept(metalsdev_api_key);
-	_visitor.template type_end<NodeBase>(50);
+	_visitor.type_field("exec_debug", 43); _visitor.accept(exec_debug);
+	_visitor.type_field("exec_profile", 44); _visitor.accept(exec_profile);
+	_visitor.type_field("exec_trace", 45); _visitor.accept(exec_trace);
+	_visitor.type_field("storage_path", 46); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 47); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 48); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 49); _visitor.accept(timelord_name);
+	_visitor.type_field("mmx_usd_swap_addr", 50); _visitor.accept(mmx_usd_swap_addr);
+	_visitor.type_field("metalsdev_api_key", 51); _visitor.accept(metalsdev_api_key);
+	_visitor.template type_end<NodeBase>(52);
 }
 
 
