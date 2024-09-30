@@ -225,6 +225,9 @@ private:
 
 	size_t erase_call_depth = 0;
 
+	bool first_alloc = true;
+	uint64_t new_heap_base = -1;	// start of newly allocated heap for this run
+
 };
 
 

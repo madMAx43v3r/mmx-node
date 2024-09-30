@@ -17,7 +17,8 @@
 namespace mmx {
 namespace vm {
 
-const uint64_t MEM_EXTERN_BALANCE = MEM_EXTERN + EXTERN_BALANCE;
+static const uint64_t MEM_EXTERN_BALANCE = MEM_EXTERN + EXTERN_BALANCE;
+static const uint64_t MEM_HEAP_NEXT_ALLOC = MEM_HEAP + GLOBAL_NEXT_ALLOC;
 
 Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only)
 	:	contract(contract),
@@ -64,7 +65,7 @@ var_t* Engine::assign(const uint64_t dst, std::unique_ptr<var_t> value)
 			break;
 	}
 	auto& var = memory[dst];
-	if(!var && dst >= MEM_STATIC) {
+	if(!var && dst >= MEM_STATIC && dst < new_heap_base) {
 		var = storage->read(contract, dst);
 	}
 	return assign(var, std::move(value));
@@ -157,7 +158,7 @@ var_t* Engine::write(const uint64_t dst, const var_t& src)
 		throw std::logic_error("already initialized");
 	}
 	auto& var = memory[dst];
-	if(!var && dst >= MEM_STATIC) {
+	if(!var && dst >= MEM_STATIC && dst < new_heap_base) {
 		var = storage->read(contract, dst);
 	}
 	return write(var, &dst, src);
@@ -585,15 +586,21 @@ var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 
 uint64_t Engine::alloc()
 {
-	auto offset = read<uint_t>(MEM_HEAP + GLOBAL_NEXT_ALLOC, TYPE_UINT);
+	auto offset = read<uint_t>(MEM_HEAP_NEXT_ALLOC, TYPE_UINT);
 	if(!offset) {
-		offset = (uint_t*)assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START));
+		new_heap_base = MEM_HEAP;
+		offset = (uint_t*)assign(MEM_HEAP_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START));
 		offset->pin();
 	}
 	if(offset->value >= uint64_t(-1)) {
 		throw std::runtime_error("out of memory");
 	}
 	offset->flags |= FLAG_DIRTY;
+
+	if(first_alloc) {
+		first_alloc = false;
+		new_heap_base = offset->value;
+	}
 	return offset->value++;
 }
 
