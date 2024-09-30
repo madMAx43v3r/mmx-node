@@ -30,7 +30,6 @@ Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool re
 Engine::~Engine()
 {
 	key_map.clear();
-	storage = nullptr;
 }
 
 void Engine::addref(const uint64_t dst)

@@ -244,6 +244,8 @@ private:
 	};
 
 	struct execution_context_t {
+		bool do_profile = false;
+		bool do_trace = false;
 		uint32_t height = 0;
 		std::shared_ptr<vm::StorageCache> storage;
 		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;				// [contract => TX ids]

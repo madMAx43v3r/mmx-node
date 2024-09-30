@@ -393,6 +393,8 @@ exec_result_t Node::validate(std::shared_ptr<const Transaction> tx) const
 		throw std::logic_error("exec_result not null");
 	}
 	auto context = new_exec_context(get_height() + 1);
+	context->do_profile = exec_profile;
+	context->do_trace = exec_trace;
 	prepare_context(context, tx);
 
 	const auto result = validate(tx, context);
@@ -417,6 +419,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		throw std::logic_error("not an executable: " + address.to_string());
 	}
 	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false);
+	engine->do_profile = context->do_profile;
+	engine->do_trace = context->do_trace;
 	{
 		const auto avail_gas = fee_to_cost<mmx::static_failure>(tx->max_fee_amount, tx->fee_ratio);
 		engine->gas_limit = std::min(avail_gas - std::min(tx_cost, avail_gas), params->max_tx_cost);
@@ -453,6 +457,17 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	// decouple gas checking from consensus by clamping cost to limit
 	tx_cost += std::min(engine->gas_used, engine->gas_limit);
 
+	if(engine->do_profile) {
+		std::ofstream out("profile_" + executable->binary.to_string() + "_" + op->method + "_" + std::to_string(vnx::get_time_micros()) + ".json");
+		out << vnx::to_pretty_string(engine->cost_map);
+	}
+	if(engine->do_trace) {
+		std::ofstream out("trace_" + executable->binary.to_string() + "_" + op->method + "_" + std::to_string(vnx::get_time_micros()) + ".json");
+		for(const auto& t : engine->storage->trace) {
+			out << t.type << "\taddr = 0x" << vnx::to_hex_string(t.addr)
+					<< "\tkey = 0x" << vnx::to_hex_string(t.key) << "\tvalue = " << to_string(t.value) << std::endl;
+		}
+	}
 	if(failed_ex) {
 		std::rethrow_exception(failed_ex);
 	}
@@ -560,7 +575,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 				error.line = iter->second;
 			}
 		}
-		if(debug_exec_fails) {
+		if(exec_debug) {
 			engine->dump_memory();
 		}
 		throw;

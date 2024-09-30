@@ -14,6 +14,7 @@
 #include <mmx/vm/varptr_t.hpp>
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm/Storage.h>
+#include <mmx/vm/StorageProxy.h>
 
 #include <set>
 #include <map>
@@ -25,8 +26,6 @@
 
 namespace mmx {
 namespace vm {
-
-class StorageProxy;
 
 static constexpr uint64_t INSTR_COST = 20;
 static constexpr uint64_t INSTR_CALL_COST = 30;
@@ -102,11 +101,17 @@ public:
 	const addr_t contract;
 
 	bool is_debug = false;
+	bool do_profile = false;
+	bool do_trace = false;
+
+	std::map<std::string, uint32_t> cost_map;		// key => count
 
 	std::function<void(uint32_t level, const std::string& msg)> log_func;
 	std::function<void(const std::string& name, const uint64_t data)> event_func;
 	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote_call;
 	std::function<void(const addr_t& address, const std::string& field, const uint64_t dst)> read_contract;
+
+	const std::shared_ptr<StorageProxy> storage;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
 
@@ -218,7 +223,6 @@ private:
 
 private:
 	bool have_init = false;
-	std::shared_ptr<StorageProxy> storage;
 	std::map<uint64_t, std::unique_ptr<var_t>> memory;
 	std::map<std::pair<uint64_t, uint64_t>, std::unique_ptr<var_t>> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;

@@ -40,9 +40,21 @@ std::unique_ptr<var_t> StorageProxy::read(const addr_t& contract, const uint64_t
 {
 	auto var = read_ex(backend->read(contract, src));
 
+	if(engine->do_profile) {
+		engine->cost_map["STOR_READ_COST"]++;
+		engine->cost_map["STOR_READ_BYTE_COST"] += num_bytes(var.get());
+	}
 	engine->gas_used += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
 	engine->check_gas();
 
+	if(engine->do_trace) {
+		trace_t t;
+		t.type = "READ";
+		t.contract = contract;
+		t.addr = src;
+		t.value = clone(var.get());
+		trace.push_back(t);
+	}
 	return var;
 }
 
@@ -50,9 +62,22 @@ std::unique_ptr<var_t> StorageProxy::read(const addr_t& contract, const uint64_t
 {
 	auto var = read_ex(backend->read(contract, src, key));
 
+	if(engine->do_profile) {
+		engine->cost_map["STOR_READ_COST"]++;
+		engine->cost_map["STOR_READ_BYTE_COST"] += num_bytes(var.get());
+	}
 	engine->gas_used += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
 	engine->check_gas();
 
+	if(engine->do_trace) {
+		trace_t t;
+		t.type = "READ_KEY";
+		t.contract = contract;
+		t.addr = src;
+		t.key = key;
+		t.value = clone(var.get());
+		trace.push_back(t);
+	}
 	return var;
 }
 
@@ -60,6 +85,14 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const var_t
 {
 	if(read_only) {
 		throw std::logic_error("read-only storage");
+	}
+	if(engine->do_trace) {
+		trace_t t;
+		t.type = "WRITE";
+		t.contract = contract;
+		t.addr = dst;
+		t.value = clone(value);
+		trace.push_back(t);
 	}
 	if(value.type == TYPE_REF) {
 		const auto address = ((const ref_t&)value).address;
@@ -70,7 +103,13 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const var_t
 	if((value.flags & FLAG_KEY) && !(value.flags & FLAG_CONST)) {
 		throw std::logic_error("keys need to be const");
 	}
-	engine->gas_used += (STOR_WRITE_COST + num_bytes(value) * STOR_WRITE_BYTE_COST) * (value.flags & FLAG_KEY ? 2 : 1);
+	const int cost_factor = (value.flags & FLAG_KEY ? 2 : 1);
+
+	if(engine->do_profile) {
+		engine->cost_map["STOR_WRITE_COST"] += cost_factor;
+		engine->cost_map["STOR_WRITE_BYTE_COST"] += num_bytes(value) * cost_factor;
+	}
+	engine->gas_used += (STOR_WRITE_COST + num_bytes(value) * STOR_WRITE_BYTE_COST) * cost_factor;
 	engine->check_gas();
 
 	backend->write(contract, dst, value);
@@ -81,6 +120,15 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const uint6
 	if(read_only) {
 		throw std::logic_error("read-only storage");
 	}
+	if(engine->do_trace) {
+		trace_t t;
+		t.type = "WRITE_KEY";
+		t.contract = contract;
+		t.addr = dst;
+		t.key = key;
+		t.value = clone(value);
+		trace.push_back(t);
+	}
 	if(value.type == TYPE_REF) {
 		const auto address = ((const ref_t&)value).address;
 		if(address < MEM_STATIC) {
@@ -90,6 +138,10 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const uint6
 	if(value.ref_count) {
 		throw std::logic_error("entries cannot have ref_count > 0");
 	}
+	if(engine->do_profile) {
+		engine->cost_map["STOR_WRITE_COST"]++;
+		engine->cost_map["STOR_WRITE_BYTE_COST"] += num_bytes(value);
+	}
 	engine->gas_used += STOR_WRITE_COST + num_bytes(value) * STOR_WRITE_BYTE_COST;
 	engine->check_gas();
 
@@ -98,6 +150,17 @@ void StorageProxy::write(const addr_t& contract, const uint64_t dst, const uint6
 
 uint64_t StorageProxy::lookup(const addr_t& contract, const var_t& value) const
 {
+	if(engine->do_trace) {
+		trace_t t;
+		t.type = "LOOKUP";
+		t.contract = contract;
+		t.value = clone(value);
+		trace.push_back(t);
+	}
+	if(engine->do_profile) {
+		engine->cost_map["STOR_READ_COST"]++;
+		engine->cost_map["STOR_READ_BYTE_COST"] += num_bytes(value);
+	}
 	engine->gas_used += STOR_READ_COST + num_bytes(value) * STOR_READ_BYTE_COST;
 	engine->check_gas();
 
@@ -106,6 +169,16 @@ uint64_t StorageProxy::lookup(const addr_t& contract, const var_t& value) const
 
 std::unique_ptr<uint128> StorageProxy::get_balance(const addr_t& contract, const addr_t& currency) const
 {
+	if(engine->do_trace) {
+		trace_t t;
+		t.type = "GET_BALANCE";
+		t.contract = contract;
+		t.value = to_binary(currency);
+		trace.push_back(t);
+	}
+	if(engine->do_profile) {
+		engine->cost_map["STOR_READ_COST"]++;
+	}
 	engine->gas_used += STOR_READ_COST;
 	engine->check_gas();
 

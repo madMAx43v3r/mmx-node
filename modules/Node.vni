@@ -54,7 +54,9 @@ module Node implements vnx.addons.HttpComponent {
 	bool vdf_slave_mode = false;
 	bool verify_vdf_cpuopencl = false;			// verify VDF streams on cpu and opencl, if possible
 	bool verify_vdf_rewards = true;
-	bool debug_exec_fails = false;
+	bool exec_debug = false;					// dump memory on exec fail
+	bool exec_profile = false;					// write execution profiles
+	bool exec_trace = false;					// write execution traces
 	
 	string storage_path;
 	string database_path = "db/";
