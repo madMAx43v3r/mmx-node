@@ -1178,6 +1178,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		((WebAPI*)this)->shutdown();
 		respond_status(request_id, 200);
 	}
+	else if(sub_path == "/chain/info") {
+		respond(request_id, render(params));
+	}
 	else if(sub_path == "/node/info") {
 		node->get_network_info(
 			[this, request_id](std::shared_ptr<const NetworkInfo> info) {
@@ -2731,7 +2734,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else {
 		std::vector<std::string> options = {
-			"config/get", "config/set", "farmer", "farmers",
+			"config/get", "config/set", "farmer", "farmers", "chain/info",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address"
 			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/send_many", "wallet/send_off",
