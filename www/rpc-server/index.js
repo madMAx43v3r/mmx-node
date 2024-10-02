@@ -126,14 +126,14 @@ setInterval(reset_pending, load_balance_tick);
 	console.log("Listening on port 80 ...");
 }
 
-const cert_path = '/etc/letsencrypt/live/rpc.mmx.network/';
+const cert_path = '/root/.acme.sh/rpc.mmx.network_ecc/';
 
 if(fs.existsSync(cert_path))
 {
 	var options = {
-		key: fs.readFileSync(cert_path + 'privkey.pem'),
-		cert: fs.readFileSync(cert_path + 'fullchain.pem'),
-		ca: fs.readFileSync(cert_path + 'chain.pem')
+		key: fs.readFileSync(cert_path + 'rpc.mmx.network.key'),
+		cert: fs.readFileSync(cert_path + 'fullchain.cer'),
+		ca: fs.readFileSync(cert_path + 'ca.cer')
 	};
 
 	https.createServer(options, app).listen(443);
