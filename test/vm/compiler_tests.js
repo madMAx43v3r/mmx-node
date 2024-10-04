@@ -45,8 +45,28 @@ if(concat(to_string(1), to_string(2), to_string(3)) != "123") {
 	}
 }
 
+if(balance() != 0) {
+	fail("balance() != 0");
+}
+if(balance(sha256("test")) != 0) {
+	fail("balance(test) != 0");
+}
 if(this.balance[bech32()] != 0) {
-	fail("balance != 0");
+	fail("this.balance != 0");
+}
+{
+	var tmp = balance();
+	if(tmp != 0) {
+		fail("balance() != 0");
+	}
+	tmp = 1337;
+}
+{
+	var tmp = this.balance[bech32()];
+	if(tmp != 0) {
+		fail("this.balance != 0");
+	}
+	tmp = 1337;
 }
 
 {

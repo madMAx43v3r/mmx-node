@@ -64,7 +64,7 @@ enum externvar_e : uint32_t {
 	EXTERN_HEIGHT,
 	EXTERN_TXID,
 	EXTERN_USER,
-	EXTERN_BALANCE,
+	EXTERN_BALANCE,		// obsolete
 	EXTERN_DEPOSIT,
 	EXTERN_ADDRESS,
 	EXTERN_NETWORK,		// network identifier
@@ -174,6 +174,7 @@ public:
 	void mint(const uint64_t address, const uint64_t amount, const uint64_t memo);
 	void rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs);
 	void cread(const uint64_t dst, const uint64_t address, const uint64_t field);
+	void read_balance(const uint64_t dst, const uint64_t currency);
 
 	frame_t& get_frame();
 	uint64_t deref(const uint64_t src);
@@ -197,6 +198,8 @@ public:
 
 	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;
 
+	uint128_t& get_balance(const uint64_t currency_addr);
+
 	void dump_memory(const uint64_t begin = 0, const uint64_t end = -1);
 
 	template<typename T>
@@ -219,13 +222,12 @@ private:
 	uint64_t deref_addr(uint32_t src, const bool flag);
 	uint64_t deref_value(uint32_t src, const bool flag);
 
-	bool is_read_only(const uint64_t src) const;
-
 private:
 	bool have_init = false;
 	std::map<uint64_t, std::unique_ptr<var_t>> memory;
 	std::map<std::pair<uint64_t, uint64_t>, std::unique_ptr<var_t>> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
+	std::map<addr_t, uint128_t> balance_map;
 
 	size_t erase_call_depth = 0;
 

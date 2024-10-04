@@ -172,6 +172,8 @@ Note: Objects are maps with string keys.
 - `to_string_bech32(v)`: Same as `to_string()` except:
 	- Converts binary string to a bech32 address string `mmx1...` (fails if not 32 bytes)
 	- Converts `null` to zero address string `mmx1qqqq...`
+- `balance([currency])`: Returns current balance for given currency (for the contract)
+	- `currency` defaults to MMX if not specified (32-byte binary)
 - `send(address, amount, [currency], [memo])`: Transfer funds from contract to an address
 	- `address` is destination address as 32-byte binary
 	- `amount` is integer amount, fails if larger than 64-bit

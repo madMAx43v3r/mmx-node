@@ -391,7 +391,7 @@ protected:
 
 	vref_t copy(const vref_t& dst, const vref_t& src, const bool validate = true);
 
-	uint32_t get(const vref_t& src);
+	uint32_t get(const vref_t& src, const uint32_t* dst = nullptr);
 
 	void push_scope();
 
@@ -570,6 +570,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["to_string_hex"].name = "to_string_hex";
 	function_map["to_string_bech32"].name = "to_string_bech32";
 	function_map["rcall"].name = "rcall";
+	function_map["balance"].name = "balance";
 
 	global.section = MEM_STATIC;
 
@@ -1761,6 +1762,14 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_RCALL, 0, get(recurse(args[0])), get(recurse(args[1])), offset - MEM_STACK, args.size() - 2);
 				out.address = offset;
 			}
+			else if(name == "balance") {
+				if(args.size() > 1) {
+					throw std::logic_error("expected at most one argument for balance([currency])");
+				}
+				const auto currency = args.size() > 0 ? get(recurse(args[0])) : get_const_address(addr_t());
+				out.address = stack.new_addr();
+				code.emplace_back(OP_BALANCE, 0, out.address, currency);
+			}
 			else {
 				if(curr_function && curr_function->is_const && lhs->func->root && !lhs->func->is_const) {
 					throw std::logic_error("cannot call non-const function inside const function: " + name);
@@ -1872,23 +1881,33 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src, const bool
 	} else if(!src.key && dst.key) {
 		code.emplace_back(OP_SET, OPFLAG_REF_A, dst.address, *dst.key, src.address);
 	} else if(src.key && !dst.key) {
-		code.emplace_back(OP_GET, OPFLAG_REF_B, dst.address, src.address, *src.key);
+		get(src, &dst.address);
 	} else if(dst.address != src.address) {
 		code.emplace_back(OP_COPY, 0, dst.address, src.address);
 	}
 	return dst;
 }
 
-uint32_t Compiler::get(const vref_t& src)
+uint32_t Compiler::get(const vref_t& src, const uint32_t* dst)
 {
 	src.check_value();
+
 	if(src.key) {
-		const auto tmp_addr = frame.back().new_addr();
-		code.emplace_back(OP_GET, OPFLAG_REF_B, tmp_addr, src.address, *src.key);
-		return tmp_addr;
-	} else {
-		return src.address;
+		const auto dst_addr = (dst ? *dst : frame.back().new_addr());
+		if(src.address == MEM_EXTERN + EXTERN_BALANCE) {
+			code.emplace_back(OP_BALANCE, 0, dst_addr, *src.key);
+		} else {
+			code.emplace_back(OP_GET, OPFLAG_REF_B, dst_addr, src.address, *src.key);
+		}
+		return dst_addr;
 	}
+	if(dst) {
+		vref_t vdst;
+		vdst.address = *dst;
+		copy(vdst, src);
+		return *dst;
+	}
+	return src.address;
 }
 
 const Compiler::variable_t* Compiler::find_variable(const std::string& name) const

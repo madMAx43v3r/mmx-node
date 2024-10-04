@@ -45,14 +45,14 @@ function cancel() public
 {
 	check_owner();
 	
-	send(owner, this.balance[bid_currency], bid_currency, "mmx_offer_cancel");
+	send(owner, balance(bid_currency), bid_currency, "mmx_offer_cancel");
 }
 
 function withdraw() public
 {
 	check_owner();
 	
-	send(owner, this.balance[ask_currency], ask_currency, "mmx_offer_withdraw");
+	send(owner, balance(ask_currency), ask_currency, "mmx_offer_withdraw");
 }
 
 function set_price(new_price) public
@@ -95,7 +95,7 @@ function accept(dst_addr, price) public payable
 		fail("currency mismatch", 3);
 	}
 	// take whatever is left in case another trade happened before
-	const bid_amount = min((this.deposit.amount * inv_price) >> FRACT_BITS, this.balance[bid_currency]);
+	const bid_amount = min((this.deposit.amount * inv_price) >> FRACT_BITS, balance(bid_currency));
 	if(bid_amount == 0) {
 		fail("empty offer", 5);
 	}

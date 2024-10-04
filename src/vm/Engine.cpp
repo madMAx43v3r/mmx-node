@@ -17,14 +17,12 @@
 namespace mmx {
 namespace vm {
 
-static const uint64_t MEM_EXTERN_BALANCE = MEM_EXTERN + EXTERN_BALANCE;
 static const uint64_t MEM_HEAP_NEXT_ALLOC = MEM_HEAP + GLOBAL_NEXT_ALLOC;
 
 Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only)
 	:	contract(contract),
 		storage(std::make_shared<StorageProxy>(this, backend, read_only))
 {
-	assign(MEM_EXTERN_BALANCE, std::make_unique<map_t>());
 }
 
 Engine::~Engine()
@@ -530,11 +528,6 @@ var_t* Engine::read_entry(const uint64_t src, const uint64_t key)
 			return (entries[mapkey] = std::move(var)).get();
 		}
 	}
-	if(src == MEM_EXTERN_BALANCE) {
-		const auto currency = to_addr(read_fail(key));
-		const auto value = storage->get_balance(contract, currency);
-		return (entries[mapkey] = std::make_unique<uint_t>(value ? *value : uint128())).get();
-	}
 	return nullptr;
 }
 
@@ -546,14 +539,9 @@ var_t& Engine::read_entry_fail(const uint64_t src, const uint64_t key)
 	throw std::logic_error("read fail at " + to_hex(src) + "[" + std::to_string(key) + "]");
 }
 
-bool Engine::is_read_only(const uint64_t src) const
-{
-	return src != MEM_EXTERN_BALANCE;
-}
-
 var_t* Engine::read_key(const uint64_t src, const uint64_t key)
 {
-	if(auto addr = lookup(key, is_read_only(src))) {
+	if(auto addr = lookup(key, true)) {
 		return read_entry(src, addr);
 	}
 	return nullptr;
@@ -561,7 +549,7 @@ var_t* Engine::read_key(const uint64_t src, const uint64_t key)
 
 var_t* Engine::read_key(const uint64_t src, const var_t& key)
 {
-	if(auto addr = lookup(key, is_read_only(src))) {
+	if(auto addr = lookup(key, true)) {
 		return read_entry(src, addr);
 	}
 	return nullptr;
@@ -569,7 +557,7 @@ var_t* Engine::read_key(const uint64_t src, const var_t& key)
 
 var_t* Engine::read_key(const uint64_t src, const varptr_t& key)
 {
-	if(auto addr = lookup(key, is_read_only(src))) {
+	if(auto addr = lookup(key, true)) {
 		return read_entry(src, addr);
 	}
 	return nullptr;
@@ -577,7 +565,7 @@ var_t* Engine::read_key(const uint64_t src, const varptr_t& key)
 
 var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 {
-	if(auto addr = lookup(key, is_read_only(src))) {
+	if(auto addr = lookup(key, true)) {
 		return read_entry_fail(src, addr);
 	}
 	throw std::logic_error("no such key at " + to_hex(src));
@@ -1132,16 +1120,16 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 		return;
 	}
 	if(value >> 64) {
-		throw std::runtime_error("send(): amount too large: " + value.str());
+		throw std::runtime_error("send(): amount too large: 0x" + value.str(16));
 	}
 	if(currency == 0) {
 		throw std::runtime_error("send(): currency == null");
 	}
-	auto balance = read_key<uint_t>(MEM_EXTERN_BALANCE, currency, TYPE_UINT);
-	if(!balance || balance->value < value) {
+	auto& balance = get_balance(currency);
+	if(balance < value) {
 		throw std::runtime_error("send(): insufficient funds");
 	}
-	balance->value -= value;
+	balance -= value;
 
 	txout_t out;
 	out.contract = read_fail<binary_t>(currency, TYPE_BINARY).to_addr();
@@ -1158,7 +1146,7 @@ void Engine::mint(const uint64_t address, const uint64_t amount, const uint64_t 
 		return;
 	}
 	if(value >> 64) {
-		throw std::runtime_error("mint(): amount too large: " + value.str());
+		throw std::runtime_error("mint(): amount too large: 0x" + value.str(16));
 	}
 	txout_t out;
 	out.contract = contract;
@@ -1188,8 +1176,8 @@ void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t st
 	frame.stack_ptr += stack_ptr;
 	call_stack.push_back(frame);
 
-	remote_call(	read_fail<binary_t>(name, TYPE_STRING).to_string(),
-			read_fail<binary_t>(method, TYPE_STRING).to_string(), nargs);
+	remote_call(read_fail<binary_t>(name, TYPE_STRING).to_string(),
+				read_fail<binary_t>(method, TYPE_STRING).to_string(), nargs);
 	ret();
 }
 
@@ -1201,6 +1189,26 @@ void Engine::cread(const uint64_t dst, const uint64_t address, const uint64_t fi
 	read_contract(
 			read_fail<binary_t>(address, TYPE_BINARY).to_addr(),
 			read_fail<binary_t>(field, TYPE_STRING).to_string(), dst);
+}
+
+uint128_t& Engine::get_balance(const uint64_t currency_addr)
+{
+	const auto currency = read_fail<binary_t>(currency_addr, TYPE_BINARY).to_addr();
+	{
+		auto iter = balance_map.find(currency);
+		if(iter != balance_map.end()) {
+			return iter->second;
+		}
+	}
+	gas_used += WRITE_COST;
+
+	const auto value = storage->get_balance(contract, currency);
+	return balance_map[currency] = (value ? *value : uint128_0);
+}
+
+void Engine::read_balance(const uint64_t dst, const uint64_t currency)
+{
+	write(dst, uint_t(get_balance(currency)));
 }
 
 void Engine::jump(const uint64_t instr_ptr)
@@ -1680,8 +1688,12 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
 				deref_addr(instr.c, instr.flags & OPFLAG_REF_C));
 		break;
+	case OP_BALANCE:
+		read_balance(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+						deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
+		break;
 	default:
-		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint32_t(instr.code)));
+		throw std::logic_error("invalid op_code: " + to_hex(uint32_t(instr.code)));
 	}
 	get_frame().instr_ptr++;
 }
