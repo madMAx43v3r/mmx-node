@@ -6,6 +6,7 @@ const axios = require("axios");
 const dbs = require('./schema.js');
 const utils = require('./utils.js');
 const config = require('./config.js');
+const { createHash } = require('crypto');
 
 var db = null;
 var app = express();
@@ -61,7 +62,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
         out.response_time = response_time;
 
         console.log('/partial', 'height', partial.height, 'diff', partial.difficulty,
-            'response', response_time / 1e3, 'time', now, 'account', partial.account, 'hash', partial.hash);
+            'response', response_time / 1e3, 'time', now, 'account', partial.account);
 
         if(partial.height < 0 || partial.height > 4294967295
             || partial.lookup_time_ms < 0 || partial.lookup_time_ms > 4294967295)
@@ -77,9 +78,11 @@ app.post('/partial', no_cache, async (req, res, next) =>
             res.json(out);
             return;
         }
-        if(partial.proof.__type == 'mmx.ProofOfSpaceNFT') {
-            const ksize = partial.proof.ksize;
-            const proof_xs = partial.proof.proof_xs;
+        const proof = partial.proof;
+
+        if(proof.__type == 'mmx.ProofOfSpaceNFT') {
+            const ksize = proof.ksize;
+            const proof_xs = proof.proof_xs;
             if(ksize < 0 || ksize > 255) {
                 out.error_code = 'INVALID_PROOF';
                 out.error_message = 'Invalid proof ksize';
@@ -101,13 +104,30 @@ app.post('/partial', no_cache, async (req, res, next) =>
                 }
             }
         }
+
         if(partial.difficulty < 1 || partial.difficulty > 4503599627370495) {
             out.error_code = 'INVALID_DIFFICULTY';
             out.error_message = 'Invalid numeric value for difficulty';
             res.json(out);
             return;
         }
-        if(await dbs.Partial.exists({hash: partial.hash})) {
+        var msg = proof.__type + ':' + partial.height + ':' + partial.challenge + ':' + proof.plot_id;
+
+        switch(proof.__type) {
+            case 'mmx.ProofOfSpaceNFT':
+                msg += ':' + proof.ksize + ':' + proof.proof_xs.join(',');
+                break;
+            case 'mmx.ProofOfStake':
+                break;
+            default:
+                out.error_code = 'INVALID_PROOF';
+                out.error_message = 'Invalid proof type: ' + proof.__type;
+                res.json(out);
+                return;
+        }
+        const hash = createHash('sha256').update(msg).digest('hex');
+
+        if(await dbs.Partial.exists({hash: hash})) {
             out.error_code = 'DUPLICATE_PARTIAL';
             out.error_message = 'Duplicate partial';
             res.json(out);
@@ -126,7 +146,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
         }
 
         const entry = new dbs.Partial({
-            hash: partial.hash,
+            hash: hash,
             height: partial.height,
             account: partial.account,
             contract: partial.contract,
