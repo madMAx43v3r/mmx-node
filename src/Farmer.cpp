@@ -191,6 +191,9 @@ void Farmer::update_difficulty()
 
 void Farmer::query_difficulty(const addr_t& contract, const std::string& url)
 {
+	if(url.empty()) {
+		return;
+	}
 	http_async->get_json(url + "/difficulty", {},
 		[this, url, contract](const vnx::Variant& value) {
 			const auto res = value.to_object();
@@ -224,12 +227,13 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 		}
 	}
 	for(const auto& entry : value->pool_info) {
-		if(!nft_stats.count(entry.first)) {
-			const auto& info = entry.second;
-			if(auto url = info.server_url) {
-				if(url->size()) {
+		const auto& info = entry.second;
+		if(auto url = info.server_url) {
+			if(url->size()) {
+				auto& stats = nft_stats[info.contract];
+				if(stats.server_url != (*url)) {
+					stats.server_url = *url;
 					query_difficulty(info.contract, *url);
-					nft_stats[info.contract].server_url = *url;
 				}
 			}
 		}
