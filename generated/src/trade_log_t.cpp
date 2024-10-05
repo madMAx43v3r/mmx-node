@@ -6,6 +6,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/uint128.hpp>
+#include <mmx/uint80.hpp>
 
 #include <vnx/vnx.h>
 
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 trade_log_t::VNX_TYPE_HASH(0xafedf6853c645eb8ull);
-const vnx::Hash64 trade_log_t::VNX_CODE_HASH(0xb2194a14ff250b73ull);
+const vnx::Hash64 trade_log_t::VNX_CODE_HASH(0xc6d809793155dea4ull);
 
 vnx::Hash64 trade_log_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -155,7 +156,7 @@ std::shared_ptr<vnx::TypeCode> trade_log_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.trade_log_t";
 	type_code->type_hash = vnx::Hash64(0xafedf6853c645eb8ull);
-	type_code->code_hash = vnx::Hash64(0xb2194a14ff250b73ull);
+	type_code->code_hash = vnx::Hash64(0xc6d809793155dea4ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::trade_log_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<trade_log_t>>(); };
@@ -186,9 +187,9 @@ std::shared_ptr<vnx::TypeCode> trade_log_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[4];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "ask_amount";
-		field.code = {4};
+		field.code = {11, 10, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -235,15 +236,13 @@ void read(TypeInput& in, ::mmx::trade_log_t& value, const TypeCode* type_code, c
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.time_stamp, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[4]) {
-			vnx::read_value(_buf + _field->offset, value.ask_amount, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.txid, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.inv_price, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.ask_amount, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -262,12 +261,12 @@ void write(TypeOutput& out, const ::mmx::trade_log_t& value, const TypeCode* typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(16);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.time_stamp);
-	vnx::write_value(_buf + 8, value.ask_amount);
 	vnx::write(out, value.txid, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.address, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.inv_price, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.ask_amount, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::trade_log_t& value) {

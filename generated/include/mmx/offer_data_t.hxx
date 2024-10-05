@@ -8,6 +8,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/uint128.hpp>
+#include <mmx/uint80.hpp>
 
 
 namespace mmx {
@@ -22,9 +23,9 @@ struct MMX_EXPORT offer_data_t : vnx::struct_t {
 	::mmx::addr_t address;
 	::mmx::addr_t bid_currency;
 	::mmx::addr_t ask_currency;
-	uint64_t bid_balance = 0;
-	uint64_t ask_balance = 0;
-	uint64_t ask_amount = 0;
+	::mmx::uint80 bid_balance;
+	::mmx::uint80 ask_balance;
+	::mmx::uint80 ask_amount;
 	::mmx::uint128 inv_price;
 	vnx::float64_t price = 0;
 	
@@ -42,8 +43,8 @@ struct MMX_EXPORT offer_data_t : vnx::struct_t {
 	vnx::bool_t is_scam() const;
 	vnx::bool_t is_open() const;
 	vnx::float64_t get_price() const;
-	uint64_t get_bid_amount(const uint64_t& ask_amount = 0) const;
-	uint64_t get_ask_amount(const uint64_t& bid_amount = 0) const;
+	::mmx::uint80 get_bid_amount(const ::mmx::uint80& ask_amount = ::mmx::uint80()) const;
+	::mmx::uint80 get_ask_amount(const ::mmx::uint80& bid_amount = ::mmx::uint80()) const;
 	
 	static std::shared_ptr<offer_data_t> create();
 	std::shared_ptr<offer_data_t> clone() const;

@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
+#include <mmx/uint80.hpp>
 #include <vnx/Value.h>
 
 
@@ -17,9 +18,9 @@ public:
 	
 	uint32_t index = 0;
 	::mmx::addr_t address;
-	uint64_t amount = 0;
+	::mmx::uint80 amount;
 	::mmx::addr_t currency;
-	vnx::optional<uint64_t> min_trade;
+	vnx::optional<::mmx::uint80> min_trade;
 	int32_t num_iter = 20;
 	::mmx::spend_options_t options;
 	

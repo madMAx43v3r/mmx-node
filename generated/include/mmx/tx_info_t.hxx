@@ -28,8 +28,8 @@ public:
 	vnx::optional<int64_t> time_stamp;
 	vnx::optional<::mmx::hash_t> block;
 	vnx::optional<std::string> message;
-	int64_t fee = 0;
-	uint64_t cost = 0;
+	uint32_t fee = 0;
+	uint32_t cost = 0;
 	::mmx::tx_note_e note;
 	vnx::optional<::mmx::addr_t> sender;
 	std::vector<::mmx::txin_t> inputs;

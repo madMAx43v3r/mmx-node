@@ -17,6 +17,7 @@
 #include <mmx/txin_t.hxx>
 #include <mmx/txout_t.hxx>
 #include <mmx/uint128.hpp>
+#include <mmx/uint80.hpp>
 
 #include <vnx/vnx.h>
 
@@ -26,7 +27,7 @@ namespace mmx {
 const uint32_t Transaction::MAX_SOLUTIONS;
 
 const vnx::Hash64 Transaction::VNX_TYPE_HASH(0xce0462acdceaa5bcull);
-const vnx::Hash64 Transaction::VNX_CODE_HASH(0x8e4b410f47fa16dull);
+const vnx::Hash64 Transaction::VNX_CODE_HASH(0x679611b063e0abb1ull);
 
 vnx::Hash64 Transaction::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -287,7 +288,7 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Transaction";
 	type_code->type_hash = vnx::Hash64(0xce0462acdceaa5bcull);
-	type_code->code_hash = vnx::Hash64(0x8e4b410f47fa16dull);
+	type_code->code_hash = vnx::Hash64(0x679611b063e0abb1ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Transaction);

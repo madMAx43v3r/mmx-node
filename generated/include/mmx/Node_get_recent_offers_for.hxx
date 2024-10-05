@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint80.hpp>
 #include <vnx/Value.h>
 
 
@@ -16,7 +17,7 @@ public:
 	
 	vnx::optional<::mmx::addr_t> bid;
 	vnx::optional<::mmx::addr_t> ask;
-	uint64_t min_bid = 0;
+	::mmx::uint80 min_bid;
 	int32_t limit = 100;
 	vnx::bool_t state = true;
 	

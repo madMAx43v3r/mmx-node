@@ -8,6 +8,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/uint80.hpp>
 
 
 namespace mmx {
@@ -21,8 +22,8 @@ struct MMX_EXPORT trade_entry_t : vnx::struct_t {
 	::mmx::hash_t txid;
 	::mmx::addr_t bid_currency;
 	::mmx::addr_t ask_currency;
-	uint64_t bid_amount = 0;
-	uint64_t ask_amount = 0;
+	::mmx::uint80 bid_amount;
+	::mmx::uint80 ask_amount;
 	vnx::float64_t price = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;

@@ -20,7 +20,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_info_t::VNX_TYPE_HASH(0x44e4a710953f4785ull);
-const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0xaf8ff2437ed603f3ull);
+const vnx::Hash64 tx_info_t::VNX_CODE_HASH(0x1c349e23171717d4ull);
 
 vnx::Hash64 tx_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -291,7 +291,7 @@ std::shared_ptr<vnx::TypeCode> tx_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_info_t";
 	type_code->type_hash = vnx::Hash64(0x44e4a710953f4785ull);
-	type_code->code_hash = vnx::Hash64(0xaf8ff2437ed603f3ull);
+	type_code->code_hash = vnx::Hash64(0x1c349e23171717d4ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::tx_info_t);
@@ -345,15 +345,15 @@ std::shared_ptr<vnx::TypeCode> tx_info_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[7];
-		field.data_size = 8;
+		field.data_size = 4;
 		field.name = "fee";
-		field.code = {8};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[8];
-		field.data_size = 8;
+		field.data_size = 4;
 		field.name = "cost";
-		field.code = {4};
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[9];
@@ -504,11 +504,11 @@ void write(TypeOutput& out, const ::mmx::tx_info_t& value, const TypeCode* type_
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(21);
+	auto* const _buf = out.write(13);
 	vnx::write_value(_buf + 0, value.expires);
 	vnx::write_value(_buf + 4, value.did_fail);
 	vnx::write_value(_buf + 5, value.fee);
-	vnx::write_value(_buf + 13, value.cost);
+	vnx::write_value(_buf + 9, value.cost);
 	vnx::write(out, value.id, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.height, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.time_stamp, type_code, type_code->fields[4].code.data());

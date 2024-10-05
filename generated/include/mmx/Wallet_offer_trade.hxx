@@ -8,6 +8,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/uint128.hpp>
+#include <mmx/uint80.hpp>
 #include <vnx/Value.h>
 
 
@@ -18,7 +19,7 @@ public:
 	
 	uint32_t index = 0;
 	::mmx::addr_t address;
-	uint64_t amount = 0;
+	::mmx::uint80 amount;
 	uint32_t dst_addr = 0;
 	::mmx::uint128 price;
 	::mmx::spend_options_t options;

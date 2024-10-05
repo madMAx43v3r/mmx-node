@@ -6,6 +6,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/operation/Execute.hxx>
+#include <mmx/uint80.hpp>
 
 #include <vnx/vnx.h>
 
@@ -15,7 +16,7 @@ namespace operation {
 
 
 const vnx::Hash64 Deposit::VNX_TYPE_HASH(0xc23408cb7b04b0ecull);
-const vnx::Hash64 Deposit::VNX_CODE_HASH(0x1051b29518159c6dull);
+const vnx::Hash64 Deposit::VNX_CODE_HASH(0x2bc81872406d71f4ull);
 
 vnx::Hash64 Deposit::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -186,7 +187,7 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.operation.Deposit";
 	type_code->type_hash = vnx::Hash64(0xc23408cb7b04b0ecull);
-	type_code->code_hash = vnx::Hash64(0x1051b29518159c6dull);
+	type_code->code_hash = vnx::Hash64(0x2bc81872406d71f4ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::operation::Deposit);
@@ -240,9 +241,9 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[7];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "amount";
-		field.code = {4};
+		field.code = {11, 10, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -299,9 +300,6 @@ void read(TypeInput& in, ::mmx::operation::Deposit& value, const TypeCode* type_
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.solution, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[7]) {
-			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -310,6 +308,7 @@ void read(TypeInput& in, ::mmx::operation::Deposit& value, const TypeCode* type_
 			case 4: vnx::read(in, value.args, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.user, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.currency, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.amount, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -328,15 +327,15 @@ void write(TypeOutput& out, const ::mmx::operation::Deposit& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(14);
+	auto* const _buf = out.write(6);
 	vnx::write_value(_buf + 0, value.version);
 	vnx::write_value(_buf + 4, value.solution);
-	vnx::write_value(_buf + 6, value.amount);
 	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.method, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.args, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.user, type_code, type_code->fields[5].code.data());
 	vnx::write(out, value.currency, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.amount, type_code, type_code->fields[7].code.data());
 }
 
 void read(std::istream& in, ::mmx::operation::Deposit& value) {

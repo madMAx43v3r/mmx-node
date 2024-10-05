@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txout_t::VNX_TYPE_HASH(0xaa91772752216576ull);
-const vnx::Hash64 txout_t::VNX_CODE_HASH(0x27fc48e27f12becull);
+const vnx::Hash64 txout_t::VNX_CODE_HASH(0x5525ffaf2b4fe3acull);
 
 vnx::Hash64 txout_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -143,7 +143,7 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txout_t";
 	type_code->type_hash = vnx::Hash64(0xaa91772752216576ull);
-	type_code->code_hash = vnx::Hash64(0x27fc48e27f12becull);
+	type_code->code_hash = vnx::Hash64(0x5525ffaf2b4fe3acull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txout_t);
 	type_code->parents.resize(1);
@@ -164,9 +164,9 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "amount";
-		field.code = {4};
+		field.code = {11, 10, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -214,16 +214,14 @@ void read(TypeInput& in, ::mmx::txout_t& value, const TypeCode* type_code, const
 			}
 		}
 	}
-	const auto* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.amount, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.memo, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
@@ -243,10 +241,9 @@ void write(TypeOutput& out, const ::mmx::txout_t& value, const TypeCode* type_co
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(8);
-	vnx::write_value(_buf + 0, value.amount);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.amount, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.memo, type_code, type_code->fields[3].code.data());
 }
 

@@ -424,6 +424,7 @@ struct txio_entry_t;
 struct txio_t;
 struct txout_t;
 class uint128;
+class uint80;
 struct uint_fraction_t;
 struct ulong_fraction_t;
 struct virtual_plot_info_t;
@@ -1229,6 +1230,7 @@ void read(TypeInput& in, ::mmx::txio_entry_t& value, const TypeCode* type_code, 
 void read(TypeInput& in, ::mmx::txio_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::txout_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::uint128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::uint80& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::uint_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ulong_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::virtual_plot_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1633,6 +1635,7 @@ void write(TypeOutput& out, const ::mmx::txio_entry_t& value, const TypeCode* ty
 void write(TypeOutput& out, const ::mmx::txio_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::txout_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::uint128& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::uint80& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::uint_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ulong_fraction_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::virtual_plot_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2037,6 +2040,7 @@ void read(std::istream& in, ::mmx::txio_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::txio_t& value); ///< \private
 void read(std::istream& in, ::mmx::txout_t& value); ///< \private
 void read(std::istream& in, ::mmx::uint128& value); ///< \private
+void read(std::istream& in, ::mmx::uint80& value); ///< \private
 void read(std::istream& in, ::mmx::uint_fraction_t& value); ///< \private
 void read(std::istream& in, ::mmx::ulong_fraction_t& value); ///< \private
 void read(std::istream& in, ::mmx::virtual_plot_info_t& value); ///< \private
@@ -2441,6 +2445,7 @@ void write(std::ostream& out, const ::mmx::txio_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::txio_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::txout_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::uint128& value); ///< \private
+void write(std::ostream& out, const ::mmx::uint80& value); ///< \private
 void write(std::ostream& out, const ::mmx::uint_fraction_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::ulong_fraction_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::virtual_plot_info_t& value); ///< \private
@@ -2845,6 +2850,7 @@ void accept(Visitor& visitor, const ::mmx::txio_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::txio_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::txout_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::uint128& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::uint80& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::uint_fraction_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ulong_fraction_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::virtual_plot_info_t& value); ///< \private
@@ -12723,6 +12729,29 @@ struct type<::mmx::uint128> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::uint128& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::uint80> {
+	void read(TypeInput& in, ::mmx::uint80& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::uint80& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::uint80& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::uint80& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::uint80& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::uint80& value, bool special = false);
 };
 
 /// \private
