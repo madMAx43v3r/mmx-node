@@ -55,6 +55,13 @@ function withdraw() public
 	send(owner, balance(ask_currency), ask_currency, "mmx_offer_withdraw");
 }
 
+function recover(amount, currency) public
+{
+	check_owner();
+	
+	send(owner, uint(amount), bech32(currency));
+}
+
 function set_price(new_price) public
 {
 	check_owner();
