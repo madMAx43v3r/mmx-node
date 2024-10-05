@@ -20,11 +20,11 @@ namespace mmx {
 
 class fixed128 {
 public:
-	uint128 fixed = 0;
+	uint128 fixed = uint128();
 
 	fixed128() = default;
 
-	fixed128(const uint128_t& value) {
+	fixed128(const uint128& value) {
 		fixed = value * divider;
 	}
 

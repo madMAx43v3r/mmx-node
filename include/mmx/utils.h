@@ -9,6 +9,8 @@
 #define INCLUDE_MMX_UTILS_H_
 
 #include <mmx/hash_t.hpp>
+#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
@@ -18,8 +20,6 @@
 #include <uint128_t.h>
 #include <uint256_t.h>
 #include <cmath>
-
-static constexpr double UINT64_MAX_DOUBLE = 18446744073709549568.0;
 
 
 namespace mmx {
@@ -42,61 +42,62 @@ std::shared_ptr<const ChainParams> get_params()
 }
 
 inline
-double to_value(const uint64_t amount, const int decimals) {
-	return amount * pow(10, -decimals);
-}
-
-inline
 double to_value(const uint128_t& amount, const int decimals) {
 	return (double(amount.upper()) * pow(2, 64) + double(amount.lower())) * pow(10, -decimals);
 }
 
 inline
-double to_value(const uint64_t amount, std::shared_ptr<const ChainParams> params) {
+double to_value(const uint128_t& amount, std::shared_ptr<const ChainParams> params) {
 	return to_value(amount, params->decimals);
 }
 
-inline
-double to_value_128(uint128_t amount, const int decimals)
+template<typename T>
+T to_amount_impl(const double value, const int decimals, const int width)
 {
-	int i = 0;
-	for(; amount.upper() && i < decimals; ++i) {
-		amount /= 10;
+	if(decimals < 0 || decimals > 18) {
+		throw std::runtime_error("invalid decimals: " + std::to_string(decimals));
 	}
-	if(amount.upper()) {
-		return std::numeric_limits<double>::quiet_NaN();
+	if(value == std::numeric_limits<double>::quiet_NaN()) {
+		throw std::runtime_error("invalid value: NaN");
 	}
-	return double(amount.lower()) * pow(10, i - decimals);
-}
+	if(value < 0) {
+		throw std::runtime_error("negative value: " + std::to_string(value));
+	}
+	auto shift = uint128_1;
+	for(int i = 0; i < decimals; ++i) {
+		shift *= 10;
+	}
+	const double div_64 = pow(2, 64);
+	const uint64_t value_128 = value / div_64;
+	const uint64_t value_64  = fmod(value, div_64);
 
-inline
-uint64_t to_amount(const double value, const int decimals)
-{
-	const auto amount = value * pow(10, decimals);
-	if(amount < 0) {
-		throw std::runtime_error("negative amount: " + std::to_string(value));
-	}
-	if(amount > UINT64_MAX_DOUBLE) {
-		throw std::runtime_error("amount overflow: " + std::to_string(value));
-	}
-	if(amount == std::numeric_limits<double>::quiet_NaN()) {
-		throw std::runtime_error("invalid amount: " + std::to_string(value));
-	}
-	return amount;
-}
-
-inline
-uint64_t to_amount(const fixed128& value, const int decimals)
-{
-	const auto amount = value.to_amount(decimals);
-	if(amount.upper()) {
+	const uint256_t amount =
+			uint256_t((uint128_t(value_128) << 64) + value_64) * shift
+			+ uint64_t(fmod(value, 1) * pow(10, decimals) + 0.5);
+	if(amount >> width) {
 		throw std::runtime_error("amount overflow: " + amount.str(10));
 	}
 	return amount;
 }
 
 inline
-uint64_t to_amount(const double value, std::shared_ptr<const ChainParams> params) {
+uint80 to_amount(const double value, const int decimals)
+{
+	return to_amount_impl<uint80>(value, decimals, 80);
+}
+
+inline
+uint80 to_amount(const fixed128& value, const int decimals)
+{
+	const auto amount = value.to_amount(decimals);
+	if(amount >> 80) {
+		throw std::runtime_error("amount overflow: " + amount.to_string());
+	}
+	return amount;
+}
+
+inline
+uint80 to_amount(const double value, std::shared_ptr<const ChainParams> params) {
 	return to_amount(value, params->decimals);
 }
 
@@ -209,7 +210,7 @@ uint64_t get_effective_plot_size(const int ksize)
 inline
 uint64_t get_virtual_plot_size(std::shared_ptr<const ChainParams> params, const uint64_t balance)
 {
-	return to_effective_space(uint128_t(balance) * params->virtual_space_constant);
+	return to_effective_space(balance * params->virtual_space_constant);
 }
 
 inline
@@ -303,16 +304,6 @@ uint64_t fee_to_cost(const uint64_t fee, const uint32_t fee_ratio)
 		throw error_t("cost value overflow");
 	}
 	return cost;
-}
-
-template<typename error_t>
-void safe_acc(uint64_t& lhs, const uint64_t& rhs)
-{
-	const auto tmp = uint128_t(lhs) + rhs;
-	if(tmp.upper()) {
-		throw error_t("accumulate overflow");
-	}
-	lhs = tmp.lower();
 }
 
 template<typename T, typename S>

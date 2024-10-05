@@ -99,7 +99,7 @@ std::shared_ptr<ECDSA_Wallet> Wallet::get_wallet(const uint32_t& index) const
 }
 
 std::shared_ptr<const Transaction>
-Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+Wallet::send(	const uint32_t& index, const uint80& amount, const addr_t& dst_addr,
 				const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
@@ -132,7 +132,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 }
 
 std::shared_ptr<const Transaction>
-Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, uint64_t>>& amounts,
+Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, uint80>>& amounts,
 					const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
@@ -167,7 +167,7 @@ Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, ui
 }
 
 std::shared_ptr<const Transaction>
-Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
+Wallet::send_from(	const uint32_t& index, const uint80& amount,
 					const addr_t& dst_addr, const addr_t& src_addr,
 					const addr_t& currency, const spend_options_t& options) const
 {
@@ -277,7 +277,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 
 std::shared_ptr<const Transaction> Wallet::deposit(
 			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
-			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const
+			const uint80& amount, const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -311,11 +311,15 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 }
 
 std::shared_ptr<const Transaction> Wallet::make_offer(
-			const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const addr_t& bid_currency,
-			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const
+			const uint32_t& index, const uint32_t& owner, const uint80& bid_amount, const addr_t& bid_currency,
+			const uint80& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const
 {
 	if(bid_amount == 0 || ask_amount == 0) {
 		throw std::logic_error("amount cannot be zero");
+	}
+	const auto inv_price = (uint256_t(bid_amount) << 64) / ask_amount;
+	if(inv_price >> 128) {
+		throw std::logic_error("price out of range");
 	}
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -328,14 +332,14 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	offer->init_args.emplace_back(owner_addr.to_string());
 	offer->init_args.emplace_back(bid_currency.to_string());
 	offer->init_args.emplace_back(ask_currency.to_string());
-	offer->init_args.emplace_back("0x" + ((uint128_t(bid_amount) << 64) / ask_amount).str(16));
+	offer->init_args.emplace_back(uint128(inv_price).to_hex_string());
 	offer->init_args.emplace_back();
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::OFFER;
 	tx->deploy = offer;
 
-	std::vector<std::pair<addr_t, uint64_t>> deposit;
+	std::vector<std::pair<addr_t, uint80>> deposit;
 	deposit.emplace_back(bid_currency, bid_amount);
 
 	wallet->complete(tx, options, deposit);
@@ -356,7 +360,7 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 }
 
 std::shared_ptr<const Transaction> Wallet::offer_trade(
-			const uint32_t& index, const addr_t& address, const uint64_t& amount,
+			const uint32_t& index, const addr_t& address, const uint80& amount,
 			const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
@@ -408,8 +412,8 @@ std::shared_ptr<const Transaction> Wallet::offer_withdraw(
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_trade(
-		const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
-		const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const spend_options_t& options) const
+		const uint32_t& index, const addr_t& address, const uint80& amount, const addr_t& currency,
+		const vnx::optional<uint80>& min_trade, const int32_t& num_iter, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	const auto info = node->get_swap_info(address);
@@ -434,7 +438,7 @@ std::shared_ptr<const Transaction> Wallet::swap_trade(
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
-		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const
+		const uint32_t& index, const addr_t& address, const std::array<uint80, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -472,7 +476,7 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
-		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const
+		const uint32_t& index, const addr_t& address, const std::array<uint80, 2>& amount, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -634,7 +638,7 @@ void Wallet::update_cache(const uint32_t& index) const
 	}
 }
 
-std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
+std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint80& amount,
 												const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);

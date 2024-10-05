@@ -752,8 +752,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		error.operation = -1;
 
 		// create exec inputs
-		for(auto& entry : exec_spend_map) {
-			auto& amount_left = entry.second;
+		for(const auto& entry : exec_spend_map) {
+			auto amount_left = entry.second;
 			{
 				// use deposit amounts first
 				auto& deposit = deposit_map[entry.first];
@@ -761,43 +761,49 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				deposit -= amount;
 				amount_left -= amount;
 			}
-			while(amount_left > 0) {
+			if(amount_left >> 80) {
+				throw std::logic_error("total execution spend amount too large");
+			}
+			if(amount_left) {
 				txin_t in;
 				in.address = entry.first.first;
 				in.contract = entry.first.second;
-				in.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
+				in.amount = amount_left;
 				exec_inputs.push_back(in);
-				amount_left -= in.amount;
 			}
 		}
 
 		// create deposit outputs
-		for(auto& entry : deposit_map) {
-			auto& amount_left = entry.second;
-			while(amount_left > 0) {
+		for(const auto& entry : deposit_map) {
+			const auto& amount = entry.second;
+			if(amount >> 80) {
+				throw std::logic_error("total deposit amount too large");
+			}
+			if(amount) {
 				txout_t out;
 				out.address = entry.first.first;
 				out.contract = entry.first.second;
-				out.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
+				out.amount = amount;
 				exec_outputs.push_back(out);
-				amount_left -= out.amount;
 			}
 		}
 
 		// check for left-over amounts
-		for(auto& entry : amounts) {
+		for(const auto& entry : amounts) {
 			if(entry.second) {
 				if(!tx->deploy) {
-					throw std::logic_error("left-over amount without deploy");
+					throw std::logic_error("implicit deposit without deploy");
 				}
-				auto& amount_left = entry.second;
-				while(amount_left > 0) {
+				const auto& amount = entry.second;
+				if(amount >> 80) {
+					throw std::logic_error("total implicit deposit amount too large");
+				}
+				if(amount) {
 					txout_t out;
 					out.address = tx->id;
 					out.contract = entry.first;
-					out.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
+					out.amount = amount;
 					exec_outputs.push_back(out);
-					amount_left -= out.amount;
 				}
 			}
 		}

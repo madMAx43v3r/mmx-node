@@ -1,5 +1,6 @@
 package mmx;
 
+extern uint80 = {11, 10, 1};
 extern uint128 = {11, 16, 1};
 extern fixed128 = {11, 16, 1};
 

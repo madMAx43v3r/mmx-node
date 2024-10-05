@@ -1,1 +1,1 @@
-send(bech32("MMX"), 1 << 64);
+send(bech32("MMX"), 1 << 80);

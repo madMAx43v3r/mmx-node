@@ -133,7 +133,7 @@ template<size_t N>
 template<typename T>
 T bytes_t<N>::to_uint(const bool big_endian) const
 {
-	T out = 0;
+	T out = T();
 	for(size_t i = 0; i < N; ++i) {
 		out <<= 8;
 		if(big_endian) {

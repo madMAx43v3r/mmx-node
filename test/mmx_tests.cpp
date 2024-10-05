@@ -102,6 +102,17 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
+	VNX_TEST_BEGIN("to_amount()")
+	{
+		vnx::test::expect<uint128, uint128>(mmx::to_amount(1.0, int(0)), 1);
+		vnx::test::expect<uint128, uint128>(mmx::to_amount(1337.0, int(0)), 1337);
+		vnx::test::expect<uint128, uint128>(mmx::to_amount(1337.1337, int(4)), 13371337);
+		vnx::test::expect<uint128, uint128>(mmx::to_amount(1337.1337, int(6)), 1337133700);
+		vnx::test::expect<uint128, uint128>(mmx::to_amount(1180591620717411303424.0, int(0)), uint128_1 << 70);
+		vnx::test::expect<uint128, uint128>(mmx::to_amount(10, int(18)), 10000000000000000000ull);
+	}
+	VNX_TEST_END()
+
 	VNX_TEST_BEGIN("calc_tree_hash()")
 	{
 		std::vector<hash_t> list;

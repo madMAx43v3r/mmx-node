@@ -1,5 +1,6 @@
 package mmx.operation;
 
+import mmx.uint80;
 import mmx.hash_t;
 import mmx.addr_t;
 
@@ -7,7 +8,7 @@ class Deposit extends Execute {
 	
 	addr_t currency;
 	
-	ulong amount;
+	uint80 amount;
 	
 	
 	bool is_valid() const;

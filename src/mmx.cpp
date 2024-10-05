@@ -78,7 +78,7 @@ void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, s
 		const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 		const auto decimals = token ? token->decimals : currency == mmx::addr_t() ? params->decimals : 0;
 		const auto symbol = token ? token->symbol : currency == mmx::addr_t() ? std::string("MMX") : std::string("???");
-		std::cout << to_value_128(entry.amount, decimals) << " " << symbol
+		std::cout << mmx::to_value(entry.amount, decimals) << " " << symbol
 				<< " (" << entry.amount << ") " << arrow << " " << entry.address << " TX(" << entry.txid << ")";
 		if(entry.memo) {
 			std::cout << " M(" << *entry.memo << ")";
@@ -94,7 +94,7 @@ void print_tx(std::shared_ptr<const mmx::Transaction> tx, mmx::NodeClient& node,
 	std::cout << "Network: " << tx->network << std::endl;
 	std::cout << "Expires: at height " << tx->expires << std::endl;
 	std::cout << "Fee Ratio: " << tx->fee_ratio / 1024. << std::endl;
-	std::cout << "Max Fee Amount: " << mmx::to_value(tx->max_fee_amount, params->decimals) << " MMX" << std::endl;
+	std::cout << "Max Fee Amount: " << mmx::to_value(tx->max_fee_amount, params) << " MMX" << std::endl;
 	std::cout << "Sender: " << vnx::to_string_value(tx->sender) << std::endl;
 	{
 		int i = 0;
@@ -359,9 +359,9 @@ int main(int argc, char** argv)
 							}
 						}
 						if(auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract)) {
-							std::cout << "Balance: " << to_value_128(balance.total, token->decimals)
+							std::cout << "Balance: " << mmx::to_value(balance.total, token->decimals)
 									<< " " << token->symbol << (balance.is_validated ? "" : "?")
-									<< " (Spendable: " << to_value_128(balance.spendable, token->decimals)
+									<< " (Spendable: " << mmx::to_value(balance.spendable, token->decimals)
 									<< " " << token->symbol << (balance.is_validated ? "" : "?") << ")";
 							if(entry.first != mmx::addr_t()) {
 								std::cout << " [" << entry.first << "]";
@@ -417,7 +417,7 @@ int main(int argc, char** argv)
 						}
 						if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
 							const auto balance = node.get_virtual_plot_balance(entry.first);
-							std::cout << ", " << balance / pow(10, params->decimals) << " MMX";
+							std::cout << ", " << mmx::to_value(balance, params) << " MMX";
 							std::cout << ", " << mmx::get_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
 						}
 						std::cout << ")" << std::endl;
@@ -426,7 +426,7 @@ int main(int argc, char** argv)
 						{
 							const auto& balance = entry.second;
 							if(auto token = get_token(node, entry.first, false)) {
-								std::cout << "  Balance: " << to_value_128(balance.total, token->decimals) << " " << token->symbol
+								std::cout << "  Balance: " << to_value(balance.total, token->decimals) << " " << token->symbol
 										<< (balance.is_validated ? "" : "?") << " (" << balance.total << ")";
 								if(entry.first != mmx::addr_t()) {
 									std::cout << " [" << entry.first << "]";
@@ -485,7 +485,7 @@ int main(int argc, char** argv)
 				else if(subject == "balance")
 				{
 					const auto token = get_token(node, contract);
-					std::cout << to_value_128(wallet.get_balance(index, contract).total, token ? token->decimals : params->decimals) << std::endl;
+					std::cout << mmx::to_value(wallet.get_balance(index, contract).total, token ? token->decimals : params->decimals) << std::endl;
 				}
 				else if(subject == "contracts")
 				{
@@ -787,17 +787,15 @@ int main(int argc, char** argv)
 				const auto trade_estimate = node.get_swap_trade_estimate(contract, i, deposit_amount);
 				const auto expected_amount = trade_estimate[0];
 
-				if(expected_amount.upper()) {
-					throw std::logic_error("amount overflow");
-				}
-				const uint64_t min_trade_amount = expected_amount.lower() * min_amount;
+				const mmx::uint80 min_trade_amount = mmx::to_amount(expected_amount.to_double() * min_amount, 0);
 
 				std::cout << "You send: " << mmx::to_value(deposit_amount, token_i->decimals) << " " << token_i->symbol << std::endl;
 				std::cout << "You receive at least:  " << mmx::to_value(min_trade_amount, token_k->decimals) << " " << token_k->symbol << std::endl;
 				std::cout << "You expect to receive: " << mmx::to_value(expected_amount, token_k->decimals) << " " << token_k->symbol << " (estimated)" << std::endl;
 				std::cout << "Fee:   " << mmx::to_value(trade_estimate[1], token_k->decimals) << " " << token_k->symbol << std::endl;
-				std::cout << "Price: " << (command == "sell" ? double(expected_amount.lower()) / deposit_amount : double(deposit_amount) / expected_amount.lower())
-						<< " " << (command == "sell" ? token_k : token_i)->symbol << " / " << (command == "sell" ? token_i : token_k)->symbol << std::endl;
+				std::cout << "Price: "
+						<< (command == "sell" ? expected_amount.to_double() / deposit_amount.to_double() : deposit_amount.to_double() / expected_amount.to_double()) << " "
+						<< (command == "sell" ? token_k : token_i)->symbol << " / " << (command == "sell" ? token_i : token_k)->symbol << std::endl;
 
 				if(pre_accept || accept_prompt()) {
 					if(wallet.is_locked(index)) {
@@ -816,7 +814,7 @@ int main(int argc, char** argv)
 				if(action == "add")
 				{
 					const auto usage = "mmx wallet swap add -a <amount> -b <amount> -x <contract>";
-					std::array<uint64_t, 2> add_amount = {};
+					std::array<mmx::uint80, 2> add_amount = {};
 					const auto info = node.get_swap_info(contract);
 					const auto token_0 = get_token(node, info.tokens[0]);
 					const auto token_1 = get_token(node, info.tokens[1]);
@@ -878,7 +876,7 @@ int main(int argc, char** argv)
 				}
 				else if(action == "remove")
 				{
-					std::array<uint64_t, 2> rem_amount = {};
+					std::array<mmx::uint80, 2> rem_amount = {};
 					const auto info = node.get_swap_info(contract);
 					const auto user_info = node.get_swap_user_info(contract, wallet.get_address(index, offset));
 					const auto token_0 = get_token(node, info.tokens[0]);
@@ -895,9 +893,7 @@ int main(int argc, char** argv)
 						}
 					}
 					for(int i = 0; i < 2; ++i) {
-						if(!user_info.balance[i].upper()) {
-							rem_amount[i] = std::min(rem_amount[i], user_info.balance[i].lower());
-						}
+						rem_amount[i] = std::min<uint128_t>(rem_amount[i], user_info.balance[i]);
 					}
 					if(!rem_amount[0] && !rem_amount[1]) {
 						std::cerr << "Nothing to remove." << std::endl;
@@ -1069,7 +1065,7 @@ int main(int argc, char** argv)
 					if(!exe || exe->binary != params->nft_binary) {
 						const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
 						const auto decimals = token ? token->decimals : params->decimals;
-						std::cout << "Balance: " << to_value_128(entry.second, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
+						std::cout << "Balance: " << mmx::to_value(entry.second, decimals) << " " << (token ? token->symbol : "MMX") << " (" << entry.second << ")" << std::endl;
 					}
 				}
 			}
@@ -1080,8 +1076,8 @@ int main(int argc, char** argv)
 				std::cout << "Height:     " << info->height << std::endl;
 				std::cout << "Netspace:   " << info->total_space / pow(1000, 5) << " PB (" << info->netspace_ratio * 100 << " % physical)" << std::endl;
 				std::cout << "VDF Speed:  " << info->vdf_speed << " MH/s" << std::endl;
-				std::cout << "Reward:     " << info->block_reward / pow(10, params->decimals) << " MMX" << std::endl;
-				std::cout << "Supply:     " << info->total_supply / pow(10, params->decimals) << " MMX" << std::endl;
+				std::cout << "Reward:     " << mmx::to_value(info->block_reward, params) << " MMX" << std::endl;
+				std::cout << "Supply:     " << mmx::to_value(info->total_supply, params) << " MMX" << std::endl;
 				std::cout << "Block Size: " << info->block_size * 100 << " %" << std::endl;
 				std::cout << "N(Address): " << info->address_count << std::endl;
 				for(uint32_t i = 0; i < 10 && i < info->height; ++i) {
@@ -1197,7 +1193,7 @@ int main(int argc, char** argv)
 				for(const auto& in : tx->get_inputs()) {
 					std::cout << "Input[" << i++ << "]: ";
 					if(auto token = get_token(node, in.contract, false)) {
-						std::cout << in.amount / pow(10, token->decimals) << " " << token->symbol << " (" << in.amount << ") <- " << in.address << std::endl;
+						std::cout << mmx::to_value(in.amount, token->decimals) << " " << token->symbol << " (" << in.amount << ") <- " << in.address << std::endl;
 					} else {
 						std::cout << in.amount << " [" << in.contract << "]" << std::endl;
 					}
@@ -1206,7 +1202,7 @@ int main(int argc, char** argv)
 				for(const auto& out : tx->get_outputs()) {
 					std::cout << "Output[" << i++ << "]: ";
 					if(auto token = get_token(node, out.contract, false)) {
-						std::cout << out.amount / pow(10, token->decimals) << " " << token->symbol << " (" << out.amount << ") -> " << out.address << std::endl;
+						std::cout << mmx::to_value(out.amount, token->decimals) << " " << token->symbol << " (" << out.amount << ") -> " << out.address << std::endl;
 					} else {
 						std::cout << out.amount << " [" << out.contract << "]" << std::endl;
 					}
@@ -1223,7 +1219,7 @@ int main(int argc, char** argv)
 					vnx::read_config("$4", address);
 
 					const auto token = get_token(node, contract);
-					std::cout << to_value_128(node.get_balance(address, contract), token->decimals) << std::endl;
+					std::cout << mmx::to_value(node.get_balance(address, contract), token->decimals) << std::endl;
 				}
 				else if(subject == "amount")
 				{
@@ -1511,7 +1507,7 @@ int main(int argc, char** argv)
 							std::cout << mmx::to_value(data.balance[i], token->decimals) << " " << token->symbol << (i == 0 ? " / " : "");
 						}
 					}
-					const auto price = to_value(data.balance[1], decimals[1]) / to_value(data.balance[0], decimals[0]);
+					const auto price = mmx::to_value(data.balance[1], decimals[1]) / mmx::to_value(data.balance[0], decimals[0]);
 					std::cout << " (" << price << " " << symbols[1] << " / " << symbols[0] << ")" << std::endl;
 				}
 			}
@@ -1537,7 +1533,7 @@ int main(int argc, char** argv)
 						std::cout << "  Total Fees:     " << mmx::to_value(data.fees_paid[i], token->decimals) << " " << token->symbol << std::endl;
 					}
 				}
-				const auto price = to_value(data.balance[1], decimals[1]) / to_value(data.balance[0], decimals[0]);
+				const auto price = mmx::to_value(data.balance[1], decimals[1]) / mmx::to_value(data.balance[0], decimals[0]);
 				std::cout << "Price: " << price << " " << symbols[1] << " / " << symbols[0] << std::endl;
 			}
 			else {
@@ -1582,7 +1578,7 @@ int main(int argc, char** argv)
 				std::cout << "Physical size:  " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
 				std::cout << "Effective size: " << info->total_bytes_effective / pow(1000, 4) << " TBe" << std::endl;
 				const auto virtual_bytes = mmx::get_virtual_plot_size(params, info->total_balance);
-				std::cout << "Virtual size:   " << info->total_balance / pow(10, params->decimals) << " MMX ("
+				std::cout << "Virtual size:   " << mmx::to_value(info->total_balance, params) << " MMX ("
 						<< virtual_bytes / pow(1000, 4) << " TBe)" << std::endl;
 				std::cout << "Total size:     " << (info->total_bytes_effective + virtual_bytes) / pow(1000, 4) << " TBe" << std::endl;
 				for(const auto& entry : info->plot_count) {

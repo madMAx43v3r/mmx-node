@@ -24,13 +24,13 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* send(uint index, ulong amount, addr_t dst_addr, addr_t currency, spend_options_t options) const;
+	Transaction* send(uint index, uint80 amount, addr_t dst_addr, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* send_many(uint index, vector<pair<addr_t, ulong>> amounts, addr_t currency, spend_options_t options) const;
+	Transaction* send_many(uint index, vector<pair<addr_t, uint80>> amounts, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* send_from(uint index, ulong amount, addr_t dst_addr, addr_t src_addr, addr_t currency, spend_options_t options) const;
+	Transaction* send_from(uint index, uint80 amount, addr_t dst_addr, addr_t src_addr, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* deploy(uint index, Contract* contract, spend_options_t options) const;
@@ -40,14 +40,14 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* deposit(	uint index, addr_t address, string method, vector<vnx.Variant> args,
-							ulong amount, addr_t currency, spend_options_t options) const;
+							uint80 amount, addr_t currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* make_offer(uint index, uint owner, ulong bid_amount, addr_t bid_currency,
-							ulong ask_amount, addr_t ask_currency, spend_options_t options) const;
+	Transaction* make_offer(uint index, uint owner, uint80 bid_amount, addr_t bid_currency,
+							uint80 ask_amount, addr_t ask_currency, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* offer_trade(uint index, addr_t address, ulong amount, uint dst_addr, uint128 price, spend_options_t options) const;
+	Transaction* offer_trade(uint index, addr_t address, uint80 amount, uint dst_addr, uint128 price, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* offer_withdraw(uint index, addr_t address, spend_options_t options) const;
@@ -59,13 +59,13 @@ module Wallet implements vnx.addons.HttpComponent {
 	Transaction* cancel_offer(uint index, addr_t address, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* swap_trade(uint index, addr_t address, ulong amount, addr_t currency, optional<ulong> min_trade, int num_iter = 20, spend_options_t options) const;
+	Transaction* swap_trade(uint index, addr_t address, uint80 amount, addr_t currency, optional<uint80> min_trade, int num_iter = 20, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* swap_add_liquid(uint index, addr_t address, ulong amount[2], uint pool_idx, spend_options_t options) const;
+	Transaction* swap_add_liquid(uint index, addr_t address, uint80 amount[2], uint pool_idx, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
-	Transaction* swap_rem_liquid(uint index, addr_t address, ulong amount[2], spend_options_t options) const;
+	Transaction* swap_rem_liquid(uint index, addr_t address, uint80 amount[2], spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
@@ -96,7 +96,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	vector<tx_log_entry_t> get_tx_log(uint index, int limit = -1, uint offset) const;
 	
-	vector<txin_t> gather_inputs_for(uint index, ulong amount, addr_t currency, spend_options_t options) const;
+	vector<txin_t> gather_inputs_for(uint index, uint80 amount, addr_t currency, spend_options_t options) const;
 	
 	balance_t get_balance(uint index, addr_t currency) const;
 	

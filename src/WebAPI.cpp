@@ -176,27 +176,11 @@ void WebAPI::handle(std::shared_ptr<const vnx::LogMsg> value)
 	}
 }
 
-vnx::Object to_amount_object(const uint64_t& amount, const int decimals)
-{
-	vnx::Object res;
-	res["value"] = to_value(amount, decimals);
-	res["amount"] = amount;
-	return res;
-}
-
 vnx::Object to_amount_object(const uint128& amount, const int decimals)
 {
 	vnx::Object res;
 	res["value"] = to_value(amount, decimals);
-	res["amount"] = amount.str();
-	return res;
-}
-
-vnx::Object to_amount_object_str(const uint64_t& amount, const int decimals)
-{
-	vnx::Object res;
-	res["value"] = fixed128(amount, decimals).to_string();
-	res["amount"] = amount;
+	res["amount"] = amount.to_string();
 	return res;
 }
 
@@ -204,7 +188,7 @@ vnx::Object to_amount_object_str(const uint128& amount, const int decimals)
 {
 	vnx::Object res;
 	res["value"] = fixed128(amount, decimals).to_string();
-	res["amount"] = amount.str();
+	res["amount"] = amount.to_string();
 	return res;
 }
 
@@ -345,14 +329,14 @@ public:
 		set(render(value, context));
 	}
 
-	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint128_t amount) {
+	vnx::Object augment(vnx::Object out, const addr_t& contract, const uint128_t& amount) {
 		if(context) {
 			if(auto info = context->find_currency(contract)) {
 				if(info->is_nft) {
 					out["is_nft"] = true;
 				} else {
 					out["symbol"] = info->symbol;
-					out["value"] = to_value_128(amount, info->decimals);
+					out["value"] = to_value(amount, info->decimals);
 				}
 			}
 			out["is_native"] = contract == addr_t();
@@ -964,10 +948,10 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 					} else {
 						const auto& balance = entry.second;
 						vnx::Object row;
-						row["total"] = to_value_128(balance.total, currency->decimals);
-						row["spendable"] = to_value_128(balance.spendable, currency->decimals);
-						row["reserved"] = to_value_128(balance.reserved, currency->decimals);
-						row["locked"] = to_value_128(balance.locked, currency->decimals);
+						row["total"] = to_value(balance.total, currency->decimals);
+						row["spendable"] = to_value(balance.spendable, currency->decimals);
+						row["reserved"] = to_value(balance.reserved, currency->decimals);
+						row["locked"] = to_value(balance.locked, currency->decimals);
 						row["symbol"] = currency->symbol;
 						row["decimals"] = currency->decimals;
 						row["contract"] = entry.first.to_string();
@@ -1567,7 +1551,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 								out["input"] = to_amount_object_str(amount, ask_currency->decimals);
 								out["trade"] = to_amount_object_str(bid_amount, bid_currency->decimals);
 								const auto ask_amount = info.get_ask_amount(bid_amount + 1);
-								if(!amount || double(bid_amount + 1) / ask_amount > double(bid_amount) / amount) {
+								if(!amount || uint128(bid_amount + 1).to_double() / ask_amount.to_double() > bid_amount.to_double() / amount.to_double()) {
 									out["next_input"] = to_amount_object_str(ask_amount, ask_currency->decimals);
 								} else {
 									out["next_input"] = to_amount_object_str(amount + 1, ask_currency->decimals);
@@ -1967,7 +1951,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			get_context({currency}, request_id,
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
 					try {
-						uint64_t amount = 0;
+						uint80 amount = 0;
 						if(args["raw_mode"].to<bool>()) {
 							args["amount"].to(amount);
 						} else {
@@ -2011,7 +1995,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			get_context({currency}, request_id,
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
 					try {
-						std::vector<std::pair<addr_t, uint64_t>> amounts;
+						std::vector<std::pair<addr_t, uint80>> amounts;
 						if(args["raw_mode"].to<bool>()) {
 							args["amounts"].to(amounts);
 						} else {
@@ -2101,8 +2085,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			get_context({bid_currency, ask_currency}, request_id,
 				[this, request_id, args, bid_currency, ask_currency](std::shared_ptr<RenderContext> context) {
 					try {
-						uint64_t bid_amount = 0;
-						uint64_t ask_amount = 0;
+						uint80 bid_amount = 0;
+						uint80 ask_amount = 0;
 						if(auto currency = context->find_currency(bid_currency)) {
 							bid_amount = to_amount(args["bid"].to<fixed128>(), currency->decimals);
 						} else {
@@ -2284,7 +2268,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							}
 							const auto amount = to_amount(value, token_i->decimals);
 
-							vnx::optional<uint64_t> min_trade;
+							vnx::optional<uint80> min_trade;
 							if(min_value) {
 								min_trade = to_amount(*min_value, token_k->decimals);
 							}
@@ -2316,7 +2300,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 							const auto pool_idx = args["pool_idx"].to<uint32_t>();
 							const auto options = args["options"].to<spend_options_t>();
 
-							std::array<uint64_t, 2> amount = {};
+							std::array<uint80, 2> amount = {};
 							for(int i = 0; i < 2; ++i) {
 								if(const auto token = context->find_currency(info.tokens[i])) {
 									amount[i] = to_amount(value[i], token->decimals);
@@ -2486,7 +2470,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(iter_ask != query.end()) {
 			ask = vnx::from_string_value<addr_t>(iter_ask->second);
 		}
-		const uint64_t min_bid = iter_min_bid != query.end() ? vnx::from_string<uint64_t>(iter_min_bid->second) : 0;
+		const uint80 min_bid = iter_min_bid != query.end() ? vnx::from_string<uint80>(iter_min_bid->second) : uint80();
 		const uint64_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : 100;
 		const uint64_t offset = iter_offset != query.end() ? vnx::from_string<int64_t>(iter_offset->second) : 0;
 		const bool state = iter_state != query.end() ? vnx::from_string<bool>(iter_state->second) : true;
@@ -2499,8 +2483,11 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				throw std::logic_error("offset + limit > 1000");
 			}
 		}
-		const auto limit_ = bid && ask ? std::max<size_t>(1000, limit) : offset + limit;
-		node->get_recent_offers_for(bid, ask, min_bid, limit_, state,
+		int req_limit = offset + limit;
+		if(bid && ask) {
+			req_limit = std::max(req_limit, 1000);
+		}
+		node->get_recent_offers_for(bid, ask, min_bid, req_limit, state,
 			[this, request_id, bid, ask, limit, offset](const std::vector<offer_data_t>& offers) {
 				std::unordered_set<addr_t> addr_set;
 				std::vector<std::pair<offer_data_t, double>> result;

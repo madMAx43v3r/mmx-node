@@ -24,7 +24,7 @@ const contract::method_t* find_method(std::shared_ptr<const contract::Binary> bi
 	return nullptr;
 }
 
-void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint64_t amount)
+void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint80& amount)
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
 	engine->assign(addr, std::make_unique<vm::array_t>());

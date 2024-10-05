@@ -6,6 +6,7 @@
  */
 
 #include <mmx/fixed128.hpp>
+#include <mmx/utils.h>
 
 #include <vnx/Variant.hpp>
 
@@ -28,18 +29,19 @@ const uint64_t fixed128::divider = calc_divider(fixed128::decimals);
 
 fixed128::fixed128(const double& v)
 {
-	fixed = uint64_t(v);
-	fixed *= divider;
-	fixed += uint64_t(fmod(v, 1) * pow(10, decimals) + 0.5);
+	fixed = mmx::to_amount_impl<uint128_t>(v, decimals, 128);
 }
 
 fixed128::fixed128(const uint128_t& value, const int decimals)
 {
-	fixed = value;
-	fixed *= divider;
+	auto tmp = uint256_t(value) * divider;
 	for(int i = 0; i < decimals; ++i) {
-		fixed /= 10;
+		tmp /= 10;
 	}
+	if(tmp.upper()) {
+		throw std::logic_error("fixed128 overflow");
+	}
+	fixed = tmp;
 }
 
 fixed128::fixed128(const std::string& str)

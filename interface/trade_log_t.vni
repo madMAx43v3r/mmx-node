@@ -10,10 +10,10 @@ struct trade_log_t {
 	
 	uint128 inv_price;			// [bid / ask]
 	
-	ulong ask_amount;
+	uint80 ask_amount;
 	
 	
-	ulong get_bid_amount() const;
+	uint80 get_bid_amount() const;
 	
 	double get_price() const;
 	

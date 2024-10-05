@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 	vnx::optional<mmx::addr_t> swap;
 	mmx::addr_t contract;
 	int64_t index = 0;
-	int64_t amount = 1000;
+	mmx::uint80 amount = 1000;
 	double speed = 1;
 	double fee_ratio = 1;
 	vnx::read_config("node", node_url);

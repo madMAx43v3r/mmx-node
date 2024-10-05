@@ -29,15 +29,15 @@ protected:
 	void main() override;
 
 	std::shared_ptr<const Transaction> send(
-			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+			const uint32_t& index, const uint80& amount, const addr_t& dst_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> send_many(
-			const uint32_t& index, const std::vector<std::pair<addr_t, uint64_t>>& amounts,
+			const uint32_t& index, const std::vector<std::pair<addr_t, uint80>>& amounts,
 			const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> send_from(
-			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
+			const uint32_t& index, const uint80& amount, const addr_t& dst_addr, const addr_t& src_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> deploy(
@@ -49,14 +49,14 @@ protected:
 
 	std::shared_ptr<const Transaction> deposit(
 			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
-			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const override;
+			const uint80& amount, const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> make_offer(
-			const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const addr_t& bid_currency,
-			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
+			const uint32_t& index, const uint32_t& owner, const uint80& bid_amount, const addr_t& bid_currency,
+			const uint80& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> offer_trade(
-			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint80& amount, const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> accept_offer(
 			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const override;
@@ -68,14 +68,14 @@ protected:
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_trade(
-			const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
-			const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint80& amount, const addr_t& currency,
+			const vnx::optional<uint80>& min_trade, const int32_t& num_iter, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_add_liquid(
-			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const std::array<uint80, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_rem_liquid(
-			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const std::array<uint80, 2>& amount, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
@@ -99,7 +99,7 @@ protected:
 
 	void update_cache(const uint32_t& index) const override;
 
-	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
+	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint80& amount,
 											const addr_t& currency, const spend_options_t& options) const override;
 
 	std::vector<tx_entry_t> get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit,
