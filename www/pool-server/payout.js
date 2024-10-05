@@ -25,6 +25,7 @@ async function check()
         const list = await dbs.Payout.find({pending: true});
         for(const payout of list) {
             let failed = false;
+            let expired = false;
             let confirmed = false;
             try {
                 const res = await axios.get(config.node_url + '/wapi/transaction?id=' + payout.txid);
@@ -41,46 +42,60 @@ async function check()
             } catch(e) {
                 if(height - payout.height > config.payout_tx_expire + 100) {
                     failed = true;
+                    expired = true;
                     console.log("Payout transaction expired:", "height", payout.height, "txid", payout.txid);
                 } else {
                     console.log("Failed to check payout transaction:", e.message, "txid", payout.txid);
                 }
             }
+            if(!confirmed && !failed) {
+                continue;
+            }
+            payout.valid = !failed;
+            payout.pending = false;
 
-            if(failed) {
-                const conn = await db.startSession();
-                try {
-                    await conn.startTransaction();
-                    const opt = {session: conn};
+            const conn = await db.startSession();
+            try {
+                await conn.startTransaction();
+                const opt = {session: conn};
 
+                if(failed) {
                     // revert balances
                     for(const entry of payout.amounts) {
-                        const account = await dbs.Account.findOne({address: entry[0]});
+                        const address = entry[0];
+                        const account = await dbs.Account.findOne({address: address});
                         if(!account) {
-                            throw new Error("Account not found: " + entry[0]);
+                            throw new Error("Account not found: " + address);
                         }
                         account.balance += entry[1];
                         await account.save(opt);
                     }
-                    payout.valid = false;
-                    payout.pending = false;
-                    await payout.save(opt);
-
-                    await conn.commitTransaction();
+                    payout.expired = expired;
 
                     console.log("Payout failed:", "height", payout.height, "txid", payout.txid);
-                } catch(e) {
-                    await conn.abortTransaction();
-                    throw e;
-                } finally {
-                    conn.endSession();
+                } else {
+                    console.log("Payout confirmed:", "height", payout.height, "total_amount", payout.total_amount,
+                        "count", payout.count, "tx_fee", payout.tx_fee, "txid", payout.txid);
                 }
-            }
-            else if(confirmed) {
-                payout.valid = true;
-                payout.pending = false;
-                await payout.save();
-                console.log("Payout confirmed:", "height", payout.height, "total_amount", payout.total_amount, "count", payout.count, "txid", payout.txid);
+                await payout.save(opt);
+
+                if(!expired) {
+                    const account = await dbs.Account.findOne({address: config.fee_account});
+                    if(!account) {
+                        throw new Error("Fee account not found: " + config.fee_account);
+                    }
+                    if(account.balance < payout.tx_fee) {
+                        throw new Error("Insufficient balance to cover tx fee: " + account.balance + " < " + payout.tx_fee);
+                    }
+                    account.balance -= payout.tx_fee;
+                    await account.save(opt);
+                }
+                await conn.commitTransaction();
+            } catch(e) {
+                await conn.abortTransaction();
+                throw e;
+            } finally {
+                conn.endSession();
             }
         }
     } catch(e) {
@@ -170,7 +185,7 @@ async function payout()
             const list = dbs.Account.find({balance: {$gt: config.payout_threshold}});
 
             // reserve for tx fees
-            const reserve = (list.length * config.tx_output_cost + 1) * config.mmx_divider;
+            const reserve = (list.length * config.tx_output_cost + 1);
 
             let total_amount = 0;
             let outputs = [];
@@ -178,10 +193,10 @@ async function payout()
 
             for await(const account of list)
             {
-                let amount = Math.floor(account.balance);
+                let amount = account.balance;
 
                 if(account.address == config.fee_account) {
-                    amount = Math.floor(amount - reserve);
+                    amount -= reserve;
                     if(amount < config.payout_threshold) {
                         continue;
                     }
@@ -189,7 +204,7 @@ async function payout()
                 account.balance -= amount;
                 await account.save(opt);
 
-                console.log("Payout triggered for", account.address, "amount", amount, "value", amount / config.mmx_divider, "MMX");
+                console.log("Payout triggered for", account.address, "amount", amount, "MMX");
 
                 total_amount += amount;
                 outputs.push([account.address, amount]);

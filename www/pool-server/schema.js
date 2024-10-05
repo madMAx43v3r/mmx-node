@@ -54,6 +54,7 @@ const payout = new mongoose.Schema({
     time: Date,
     height: {type: Number, index: true},
     pending: {type: Boolean, default: true, index: true},
+    expired: {type: Boolean, index: true},
     valid: {type: Boolean, index: true},
 });
 
