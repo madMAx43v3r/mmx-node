@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmInfo::VNX_TYPE_HASH(0xa2701372b9137f0eull);
-const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0x287ab67c8027ada4ull);
+const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0xd0d9f172accc5b64ull);
 
 vnx::Hash64 FarmInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -207,7 +207,7 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.FarmInfo";
 	type_code->type_hash = vnx::Hash64(0xa2701372b9137f0eull);
-	type_code->code_hash = vnx::Hash64(0x287ab67c8027ada4ull);
+	type_code->code_hash = vnx::Hash64(0xd0d9f172accc5b64ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::FarmInfo);
