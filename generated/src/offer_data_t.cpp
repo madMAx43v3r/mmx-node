@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 offer_data_t::VNX_TYPE_HASH(0xc97a08a709a5f1efull);
-const vnx::Hash64 offer_data_t::VNX_CODE_HASH(0xf0fb0d387c7ced3cull);
+const vnx::Hash64 offer_data_t::VNX_CODE_HASH(0x8f022b0629fe6af9ull);
 
 vnx::Hash64 offer_data_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -51,13 +51,14 @@ void offer_data_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, time_stamp);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, owner);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, address);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, bid_currency);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, ask_currency);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, bid_balance);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, ask_balance);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, ask_amount);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, inv_price);
-	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, price);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, partner);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, bid_currency);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, ask_currency);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, bid_balance);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, ask_balance);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, ask_amount);
+	_visitor.type_field(_type_code->fields[11], 11); vnx::accept(_visitor, inv_price);
+	_visitor.type_field(_type_code->fields[12], 12); vnx::accept(_visitor, price);
 	_visitor.type_end(*_type_code);
 }
 
@@ -68,6 +69,7 @@ void offer_data_t::write(std::ostream& _out) const {
 	_out << ", \"time_stamp\": "; vnx::write(_out, time_stamp);
 	_out << ", \"owner\": "; vnx::write(_out, owner);
 	_out << ", \"address\": "; vnx::write(_out, address);
+	_out << ", \"partner\": "; vnx::write(_out, partner);
 	_out << ", \"bid_currency\": "; vnx::write(_out, bid_currency);
 	_out << ", \"ask_currency\": "; vnx::write(_out, ask_currency);
 	_out << ", \"bid_balance\": "; vnx::write(_out, bid_balance);
@@ -92,6 +94,7 @@ vnx::Object offer_data_t::to_object() const {
 	_object["time_stamp"] = time_stamp;
 	_object["owner"] = owner;
 	_object["address"] = address;
+	_object["partner"] = partner;
 	_object["bid_currency"] = bid_currency;
 	_object["ask_currency"] = ask_currency;
 	_object["bid_balance"] = bid_balance;
@@ -124,6 +127,8 @@ void offer_data_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(last_update);
 		} else if(_entry.first == "owner") {
 			_entry.second.to(owner);
+		} else if(_entry.first == "partner") {
+			_entry.second.to(partner);
 		} else if(_entry.first == "price") {
 			_entry.second.to(price);
 		} else if(_entry.first == "time_stamp") {
@@ -147,6 +152,9 @@ vnx::Variant offer_data_t::get_field(const std::string& _name) const {
 	}
 	if(_name == "address") {
 		return vnx::Variant(address);
+	}
+	if(_name == "partner") {
+		return vnx::Variant(partner);
 	}
 	if(_name == "bid_currency") {
 		return vnx::Variant(bid_currency);
@@ -183,6 +191,8 @@ void offer_data_t::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(owner);
 	} else if(_name == "address") {
 		_value.to(address);
+	} else if(_name == "partner") {
+		_value.to(partner);
 	} else if(_name == "bid_currency") {
 		_value.to(bid_currency);
 	} else if(_name == "ask_currency") {
@@ -224,11 +234,11 @@ std::shared_ptr<vnx::TypeCode> offer_data_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.offer_data_t";
 	type_code->type_hash = vnx::Hash64(0xc97a08a709a5f1efull);
-	type_code->code_hash = vnx::Hash64(0xf0fb0d387c7ced3cull);
+	type_code->code_hash = vnx::Hash64(0x8f022b0629fe6af9ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::offer_data_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<offer_data_t>>(); };
-	type_code->fields.resize(12);
+	type_code->fields.resize(13);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -262,41 +272,47 @@ std::shared_ptr<vnx::TypeCode> offer_data_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[5];
 		field.is_extended = true;
+		field.name = "partner";
+		field.code = {33, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[6];
+		field.is_extended = true;
 		field.name = "bid_currency";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "ask_currency";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[8];
 		field.data_size = 8;
 		field.name = "bid_balance";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[8];
+		auto& field = type_code->fields[9];
 		field.data_size = 8;
 		field.name = "ask_balance";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[9];
+		auto& field = type_code->fields[10];
 		field.data_size = 8;
 		field.name = "ask_amount";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[10];
+		auto& field = type_code->fields[11];
 		field.is_extended = true;
 		field.name = "inv_price";
 		field.code = {11, 16, 1};
 	}
 	{
-		auto& field = type_code->fields[11];
+		auto& field = type_code->fields[12];
 		field.data_size = 8;
 		field.name = "price";
 		field.code = {10};
@@ -352,16 +368,16 @@ void read(TypeInput& in, ::mmx::offer_data_t& value, const TypeCode* type_code, 
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.time_stamp, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[7]) {
+		if(const auto* const _field = type_code->field_map[8]) {
 			vnx::read_value(_buf + _field->offset, value.bid_balance, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[8]) {
+		if(const auto* const _field = type_code->field_map[9]) {
 			vnx::read_value(_buf + _field->offset, value.ask_balance, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[9]) {
+		if(const auto* const _field = type_code->field_map[10]) {
 			vnx::read_value(_buf + _field->offset, value.ask_amount, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[11]) {
+		if(const auto* const _field = type_code->field_map[12]) {
 			vnx::read_value(_buf + _field->offset, value.price, _field->code.data());
 		}
 	}
@@ -369,9 +385,10 @@ void read(TypeInput& in, ::mmx::offer_data_t& value, const TypeCode* type_code, 
 		switch(_field->native_index) {
 			case 3: vnx::read(in, value.owner, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.address, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.bid_currency, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.ask_currency, type_code, _field->code.data()); break;
-			case 10: vnx::read(in, value.inv_price, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.partner, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.bid_currency, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.ask_currency, type_code, _field->code.data()); break;
+			case 11: vnx::read(in, value.inv_price, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -400,9 +417,10 @@ void write(TypeOutput& out, const ::mmx::offer_data_t& value, const TypeCode* ty
 	vnx::write_value(_buf + 40, value.price);
 	vnx::write(out, value.owner, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.address, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.bid_currency, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.ask_currency, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.inv_price, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.partner, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.bid_currency, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.ask_currency, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.inv_price, type_code, type_code->fields[11].code.data());
 }
 
 void read(std::istream& in, ::mmx::offer_data_t& value) {
