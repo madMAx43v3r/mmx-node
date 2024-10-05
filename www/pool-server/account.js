@@ -123,23 +123,24 @@ async function update()
                     await block.save(opt);
 
                     if(valid) {
-                        console.log("Farmed block", block.height, "reward", block.reward_value / config.mmx_divider, "MMX", "account", block.account);
+                        console.log("Farmed block", block.height, "reward", block.reward_value, "MMX", "account", block.account);
                     } else {
                         console.log("Invalid block", block.height);
                     }
                 }
             }
+            var fee_value = 0;
             
             // Take pool fee first
             if(total_rewards) {
-                const fee = total_rewards * config.pool_fee;
-                total_rewards -= fee;
+                fee_value = total_rewards * config.pool_fee;
+                total_rewards -= fee_value;
 
-                const account = await dbs.Account.findOne({address: config.fee_account});
+                let account = await dbs.Account.findOne({address: config.fee_account});
                 if(!account) {
                     account = new dbs.Account({address: config.fee_account});
                 }
-                account.balance += fee;
+                account.balance += fee_value;
                 await account.save(opt);
             }
 
@@ -157,8 +158,8 @@ async function update()
 
             if(total_rewards) {
                 console.log(
-                    "Distributed", total_rewards / config.mmx_divider, "MMX to", result.length, "accounts",
-                    "total_points", total_points, "total_partials", total_partials);
+                    "Distributed", total_rewards, "MMX to", result.length, "accounts",
+                    "fee", fee_value, "MMX", "total_points", total_points, "total_partials", total_partials);
             }
             console.log(
                 "height", sync_height, "points_rate", pool.points_rate, "partial_rate", pool.partial_rate, "farmers", pool.farmers,
@@ -208,10 +209,10 @@ async function check()
             }
         }
         const res = await axios.get(config.node_url + '/wapi/address/history?id='
-            + config.fee_account + "&since=" + since + "&until=" + (sync_height - 1) + "&limit=-1",
+            + config.pool_target + "&since=" + since + "&until=" + (sync_height - 1) + "&limit=-1",
             {headers: {'x-api-token': config.api_token}}
         );
-        
+
         for(const entry of res.data) {
             if(entry.type != 'REWARD') {
                 continue;
@@ -236,10 +237,11 @@ async function check()
                     farmer_key: header.proof.farmer_key,
                     reward: entry.amount,
                     reward_value: entry.value,
-                    time: entry.time,
+                    time: entry.time_stamp,
                     pending: true,
                 });
                 await block.save();
+                console.log("Added block", block.height, "hash", block.hash, "reward", block.reward_value, "MMX");
             } catch(e) {
                 console.log("Failed to add block:", e.message);
             }
