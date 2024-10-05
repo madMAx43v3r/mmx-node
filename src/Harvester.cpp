@@ -724,10 +724,12 @@ void Harvester::update_nfts()
 	for(const auto& entry : plot_nfts) {
 		missing.insert(entry.first);
 	}
+	auto job = std::make_shared<size_t>(plot_contract_set.size());
+
 	for(const auto& entry : plot_contract_set) {
 		const auto& address = entry.first;
 		node_async->get_plot_nft_info(address,
-			[this, address](const vnx::optional<plot_nft_info_t>& info) {
+			[this, job, address](const vnx::optional<plot_nft_info_t>& info) {
 				if(info) {
 					if(!plot_nfts.count(address)) {
 						log(INFO) << "Found plot NFT " << (info->name.empty() ? info->address.to_string() : "'" + info->name + "'")
@@ -735,6 +737,9 @@ void Harvester::update_nfts()
 								<< ", server_url = " << vnx::to_string(info->server_url);
 					}
 					plot_nfts[address] = *info;
+				}
+				if(--(*job) == 0) {
+					update();
 				}
 			},
 			[this, address](const std::exception& ex) {
