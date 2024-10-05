@@ -1,7 +1,3 @@
 #!/bin/bash
 
-set -e
-
-ulimit -n 100000
-
-node index.js
+pm2 start index.js --name mmx-rpc --namespace mmx --cron-restart="0 0 * * *"
