@@ -42,17 +42,12 @@ async function check()
                 if(height - payout.height > config.payout_tx_expire + 100) {
                     failed = true;
                     console.log("Payout transaction expired:", "height", payout.height, "txid", payout.txid);
+                } else {
+                    console.log("Failed to check payout transaction:", e.message, "txid", payout.txid);
                 }
-                console.log("Failed to check payout transaction:", e.message, "txid", payout.txid);
             }
 
-            if(confirmed) {
-                payout.valid = true;
-                payout.pending = false;
-                await payout.save();
-                console.log("Payout confirmed:", "height", payout.height, "total_amount", payout.total_amount, "count", payout.count, "txid", payout.txid);
-            }
-            else if(failed) {
+            if(failed) {
                 const conn = await db.startSession();
                 try {
                     await conn.startTransaction();
@@ -80,6 +75,12 @@ async function check()
                 } finally {
                     conn.endSession();
                 }
+            }
+            else if(confirmed) {
+                payout.valid = true;
+                payout.pending = false;
+                await payout.save();
+                console.log("Payout confirmed:", "height", payout.height, "total_amount", payout.total_amount, "count", payout.count, "txid", payout.txid);
             }
         }
     } catch(e) {
