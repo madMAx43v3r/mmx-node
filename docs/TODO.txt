@@ -24,3 +24,6 @@ Mainnet
 - Timestamp delta adjustment (limited to +- 1 sec per block)
 - Binary source_info
 - Explorer search by block hash
+- 128-bit txio_t amount (only mint limited to 80-bit)
+- Check Engine::write_entry() load on write
+- Node offer_index + api refactor

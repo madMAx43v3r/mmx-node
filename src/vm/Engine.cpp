@@ -349,6 +349,8 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 	auto& var = entries[std::make_pair(dst, key)];
 
 	// load potential previous value if container is stored
+	// TODO: still needed?
+	// TODO: because no more ref counting for stored values
 	if(!var && dst >= MEM_STATIC && (container.flags & FLAG_STORED)) {
 		var = storage->read(contract, dst, key);
 	}
