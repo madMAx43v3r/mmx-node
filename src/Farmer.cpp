@@ -277,6 +277,7 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 	http_async->post_json(out->pool_url + "/partial", payload, {},
 		[this, out](std::shared_ptr<const vnx::addons::HttpResponse> response) {
 			auto& stats = nft_stats[out->contract];
+			stats.last_partial = vnx::get_wall_time_seconds();
 			bool is_valid = false;
 			bool have_error = false;
 			if(response->is_json()) {

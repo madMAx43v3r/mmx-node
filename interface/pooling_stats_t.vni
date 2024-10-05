@@ -12,6 +12,8 @@ struct pooling_stats_t {
 	uint total_partials;			// valid only
 	long total_response_time;		// [ms]
 	
+	long last_partial;				// UNIX [sec]
+	
 	map<pooling_error_e, uint> error_count;
 	
 }
