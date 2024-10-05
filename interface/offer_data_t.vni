@@ -11,6 +11,8 @@ struct offer_data_t {
 	addr_t owner;
 	addr_t address;
 	
+	optional<addr_t> partner;
+	
 	addr_t bid_currency;
 	addr_t ask_currency;
 	

@@ -910,6 +910,11 @@ offer_data_t Node::get_offer(const addr_t& address) const
 			out.time_stamp = entry.time_stamp;
 		}
 	}
+	if(auto partner = data["partner"]) {
+		if(partner->type != vm::TYPE_NIL) {
+			out.partner = to_addr(partner);
+		}
+	}
 	out.owner = to_addr(data["owner"]);
 	out.bid_currency = to_addr(data["bid_currency"]);
 	out.ask_currency = to_addr(data["ask_currency"]);
@@ -940,7 +945,7 @@ std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& addresse
 		const int offer_state = state ? get_offer_state(address) : -1;
 		if(!state || offer_state == 1 || (closed && offer_state == 2)) {
 			const auto data = get_offer(address);
-			if(!data.is_scam()) {
+			if(!data.partner && !data.is_scam()) {
 				out.push_back(data);
 			}
 		}
