@@ -1,12 +1,12 @@
 
 var source;
-var beneficiary;
+var target;
 var agent;
 
-function init(source_, beneficiary_, agent_)
+function init(source_, target_, agent_)
 {
 	source = bech32(source_);
-	beneficiary = bech32(beneficiary_);
+	target = bech32(target_);
 	agent = bech32(agent_);
 }
 
@@ -17,7 +17,7 @@ function unlock(currency) public
 	if(this.user != agent) {
 		fail("user != agent");
 	}
-	send(beneficiary, balance(currency), currency, "mmx_escrow_unlock");
+	send(target, balance(currency), currency, "mmx_escrow_unlock");
 }
 
 function revoke(currency) public
