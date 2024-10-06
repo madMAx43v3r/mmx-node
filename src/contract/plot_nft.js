@@ -24,6 +24,14 @@ function is_locked() const public
 	return unlock_height == null || this.height < unlock_height;
 }
 
+function mmx_reward_target(farmer) const public
+{
+	if(is_locked()) {
+		return target;
+	}
+	return owner;
+}
+
 function lock(target_, unlock_delay_, server_url_) public
 {
 	check_owner();
