@@ -1,7 +1,6 @@
 const config = {};
 
 config.pool_fee = 0.01;                     // [%]
-config.mmx_divider = 1e6;
 config.challenge_delay = 6;                 // [blocks]
 config.partial_expiry = 100;                // [blocks]
 config.account_delay = 24;                  // [blocks]

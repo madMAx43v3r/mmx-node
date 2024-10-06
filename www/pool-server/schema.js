@@ -73,6 +73,7 @@ const pool = new mongoose.Schema({
     partial_errors: {type: Object},
     last_update: {type: Number, default: 0},
     last_payout: {type: Number, default: 0},
+    payout_enable: {type: Boolean, default: true},
 }, {
     minimize: false,
 });

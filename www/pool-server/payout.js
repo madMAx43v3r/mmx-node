@@ -8,6 +8,10 @@ const config = require('./config.js');
 var db = null;
 var sync_height = null;
 
+const api_token_header = {
+    headers: {'x-api-token': config.api_token}
+};
+
 var check_lock = false;
 
 async function check()
@@ -28,7 +32,7 @@ async function check()
             let expired = false;
             let confirmed = false;
             try {
-                const res = await axios.get(config.node_url + '/wapi/transaction?id=' + payout.txid);
+                const res = await axios.get(config.node_url + '/wapi/transaction?id=' + payout.txid, api_token_header);
                 const tx = res.data;
                 if(tx.confirm && tx.confirm >= config.account_delay) {
                     if(tx.did_fail) {
@@ -45,7 +49,8 @@ async function check()
                     expired = true;
                     console.log("Payout transaction expired:", "height", payout.height, "txid", payout.txid);
                 } else {
-                    console.log("Failed to check payout transaction:", e.message, "txid", payout.txid);
+                    console.log("Failed to check payout transaction:", e.message,
+                        "response", e.response ? e.response.data : null, "txid", payout.txid);
                 }
             }
             if(!confirmed && !failed) {
@@ -84,9 +89,6 @@ async function check()
                     if(!account) {
                         throw new Error("Fee account not found: " + config.fee_account);
                     }
-                    if(account.balance < payout.tx_fee) {
-                        throw new Error("Insufficient balance to cover tx fee: " + account.balance + " < " + payout.tx_fee);
-                    }
                     account.balance -= payout.tx_fee;
                     await account.save(opt);
                 }
@@ -117,17 +119,19 @@ async function make_payout(height, amounts, opt)
     try {
         const res = await axios.post(config.node_url + '/wapi/wallet/send_many', {
             index: config.wallet_index,
-            raw_mode: true,
             amounts: amounts,
             currency: "MMX",
             options: options,
-        }, {
-            headers: {'x-api-token': config.api_token}
-        });
+        }, api_token_header);
         tx = res.data;
     } catch(e) {
         throw new Error("Failed to create payout transaction: "
             + e.message + " (" + (e.response ? e.response.data : "???") + ")");
+    }
+
+    if(tx.sender != config.pool_target) {
+        throw new Error("Invalid payout transaction sender: " + tx.sender
+            + " != " + config.pool_target + " (wrong config.wallet_index)");
     }
 
     let total_amount = 0;
@@ -174,6 +178,10 @@ async function payout()
         if(!pool) {
             throw new Error("Pool state not found");
         }
+        if(!pool.payout_enable) {
+            console.log("Payouts currently disabled");
+            return;
+        }
         if(pool.last_payout && height - pool.last_payout < config.payout_interval) {
             return;
         }
@@ -187,6 +195,7 @@ async function payout()
             // reserve for tx fees
             const reserve = (list.length * config.tx_output_cost + 1);
 
+            let total_count = 0;
             let total_amount = 0;
             let outputs = [];
             let tx_list = [];
@@ -206,16 +215,17 @@ async function payout()
 
                 console.log("Payout triggered for", account.address, "amount", amount, "MMX");
 
+                total_count++;
                 total_amount += amount;
                 outputs.push([account.address, amount]);
 
                 if(outputs.length >= config.max_payouts) {
-                    tx_list.push(await make_payout(outputs, opt));
+                    tx_list.push(await make_payout(height, outputs, opt));
                     outputs = [];
                 }
             }
             if(outputs.length) {
-                tx_list.push(await make_payout(outputs, opt));
+                tx_list.push(await make_payout(height, outputs, opt));
             }
             pool.last_payout = height;
             await pool.save(opt);
@@ -227,14 +237,16 @@ async function payout()
                     await axios.post(config.node_url + '/wapi/wallet/send_off', {
                         index: config.wallet_index,
                         tx: tx,
-                    }, {
-                        headers: {'x-api-token': config.api_token}
-                    });
+                    }, api_token_header);
                     console.log("Payout transaction sent:", tx.id);
                 } catch(e) {
                     console.log("Failed to send payout transaction:",
                         e.message, "txid", tx.id, "response", e.response ? e.response.data : "???");
                 }
+            }
+            if(tx_list.length) {
+                console.log("Payout initiated:", "height", height, "total_amount",
+                    total_amount, "total_count", total_count, "tx_count", tx_list.length);
             }
         } catch(e) {
             await conn.abortTransaction();

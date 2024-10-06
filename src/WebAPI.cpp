@@ -176,7 +176,7 @@ void WebAPI::handle(std::shared_ptr<const vnx::LogMsg> value)
 	}
 }
 
-vnx::Object to_amount_object(const uint64_t& amount, const int decimals)
+static vnx::Object to_amount_object(const uint64_t& amount, const int decimals)
 {
 	vnx::Object res;
 	res["value"] = to_value(amount, decimals);
@@ -184,7 +184,7 @@ vnx::Object to_amount_object(const uint64_t& amount, const int decimals)
 	return res;
 }
 
-vnx::Object to_amount_object(const uint128& amount, const int decimals)
+static vnx::Object to_amount_object(const uint128& amount, const int decimals)
 {
 	vnx::Object res;
 	res["value"] = to_value(amount, decimals);
@@ -192,7 +192,7 @@ vnx::Object to_amount_object(const uint128& amount, const int decimals)
 	return res;
 }
 
-vnx::Object to_amount_object_str(const uint64_t& amount, const int decimals)
+static vnx::Object to_amount_object_str(const uint64_t& amount, const int decimals)
 {
 	vnx::Object res;
 	res["value"] = fixed128(amount, decimals).to_string();
@@ -200,12 +200,19 @@ vnx::Object to_amount_object_str(const uint64_t& amount, const int decimals)
 	return res;
 }
 
-vnx::Object to_amount_object_str(const uint128& amount, const int decimals)
+static vnx::Object to_amount_object_str(const uint128& amount, const int decimals)
 {
 	vnx::Object res;
 	res["value"] = fixed128(amount, decimals).to_string();
 	res["amount"] = amount.str();
 	return res;
+}
+
+static void parse_uint64(vnx::Variant& value)
+{
+	uint64_t tmp = 0;
+	vnx::from_string(value.to_string_value(), tmp);
+	value = tmp;
 }
 
 
@@ -256,6 +263,14 @@ public:
 	template<size_t N>
 	void accept(const bytes_t<N>& value) {
 		set(value.to_string());
+	}
+
+	void accept(const uint64_t& value) {
+		if(value >> 53) {
+			set(std::to_string(value));
+		} else {
+			set(value);
+		}
 	}
 
 	void accept(const uint128& value) {
@@ -2044,7 +2059,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			vnx::Object args;
 			vnx::from_string(request->payload.as_string(), args);
 			const auto index = args["index"].to<uint32_t>();
-			const auto tx = args["tx"].to<std::shared_ptr<const Transaction>>();
+			auto obj = args["tx"].to_object();
+			parse_uint64(obj["nonce"]);
+			auto tx = Transaction::create();
+			tx->from_object(obj);
 			wallet->send_off(index, tx,
 				[this, request_id]() {
 					respond_status(request_id, 200);

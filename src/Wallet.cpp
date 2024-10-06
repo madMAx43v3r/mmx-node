@@ -564,7 +564,7 @@ void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> 
 	wallet->update_from(tx);
 	{
 		tx_log_entry_t entry;
-		entry.time = vnx::get_time_millis();
+		entry.time = vnx::get_wall_time_millis();
 		entry.tx = tx;
 		tx_log.insert(wallet->get_address(0), entry);
 		tx_log.commit();
