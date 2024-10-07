@@ -236,9 +236,6 @@ public:
 						const uint128_t& amount, const addr_t& currency,
 						const spend_options_t& options = {}) const
 	{
-		if(amount >> 80) {
-			throw std::logic_error("amount too large");
-		}
 		auto left = amount;
 
 		// try to reuse existing inputs if possible
@@ -265,7 +262,7 @@ public:
 					} else {
 						amount = balance;
 					}
-					if(amount && ((in.amount + amount) >> 80) == 0) {
+					if(amount) {
 						in.amount += amount;
 						spent_map[iter->first] += amount;
 						left -= amount;
