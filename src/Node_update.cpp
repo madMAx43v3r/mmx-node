@@ -831,8 +831,10 @@ std::shared_ptr<const Block> Node::make_block(
 			block->reward_contract = plot->reward_address;
 		}
 	}
+
+	const addr_t reward_addr_tag = hash_t("MMX/farmer_reward_addr/" + std::to_string(vnx::rand64()));
 	if(block->reward_contract) {
-		block->reward_addr = get_plot_nft_target(*block->reward_contract);
+		block->reward_addr = get_plot_nft_target(*block->reward_contract, reward_addr_tag);
 	}
 
 	uint64_t total_fees = 0;
@@ -888,8 +890,13 @@ std::shared_ptr<const Block> Node::make_block(
 	block->finalize();
 
 	FarmerClient farmer(proof.farmer_mac);
-	const auto result = farmer.sign_block(block);
 
+	auto result = farmer.sign_block(block);
+	if(result && result->reward_account && block->reward_addr && (*block->reward_addr) == reward_addr_tag) {
+		// we can use farmer reward address
+		block->reward_addr = result->reward_account;
+		result = farmer.sign_block(block);
+	}
 	if(!result) {
 		throw std::logic_error("farmer refused to sign block");
 	}

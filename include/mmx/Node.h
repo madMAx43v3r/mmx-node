@@ -153,7 +153,7 @@ protected:
 
 	vnx::optional<plot_nft_info_t> get_plot_nft_info(const addr_t& address) const override;
 
-	addr_t get_plot_nft_target(const addr_t& address) const override;
+	addr_t get_plot_nft_target(const addr_t& address, const vnx::optional<addr_t>& farmer_addr = nullptr) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
 

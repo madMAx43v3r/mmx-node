@@ -782,6 +782,7 @@ vnx::Variant Node::call_contract(
 		const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
 		const vnx::optional<addr_t>& user, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit) const
 {
+	// Note: consensus relevant
 	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(address))) {
 		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
 			auto func = vm::find_method(bin, method);
@@ -822,15 +823,14 @@ uint128 Node::get_total_supply(const addr_t& currency) const
 
 vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) const
 {
-	// Note: consensus relevant
 	if(auto exec = get_contract_as<contract::Executable>(address)) {
 		if(exec->binary == params->plot_nft_binary) {
+			auto data = read_storage(address);
 			plot_nft_info_t info;
 			info.name = exec->name;
-			info.owner = to_addr(read_storage_field(address, "owner").first);
+			info.owner = to_addr(data["owner"]);
 			info.address = address;
-
-			const auto unlock_height = read_storage_field(address, "unlock_height").first;
+			const auto& unlock_height = data["unlock_height"];
 			if(unlock_height && unlock_height->type == vm::TYPE_UINT) {
 				const uint32_t unlock_at = to_uint(unlock_height);
 				info.unlock_height = unlock_at;
@@ -839,10 +839,10 @@ vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) co
 				info.is_locked = true;
 			}
 			if(info.is_locked) {
-				info.target = to_addr(read_storage_field(address, "target").first);
-				info.unlock_delay = to_uint(read_storage_field(address, "unlock_delay").first);
+				info.target = to_addr(data["target"]);
+				info.unlock_delay = to_uint(data["unlock_delay"]);
 			}
-			const auto server_url = read_storage_field(address, "server_url").first;
+			const auto server_url = data["server_url"];
 			if(server_url && server_url->type == vm::TYPE_STRING) {
 				info.server_url = to_string_value(server_url);
 			}
@@ -852,15 +852,18 @@ vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) co
 	return nullptr;
 }
 
-addr_t Node::get_plot_nft_target(const addr_t& address) const
+addr_t Node::get_plot_nft_target(const addr_t& address, const vnx::optional<addr_t>& farmer_addr) const
 {
 	// Note: consensus relevant
-	if(auto info = get_plot_nft_info(address)) {
-		if(info->is_locked && info->target) {
-			return *info->target;
-		} else {
-			return info->owner;
+	if(get_contract_as<contract::Executable>(address)) try {
+		vnx::Variant arg0;
+		if(farmer_addr) {
+			arg0 = farmer_addr->to_string();
 		}
+		return call_contract(address, "mmx_reward_target", {arg0}).to<addr_t>();
+	}
+	catch(const std::exception& ex) {
+		throw std::logic_error("mmx_reward_target() failed with: " + std::string(ex.what()));
 	}
 	return address;
 }
@@ -1473,18 +1476,13 @@ std::tuple<pooling_error_e, std::string> Node::verify_plot_nft_target(const addr
 	if(!is_synced) {
 		throw std::logic_error("out of sync");
 	}
-	if(auto info = get_plot_nft_info(address)) {
-		if(!info->is_locked) {
-			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT is not locked"};
-		}
-		if(!info->target) {
-			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT has no target"};
-		}
-		if((*info->target) != pool_target) {
+	try {
+		const auto target = get_plot_nft_target(address);
+		if(target != pool_target) {
 			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT not pointing at expected pool target: " + pool_target.to_string()};
 		}
-	} else {
-		return {pooling_error_e::INVALID_CONTRACT, "Not a plot NFT: " + address.to_string()};
+	} catch(const std::exception& ex) {
+		return {pooling_error_e::INVALID_CONTRACT, "Plot NFT target resolution failed with: " + std::string(ex.what())};
 	}
 	return {pooling_error_e::NONE, ""};
 }
@@ -1508,7 +1506,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 		return {pooling_error_e::INVALID_SIGNATURE, "Missing signature"};
 	}
 	if(!partial->farmer_sig->verify(partial->proof->farmer_key, partial->hash)) {
-		return {pooling_error_e::INVALID_SIGNATURE, "Signature validation failed"};
+		return {pooling_error_e::INVALID_SIGNATURE, "Signature verification failed"};
 	}
 
 	const auto vdf_height = partial->height - params->challenge_delay;

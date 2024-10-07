@@ -214,7 +214,7 @@ module Node implements vnx.addons.HttpComponent {
 	optional<plot_nft_info_t> get_plot_nft_info(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)
-	addr_t get_plot_nft_target(addr_t address) const;
+	addr_t get_plot_nft_target(addr_t address, optional<addr_t> farmer_addr) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;

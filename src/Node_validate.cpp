@@ -202,8 +202,14 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		throw std::logic_error("invalid reward_contract");
 	}
 	if(reward_contract) {
-		if(!block->reward_addr || (*block->reward_addr) != get_plot_nft_target(*reward_contract)) {
-			throw std::logic_error("invalid reward_addr for reward_contract");
+		addr_t target;
+		try {
+			target = get_plot_nft_target(*reward_contract, block->reward_account);
+		} catch(const std::exception& ex) {
+			throw std::logic_error("reward_addr resolution failed with: " + std::string(ex.what()));
+		}
+		if(!block->reward_addr || (*block->reward_addr) != target) {
+			throw std::logic_error("invalid reward_addr for reward_contract: expected " + target.to_string());
 		}
 	}
 
