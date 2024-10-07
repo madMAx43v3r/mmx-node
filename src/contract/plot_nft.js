@@ -28,6 +28,8 @@ function mmx_reward_target(farmer) const public
 	var addr = owner;
 	if(is_locked()) {
 		addr = target;
+	} else if(farmer) {
+		addr = bech32(farmer);
 	}
 	return addr;
 }
