@@ -20,7 +20,7 @@ struct MMX_EXPORT trade_log_t : vnx::struct_t {
 	::mmx::hash_t txid;
 	::mmx::addr_t address;
 	::mmx::uint128 inv_price;
-	uint64_t ask_amount = 0;
+	::mmx::uint128 ask_amount;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -33,7 +33,7 @@ struct MMX_EXPORT trade_log_t : vnx::struct_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
-	uint64_t get_bid_amount() const;
+	::mmx::uint128 get_bid_amount() const;
 	vnx::float64_t get_price() const;
 	
 	static std::shared_ptr<trade_log_t> create();

@@ -236,15 +236,12 @@ public:
 						const uint128_t& amount, const addr_t& currency,
 						const spend_options_t& options = {}) const
 	{
-		if(amount.upper()) {
-			throw std::logic_error("amount too large");
-		}
-		uint64_t left = amount;
+		auto left = amount;
 
 		// try to reuse existing inputs if possible
 		for(auto& in : tx->inputs)
 		{
-			if(left == 0) {
+			if(!left) {
 				return;
 			}
 			if(in.contract == currency && find_address(in.address) >= 0)
@@ -259,14 +256,11 @@ public:
 							balance -= iter2->second;
 						}
 					}
-					uint64_t amount = 0;
+					uint128_t amount = 0;
 					if(balance >= left) {
 						amount = left;
 					} else {
 						amount = balance;
-					}
-					if((uint128_t(in.amount) + amount).upper()) {
-						amount = uint64_t(-1) - in.amount;
 					}
 					if(amount) {
 						in.amount += amount;
@@ -438,7 +432,7 @@ public:
 	void complete(
 			std::shared_ptr<Transaction> tx,
 			const spend_options_t& options = {},
-			const std::vector<std::pair<addr_t, uint64_t>>& deposit = {})
+			const std::vector<std::pair<addr_t, uint128>>& deposit = {})
 	{
 		bool was_locked = false;
 		if(is_locked()) {

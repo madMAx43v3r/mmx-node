@@ -181,7 +181,7 @@ protected:
 	virtual std::vector<::mmx::vm::varptr_t> read_storage_array(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual std::map<::mmx::vm::varptr_t, ::mmx::vm::varptr_t> read_storage_map(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage_object(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
-	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit) const = 0;
+	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint128>>& deposit) const = 0;
 	virtual vnx::optional<::mmx::plot_nft_info_t> get_plot_nft_info(const ::mmx::addr_t& address) const = 0;
 	virtual ::mmx::addr_t get_plot_nft_target(const ::mmx::addr_t& address, const vnx::optional<::mmx::addr_t>& farmer_addr) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses) const = 0;
@@ -193,14 +193,14 @@ protected:
 	virtual std::vector<::mmx::offer_data_t> get_offers_by(const std::vector<::mmx::addr_t>& owners, const vnx::bool_t& state) const = 0;
 	virtual std::vector<::mmx::offer_data_t> fetch_offers(const std::vector<::mmx::addr_t>& addresses, const vnx::bool_t& state, const vnx::bool_t& closed) const = 0;
 	virtual std::vector<::mmx::offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const = 0;
-	virtual std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const uint64_t& min_bid, const int32_t& limit, const vnx::bool_t& state) const = 0;
+	virtual std::vector<::mmx::offer_data_t> get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const ::mmx::uint128& min_bid, const int32_t& limit, const vnx::bool_t& state) const = 0;
 	virtual std::vector<::mmx::trade_entry_t> get_trade_history(const int32_t& limit, const uint32_t& since) const = 0;
 	virtual std::vector<::mmx::trade_entry_t> get_trade_history_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const int32_t& limit, const uint32_t& since) const = 0;
 	virtual std::vector<::mmx::swap_info_t> get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency) const = 0;
 	virtual ::mmx::swap_info_t get_swap_info(const ::mmx::addr_t& address) const = 0;
 	virtual ::mmx::swap_user_info_t get_swap_user_info(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
 	virtual std::vector<::mmx::swap_entry_t> get_swap_history(const ::mmx::addr_t& address, const int32_t& limit) const = 0;
-	virtual std::array<::mmx::uint128, 2> get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) const = 0;
+	virtual std::array<::mmx::uint128, 2> get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const ::mmx::uint128& amount, const int32_t& num_iter) const = 0;
 	virtual std::array<::mmx::uint128, 2> get_swap_fees_earned(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
 	virtual std::array<::mmx::uint128, 2> get_swap_equivalent_liquidity(const ::mmx::addr_t& address, const ::mmx::addr_t& user) const = 0;
 	virtual std::map<::mmx::addr_t, std::array<std::pair<::mmx::addr_t, ::mmx::uint128>, 2>> get_swap_liquidity_by(const std::vector<::mmx::addr_t>& addresses) const = 0;

@@ -71,17 +71,17 @@ void read(std::istream& in, mmx::uint128& value)
 {
 	std::string tmp;
 	vnx::read(in, tmp);
-	value = uint128_t(tmp, 10);
+	value = mmx::uint128(tmp);
 }
 
 inline
 void write(std::ostream& out, const mmx::uint128& value) {
-	vnx::write(out, value.str(10));
+	vnx::write(out, value.to_string());
 }
 
 inline
 void accept(vnx::Visitor& visitor, const mmx::uint128& value) {
-	vnx::accept(visitor, value.str(10));
+	vnx::accept(visitor, value.to_string());
 }
 
 } // vnx

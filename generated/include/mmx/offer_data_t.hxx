@@ -23,9 +23,9 @@ struct MMX_EXPORT offer_data_t : vnx::struct_t {
 	vnx::optional<::mmx::addr_t> partner;
 	::mmx::addr_t bid_currency;
 	::mmx::addr_t ask_currency;
-	uint64_t bid_balance = 0;
-	uint64_t ask_balance = 0;
-	uint64_t ask_amount = 0;
+	::mmx::uint128 bid_balance;
+	::mmx::uint128 ask_balance;
+	::mmx::uint128 ask_amount;
 	::mmx::uint128 inv_price;
 	vnx::float64_t price = 0;
 	
@@ -43,8 +43,8 @@ struct MMX_EXPORT offer_data_t : vnx::struct_t {
 	vnx::bool_t is_scam() const;
 	vnx::bool_t is_open() const;
 	vnx::float64_t get_price() const;
-	uint64_t get_bid_amount(const uint64_t& ask_amount = 0) const;
-	uint64_t get_ask_amount(const uint64_t& bid_amount = 0) const;
+	::mmx::uint128 get_bid_amount(const ::mmx::uint128& ask_amount = ::mmx::uint128()) const;
+	::mmx::uint128 get_ask_amount(const ::mmx::uint128& bid_amount = ::mmx::uint128()) const;
 	
 	static std::shared_ptr<offer_data_t> create();
 	std::shared_ptr<offer_data_t> clone() const;

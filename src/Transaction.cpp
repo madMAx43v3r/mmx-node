@@ -134,7 +134,7 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-void Transaction::add_input(const addr_t& currency, const addr_t& address, const uint64_t& amount)
+void Transaction::add_input(const addr_t& currency, const addr_t& address, const uint128& amount)
 {
 	txin_t in;
 	in.address = address;
@@ -143,7 +143,7 @@ void Transaction::add_input(const addr_t& currency, const addr_t& address, const
 	inputs.push_back(in);
 }
 
-void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const vnx::optional<std::string>& memo)
+void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint128& amount, const vnx::optional<std::string>& memo)
 {
 	if(memo && memo->size() > txio_t::MAX_MEMO_SIZE) {
 		throw std::logic_error("memo too long");

@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -16,7 +17,7 @@ public:
 	
 	::mmx::addr_t address;
 	uint32_t i = 0;
-	uint64_t amount = 0;
+	::mmx::uint128 amount;
 	int32_t num_iter = 20;
 	
 	typedef ::vnx::Value Super;

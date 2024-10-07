@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txio_entry_t::VNX_TYPE_HASH(0x2d1c65e166ab244bull);
-const vnx::Hash64 txio_entry_t::VNX_CODE_HASH(0xcb28155ac67434b9ull);
+const vnx::Hash64 txio_entry_t::VNX_CODE_HASH(0x2daf93e2887e8013ull);
 
 vnx::Hash64 txio_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -185,7 +185,7 @@ std::shared_ptr<vnx::TypeCode> txio_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txio_entry_t";
 	type_code->type_hash = vnx::Hash64(0x2d1c65e166ab244bull);
-	type_code->code_hash = vnx::Hash64(0xcb28155ac67434b9ull);
+	type_code->code_hash = vnx::Hash64(0x2daf93e2887e8013ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txio_entry_t);
 	type_code->parents.resize(1);
@@ -208,9 +208,9 @@ std::shared_ptr<vnx::TypeCode> txio_entry_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "amount";
-		field.code = {4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -284,9 +284,6 @@ void read(TypeInput& in, ::mmx::txio_entry_t& value, const TypeCode* type_code, 
 	}
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
-		}
 		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
 		}
@@ -298,6 +295,7 @@ void read(TypeInput& in, ::mmx::txio_entry_t& value, const TypeCode* type_code, 
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.amount, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.memo, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.txid, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.type, type_code, _field->code.data()); break;
@@ -319,12 +317,12 @@ void write(TypeOutput& out, const ::mmx::txio_entry_t& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(20);
-	vnx::write_value(_buf + 0, value.amount);
-	vnx::write_value(_buf + 8, value.height);
-	vnx::write_value(_buf + 12, value.time_stamp);
+	auto* const _buf = out.write(12);
+	vnx::write_value(_buf + 0, value.height);
+	vnx::write_value(_buf + 4, value.time_stamp);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.amount, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.memo, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.txid, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.type, type_code, type_code->fields[7].code.data());

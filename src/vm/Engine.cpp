@@ -1121,7 +1121,7 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	if(value == 0) {
 		return;
 	}
-	if(value >> 64) {
+	if(value >> 128) {
 		throw std::runtime_error("send(): amount too large: 0x" + value.str(16));
 	}
 	if(currency == 0) {
@@ -1147,7 +1147,7 @@ void Engine::mint(const uint64_t address, const uint64_t amount, const uint64_t 
 	if(value == 0) {
 		return;
 	}
-	if(value >> 64) {
+	if(value >> 80) {
 		throw std::runtime_error("mint(): amount too large: 0x" + value.str(16));
 	}
 	txout_t out;

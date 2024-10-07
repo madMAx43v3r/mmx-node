@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -17,9 +18,9 @@ public:
 	
 	uint32_t index = 0;
 	uint32_t owner = 0;
-	uint64_t bid_amount = 0;
+	::mmx::uint128 bid_amount;
 	::mmx::addr_t bid_currency;
-	uint64_t ask_amount = 0;
+	::mmx::uint128 ask_amount;
 	::mmx::addr_t ask_currency;
 	::mmx::spend_options_t options;
 	

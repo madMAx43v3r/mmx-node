@@ -12,8 +12,8 @@ class tx_info_t {
 	optional<hash_t> block;
 	optional<string> message;
 	
-	long fee;
-	ulong cost;
+	uint fee;
+	uint cost;
 	
 	tx_note_e note;
 	

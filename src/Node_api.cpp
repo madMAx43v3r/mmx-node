@@ -780,7 +780,7 @@ std::map<std::string, vm::varptr_t> Node::read_storage_object(const addr_t& cont
 
 vnx::Variant Node::call_contract(
 		const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
-		const vnx::optional<addr_t>& user, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit) const
+		const vnx::optional<addr_t>& user, const vnx::optional<std::pair<addr_t, uint128>>& deposit) const
 {
 	// Note: consensus relevant
 	if(auto exec = get_contract_as<contract::Executable>(address)) {
@@ -1016,7 +1016,7 @@ std::vector<offer_data_t> Node::get_recent_offers(const int32_t& limit, const vn
 }
 
 std::vector<offer_data_t> Node::get_recent_offers_for(
-		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint64_t& min_bid, const int32_t& limit, const vnx::bool_t& state) const
+		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint128& min_bid, const int32_t& limit, const vnx::bool_t& state) const
 {
 	std::vector<offer_data_t> result;
 	std::unordered_set<addr_t> bid_set;
@@ -1341,7 +1341,7 @@ std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const in
 				if(entry.deposit) {
 					out.amount = entry.deposit->second;
 				} else if(entry.args.size() >= 2) {
-					out.amount = entry.args[1].to<uint64_t>();
+					out.amount = entry.args[1].to<uint128>();
 				}
 			}
 		} else if(entry.method == "rem_all_liquid") {
@@ -1365,7 +1365,7 @@ std::vector<swap_entry_t> Node::get_swap_history(const addr_t& address, const in
 	return result;
 }
 
-std::array<uint128, 2> Node::get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) const
+std::array<uint128, 2> Node::get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint128& amount, const int32_t& num_iter) const
 {
 	const auto info = get_swap_info(address);
 

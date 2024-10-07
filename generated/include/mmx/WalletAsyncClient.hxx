@@ -39,15 +39,15 @@ public:
 	
 	WalletAsyncClient(vnx::Hash64 service_addr);
 	
-	uint64_t send(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t send(const uint32_t& index = 0, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t send_many(const uint32_t& index = 0, const std::vector<std::pair<::mmx::addr_t, uint64_t>>& amounts = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t send_many(const uint32_t& index = 0, const std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>& amounts = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t send_from(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& src_addr = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t send_from(const uint32_t& index = 0, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& src_addr = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -59,15 +59,15 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t deposit(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t deposit(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t make_offer(const uint32_t& index = 0, const uint32_t& owner = 0, const uint64_t& bid_amount = 0, const ::mmx::addr_t& bid_currency = ::mmx::addr_t(), const uint64_t& ask_amount = 0, const ::mmx::addr_t& ask_currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t make_offer(const uint32_t& index = 0, const uint32_t& owner = 0, const ::mmx::uint128& bid_amount = ::mmx::uint128(), const ::mmx::addr_t& bid_currency = ::mmx::addr_t(), const ::mmx::uint128& ask_amount = ::mmx::uint128(), const ::mmx::addr_t& ask_currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t offer_trade(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const uint32_t& dst_addr = 0, const ::mmx::uint128& price = ::mmx::uint128(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t offer_trade(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128(), const uint32_t& dst_addr = 0, const ::mmx::uint128& price = ::mmx::uint128(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -83,15 +83,15 @@ public:
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t swap_trade(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const vnx::optional<uint64_t>& min_trade = nullptr, const int32_t& num_iter = 20, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t swap_trade(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const vnx::optional<::mmx::uint128>& min_trade = nullptr, const int32_t& num_iter = 20, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t swap_add_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<uint64_t, 2>& amount = {}, const uint32_t& pool_idx = 0, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t swap_add_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<::mmx::uint128, 2>& amount = {}, const uint32_t& pool_idx = 0, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t swap_rem_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<uint64_t, 2>& amount = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t swap_rem_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<::mmx::uint128, 2>& amount = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(std::shared_ptr<const ::mmx::Transaction>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::Transaction>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -147,7 +147,7 @@ public:
 			const std::function<void(const std::vector<::mmx::tx_log_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::tx_log_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t gather_inputs_for(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
+	uint64_t gather_inputs_for(const uint32_t& index = 0, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t(), 
 			const std::function<void(const std::vector<::mmx::txin_t>&)>& _callback = std::function<void(const std::vector<::mmx::txin_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

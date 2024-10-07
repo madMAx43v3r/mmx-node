@@ -6,6 +6,7 @@
 #include <mmx/Wallet_gather_inputs_for_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_gather_inputs_for::VNX_TYPE_HASH(0x31d9b9888b8c2de3ull);
-const vnx::Hash64 Wallet_gather_inputs_for::VNX_CODE_HASH(0xe714739113f28c05ull);
+const vnx::Hash64 Wallet_gather_inputs_for::VNX_CODE_HASH(0xa883e81e08607862ull);
 
 vnx::Hash64 Wallet_gather_inputs_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -146,7 +147,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_gather_inputs_for::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.gather_inputs_for";
 	type_code->type_hash = vnx::Hash64(0x31d9b9888b8c2de3ull);
-	type_code->code_hash = vnx::Hash64(0xe714739113f28c05ull);
+	type_code->code_hash = vnx::Hash64(0xa883e81e08607862ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -165,9 +166,9 @@ std::shared_ptr<vnx::TypeCode> Wallet_gather_inputs_for::static_create_type_code
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "amount";
-		field.code = {4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[2];
@@ -226,12 +227,10 @@ void read(TypeInput& in, ::mmx::Wallet_gather_inputs_for& value, const TypeCode*
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
+			case 1: vnx::read(in, value.amount, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.currency, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.options, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
@@ -252,9 +251,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_gather_inputs_for& value, const 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(12);
+	auto* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write_value(_buf + 4, value.amount);
+	vnx::write(out, value.amount, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.currency, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.options, type_code, type_code->fields[3].code.data());
 }

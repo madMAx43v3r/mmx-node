@@ -147,7 +147,7 @@ protected:
 	std::map<std::string, vm::varptr_t> read_storage_object(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 
 	vnx::Variant call_contract(	const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args = {},
-								const vnx::optional<addr_t>& user = nullptr, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit = nullptr) const override;
+								const vnx::optional<addr_t>& user = nullptr, const vnx::optional<std::pair<addr_t, uint128>>& deposit = nullptr) const override;
 
 	uint128 get_total_supply(const addr_t& currency) const override;
 
@@ -176,7 +176,7 @@ protected:
 	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const override;
 
 	std::vector<offer_data_t> get_recent_offers_for(
-			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint64_t& min_bid,
+			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint128& min_bid,
 			const int32_t& limit, const vnx::bool_t& state) const override;
 
 	std::vector<trade_entry_t> get_trade_history(const int32_t& limit, const uint32_t& since = 0) const override;
@@ -192,7 +192,7 @@ protected:
 
 	std::vector<swap_entry_t> get_swap_history(const addr_t& address, const int32_t& limit) const override;
 
-	std::array<uint128, 2> get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) const override;
+	std::array<uint128, 2> get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint128& amount, const int32_t& num_iter) const override;
 
 	std::array<uint128, 2> get_swap_fees_earned(const addr_t& address, const addr_t& user) const override;
 

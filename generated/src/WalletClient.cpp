@@ -182,7 +182,7 @@ WalletClient::WalletClient(vnx::Hash64 service_addr)
 {
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::send(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::send(const uint32_t& index, const ::mmx::uint128& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_send::create();
 	_method->index = index;
 	_method->amount = amount;
@@ -199,7 +199,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::send(const uint32_t& ind
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::send_many(const uint32_t& index, const std::vector<std::pair<::mmx::addr_t, uint64_t>>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::send_many(const uint32_t& index, const std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_send_many::create();
 	_method->index = index;
 	_method->amounts = amounts;
@@ -215,7 +215,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::send_many(const uint32_t
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::send_from(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& src_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::send_from(const uint32_t& index, const ::mmx::uint128& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& src_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_send_from::create();
 	_method->index = index;
 	_method->amount = amount;
@@ -266,7 +266,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::execute(const uint32_t& 
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::deposit(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::deposit(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const ::mmx::uint128& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_deposit::create();
 	_method->index = index;
 	_method->address = address;
@@ -285,7 +285,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::deposit(const uint32_t& 
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const ::mmx::addr_t& bid_currency, const uint64_t& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_t& index, const uint32_t& owner, const ::mmx::uint128& bid_amount, const ::mmx::addr_t& bid_currency, const ::mmx::uint128& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_make_offer::create();
 	_method->index = index;
 	_method->owner = owner;
@@ -304,7 +304,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::make_offer(const uint32_
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::uint128& amount, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_offer_trade::create();
 	_method->index = index;
 	_method->address = address;
@@ -369,7 +369,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::cancel_offer(const uint3
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const uint64_t& amount, const ::mmx::addr_t& currency, const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::uint128& amount, const ::mmx::addr_t& currency, const vnx::optional<::mmx::uint128>& min_trade, const int32_t& num_iter, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_swap_trade::create();
 	_method->index = index;
 	_method->address = address;
@@ -388,7 +388,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_trade(const uint32_
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<::mmx::uint128, 2>& amount, const uint32_t& pool_idx, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_swap_add_liquid::create();
 	_method->index = index;
 	_method->address = address;
@@ -405,7 +405,7 @@ std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_add_liquid(const ui
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_rem_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<uint64_t, 2>& amount, const ::mmx::spend_options_t& options) {
+std::shared_ptr<const ::mmx::Transaction> WalletClient::swap_rem_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<::mmx::uint128, 2>& amount, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_swap_rem_liquid::create();
 	_method->index = index;
 	_method->address = address;
@@ -605,7 +605,7 @@ std::vector<::mmx::tx_log_entry_t> WalletClient::get_tx_log(const uint32_t& inde
 	}
 }
 
-std::vector<::mmx::txin_t> WalletClient::gather_inputs_for(const uint32_t& index, const uint64_t& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
+std::vector<::mmx::txin_t> WalletClient::gather_inputs_for(const uint32_t& index, const ::mmx::uint128& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) {
 	auto _method = ::mmx::Wallet_gather_inputs_for::create();
 	_method->index = index;
 	_method->amount = amount;

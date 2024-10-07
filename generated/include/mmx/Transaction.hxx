@@ -60,8 +60,8 @@ public:
 	virtual void reset(std::shared_ptr<const ::mmx::ChainParams> params = nullptr);
 	virtual void update(const ::mmx::exec_result_t& result = ::mmx::exec_result_t(), std::shared_ptr<const ::mmx::ChainParams> params = nullptr);
 	virtual void finalize();
-	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
-	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const vnx::optional<std::string>& memo = nullptr);
+	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128());
+	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128(), const vnx::optional<std::string>& memo = nullptr);
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual vnx::bool_t is_signed() const;

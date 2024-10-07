@@ -857,7 +857,7 @@ std::map<std::string, ::mmx::vm::varptr_t> NodeClient::read_storage_object(const
 	}
 }
 
-::vnx::Variant NodeClient::call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit) {
+::vnx::Variant NodeClient::call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint128>>& deposit) {
 	auto _method = ::mmx::Node_call_contract::create();
 	_method->address = address;
 	_method->method = method;
@@ -1024,7 +1024,7 @@ std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers(const int32_t& li
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const uint64_t& min_bid, const int32_t& limit, const vnx::bool_t& state) {
+std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const ::mmx::uint128& min_bid, const int32_t& limit, const vnx::bool_t& state) {
 	auto _method = ::mmx::Node_get_recent_offers_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
@@ -1127,7 +1127,7 @@ std::vector<::mmx::swap_entry_t> NodeClient::get_swap_history(const ::mmx::addr_
 	}
 }
 
-std::array<::mmx::uint128, 2> NodeClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) {
+std::array<::mmx::uint128, 2> NodeClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const ::mmx::uint128& amount, const int32_t& num_iter) {
 	auto _method = ::mmx::Node_get_swap_trade_estimate::create();
 	_method->address = address;
 	_method->i = i;
