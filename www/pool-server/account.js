@@ -8,6 +8,10 @@ const config = require('./config.js');
 var db = null;
 var sync_height = null;
 
+const api_token_header = {
+    headers: {'x-api-token': config.api_token}
+};
+
 async function update_account(address, reward, pool_share, points, count, height, opt)
 {
     const account = await dbs.Account.findOne({address: address});
@@ -113,7 +117,7 @@ async function update()
                 });
 
                 for(const block of blocks) {
-                    const res = await axios.get(config.node_url + '/wapi/header?height=' + block.height);
+                    const res = await axios.get(config.node_url + '/wapi/header?height=' + block.height, api_token_header);
                     const valid = (res.data.hash === block.hash);
                     if(valid) {
                         total_rewards += block.reward_value;
@@ -210,7 +214,7 @@ async function check()
         }
         const res = await axios.get(config.node_url + '/wapi/address/history?id='
             + config.pool_target + "&since=" + since + "&until=" + (sync_height - 1) + "&limit=-1",
-            {headers: {'x-api-token': config.api_token}}
+            api_token_header
         );
 
         for(const entry of res.data) {
@@ -226,7 +230,7 @@ async function check()
                 continue;
             }
             try {
-                const res = await axios.get(config.node_url + '/wapi/header?hash=' + block_hash);
+                const res = await axios.get(config.node_url + '/wapi/header?hash=' + block_hash, api_token_header);
                 const header = res.data;
                 const block = new dbs.Block({
                     hash: header.hash,
