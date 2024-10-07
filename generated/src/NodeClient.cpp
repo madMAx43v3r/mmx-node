@@ -887,9 +887,10 @@ vnx::optional<::mmx::plot_nft_info_t> NodeClient::get_plot_nft_info(const ::mmx:
 	}
 }
 
-::mmx::addr_t NodeClient::get_plot_nft_target(const ::mmx::addr_t& address) {
+::mmx::addr_t NodeClient::get_plot_nft_target(const ::mmx::addr_t& address, const vnx::optional<::mmx::addr_t>& farmer_addr) {
 	auto _method = ::mmx::Node_get_plot_nft_target::create();
 	_method->address = address;
+	_method->farmer_addr = farmer_addr;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_plot_nft_target_return>(_return_value)) {
 		return _result->_ret_0;

@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_plot_nft_target::VNX_TYPE_HASH(0x14dfd6e2b1f3282eull);
-const vnx::Hash64 Node_get_plot_nft_target::VNX_CODE_HASH(0x1c744973d9b278f6ull);
+const vnx::Hash64 Node_get_plot_nft_target::VNX_CODE_HASH(0x5fdab24f83715353ull);
 
 vnx::Hash64 Node_get_plot_nft_target::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,12 +48,14 @@ void Node_get_plot_nft_target::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_plot_nft_target;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, farmer_addr);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_plot_nft_target::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_plot_nft_target\"";
 	_out << ", \"address\": "; vnx::write(_out, address);
+	_out << ", \"farmer_addr\": "; vnx::write(_out, farmer_addr);
 	_out << "}";
 }
 
@@ -67,6 +69,7 @@ vnx::Object Node_get_plot_nft_target::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_plot_nft_target";
 	_object["address"] = address;
+	_object["farmer_addr"] = farmer_addr;
 	return _object;
 }
 
@@ -74,6 +77,8 @@ void Node_get_plot_nft_target::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "address") {
 			_entry.second.to(address);
+		} else if(_entry.first == "farmer_addr") {
+			_entry.second.to(farmer_addr);
 		}
 	}
 }
@@ -82,12 +87,17 @@ vnx::Variant Node_get_plot_nft_target::get_field(const std::string& _name) const
 	if(_name == "address") {
 		return vnx::Variant(address);
 	}
+	if(_name == "farmer_addr") {
+		return vnx::Variant(farmer_addr);
+	}
 	return vnx::Variant();
 }
 
 void Node_get_plot_nft_target::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "address") {
 		_value.to(address);
+	} else if(_name == "farmer_addr") {
+		_value.to(farmer_addr);
 	}
 }
 
@@ -115,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_plot_nft_target::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_plot_nft_target";
 	type_code->type_hash = vnx::Hash64(0x14dfd6e2b1f3282eull);
-	type_code->code_hash = vnx::Hash64(0x1c744973d9b278f6ull);
+	type_code->code_hash = vnx::Hash64(0x5fdab24f83715353ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -123,12 +133,18 @@ std::shared_ptr<vnx::TypeCode> Node_get_plot_nft_target::static_create_type_code
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_plot_nft_target>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_plot_nft_target_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "address";
 		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.is_extended = true;
+		field.name = "farmer_addr";
+		field.code = {33, 11, 32, 1};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -177,6 +193,7 @@ void read(TypeInput& in, ::mmx::Node_get_plot_nft_target& value, const TypeCode*
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.farmer_addr, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -196,6 +213,7 @@ void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_target& value, const 
 		type_code = type_code->depends[code[1]];
 	}
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.farmer_addr, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_plot_nft_target& value) {

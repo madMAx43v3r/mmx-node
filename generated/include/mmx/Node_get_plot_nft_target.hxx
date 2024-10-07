@@ -15,6 +15,7 @@ class MMX_EXPORT Node_get_plot_nft_target : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t address;
+	vnx::optional<::mmx::addr_t> farmer_addr;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,9 +59,10 @@ public:
 
 template<typename T>
 void Node_get_plot_nft_target::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_plot_nft_target>(1);
+	_visitor.template type_begin<Node_get_plot_nft_target>(2);
 	_visitor.type_field("address", 0); _visitor.accept(address);
-	_visitor.template type_end<Node_get_plot_nft_target>(1);
+	_visitor.type_field("farmer_addr", 1); _visitor.accept(farmer_addr);
+	_visitor.template type_end<Node_get_plot_nft_target>(2);
 }
 
 

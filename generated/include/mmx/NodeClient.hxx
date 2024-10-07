@@ -150,7 +150,7 @@ public:
 	
 	vnx::optional<::mmx::plot_nft_info_t> get_plot_nft_info(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	::mmx::addr_t get_plot_nft_target(const ::mmx::addr_t& address = ::mmx::addr_t());
+	::mmx::addr_t get_plot_nft_target(const ::mmx::addr_t& address = ::mmx::addr_t(), const vnx::optional<::mmx::addr_t>& farmer_addr = nullptr);
 	
 	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses = {});
 	

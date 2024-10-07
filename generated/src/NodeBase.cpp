@@ -1568,7 +1568,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x14dfd6e2b1f3282eull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_plot_nft_target>(_method);
 			auto _return_value = ::mmx::Node_get_plot_nft_target_return::create();
-			_return_value->_ret_0 = get_plot_nft_target(_args->address);
+			_return_value->_ret_0 = get_plot_nft_target(_args->address, _args->farmer_addr);
 			return _return_value;
 		}
 		case 0xfcd729efd0504fdeull: {

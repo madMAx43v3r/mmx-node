@@ -183,7 +183,7 @@ protected:
 	virtual std::map<std::string, ::mmx::vm::varptr_t> read_storage_object(const ::mmx::addr_t& contract, const uint64_t& address, const uint32_t& height) const = 0;
 	virtual ::vnx::Variant call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit) const = 0;
 	virtual vnx::optional<::mmx::plot_nft_info_t> get_plot_nft_info(const ::mmx::addr_t& address) const = 0;
-	virtual ::mmx::addr_t get_plot_nft_target(const ::mmx::addr_t& address) const = 0;
+	virtual ::mmx::addr_t get_plot_nft_target(const ::mmx::addr_t& address, const vnx::optional<::mmx::addr_t>& farmer_addr) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key) const = 0;
 	virtual std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<::mmx::addr_t>& addresses) const = 0;

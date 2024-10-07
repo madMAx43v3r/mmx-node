@@ -242,7 +242,7 @@ public:
 			const std::function<void(const vnx::optional<::mmx::plot_nft_info_t>&)>& _callback = std::function<void(const vnx::optional<::mmx::plot_nft_info_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_plot_nft_target(const ::mmx::addr_t& address = ::mmx::addr_t(), 
+	uint64_t get_plot_nft_target(const ::mmx::addr_t& address = ::mmx::addr_t(), const vnx::optional<::mmx::addr_t>& farmer_addr = nullptr, 
 			const std::function<void(const ::mmx::addr_t&)>& _callback = std::function<void(const ::mmx::addr_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

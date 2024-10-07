@@ -888,9 +888,10 @@ uint64_t NodeAsyncClient::get_plot_nft_info(const ::mmx::addr_t& address, const 
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_plot_nft_target(const ::mmx::addr_t& address, const std::function<void(const ::mmx::addr_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_plot_nft_target(const ::mmx::addr_t& address, const vnx::optional<::mmx::addr_t>& farmer_addr, const std::function<void(const ::mmx::addr_t&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_plot_nft_target::create();
 	_method->address = address;
+	_method->farmer_addr = farmer_addr;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
