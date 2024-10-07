@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txout_t::VNX_TYPE_HASH(0xaa91772752216576ull);
-const vnx::Hash64 txout_t::VNX_CODE_HASH(0x5525ffaf2b4fe3acull);
+const vnx::Hash64 txout_t::VNX_CODE_HASH(0xa65c408fd2dafa11ull);
 
 vnx::Hash64 txout_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -143,7 +143,7 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txout_t";
 	type_code->type_hash = vnx::Hash64(0xaa91772752216576ull);
-	type_code->code_hash = vnx::Hash64(0x5525ffaf2b4fe3acull);
+	type_code->code_hash = vnx::Hash64(0xa65c408fd2dafa11ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txout_t);
 	type_code->parents.resize(1);
@@ -166,7 +166,7 @@ std::shared_ptr<vnx::TypeCode> txout_t::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];

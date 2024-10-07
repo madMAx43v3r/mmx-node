@@ -5,7 +5,7 @@
 #include <mmx/txio_t.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>
 
@@ -15,7 +15,7 @@ namespace mmx {
 const uint32_t txio_t::MAX_MEMO_SIZE;
 
 const vnx::Hash64 txio_t::VNX_TYPE_HASH(0x32adb93b85c82cf4ull);
-const vnx::Hash64 txio_t::VNX_CODE_HASH(0x5487a48ad6a0ed92ull);
+const vnx::Hash64 txio_t::VNX_CODE_HASH(0x7ddcede672a6e7ddull);
 
 vnx::Hash64 txio_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -146,7 +146,7 @@ std::shared_ptr<vnx::TypeCode> txio_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txio_t";
 	type_code->type_hash = vnx::Hash64(0x32adb93b85c82cf4ull);
-	type_code->code_hash = vnx::Hash64(0x5487a48ad6a0ed92ull);
+	type_code->code_hash = vnx::Hash64(0x7ddcede672a6e7ddull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txio_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<txio_t>>(); };
@@ -167,7 +167,7 @@ std::shared_ptr<vnx::TypeCode> txio_t::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];

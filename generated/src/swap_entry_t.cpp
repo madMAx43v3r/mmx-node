@@ -5,7 +5,7 @@
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>
 
@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 swap_entry_t::VNX_TYPE_HASH(0xe3110712aa0f6064ull);
-const vnx::Hash64 swap_entry_t::VNX_CODE_HASH(0x13b67f19e49b08c7ull);
+const vnx::Hash64 swap_entry_t::VNX_CODE_HASH(0xe1805d1d4cab1d30ull);
 
 vnx::Hash64 swap_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -195,7 +195,7 @@ std::shared_ptr<vnx::TypeCode> swap_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.swap_entry_t";
 	type_code->type_hash = vnx::Hash64(0xe3110712aa0f6064ull);
-	type_code->code_hash = vnx::Hash64(0x13b67f19e49b08c7ull);
+	type_code->code_hash = vnx::Hash64(0xe1805d1d4cab1d30ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::swap_entry_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<swap_entry_t>>(); };
@@ -234,7 +234,7 @@ std::shared_ptr<vnx::TypeCode> swap_entry_t::static_create_type_code() {
 		auto& field = type_code->fields[5];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[6];

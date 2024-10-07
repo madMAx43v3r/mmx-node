@@ -5,7 +5,7 @@
 #include <mmx/Node_call_contract.hxx>
 #include <mmx/Node_call_contract_return.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 #include <vnx/Variant.hpp>
 
@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_call_contract::VNX_TYPE_HASH(0x6a21b0dfe3e541e8ull);
-const vnx::Hash64 Node_call_contract::VNX_CODE_HASH(0x9107c9db9f2ec95eull);
+const vnx::Hash64 Node_call_contract::VNX_CODE_HASH(0x66777d15263b1ed3ull);
 
 vnx::Hash64 Node_call_contract::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -157,7 +157,7 @@ std::shared_ptr<vnx::TypeCode> Node_call_contract::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.call_contract";
 	type_code->type_hash = vnx::Hash64(0x6a21b0dfe3e541e8ull);
-	type_code->code_hash = vnx::Hash64(0x9107c9db9f2ec95eull);
+	type_code->code_hash = vnx::Hash64(0x66777d15263b1ed3ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -194,7 +194,7 @@ std::shared_ptr<vnx::TypeCode> Node_call_contract::static_create_type_code() {
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "deposit";
-		field.code = {33, 23, 2, 4, 7, 11, 32, 1, 11, 10, 1};
+		field.code = {33, 23, 2, 4, 7, 11, 32, 1, 11, 16, 1};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();

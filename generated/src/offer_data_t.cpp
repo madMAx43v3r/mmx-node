@@ -5,7 +5,6 @@
 #include <mmx/offer_data_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/uint128.hpp>
-#include <mmx/uint80.hpp>
 
 #include <vnx/vnx.h>
 
@@ -14,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 offer_data_t::VNX_TYPE_HASH(0xc97a08a709a5f1efull);
-const vnx::Hash64 offer_data_t::VNX_CODE_HASH(0xe841d9fbc5e0dc97ull);
+const vnx::Hash64 offer_data_t::VNX_CODE_HASH(0x52bb84b8a831f7c3ull);
 
 vnx::Hash64 offer_data_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -225,7 +224,7 @@ std::shared_ptr<vnx::TypeCode> offer_data_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.offer_data_t";
 	type_code->type_hash = vnx::Hash64(0xc97a08a709a5f1efull);
-	type_code->code_hash = vnx::Hash64(0xe841d9fbc5e0dc97ull);
+	type_code->code_hash = vnx::Hash64(0x52bb84b8a831f7c3ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::offer_data_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<offer_data_t>>(); };
@@ -276,19 +275,19 @@ std::shared_ptr<vnx::TypeCode> offer_data_t::static_create_type_code() {
 		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "bid_balance";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "ask_balance";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[9];
 		field.is_extended = true;
 		field.name = "ask_amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[10];

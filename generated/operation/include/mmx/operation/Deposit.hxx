@@ -8,7 +8,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/operation/Execute.hxx>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -18,7 +18,7 @@ class MMX_OPERATION_EXPORT Deposit : public ::mmx::operation::Execute {
 public:
 	
 	::mmx::addr_t currency;
-	::mmx::uint80 amount;
+	::mmx::uint128 amount;
 	
 	typedef ::mmx::operation::Execute Super;
 	

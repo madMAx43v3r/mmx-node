@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 txio_entry_t::VNX_TYPE_HASH(0x2d1c65e166ab244bull);
-const vnx::Hash64 txio_entry_t::VNX_CODE_HASH(0xb755debf1a87cc36ull);
+const vnx::Hash64 txio_entry_t::VNX_CODE_HASH(0x2daf93e2887e8013ull);
 
 vnx::Hash64 txio_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -185,7 +185,7 @@ std::shared_ptr<vnx::TypeCode> txio_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txio_entry_t";
 	type_code->type_hash = vnx::Hash64(0x2d1c65e166ab244bull);
-	type_code->code_hash = vnx::Hash64(0xb755debf1a87cc36ull);
+	type_code->code_hash = vnx::Hash64(0x2daf93e2887e8013ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txio_entry_t);
 	type_code->parents.resize(1);
@@ -210,7 +210,7 @@ std::shared_ptr<vnx::TypeCode> txio_entry_t::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];

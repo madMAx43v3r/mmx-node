@@ -5,7 +5,7 @@
 #include <mmx/Node_get_recent_offers_for.hxx>
 #include <mmx/Node_get_recent_offers_for_return.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_recent_offers_for::VNX_TYPE_HASH(0xd89f845556eb17a0ull);
-const vnx::Hash64 Node_get_recent_offers_for::VNX_CODE_HASH(0xf31427b01cef9e08ull);
+const vnx::Hash64 Node_get_recent_offers_for::VNX_CODE_HASH(0x257e50ef372250f1ull);
 
 vnx::Hash64 Node_get_recent_offers_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -156,7 +156,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_recent_offers_for";
 	type_code->type_hash = vnx::Hash64(0xd89f845556eb17a0ull);
-	type_code->code_hash = vnx::Hash64(0xf31427b01cef9e08ull);
+	type_code->code_hash = vnx::Hash64(0x257e50ef372250f1ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -181,7 +181,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "min_bid";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];

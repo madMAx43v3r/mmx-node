@@ -9,7 +9,6 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/uint128.hpp>
-#include <mmx/uint80.hpp>
 
 
 namespace mmx {
@@ -21,7 +20,7 @@ struct MMX_EXPORT trade_log_t : vnx::struct_t {
 	::mmx::hash_t txid;
 	::mmx::addr_t address;
 	::mmx::uint128 inv_price;
-	::mmx::uint80 ask_amount;
+	::mmx::uint128 ask_amount;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -34,7 +33,7 @@ struct MMX_EXPORT trade_log_t : vnx::struct_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
-	::mmx::uint80 get_bid_amount() const;
+	::mmx::uint128 get_bid_amount() const;
 	vnx::float64_t get_price() const;
 	
 	static std::shared_ptr<trade_log_t> create();

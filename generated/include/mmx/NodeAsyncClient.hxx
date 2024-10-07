@@ -32,7 +32,6 @@
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
-#include <mmx/uint80.hpp>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/vm/varptr_t.hpp>
 #include <vnx/Module.h>
@@ -235,7 +234,7 @@ public:
 			const std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>& _callback = std::function<void(const std::map<std::string, ::mmx::vm::varptr_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t call_contract(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const vnx::optional<::mmx::addr_t>& user = nullptr, const vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint80>>& deposit = nullptr, 
+	uint64_t call_contract(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const vnx::optional<::mmx::addr_t>& user = nullptr, const vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint128>>& deposit = nullptr, 
 			const std::function<void(const ::vnx::Variant&)>& _callback = std::function<void(const ::vnx::Variant&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -283,7 +282,7 @@ public:
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const ::mmx::uint80& min_bid = ::mmx::uint80(), const int32_t& limit = 100, const vnx::bool_t& state = true, 
+	uint64_t get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid = nullptr, const vnx::optional<::mmx::addr_t>& ask = nullptr, const ::mmx::uint128& min_bid = ::mmx::uint128(), const int32_t& limit = 100, const vnx::bool_t& state = true, 
 			const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback = std::function<void(const std::vector<::mmx::offer_data_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -311,7 +310,7 @@ public:
 			const std::function<void(const std::vector<::mmx::swap_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::swap_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_swap_trade_estimate(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& i = 0, const ::mmx::uint80& amount = ::mmx::uint80(), const int32_t& num_iter = 20, 
+	uint64_t get_swap_trade_estimate(const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& i = 0, const ::mmx::uint128& amount = ::mmx::uint128(), const int32_t& num_iter = 20, 
 			const std::function<void(const std::array<::mmx::uint128, 2>&)>& _callback = std::function<void(const std::array<::mmx::uint128, 2>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

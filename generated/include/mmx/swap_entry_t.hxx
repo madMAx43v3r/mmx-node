@@ -8,7 +8,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -21,7 +21,7 @@ struct MMX_EXPORT swap_entry_t : vnx::struct_t {
 	::mmx::hash_t txid;
 	std::string type;
 	uint8_t index = 0;
-	::mmx::uint80 amount;
+	::mmx::uint128 amount;
 	vnx::optional<vnx::float64_t> value;
 	vnx::optional<std::string> symbol;
 	vnx::optional<::mmx::addr_t> user;

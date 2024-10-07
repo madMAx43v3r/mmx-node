@@ -19,7 +19,6 @@
 #include <mmx/txin_t.hxx>
 #include <mmx/txout_t.hxx>
 #include <mmx/uint128.hpp>
-#include <mmx/uint80.hpp>
 
 
 namespace mmx {
@@ -61,8 +60,8 @@ public:
 	virtual void reset(std::shared_ptr<const ::mmx::ChainParams> params = nullptr);
 	virtual void update(const ::mmx::exec_result_t& result = ::mmx::exec_result_t(), std::shared_ptr<const ::mmx::ChainParams> params = nullptr);
 	virtual void finalize();
-	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint80& amount = ::mmx::uint80());
-	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint80& amount = ::mmx::uint80(), const vnx::optional<std::string>& memo = nullptr);
+	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128());
+	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128(), const vnx::optional<std::string>& memo = nullptr);
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual vnx::bool_t is_signed() const;

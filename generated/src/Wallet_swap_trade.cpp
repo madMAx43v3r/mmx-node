@@ -6,7 +6,7 @@
 #include <mmx/Wallet_swap_trade_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_swap_trade::VNX_TYPE_HASH(0x4b5a42cbf6657910ull);
-const vnx::Hash64 Wallet_swap_trade::VNX_CODE_HASH(0xae110613e47f07dull);
+const vnx::Hash64 Wallet_swap_trade::VNX_CODE_HASH(0x6bb329b9350aabdbull);
 
 vnx::Hash64 Wallet_swap_trade::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -177,7 +177,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_trade::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.swap_trade";
 	type_code->type_hash = vnx::Hash64(0x4b5a42cbf6657910ull);
-	type_code->code_hash = vnx::Hash64(0xae110613e47f07dull);
+	type_code->code_hash = vnx::Hash64(0x6bb329b9350aabdbull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -204,7 +204,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_trade::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -216,7 +216,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_trade::static_create_type_code() {
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "min_trade";
-		field.code = {33, 11, 10, 1};
+		field.code = {33, 11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[5];

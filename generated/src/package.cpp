@@ -404,7 +404,6 @@
 #include <mmx/signature_t.hpp>
 #include <mmx/skey_t.hpp>
 #include <mmx/uint128.hpp>
-#include <mmx/uint80.hpp>
 
 #include <mmx/package.hxx>
 #include <vnx/vnx.h>
@@ -5151,18 +5150,6 @@ void type<::mmx::uint128>::create_dynamic_code(std::vector<uint16_t>& code) {
 
 void type<::mmx::uint128>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::uint128& value, bool special) {
 	const std::vector<int> tmp = {11, 16, 1};
-	code.insert(code.end(), tmp.begin(), tmp.end());}
-
-const TypeCode* type<::mmx::uint80>::get_type_code() {
-	return nullptr;
-}
-
-void type<::mmx::uint80>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::uint80());
-}
-
-void type<::mmx::uint80>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::uint80& value, bool special) {
-	const std::vector<int> tmp = {11, 10, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
 const TypeCode* type<::mmx::uint_fraction_t>::get_type_code() {

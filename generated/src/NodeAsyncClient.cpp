@@ -184,7 +184,6 @@
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
-#include <mmx/uint80.hpp>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/vm/varptr_t.hpp>
 #include <vnx/Module.h>
@@ -859,7 +858,7 @@ uint64_t NodeAsyncClient::read_storage_object(const ::mmx::addr_t& contract, con
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint80>>& deposit, const std::function<void(const ::vnx::Variant&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint128>>& deposit, const std::function<void(const ::vnx::Variant&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_call_contract::create();
 	_method->address = address;
 	_method->method = method;
@@ -1025,7 +1024,7 @@ uint64_t NodeAsyncClient::get_recent_offers(const int32_t& limit, const vnx::boo
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const ::mmx::uint80& min_bid, const int32_t& limit, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const ::mmx::uint128& min_bid, const int32_t& limit, const vnx::bool_t& state, const std::function<void(const std::vector<::mmx::offer_data_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_recent_offers_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
@@ -1128,7 +1127,7 @@ uint64_t NodeAsyncClient::get_swap_history(const ::mmx::addr_t& address, const i
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const ::mmx::uint80& amount, const int32_t& num_iter, const std::function<void(const std::array<::mmx::uint128, 2>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const ::mmx::uint128& amount, const int32_t& num_iter, const std::function<void(const std::array<::mmx::uint128, 2>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_swap_trade_estimate::create();
 	_method->address = address;
 	_method->i = i;

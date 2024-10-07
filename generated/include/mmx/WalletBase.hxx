@@ -23,7 +23,6 @@
 #include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
-#include <mmx/uint80.hpp>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/Variant.hpp>
@@ -86,20 +85,20 @@ public:
 protected:
 	using Super::handle;
 	
-	virtual std::shared_ptr<const ::mmx::Transaction> send(const uint32_t& index, const ::mmx::uint80& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> send_many(const uint32_t& index, const std::vector<std::pair<::mmx::addr_t, ::mmx::uint80>>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> send_from(const uint32_t& index, const ::mmx::uint80& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& src_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> send(const uint32_t& index, const ::mmx::uint128& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> send_many(const uint32_t& index, const std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>& amounts, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> send_from(const uint32_t& index, const ::mmx::uint128& amount, const ::mmx::addr_t& dst_addr, const ::mmx::addr_t& src_addr, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> deploy(const uint32_t& index, std::shared_ptr<const ::mmx::Contract> contract, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> execute(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<uint32_t>& user, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> deposit(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const ::mmx::uint80& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index, const uint32_t& owner, const ::mmx::uint80& bid_amount, const ::mmx::addr_t& bid_currency, const ::mmx::uint80& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::uint80& amount, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> deposit(const uint32_t& index, const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const ::mmx::uint128& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index, const uint32_t& owner, const ::mmx::uint128& bid_amount, const ::mmx::addr_t& bid_currency, const ::mmx::uint128& ask_amount, const ::mmx::addr_t& ask_currency, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> offer_trade(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::uint128& amount, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> offer_withdraw(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> accept_offer(const uint32_t& index, const ::mmx::addr_t& address, const uint32_t& dst_addr, const ::mmx::uint128& price, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> cancel_offer(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::uint80& amount, const ::mmx::addr_t& currency, const vnx::optional<::mmx::uint80>& min_trade, const int32_t& num_iter, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<::mmx::uint80, 2>& amount, const uint32_t& pool_idx, const ::mmx::spend_options_t& options) const = 0;
-	virtual std::shared_ptr<const ::mmx::Transaction> swap_rem_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<::mmx::uint80, 2>& amount, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> swap_trade(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::uint128& amount, const ::mmx::addr_t& currency, const vnx::optional<::mmx::uint128>& min_trade, const int32_t& num_iter, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> swap_add_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<::mmx::uint128, 2>& amount, const uint32_t& pool_idx, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::shared_ptr<const ::mmx::Transaction> swap_rem_liquid(const uint32_t& index, const ::mmx::addr_t& address, const std::array<::mmx::uint128, 2>& amount, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> complete(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index, std::shared_ptr<const ::mmx::Transaction> tx, const ::mmx::spend_options_t& options) const = 0;
 	virtual std::shared_ptr<const ::mmx::Solution> sign_msg(const uint32_t& index, const ::mmx::addr_t& address, const ::mmx::hash_t& msg) const = 0;
@@ -113,7 +112,7 @@ protected:
 	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history_memo(const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<::mmx::addr_t>& currency) const = 0;
 	virtual std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const = 0;
-	virtual std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index, const ::mmx::uint80& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
+	virtual std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index, const ::mmx::uint128& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::balance_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index, const vnx::bool_t& with_zero, const vnx::bool_t& show_all) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses) const = 0;

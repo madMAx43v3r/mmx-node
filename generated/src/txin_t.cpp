@@ -14,7 +14,7 @@ const uint8_t txin_t::IS_EXEC;
 const uint16_t txin_t::NO_SOLUTION;
 
 const vnx::Hash64 txin_t::VNX_TYPE_HASH(0xda6587114a2413full);
-const vnx::Hash64 txin_t::VNX_CODE_HASH(0x4ed2669018e23314ull);
+const vnx::Hash64 txin_t::VNX_CODE_HASH(0xf995f5e67a956c4eull);
 
 vnx::Hash64 txin_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -165,7 +165,7 @@ std::shared_ptr<vnx::TypeCode> txin_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.txin_t";
 	type_code->type_hash = vnx::Hash64(0xda6587114a2413full);
-	type_code->code_hash = vnx::Hash64(0x4ed2669018e23314ull);
+	type_code->code_hash = vnx::Hash64(0xf995f5e67a956c4eull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::txin_t);
 	type_code->parents.resize(1);
@@ -188,7 +188,7 @@ std::shared_ptr<vnx::TypeCode> txin_t::static_create_type_code() {
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];

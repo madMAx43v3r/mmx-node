@@ -6,7 +6,7 @@
 #include <mmx/Wallet_deposit_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 #include <vnx/Variant.hpp>
 
@@ -17,7 +17,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_deposit::VNX_TYPE_HASH(0x4bf71b9049e1c689ull);
-const vnx::Hash64 Wallet_deposit::VNX_CODE_HASH(0xb09c8dd48c608fcull);
+const vnx::Hash64 Wallet_deposit::VNX_CODE_HASH(0x6bc14c354ede2138ull);
 
 vnx::Hash64 Wallet_deposit::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -178,7 +178,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_deposit::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.deposit";
 	type_code->type_hash = vnx::Hash64(0x4bf71b9049e1c689ull);
-	type_code->code_hash = vnx::Hash64(0xb09c8dd48c608fcull);
+	type_code->code_hash = vnx::Hash64(0x6bc14c354ede2138ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -217,7 +217,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_deposit::static_create_type_code() {
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[5];

@@ -5,7 +5,7 @@
 #include <mmx/exec_entry_t.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Variant.hpp>
 
 #include <vnx/vnx.h>
@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 exec_entry_t::VNX_TYPE_HASH(0xd30282844b1862a4ull);
-const vnx::Hash64 exec_entry_t::VNX_CODE_HASH(0xc399a416b5144792ull);
+const vnx::Hash64 exec_entry_t::VNX_CODE_HASH(0x34e910d80c01901full);
 
 vnx::Hash64 exec_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -176,7 +176,7 @@ std::shared_ptr<vnx::TypeCode> exec_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exec_entry_t";
 	type_code->type_hash = vnx::Hash64(0xd30282844b1862a4ull);
-	type_code->code_hash = vnx::Hash64(0xc399a416b5144792ull);
+	type_code->code_hash = vnx::Hash64(0x34e910d80c01901full);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exec_entry_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<exec_entry_t>>(); };
@@ -221,7 +221,7 @@ std::shared_ptr<vnx::TypeCode> exec_entry_t::static_create_type_code() {
 		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "deposit";
-		field.code = {33, 23, 2, 4, 7, 11, 32, 1, 11, 10, 1};
+		field.code = {33, 23, 2, 4, 7, 11, 32, 1, 11, 16, 1};
 	}
 	type_code->build();
 	return type_code;

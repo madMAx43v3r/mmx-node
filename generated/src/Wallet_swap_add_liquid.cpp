@@ -6,7 +6,7 @@
 #include <mmx/Wallet_swap_add_liquid_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_swap_add_liquid::VNX_TYPE_HASH(0xe053d1ae718e2f64ull);
-const vnx::Hash64 Wallet_swap_add_liquid::VNX_CODE_HASH(0x8cf10323a5b1ed8eull);
+const vnx::Hash64 Wallet_swap_add_liquid::VNX_CODE_HASH(0x1302ccbca02306f6ull);
 
 vnx::Hash64 Wallet_swap_add_liquid::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -157,7 +157,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_add_liquid::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.swap_add_liquid";
 	type_code->type_hash = vnx::Hash64(0xe053d1ae718e2f64ull);
-	type_code->code_hash = vnx::Hash64(0x8cf10323a5b1ed8eull);
+	type_code->code_hash = vnx::Hash64(0x1302ccbca02306f6ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -184,7 +184,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_add_liquid::static_create_type_code()
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 2, 11, 10, 1};
+		field.code = {11, 2, 11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];

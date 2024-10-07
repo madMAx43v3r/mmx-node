@@ -6,7 +6,6 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/uint128.hpp>
-#include <mmx/uint80.hpp>
 
 #include <vnx/vnx.h>
 
@@ -15,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 trade_log_t::VNX_TYPE_HASH(0xafedf6853c645eb8ull);
-const vnx::Hash64 trade_log_t::VNX_CODE_HASH(0xc6d809793155dea4ull);
+const vnx::Hash64 trade_log_t::VNX_CODE_HASH(0xac626531793faaf2ull);
 
 vnx::Hash64 trade_log_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -156,7 +155,7 @@ std::shared_ptr<vnx::TypeCode> trade_log_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.trade_log_t";
 	type_code->type_hash = vnx::Hash64(0xafedf6853c645eb8ull);
-	type_code->code_hash = vnx::Hash64(0xc6d809793155dea4ull);
+	type_code->code_hash = vnx::Hash64(0xac626531793faaf2ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::trade_log_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<trade_log_t>>(); };
@@ -189,7 +188,7 @@ std::shared_ptr<vnx::TypeCode> trade_log_t::static_create_type_code() {
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "ask_amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	type_code->build();
 	return type_code;

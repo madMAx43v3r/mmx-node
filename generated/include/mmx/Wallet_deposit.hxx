@@ -7,7 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 #include <vnx/Variant.hpp>
 
@@ -21,7 +21,7 @@ public:
 	::mmx::addr_t address;
 	std::string method;
 	std::vector<::vnx::Variant> args;
-	::mmx::uint80 amount;
+	::mmx::uint128 amount;
 	::mmx::addr_t currency;
 	::mmx::spend_options_t options;
 	

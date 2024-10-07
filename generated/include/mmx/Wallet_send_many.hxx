@@ -7,7 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -17,7 +17,7 @@ class MMX_EXPORT Wallet_send_many : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	std::vector<std::pair<::mmx::addr_t, ::mmx::uint80>> amounts;
+	std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>> amounts;
 	::mmx::addr_t currency;
 	::mmx::spend_options_t options;
 	

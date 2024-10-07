@@ -6,7 +6,7 @@
 #include <mmx/Wallet_gather_inputs_for_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_gather_inputs_for::VNX_TYPE_HASH(0x31d9b9888b8c2de3ull);
-const vnx::Hash64 Wallet_gather_inputs_for::VNX_CODE_HASH(0xc84b6cf60e7851a6ull);
+const vnx::Hash64 Wallet_gather_inputs_for::VNX_CODE_HASH(0xa883e81e08607862ull);
 
 vnx::Hash64 Wallet_gather_inputs_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -147,7 +147,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_gather_inputs_for::static_create_type_code
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.gather_inputs_for";
 	type_code->type_hash = vnx::Hash64(0x31d9b9888b8c2de3ull);
-	type_code->code_hash = vnx::Hash64(0xc84b6cf60e7851a6ull);
+	type_code->code_hash = vnx::Hash64(0xa883e81e08607862ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -168,7 +168,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_gather_inputs_for::static_create_type_code
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[2];

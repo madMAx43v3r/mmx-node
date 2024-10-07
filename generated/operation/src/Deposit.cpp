@@ -6,7 +6,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/operation/Execute.hxx>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 
 #include <vnx/vnx.h>
 
@@ -16,7 +16,7 @@ namespace operation {
 
 
 const vnx::Hash64 Deposit::VNX_TYPE_HASH(0xc23408cb7b04b0ecull);
-const vnx::Hash64 Deposit::VNX_CODE_HASH(0x2bc81872406d71f4ull);
+const vnx::Hash64 Deposit::VNX_CODE_HASH(0xc1722b8fe9ad5dc0ull);
 
 vnx::Hash64 Deposit::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -187,7 +187,7 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.operation.Deposit";
 	type_code->type_hash = vnx::Hash64(0xc23408cb7b04b0ecull);
-	type_code->code_hash = vnx::Hash64(0x2bc81872406d71f4ull);
+	type_code->code_hash = vnx::Hash64(0xc1722b8fe9ad5dc0ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::operation::Deposit);
@@ -243,7 +243,7 @@ std::shared_ptr<vnx::TypeCode> Deposit::static_create_type_code() {
 		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	type_code->build();
 	return type_code;

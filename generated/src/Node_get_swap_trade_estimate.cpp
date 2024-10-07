@@ -5,7 +5,7 @@
 #include <mmx/Node_get_swap_trade_estimate.hxx>
 #include <mmx/Node_get_swap_trade_estimate_return.hxx>
 #include <mmx/addr_t.hpp>
-#include <mmx/uint80.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_swap_trade_estimate::VNX_TYPE_HASH(0x1c3d2e0c3a431e9eull);
-const vnx::Hash64 Node_get_swap_trade_estimate::VNX_CODE_HASH(0x70f76d56b5fee3d2ull);
+const vnx::Hash64 Node_get_swap_trade_estimate::VNX_CODE_HASH(0x59ac243a11f8e99dull);
 
 vnx::Hash64 Node_get_swap_trade_estimate::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -146,7 +146,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_trade_estimate::static_create_type_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_swap_trade_estimate";
 	type_code->type_hash = vnx::Hash64(0x1c3d2e0c3a431e9eull);
-	type_code->code_hash = vnx::Hash64(0x70f76d56b5fee3d2ull);
+	type_code->code_hash = vnx::Hash64(0x59ac243a11f8e99dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -171,7 +171,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_trade_estimate::static_create_type_
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 10, 1};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
