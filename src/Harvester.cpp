@@ -702,7 +702,9 @@ void Harvester::update()
 
 		std::vector<addr_t> list;
 		for(const auto& entry : plot_nfts) {
-			list.push_back(entry.first);
+			if(entry.second.server_url) {
+				list.push_back(entry.first);
+			}
 		}
 		const auto new_diff = farmer->get_partial_diffs(list);
 		for(const auto& entry : new_diff) {
