@@ -783,8 +783,8 @@ vnx::Variant Node::call_contract(
 		const vnx::optional<addr_t>& user, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit) const
 {
 	// Note: consensus relevant
-	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(address))) {
-		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
+	if(auto exec = get_contract_as<contract::Executable>(address)) {
+		if(auto bin = get_contract_as<contract::Binary>(exec->binary)) {
 			auto func = vm::find_method(bin, method);
 			if(!func) {
 				throw std::runtime_error("no such method: " + method);
@@ -855,12 +855,16 @@ vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) co
 addr_t Node::get_plot_nft_target(const addr_t& address, const vnx::optional<addr_t>& farmer_addr) const
 {
 	// Note: consensus relevant
-	if(get_contract_as<contract::Executable>(address)) try {
-		vnx::Variant arg0;
-		if(farmer_addr) {
-			arg0 = farmer_addr->to_string();
+	if(auto exec = get_contract_as<contract::Executable>(address)) try {
+		if(auto bin = get_contract_as<contract::Binary>(exec->binary)) {
+			if(vm::find_method(bin, "mmx_reward_target")) {
+				vnx::Variant arg0;
+				if(farmer_addr) {
+					arg0 = farmer_addr->to_string();
+				}
+				return call_contract(address, "mmx_reward_target", {arg0}).to<addr_t>();
+			}
 		}
-		return call_contract(address, "mmx_reward_target", {arg0}).to<addr_t>();
 	}
 	catch(const std::exception& ex) {
 		throw std::logic_error("mmx_reward_target() failed with: " + std::string(ex.what()));
