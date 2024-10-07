@@ -29,7 +29,7 @@ const uint64_t fixed128::divider = calc_divider(fixed128::decimals);
 
 fixed128::fixed128(const double& v)
 {
-	fixed = mmx::to_amount_impl<uint128_t>(v, decimals, 128);
+	fixed = mmx::to_amount(v, decimals);
 }
 
 fixed128::fixed128(const uint128_t& value, const int decimals)

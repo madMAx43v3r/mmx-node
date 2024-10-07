@@ -435,7 +435,7 @@ public:
 	void complete(
 			std::shared_ptr<Transaction> tx,
 			const spend_options_t& options = {},
-			const std::vector<std::pair<addr_t, uint80>>& deposit = {})
+			const std::vector<std::pair<addr_t, uint128>>& deposit = {})
 	{
 		bool was_locked = false;
 		if(is_locked()) {

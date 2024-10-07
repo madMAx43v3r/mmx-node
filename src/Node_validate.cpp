@@ -761,9 +761,6 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				deposit -= amount;
 				amount_left -= amount;
 			}
-			if(amount_left >> 80) {
-				throw std::logic_error("total execution spend amount too large");
-			}
 			if(amount_left) {
 				txin_t in;
 				in.address = entry.first.first;
@@ -775,11 +772,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 
 		// create deposit outputs
 		for(const auto& entry : deposit_map) {
-			const auto& amount = entry.second;
-			if(amount >> 80) {
-				throw std::logic_error("total deposit amount too large");
-			}
-			if(amount) {
+			if(const auto& amount = entry.second) {
 				txout_t out;
 				out.address = entry.first.first;
 				out.contract = entry.first.second;
@@ -794,11 +787,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				if(!tx->deploy) {
 					throw std::logic_error("implicit deposit without deploy");
 				}
-				const auto& amount = entry.second;
-				if(amount >> 80) {
-					throw std::logic_error("total implicit deposit amount too large");
-				}
-				if(amount) {
+				if(const auto& amount = entry.second) {
 					txout_t out;
 					out.address = tx->id;
 					out.contract = entry.first;

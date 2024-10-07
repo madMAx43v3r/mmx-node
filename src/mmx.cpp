@@ -787,7 +787,7 @@ int main(int argc, char** argv)
 				const auto trade_estimate = node.get_swap_trade_estimate(contract, i, deposit_amount);
 				const auto expected_amount = trade_estimate[0];
 
-				const mmx::uint80 min_trade_amount = mmx::to_amount(expected_amount.to_double() * min_amount, 0);
+				const mmx::uint128 min_trade_amount = mmx::to_amount(expected_amount.to_double() * min_amount, 0);
 
 				std::cout << "You send: " << mmx::to_value(deposit_amount, token_i->decimals) << " " << token_i->symbol << std::endl;
 				std::cout << "You receive at least:  " << mmx::to_value(min_trade_amount, token_k->decimals) << " " << token_k->symbol << std::endl;
@@ -814,7 +814,7 @@ int main(int argc, char** argv)
 				if(action == "add")
 				{
 					const auto usage = "mmx wallet swap add -a <amount> -b <amount> -x <contract>";
-					std::array<mmx::uint80, 2> add_amount = {};
+					std::array<mmx::uint128, 2> add_amount = {};
 					const auto info = node.get_swap_info(contract);
 					const auto token_0 = get_token(node, info.tokens[0]);
 					const auto token_1 = get_token(node, info.tokens[1]);
@@ -876,7 +876,7 @@ int main(int argc, char** argv)
 				}
 				else if(action == "remove")
 				{
-					std::array<mmx::uint80, 2> rem_amount = {};
+					std::array<mmx::uint128, 2> rem_amount = {};
 					const auto info = node.get_swap_info(contract);
 					const auto user_info = node.get_swap_user_info(contract, wallet.get_address(index, offset));
 					const auto token_0 = get_token(node, info.tokens[0]);

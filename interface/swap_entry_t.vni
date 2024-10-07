@@ -12,7 +12,7 @@ struct swap_entry_t {
 	
 	uchar index;
 	
-	uint80 amount;
+	uint128 amount;
 	
 	optional<double> value;
 	

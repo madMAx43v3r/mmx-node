@@ -53,18 +53,18 @@ vnx::float64_t offer_data_t::get_price() const
 	return ::get_price(inv_price);
 }
 
-uint80 offer_data_t::get_bid_amount(const uint80& ask_amount) const
+uint128 offer_data_t::get_bid_amount(const uint128& ask_amount) const
 {
 	return ::get_bid_amount(ask_amount, inv_price);
 }
 
-uint80 offer_data_t::get_ask_amount(const uint80& bid_amount) const
+uint128 offer_data_t::get_ask_amount(const uint128& bid_amount) const
 {
 	return ::get_ask_amount(bid_amount, inv_price);
 }
 
 
-uint80 trade_log_t::get_bid_amount() const
+uint128 trade_log_t::get_bid_amount() const
 {
 	return ::get_bid_amount(ask_amount, inv_price);
 }

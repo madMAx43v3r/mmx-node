@@ -7,7 +7,6 @@
 
 #include <mmx/skey_t.hpp>
 #include <mmx/addr_t.hpp>
-#include <mmx/uint80.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
 #include <mmx/tree_hash.h>
@@ -37,7 +36,6 @@ int main(int argc, char** argv)
 		vnx::test::expect((uint128(256) / 8).lower(), 32u);
 		vnx::test::expect((uint128(256) / 16).lower(), 16u);
 		vnx::test::expect(vnx::Variant(uint128((uint128_1 << 127) + 3)).to<uint128>(), uint128((uint128_1 << 127) + 3));
-		vnx::test::expect(vnx::Variant(uint80((uint128_1 << 79) + 3)).to<uint80>(), uint80((uint128_1 << 79) + 3));
 	}
 	VNX_TEST_END()
 

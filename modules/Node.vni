@@ -208,7 +208,7 @@ module Node implements vnx.addons.HttpComponent {
 	map<string, varptr_t> read_storage_object(addr_t contract, ulong address, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, uint80>> deposit) const;
+	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, uint128>> deposit) const;
 	
 	@Permission(permission_e.PUBLIC)
 	optional<plot_nft_info_t> get_plot_nft_info(addr_t address) const;
@@ -244,7 +244,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<offer_data_t> get_recent_offers(int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, uint80 min_bid, int limit = 100, bool state = true) const;
+	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, uint128 min_bid, int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<trade_entry_t> get_trade_history(int limit = 100, uint since) const;
@@ -265,7 +265,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<swap_entry_t> get_swap_history(addr_t address, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint128[2] get_swap_trade_estimate(addr_t address, uint i, uint80 amount, int num_iter = 20) const;
+	uint128[2] get_swap_trade_estimate(addr_t address, uint i, uint128 amount, int num_iter = 20) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128[2] get_swap_fees_earned(addr_t address, addr_t user) const;

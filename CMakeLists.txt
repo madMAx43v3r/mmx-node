@@ -120,7 +120,6 @@ add_library(mmx_iface SHARED
 	src/ProofOfSpaceNFT.cpp
 	src/ProofResponse.cpp
 	src/secp256k1.cpp
-	src/uint80.cpp
 	src/uint128.cpp
 	src/fixed128.cpp
 	src/hash_t.cpp

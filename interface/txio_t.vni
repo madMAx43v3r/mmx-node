@@ -6,7 +6,7 @@ struct txio_t {
 	
 	addr_t contract;
 	
-	uint80 amount;
+	uint128 amount;
 	
 	optional<string> memo;
 	

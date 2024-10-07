@@ -9,7 +9,6 @@
 #define INCLUDE_MMX_UTILS_H_
 
 #include <mmx/hash_t.hpp>
-#include <mmx/uint80.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
 #include <mmx/BlockHeader.hxx>
@@ -51,8 +50,8 @@ double to_value(const uint128_t& amount, std::shared_ptr<const ChainParams> para
 	return to_value(amount, params->decimals);
 }
 
-template<typename T>
-T to_amount_impl(const double value, const int decimals, const int width)
+inline
+uint128 to_amount(const double value, const int decimals)
 {
 	if(decimals < 0 || decimals > 18) {
 		throw std::runtime_error("invalid decimals: " + std::to_string(decimals));
@@ -74,30 +73,20 @@ T to_amount_impl(const double value, const int decimals, const int width)
 	const uint256_t amount =
 			uint256_t((uint128_t(value_128) << 64) + value_64) * shift
 			+ uint64_t(fmod(value, 1) * pow(10, decimals) + 0.5);
-	if(amount >> width) {
+	if(amount >> 128) {
 		throw std::runtime_error("amount overflow: " + amount.str(10));
 	}
 	return amount;
 }
 
 inline
-uint80 to_amount(const double value, const int decimals)
+uint128 to_amount(const fixed128& value, const int decimals)
 {
-	return to_amount_impl<uint80>(value, decimals, 80);
+	return value.to_amount(decimals);
 }
 
 inline
-uint80 to_amount(const fixed128& value, const int decimals)
-{
-	const auto amount = value.to_amount(decimals);
-	if(amount >> 80) {
-		throw std::runtime_error("amount overflow: " + amount.to_string());
-	}
-	return amount;
-}
-
-inline
-uint80 to_amount(const double value, std::shared_ptr<const ChainParams> params) {
+uint128 to_amount(const double value, std::shared_ptr<const ChainParams> params) {
 	return to_amount(value, params->decimals);
 }
 
