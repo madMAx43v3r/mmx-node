@@ -857,12 +857,13 @@ addr_t Node::get_plot_nft_target(const addr_t& address, const vnx::optional<addr
 	// Note: consensus relevant
 	if(auto exec = get_contract_as<contract::Executable>(address)) try {
 		if(auto bin = get_contract_as<contract::Binary>(exec->binary)) {
-			if(vm::find_method(bin, "mmx_reward_target")) {
+			const std::string method = "mmx_reward_target";
+			if(vm::find_method(bin, method)) {
 				vnx::Variant arg0;
 				if(farmer_addr) {
 					arg0 = farmer_addr->to_string();
 				}
-				return call_contract(address, "mmx_reward_target", {arg0}).to<addr_t>();
+				return call_contract(address, method, {arg0}).to<addr_t>();
 			}
 		}
 	}
