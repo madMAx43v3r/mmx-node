@@ -7,6 +7,8 @@ class NetworkInfo {
 	uint height;
 	uint synced_since;
 	
+	long time_stamp;			// UNIX [ms]
+	
 	ulong time_diff;
 	ulong space_diff;
 	

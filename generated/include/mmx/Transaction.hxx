@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_Transaction_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
@@ -59,8 +60,8 @@ public:
 	virtual void reset(std::shared_ptr<const ::mmx::ChainParams> params = nullptr);
 	virtual void update(const ::mmx::exec_result_t& result = ::mmx::exec_result_t(), std::shared_ptr<const ::mmx::ChainParams> params = nullptr);
 	virtual void finalize();
-	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0);
-	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const vnx::optional<std::string>& memo = nullptr);
+	virtual void add_input(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128());
+	virtual void add_output(const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128(), const vnx::optional<std::string>& memo = nullptr);
 	virtual void merge_sign(std::shared_ptr<const ::mmx::Transaction> tx = nullptr);
 	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual vnx::bool_t is_signed() const;
@@ -73,7 +74,7 @@ public:
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
 	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_operations() const;
 	virtual std::map<::mmx::addr_t, std::pair<::mmx::uint128, ::mmx::uint128>> get_balance() const;
-	virtual ::mmx::tx_index_t get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, const uint32_t& height = 0, const int64_t& file_offset = 0) const;
+	virtual ::mmx::tx_index_t get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, const int64_t& file_offset = 0) const;
 	
 	static std::shared_ptr<Transaction> create();
 	std::shared_ptr<vnx::Value> clone() const override;

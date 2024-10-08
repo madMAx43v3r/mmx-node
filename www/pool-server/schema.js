@@ -54,6 +54,7 @@ const payout = new mongoose.Schema({
     time: Date,
     height: {type: Number, index: true},
     pending: {type: Boolean, default: true, index: true},
+    expired: {type: Boolean, index: true},
     valid: {type: Boolean, index: true},
 });
 
@@ -72,6 +73,7 @@ const pool = new mongoose.Schema({
     partial_errors: {type: Object},
     last_update: {type: Number, default: 0},
     last_payout: {type: Number, default: 0},
+    payout_enable: {type: Boolean, default: true},
 }, {
     minimize: false,
 });

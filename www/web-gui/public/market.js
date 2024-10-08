@@ -262,6 +262,7 @@ Vue.component('market-offers', {
 			req.index = this.wallet;
 			req.address = this.offer.address;
 			req.amount = this.trade_amount;
+			req.price = this.trade_estimate_data ? this.trade_estimate_data.inv_price : this.offer.inv_price;
 			req.options = {};
 			req.options.fee_ratio = this.fee_ratio;
 			if(estimate) {
@@ -297,6 +298,7 @@ Vue.component('market-offers', {
 			const req = {};
 			req.index = this.wallet;
 			req.address = address;
+			req.price = this.offer.inv_price;
 			req.options = {};
 			req.options.fee_ratio = this.fee_ratio;
 			if(estimate) {

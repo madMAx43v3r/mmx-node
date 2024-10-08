@@ -14,9 +14,9 @@ namespace mmx {
 
 void sync_type_codes(const std::string& file_path)
 {
-	uint_table<vnx::Hash64, vnx::TypeCode> table(file_path, false);
+	uint_table<uint64_t, vnx::TypeCode> table(file_path, false);
 
-	table.scan([](const vnx::Hash64& code_hash, const vnx::TypeCode& type_code) -> bool {
+	table.scan([](const uint64_t& code_hash, const vnx::TypeCode& type_code) -> bool {
 		auto copy = std::make_shared<vnx::TypeCode>(type_code);
 		copy->build();
 		vnx::register_type_code(copy);

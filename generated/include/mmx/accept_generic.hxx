@@ -104,6 +104,8 @@
 #include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_plot_nft_info.hxx>
 #include <mmx/Node_get_plot_nft_info_return.hxx>
+#include <mmx/Node_get_plot_nft_target.hxx>
+#include <mmx/Node_get_plot_nft_target_return.hxx>
 #include <mmx/Node_get_recent_offers.hxx>
 #include <mmx/Node_get_recent_offers_return.hxx>
 #include <mmx/Node_get_recent_offers_for.hxx>
@@ -1251,6 +1253,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_i
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_info_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_target> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_target_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

@@ -133,7 +133,7 @@ template<size_t N>
 template<typename T>
 T bytes_t<N>::to_uint(const bool big_endian) const
 {
-	T out = 0;
+	T out = T();
 	for(size_t i = 0; i < N; ++i) {
 		out <<= 8;
 		if(big_endian) {
@@ -183,6 +183,11 @@ void bytes_t<N>::from_string(const std::string& str) {
 template<size_t N>
 bool operator<(const bytes_t<N>& lhs, const bytes_t<N>& rhs) {
 	return ::memcmp(lhs.data(), rhs.data(), N) < 0;
+}
+
+template<size_t N>
+bool operator>(const bytes_t<N>& lhs, const bytes_t<N>& rhs) {
+	return ::memcmp(lhs.data(), rhs.data(), N) > 0;
 }
 
 template<size_t N>

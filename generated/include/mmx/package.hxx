@@ -127,6 +127,8 @@ class Node_get_params;
 class Node_get_params_return;
 class Node_get_plot_nft_info;
 class Node_get_plot_nft_info_return;
+class Node_get_plot_nft_target;
+class Node_get_plot_nft_target_return;
 class Node_get_recent_offers;
 class Node_get_recent_offers_return;
 class Node_get_recent_offers_for;
@@ -410,6 +412,7 @@ struct swap_pool_info_t;
 struct swap_user_info_t;
 struct time_segment_t;
 struct trade_entry_t;
+struct trade_log_t;
 struct tx_entry_t;
 struct tx_index_t;
 class tx_info_t;
@@ -528,6 +531,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_param
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_params_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_info; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_info_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_target; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_plot_nft_target_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_recent_offers_for; ///< \private
@@ -804,6 +809,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_pool_info
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_user_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_time_segment_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_entry_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_log_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_index_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_info_t; ///< \private
@@ -926,6 +932,8 @@ void read(TypeInput& in, ::mmx::Node_get_params& value, const TypeCode* type_cod
 void read(TypeInput& in, ::mmx::Node_get_params_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_plot_nft_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_plot_nft_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_plot_nft_target& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_plot_nft_target_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_recent_offers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1209,6 +1217,7 @@ void read(TypeInput& in, ::mmx::swap_pool_info_t& value, const TypeCode* type_co
 void read(TypeInput& in, ::mmx::swap_user_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::trade_log_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_index_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1327,6 +1336,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_params& value, const TypeCode*
 void write(TypeOutput& out, const ::mmx::Node_get_params_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_info& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_target& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_target_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1610,6 +1621,7 @@ void write(TypeOutput& out, const ::mmx::swap_pool_info_t& value, const TypeCode
 void write(TypeOutput& out, const ::mmx::swap_user_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::time_segment_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::trade_log_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_index_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1728,6 +1740,8 @@ void read(std::istream& in, ::mmx::Node_get_params& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_params_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_plot_nft_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_plot_nft_info_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_plot_nft_target& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_plot_nft_target_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_recent_offers_for& value); ///< \private
@@ -2011,6 +2025,7 @@ void read(std::istream& in, ::mmx::swap_pool_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::swap_user_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::time_segment_t& value); ///< \private
 void read(std::istream& in, ::mmx::trade_entry_t& value); ///< \private
+void read(std::istream& in, ::mmx::trade_log_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_index_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_info_t& value); ///< \private
@@ -2129,6 +2144,8 @@ void write(std::ostream& out, const ::mmx::Node_get_params& value); ///< \privat
 void write(std::ostream& out, const ::mmx::Node_get_params_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_plot_nft_info& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_plot_nft_info_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_plot_nft_target& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_plot_nft_target_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_recent_offers_for& value); ///< \private
@@ -2412,6 +2429,7 @@ void write(std::ostream& out, const ::mmx::swap_pool_info_t& value); ///< \priva
 void write(std::ostream& out, const ::mmx::swap_user_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::time_segment_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::trade_entry_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::trade_log_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_index_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_info_t& value); ///< \private
@@ -2530,6 +2548,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_params& value); ///< \privat
 void accept(Visitor& visitor, const ::mmx::Node_get_params_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_info& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_info_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_target& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_target_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_recent_offers_for& value); ///< \private
@@ -2813,6 +2833,7 @@ void accept(Visitor& visitor, const ::mmx::swap_pool_info_t& value); ///< \priva
 void accept(Visitor& visitor, const ::mmx::swap_user_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::time_segment_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::trade_entry_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::trade_log_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_index_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_info_t& value); ///< \private
@@ -3028,6 +3049,10 @@ template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_info> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_info_return> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_target> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_target_return> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_recent_offers> value); ///< \private
 template<typename V>
@@ -5879,6 +5904,52 @@ struct type<::mmx::Node_get_plot_nft_info_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_plot_nft_info_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_plot_nft_target> {
+	void read(TypeInput& in, ::mmx::Node_get_plot_nft_target& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_target& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_plot_nft_target& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_plot_nft_target& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_target& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_plot_nft_target& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_plot_nft_target_return> {
+	void read(TypeInput& in, ::mmx::Node_get_plot_nft_target_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_plot_nft_target_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_plot_nft_target_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_plot_nft_target_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_plot_nft_target_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_plot_nft_target_return& value, bool special = false);
 };
 
 /// \private
@@ -12376,6 +12447,29 @@ struct type<::mmx::trade_entry_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::trade_entry_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::trade_log_t> {
+	void read(TypeInput& in, ::mmx::trade_log_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::trade_log_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::trade_log_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::trade_log_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::trade_log_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::trade_log_t& value, bool special = false);
 };
 
 /// \private

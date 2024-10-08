@@ -34,8 +34,20 @@ public:
 
 	uint128(const uint256_t& value) : uint128_t(value.lower()) {}
 
+	uint128(const std::string& str) {
+		if(str.substr(0, 2) == "0x") {
+			*this = uint128_t(str.substr(2), 16);
+		} else {
+			*this = uint128_t(str, 10);
+		}
+	}
+
 	std::string to_string() const {
 		return str(10);
+	}
+
+	std::string to_hex_string() const {
+		return "0x" + str(16);
 	}
 
 	double to_double() const {
@@ -59,17 +71,17 @@ void read(std::istream& in, mmx::uint128& value)
 {
 	std::string tmp;
 	vnx::read(in, tmp);
-	value = uint128_t(tmp, 10);
+	value = mmx::uint128(tmp);
 }
 
 inline
 void write(std::ostream& out, const mmx::uint128& value) {
-	vnx::write(out, value.str(10));
+	vnx::write(out, value.to_string());
 }
 
 inline
 void accept(vnx::Visitor& visitor, const mmx::uint128& value) {
-	vnx::accept(visitor, value.str(10));
+	vnx::accept(visitor, value.to_string());
 }
 
 } // vnx

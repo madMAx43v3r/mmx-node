@@ -6,9 +6,11 @@ struct txio_entry_t extends txio_t {
 	
 	uint height;
 	
+	long time_stamp;		// UNIX [ms]
+	
 	tx_type_e type;
 	
 	
-	static txio_entry_t create_ex(hash_t txid, uint height, tx_type_e type, txio_t txio);
+	static txio_entry_t create_ex(hash_t txid, uint height, long time_stamp, tx_type_e type, txio_t txio);
 	
 }

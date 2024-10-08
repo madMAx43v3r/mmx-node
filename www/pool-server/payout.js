@@ -8,6 +8,10 @@ const config = require('./config.js');
 var db = null;
 var sync_height = null;
 
+const api_token_header = {
+    headers: {'x-api-token': config.api_token}
+};
+
 var check_lock = false;
 
 async function check()
@@ -25,9 +29,10 @@ async function check()
         const list = await dbs.Payout.find({pending: true});
         for(const payout of list) {
             let failed = false;
+            let expired = false;
             let confirmed = false;
             try {
-                const res = await axios.get(config.node_url + '/wapi/transaction?id=' + payout.txid);
+                const res = await axios.get(config.node_url + '/wapi/transaction?id=' + payout.txid, api_token_header);
                 const tx = res.data;
                 if(tx.confirm && tx.confirm >= config.account_delay) {
                     if(tx.did_fail) {
@@ -41,45 +46,58 @@ async function check()
             } catch(e) {
                 if(height - payout.height > config.payout_tx_expire + 100) {
                     failed = true;
+                    expired = true;
                     console.log("Payout transaction expired:", "height", payout.height, "txid", payout.txid);
+                } else {
+                    console.log("Failed to check payout transaction:", e.message,
+                        "response", e.response ? e.response.data : null, "txid", payout.txid);
                 }
-                console.log("Failed to check payout transaction:", e.message, "txid", payout.txid);
             }
-
-            if(confirmed) {
-                payout.valid = true;
-                payout.pending = false;
-                await payout.save();
-                console.log("Payout confirmed:", "height", payout.height, "total_amount", payout.total_amount, "count", payout.count, "txid", payout.txid);
+            if(!confirmed && !failed) {
+                continue;
             }
-            else if(failed) {
-                const conn = await db.startSession();
-                try {
-                    await conn.startTransaction();
-                    const opt = {session: conn};
+            payout.valid = !failed;
+            payout.pending = false;
 
+            const conn = await db.startSession();
+            try {
+                await conn.startTransaction();
+                const opt = {session: conn};
+
+                if(failed) {
                     // revert balances
                     for(const entry of payout.amounts) {
-                        const account = await dbs.Account.findOne({address: entry[0]});
+                        const address = entry[0];
+                        const account = await dbs.Account.findOne({address: address});
                         if(!account) {
-                            throw new Error("Account not found: " + entry[0]);
+                            throw new Error("Account not found: " + address);
                         }
                         account.balance += entry[1];
                         await account.save(opt);
                     }
-                    payout.valid = false;
-                    payout.pending = false;
-                    await payout.save(opt);
-
-                    await conn.commitTransaction();
+                    payout.expired = expired;
 
                     console.log("Payout failed:", "height", payout.height, "txid", payout.txid);
-                } catch(e) {
-                    await conn.abortTransaction();
-                    throw e;
-                } finally {
-                    conn.endSession();
+                } else {
+                    console.log("Payout confirmed:", "height", payout.height, "total_amount", payout.total_amount,
+                        "count", payout.count, "tx_fee", payout.tx_fee, "txid", payout.txid);
                 }
+                await payout.save(opt);
+
+                if(!expired) {
+                    const account = await dbs.Account.findOne({address: config.fee_account});
+                    if(!account) {
+                        throw new Error("Fee account not found: " + config.fee_account);
+                    }
+                    account.balance -= payout.tx_fee;
+                    await account.save(opt);
+                }
+                await conn.commitTransaction();
+            } catch(e) {
+                await conn.abortTransaction();
+                throw e;
+            } finally {
+                conn.endSession();
             }
         }
     } catch(e) {
@@ -101,17 +119,19 @@ async function make_payout(height, amounts, opt)
     try {
         const res = await axios.post(config.node_url + '/wapi/wallet/send_many', {
             index: config.wallet_index,
-            raw_mode: true,
             amounts: amounts,
             currency: "MMX",
             options: options,
-        }, {
-            headers: {'x-api-token': config.api_token}
-        });
+        }, api_token_header);
         tx = res.data;
     } catch(e) {
         throw new Error("Failed to create payout transaction: "
             + e.message + " (" + (e.response ? e.response.data : "???") + ")");
+    }
+
+    if(tx.sender != config.pool_target) {
+        throw new Error("Invalid payout transaction sender: " + tx.sender
+            + " != " + config.pool_target + " (wrong config.wallet_index)");
     }
 
     let total_amount = 0;
@@ -158,6 +178,10 @@ async function payout()
         if(!pool) {
             throw new Error("Pool state not found");
         }
+        if(!pool.payout_enable) {
+            console.log("Payouts currently disabled");
+            return;
+        }
         if(pool.last_payout && height - pool.last_payout < config.payout_interval) {
             return;
         }
@@ -169,18 +193,19 @@ async function payout()
             const list = dbs.Account.find({balance: {$gt: config.payout_threshold}});
 
             // reserve for tx fees
-            const reserve = (list.length * config.tx_output_cost + 1) * config.mmx_divider;
+            const reserve = (list.length * config.tx_output_cost + 1);
 
+            let total_count = 0;
             let total_amount = 0;
             let outputs = [];
             let tx_list = [];
 
             for await(const account of list)
             {
-                let amount = Math.floor(account.balance);
+                let amount = account.balance;
 
                 if(account.address == config.fee_account) {
-                    amount = Math.floor(amount - reserve);
+                    amount -= reserve;
                     if(amount < config.payout_threshold) {
                         continue;
                     }
@@ -188,18 +213,19 @@ async function payout()
                 account.balance -= amount;
                 await account.save(opt);
 
-                console.log("Payout triggered for", account.address, "amount", amount, "value", amount / config.mmx_divider, "MMX");
+                console.log("Payout triggered for", account.address, "amount", amount, "MMX");
 
+                total_count++;
                 total_amount += amount;
                 outputs.push([account.address, amount]);
 
                 if(outputs.length >= config.max_payouts) {
-                    tx_list.push(await make_payout(outputs, opt));
+                    tx_list.push(await make_payout(height, outputs, opt));
                     outputs = [];
                 }
             }
             if(outputs.length) {
-                tx_list.push(await make_payout(outputs, opt));
+                tx_list.push(await make_payout(height, outputs, opt));
             }
             pool.last_payout = height;
             await pool.save(opt);
@@ -211,14 +237,16 @@ async function payout()
                     await axios.post(config.node_url + '/wapi/wallet/send_off', {
                         index: config.wallet_index,
                         tx: tx,
-                    }, {
-                        headers: {'x-api-token': config.api_token}
-                    });
+                    }, api_token_header);
                     console.log("Payout transaction sent:", tx.id);
                 } catch(e) {
                     console.log("Failed to send payout transaction:",
                         e.message, "txid", tx.id, "response", e.response ? e.response.data : "???");
                 }
+            }
+            if(tx_list.length) {
+                console.log("Payout initiated:", "height", height, "total_amount",
+                    total_amount, "total_count", total_count, "tx_count", tx_list.length);
             }
         } catch(e) {
             await conn.abortTransaction();

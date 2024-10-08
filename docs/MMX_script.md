@@ -73,6 +73,7 @@ Note: Objects are maps with string keys.
 	- `txid`: The transaction ID (Type: 32-bytes or `null`)
 	- `height`: The block height at which the code is executed (Type: 256-bit unsigned int)
 	- `balance`: Map of contract balances (Type: Map[32-bytes] = 256-bit unsigned int)
+		- Returns `0` in case of missing balance entry (instead of `null`).
 	- `address`: Contract address (Type: 32-bytes)
 	- `user`: A user address can be specified when executing a contract function,
 		which is verified via a signature before executution, same as `msg.sender` in EVM.
@@ -171,6 +172,8 @@ Note: Objects are maps with string keys.
 - `to_string_bech32(v)`: Same as `to_string()` except:
 	- Converts binary string to a bech32 address string `mmx1...` (fails if not 32 bytes)
 	- Converts `null` to zero address string `mmx1qqqq...`
+- `balance([currency])`: Returns current balance for given currency (for the contract)
+	- `currency` defaults to MMX if not specified (32-byte binary)
 - `send(address, amount, [currency], [memo])`: Transfer funds from contract to an address
 	- `address` is destination address as 32-byte binary
 	- `amount` is integer amount, fails if larger than 64-bit
@@ -206,6 +209,7 @@ Note: Objects are maps with string keys.
 - `event(name, data)`: For debugging / testing only
 	- Logs an event with string `name` and arbitrary `data`
 - `__nop()`: Injects an `OP_NOP` instruction (for debugging)
+- `__copy(dst, src)`: Same as `dst = src` but bypasses compiler const check on `dst` for debugging.
 
 ## Fixed-point Arithmetic
 

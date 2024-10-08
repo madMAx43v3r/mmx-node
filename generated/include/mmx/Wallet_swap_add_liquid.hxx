@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 
@@ -17,7 +18,7 @@ public:
 	
 	uint32_t index = 0;
 	::mmx::addr_t address;
-	std::array<uint64_t, 2> amount = {};
+	std::array<::mmx::uint128, 2> amount = {};
 	uint32_t pool_idx = 0;
 	::mmx::spend_options_t options;
 	

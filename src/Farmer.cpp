@@ -191,6 +191,9 @@ void Farmer::update_difficulty()
 
 void Farmer::query_difficulty(const addr_t& contract, const std::string& url)
 {
+	if(url.empty()) {
+		return;
+	}
 	http_async->get_json(url + "/difficulty", {},
 		[this, url, contract](const vnx::Variant& value) {
 			const auto res = value.to_object();
@@ -224,12 +227,13 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 		}
 	}
 	for(const auto& entry : value->pool_info) {
-		if(!nft_stats.count(entry.first)) {
-			const auto& info = entry.second;
-			if(auto url = info.server_url) {
-				if(url->size()) {
+		const auto& info = entry.second;
+		if(auto url = info.server_url) {
+			if(url->size()) {
+				auto& stats = nft_stats[info.contract];
+				if(stats.server_url != (*url)) {
+					stats.server_url = *url;
 					query_difficulty(info.contract, *url);
-					nft_stats[info.contract].server_url = *url;
 				}
 			}
 		}
@@ -273,6 +277,7 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 	http_async->post_json(out->pool_url + "/partial", payload, {},
 		[this, out](std::shared_ptr<const vnx::addons::HttpResponse> response) {
 			auto& stats = nft_stats[out->contract];
+			stats.last_partial = vnx::get_wall_time_seconds();
 			bool is_valid = false;
 			bool have_error = false;
 			if(response->is_json()) {
@@ -348,6 +353,8 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 
 	if(!out->reward_addr || std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
 		out->reward_addr = reward_addr;
+	} else {
+		out->reward_account = reward_addr;
 	}
 	out->hash = out->calc_hash().first;
 	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);

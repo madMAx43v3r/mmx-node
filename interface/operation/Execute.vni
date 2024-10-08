@@ -18,4 +18,6 @@ class Execute extends mmx.Operation {
 	
 	ulong calc_cost(mmx.ChainParams* params) const;
 	
+	vnx.Variant get_arg(uint index) const;
+	
 }

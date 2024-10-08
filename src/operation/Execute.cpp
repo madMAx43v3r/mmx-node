@@ -47,6 +47,14 @@ uint64_t Execute::calc_cost(std::shared_ptr<const ChainParams> params) const
 	return Super::calc_cost(params) + payload * params->min_txfee_byte;
 }
 
+vnx::Variant Execute::get_arg(const uint32_t& index) const
+{
+	if(index < args.size()) {
+		return args[index];
+	}
+	return vnx::Variant();
+}
+
 
 } // operation
 } // mmx
