@@ -1088,11 +1088,16 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			info.reward_addr = (block->reward_addr ? *block->reward_addr : addr_t());
 			farmer_block_map.insert(proof->farmer_key, info);
 
+			bool found = false;
 			for(auto& entry : farmer_ranking) {
 				if(entry.first == proof->farmer_key) {
 					entry.second++;
+					found = true;
 					break;
 				}
+			}
+			if(!found) {
+				farmer_ranking.emplace_back(proof->farmer_key, 1);
 			}
 			update_farmer_ranking();
 		}
