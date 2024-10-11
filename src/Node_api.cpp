@@ -1482,9 +1482,13 @@ std::tuple<pooling_error_e, std::string> Node::verify_plot_nft_target(const addr
 		throw std::logic_error("out of sync");
 	}
 	try {
+		const auto exec = get_contract_as<contract::Executable>(address);
+		if(!exec || exec->binary != params->plot_nft_binary) {
+			return {pooling_error_e::INVALID_CONTRACT, "Not a Plot NFT contract: " + address.to_string()};
+		}
 		const auto target = get_plot_nft_target(address);
 		if(target != pool_target) {
-			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT not pointing at expected pool target: " + pool_target.to_string()};
+			return {pooling_error_e::INVALID_CONTRACT, "Plot NFT not pointing at expected pool target: " + target.to_string()};
 		}
 	} catch(const std::exception& ex) {
 		return {pooling_error_e::INVALID_CONTRACT, "Plot NFT target resolution failed with: " + std::string(ex.what())};
