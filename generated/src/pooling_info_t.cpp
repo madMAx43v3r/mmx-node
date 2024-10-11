@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 pooling_info_t::VNX_TYPE_HASH(0xbddcc977498f516full);
-const vnx::Hash64 pooling_info_t::VNX_CODE_HASH(0x7d1ffd45c68a5acfull);
+const vnx::Hash64 pooling_info_t::VNX_CODE_HASH(0x9ae4e6628fe7603aull);
 
 vnx::Hash64 pooling_info_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,17 +46,19 @@ void pooling_info_t::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_pooling_info_t;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, contract);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, server_url);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, pool_target);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, partial_diff);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, plot_count);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, is_plot_nft);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, name);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, server_url);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, pool_target);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, partial_diff);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, plot_count);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, is_plot_nft);
 	_visitor.type_end(*_type_code);
 }
 
 void pooling_info_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"contract\": "; vnx::write(_out, contract);
+	_out << ", \"name\": "; vnx::write(_out, name);
 	_out << ", \"server_url\": "; vnx::write(_out, server_url);
 	_out << ", \"pool_target\": "; vnx::write(_out, pool_target);
 	_out << ", \"partial_diff\": "; vnx::write(_out, partial_diff);
@@ -75,6 +77,7 @@ vnx::Object pooling_info_t::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.pooling_info_t";
 	_object["contract"] = contract;
+	_object["name"] = name;
 	_object["server_url"] = server_url;
 	_object["pool_target"] = pool_target;
 	_object["partial_diff"] = partial_diff;
@@ -89,6 +92,8 @@ void pooling_info_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(contract);
 		} else if(_entry.first == "is_plot_nft") {
 			_entry.second.to(is_plot_nft);
+		} else if(_entry.first == "name") {
+			_entry.second.to(name);
 		} else if(_entry.first == "partial_diff") {
 			_entry.second.to(partial_diff);
 		} else if(_entry.first == "plot_count") {
@@ -104,6 +109,9 @@ void pooling_info_t::from_object(const vnx::Object& _object) {
 vnx::Variant pooling_info_t::get_field(const std::string& _name) const {
 	if(_name == "contract") {
 		return vnx::Variant(contract);
+	}
+	if(_name == "name") {
+		return vnx::Variant(name);
 	}
 	if(_name == "server_url") {
 		return vnx::Variant(server_url);
@@ -126,6 +134,8 @@ vnx::Variant pooling_info_t::get_field(const std::string& _name) const {
 void pooling_info_t::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "contract") {
 		_value.to(contract);
+	} else if(_name == "name") {
+		_value.to(name);
 	} else if(_name == "server_url") {
 		_value.to(server_url);
 	} else if(_name == "pool_target") {
@@ -163,11 +173,11 @@ std::shared_ptr<vnx::TypeCode> pooling_info_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.pooling_info_t";
 	type_code->type_hash = vnx::Hash64(0xbddcc977498f516full);
-	type_code->code_hash = vnx::Hash64(0x7d1ffd45c68a5acfull);
+	type_code->code_hash = vnx::Hash64(0x9ae4e6628fe7603aull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::pooling_info_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<pooling_info_t>>(); };
-	type_code->fields.resize(6);
+	type_code->fields.resize(7);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -177,29 +187,35 @@ std::shared_ptr<vnx::TypeCode> pooling_info_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.is_extended = true;
-		field.name = "server_url";
+		field.name = "name";
 		field.code = {33, 32};
 	}
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
+		field.name = "server_url";
+		field.code = {33, 32};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.is_extended = true;
 		field.name = "pool_target";
 		field.code = {33, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[4];
 		field.data_size = 8;
 		field.name = "partial_diff";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[5];
 		field.data_size = 4;
 		field.name = "plot_count";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[6];
 		field.data_size = 1;
 		field.name = "is_plot_nft";
 		field.code = {31};
@@ -246,21 +262,22 @@ void read(TypeInput& in, ::mmx::pooling_info_t& value, const TypeCode* type_code
 	}
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[3]) {
+		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.partial_diff, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[4]) {
+		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.plot_count, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[5]) {
+		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.is_plot_nft, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.contract, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.server_url, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.pool_target, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.name, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.server_url, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.pool_target, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -284,8 +301,9 @@ void write(TypeOutput& out, const ::mmx::pooling_info_t& value, const TypeCode* 
 	vnx::write_value(_buf + 8, value.plot_count);
 	vnx::write_value(_buf + 12, value.is_plot_nft);
 	vnx::write(out, value.contract, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.server_url, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.pool_target, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.name, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.server_url, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.pool_target, type_code, type_code->fields[3].code.data());
 }
 
 void read(std::istream& in, ::mmx::pooling_info_t& value) {
