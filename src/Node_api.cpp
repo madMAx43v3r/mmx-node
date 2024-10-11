@@ -806,7 +806,11 @@ vnx::Variant Node::call_contract(
 				vm::set_deposit(engine, deposit->first, deposit->second);
 			}
 			vm::set_args(engine, args);
-			vm::execute(engine, *func, true);
+			try {
+				vm::execute(engine, *func, true);
+			} catch(const std::exception& ex) {
+				throw std::runtime_error("exception at 0x" + vnx::to_hex_string(engine->error_addr) + ": " + ex.what());
+			}
 			return vm::read(engine, vm::MEM_STACK);
 		}
 		throw std::runtime_error("no such binary");
