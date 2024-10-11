@@ -1019,7 +1019,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			if(auto balance = balance_cache.find(in.address, in.contract)) {
 				clamped_sub_assign(*balance, in.amount);
 			}
-			// TODO: memo_log
+			if(in.memo) {
+				const auto key = hash_t(in.address + (*in.memo));
+				memo_log.insert(std::make_tuple(key, block->height, counter++), in);
+			}
 			spend_log.insert(std::make_tuple(in.address, block->height, counter++), in);
 		}
 		for(const auto& tx : block->get_transactions()) {
