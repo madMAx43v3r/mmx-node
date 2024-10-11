@@ -442,6 +442,7 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 		const auto& nft = entry.second;
 		auto& info = out->pool_info[nft.address];
 		info.contract = nft.address;
+		info.name = nft.name;
 		info.is_plot_nft = true;
 		if(nft.is_locked) {
 			info.server_url = nft.server_url;
@@ -465,7 +466,6 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 			auto& info = out->pool_info[entry.first];
 			info.contract = entry.first;
 			info.plot_count = entry.second;
-			info.pool_target = entry.first;
 		}
 	}
 	return out;

@@ -1581,11 +1581,54 @@ int main(int argc, char** argv)
 				std::cout << "Virtual size:   " << mmx::to_value(info->total_balance, params) << " MMX ("
 						<< virtual_bytes / pow(1000, 4) << " TBe)" << std::endl;
 				std::cout << "Total size:     " << (info->total_bytes_effective + virtual_bytes) / pow(1000, 4) << " TBe" << std::endl;
+				std::cout << "Plots:" << std::endl;
+				uint64_t total_plots = 0;
 				for(const auto& entry : info->plot_count) {
-					std::cout << "K" << int(entry.first) << ": " << entry.second << " plots" << std::endl;
+					total_plots += entry.second;
+					std::cout << "  K" << int(entry.first) << ":   " << entry.second << std::endl;
+				}
+				std::cout << "  Total: " << total_plots << std::endl;
+				if(!info->harvester_bytes.empty()) {
+					std::cout << "Harvesters:" << std::endl;
 				}
 				for(const auto& entry : info->harvester_bytes) {
-					std::cout << "[" << entry.first << "] " << entry.second.first / pow(1000, 4) << " TB, " << entry.second.second / pow(1000, 4) << " TBe" << std::endl;
+					std::cout << "  [" << entry.first << "] " << entry.second.first / pow(1000, 4) << " TB, " << entry.second.second / pow(1000, 4) << " TBe" << std::endl;
+				}
+				if(info->reward_addr) {
+					std::cout << "Reward Address: " << info->reward_addr->to_string() << std::endl;
+				}
+				for(const auto& entry : info->pool_info) {
+					const auto& data = entry.second;
+					std::cout << std::endl << "Plot " << (data.is_plot_nft ? "NFT" : "Contract") << " [" << entry.first.to_string() << "]" << std::endl;
+					if(data.name) {
+						std::cout << "  Name: " << (*data.name) << std::endl;
+					}
+					std::cout << "  Server URL: " << (data.server_url ? *data.server_url : std::string("Solo farming")) << std::endl;
+					std::string target = "N/A";
+					if(data.pool_target) {
+						target = data.pool_target->to_string();
+					} else {
+						if(data.is_plot_nft && info->reward_addr) {
+							target = info->reward_addr->to_string();
+						}
+					}
+					std::cout << "  Target Address: " << target << std::endl;
+					std::cout << "  Plot Count: " << data.plot_count << std::endl;
+					const auto iter = info->pool_stats.find(entry.first);
+					if(iter != info->pool_stats.end()) {
+						const auto& stats = iter->second;
+						std::cout << "  Points: " << stats.valid_points << " OK / " << stats.failed_points << " FAIL" << std::endl;
+						std::cout << "  Difficulty: " << stats.partial_diff << std::endl;
+						if(stats.total_partials) {
+							std::cout << "  Avg. Response: " << double(stats.total_response_time) / stats.total_partials / 1e3 << " sec" << std::endl;
+						}
+						if(stats.last_partial) {
+							std::cout << "  Last Partial: " << vnx::get_date_string(false, stats.last_partial) << std::endl;
+						}
+						for(const auto& entry : stats.error_count) {
+							std::cout << "  Error[" << entry.first.to_string_value() << "]: " << entry.second << std::endl;
+						}
+					}
 				}
 			}
 			else if(command == "reload")

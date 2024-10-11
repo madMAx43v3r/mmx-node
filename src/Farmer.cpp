@@ -130,6 +130,7 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 		entry.second.partial_diff = get_partial_diff(entry.first);
 	}
 	info->pool_stats = nft_stats;
+	info->reward_addr = reward_addr;
 	return info;
 }
 
