@@ -257,6 +257,8 @@
 #include <mmx/Wallet_execute_return.hxx>
 #include <mmx/Wallet_export_wallet.hxx>
 #include <mmx/Wallet_export_wallet_return.hxx>
+#include <mmx/Wallet_find_wallet_by_addr.hxx>
+#include <mmx/Wallet_find_wallet_by_addr_return.hxx>
 #include <mmx/Wallet_gather_inputs_for.hxx>
 #include <mmx/Wallet_gather_inputs_for_return.hxx>
 #include <mmx/Wallet_get_account.hxx>
@@ -317,6 +319,10 @@
 #include <mmx/Wallet_offer_trade_return.hxx>
 #include <mmx/Wallet_offer_withdraw.hxx>
 #include <mmx/Wallet_offer_withdraw_return.hxx>
+#include <mmx/Wallet_plotnft_create.hxx>
+#include <mmx/Wallet_plotnft_create_return.hxx>
+#include <mmx/Wallet_plotnft_exec.hxx>
+#include <mmx/Wallet_plotnft_exec_return.hxx>
 #include <mmx/Wallet_release.hxx>
 #include <mmx/Wallet_release_return.hxx>
 #include <mmx/Wallet_release_all.hxx>
@@ -3412,6 +3418,30 @@ void type<::mmx::Wallet_export_wallet_return>::create_dynamic_code(std::vector<u
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Wallet_find_wallet_by_addr>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_find_wallet_by_addr;
+}
+
+void type<::mmx::Wallet_find_wallet_by_addr>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_find_wallet_by_addr());
+}
+
+void type<::mmx::Wallet_find_wallet_by_addr>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_find_wallet_by_addr& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_find_wallet_by_addr_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_find_wallet_by_addr_return;
+}
+
+void type<::mmx::Wallet_find_wallet_by_addr_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_find_wallet_by_addr_return());
+}
+
+void type<::mmx::Wallet_find_wallet_by_addr_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_find_wallet_by_addr_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::Wallet_gather_inputs_for>::get_type_code() {
 	return mmx::vnx_native_type_code_Wallet_gather_inputs_for;
 }
@@ -4129,6 +4159,54 @@ void type<::mmx::Wallet_offer_withdraw_return>::create_dynamic_code(std::vector<
 }
 
 void type<::mmx::Wallet_offer_withdraw_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_offer_withdraw_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_plotnft_create>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_plotnft_create;
+}
+
+void type<::mmx::Wallet_plotnft_create>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_plotnft_create());
+}
+
+void type<::mmx::Wallet_plotnft_create>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_plotnft_create& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_plotnft_create_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_plotnft_create_return;
+}
+
+void type<::mmx::Wallet_plotnft_create_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_plotnft_create_return());
+}
+
+void type<::mmx::Wallet_plotnft_create_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_plotnft_create_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_plotnft_exec>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_plotnft_exec;
+}
+
+void type<::mmx::Wallet_plotnft_exec>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_plotnft_exec());
+}
+
+void type<::mmx::Wallet_plotnft_exec>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_plotnft_exec& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Wallet_plotnft_exec_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Wallet_plotnft_exec_return;
+}
+
+void type<::mmx::Wallet_plotnft_exec_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Wallet_plotnft_exec_return());
+}
+
+void type<::mmx::Wallet_plotnft_exec_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Wallet_plotnft_exec_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5452,6 +5530,8 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Wallet_execute_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_export_wallet::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_export_wallet_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_find_wallet_by_addr::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_find_wallet_by_addr_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_gather_inputs_for::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_gather_inputs_for_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_get_account::static_create_type_code());
@@ -5512,6 +5592,10 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Wallet_offer_trade_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_offer_withdraw::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_offer_withdraw_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_plotnft_create::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_plotnft_create_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_plotnft_exec::static_create_type_code());
+	vnx::register_type_code(::mmx::Wallet_plotnft_exec_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_release::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_release_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_release_all::static_create_type_code());
@@ -5855,6 +5939,8 @@ const vnx::TypeCode* const vnx_native_type_code_Wallet_execute = vnx::get_type_c
 const vnx::TypeCode* const vnx_native_type_code_Wallet_execute_return = vnx::get_type_code(vnx::Hash64(0x9a51f18a1c26c764ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_export_wallet = vnx::get_type_code(vnx::Hash64(0xd52b494df565ce7ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_export_wallet_return = vnx::get_type_code(vnx::Hash64(0x1c82818ba92b03f4ull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_find_wallet_by_addr = vnx::get_type_code(vnx::Hash64(0x320237e79adcef6bull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_find_wallet_by_addr_return = vnx::get_type_code(vnx::Hash64(0xdae07576f8844f6aull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_gather_inputs_for = vnx::get_type_code(vnx::Hash64(0x31d9b9888b8c2de3ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_gather_inputs_for_return = vnx::get_type_code(vnx::Hash64(0xb099ed949b98dc77ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_get_account = vnx::get_type_code(vnx::Hash64(0xf9669d0d42aec09eull));
@@ -5915,6 +6001,10 @@ const vnx::TypeCode* const vnx_native_type_code_Wallet_offer_trade = vnx::get_ty
 const vnx::TypeCode* const vnx_native_type_code_Wallet_offer_trade_return = vnx::get_type_code(vnx::Hash64(0xb43f9bef89670cebull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_offer_withdraw = vnx::get_type_code(vnx::Hash64(0x790a334fbf5dd1e6ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_offer_withdraw_return = vnx::get_type_code(vnx::Hash64(0xea9f43cd17c41965ull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_plotnft_create = vnx::get_type_code(vnx::Hash64(0x6b0c985ca2c555c9ull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_plotnft_create_return = vnx::get_type_code(vnx::Hash64(0x349cedc7d1d4dcfull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_plotnft_exec = vnx::get_type_code(vnx::Hash64(0xca9e9d0dfde795d1ull));
+const vnx::TypeCode* const vnx_native_type_code_Wallet_plotnft_exec_return = vnx::get_type_code(vnx::Hash64(0x8330b38d9cb47b24ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_release = vnx::get_type_code(vnx::Hash64(0x2cd72a3370e05db3ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_release_return = vnx::get_type_code(vnx::Hash64(0xd302995a8c4dcf83ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_release_all = vnx::get_type_code(vnx::Hash64(0x4bd57b9deca4be51ull));

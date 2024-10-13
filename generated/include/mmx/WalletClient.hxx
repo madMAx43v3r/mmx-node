@@ -67,6 +67,10 @@ public:
 	
 	std::shared_ptr<const ::mmx::Transaction> swap_rem_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<::mmx::uint128, 2>& amount = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
+	std::shared_ptr<const ::mmx::Transaction> plotnft_exec(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	
+	std::shared_ptr<const ::mmx::Transaction> plotnft_create(const uint32_t& index = 0, const std::string& name = "", const vnx::optional<uint32_t>& owner = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	
 	std::shared_ptr<const ::mmx::Transaction> complete(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> sign_off(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
@@ -117,9 +121,9 @@ public:
 	
 	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr);
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr, const vnx::optional<::mmx::hash_t>& type_hash = nullptr);
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr);
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr, const vnx::optional<::mmx::hash_t>& type_hash = nullptr);
 	
 	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const uint32_t& index = 0);
 	
@@ -130,6 +134,8 @@ public:
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);
+	
+	int32_t find_wallet_by_addr(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
 	::mmx::account_info_t get_account(const uint32_t& index = 0);
 	

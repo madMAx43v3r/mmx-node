@@ -254,6 +254,8 @@
 #include <mmx/Wallet_execute_return.hxx>
 #include <mmx/Wallet_export_wallet.hxx>
 #include <mmx/Wallet_export_wallet_return.hxx>
+#include <mmx/Wallet_find_wallet_by_addr.hxx>
+#include <mmx/Wallet_find_wallet_by_addr_return.hxx>
 #include <mmx/Wallet_gather_inputs_for.hxx>
 #include <mmx/Wallet_gather_inputs_for_return.hxx>
 #include <mmx/Wallet_get_account.hxx>
@@ -314,6 +316,10 @@
 #include <mmx/Wallet_offer_trade_return.hxx>
 #include <mmx/Wallet_offer_withdraw.hxx>
 #include <mmx/Wallet_offer_withdraw_return.hxx>
+#include <mmx/Wallet_plotnft_create.hxx>
+#include <mmx/Wallet_plotnft_create_return.hxx>
+#include <mmx/Wallet_plotnft_exec.hxx>
+#include <mmx/Wallet_plotnft_exec_return.hxx>
 #include <mmx/Wallet_release.hxx>
 #include <mmx/Wallet_release_return.hxx>
 #include <mmx/Wallet_release_all.hxx>
@@ -2623,6 +2629,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_export_walle
 }
 
 template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_find_wallet_by_addr> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_find_wallet_by_addr_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_gather_inputs_for> value) {
 	if(value) {
 		value->accept_generic(visitor);
@@ -3155,6 +3179,42 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_offer_withdr
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_offer_withdraw_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_plotnft_create> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_plotnft_create_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_plotnft_exec> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_plotnft_exec_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
