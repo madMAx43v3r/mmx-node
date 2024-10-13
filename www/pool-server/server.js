@@ -69,13 +69,7 @@ app.get('/difficulty', max_age_cache(30), async (req, res) =>
 {
     const account = await dbs.Account.findOne({address: req.query.id});
 
-    let diff = config.default_difficulty;
-    if(account) {
-        diff = account.difficulty;
-    }
-    diff = Math.max(diff, config.min_difficulty);
-    
-    res.json({difficulty: Math.round(diff)});
+    res.json({difficulty: account ? account.difficulty : config.default_difficulty});
 });
 
 app.post('/partial', no_cache, async (req, res, next) =>
