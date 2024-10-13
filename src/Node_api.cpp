@@ -844,7 +844,6 @@ vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) co
 			}
 			if(info.is_locked) {
 				info.target = to_addr(data["target"]);
-				info.unlock_delay = to_uint(data["unlock_delay"]);
 			}
 			const auto server_url = data["server_url"];
 			if(server_url && server_url->type == vm::TYPE_STRING) {

@@ -1777,12 +1777,17 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/wallet/contracts") {
 		const auto iter_index = query.find("index");
 		const auto iter_type = query.find("type");
+		const auto iter_type_hash = query.find("type_hash");
 		const auto iter_owned = query.find("owned");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
+			vnx::optional<hash_t> type_hash;
 			vnx::optional<std::string> type_name;
 			if(iter_type != query.end()) {
 				vnx::from_string(iter_type->second, type_name);
+			}
+			if(iter_type_hash != query.end()) {
+				vnx::from_string(iter_type_hash->second, type_hash);
 			}
 			const auto callback = [this, request_id](const std::map<addr_t, std::shared_ptr<const Contract>>& map) {
 				auto context = get_context();
@@ -1797,10 +1802,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				respond(request_id, vnx::Variant(res));
 			};
 			if(iter_owned != query.end() && vnx::from_string<bool>(iter_owned->second)) {
-				wallet->get_contracts_owned(index, type_name,
+				wallet->get_contracts_owned(index, type_name, type_hash,
 					callback, std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 			} else {
-				wallet->get_contracts(index, type_name,
+				wallet->get_contracts(index, type_name, type_hash,
 					callback, std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 			}
 		} else {

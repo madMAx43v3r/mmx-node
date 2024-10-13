@@ -68,6 +68,12 @@ module Wallet implements vnx.addons.HttpComponent {
 	Transaction* swap_rem_liquid(uint index, addr_t address, uint128 amount[2], spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
+	Transaction* plotnft_exec(addr_t address, string method, vector<vnx.Variant> args, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
+	Transaction* plotnft_create(uint index, string name, optional<uint> owner, spend_options_t options) const;
+	
+	@Permission(permission_e.SPENDING)
 	Transaction* complete(uint index, Transaction* tx, spend_options_t options) const;
 	
 	@Permission(permission_e.SPENDING)
@@ -106,9 +112,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	map<addr_t, balance_t> get_contract_balances(addr_t address) const;
 	
-	map<addr_t, Contract*> get_contracts(uint index, optional<string> type_name) const;
+	map<addr_t, Contract*> get_contracts(uint index, optional<string> type_name, optional<hash_t> type_hash) const;
 	
-	map<addr_t, Contract*> get_contracts_owned(uint index, optional<string> type_name) const;
+	map<addr_t, Contract*> get_contracts_owned(uint index, optional<string> type_name, optional<hash_t> type_hash) const;
 	
 	vector<virtual_plot_info_t> get_virtual_plots(uint index) const;
 	
@@ -119,6 +125,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	addr_t get_address(uint index, uint offset) const;
 	
 	vector<addr_t> get_all_addresses(int index) const;				// (index == -1) -> all wallets
+	
+	int find_wallet_by_addr(addr_t address) const;
 	
 	account_info_t get_account(uint index) const;
 	

@@ -195,7 +195,11 @@ void Farmer::query_difficulty(const addr_t& contract, const std::string& url)
 	if(url.empty()) {
 		return;
 	}
-	http_async->get_json(url + "/difficulty", {},
+	vnx::addons::http_request_options_t opt;
+	if(reward_addr) {
+		opt.query["id"] = reward_addr->to_string();
+	}
+	http_async->get_json(url + "/difficulty", opt,
 		[this, url, contract](const vnx::Variant& value) {
 			const auto res = value.to_object();
 			if(auto field = res["difficulty"]) {

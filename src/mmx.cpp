@@ -28,6 +28,8 @@
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
 #include <vnx/ProxyClient.hxx>
+#include <vnx/addons/HttpClient.h>
+#include <vnx/addons/HttpClientClient.hxx>
 
 #include <cmath>
 #include <filesystem>
@@ -194,6 +196,7 @@ int main(int argc, char** argv)
 	options["r"] = "fee-ratio";
 	options["l"] = "gas-limit";
 	options["N"] = "limit";
+	options["v"] = "verbose";
 	options["node"] = "address";
 	options["file"] = "path";
 	options["index"] = "0..?";
@@ -232,6 +235,7 @@ int main(int argc, char** argv)
 	double fee_ratio = 1;
 	double gas_limit = 5;
 	double min_amount = 0.95;
+	int verbose = 0;
 	bool pre_accept = false;
 	vnx::read_config("$1", module);
 	vnx::read_config("$2", command);
@@ -252,6 +256,7 @@ int main(int argc, char** argv)
 	vnx::read_config("passwd", passwd);
 	vnx::read_config("memo", memo);
 	vnx::read_config("limit", limit);
+	vnx::read_config("verbose", verbose);
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
@@ -272,6 +277,12 @@ int main(int argc, char** argv)
 	spend_options.memo = memo;
 
 	mmx::NodeClient node("Node");
+	{
+		vnx::Handle<vnx::addons::HttpClient> module = new vnx::addons::HttpClient("HttpClient");
+		module->connection_timeout_ms = 5000;
+		module.start_detached();
+	}
+	vnx::addons::HttpClientClient http("HttpClient");
 
 	mmx::addr_t source;
 	mmx::addr_t target;
@@ -1025,15 +1036,130 @@ int main(int argc, char** argv)
 				config.num_addresses = 0;	// use default
 				wallet.import_wallet(config, key_file, passphrase);
 			}
-			else if(command == "remove") {
+			else if(command == "remove")
+			{
 				if(index < 100) {
 					vnx::log_error() << "Wallet removal not supported for indices below 100!";
 					goto failed;
 				}
 				wallet.remove_account(index, offset);
 			}
+			else if(command == "plotnft")
+			{
+				vnx::read_config("$3", command);
+				try {
+					if(command != "create") {
+						index = wallet.find_wallet_by_addr(contract);
+					}
+				} catch(...) {
+					// ignore
+				}
+				if(command == "join") {
+					std::string url;
+					vnx::read_config("$4", url);
+					if(url.size() && !contract.is_zero()) {
+						const auto info = http.get_json(url + "/pool/info", {}).to_object();
+						std::cout << "[" << url << "]" << std::endl;
+						std::cout << "Name: " << info["name"].to_string_value() << std::endl;
+						std::cout << "Description: " << info["description"].to_string_value() << std::endl;
+						std::cout << "Pool Fee: " << info["fee"].to<double>() * 100 << " %" << std::endl;
+						std::cout << "Minimum difficulty: " << info["min_difficulty"] << std::endl;
+						const auto target = info["pool_target"].to<mmx::addr_t>();
+						if(target.is_zero()) {
+							throw std::logic_error("pool returned invalid target address");
+						}
+						if(wallet.is_locked(index)) {
+							spend_options.passphrase = vnx::input_password("Passphrase: ");
+						}
+						if(pre_accept || accept_prompt()) {
+							if(auto tx = wallet.plotnft_exec(contract, "lock", {vnx::Variant(target.to_string()), vnx::Variant(url)}, spend_options)) {
+								std::cout << "Transaction ID: " << tx->id << std::endl;
+							}
+						}
+					} else {
+						std::cerr << "Usage: mmx wallet plotnft join <pool_url> -x <plot_nft_address>" << std::endl;
+						goto failed;
+					}
+				}
+				else if(command == "lock") {
+					std::string target;
+					vnx::read_config("$4", target);
+					if(target.size() && !contract.is_zero()) {
+						if(wallet.is_locked(index)) {
+							spend_options.passphrase = vnx::input_password("Passphrase: ");
+						}
+						if(auto tx = wallet.plotnft_exec(contract, "lock", {vnx::Variant(target), vnx::Variant()}, spend_options)) {
+							std::cout << "Transaction ID: " << tx->id << std::endl;
+						}
+					} else {
+						std::cerr << "Usage: mmx wallet plotnft lock <target_address> -x <plot_nft_address>" << std::endl;
+						goto failed;
+					}
+				}
+				else if(command == "unlock") {
+					if(contract.is_zero()) {
+						std::cerr << "Usage: mmx wallet plotnft unlock -x <plot_nft_address>" << std::endl;
+						goto failed;
+					}
+					if(wallet.is_locked(index)) {
+						spend_options.passphrase = vnx::input_password("Passphrase: ");
+					}
+					if(auto tx = wallet.plotnft_exec(contract, "unlock", {}, spend_options)) {
+						std::cout << "Transaction ID: " << tx->id << std::endl;
+					}
+				}
+				else if(command == "create") {
+					std::string name;
+					vnx::read_config("$4", name);
+					if(name.size()) {
+						if(wallet.is_locked(index)) {
+							spend_options.passphrase = vnx::input_password("Passphrase: ");
+						}
+						if(auto tx = wallet.plotnft_create(index, name, offset, spend_options)) {
+							std::cout << "Transaction ID: " << tx->id << std::endl;
+						}
+					} else {
+						std::cerr << "Usage: mmx wallet plotnft create <name>" << std::endl;
+						goto failed;
+					}
+				}
+				else if(command == "show") {
+					std::map<mmx::addr_t, std::shared_ptr<const mmx::Contract>> list;
+					if(contract.is_zero()) {
+						list = wallet.get_contracts_owned(index, nullptr, params->plot_nft_binary);
+					} else {
+						if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(node.get_contract(contract))) {
+							if(exec->binary == params->plot_nft_binary) {
+								list[contract] = exec;
+							}
+						}
+					}
+					for(const auto& entry : list) {
+						std::cout << "[" << entry.first.to_string() << "]" << std::endl;
+						if(auto info = node.get_plot_nft_info(entry.first)) {
+							std::cout << "  Name: " << info->name << std::endl;
+							std::cout << "  Locked: " << vnx::to_string(info->is_locked) << std::endl;
+							if(info->is_locked && info->unlock_height) {
+								std::cout << "  Unlock Height: " << *info->unlock_height << std::endl;
+							}
+							std::cout << "  Server URL: " << (info->server_url ? *info->server_url : std::string("N/A")) << std::endl;
+							if(verbose) {
+								std::cout << "  Target Address: " << (info->target ? info->target->to_string() : std::string("N/A")) << std::endl;
+								std::cout << "  Owner: " << info->owner.to_string() << std::endl;
+							}
+						}
+					}
+					if(list.empty()) {
+						std::cout << "No Plot NFTs found!" << std::endl;
+					}
+				}
+				else {
+					std::cerr << "Usage: mmx wallet plotnft [show | join | lock | unlock | create]" << std::endl;
+					goto failed;
+				}
+			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | import | remove | accounts | keys | lock | unlock]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | import | remove | accounts | keys | lock | unlock | plotnft]" << std::endl;
 			}
 		}
 		else if(module == "node")
@@ -1623,7 +1749,7 @@ int main(int argc, char** argv)
 							std::cout << "  Avg. Response: " << double(stats.total_response_time) / stats.total_partials / 1e3 << " sec" << std::endl;
 						}
 						if(stats.last_partial) {
-							std::cout << "  Last Partial: " << vnx::get_date_string(false, stats.last_partial) << std::endl;
+							std::cout << "  Last Partial: " << vnx::get_date_string_ex("%Y-%m-%d %H:%M:%S", false, stats.last_partial) << std::endl;
 						}
 						for(const auto& entry : stats.error_count) {
 							std::cout << "  Error[" << entry.first.to_string_value() << "]: " << entry.second << std::endl;
@@ -1676,8 +1802,65 @@ int main(int argc, char** argv)
 				std::cerr << "Help: mmx " << module << " [info | get | add | remove | reload]" << std::endl;
 			}
 		}
+		else if(module == "pool")
+		{
+			std::string node_url = ":11333";
+			vnx::read_config("node", node_url);
+
+			vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+			proxy->forward_list = {"Farmer", "Node"};
+			proxy.start_detached();
+			{
+				vnx::ProxyClient client(proxy.get_name());
+				client.login(user, passwd);
+			}
+			try {
+				params = node.get_params();
+			} catch(...) {
+				// ignore
+			}
+			mmx::FarmerClient farmer("Farmer");
+
+			const auto info = farmer.get_farm_info();
+			if(!info || !info->reward_addr) {
+				std::cerr << "No reward address to query!" << std::endl;
+				goto failed;
+			}
+
+			if(command == "info")
+			{
+				std::set<std::string> urls;
+				for(const auto& entry : info->pool_info) {
+					const auto& pool = entry.second;
+					if(auto url = pool.server_url) {
+						urls.insert(*url);
+					}
+				}
+				for(const auto& url : urls) {
+					std::cout << "Pool [" << url << "]" << std::endl;
+					try {
+						vnx::addons::http_request_options_t opt;
+						opt.query["id"] = info->reward_addr->to_string();
+						const auto data = http.get_json(url + "/account/info", opt).to_object();
+						std::cout << "  Balance: " << data["balance"].to<double>() << " MMX" << std::endl;
+						std::cout << "  Total Paid: " << data["total_paid"].to<double>() << " MMX" << std::endl;
+						std::cout << "  Difficulty: " << data["difficulty"].to<uint64_t>() << std::endl;
+						std::cout << "  Pool Share: " << data["pool_share"].to<float>() * 100 << " %" << std::endl;
+						std::cout << "  Partial Rate: " << data["partial_rate"].to<float>() << " per hour" << std::endl;
+						std::cout << "  Blocks Found: " << data["blocks_found"].to<int>() << std::endl;
+						std::cout << "  Estimated Space: " << data["estimated_space"].to<float>() << " TB" << std::endl;
+					}
+					catch(const std::exception& ex) {
+						std::cout << "Failed with: " << ex.what() << std::endl;
+					}
+				}
+			}
+			else {
+				std::cerr << "Help: mmx " << module << " [info]" << std::endl;
+			}
+		}
 		else {
-			std::cerr << "Help: mmx [node | wallet | farm | harvester]" << std::endl;
+			std::cerr << "Help: mmx [node | wallet | farm | pool | harvester]" << std::endl;
 		}
 	}
 	catch(const std::exception& ex) {

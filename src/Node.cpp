@@ -1142,7 +1142,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 					offer_ask_map.insert(std::make_tuple(exec->init_args[2].to<addr_t>(), block->height, ticket), tx->id);
 				}
 			}
-			if(exec->binary == params->plot_binary) {
+			if(exec->binary == params->plot_binary || exec->binary == params->plot_nft_binary) {
 				if(exec->init_args.size() >= 1) {
 					owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
 				}

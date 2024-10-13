@@ -77,6 +77,12 @@ protected:
 	std::shared_ptr<const Transaction> swap_rem_liquid(
 			const uint32_t& index, const addr_t& address, const std::array<uint128, 2>& amount, const spend_options_t& options) const override;
 
+	std::shared_ptr<const Transaction> plotnft_exec(
+			const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> plotnft_create(
+			const uint32_t& index, const std::string& name, const vnx::optional<uint32_t>& owner, const spend_options_t& options) const override;
+
 	std::shared_ptr<const Transaction> complete(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
 
@@ -120,10 +126,10 @@ protected:
 	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const override;
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(
-			const uint32_t& index, const vnx::optional<std::string>& type_name) const override;
+			const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<hash_t>& type_hash) const override;
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(
-			const uint32_t& index, const vnx::optional<std::string>& type_name) const override;
+			const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<hash_t>& type_hash) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots(const uint32_t& index) const override;
 
@@ -134,6 +140,8 @@ protected:
 	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 
 	std::vector<addr_t> get_all_addresses(const int32_t& index) const override;
+
+	int32_t find_wallet_by_addr(const addr_t& address) const override;
 
 	std::pair<skey_t, pubkey_t> get_farmer_keys(const uint32_t& index) const override;
 
@@ -181,6 +189,8 @@ protected:
 
 private:
 	std::shared_ptr<ECDSA_Wallet> get_wallet(const uint32_t& index) const;
+
+	addr_t get_plotnft_owner(const addr_t& address) const;
 
 private:
 	std::shared_ptr<NodeClient> node;

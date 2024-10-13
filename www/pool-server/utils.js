@@ -11,7 +11,8 @@ async function get_synced_height()
 function calc_eff_space(points_rate)
 {
     // points_rate = points per block (height)
-    return points_rate * config.space_diff_constant * 2.467;
+    return points_rate * config.space_diff_constant * 2.467 * 1e-12;    // [TB]
 }
 
 exports.get_synced_height = get_synced_height;
+exports.calc_eff_space = calc_eff_space;

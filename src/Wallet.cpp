@@ -516,6 +516,28 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 	return tx;
 }
 
+std::shared_ptr<const Transaction> Wallet::plotnft_exec(
+		const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args, const spend_options_t& options_) const
+{
+	const auto owner = get_plotnft_owner(address);
+	const auto index = find_wallet_by_addr(owner);
+	auto options = options_;
+	options.user = owner;
+	return execute(index, address, method, args, nullptr, options);
+}
+
+std::shared_ptr<const Transaction> Wallet::plotnft_create(
+			const uint32_t& index, const std::string& name, const vnx::optional<uint32_t>& owner, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+
+	auto nft = contract::Executable::create();
+	nft->name = name;
+	nft->binary = params->plot_nft_binary;
+	nft->init_args.emplace_back(wallet->get_address(owner ? *owner : 0).to_string());
+	return deploy(index, nft, options);
+}
+
 std::shared_ptr<const Transaction> Wallet::complete(
 		const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const
 {
@@ -771,10 +793,10 @@ std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address)
 }
 
 std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(
-		const uint32_t& index, const vnx::optional<std::string>& type_name) const
+		const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<hash_t>& type_hash) const
 {
 	const auto wallet = get_wallet(index);
-	const auto addresses = node->get_contracts_by(wallet->get_all_addresses());
+	const auto addresses = node->get_contracts_by(wallet->get_all_addresses(), type_hash);
 	const auto contracts = node->get_contracts(addresses);
 
 	std::map<addr_t, std::shared_ptr<const Contract>> result;
@@ -789,10 +811,10 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(
 }
 
 std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(
-		const uint32_t& index, const vnx::optional<std::string>& type_name) const
+		const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<hash_t>& type_hash) const
 {
 	const auto wallet = get_wallet(index);
-	const auto addresses = node->get_contracts_owned_by(wallet->get_all_addresses());
+	const auto addresses = node->get_contracts_owned_by(wallet->get_all_addresses(), type_hash);
 	const auto contracts = node->get_contracts(addresses);
 
 	std::map<addr_t, std::shared_ptr<const Contract>> result;
@@ -843,6 +865,18 @@ std::vector<addr_t> Wallet::get_all_addresses(const int32_t& index) const
 		}
 	}
 	return list;
+}
+
+int32_t Wallet::find_wallet_by_addr(const addr_t& address) const
+{
+	for(size_t i = 0; i < wallets.size(); ++i) {
+		if(auto wallet = wallets[i]) {
+			if(wallet->find_address(address) >= 0) {
+				return i;
+			}
+		}
+	}
+	throw std::logic_error("wallet for address not found: " + address.to_string());
 }
 
 std::pair<skey_t, pubkey_t> Wallet::get_farmer_keys(const uint32_t& index) const
@@ -1136,6 +1170,14 @@ std::vector<std::string> Wallet::get_mnemonic_wordlist(const std::string& lang) 
 		return mnemonic::wordlist_en;
 	}
 	throw std::logic_error("unknown language");
+}
+
+addr_t Wallet::get_plotnft_owner(const addr_t& address) const
+{
+	if(auto info = node->get_plot_nft_info(address)) {
+		return info->owner;
+	}
+	throw std::logic_error("not a plot NFT: " + address.to_string());
 }
 
 void Wallet::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,

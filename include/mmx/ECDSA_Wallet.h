@@ -165,6 +165,15 @@ public:
 		return -1;
 	}
 
+	size_t find_address_throw(const addr_t& address) const
+	{
+		const auto i = find_address(address);
+		if(i >= 0) {
+			return i;
+		}
+		throw std::logic_error("address not found: " + address.to_string());
+	}
+
 	std::pair<skey_t, pubkey_t> get_keypair(const uint32_t index) const
 	{
 		return keypairs.at(index);

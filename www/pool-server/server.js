@@ -29,9 +29,53 @@ function max_age_cache(max_age = 60) {
 }
 
 
+app.get('/pool/info', max_age_cache(60), async (req, res) =>
+{
+    res.json({
+        name: config.pool_name,
+        description: config.pool_description,
+        fee: config.pool_fee,
+        logo_path: config.logo_path,
+        protocol_version: 1,
+        pool_target: config.pool_target,
+        min_difficulty: config.min_difficulty,
+    });
+});
+
+app.get('/account/info', max_age_cache(60), async (req, res, next) =>
+{
+    const id = req.query.id;
+    try {
+        const account = await dbs.Account.findOne({address: id});
+        if(!account) {
+            throw new Error('Account not found');
+        }
+        const blocks_found = await dbs.Block.countDocuments({account: id, valid: true});
+        res.json({
+            balance: account.balance,
+            total_paid: account.total_paid,
+            difficulty: account.difficulty,
+            pool_share: account.pool_share,
+            partial_rate: account.partial_rate,
+            blocks_found: blocks_found,
+            estimated_space: utils.calc_eff_space(account.points_rate),
+        });
+    } catch(e) {
+        next(e);
+    }
+});
+
 app.get('/difficulty', max_age_cache(30), async (req, res) =>
 {
-    res.json({difficulty: 1});
+    const account = await dbs.Account.findOne({address: req.query.id});
+
+    let diff = config.default_difficulty;
+    if(account) {
+        diff = account.difficulty;
+    }
+    diff = Math.max(diff, config.min_difficulty);
+    
+    res.json({difficulty: Math.round(diff)});
 });
 
 app.post('/partial', no_cache, async (req, res, next) =>
@@ -135,9 +179,9 @@ app.post('/partial', no_cache, async (req, res, next) =>
         }
         let difficulty = config.default_difficulty;
 
-        const account = await dbs.Account.findOne({address: partial.account}, {difficulty: 1});
+        const account = await dbs.Account.findOne({address: partial.account});
         if(account) {
-            difficulty = Math.round(account.difficulty);
+            difficulty = account.difficulty;
         }
         if(partial.difficulty < difficulty) {
             is_valid = false;
@@ -159,7 +203,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
 
         if(is_valid) {
             entry.data = partial;
-            entry.points = difficulty;      // need to use current difficulty to avoid cheating
+            entry.points = Math.floor(difficulty);      // need to use current difficulty to avoid cheating
         } else {
             entry.valid = false;
             entry.pending = false;
