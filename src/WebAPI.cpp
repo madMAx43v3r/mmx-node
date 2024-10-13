@@ -360,6 +360,7 @@ public:
 				} else {
 					out["symbol"] = info->symbol;
 					out["value"] = to_value_128(amount, info->decimals);
+					out["decimals"] = info->decimals;
 				}
 			}
 			out["is_native"] = contract == addr_t();
