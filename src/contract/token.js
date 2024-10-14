@@ -22,7 +22,7 @@ function mint_to(address, amount, memo) public
 	} else if(memo == false) {
 		memo = null;
 	}
-	mint(bech32(address), amount, memo);
+	mint(bech32(address), uint(amount), memo);
 }
 
 function transfer(owner_) public
