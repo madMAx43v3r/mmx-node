@@ -20,7 +20,11 @@ function check_owner() const
 
 function is_locked() const public
 {
-	return unlock_height == null || this.height < unlock_height;
+	var res = (unlock_height == null);
+	if(!res) {
+		res = (this.height < unlock_height);
+	}
+	return res;
 }
 
 function mmx_reward_target(farmer) const public
