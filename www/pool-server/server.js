@@ -42,6 +42,26 @@ app.get('/pool/info', max_age_cache(60), async (req, res) =>
     });
 });
 
+app.get('/pool/stats', max_age_cache(60), async (req, res, next) =>
+{
+    try {
+        const pool = await dbs.Pool.findOne({id: "this"});
+        if(!pool) {
+            throw new Error('Not initialized yet');
+        }
+        res.json({
+            estimated_space: utils.calc_eff_space(pool.points_rate),
+            partial_rate: pool.partial_rate,
+            partial_errors: pool.partial_errors,
+            farmers: pool.farmers,
+            last_update: pool.last_update,
+            last_payout: pool.last_payout,
+        });
+    } catch(e) {
+        next(e);
+    }
+});
+
 app.get('/account/info', max_age_cache(60), async (req, res, next) =>
 {
     const id = req.query.id;
