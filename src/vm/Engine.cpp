@@ -1569,7 +1569,17 @@ void Engine::exec(const instr_t& instr)
 		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
-		const auto cmp = compare(read_fail(lhs), read_fail(rhs));
+		const auto& L = read_fail(lhs);
+		const auto& R = read_fail(rhs);
+		switch(instr.code) {
+			case OP_CMP_EQ:
+			case OP_CMP_NEQ: break;
+			default:
+				if(L.type != R.type) {
+					throw std::logic_error("compare type mismatch: " + std::to_string(int(L.type)) + " != " + std::to_string(int(R.type)));
+				}
+		}
+		const auto cmp = compare(L, R);
 		bool res = false;
 		switch(instr.code) {
 			case OP_CMP_EQ: res = (cmp == 0); break;
