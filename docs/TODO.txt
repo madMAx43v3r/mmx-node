@@ -1,5 +1,4 @@
 Mainnet
-- Pooling protocol
 - Multisig
 - Test remote calls again
 - unsafe_add() / unsafe_sub() / unsafe_mul()
@@ -21,7 +20,6 @@ Mainnet
 - Node + Wallet get_balances() limit
 - mmx_test framework
 - 1000 commas for balances
-- Timestamp delta adjustment (limited to +- 1 sec per block)
 - Binary source_info
 - Explorer search by block hash
 - Check Engine::write_entry() load on write
