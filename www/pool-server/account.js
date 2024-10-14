@@ -334,6 +334,9 @@ async function check_payout()
 
                     console.log("Payout failed:", "height", payout.height, "txid", payout.txid);
                 } else {
+                    for(const entry of payout.amounts) {
+                        await dbs.Account.updateOne({address: entry[0]}, {$inc: {total_paid: entry[1]}}, opt);
+                    }
                     console.log("Payout confirmed:", "height", payout.height, "total_amount", payout.total_amount,
                         "count", payout.count, "tx_fee", payout.tx_fee, "txid", payout.txid);
                 }
