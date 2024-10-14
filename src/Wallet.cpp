@@ -429,7 +429,7 @@ std::shared_ptr<const Transaction> Wallet::swap_trade(
 	std::vector<vnx::Variant> args;
 	args.emplace_back(token);
 	args.emplace_back(wallet->get_address(0).to_string());
-	args.emplace_back(min_trade);
+	args.emplace_back(min_trade ? min_trade->to_var_arg() : vnx::Variant());
 	args.emplace_back(num_iter);
 
 	auto options_ = options;
@@ -495,7 +495,7 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 			auto op = operation::Execute::create();
 			op->address = address;
 			op->method = "rem_liquid";
-			op->args = {vnx::Variant(i), vnx::Variant(amount[i]), vnx::Variant(false)};
+			op->args = {vnx::Variant(i), amount[i].to_var_arg(), vnx::Variant(false)};
 			op->user = wallet->get_address(0);
 			tx->execute.push_back(op);
 		}

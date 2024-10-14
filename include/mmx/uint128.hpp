@@ -50,6 +50,13 @@ public:
 		return "0x" + str(16);
 	}
 
+	vnx::Variant to_var_arg() const {
+		if((*this) >> 64) {
+			return vnx::Variant(to_hex_string());
+		}
+		return vnx::Variant(uint64_t(*this));
+	}
+
 	double to_double() const {
 		return double(upper()) * pow(2, 64) + double(lower());
 	}

@@ -578,12 +578,6 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Invalid amount: " << amount << " (-a | --amount)";
 					goto failed;
 				}
-				vnx::Variant amount;
-				if(mojo >> 64) {
-					amount = mojo.to_hex_string();
-				} else {
-					amount = uint64_t(mojo);
-				}
 				if(target == mmx::addr_t()) {
 					vnx::log_error() << "Missing destination address argument: -t | --target";
 					goto failed;
@@ -595,7 +589,7 @@ int main(int argc, char** argv)
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
 				const auto tx = wallet.execute(index, contract, "mint_to",
-						{vnx::Variant(target.to_string()), amount, vnx::Variant(memo)}, nullptr, spend_options);
+						{vnx::Variant(target.to_string()), mojo.to_var_arg(), vnx::Variant(memo)}, nullptr, spend_options);
 				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
