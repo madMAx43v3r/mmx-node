@@ -1848,7 +1848,7 @@ int main(int argc, char** argv)
 						std::cout << "  Pool Share: " << data["pool_share"].to<float>() * 100 << " %" << std::endl;
 						std::cout << "  Partial Rate: " << data["partial_rate"].to<float>() << " per hour" << std::endl;
 						std::cout << "  Blocks Found: " << data["blocks_found"].to<int>() << std::endl;
-						std::cout << "  Estimated Space: " << data["estimated_space"].to<float>() << " TB" << std::endl;
+						std::cout << "  Estimated Space: " << data["estimated_space"].to<float>() << " TBe" << std::endl;
 					}
 					catch(const std::exception& ex) {
 						std::cout << "Failed with: " << ex.what() << std::endl;
