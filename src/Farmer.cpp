@@ -78,14 +78,16 @@ uint64_t Farmer::get_partial_diff(const addr_t& plot_nft) const
 			return stats.partial_diff;
 		}
 	}
-	return 1;
+	return 0;
 }
 
 std::map<addr_t, uint64_t> Farmer::get_partial_diffs(const std::vector<addr_t>& plot_nfts) const
 {
 	std::map<addr_t, uint64_t> out;
 	for(const auto& addr : plot_nfts) {
-		out[addr] = get_partial_diff(addr);
+		if(auto diff = get_partial_diff(addr)) {
+			out[addr] = diff;
+		}
 	}
 	return out;
 }

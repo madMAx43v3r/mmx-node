@@ -130,7 +130,7 @@ void Harvester::check_queue()
 
 void Harvester::handle(std::shared_ptr<const Challenge> value)
 {
-	if(value->max_delay < 2) {
+	if(!is_ready || value->max_delay < 2) {
 		return;
 	}
 	if(!already_checked.insert(value->challenge).second) {
@@ -643,8 +643,8 @@ void Harvester::reload()
 		}
 	}
 	for(const auto& entry : plot_map) {
-		if(auto contract = entry.second->get_contract()) {
-			plot_contract_set[*contract]++;
+		if(const auto& addr = entry.second->get_contract()) {
+			plot_contract_set[*addr]++;
 		}
 	}
 
@@ -653,7 +653,13 @@ void Harvester::reload()
 
 	// check challenges again for new plots
 	if(plots.size()) {
+		is_ready = false;
 		already_checked.clear();
+	}
+	if(!is_ready) {
+		set_timeout_millis(3000, [this]() {
+			is_ready = true;
+		});
 	}
 	log(INFO) << "[" << my_name << "] Loaded " << plot_map.size() << " plots, "
 			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe, "
@@ -742,6 +748,7 @@ void Harvester::update_nfts()
 				}
 				if(--(*job) == 0) {
 					update();
+					set_timeout_millis(2000, std::bind(&Harvester::update, this));
 				}
 			},
 			[this, address](const std::exception& ex) {
