@@ -1628,7 +1628,7 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x219bbb3e5dcd19eaull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_swaps>(_method);
 			auto _return_value = ::mmx::Node_get_swaps_return::create();
-			_return_value->_ret_0 = get_swaps(_args->since, _args->token, _args->currency);
+			_return_value->_ret_0 = get_swaps(_args->since, _args->token, _args->currency, _args->limit);
 			return _return_value;
 		}
 		case 0xc4fb44ec3d1a8bb7ull: {

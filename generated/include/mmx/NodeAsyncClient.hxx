@@ -294,7 +294,7 @@ public:
 			const std::function<void(const std::vector<::mmx::trade_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::trade_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_swaps(const uint32_t& since = 0, const vnx::optional<::mmx::addr_t>& token = nullptr, const vnx::optional<::mmx::addr_t>& currency = nullptr, 
+	uint64_t get_swaps(const uint32_t& since = 0, const vnx::optional<::mmx::addr_t>& token = nullptr, const vnx::optional<::mmx::addr_t>& currency = nullptr, const int32_t& limit = 100, 
 			const std::function<void(const std::vector<::mmx::swap_info_t>&)>& _callback = std::function<void(const std::vector<::mmx::swap_info_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	

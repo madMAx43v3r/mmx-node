@@ -17,6 +17,7 @@ public:
 	uint32_t since = 0;
 	vnx::optional<::mmx::addr_t> token;
 	vnx::optional<::mmx::addr_t> currency;
+	int32_t limit = 100;
 	
 	typedef ::vnx::Value Super;
 	
@@ -60,11 +61,12 @@ public:
 
 template<typename T>
 void Node_get_swaps::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_swaps>(3);
+	_visitor.template type_begin<Node_get_swaps>(4);
 	_visitor.type_field("since", 0); _visitor.accept(since);
 	_visitor.type_field("token", 1); _visitor.accept(token);
 	_visitor.type_field("currency", 2); _visitor.accept(currency);
-	_visitor.template type_end<Node_get_swaps>(3);
+	_visitor.type_field("limit", 3); _visitor.accept(limit);
+	_visitor.template type_end<Node_get_swaps>(4);
 }
 
 

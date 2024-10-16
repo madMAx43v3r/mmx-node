@@ -1072,11 +1072,12 @@ uint64_t NodeAsyncClient::get_trade_history_for(const vnx::optional<::mmx::addr_
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency, const std::function<void(const std::vector<::mmx::swap_info_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency, const int32_t& limit, const std::function<void(const std::vector<::mmx::swap_info_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_swaps::create();
 	_method->since = since;
 	_method->token = token;
 	_method->currency = currency;
+	_method->limit = limit;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

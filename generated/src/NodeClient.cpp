@@ -1071,11 +1071,12 @@ std::vector<::mmx::trade_entry_t> NodeClient::get_trade_history_for(const vnx::o
 	}
 }
 
-std::vector<::mmx::swap_info_t> NodeClient::get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency) {
+std::vector<::mmx::swap_info_t> NodeClient::get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_swaps::create();
 	_method->since = since;
 	_method->token = token;
 	_method->currency = currency;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_swaps_return>(_return_value)) {
 		return _result->_ret_0;
