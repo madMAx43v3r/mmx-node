@@ -20,6 +20,7 @@ Note: Objects are maps with string keys.
 - Integer overflows / underflows will fail execution (except for `unsafe_*(...)`)
 - Reading un-initialized variables will fail execution (instead of returning `undefined`)
 - Reading non-existent map values will return `null` (instead of `undefined`)
+- Out of bounds array access will return `null` by default (instead of `undefined`)
 - `==` comparison is strict (ie. same as `===` in JS)
 - `+` only supports integer addition (need to use `concat()` for strings)
 - `$` is not supported in variable / function names

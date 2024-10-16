@@ -610,9 +610,9 @@ __nop();
 {
 	var test = [1, 2, 3];
 	pop(test);
-	push(test, 3);
-	if(test[2] != 3) {
-		fail("test[2] != 3");
+	push(test, 4);
+	if(test[2] != 4) {
+		fail("test[2] != 4");
 	}
 }
 {
@@ -701,6 +701,16 @@ __nop();
 	const A = {};
 	const B = {ptr: A};
 	A.ptr = B;
+}
+{
+	var array = [1, 2, 3];
+	pop(array);
+	if(array[2] != null) {
+		fail("array[2] != null");
+	}
+	if(array[1337] != null) {
+		fail("array[1337] != null");
+	}
 }
 
 
