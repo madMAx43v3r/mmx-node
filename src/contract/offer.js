@@ -1,5 +1,6 @@
 
 const FRACT_BITS = 64;
+const UPDATE_INTERVAL = 1080;
 
 var owner;
 var partner;			// optional
@@ -59,13 +60,18 @@ function recover(amount, currency) public
 {
 	check_owner();
 	
-	send(owner, uint(amount), bech32(currency));
+	send(owner, uint(amount), bech32(currency), "mmx_offer_recover");
 }
 
 function set_price(new_price) public
 {
 	check_owner();
 	
+	if(last_update != null) {
+		if(this.height - last_update < UPDATE_INTERVAL) {
+			fail("update too soon", 7);
+		}
+	}
 	new_price = uint(new_price);
 	
 	if(new_price != inv_price) {
