@@ -184,7 +184,8 @@ protected:
 	std::vector<trade_entry_t> get_trade_history_for(
 			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since = 0) const override;
 
-	std::vector<swap_info_t> get_swaps(const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency) const override;
+	std::vector<swap_info_t> get_swaps(
+			const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency, const int32_t& limit) const override;
 
 	swap_info_t get_swap_info(const addr_t& address) const override;
 
@@ -489,6 +490,7 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
 
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> swap_index;			// TODO [[hash(bid, ask), height, counter] => contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> offer_index;			// [[hash(bid, ask), height, counter] => contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, bool> trade_index;				// [hash(bid, ask), height, counter]
 	uint_uint_table<uint32_t, uint32_t, trade_log_t> trade_log;						// [[height, counter] => info]

@@ -1082,6 +1082,16 @@ void require(std::shared_ptr<const vnx::Session> session, const T& perm)
 	}
 }
 
+template<typename T>
+T get_param(const std::map<std::string, std::string>& map, const std::string& name, const T& def = T())
+{
+	auto iter = map.find(name);
+	if(iter != map.end()) {
+		return vnx::from_string_value<T>(iter->second);
+	}
+	return def;
+}
+
 void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
@@ -1385,18 +1395,20 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/swap/list") {
-		const auto iter_token = query.find("token");
-		const auto iter_currency = query.find("currency");
-		const auto iter_limit = query.find("limit");
-		const auto iter_offset = query.find("offset");
-		const auto token = iter_token != query.end() ? vnx::from_string_value<vnx::optional<addr_t>>(iter_token->second) : vnx::optional<addr_t>();
-		const auto currency = iter_currency != query.end() ? vnx::from_string_value<vnx::optional<addr_t>>(iter_currency->second) : vnx::optional<addr_t>();
-		const size_t limit = iter_limit != query.end() ? vnx::from_string_value<int64_t>(iter_limit->second) : 100;
-		const size_t offset = iter_offset != query.end() ? vnx::from_string_value<int64_t>(iter_offset->second) : 0;
-		if(is_public && limit > 100) {
-			throw std::logic_error("limit > 100");
+		const auto token = get_param<vnx::optional<addr_t>>(query, "token");
+		const auto currency = get_param<vnx::optional<addr_t>>(query, "currency");
+		const auto since = get_param<uint32_t>(query, "since");
+		const uint64_t limit = get_param<int64_t>(query, "limit", 100);
+		const uint64_t offset = get_param<int64_t>(query, "offset");
+		if(is_public) {
+			if(limit > 100) {
+				throw std::logic_error("limit > 100");
+			}
+			if(offset + limit > 100 || (limit >> 32) || (offset >> 32)) {
+				throw std::logic_error("offset + limit > 100");
+			}
 		}
-		node->get_swaps(0, token, currency,
+		node->get_swaps(since, token, currency, offset + limit,
 			[this, request_id, limit, offset](const std::vector<swap_info_t>& list) {
 				const auto result = get_page(list, limit, offset);
 				std::unordered_set<addr_t> token_set;

@@ -140,6 +140,7 @@ void Node::main()
 		db->open_async(deploy_map, database_path + "deploy_map");
 		db->open_async(vplot_map, database_path + "vplot_map");
 		db->open_async(owner_map, database_path + "owner_map");
+		db->open_async(swap_index, database_path + "swap_index");
 		db->open_async(offer_index, database_path + "offer_index");
 		db->open_async(trade_log, database_path + "trade_log");
 		db->open_async(trade_index, database_path + "trade_index");
@@ -1140,6 +1141,13 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				offer_index.insert(std::make_tuple(hash_t(ask_currency + "ANY"), block->height, ticket), tx->id);
 				offer_index.insert(std::make_tuple(hash_t("ANY" + bid_currency), block->height, ticket), tx->id);
 				offer_index.insert(std::make_tuple(hash_t(ask_currency + bid_currency), block->height, ticket), tx->id);
+			}
+			if(exec->binary == params->swap_binary) {
+				const auto token = exec->get_arg(0).to<addr_t>();
+				const auto currency = exec->get_arg(1).to<addr_t>();
+				swap_index.insert(std::make_tuple(hash_t(token + "ANY"), block->height, ticket), tx->id);
+				swap_index.insert(std::make_tuple(hash_t("ANY" + currency), block->height, ticket), tx->id);
+				swap_index.insert(std::make_tuple(hash_t(token + currency), block->height, ticket), tx->id);
 			}
 			if(exec->binary == params->plot_binary
 				|| exec->binary == params->plot_nft_binary

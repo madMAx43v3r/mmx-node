@@ -253,7 +253,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<trade_entry_t> get_trade_history_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<swap_info_t> get_swaps(uint since, optional<addr_t> token, optional<addr_t> currency) const;
+	vector<swap_info_t> get_swaps(uint since, optional<addr_t> token, optional<addr_t> currency, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
 	swap_info_t get_swap_info(addr_t address) const;

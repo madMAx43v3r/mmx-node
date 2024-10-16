@@ -1097,17 +1097,27 @@ std::vector<trade_entry_t> Node::get_trade_history_for(
 	return result;
 }
 
-std::vector<swap_info_t> Node::get_swaps(const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency) const
+std::vector<swap_info_t> Node::get_swaps(
+		const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency, const int32_t& limit) const
 {
-	std::vector<addr_t> entries;
-	contract_log.find_range(std::make_tuple(params->swap_binary, since, 0), std::make_tuple(params->swap_binary, -1, -1), entries);
+	std::vector<addr_t> list;
+	if(!token && !currency) {
+		contract_log.find_range(std::make_tuple(params->swap_binary, since, 0), std::make_tuple(params->swap_binary, -1, -1), list, limit);
+	} else {
+		hash_t key;
+		if(token && currency) {
+			key = hash_t(*token + *currency);
+		} else if(token) {
+			key = hash_t(*token + "ANY");
+		} else if(currency) {
+			key = hash_t("ANY" + *currency);
+		}
+		swap_index.find_range(std::make_tuple(key, since, 0), std::make_tuple(key, -1, -1), list, limit);
+	}
 
 	std::vector<swap_info_t> result;
-	for(const auto& address : entries) {
-		const auto info = get_swap_info(address);
-		if((!token || info.tokens[0] == *token) && (!currency || info.tokens[1] == *currency)) {
-			result.push_back(info);
-		}
+	for(const auto& address : list) {
+		result.push_back(get_swap_info(address));
 	}
 	if(token) {
 		std::sort(result.begin(), result.end(), [](const swap_info_t& L, const swap_info_t& R) -> bool {

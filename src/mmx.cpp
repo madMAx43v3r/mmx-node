@@ -1619,15 +1619,17 @@ int main(int argc, char** argv)
 			else if(command == "swaps")
 			{
 				vnx::optional<mmx::addr_t> token;
+				vnx::optional<mmx::addr_t> currency;
 				vnx::read_config("$3", token);
+				vnx::read_config("$4", currency);
 
-				for(const auto& data : node.get_swaps(0, token))
+				for(const auto& data : node.get_swaps(offset, token, currency, limit))
 				{
 					std::cout << "[" << data.address << "] ";
 					std::array<int, 2> decimals;
 					std::array<std::string, 2> symbols;
 					for(int i = 0; i < 2; ++i) {
-						if(auto token = get_token(node, data.tokens[i])) {
+						if(auto token = get_token(node, data.tokens[i], false)) {
 							decimals[i] = token->decimals;
 							symbols[i] = token->symbol;
 							std::cout << mmx::to_value(data.balance[i], token->decimals) << " " << token->symbol << (i == 0 ? " / " : "");
