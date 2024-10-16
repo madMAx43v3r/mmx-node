@@ -22,6 +22,4 @@ Mainnet
 - 1000 commas for balances
 - Binary source_info
 - Explorer search by block hash
-- Check Engine::write_entry() load on write
-- Node offer_index + api refactor
 - Compiler auto-convert to bool for if()
