@@ -31,3 +31,10 @@ function transfer(owner_) public
 	
 	owner = owner_;
 }
+
+function recover(amount, currency) public
+{
+	check_owner();
+	
+	send(owner, uint(amount), bech32(currency), "mmx_token_recover");
+}
