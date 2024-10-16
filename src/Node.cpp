@@ -140,8 +140,7 @@ void Node::main()
 		db->open_async(deploy_map, database_path + "deploy_map");
 		db->open_async(vplot_map, database_path + "vplot_map");
 		db->open_async(owner_map, database_path + "owner_map");
-		db->open_async(offer_bid_map, database_path + "offer_bid_map");
-		db->open_async(offer_ask_map, database_path + "offer_ask_map");
+		db->open_async(offer_index, database_path + "offer_index");
 		db->open_async(trade_log, database_path + "trade_log");
 		db->open_async(trade_index, database_path + "trade_index");
 		db->open_async(swap_liquid_map, database_path + "swap_liquid_map");
@@ -1136,16 +1135,17 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
 			type_hash = exec->binary;
 			if(exec->binary == params->offer_binary) {
-				if(exec->init_args.size() >= 3) {
-					owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
-					offer_bid_map.insert(std::make_tuple(exec->init_args[1].to<addr_t>(), block->height, ticket), tx->id);
-					offer_ask_map.insert(std::make_tuple(exec->init_args[2].to<addr_t>(), block->height, ticket), tx->id);
-				}
+				const auto bid_currency = exec->get_arg(1).to<addr_t>();
+				const auto ask_currency = exec->get_arg(2).to<addr_t>();
+				offer_index.insert(std::make_tuple(hash_t(ask_currency + "ANY"), block->height, ticket), tx->id);
+				offer_index.insert(std::make_tuple(hash_t("ANY" + bid_currency), block->height, ticket), tx->id);
+				offer_index.insert(std::make_tuple(hash_t(ask_currency + bid_currency), block->height, ticket), tx->id);
 			}
-			if(exec->binary == params->plot_binary || exec->binary == params->plot_nft_binary) {
-				if(exec->init_args.size() >= 1) {
-					owner_map.insert(std::make_tuple(exec->init_args[0].to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
-				}
+			if(exec->binary == params->plot_binary
+				|| exec->binary == params->plot_nft_binary
+				|| exec->binary == params->offer_binary)
+			{
+				owner_map.insert(std::make_tuple(exec->get_arg(0).to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
 			}
 			contract_log.insert(std::make_tuple(exec->binary, block->height, ticket), tx->id);
 		}

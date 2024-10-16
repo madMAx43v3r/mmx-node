@@ -964,24 +964,6 @@ std::vector<offer_data_t> Node::fetch_offers(const std::vector<addr_t>& addresse
 	return out;
 }
 
-std::vector<offer_data_t> Node::fetch_offers_for(	const std::vector<addr_t>& addresses,
-													const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-													const bool state, const bool filter) const
-{
-	std::vector<offer_data_t> out;
-	for(const auto& address : addresses) {
-		if(!state || get_offer_state(address) == 1) {
-			const auto data = get_offer(address);
-			if((!bid || data.bid_currency == *bid) && (!ask || data.ask_currency == *ask)) {
-				if(!filter || !data.is_scam()) {
-					out.push_back(data);
-				}
-			}
-		}
-	}
-	return out;
-}
-
 std::vector<offer_data_t> Node::get_offers(const uint32_t& since, const vnx::bool_t& state) const
 {
 	std::vector<addr_t> entries;
@@ -1022,76 +1004,38 @@ std::vector<offer_data_t> Node::get_recent_offers_for(
 		const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint128& min_bid, const int32_t& limit, const vnx::bool_t& state) const
 {
 	std::vector<offer_data_t> result;
-	std::unordered_set<addr_t> bid_set;
-	std::unordered_set<addr_t> ask_set;
-	std::unordered_set<addr_t> offer_set;
-	std::tuple<addr_t, uint32_t, uint32_t> bid_history_end(bid ? *bid : addr_t(), -1, -1);
-	std::tuple<addr_t, uint32_t, uint32_t> ask_history_end(ask ? *ask : addr_t(), -1, -1);
-
-	while(result.size() < size_t(limit)) {
-		std::vector<std::pair<std::tuple<addr_t, uint32_t, uint32_t>, addr_t>> bid_list;
-		std::vector<std::pair<std::tuple<addr_t, uint32_t, uint32_t>, addr_t>> ask_list;
-		if(bid) {
-			if(offer_bid_map.find_last_range(std::make_tuple(*bid, 0, 0), bid_history_end, bid_list, std::max<size_t>(limit, 100))) {
-				bid_history_end = bid_list.back().first;
-			}
-		}
-		if(ask) {
-			if(offer_ask_map.find_last_range(std::make_tuple(*ask, 0, 0), ask_history_end, ask_list, std::max<size_t>(limit, 100))) {
-				ask_history_end = ask_list.back().first;
-			}
-		}
-		std::vector<offer_data_t> tmp;
+	if(!bid && !ask) {
+		result = get_recent_offers(limit, state);
+	} else {
+		hash_t key;
 		if(bid && ask) {
-			std::vector<addr_t> list;
-			for(const auto& entry : bid_list) {
-				bid_set.insert(entry.second);
-			}
-			for(const auto& entry : ask_list) {
-				ask_set.insert(entry.second);
-			}
-			for(const auto& address : bid_set) {
-				if(ask_set.count(address)) {
-					list.push_back(address);
-				}
-			}
-			for(const auto& address : list) {
-				bid_set.erase(address);
-				ask_set.erase(address);
-			}
-			tmp = fetch_offers_for(list, bid, ask, state, true);
+			key = hash_t(*ask + *bid);
+		} else if(bid) {
+			key = hash_t("ANY" + *bid);
+		} else if(ask) {
+			key = hash_t(*ask + "ANY");
 		}
-		else if(bid) {
-			std::vector<addr_t> list;
-			for(const auto& entry : bid_list) {
-				list.push_back(entry.second);
+		std::tuple<hash_t, uint32_t, uint32_t> search_end(key, -1, -1);
+		while(result.size() < size_t(limit)) {
+			std::vector<std::pair<std::tuple<hash_t, uint32_t, uint32_t>, addr_t>> list;
+			if(!offer_index.find_last_range(std::make_tuple(key, 0, 0), search_end, list, limit)) {
+				break;
 			}
-			tmp = fetch_offers_for(list, bid, ask, state, true);
-		}
-		else if(ask) {
-			std::vector<addr_t> list;
-			for(const auto& entry : ask_list) {
-				list.push_back(entry.second);
+			std::vector<addr_t> addresses;
+			for(const auto& entry : list) {
+				addresses.push_back(entry.second);
 			}
-			tmp = fetch_offers_for(list, bid, ask, state, true);
-		}
-		else {
-			tmp = get_recent_offers(limit, state);
-		}
-		for(const auto& entry : tmp) {
-			if(entry.bid_balance >= min_bid) {
-				if(offer_set.insert(entry.address).second) {
+			for(const auto& entry : fetch_offers(addresses, state)) {
+				if(entry.bid_balance >= min_bid) {
 					result.push_back(entry);
 				}
 			}
-		}
-		if(bid_list.empty() && ask_list.empty()) {
-			break;
+			search_end = list.back().first;
 		}
 	}
 	std::sort(result.begin(), result.end(),
 		[](const offer_data_t& L, const offer_data_t& R) -> bool {
-			return L.height > R.height;
+			return std::make_pair(L.height, L.address) > std::make_pair(R.height, R.address);
 		});
 	result.resize(std::min(result.size(), size_t(limit)));
 	return result;

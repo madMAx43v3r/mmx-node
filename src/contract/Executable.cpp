@@ -74,6 +74,14 @@ vnx::Variant Executable::read_field(const std::string& name) const
 	return Super::read_field(name);
 }
 
+vnx::Variant Executable::get_arg(const uint32_t& index) const
+{
+	if(index < init_args.size()) {
+		return init_args[index];
+	}
+	return vnx::Variant();
+}
+
 
 } // contract
 } // mmx

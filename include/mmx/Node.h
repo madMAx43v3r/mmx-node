@@ -335,10 +335,6 @@ private:
 
 	trade_entry_t make_trade_entry(const uint32_t& height, const trade_log_t& log) const;
 
-	std::vector<offer_data_t> fetch_offers_for(
-			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-			const bool state = false, const bool filter = false) const;
-
 	std::tuple<vm::varptr_t, uint64_t, uint64_t> read_storage_entry_var(
 			const addr_t& contract, const std::string& name, const vm::varptr_t& key, const uint32_t& height = -1) const;
 
@@ -493,9 +489,7 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
 
-	// TODO: offer_index
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> offer_index;			// [[hash(bid, ask), height, counter] => contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, bool> trade_index;				// [hash(bid, ask), height, counter]
 	uint_uint_table<uint32_t, uint32_t, trade_log_t> trade_log;						// [[height, counter] => info]
 
