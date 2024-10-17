@@ -150,6 +150,7 @@ if(this.balance[bech32()] != 0) {
 		fail("object _key_");
 	}
 }
+
 if(1337 / 16 != 83) {
 	fail("1337 / 16 != 83");
 }
@@ -161,6 +162,43 @@ if(1337133713371337 / 1024 != 1305794641964) {
 }
 if(1337133713371337 % 1024 != 201) {
 	fail("1337133713371337 % 1024 != 201");
+}
+
+if(false) {
+	fail("if(false)");
+}
+if(!true) {
+	fail("if(!true)");
+}
+if(1 == 2) {
+	fail("if(1 == 2)");
+}
+if(1 != 1) {
+	fail("if(1 != 1)");
+}
+if(2 < 1) {
+	fail("if(2 < 1)");
+}
+if(1 > 2) {
+	fail("if(1 > 2)");
+}
+if(2 <= 1) {
+	fail("if(2 <= 1)");
+}
+if(1 >= 2) {
+	fail("if(1 >= 2)");
+}
+{
+	var cond = (1 > 2);
+	if(cond) {
+		fail("if(cond)");
+	}
+}
+{
+	const cond = (1 > 2);
+	if(cond) {
+		fail("if(cond)");
+	}
 }
 
 

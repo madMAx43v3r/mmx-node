@@ -324,6 +324,7 @@ protected:
 	struct variable_t {
 		bool is_const = false;
 		bool is_static = false;
+		bool is_bool = false;
 		uint32_t address = 0;
 		std::string name;
 		varptr_t value;
@@ -351,13 +352,16 @@ protected:
 		}
 		void add_variable(const variable_t& var) {
 			if(var.name.size()) {
-				var_map[var.name] = var_list.size();
+				if(!var_map.emplace(var.name, var_list.size()).second) {
+					throw std::logic_error("duplicate variable name: " + var.name);
+				}
 			}
 			var_list.push_back(var);
 		}
 	};
 
 	struct vref_t {
+		bool is_bool = false;
 		bool is_const = false;
 		uint32_t address = -1;
 		vnx::optional<uint32_t> key;
@@ -392,6 +396,8 @@ protected:
 	vref_t copy(const vref_t& dst, const vref_t& src, const bool validate = true);
 
 	uint32_t get(const vref_t& src, const uint32_t* dst = nullptr);
+
+	uint32_t get_bool(const vref_t& src);
 
 	void push_scope();
 
@@ -1036,17 +1042,15 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		}
 		debug() << " (0x" << std::hex << var.address << std::dec << ")" << std::endl;
 
-		if(scope.var_map.count(var.name)) {
-			throw std::logic_error("duplicate variable name: " + var.name);
+		if(is_expression) {
+			const auto src = recurse(list.back());
+			var.is_bool = (var.is_const && src.is_bool);
+			copy(var.address, src);
+		} else if(!is_constant) {
+			copy(var.address, 0);
 		}
 		scope.add_variable(var);
 
-		if(is_expression) {
-			copy(var.address, recurse(list.back()));
-		}
-		if(!is_constant && !is_expression) {
-			copy(var.address, 0);
-		}
 		out.address = var.address;
 	}
 	else if(name == lang::if_ex::name)
@@ -1054,7 +1058,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		if(list.size() < 5) {
 			throw std::logic_error("invalid if()");
 		}
-		const auto cond = get(recurse(list[2]));
+		const auto cond = get_bool(recurse(list[2]));
 		const auto jump = code.size();
 		code.emplace_back(OP_JUMPN, 0, -1, cond);
 		recurse(list[4]);
@@ -1082,7 +1086,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			throw std::logic_error("invalid while()");
 		}
 		const auto begin = code.size();
-		const auto cond = get(recurse(list[2]));
+		const auto cond = get_bool(recurse(list[2]));
 		const auto jump = code.size();
 		code.emplace_back(OP_JUMPN, 0, -1, cond);
 		recurse(list.back());
@@ -1152,7 +1156,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 				recurse(node);
 			}
 			const auto begin = code.size();
-			const auto cond = get(recurse(nodes[1].front()));
+			const auto cond = get_bool(recurse(nodes[1].front()));
 			const auto jump = code.size();
 			code.emplace_back(OP_JUMPN, 0, -1, cond);
 			recurse(list.back());
@@ -1235,6 +1239,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 		if(auto var = find_variable(name)) {
 			out.address = var->address;
 			out.is_const = var->is_const;
+			out.is_bool = var->is_bool;
 		}
 		else if(auto func = find_function(name)) {
 			out.func = *func;
@@ -1350,6 +1355,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				out = *lhs;
 			} else {
+				switch(op_code) {
+					case OP_CMP_EQ:
+					case OP_CMP_NEQ:
+					case OP_CMP_LT:
+					case OP_CMP_LTE:
+					case OP_CMP_GT:
+					case OP_CMP_GTE:
+						out.is_bool = true;	break;
+					default: break;
+				}
 				out.address = stack.new_addr();
 				code.emplace_back(op_code, op_flags, out.address, get(*lhs), rhs);
 			}
@@ -1678,6 +1693,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(args.size() != 1) {
 					throw std::logic_error("expected 1 argument for bool()");
 				}
+				out.is_bool = true;
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BOOL, CONVTYPE_DEFAULT);
 			}
@@ -1713,6 +1729,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(args.size() != 3) {
 					throw std::logic_error("expected 3 arguments for ecdsa_verify(msg, pubkey, signature)");
 				}
+				out.is_bool = true;
 				out.address = stack.new_addr();
 				code.emplace_back(OP_VERIFY, 0, out.address, get(recurse(args[0])), get(recurse(args[1])), get(recurse(args[2])));
 			}
@@ -1908,6 +1925,22 @@ uint32_t Compiler::get(const vref_t& src, const uint32_t* dst)
 		return *dst;
 	}
 	return src.address;
+}
+
+uint32_t Compiler::get_bool(const vref_t& src)
+{
+	src.check_value();
+
+	if(src.is_bool) {
+		if(src.key) {
+			throw std::logic_error("is_bool with key");
+		}
+		return src.address;
+	}
+	const auto tmp = get(src);
+	const auto dst = frame.back().new_addr();
+	code.emplace_back(OP_CONV, 0, dst, tmp, CONVTYPE_BOOL, CONVTYPE_DEFAULT);
+	return dst;
 }
 
 const Compiler::variable_t* Compiler::find_variable(const std::string& name) const

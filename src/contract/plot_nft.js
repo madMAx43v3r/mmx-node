@@ -32,7 +32,7 @@ function mmx_reward_target(farmer) const public
 	var addr = owner;
 	if(is_locked()) {
 		addr = target;
-	} else if(farmer != null) {
+	} else if(farmer) {
 		addr = bech32(farmer);
 	}
 	return addr;
@@ -68,7 +68,7 @@ function claim_all(address, currency) public
 	} else {
 		check_owner();
 	}
-	if(currency != null) {
+	if(currency) {
 		currency = bech32(currency);
 	} else {
 		currency = bech32();
