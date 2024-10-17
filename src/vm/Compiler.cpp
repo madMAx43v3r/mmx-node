@@ -522,9 +522,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	simple_code_map["/"] = OP_DIV;
 	simple_code_map["%"] = OP_MOD;
 	simple_code_map["&"] = OP_AND;
-	simple_code_map["&&"] = OP_AND;
 	simple_code_map["|"] = OP_OR;
-	simple_code_map["||"] = OP_OR;
 	simple_code_map["^"] = OP_XOR;
 	simple_code_map[">"] = OP_CMP_GT;
 	simple_code_map["<"] = OP_CMP_LT;
@@ -1433,7 +1431,21 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			}
 			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
 			out.address = stack.new_addr();
-			code.emplace_back(OP_NOT, 0, out.address, get(rhs));
+			out.is_bool = (op == "!");
+			const auto src = (out.is_bool ? get_bool(rhs) : get(rhs));
+			code.emplace_back(OP_NOT, 0, out.address, src);
+		}
+		else if(op == "&&" || op == "||") {
+			if(!lhs) {
+				throw std::logic_error("missing left operand");
+			}
+			if(expr_len < 1) {
+				throw std::logic_error("missing right operand");
+			}
+			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
+			out.address = stack.new_addr();
+			out.is_bool = true;
+			code.emplace_back(op == "&&" ? OP_AND : OP_OR, 0, out.address, get_bool(*lhs), get_bool(rhs));
 		}
 		else if(op == "++" || op == "--") {
 			if(lhs) {

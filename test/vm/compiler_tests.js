@@ -188,6 +188,39 @@ if(2 <= 1) {
 if(1 >= 2) {
 	fail("if(1 >= 2)");
 }
+if(!(1 == 1)) {
+	fail("if(!(1 == 1))");
+}
+if((1 == 1) && (1 == 0)) {
+	fail("if((1 == 1) && (1 == 0))");
+}
+if((1 != 1) || (1 != 1)) {
+	fail("if((1 != 1) || (1 != 1))");
+}
+if(0) {
+	fail("if(0)");
+}
+if(null) {
+	fail("if(null)");
+}
+if("") {
+	fail("if('')");
+}
+if(!1337) {
+	fail("if(!1337)");
+}
+if(!"test") {
+	fail("if(!'test')");
+}
+if(!(true && 1337 && "test")) {
+	fail("if(!(1 && true && 'test'))");
+}
+if(0 || null || "") {
+	fail("if(0 || null || '')");
+}
+if(!(0 || null || 1)) {
+	fail("if(!(null || null || 1))");
+}
 {
 	var cond = (1 > 2);
 	if(cond) {
