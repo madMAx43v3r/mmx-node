@@ -3,7 +3,8 @@ const WITHDRAW_FACTOR = 90;
 
 var owner;
 
-function init(owner_) {
+function init(owner_)
+{
 	owner = bech32(owner_);
 }
 
@@ -14,6 +15,7 @@ function withdraw(amount, currency) public
 	if(this.user != owner) {
 		fail("user != owner", 1);
 	}
+	amount = uint(amount);
 	currency = bech32(currency);
 	
 	var ret_amount = amount;

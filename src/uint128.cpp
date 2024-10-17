@@ -23,11 +23,7 @@ void read(vnx::TypeInput& in, mmx::uint128& value, const vnx::TypeCode* type_cod
 			std::string str;
 			vnx::read(in, str, type_code, code);
 			try {
-				if(str.substr(0, 2) == "0x") {
-					value = uint128_t(str.substr(2), 16);
-				} else {
-					value = uint128_t(str, 10);
-				}
+				value = mmx::uint128(str);
 			} catch(...) {
 				value = uint128_0;
 			}

@@ -9,6 +9,7 @@ class BlockHeader {
 	
 	uint height;
 	ulong nonce;
+	long time_stamp;					// UNIX [ms]
 	
 	ulong time_diff;
 	ulong space_diff;
@@ -17,21 +18,25 @@ class BlockHeader {
 	uint128 total_weight;
 	
 	uint netspace_ratio;
-	uint average_txfee;
+	ulong txfee_buffer;
 	
 	ulong vdf_iters;
 	hash_t vdf_output[2];
 	optional<addr_t> vdf_reward_addr;
+	optional<addr_t> vdf_reward_vote;
 	
 	ProofOfSpace* proof;
 	
+	uint proof_score_sum;
+	
 	ulong reward_amount;
 	optional<addr_t> reward_addr;
-	// TODO: optional<addr_t> reward_contract;		// plot NFT address
-	// TODO: optional<addr_t> reward_account;		// farmer account
+	optional<addr_t> reward_contract;		// plot NFT address
+	optional<addr_t> reward_account;		// farmer account
 	
 	char reward_vote;					// 0 = unchanged, 1 = up, -1 = down
-	ulong next_base_reward;
+	int  reward_vote_sum;
+	ulong base_reward;
 	
 	ulong static_cost;
 	ulong total_cost;
@@ -55,5 +60,9 @@ class BlockHeader {
 	BlockHeader* get_header() const;
 	
 	block_index_t get_block_index(long file_offset) const;
+	
+	void set_space_diff(ChainParams* params, BlockHeader* prev);
+	
+	void set_base_reward(ChainParams* params, BlockHeader* prev);
 	
 }

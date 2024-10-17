@@ -11,7 +11,6 @@ struct plot_nft_info_t {
 	
 	optional<addr_t> target;
 	optional<uint> unlock_height;
-	optional<uint> unlock_delay;
 	
 	optional<string> server_url;
 	

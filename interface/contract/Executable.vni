@@ -26,4 +26,6 @@ class Executable extends TokenBase {
 	
 	vnx.Variant read_field(string name) const;
 	
+	vnx.Variant get_arg(uint index) const;
+	
 }

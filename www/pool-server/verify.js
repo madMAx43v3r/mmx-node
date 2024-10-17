@@ -60,7 +60,8 @@ async function verify(partial, sync_height)
             let account = await dbs.Account.findOne({address: partial.account});
             if(!account) {
                 account = new dbs.Account({
-                    address: partial.account
+                    address: partial.account,
+                    difficulty: config.default_difficulty,
                 });
                 await account.save();
 

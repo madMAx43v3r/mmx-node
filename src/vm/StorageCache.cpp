@@ -63,21 +63,16 @@ void StorageCache::commit() const
 	}
 }
 
-std::unique_ptr<uint128> StorageCache::get_balance(const addr_t& contract, const addr_t& currency) const
+std::unique_ptr<uint128> StorageCache::get_balance(const addr_t& contract, const addr_t& currency)
 {
 	if(auto value = Super::get_balance(contract, currency)) {
 		return value;
 	}
-	return backend->get_balance(contract, currency);
-}
-
-std::map<addr_t, uint128> StorageCache::get_balances(const addr_t& contract) const
-{
-	auto out = backend->get_balances(contract);
-	for(const auto& entry : Super::get_balances(contract)) {
-		out[entry.first] = entry.second;
+	auto amount = backend->get_balance(contract, currency);
+	if(amount) {
+		Super::set_balance(contract, currency, *amount);
 	}
-	return out;
+	return amount;
 }
 
 

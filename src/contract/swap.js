@@ -174,6 +174,8 @@ function _rem_liquid(user, i, amount, do_send = true)
 
 function rem_liquid(i, amount, dry_run = false) public
 {
+	amount = uint(amount);
+	
 	if(amount == 0) {
 		fail("amount == 0");
 	}
@@ -297,7 +299,7 @@ function trade(i, address, min_trade, num_iter) public payable
 				}
 			}
 		}
-		if(entry != null) {
+		if(entry) {
 			total_actual_amount += actual_amount_i;
 			
 			out[0] += trade_amount_i;
@@ -316,8 +318,8 @@ function trade(i, address, min_trade, num_iter) public payable
 	if(amount_left > 0) {
 		fail("incomplete trade");
 	}
-	if(min_trade != null) {
-		if(total_actual_amount < min_trade) {
+	if(min_trade) {
+		if(total_actual_amount < uint(min_trade)) {
 			fail("minimum trade amount not reached", 7);
 		}
 	}

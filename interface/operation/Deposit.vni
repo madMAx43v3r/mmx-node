@@ -2,12 +2,13 @@ package mmx.operation;
 
 import mmx.hash_t;
 import mmx.addr_t;
+import mmx.uint128;
 
 class Deposit extends Execute {
 	
 	addr_t currency;
 	
-	ulong amount;
+	uint128 amount;
 	
 	
 	bool is_valid() const;
