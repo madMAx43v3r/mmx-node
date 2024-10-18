@@ -40,7 +40,6 @@ hash_t Binary::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "constant", 	constant);
 	write_field(out, "binary", 		binary);
 	write_field(out, "line_info", 	line_info);
-	write_field(out, "source_info",	source_info);
 	write_field(out, "source", 		source);
 	write_field(out, "compiler", 	compiler);
 	write_field(out, "build_flags", build_flags);
@@ -52,16 +51,13 @@ hash_t Binary::calc_hash(const vnx::bool_t& full_hash) const
 uint64_t Binary::num_bytes(const vnx::bool_t& total) const
 {
 	uint64_t sum = (total ? Super::num_bytes() : 0)
-			+ fields.size() * 4 + line_info.size() * 8 + source_info.size() * 8;
+			+ fields.size() * 4 + line_info.size() * 8;
 
 	for(const auto& entry : fields) {
 		sum += entry.first.size();
 	}
 	for(const auto& entry : methods) {
 		sum += entry.first.size() + entry.second.num_bytes();
-	}
-	for(const auto& entry : source_info) {
-		sum += entry.second.first.size();
 	}
 	sum += name.size() + constant.size() + binary.size() + source.size() + compiler.size();
 	return sum;

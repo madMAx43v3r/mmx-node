@@ -20,6 +20,6 @@ Mainnet
 - Node + Wallet get_balances() limit
 - mmx_test framework
 - 1000 commas for balances
-- Binary source_info
+- Binary line_info
 - Explorer search by block hash
 - Harvester VP partials support
