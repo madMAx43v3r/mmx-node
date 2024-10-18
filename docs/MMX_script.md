@@ -242,6 +242,35 @@ In order to pass binary strings, encode it as a hex string (`0x...`) and then de
 In order to pass integers greater than 64-bits you can encode them as a decimal or hex string (`0x...`)
 and then decode via `uint(...)`. Hex encoding is recommended, since decimal decoding is expensive.
 
+## Implicit Type Conversion
+
+By default MMX script does *not* perform any implicit type conversion except in the following cases:
+- `if(cond)`: `cond` is casted to `bool`, same as `if(bool(cond))`
+- `while(cond)`: `cond` is casted to `bool`, same as `while(bool(cond))`
+- `for(...; cond; ...)`: `cond` is casted to `bool`, same as `for(...; bool(cond); ...)`
+- `!cond`: `cond` is casted to `bool`, same as `!bool(cond)`
+- `A && B`: `A` and `B` are casted to `bool`, same as `bool(A) && bool(B)`
+- `A || B`: `A` and `B` are casted to `bool`, same as `bool(A) || bool(B)`
+
+For example the following is valid code:
+```
+if(null) {}
+while(1) {}
+for(; 1;) {}
+!null
+!""
+1 && 2
+null || "yes"
+```
+
+However, the following code is invalid:
+```
+null < 1
+null + 1
+"1" > 0
+"1" + 1
+```
+
 ## Examples
 
 ### Contract Storage
