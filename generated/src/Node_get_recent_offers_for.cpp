@@ -5,6 +5,7 @@
 #include <mmx/Node_get_recent_offers_for.hxx>
 #include <mmx/Node_get_recent_offers_for_return.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_recent_offers_for::VNX_TYPE_HASH(0xd89f845556eb17a0ull);
-const vnx::Hash64 Node_get_recent_offers_for::VNX_CODE_HASH(0x86ca17a3a5f42831ull);
+const vnx::Hash64 Node_get_recent_offers_for::VNX_CODE_HASH(0x257e50ef372250f1ull);
 
 vnx::Hash64 Node_get_recent_offers_for::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -155,7 +156,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_recent_offers_for";
 	type_code->type_hash = vnx::Hash64(0xd89f845556eb17a0ull);
-	type_code->code_hash = vnx::Hash64(0x86ca17a3a5f42831ull);
+	type_code->code_hash = vnx::Hash64(0x257e50ef372250f1ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -178,9 +179,9 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "min_bid";
-		field.code = {4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -239,9 +240,6 @@ void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCod
 	}
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.min_bid, _field->code.data());
-		}
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
 		}
@@ -253,6 +251,7 @@ void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCod
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.bid, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.ask, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.min_bid, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -271,12 +270,12 @@ void write(TypeOutput& out, const ::mmx::Node_get_recent_offers_for& value, cons
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(13);
-	vnx::write_value(_buf + 0, value.min_bid);
-	vnx::write_value(_buf + 8, value.limit);
-	vnx::write_value(_buf + 12, value.state);
+	auto* const _buf = out.write(5);
+	vnx::write_value(_buf + 0, value.limit);
+	vnx::write_value(_buf + 4, value.state);
 	vnx::write(out, value.bid, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.ask, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.min_bid, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_recent_offers_for& value) {

@@ -412,27 +412,49 @@ Vue.component('block-view', {
 										<td>{{data.reward_vote}}</td>
 									</tr>
 									<tr>
+										<td class="key-cell">Reward Vote Sum</td>
+										<td>{{data.reward_vote_sum}}</td>
+									</tr>
+									<tr>
 										<td class="key-cell">Base Reward</td>
-										<td><b>{{data.next_base_reward.value}}</b>&nbsp; MMX</td>
+										<td><b>{{data.base_reward.value}}</b>&nbsp; MMX</td>
 									</tr>
 									<tr>
 										<td class="key-cell">Avg. TX Fee</td>
 										<td><b>{{data.average_txfee.value}}</b>&nbsp; MMX</td>
 									</tr>
+									<template v-if="data.vdf_reward_vote">
+										<tr>
+											<td class="key-cell">Timelord Vote</td>
+											<td><router-link :to="'/explore/address/' + data.vdf_reward_vote">{{data.vdf_reward_vote}}</router-link></td>
+										</tr>
+									</template>
+									<template v-if="data.vdf_reward_addr">
+										<tr>
+											<td class="key-cell">Timelord Reward</td>
+											<td><router-link :to="'/explore/address/' + data.vdf_reward_addr">{{data.vdf_reward_addr}}</router-link></td>
+										</tr>
+									</template>
 									<tr>
 										<td class="key-cell">{{ $t('block_view.vdf_iterations') }}</td>
 										<td>{{data.vdf_iters}}</td>
 									</tr>
-									<template v-if="data.vdf_reward_addr">
-										<tr>
-											<td class="key-cell">Timelord Address</td>
-											<td><router-link :to="'/explore/address/' + data.vdf_reward_addr">{{data.vdf_reward_addr}}</router-link></td>
-										</tr>
-									</template>
 									<template v-if="data.reward_addr">
 										<tr>
-											<td class="key-cell">Farmer Address</td>
+											<td class="key-cell">Reward Address</td>
 											<td><router-link :to="'/explore/address/' + data.reward_addr">{{data.reward_addr}}</router-link></td>
+										</tr>
+									</template>
+									<template v-if="data.reward_contract">
+										<tr>
+											<td class="key-cell">Reward Contract</td>
+											<td><router-link :to="'/explore/address/' + data.reward_contract">{{data.reward_contract}}</router-link></td>
+										</tr>
+									</template>
+									<template v-if="data.reward_account">
+										<tr>
+											<td class="key-cell">Farmer Address</td>
+											<td><router-link :to="'/explore/address/' + data.reward_account">{{data.reward_account}}</router-link></td>
 										</tr>
 									</template>
 									<template v-if="data.proof">

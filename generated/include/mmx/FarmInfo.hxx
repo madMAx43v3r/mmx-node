@@ -27,6 +27,7 @@ public:
 	uint64_t total_balance = 0;
 	vnx::optional<std::string> harvester;
 	vnx::optional<::mmx::hash_t> harvester_id;
+	vnx::optional<::mmx::addr_t> reward_addr;
 	
 	typedef ::vnx::Value Super;
 	
@@ -73,7 +74,7 @@ protected:
 
 template<typename T>
 void FarmInfo::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<FarmInfo>(10);
+	_visitor.template type_begin<FarmInfo>(11);
 	_visitor.type_field("plot_dirs", 0); _visitor.accept(plot_dirs);
 	_visitor.type_field("plot_count", 1); _visitor.accept(plot_count);
 	_visitor.type_field("harvester_bytes", 2); _visitor.accept(harvester_bytes);
@@ -84,7 +85,8 @@ void FarmInfo::accept_generic(T& _visitor) const {
 	_visitor.type_field("total_balance", 7); _visitor.accept(total_balance);
 	_visitor.type_field("harvester", 8); _visitor.accept(harvester);
 	_visitor.type_field("harvester_id", 9); _visitor.accept(harvester_id);
-	_visitor.template type_end<FarmInfo>(10);
+	_visitor.type_field("reward_addr", 10); _visitor.accept(reward_addr);
+	_visitor.template type_end<FarmInfo>(11);
 }
 
 

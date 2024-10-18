@@ -8,6 +8,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Variant.hpp>
 
 
@@ -17,11 +18,12 @@ struct MMX_EXPORT exec_entry_t : vnx::struct_t {
 	
 	
 	uint32_t height = 0;
+	int64_t time_stamp = 0;
 	::mmx::hash_t txid;
 	std::string method;
 	std::vector<::vnx::Variant> args;
 	vnx::optional<::mmx::addr_t> user;
-	vnx::optional<std::pair<::mmx::addr_t, uint64_t>> deposit;
+	vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint128>> deposit;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -63,14 +65,15 @@ struct MMX_EXPORT exec_entry_t : vnx::struct_t {
 
 template<typename T>
 void exec_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<exec_entry_t>(6);
+	_visitor.template type_begin<exec_entry_t>(7);
 	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("txid", 1); _visitor.accept(txid);
-	_visitor.type_field("method", 2); _visitor.accept(method);
-	_visitor.type_field("args", 3); _visitor.accept(args);
-	_visitor.type_field("user", 4); _visitor.accept(user);
-	_visitor.type_field("deposit", 5); _visitor.accept(deposit);
-	_visitor.template type_end<exec_entry_t>(6);
+	_visitor.type_field("time_stamp", 1); _visitor.accept(time_stamp);
+	_visitor.type_field("txid", 2); _visitor.accept(txid);
+	_visitor.type_field("method", 3); _visitor.accept(method);
+	_visitor.type_field("args", 4); _visitor.accept(args);
+	_visitor.type_field("user", 5); _visitor.accept(user);
+	_visitor.type_field("deposit", 6); _visitor.accept(deposit);
+	_visitor.template type_end<exec_entry_t>(7);
 }
 
 

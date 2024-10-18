@@ -112,7 +112,7 @@ void Harvester::check_queue()
 		const auto& entry = iter->second;
 		const auto delay_sec = (now_ms - entry.recv_time_ms) / 1e3;
 
-		if(delay_sec > params->block_time * entry.request->max_delay) {
+		if(delay_sec > params->get_block_time() * entry.request->max_delay) {
 			log(WARN) << "[" << my_name << "] Missed deadline for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
 			iter = lookup_queue.erase(iter);
 		} else {
@@ -130,7 +130,7 @@ void Harvester::check_queue()
 
 void Harvester::handle(std::shared_ptr<const Challenge> value)
 {
-	if(value->max_delay < 2) {
+	if(!is_ready || value->max_delay < 2) {
 		return;
 	}
 	if(!already_checked.insert(value->challenge).second) {
@@ -140,6 +140,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	entry.recv_time_ms = vnx_sample->recv_time / 1000;
 	entry.request = value;
 
+	// trigger first lookup if no new challenge received for 10 ms
 	lookup_timer->set_millis(10);
 }
 
@@ -202,7 +203,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		}
 	}
 
-	const auto max_delay_sec = params->block_time * (double(value->max_delay) - 0.5);
+	const auto max_delay_sec = params->get_block_time() * (value->max_delay - 0.5);
 	const auto deadline_ms = recv_time_ms + int64_t(max_delay_sec * 1000);
 
 	for(const auto& entry : id_map)
@@ -414,6 +415,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		log(WARN) << "[" << my_name << "] Virtual plots check for height " << value->height << " took longer than allowable delay: " << delay_sec << " sec";
 	}
 
+	// trigger next lookup right away
 	lookup_timer->set_millis(0);
 }
 
@@ -424,42 +426,51 @@ uint64_t Harvester::get_total_bytes() const
 
 std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 {
-	auto info = FarmInfo::create();
-	info->harvester = my_name;
-	info->harvester_id = harvester_id;
-	info->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
-	info->total_bytes = total_bytes;
-	info->total_bytes_effective = total_bytes_effective;
+	auto out = FarmInfo::create();
+	out->harvester = my_name;
+	out->harvester_id = harvester_id;
+	out->plot_dirs = std::vector<std::string>(plot_dirs.begin(), plot_dirs.end());
+	out->total_bytes = total_bytes;
+	out->total_bytes_effective = total_bytes_effective;
 	for(const auto& entry : plot_map) {
-		if(auto prover = entry.second) {
-			info->plot_count[prover->get_ksize()]++;
+		if(const auto& prover = entry.second) {
+			out->plot_count[prover->get_ksize()]++;
 		}
 	}
 	for(const auto& entry : virtual_map) {
-		info->total_balance += entry.second.balance;
+		out->total_balance += entry.second.balance;
 	}
 	for(const auto& entry : plot_nfts) {
 		const auto& nft = entry.second;
-		auto& pool_info = info->pool_info[nft.address];
-		pool_info.contract = nft.address;
+		auto& info = out->pool_info[nft.address];
+		info.contract = nft.address;
+		info.name = nft.name;
+		info.is_plot_nft = true;
 		if(nft.is_locked) {
-			pool_info.server_url = nft.server_url;
-			pool_info.pool_target = nft.target;
+			info.server_url = nft.server_url;
+			info.pool_target = nft.target;
 		}
 		{
 			auto iter = partial_diff.find(nft.address);
 			if(iter != partial_diff.end()) {
-				pool_info.partial_diff = iter->second;
+				info.partial_diff = iter->second;
 			}
 		}
 		{
 			auto iter = plot_contract_set.find(nft.address);
 			if(iter != plot_contract_set.end()) {
-				pool_info.plot_count = iter->second;
+				info.plot_count = iter->second;
 			}
 		}
 	}
-	return info;
+	for(const auto& entry : plot_contract_set) {
+		if(!plot_nfts.count(entry.first)) {
+			auto& info = out->pool_info[entry.first];
+			info.contract = entry.first;
+			info.plot_count = entry.second;
+		}
+	}
+	return out;
 }
 
 void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::string>& all_dirs, const size_t depth) const
@@ -548,7 +559,11 @@ void Harvester::reload()
 		threads->add_task([this, file_path, &plots, &mutex]()
 		{
 			try {
-				auto prover = std::make_shared<pos::Prover>(file_path);
+				const auto prover = std::make_shared<pos::Prover>(file_path);
+				const auto ksize = uint32_t(prover->get_ksize());
+				if(ksize < params->min_ksize || ksize > params->max_ksize) {
+					throw std::logic_error("invalid ksize: " + std::to_string(ksize));
+				}
 				{
 					std::lock_guard<std::mutex> lock(mutex);
 					plots.emplace_back(file_path, prover);
@@ -630,8 +645,8 @@ void Harvester::reload()
 		}
 	}
 	for(const auto& entry : plot_map) {
-		if(auto contract = entry.second->get_contract()) {
-			plot_contract_set[*contract]++;
+		if(const auto& addr = entry.second->get_contract()) {
+			plot_contract_set[*addr]++;
 		}
 	}
 
@@ -640,7 +655,13 @@ void Harvester::reload()
 
 	// check challenges again for new plots
 	if(plots.size()) {
+		is_ready = false;
 		already_checked.clear();
+	}
+	if(!is_ready) {
+		set_timeout_millis(3000, [this]() {
+			is_ready = true;
+		});
 	}
 	log(INFO) << "[" << my_name << "] Loaded " << plot_map.size() << " plots, "
 			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe, "
@@ -689,7 +710,9 @@ void Harvester::update()
 
 		std::vector<addr_t> list;
 		for(const auto& entry : plot_nfts) {
-			list.push_back(entry.first);
+			if(entry.second.server_url) {
+				list.push_back(entry.first);
+			}
 		}
 		const auto new_diff = farmer->get_partial_diffs(list);
 		for(const auto& entry : new_diff) {
@@ -711,10 +734,12 @@ void Harvester::update_nfts()
 	for(const auto& entry : plot_nfts) {
 		missing.insert(entry.first);
 	}
+	auto job = std::make_shared<size_t>(plot_contract_set.size());
+
 	for(const auto& entry : plot_contract_set) {
 		const auto& address = entry.first;
 		node_async->get_plot_nft_info(address,
-			[this, address](const vnx::optional<plot_nft_info_t>& info) {
+			[this, job, address](const vnx::optional<plot_nft_info_t>& info) {
 				if(info) {
 					if(!plot_nfts.count(address)) {
 						log(INFO) << "Found plot NFT " << (info->name.empty() ? info->address.to_string() : "'" + info->name + "'")
@@ -722,6 +747,10 @@ void Harvester::update_nfts()
 								<< ", server_url = " << vnx::to_string(info->server_url);
 					}
 					plot_nfts[address] = *info;
+				}
+				if(--(*job) == 0) {
+					update();
+					set_timeout_millis(2000, std::bind(&Harvester::update, this));
 				}
 			},
 			[this, address](const std::exception& ex) {

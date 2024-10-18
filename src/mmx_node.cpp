@@ -53,11 +53,6 @@ int main(int argc, char** argv)
 
 	const auto params = mmx::get_params();
 
-	if(params->network != "testnet12") {
-		std::cerr << "Please remove NETWORK file and try again to switch to testnet12." << std::endl;
-		vnx::close();
-		return -1;
-	}
 	bool with_farmer = true;
 	bool with_wallet = true;
 	bool with_timelord = true;

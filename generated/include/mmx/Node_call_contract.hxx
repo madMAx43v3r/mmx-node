@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 #include <vnx/Variant.hpp>
 
@@ -19,7 +20,7 @@ public:
 	std::string method;
 	std::vector<::vnx::Variant> args;
 	vnx::optional<::mmx::addr_t> user;
-	vnx::optional<std::pair<::mmx::addr_t, uint64_t>> deposit;
+	vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint128>> deposit;
 	
 	typedef ::vnx::Value Super;
 	

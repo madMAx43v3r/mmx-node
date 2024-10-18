@@ -67,6 +67,7 @@ private:
 						const uint32_t score, const int64_t time_begin_ms) const;
 
 private:
+	bool is_ready = false;
 	hash_t harvester_id;
 	uint64_t total_bytes = 0;
 	uint64_t total_bytes_effective = 0;

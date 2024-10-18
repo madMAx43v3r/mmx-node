@@ -1,1 +1,1 @@
-mint(bech32("MMX"), 1 << 64);
+mint(bech32("MMX"), 1 << 80);

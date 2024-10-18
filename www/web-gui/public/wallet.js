@@ -537,6 +537,7 @@ Vue.component('account-history-form', {
 				{text: this.$t('account_history_form.spend'), value: "SPEND"},
 				{text: this.$t('account_history_form.receive'), value: "RECEIVE"},
 				{text: this.$t('account_history_form.reward'), value: "REWARD"},
+				{text: "VDF " + this.$t('account_history_form.reward'), value: "VDF_REWARD"},
 				{text: this.$t('account_history_form.tx_fee'), value: "TXFEE"}
 			];
 		},

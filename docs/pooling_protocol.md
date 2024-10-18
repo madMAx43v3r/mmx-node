@@ -17,12 +17,13 @@ Payload: Object
 - `height`: Block height the proof is for
 - `hash`: Message hash for signature (see below)
 - `challenge`: VDF challenge (hash) for this height and fork
+- `contract`: Plot NFT address
 - `account`: Payout address (can be multiple per NFT, first partial creates account)
-- `proof`: Proof, can be Proof of Space or Proof of Stake (see below)
 - `pool_url`: The base URL used to make this request
 - `harvester`: Harvester name, usually hostname
 - `difficulty`: Partial difficulty used when performing lookup (might be different than current setting)
 - `lookup_time_ms`: Harvester lookup time (ms)
+- `proof`: Proof, can be Proof of Space or Proof of Stake (see below)
 - `farmer_sig`: Farmer signature based on `hash` and `proof.farmer_key`
 - `__type`: `mmx.Partial`
 
@@ -38,13 +39,12 @@ For `proof.__type` == `mmx.ProofOfSpaceNFT` the following additional fields will
 - `proof_xs`: List of proof X values (256)
 - `contract`: Plot NFT contract address
 
-On success returns status 200 without payload.
-
-On error returns status 400 with `application/json` object as follows:
+Returns status 200 with `application/json` object as follows:
 - `error_code`: Integer error code (see below)
 - `error_message`: Message string
 
 #### Example partial
+TODO: update
 ```
 {
   __type: 'mmx.Partial',
@@ -82,9 +82,10 @@ If farmer account does not exist yet, it should return a default starting diffic
 Will be polled by farmers every 300 sec by default.
 
 Query parameters:
-- `account`: Farmer account address (payout address)
+- `id`: Farmer account address (payout address)
 
-Should always return status 200 with `application/json` and as payload just the integer.
+Always returns status 200 with `application/json` object as follows:
+- `difficulty`: Integer value
 
 ### POST /set_difficulty
 
@@ -102,23 +103,41 @@ Payload: Object
 - `public_key`: Public key for account address
 - `signature`: Signature for message and `public_key`
 
-On success returns status 200 without payload.
-
-On error returns status 400 with `application/json` object as follows:
+Returns status 200 with `application/json` object as follows:
 - `error_code`: Integer error code (see below)
 - `error_message`: Message string
 
-### GET /pool_info
+### GET /pool/info
 
 Returns pool information as `application/json` object:
 - `name`
 - `description`
 - `fee`: Pool fee (0 to 1)
-- `logo_url`
+- `logo_path`: Relative path for logo image, starting with `/`.
 - `protocol_version`: `1`
-- `unlock_delay`: Plot NFT unlock delay
 - `pool_target`: Plot NFT target address
 - `min_difficulty`: Lowest partial difficulty that is supported
+
+### GET /pool/stats
+
+Returns pool statistics as `application/json` object:
+- `estimated_space`: Estimated pool size in TB
+- `partial_rate`: Partials / hour
+- `farmers`: Number of active farmers
+
+### GET /account/info
+
+Query parameters:
+- `id`: Farmer account address (payout address)
+
+Returns account info as `application/json` object:
+- `balance`: Current unpaid balance [MMX]
+- `total_paid`: Total amount paid out so far [MMX]
+- `difficulty`: Partial difficulty
+- `pool_share`: Relative farm size to pool (0 to 1)
+- `partial_rate`: Partials / hour
+- `blocks_found`: Number of blocks farmed
+- `estimated_space`: Estimated farm size in TB
 
 ## Node API
 
@@ -138,9 +157,7 @@ Payload: Object
 - `pool_target`: Expected plot NFT target address (optional)
 	- When specified will verify plot NFT is locked to given target address at current blockchain height.
 
-On success returns status 200 without payload.
-
-On error returns status 400 with `application/json` object as follows:
+Returns status 200 with `application/json` object as follows:
 - `error_code`: Integer error code (see below)
 - `error_message`: Message string
 
@@ -156,9 +173,7 @@ Payload: Object
 - `address`: Plot NFT address
 - `pool_target`: Expected plot NFT target address
 
-On success returns status 200 without payload.
-
-On error returns status 400 with `application/json` object as follows:
+Returns status 200 with `application/json` object as follows:
 - `error_code`: Integer error code (see below)
 - `error_message`: Message string
 
@@ -176,7 +191,24 @@ A string is generated for JSON objects as follows:
 
 The final string is hashed via `SHA2-256`.
 
-
+## Error Codes
+Error codes are transferred as strings in JSON:
+- `NONE`: No error
+- `INVALID_PARTIAL`
+- `DUPLICATE_PARTIAL`
+- `PARTIAL_TOO_LATE`
+- `PARTIAL_NOT_GOOD_ENOUGH`
+- `CHALLENGE_REVERTED`
+- `CHALLENGE_NOT_FOUND`
+- `INVALID_PROOF`
+- `INVALID_DIFFICULTY`
+- `INVALID_SIGNATURE`
+- `INVALID_CONTRACT`
+- `INVALID_AUTH_KEY`
+- `INVALID_ACCOUNT`
+- `INVALID_TIMESTAMP`
+- `POOL_LOST_SYNC`
+- `SERVER_ERROR`
 
 
 

@@ -4,6 +4,8 @@ struct exec_entry_t {
 	
 	uint height;
 	
+	long time_stamp;			// UNIX [ms]
+	
 	hash_t txid;
 	
 	string method;
@@ -12,6 +14,6 @@ struct exec_entry_t {
 	
 	optional<addr_t> user;
 	
-	optional<pair<addr_t, ulong>> deposit;
+	optional<pair<addr_t, uint128>> deposit;
 	
 }
