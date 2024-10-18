@@ -1132,7 +1132,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 
 	bool have_args = false;
 	vnx::Object args;
-	if(request->content_type.find("application/json") == 0) {
+	if(request->content_type.find("application/json") == 0
+		|| request->content_type.find("text/plain") == 0)
+	{
 		have_args = true;
 		vnx::from_string(request->payload.as_string(), args);
 	}
