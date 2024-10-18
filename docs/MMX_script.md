@@ -292,11 +292,17 @@ Any `static` private function can be a constructor. When deploying a contract yo
 The default is to use `init()`:
 ```
 var foo;
+var spec;
 function init(bar) {
 	foo = bar;
 }
+function init_v(bar, v) static {
+	foo = bar;
+	spec = v;
+}
 ```
-Note: `init()` is always marked as `static`.
+Note: `init()` is always marked as `static`.\
+Note: Global variables are initialized to `null` before constructor is executed.
 
 ### Deposit
 
