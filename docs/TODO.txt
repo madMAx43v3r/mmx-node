@@ -23,3 +23,4 @@ Mainnet
 - Binary line_info
 - Explorer search by block hash
 - Harvester VP partials support
+- Genesis rewards
