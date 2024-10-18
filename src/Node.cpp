@@ -130,8 +130,7 @@ void Node::main()
 	{
 		db = std::make_shared<DataBase>(num_db_threads);
 
-		db->open_async(recv_log, database_path + "recv_log");
-		db->open_async(spend_log, database_path + "spend_log");
+		db->open_async(txio_log, database_path + "txio_log");
 		db->open_async(exec_log, database_path + "exec_log");
 		db->open_async(memo_log, database_path + "memo_log");
 
@@ -994,7 +993,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			}
 
 			// pre-load balance table entries in parallel
-			if(keys.size() >= 16) {
+			if(keys.size() >= 64) {
 				std::atomic<int32_t> total {0};
 				for(const auto& key : keys) {
 					threads->add_task([this, &key, &total]() {
@@ -1009,10 +1008,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		{
 			if(out.memo) {
 				const auto key = hash_t(out.address + (*out.memo));
-				memo_log.insert(std::make_tuple(key, block->height, counter++), out);
+				memo_log.insert(std::make_tuple(key, block->height, counter), out.address);
 			}
-			recv_log.insert(std::make_tuple(out.address, block->height, counter++), out);
+			txio_log.insert(std::make_tuple(out.address, block->height, counter), out);
 			balance_cache.get(out.address, out.contract) += out.amount;
+			counter++;
 		}
 		for(const auto& in : block_inputs)
 		{
@@ -1021,9 +1021,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			}
 			if(in.memo) {
 				const auto key = hash_t(in.address + (*in.memo));
-				memo_log.insert(std::make_tuple(key, block->height, counter++), in);
+				memo_log.insert(std::make_tuple(key, block->height, counter), in.address);
 			}
-			spend_log.insert(std::make_tuple(in.address, block->height, counter++), in);
+			txio_log.insert(std::make_tuple(in.address, block->height, counter), in);
+			counter++;
 		}
 		for(const auto& tx : block->get_transactions()) {
 			if(tx) {

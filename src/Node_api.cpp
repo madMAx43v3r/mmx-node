@@ -11,6 +11,7 @@
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfStake.hxx>
+#include <mmx/tx_entry_t.hpp>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 
@@ -378,86 +379,18 @@ std::vector<std::shared_ptr<const Transaction>> Node::get_transactions(const std
 std::vector<tx_entry_t> Node::get_history(
 		const std::vector<addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) const
 {
-	struct entry_t {
-		uint32_t height = 0;
-		int64_t time_stamp = 0;
-		uint128_t recv = 0;
-		uint128_t spent = 0;
-	};
-	std::map<std::tuple<addr_t, hash_t, addr_t, tx_type_e, std::string>, entry_t> delta_map;
-
-	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
-		{
-			std::vector<txio_entry_t> entries;
-			recv_log.find_last_range(std::make_tuple(address, since, 0), std::make_tuple(address, until, -1), entries, size_t(limit));
-			for(const auto& entry : entries) {
-				tx_type_e type;
-				switch(entry.type) {
-					case tx_type_e::REWARD:
-					case tx_type_e::VDF_REWARD:
-					case tx_type_e::PROJECT_REWARD:
-						type = entry.type; break;
-					default: break;
-				}
-				const std::string memo = entry.memo ? *entry.memo : std::string();
-				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type, memo)];
-				delta.height = entry.height;
-				delta.time_stamp = entry.time_stamp;
-				delta.recv += entry.amount;
-			}
-		}
-		{
-			std::vector<txio_entry_t> entries;
-			spend_log.find_last_range(std::make_tuple(address, since, 0), std::make_tuple(address, until, -1), entries, size_t(limit));
-			for(const auto& entry : entries) {
-				tx_type_e type;
-				switch(entry.type) {
-					case tx_type_e::TXFEE:
-						type = entry.type; break;
-					default: break;
-				}
-				const std::string memo = entry.memo ? *entry.memo : std::string();
-				auto& delta = delta_map[std::make_tuple(entry.address, entry.txid, entry.contract, type, memo)];
-				delta.height = entry.height;
-				delta.time_stamp = entry.time_stamp;
-				delta.spent += entry.amount;
-			}
-		}
-	}
-
 	std::vector<tx_entry_t> res;
-	for(const auto& entry : delta_map) {
-		const auto& delta = entry.second;
-		tx_entry_t out;
-		out.height = delta.height;
-		out.time_stamp = delta.time_stamp;
-		out.txid = std::get<1>(entry.first);
-		out.address = std::get<0>(entry.first);
-		out.contract = std::get<2>(entry.first);
-		out.type = std::get<3>(entry.first);
-		const auto& memo = std::get<4>(entry.first);
-		if(memo.size()) {
-			out.memo = memo;
-		}
-		if(delta.recv > delta.spent) {
-			if(!out.type) {
-				out.type = tx_type_e::RECEIVE;
-			}
-			out.amount = delta.recv - delta.spent;
-		}
-		if(delta.recv < delta.spent) {
-			if(!out.type) {
-				out.type = tx_type_e::SPEND;
-			}
-			out.amount = delta.spent - delta.recv;
-		}
-		if(out.amount) {
-			res.push_back(out);
+	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end()))
+	{
+		std::vector<txio_entry_t> entries;
+		txio_log.find_last_range(std::make_tuple(address, since, 0), std::make_tuple(address, until, -1), entries, size_t(limit));
+		for(const auto& entry : entries) {
+			res.push_back(tx_entry_t::create_ex(entry));
 		}
 	}
 	std::sort(res.begin(), res.end(), [](const tx_entry_t& L, const tx_entry_t& R) -> bool {
-		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo) >
-			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo);
+		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo, L.amount) >
+			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo, R.amount);
 	});
 	if(limit >= 0 && res.size() > size_t(limit)) {
 		res.resize(limit);
@@ -472,31 +405,23 @@ std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addres
 	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end()))
 	{
 		const hash_t key(address + memo);
-		std::vector<txio_entry_t> entries;
-		memo_log.find_last_range(std::make_tuple(key, 0, 0), std::make_tuple(key, -1, -1), entries, size_t(limit));
-		for(const auto& entry : entries) {
-			tx_type_e type = tx_type_e::RECEIVE;
-			switch(entry.type) {
-				case tx_type_e::REWARD:
-				case tx_type_e::VDF_REWARD:
-				case tx_type_e::PROJECT_REWARD:
-					type = entry.type; break;
-				default: break;
+		std::vector<std::pair<std::tuple<hash_t, uint32_t, uint32_t>, addr_t>> list;
+		memo_log.find_last_range(std::make_tuple(key, 0, 0), std::make_tuple(key, -1, -1), list, size_t(limit));
+		for(const auto& index : list) {
+			txio_entry_t entry;
+			if(txio_log.find(std::make_tuple(index.second, std::get<1>(index.first), std::get<2>(index.first)), entry)) {
+				res.push_back(tx_entry_t::create_ex(entry));
 			}
-			tx_entry_t out;
-			out.type = entry.type;
-			out.height = entry.height;
-			out.address = entry.address;
-			out.contract = entry.contract;
-			out.memo = entry.memo;
-			out.txid = entry.txid;
-			res.push_back(out);
 		}
 	}
 	std::sort(res.begin(), res.end(), [](const tx_entry_t& L, const tx_entry_t& R) -> bool {
-		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo) <
-			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo);
+		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo, L.amount) >
+			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo, R.amount);
 	});
+	if(limit >= 0 && res.size() > size_t(limit)) {
+		res.resize(limit);
+	}
+	std::reverse(res.begin(), res.end());
 	return res;
 }
 

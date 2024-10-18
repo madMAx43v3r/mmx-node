@@ -480,10 +480,9 @@ private:
 	hash_t state_hash;
 	std::shared_ptr<DataBase> db;
 
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> recv_log;	// [[address, height, counter] => entry]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> txio_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
-	hash_uint_uint_table<hash_t, uint32_t, uint32_t, txio_entry_t> memo_log;	// [[hash(address | memo), height, counter] => entry]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> memo_log;			// [[hash(address | memo), height, counter] => address]
 
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [address, contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]

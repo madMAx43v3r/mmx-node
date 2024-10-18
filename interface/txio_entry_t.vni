@@ -2,7 +2,7 @@ package mmx;
 
 struct txio_entry_t extends txio_t {
 	
-	hash_t txid;
+	hash_t txid;			// block hash in case type == REWARD
 	
 	uint height;
 	
