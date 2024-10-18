@@ -22,4 +22,4 @@ Mainnet
 - 1000 commas for balances
 - Binary source_info
 - Explorer search by block hash
-- Compiler auto-convert to bool for if()
+- Harvester VP partials support
