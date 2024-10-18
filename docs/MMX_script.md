@@ -288,7 +288,7 @@ function get() const public {
 
 ### Constructor
 
-Any private function can be a constructor. When deploying a contract you have to specify which function to use. \
+Any `static` private function can be a constructor. When deploying a contract you have to specify which function to use. \
 The default is to use `init()`:
 ```
 var foo;
@@ -296,6 +296,7 @@ function init(bar) {
 	foo = bar;
 }
 ```
+Note: `init()` is always marked as `static`.
 
 ### Deposit
 
