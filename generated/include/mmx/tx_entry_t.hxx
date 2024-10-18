@@ -4,28 +4,18 @@
 #ifndef INCLUDE_mmx_tx_entry_t_HXX_
 #define INCLUDE_mmx_tx_entry_t_HXX_
 
-#include <vnx/Type.h>
 #include <mmx/package.hxx>
-#include <mmx/addr_t.hpp>
-#include <mmx/hash_t.hpp>
-#include <mmx/tx_type_e.hxx>
-#include <mmx/uint128.hpp>
+#include <mmx/txio_entry_t.hxx>
 
 
 namespace mmx {
 
-struct MMX_EXPORT tx_entry_t : vnx::struct_t {
+struct MMX_EXPORT tx_entry_t : ::mmx::txio_entry_t {
 	
 	
-	uint32_t height = 0;
-	int64_t time_stamp = 0;
-	::mmx::hash_t txid;
-	::mmx::tx_type_e type;
-	::mmx::addr_t address;
-	::mmx::addr_t contract;
-	::mmx::uint128 amount;
-	vnx::optional<std::string> memo;
 	vnx::bool_t is_validated = 0;
+	
+	typedef ::mmx::txio_entry_t Super;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -37,6 +27,8 @@ struct MMX_EXPORT tx_entry_t : vnx::struct_t {
 	vnx::Hash64 get_type_hash() const;
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
+	
+	static ::mmx::tx_entry_t create_ex(const ::mmx::txio_entry_t& entry = ::mmx::txio_entry_t(), const vnx::bool_t& validated = 0);
 	
 	static std::shared_ptr<tx_entry_t> create();
 	std::shared_ptr<tx_entry_t> clone() const;
@@ -68,14 +60,14 @@ struct MMX_EXPORT tx_entry_t : vnx::struct_t {
 template<typename T>
 void tx_entry_t::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<tx_entry_t>(9);
-	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("time_stamp", 1); _visitor.accept(time_stamp);
-	_visitor.type_field("txid", 2); _visitor.accept(txid);
-	_visitor.type_field("type", 3); _visitor.accept(type);
-	_visitor.type_field("address", 4); _visitor.accept(address);
-	_visitor.type_field("contract", 5); _visitor.accept(contract);
-	_visitor.type_field("amount", 6); _visitor.accept(amount);
-	_visitor.type_field("memo", 7); _visitor.accept(memo);
+	_visitor.type_field("address", 0); _visitor.accept(address);
+	_visitor.type_field("contract", 1); _visitor.accept(contract);
+	_visitor.type_field("amount", 2); _visitor.accept(amount);
+	_visitor.type_field("memo", 3); _visitor.accept(memo);
+	_visitor.type_field("txid", 4); _visitor.accept(txid);
+	_visitor.type_field("height", 5); _visitor.accept(height);
+	_visitor.type_field("time_stamp", 6); _visitor.accept(time_stamp);
+	_visitor.type_field("type", 7); _visitor.accept(type);
 	_visitor.type_field("is_validated", 8); _visitor.accept(is_validated);
 	_visitor.template type_end<tx_entry_t>(9);
 }
