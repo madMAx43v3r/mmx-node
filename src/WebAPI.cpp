@@ -192,11 +192,19 @@ static vnx::Object to_amount_object_str(const uint128& amount, const int decimal
 	return res;
 }
 
-static void parse_uint64(vnx::Variant& value)
+static uint64_t parse_uint64(const vnx::Variant& value)
 {
 	uint64_t tmp = 0;
 	vnx::from_string(value.to_string_value(), tmp);
-	value = tmp;
+	return tmp;
+}
+
+static std::shared_ptr<Transaction> parse_tx(const vnx::Object& obj)
+{
+	auto tx = Transaction::create();
+	tx->from_object(obj);
+	tx->nonce = parse_uint64(obj["nonce"]);
+	return tx;
 }
 
 
@@ -1122,6 +1130,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	const auto& query = request->query_params;
 
+	bool have_args = false;
+	vnx::Object args;
+	if(request->content_type.find("application/json") == 0) {
+		have_args = true;
+		vnx::from_string(request->payload.as_string(), args);
+	}
+
 	if(sub_path == "/config/get") {
 		require<vnx::permission_e>(vnx_session, vnx::permission_e::READ_CONFIG);
 		std::lock_guard lock(g_config_mutex);
@@ -1138,8 +1153,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/config/set") {
 		require<vnx::permission_e>(vnx_session, vnx::permission_e::WRITE_CONFIG);
 		std::lock_guard lock(g_config_mutex);
-		vnx::Object args;
-		vnx::from_string(request->payload.as_string(), args);
 		const auto iter_key = args.field.find("key");
 		const auto iter_value = args.field.find("value");
 		if(iter_key != args.field.end() && iter_value != args.field.end())
@@ -1977,9 +1990,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/send") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto currency = args["currency"].to<addr_t>();
 			get_context({currency}, request_id,
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
@@ -2021,9 +2032,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/send_many") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto currency = args["currency"].to<addr_t>();
 			get_context({currency}, request_id,
 				[this, request_id, args, currency](std::shared_ptr<RenderContext> context) {
@@ -2057,14 +2066,9 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/send_off") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto index = args["index"].to<uint32_t>();
-			auto obj = args["tx"].to_object();
-			parse_uint64(obj["nonce"]);
-			auto tx = Transaction::create();
-			tx->from_object(obj);
+			const auto tx = parse_tx(args["tx"].to_object());
 			wallet->send_off(index, tx,
 				[this, request_id]() {
 					respond_status(request_id, 200);
@@ -2076,9 +2080,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/deploy") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto index = args["index"].to<uint32_t>();
 			const auto payload = args["payload"].to<std::shared_ptr<Contract>>();
 			const auto options = args["options"].to<spend_options_t>();
@@ -2093,9 +2095,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/execute") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto method = args["method"].to<std::string>();
@@ -2113,9 +2113,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/offer") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto bid_currency = args["bid_currency"].to<addr_t>();
 			const auto ask_currency = args["ask_currency"].to<addr_t>();
 			get_context({bid_currency, ask_currency}, request_id,
@@ -2150,9 +2148,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/cancel_offer") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto options = args["options"].to<spend_options_t>();
@@ -2167,9 +2163,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/offer_withdraw") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto options = args["options"].to<spend_options_t>();
@@ -2184,9 +2178,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/offer_trade") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto address = args["address"].to<addr_t>();
 			node->get_offer(address,
 				[this, request_id, address, args](const offer_data_t& offer) {
@@ -2216,9 +2208,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/accept_offer") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto address = args["address"].to<addr_t>();
 			node->get_offer(address,
 				[this, request_id, address, args](const offer_data_t& offer) {
@@ -2282,9 +2272,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/swap/trade") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto address = args["address"].to<addr_t>();
 			node->get_swap_info(address,
 				[this, request_id, address, args](const swap_info_t& info) {
@@ -2322,9 +2310,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/swap/add_liquid" || sub_path == "/wallet/swap/rem_liquid") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto address = args["address"].to<addr_t>();
 			const auto mode = (sub_path == "/wallet/swap/add_liquid");
 			node->get_swap_info(address,
@@ -2362,9 +2348,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/swap/payout") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto options = args["options"].to<spend_options_t>();
@@ -2379,9 +2363,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/swap/switch_pool") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto index = args["index"].to<uint32_t>();
 			const auto pool_idx = args["pool_idx"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
@@ -2397,9 +2379,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else if(sub_path == "/wallet/swap/rem_all_liquid") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			const auto index = args["index"].to<uint32_t>();
 			const auto address = args["address"].to<addr_t>();
 			const auto options = args["options"].to<spend_options_t>();
@@ -2704,9 +2684,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/transaction/validate") {
-		if(request->payload.size()) {
-			auto tx = mmx::Transaction::create();
-			vnx::from_string(request->payload.as_string(), tx);
+		if(have_args) {
+			const auto tx = parse_tx(args);
 			node->validate(tx,
 				[this, request_id](const exec_result_t& result) {
 					respond(request_id, render(result));
@@ -2717,9 +2696,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/transaction/broadcast") {
-		if(request->payload.size()) {
-			auto tx = mmx::Transaction::create();
-			vnx::from_string(request->payload.as_string(), tx);
+		if(have_args) {
+			const auto tx = parse_tx(args);
 			node->validate(tx,
 				[this, request_id, tx](const exec_result_t& result) {
 					node->add_transaction(tx, false,
@@ -2732,9 +2710,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/passphrase/validate") {
-		if(request->payload.size()) {
-			vnx::Object args;
-			vnx::from_string(request->payload.as_string(), args);
+		if(have_args) {
 			hash_t seed = args["seed"].to<hash_t>();
 			if(args.field.count("words")) {
 				seed = mnemonic::words_to_seed(mnemonic::string_to_words(args["words"].to_string_value()));
@@ -2763,7 +2739,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"farmer/info", "farmer/blocks", "farmer/blocks/summary", "farmer/proofs",
 			"offers", "offer", "trade_history",
 			"contract/storage", "contract/storage/field", "contract/storage/entry",
-			"transaction/validate", "transaction/broadcast"
+			"transaction/validate", "transaction/broadcast", "passphrase/validate"
 		};
 		respond_status(request_id, 404, vnx::to_string(options));
 	}
