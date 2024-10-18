@@ -140,6 +140,7 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 	entry.recv_time_ms = vnx_sample->recv_time / 1000;
 	entry.request = value;
 
+	// trigger first lookup if no new challenge received for 10 ms
 	lookup_timer->set_millis(10);
 }
 
@@ -414,6 +415,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		log(WARN) << "[" << my_name << "] Virtual plots check for height " << value->height << " took longer than allowable delay: " << delay_sec << " sec";
 	}
 
+	// trigger next lookup right away
 	lookup_timer->set_millis(0);
 }
 
