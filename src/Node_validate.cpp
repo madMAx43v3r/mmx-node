@@ -574,11 +574,11 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		error.code = engine->error_code;
 		error.address = engine->error_addr;
 
-		if(error.address < engine->code.size() && !binary->line_info.empty()) {
-			auto iter = binary->line_info.upper_bound(error.address);
-			if(iter != binary->line_info.begin()) {
-				iter--;
-				error.line = iter->second;
+		if(error.address < engine->code.size()) {
+			const auto& info = binary->line_info;
+			auto iter = info.upper_bound(error.address);
+			if(iter != info.begin()) {
+				error.line = (--iter)->second;
 			}
 		}
 		if(exec_debug) {
