@@ -11,7 +11,7 @@ function init(creator_)
 	creator = bech32(creator_);
 }
 
-function init_ex(serial_, creator_key, signature) static
+function init_n(creator_key, serial_, signature) static
 {
 	if(read("decimals") != 0) {
 		fail("decimals not zero");
