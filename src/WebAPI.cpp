@@ -1351,32 +1351,38 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/address") {
-		const auto iter = query.find("id");
-		if(iter != query.end()) {
-			const auto address = vnx::from_string_value<addr_t>(iter->second);
-			node->get_total_balances({address},
-				std::bind(&WebAPI::render_address, this, request_id, address, std::placeholders::_1),
+		const auto address = get_param<vnx::optional<addr_t>>(query, "id");
+		if(address) {
+			const auto limit = get_param<uint32_t>(query, "limit", 100);
+			if(is_public && limit > 1000) {
+				throw std::logic_error("limit > 1000");
+			}
+			node->get_total_balances({*address}, {}, limit,
+				std::bind(&WebAPI::render_address, this, request_id, *address, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 400, "address?id");
+			respond_status(request_id, 400, "address?id|limit");
 		}
 	}
 	else if(sub_path == "/balance") {
-		const auto iter_id = query.find("id");
-		const auto iter_currency = query.find("currency");
-		if(iter_id != query.end()) {
-			vnx::optional<addr_t> currency;
-			if(iter_currency != query.end()) {
-				currency = vnx::from_string<addr_t>(iter_currency->second);
+		const auto address = get_param<vnx::optional<addr_t>>(query, "id");
+		if(address) {
+			const auto limit = get_param<uint32_t>(query, "limit", 100);
+			const auto currency = get_param<vnx::optional<addr_t>>(query, "currency");
+			if(is_public && limit > 1000) {
+				throw std::logic_error("limit > 1000");
 			}
-			const auto address = vnx::from_string_value<addr_t>(iter_id->second);
-			node->get_contract_balances(address,
+			std::set<addr_t> whitelist;
+			if(currency) {
+				whitelist.insert(*currency);
+			}
+			node->get_contract_balances(*address, whitelist, limit,
 				[this, currency, request_id](const std::map<addr_t, balance_t>& balances) {
 					render_balances(request_id, currency, balances);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 400, "balance?id|currency");
+			respond_status(request_id, 400, "balance?id|currency|limit");
 		}
 	}
 	else if(sub_path == "/contract") {

@@ -17,7 +17,6 @@ Mainnet
 - Swap warning for one-sided pool
 - VDF trust system (order queue by trust)
 - Increase min_sync_peers to 5 after launch
-- Node + Wallet get_balances() limit
 - mmx_test framework
 - 1000 commas for balances
 - Binary line_info

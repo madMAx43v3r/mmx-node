@@ -640,14 +640,14 @@ void Wallet::update_cache(const uint32_t& index) const
 	{
 		const auto height = node->get_height();
 		const auto addresses = wallet->get_all_addresses();
-		const auto balances = node->get_all_balances(addresses);
+		const auto balances = node->get_all_balances(addresses, token_whitelist);
 		const auto contracts = node->get_contracts_owned_by(addresses);
 		const auto liquidity = node->get_swap_liquidity_by(addresses);
 		const auto history = wallet->pending_tx.empty() ? std::vector<hash_t>() :
 				node->get_tx_ids_since(wallet->height - std::min(params->commit_delay, wallet->height));
 
 		wallet->external_balance_map.clear();
-		for(const auto& entry : node->get_total_balances(contracts)) {
+		for(const auto& entry : node->get_total_balances(contracts, token_whitelist)) {
 			wallet->external_balance_map[entry.first] += entry.second;
 		}
 		for(const auto& entry: liquidity) {
@@ -770,22 +770,18 @@ std::map<addr_t, balance_t> Wallet::get_balances(
 std::map<addr_t, balance_t> Wallet::get_total_balances(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, balance_t> amounts;
-	for(const auto& entry : node->get_total_balances(addresses)) {
+	for(const auto& entry : node->get_total_balances(addresses, token_whitelist)) {
 		auto& balance = amounts[entry.first];
 		balance.total = entry.second;
 		balance.spendable = balance.total;
-		balance.is_validated = token_whitelist.count(entry.first);
+		balance.is_validated = true;
 	}
 	return amounts;
 }
 
 std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address) const
 {
-	auto amounts = node->get_contract_balances(address);
-	for(auto& entry : amounts) {
-		entry.second.is_validated = token_whitelist.count(entry.first);
-	}
-	return amounts;
+	return node->get_contract_balances(address, token_whitelist);
 }
 
 std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(

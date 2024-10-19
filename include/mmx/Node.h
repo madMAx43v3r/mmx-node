@@ -114,13 +114,16 @@ protected:
 
 	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency) const override;
 
-	std::map<addr_t, uint128> get_balances(const addr_t& address) const override;
+	std::map<addr_t, uint128> get_balances(const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
 
-	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const;
+	std::map<addr_t, balance_t> get_contract_balances(
+			const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const;
 
-	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses) const override;
+	std::map<addr_t, uint128> get_total_balances(
+			const std::vector<addr_t>& addresses, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
 
-	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses) const override;
+	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(
+			const std::vector<addr_t>& addresses, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
 
 	std::vector<exec_entry_t> get_exec_history(const addr_t& address, const int32_t& limit, const vnx::bool_t& recent) const override;
 

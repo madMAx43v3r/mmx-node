@@ -613,56 +613,84 @@ uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr
 	return total;
 }
 
-std::map<addr_t, uint128> Node::get_balances(const addr_t& address) const
+std::map<addr_t, uint128> Node::get_balances(const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const
 {
-	return get_total_balances({address});
+	return get_total_balances({address}, whitelist, limit);
 }
 
-std::map<addr_t, balance_t> Node::get_contract_balances(const addr_t& address) const
+std::map<addr_t, balance_t> Node::get_contract_balances(
+		const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const
 {
-	std::map<addr_t, balance_t> out;
-	const auto height = get_height() + 1;
-	const auto contract = get_contract(address);
-	for(const auto& entry : get_total_balances({address})) {
-		auto& tmp = out[entry.first];
-		if(contract) {
-			if(contract->is_locked(height)) {
-				tmp.locked = entry.second;
-			} else {
-				tmp.spendable = entry.second;
+	bool is_locked = false;
+	if(auto exec = get_contract_as<contract::Executable>(address)) {
+		if(auto bin = get_contract_as<contract::Binary>(exec->binary)) {
+			const std::string method = "is_locked";
+			if(vm::find_method(bin, method)) {
+				is_locked = call_contract(address, method, {}).to<bool>();
 			}
-		} else {
-			tmp.spendable = entry.second;
 		}
-		tmp.total = entry.second;
+	}
+	std::map<addr_t, balance_t> out;
+	for(const auto& entry : get_total_balances({address}, whitelist, limit)) {
+		const auto& amount = entry.second;
+		auto& balance = out[entry.first];
+		if(is_locked) {
+			balance.locked = amount;
+		} else {
+			balance.spendable = amount;
+		}
+		balance.total = amount;
+		balance.is_validated = !whitelist.empty();
 	}
 	return out;
 }
 
-std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses) const
+std::map<addr_t, uint128> Node::get_total_balances(
+		const std::vector<addr_t>& addresses, const std::set<addr_t>& whitelist, const int32_t& limit) const
 {
 	std::map<addr_t, uint128> totals;
 	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
-		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
-		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result);
-		for(const auto& entry : result) {
-			if(entry.second) {
-				totals[entry.first.second] += entry.second;
+		if(whitelist.empty()) {
+			std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
+			balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result, limit);
+			for(const auto& entry : result) {
+				if(entry.second) {
+					totals[entry.first.second] += entry.second;
+				}
+			}
+		} else {
+			for(const auto& currency : whitelist) {
+				uint128 balance;
+				balance_table.find(std::make_pair(address, currency), balance);
+				if(balance) {
+					totals[currency] += balance;
+				}
 			}
 		}
 	}
 	return totals;
 }
 
-std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::vector<addr_t>& addresses) const
+std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(
+		const std::vector<addr_t>& addresses, const std::set<addr_t>& whitelist, const int32_t& limit) const
 {
 	std::map<std::pair<addr_t, addr_t>, uint128> totals;
 	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
-		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
-		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result);
-		for(const auto& entry : result) {
-			if(entry.second) {
-				totals[entry.first] += entry.second;
+		if(whitelist.empty()) {
+			std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
+			balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result, limit);
+			for(const auto& entry : result) {
+				if(entry.second) {
+					totals[entry.first] += entry.second;
+				}
+			}
+		} else {
+			for(const auto& currency : whitelist) {
+				uint128 balance;
+				balance_table.find(std::make_pair(address, currency), balance);
+				if(balance) {
+					totals[std::make_pair(address, currency)] += balance;
+				}
 			}
 		}
 	}
