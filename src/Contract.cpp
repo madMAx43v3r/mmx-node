@@ -36,11 +36,6 @@ vnx::optional<addr_t> Contract::get_owner() const
 	return nullptr;
 }
 
-vnx::bool_t Contract::is_locked(const uint32_t& height) const
-{
-	return !get_owner();
-}
-
 void Contract::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
 {
 	throw std::logic_error("invalid operation");
