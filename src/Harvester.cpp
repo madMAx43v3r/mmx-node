@@ -137,11 +137,15 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 		return;
 	}
 	auto& entry = lookup_queue[value->height];
-	entry.recv_time_ms = vnx_sample->recv_time / 1000;
-	entry.request = value;
 
-	// trigger first lookup if no new challenge received for 10 ms
-	lookup_timer->set_millis(10);
+	const auto prev = entry.request;
+	if(!prev || prev->challenge != value->challenge) {
+		entry.request = value;
+		entry.recv_time_ms = vnx_sample->recv_time / 1000;
+
+		// trigger first lookup if no new challenge received for 10 ms
+		lookup_timer->set_millis(10);
+	}
 }
 
 std::vector<uint32_t> Harvester::fetch_full_proof(
