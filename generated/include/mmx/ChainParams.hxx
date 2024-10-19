@@ -64,6 +64,8 @@ public:
 	::mmx::addr_t offer_binary;
 	::mmx::addr_t token_binary;
 	::mmx::addr_t plot_nft_binary;
+	::mmx::addr_t escrow_binary;
+	::mmx::addr_t time_lock_binary;
 	::mmx::addr_t project_addr;
 	uint64_t fixed_project_reward = 50000;
 	::mmx::uint_fraction_t project_ratio;
@@ -117,7 +119,7 @@ protected:
 
 template<typename T>
 void ChainParams::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ChainParams>(54);
+	_visitor.template type_begin<ChainParams>(56);
 	_visitor.type_field("port", 0); _visitor.accept(port);
 	_visitor.type_field("decimals", 1); _visitor.accept(decimals);
 	_visitor.type_field("min_ksize", 2); _visitor.accept(min_ksize);
@@ -167,12 +169,14 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("offer_binary", 46); _visitor.accept(offer_binary);
 	_visitor.type_field("token_binary", 47); _visitor.accept(token_binary);
 	_visitor.type_field("plot_nft_binary", 48); _visitor.accept(plot_nft_binary);
-	_visitor.type_field("project_addr", 49); _visitor.accept(project_addr);
-	_visitor.type_field("fixed_project_reward", 50); _visitor.accept(fixed_project_reward);
-	_visitor.type_field("project_ratio", 51); _visitor.accept(project_ratio);
-	_visitor.type_field("reward_activation", 52); _visitor.accept(reward_activation);
-	_visitor.type_field("transaction_activation", 53); _visitor.accept(transaction_activation);
-	_visitor.template type_end<ChainParams>(54);
+	_visitor.type_field("escrow_binary", 49); _visitor.accept(escrow_binary);
+	_visitor.type_field("time_lock_binary", 50); _visitor.accept(time_lock_binary);
+	_visitor.type_field("project_addr", 51); _visitor.accept(project_addr);
+	_visitor.type_field("fixed_project_reward", 52); _visitor.accept(fixed_project_reward);
+	_visitor.type_field("project_ratio", 53); _visitor.accept(project_ratio);
+	_visitor.type_field("reward_activation", 54); _visitor.accept(reward_activation);
+	_visitor.type_field("transaction_activation", 55); _visitor.accept(transaction_activation);
+	_visitor.template type_end<ChainParams>(56);
 }
 
 

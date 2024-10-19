@@ -177,6 +177,7 @@
 #include <mmx/plot_nft_info_t.hxx>
 #include <mmx/pooling_error_e.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -581,12 +582,10 @@ uint64_t NodeAsyncClient::get_transactions(const std::vector<::mmx::hash_t>& ids
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_history(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_history(const std::vector<::mmx::addr_t>& addresses, const ::mmx::query_filter_t& filter, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_history::create();
 	_method->addresses = addresses;
-	_method->since = since;
-	_method->until = until;
-	_method->limit = limit;
+	_method->filter = filter;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -597,11 +596,11 @@ uint64_t NodeAsyncClient::get_history(const std::vector<::mmx::addr_t>& addresse
 	return _request_id;
 }
 
-uint64_t NodeAsyncClient::get_history_memo(const std::vector<::mmx::addr_t>& addresses, const std::string& memo, const int32_t& limit, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t NodeAsyncClient::get_history_memo(const std::vector<::mmx::addr_t>& addresses, const std::string& memo, const ::mmx::query_filter_t& filter, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Node_get_history_memo::create();
 	_method->addresses = addresses;
 	_method->memo = memo;
-	_method->limit = limit;
+	_method->filter = filter;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

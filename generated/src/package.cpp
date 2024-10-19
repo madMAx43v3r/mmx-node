@@ -381,6 +381,7 @@
 #include <mmx/pooling_error_e.hxx>
 #include <mmx/pooling_info_t.hxx>
 #include <mmx/pooling_stats_t.hxx>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
@@ -4970,6 +4971,18 @@ void type<::mmx::pubkey_t>::create_dynamic_code(std::vector<uint16_t>& code, con
 	const std::vector<int> tmp = {11, 33, 1};
 	code.insert(code.end(), tmp.begin(), tmp.end());}
 
+const TypeCode* type<::mmx::query_filter_t>::get_type_code() {
+	return mmx::vnx_native_type_code_query_filter_t;
+}
+
+void type<::mmx::query_filter_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::query_filter_t());
+}
+
+void type<::mmx::query_filter_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::query_filter_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::signature_t>::get_type_code() {
 	return nullptr;
 }
@@ -5654,6 +5667,7 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::pooling_error_e::static_create_type_code());
 	vnx::register_type_code(::mmx::pooling_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::pooling_stats_t::static_create_type_code());
+	vnx::register_type_code(::mmx::query_filter_t::static_create_type_code());
 	vnx::register_type_code(::mmx::spend_options_t::static_create_type_code());
 	vnx::register_type_code(::mmx::swap_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::swap_info_t::static_create_type_code());
@@ -6063,6 +6077,7 @@ const vnx::TypeCode* const vnx_native_type_code_plot_nft_info_t = vnx::get_type_
 const vnx::TypeCode* const vnx_native_type_code_pooling_error_e = vnx::get_type_code(vnx::Hash64(0xec786b877a93f17ull));
 const vnx::TypeCode* const vnx_native_type_code_pooling_info_t = vnx::get_type_code(vnx::Hash64(0xbddcc977498f516full));
 const vnx::TypeCode* const vnx_native_type_code_pooling_stats_t = vnx::get_type_code(vnx::Hash64(0xb2441a254359df11ull));
+const vnx::TypeCode* const vnx_native_type_code_query_filter_t = vnx::get_type_code(vnx::Hash64(0x92b02006aeea9a76ull));
 const vnx::TypeCode* const vnx_native_type_code_spend_options_t = vnx::get_type_code(vnx::Hash64(0x37f7c6d377362e95ull));
 const vnx::TypeCode* const vnx_native_type_code_swap_entry_t = vnx::get_type_code(vnx::Hash64(0xe3110712aa0f6064ull));
 const vnx::TypeCode* const vnx_native_type_code_swap_info_t = vnx::get_type_code(vnx::Hash64(0x7586be908f15ae8ull));

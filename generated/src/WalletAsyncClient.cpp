@@ -136,11 +136,11 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
-#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
 #include <mmx/virtual_plot_info_t.hxx>
@@ -598,14 +598,10 @@ uint64_t WalletAsyncClient::update_cache(const uint32_t& index, const std::funct
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_history(const uint32_t& index, const ::mmx::query_filter_t& filter, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_history::create();
 	_method->index = index;
-	_method->since = since;
-	_method->until = until;
-	_method->limit = limit;
-	_method->type = type;
-	_method->currency = currency;
+	_method->filter = filter;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -616,12 +612,11 @@ uint64_t WalletAsyncClient::get_history(const uint32_t& index, const uint32_t& s
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_history_memo(const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<::mmx::addr_t>& currency, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_history_memo(const uint32_t& index, const std::string& memo, const ::mmx::query_filter_t& filter, const std::function<void(const std::vector<::mmx::tx_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_history_memo::create();
 	_method->index = index;
 	_method->memo = memo;
-	_method->limit = limit;
-	_method->currency = currency;
+	_method->filter = filter;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);
@@ -632,11 +627,10 @@ uint64_t WalletAsyncClient::get_history_memo(const uint32_t& index, const std::s
 	return _request_id;
 }
 
-uint64_t WalletAsyncClient::get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset, const std::function<void(const std::vector<::mmx::tx_log_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
+uint64_t WalletAsyncClient::get_tx_log(const uint32_t& index, const int32_t& limit, const std::function<void(const std::vector<::mmx::tx_log_entry_t>&)>& _callback, const std::function<void(const vnx::exception&)>& _error_callback) {
 	auto _method = ::mmx::Wallet_get_tx_log::create();
 	_method->index = index;
 	_method->limit = limit;
-	_method->offset = offset;
 	const auto _request_id = ++vnx_next_id;
 	{
 		std::lock_guard<std::mutex> _lock(vnx_mutex);

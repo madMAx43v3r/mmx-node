@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_tx_log::VNX_TYPE_HASH(0xc5570936be29c0ebull);
-const vnx::Hash64 Wallet_get_tx_log::VNX_CODE_HASH(0xd548bac8a2d5136full);
+const vnx::Hash64 Wallet_get_tx_log::VNX_CODE_HASH(0xb1e755e53564438cull);
 
 vnx::Hash64 Wallet_get_tx_log::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,7 +48,6 @@ void Wallet_get_tx_log::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, limit);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, offset);
 	_visitor.type_end(*_type_code);
 }
 
@@ -56,7 +55,6 @@ void Wallet_get_tx_log::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_tx_log\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
 	_out << ", \"limit\": "; vnx::write(_out, limit);
-	_out << ", \"offset\": "; vnx::write(_out, offset);
 	_out << "}";
 }
 
@@ -71,7 +69,6 @@ vnx::Object Wallet_get_tx_log::to_object() const {
 	_object["__type"] = "mmx.Wallet.get_tx_log";
 	_object["index"] = index;
 	_object["limit"] = limit;
-	_object["offset"] = offset;
 	return _object;
 }
 
@@ -81,8 +78,6 @@ void Wallet_get_tx_log::from_object(const vnx::Object& _object) {
 			_entry.second.to(index);
 		} else if(_entry.first == "limit") {
 			_entry.second.to(limit);
-		} else if(_entry.first == "offset") {
-			_entry.second.to(offset);
 		}
 	}
 }
@@ -94,9 +89,6 @@ vnx::Variant Wallet_get_tx_log::get_field(const std::string& _name) const {
 	if(_name == "limit") {
 		return vnx::Variant(limit);
 	}
-	if(_name == "offset") {
-		return vnx::Variant(offset);
-	}
 	return vnx::Variant();
 }
 
@@ -105,8 +97,6 @@ void Wallet_get_tx_log::set_field(const std::string& _name, const vnx::Variant& 
 		_value.to(index);
 	} else if(_name == "limit") {
 		_value.to(limit);
-	} else if(_name == "offset") {
-		_value.to(offset);
 	}
 }
 
@@ -134,7 +124,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_tx_log::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_tx_log";
 	type_code->type_hash = vnx::Hash64(0xc5570936be29c0ebull);
-	type_code->code_hash = vnx::Hash64(0xd548bac8a2d5136full);
+	type_code->code_hash = vnx::Hash64(0xb1e755e53564438cull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -142,7 +132,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_tx_log::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_tx_log>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_get_tx_log_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -153,14 +143,8 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_tx_log::static_create_type_code() {
 		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "limit";
-		field.value = vnx::to_string(-1);
+		field.value = vnx::to_string(100);
 		field.code = {7};
-	}
-	{
-		auto& field = type_code->fields[2];
-		field.data_size = 4;
-		field.name = "offset";
-		field.code = {3};
 	}
 	type_code->build();
 	return type_code;
@@ -210,9 +194,6 @@ void read(TypeInput& in, ::mmx::Wallet_get_tx_log& value, const TypeCode* type_c
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.offset, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -234,10 +215,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_tx_log& value, const TypeCod
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(12);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.index);
 	vnx::write_value(_buf + 4, value.limit);
-	vnx::write_value(_buf + 8, value.offset);
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_tx_log& value) {

@@ -137,11 +137,11 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
-#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
 #include <mmx/virtual_plot_info_t.hxx>
@@ -732,13 +732,13 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0x921f73f3d97d2d4dull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_history>(_method);
 			auto _return_value = ::mmx::Wallet_get_history_return::create();
-			_return_value->_ret_0 = get_history(_args->index, _args->since, _args->until, _args->limit, _args->type, _args->currency);
+			_return_value->_ret_0 = get_history(_args->index, _args->filter);
 			return _return_value;
 		}
 		case 0xcbe6c5855e8776baull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_history_memo>(_method);
 			auto _return_value = ::mmx::Wallet_get_history_memo_return::create();
-			_return_value->_ret_0 = get_history_memo(_args->index, _args->memo, _args->limit, _args->currency);
+			_return_value->_ret_0 = get_history_memo(_args->index, _args->memo, _args->filter);
 			return _return_value;
 		}
 		case 0x8fddd77ece4d295bull: {
@@ -786,7 +786,7 @@ std::shared_ptr<vnx::Value> WalletBase::vnx_call_switch(std::shared_ptr<const vn
 		case 0xc5570936be29c0ebull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Wallet_get_tx_log>(_method);
 			auto _return_value = ::mmx::Wallet_get_tx_log_return::create();
-			_return_value->_ret_0 = get_tx_log(_args->index, _args->limit, _args->offset);
+			_return_value->_ret_0 = get_tx_log(_args->index, _args->limit);
 			return _return_value;
 		}
 		case 0x59beb8c73d904ccdull: {

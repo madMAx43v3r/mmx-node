@@ -25,6 +25,7 @@
 #include <mmx/plot_nft_info_t.hxx>
 #include <mmx/pooling_error_e.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -108,9 +109,9 @@ public:
 	
 	std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions(const std::vector<::mmx::hash_t>& ids = {});
 	
-	std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses = {}, const uint32_t& since = 0, const uint32_t& until = -1, const int32_t& limit = -1);
+	std::vector<::mmx::tx_entry_t> get_history(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::query_filter_t& filter = ::mmx::query_filter_t());
 	
-	std::vector<::mmx::tx_entry_t> get_history_memo(const std::vector<::mmx::addr_t>& addresses = {}, const std::string& memo = "", const int32_t& limit = -1);
+	std::vector<::mmx::tx_entry_t> get_history_memo(const std::vector<::mmx::addr_t>& addresses = {}, const std::string& memo = "", const ::mmx::query_filter_t& filter = ::mmx::query_filter_t());
 	
 	::mmx::uint128 get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t());
 	

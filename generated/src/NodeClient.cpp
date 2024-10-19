@@ -177,6 +177,7 @@
 #include <mmx/plot_nft_info_t.hxx>
 #include <mmx/pooling_error_e.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -580,12 +581,10 @@ std::vector<std::shared_ptr<const ::mmx::Transaction>> NodeClient::get_transacti
 	}
 }
 
-std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) {
+std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::addr_t>& addresses, const ::mmx::query_filter_t& filter) {
 	auto _method = ::mmx::Node_get_history::create();
 	_method->addresses = addresses;
-	_method->since = since;
-	_method->until = until;
-	_method->limit = limit;
+	_method->filter = filter;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_history_return>(_return_value)) {
 		return _result->_ret_0;
@@ -596,11 +595,11 @@ std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::
 	}
 }
 
-std::vector<::mmx::tx_entry_t> NodeClient::get_history_memo(const std::vector<::mmx::addr_t>& addresses, const std::string& memo, const int32_t& limit) {
+std::vector<::mmx::tx_entry_t> NodeClient::get_history_memo(const std::vector<::mmx::addr_t>& addresses, const std::string& memo, const ::mmx::query_filter_t& filter) {
 	auto _method = ::mmx::Node_get_history_memo::create();
 	_method->addresses = addresses;
 	_method->memo = memo;
-	_method->limit = limit;
+	_method->filter = filter;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_history_memo_return>(_return_value)) {
 		return _result->_ret_0;

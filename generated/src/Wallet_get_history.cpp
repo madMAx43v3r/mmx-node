@@ -4,8 +4,7 @@
 #include <mmx/package.hxx>
 #include <mmx/Wallet_get_history.hxx>
 #include <mmx/Wallet_get_history_return.hxx>
-#include <mmx/addr_t.hpp>
-#include <mmx/tx_type_e.hxx>
+#include <mmx/query_filter_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_history::VNX_TYPE_HASH(0x921f73f3d97d2d4dull);
-const vnx::Hash64 Wallet_get_history::VNX_CODE_HASH(0x9c170982594e92b5ull);
+const vnx::Hash64 Wallet_get_history::VNX_CODE_HASH(0x3d5c564025836cb1ull);
 
 vnx::Hash64 Wallet_get_history::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,22 +48,14 @@ void Wallet_get_history::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Wallet_get_history;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, index);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, since);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, until);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, limit);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, type);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, currency);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, filter);
 	_visitor.type_end(*_type_code);
 }
 
 void Wallet_get_history::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Wallet.get_history\"";
 	_out << ", \"index\": "; vnx::write(_out, index);
-	_out << ", \"since\": "; vnx::write(_out, since);
-	_out << ", \"until\": "; vnx::write(_out, until);
-	_out << ", \"limit\": "; vnx::write(_out, limit);
-	_out << ", \"type\": "; vnx::write(_out, type);
-	_out << ", \"currency\": "; vnx::write(_out, currency);
+	_out << ", \"filter\": "; vnx::write(_out, filter);
 	_out << "}";
 }
 
@@ -78,28 +69,16 @@ vnx::Object Wallet_get_history::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Wallet.get_history";
 	_object["index"] = index;
-	_object["since"] = since;
-	_object["until"] = until;
-	_object["limit"] = limit;
-	_object["type"] = type;
-	_object["currency"] = currency;
+	_object["filter"] = filter;
 	return _object;
 }
 
 void Wallet_get_history::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "currency") {
-			_entry.second.to(currency);
+		if(_entry.first == "filter") {
+			_entry.second.to(filter);
 		} else if(_entry.first == "index") {
 			_entry.second.to(index);
-		} else if(_entry.first == "limit") {
-			_entry.second.to(limit);
-		} else if(_entry.first == "since") {
-			_entry.second.to(since);
-		} else if(_entry.first == "type") {
-			_entry.second.to(type);
-		} else if(_entry.first == "until") {
-			_entry.second.to(until);
 		}
 	}
 }
@@ -108,20 +87,8 @@ vnx::Variant Wallet_get_history::get_field(const std::string& _name) const {
 	if(_name == "index") {
 		return vnx::Variant(index);
 	}
-	if(_name == "since") {
-		return vnx::Variant(since);
-	}
-	if(_name == "until") {
-		return vnx::Variant(until);
-	}
-	if(_name == "limit") {
-		return vnx::Variant(limit);
-	}
-	if(_name == "type") {
-		return vnx::Variant(type);
-	}
-	if(_name == "currency") {
-		return vnx::Variant(currency);
+	if(_name == "filter") {
+		return vnx::Variant(filter);
 	}
 	return vnx::Variant();
 }
@@ -129,16 +96,8 @@ vnx::Variant Wallet_get_history::get_field(const std::string& _name) const {
 void Wallet_get_history::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "index") {
 		_value.to(index);
-	} else if(_name == "since") {
-		_value.to(since);
-	} else if(_name == "until") {
-		_value.to(until);
-	} else if(_name == "limit") {
-		_value.to(limit);
-	} else if(_name == "type") {
-		_value.to(type);
-	} else if(_name == "currency") {
-		_value.to(currency);
+	} else if(_name == "filter") {
+		_value.to(filter);
 	}
 }
 
@@ -166,17 +125,17 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_history::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_history";
 	type_code->type_hash = vnx::Hash64(0x921f73f3d97d2d4dull);
-	type_code->code_hash = vnx::Hash64(0x9c170982594e92b5ull);
+	type_code->code_hash = vnx::Hash64(0x3d5c564025836cb1ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
 	type_code->native_size = sizeof(::mmx::Wallet_get_history);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_history>(); };
 	type_code->depends.resize(1);
-	type_code->depends[0] = ::mmx::tx_type_e::static_get_type_code();
+	type_code->depends[0] = ::mmx::query_filter_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_get_history_return::static_get_type_code();
-	type_code->fields.resize(6);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -185,35 +144,9 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_history::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 4;
-		field.name = "since";
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[2];
-		field.data_size = 4;
-		field.name = "until";
-		field.value = vnx::to_string(-1);
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[3];
-		field.data_size = 4;
-		field.name = "limit";
-		field.value = vnx::to_string(-1);
-		field.code = {7};
-	}
-	{
-		auto& field = type_code->fields[4];
 		field.is_extended = true;
-		field.name = "type";
-		field.code = {33, 19, 0};
-	}
-	{
-		auto& field = type_code->fields[5];
-		field.is_extended = true;
-		field.name = "currency";
-		field.code = {33, 11, 32, 1};
+		field.name = "filter";
+		field.code = {19, 0};
 	}
 	type_code->build();
 	return type_code;
@@ -260,20 +193,10 @@ void read(TypeInput& in, ::mmx::Wallet_get_history& value, const TypeCode* type_
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.since, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.until, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 4: vnx::read(in, value.type, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.currency, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.filter, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -292,13 +215,9 @@ void write(TypeOutput& out, const ::mmx::Wallet_get_history& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(16);
+	auto* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write_value(_buf + 4, value.since);
-	vnx::write_value(_buf + 8, value.until);
-	vnx::write_value(_buf + 12, value.limit);
-	vnx::write(out, value.type, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.currency, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.filter, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_get_history& value) {

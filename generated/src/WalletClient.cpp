@@ -136,11 +136,11 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
-#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
 #include <mmx/virtual_plot_info_t.hxx>
@@ -594,14 +594,10 @@ void WalletClient::update_cache_async(const uint32_t& index) {
 	vnx_request(_method, true);
 }
 
-std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit, const vnx::optional<::mmx::tx_type_e>& type, const vnx::optional<::mmx::addr_t>& currency) {
+std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, const ::mmx::query_filter_t& filter) {
 	auto _method = ::mmx::Wallet_get_history::create();
 	_method->index = index;
-	_method->since = since;
-	_method->until = until;
-	_method->limit = limit;
-	_method->type = type;
-	_method->currency = currency;
+	_method->filter = filter;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_return>(_return_value)) {
 		return _result->_ret_0;
@@ -612,12 +608,11 @@ std::vector<::mmx::tx_entry_t> WalletClient::get_history(const uint32_t& index, 
 	}
 }
 
-std::vector<::mmx::tx_entry_t> WalletClient::get_history_memo(const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<::mmx::addr_t>& currency) {
+std::vector<::mmx::tx_entry_t> WalletClient::get_history_memo(const uint32_t& index, const std::string& memo, const ::mmx::query_filter_t& filter) {
 	auto _method = ::mmx::Wallet_get_history_memo::create();
 	_method->index = index;
 	_method->memo = memo;
-	_method->limit = limit;
-	_method->currency = currency;
+	_method->filter = filter;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_history_memo_return>(_return_value)) {
 		return _result->_ret_0;
@@ -628,11 +623,10 @@ std::vector<::mmx::tx_entry_t> WalletClient::get_history_memo(const uint32_t& in
 	}
 }
 
-std::vector<::mmx::tx_log_entry_t> WalletClient::get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset) {
+std::vector<::mmx::tx_log_entry_t> WalletClient::get_tx_log(const uint32_t& index, const int32_t& limit) {
 	auto _method = ::mmx::Wallet_get_tx_log::create();
 	_method->index = index;
 	_method->limit = limit;
-	_method->offset = offset;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_get_tx_log_return>(_return_value)) {
 		return _result->_ret_0;

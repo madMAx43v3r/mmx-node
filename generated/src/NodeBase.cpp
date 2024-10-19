@@ -178,6 +178,7 @@
 #include <mmx/plot_nft_info_t.hxx>
 #include <mmx/pooling_error_e.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -1520,13 +1521,13 @@ std::shared_ptr<vnx::Value> NodeBase::vnx_call_switch(std::shared_ptr<const vnx:
 		case 0x8b3db05c6e91011dull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_history>(_method);
 			auto _return_value = ::mmx::Node_get_history_return::create();
-			_return_value->_ret_0 = get_history(_args->addresses, _args->since, _args->until, _args->limit);
+			_return_value->_ret_0 = get_history(_args->addresses, _args->filter);
 			return _return_value;
 		}
 		case 0x693c0c791039287cull: {
 			auto _args = std::static_pointer_cast<const ::mmx::Node_get_history_memo>(_method);
 			auto _return_value = ::mmx::Node_get_history_memo_return::create();
-			_return_value->_ret_0 = get_history_memo(_args->addresses, _args->memo, _args->limit);
+			_return_value->_ret_0 = get_history_memo(_args->addresses, _args->memo, _args->filter);
 			return _return_value;
 		}
 		case 0x79cedc8662eeb2e4ull: {

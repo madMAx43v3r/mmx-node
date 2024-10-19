@@ -409,6 +409,7 @@ struct pooling_error_e;
 struct pooling_info_t;
 struct pooling_stats_t;
 class pubkey_t;
+struct query_filter_t;
 class signature_t;
 class skey_t;
 struct spend_options_t;
@@ -814,6 +815,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_plot_nft_info_
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_pooling_error_e; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_pooling_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_pooling_stats_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_query_filter_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_spend_options_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_info_t; ///< \private
@@ -1226,6 +1228,7 @@ void read(TypeInput& in, ::mmx::pooling_error_e& value, const TypeCode* type_cod
 void read(TypeInput& in, ::mmx::pooling_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::pooling_stats_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::pubkey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::query_filter_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::skey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::spend_options_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1636,6 +1639,7 @@ void write(TypeOutput& out, const ::mmx::pooling_error_e& value, const TypeCode*
 void write(TypeOutput& out, const ::mmx::pooling_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::pooling_stats_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::pubkey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::query_filter_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::signature_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::skey_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::spend_options_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -2046,6 +2050,7 @@ void read(std::istream& in, ::mmx::pooling_error_e& value); ///< \private
 void read(std::istream& in, ::mmx::pooling_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::pooling_stats_t& value); ///< \private
 void read(std::istream& in, ::mmx::pubkey_t& value); ///< \private
+void read(std::istream& in, ::mmx::query_filter_t& value); ///< \private
 void read(std::istream& in, ::mmx::signature_t& value); ///< \private
 void read(std::istream& in, ::mmx::skey_t& value); ///< \private
 void read(std::istream& in, ::mmx::spend_options_t& value); ///< \private
@@ -2456,6 +2461,7 @@ void write(std::ostream& out, const ::mmx::pooling_error_e& value); ///< \privat
 void write(std::ostream& out, const ::mmx::pooling_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::pooling_stats_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::pubkey_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::query_filter_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::signature_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::skey_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::spend_options_t& value); ///< \private
@@ -2866,6 +2872,7 @@ void accept(Visitor& visitor, const ::mmx::pooling_error_e& value); ///< \privat
 void accept(Visitor& visitor, const ::mmx::pooling_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::pooling_stats_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::pubkey_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::query_filter_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::signature_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::skey_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::spend_options_t& value); ///< \private
@@ -12432,6 +12439,29 @@ struct type<::mmx::pubkey_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::pubkey_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::query_filter_t> {
+	void read(TypeInput& in, ::mmx::query_filter_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::query_filter_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::query_filter_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::query_filter_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::query_filter_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::query_filter_t& value, bool special = false);
 };
 
 /// \private

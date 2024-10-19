@@ -5,6 +5,7 @@
 #include <mmx/Node_get_history_memo.hxx>
 #include <mmx/Node_get_history_memo_return.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_history_memo::VNX_TYPE_HASH(0x693c0c791039287cull);
-const vnx::Hash64 Node_get_history_memo::VNX_CODE_HASH(0x539a06e089a8aa5ull);
+const vnx::Hash64 Node_get_history_memo::VNX_CODE_HASH(0xa755ca3fe7d77f40ull);
 
 vnx::Hash64 Node_get_history_memo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +50,7 @@ void Node_get_history_memo::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, addresses);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, memo);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, limit);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, filter);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,7 +58,7 @@ void Node_get_history_memo::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_history_memo\"";
 	_out << ", \"addresses\": "; vnx::write(_out, addresses);
 	_out << ", \"memo\": "; vnx::write(_out, memo);
-	_out << ", \"limit\": "; vnx::write(_out, limit);
+	_out << ", \"filter\": "; vnx::write(_out, filter);
 	_out << "}";
 }
 
@@ -72,7 +73,7 @@ vnx::Object Node_get_history_memo::to_object() const {
 	_object["__type"] = "mmx.Node.get_history_memo";
 	_object["addresses"] = addresses;
 	_object["memo"] = memo;
-	_object["limit"] = limit;
+	_object["filter"] = filter;
 	return _object;
 }
 
@@ -80,8 +81,8 @@ void Node_get_history_memo::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "addresses") {
 			_entry.second.to(addresses);
-		} else if(_entry.first == "limit") {
-			_entry.second.to(limit);
+		} else if(_entry.first == "filter") {
+			_entry.second.to(filter);
 		} else if(_entry.first == "memo") {
 			_entry.second.to(memo);
 		}
@@ -95,8 +96,8 @@ vnx::Variant Node_get_history_memo::get_field(const std::string& _name) const {
 	if(_name == "memo") {
 		return vnx::Variant(memo);
 	}
-	if(_name == "limit") {
-		return vnx::Variant(limit);
+	if(_name == "filter") {
+		return vnx::Variant(filter);
 	}
 	return vnx::Variant();
 }
@@ -106,8 +107,8 @@ void Node_get_history_memo::set_field(const std::string& _name, const vnx::Varia
 		_value.to(addresses);
 	} else if(_name == "memo") {
 		_value.to(memo);
-	} else if(_name == "limit") {
-		_value.to(limit);
+	} else if(_name == "filter") {
+		_value.to(filter);
 	}
 }
 
@@ -135,12 +136,14 @@ std::shared_ptr<vnx::TypeCode> Node_get_history_memo::static_create_type_code() 
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_history_memo";
 	type_code->type_hash = vnx::Hash64(0x693c0c791039287cull);
-	type_code->code_hash = vnx::Hash64(0x539a06e089a8aa5ull);
+	type_code->code_hash = vnx::Hash64(0xa755ca3fe7d77f40ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
 	type_code->native_size = sizeof(::mmx::Node_get_history_memo);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_history_memo>(); };
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::query_filter_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_history_memo_return::static_get_type_code();
 	type_code->fields.resize(3);
@@ -158,10 +161,9 @@ std::shared_ptr<vnx::TypeCode> Node_get_history_memo::static_create_type_code() 
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 4;
-		field.name = "limit";
-		field.value = vnx::to_string(-1);
-		field.code = {7};
+		field.is_extended = true;
+		field.name = "filter";
+		field.code = {19, 0};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -204,16 +206,14 @@ void read(TypeInput& in, ::mmx::Node_get_history_memo& value, const TypeCode* ty
 			}
 		}
 	}
-	const auto* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.memo, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.filter, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -232,10 +232,9 @@ void write(TypeOutput& out, const ::mmx::Node_get_history_memo& value, const Typ
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(4);
-	vnx::write_value(_buf + 0, value.limit);
 	vnx::write(out, value.addresses, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.memo, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.filter, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_history_memo& value) {
