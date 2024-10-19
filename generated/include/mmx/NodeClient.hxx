@@ -115,17 +115,17 @@ public:
 	
 	::mmx::uint128 get_balance(const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
-	std::map<::mmx::addr_t, ::mmx::uint128> get_balances(const ::mmx::addr_t& address = ::mmx::addr_t());
+	std::map<::mmx::addr_t, ::mmx::uint128> get_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::set<::mmx::addr_t>& whitelist = {}, const int32_t& limit = 100);
 	
-	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t());
+	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::set<::mmx::addr_t>& whitelist = {}, const int32_t& limit = 100);
 	
 	::mmx::uint128 get_total_balance(const std::vector<::mmx::addr_t>& addresses = {}, const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
-	std::map<::mmx::addr_t, ::mmx::uint128> get_total_balances(const std::vector<::mmx::addr_t>& addresses = {});
+	std::map<::mmx::addr_t, ::mmx::uint128> get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, const std::set<::mmx::addr_t>& whitelist = {}, const int32_t& limit = 100);
 	
-	std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> get_all_balances(const std::vector<::mmx::addr_t>& addresses = {});
+	std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> get_all_balances(const std::vector<::mmx::addr_t>& addresses = {}, const std::set<::mmx::addr_t>& whitelist = {}, const int32_t& limit = 100);
 	
-	std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = -1, const vnx::bool_t& recent = 0);
+	std::vector<::mmx::exec_entry_t> get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = 100, const vnx::bool_t& recent = 0);
 	
 	std::map<std::string, ::mmx::vm::varptr_t> read_storage(const ::mmx::addr_t& contract = ::mmx::addr_t(), const uint32_t& height = -1);
 	

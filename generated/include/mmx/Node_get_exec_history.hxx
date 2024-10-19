@@ -15,7 +15,7 @@ class MMX_EXPORT Node_get_exec_history : public ::vnx::Value {
 public:
 	
 	::mmx::addr_t address;
-	int32_t limit = -1;
+	int32_t limit = 100;
 	vnx::bool_t recent = 0;
 	
 	typedef ::vnx::Value Super;

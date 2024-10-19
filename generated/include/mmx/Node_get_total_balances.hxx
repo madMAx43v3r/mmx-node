@@ -15,6 +15,8 @@ class MMX_EXPORT Node_get_total_balances : public ::vnx::Value {
 public:
 	
 	std::vector<::mmx::addr_t> addresses;
+	std::set<::mmx::addr_t> whitelist;
+	int32_t limit = 100;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,9 +60,11 @@ public:
 
 template<typename T>
 void Node_get_total_balances::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Node_get_total_balances>(1);
+	_visitor.template type_begin<Node_get_total_balances>(3);
 	_visitor.type_field("addresses", 0); _visitor.accept(addresses);
-	_visitor.template type_end<Node_get_total_balances>(1);
+	_visitor.type_field("whitelist", 1); _visitor.accept(whitelist);
+	_visitor.type_field("limit", 2); _visitor.accept(limit);
+	_visitor.template type_end<Node_get_total_balances>(3);
 }
 
 

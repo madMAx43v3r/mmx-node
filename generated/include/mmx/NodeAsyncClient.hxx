@@ -171,11 +171,11 @@ public:
 			const std::function<void(const ::mmx::uint128&)>& _callback = std::function<void(const ::mmx::uint128&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), 
+	uint64_t get_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::set<::mmx::addr_t>& whitelist = {}, const int32_t& limit = 100, 
 			const std::function<void(const std::map<::mmx::addr_t, ::mmx::uint128>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, ::mmx::uint128>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), 
+	uint64_t get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::set<::mmx::addr_t>& whitelist = {}, const int32_t& limit = 100, 
 			const std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, ::mmx::balance_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
@@ -183,15 +183,15 @@ public:
 			const std::function<void(const ::mmx::uint128&)>& _callback = std::function<void(const ::mmx::uint128&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, 
+	uint64_t get_total_balances(const std::vector<::mmx::addr_t>& addresses = {}, const std::set<::mmx::addr_t>& whitelist = {}, const int32_t& limit = 100, 
 			const std::function<void(const std::map<::mmx::addr_t, ::mmx::uint128>&)>& _callback = std::function<void(const std::map<::mmx::addr_t, ::mmx::uint128>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_all_balances(const std::vector<::mmx::addr_t>& addresses = {}, 
+	uint64_t get_all_balances(const std::vector<::mmx::addr_t>& addresses = {}, const std::set<::mmx::addr_t>& whitelist = {}, const int32_t& limit = 100, 
 			const std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>& _callback = std::function<void(const std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = -1, const vnx::bool_t& recent = 0, 
+	uint64_t get_exec_history(const ::mmx::addr_t& address = ::mmx::addr_t(), const int32_t& limit = 100, const vnx::bool_t& recent = 0, 
 			const std::function<void(const std::vector<::mmx::exec_entry_t>&)>& _callback = std::function<void(const std::vector<::mmx::exec_entry_t>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
