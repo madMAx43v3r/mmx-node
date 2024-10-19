@@ -311,7 +311,7 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	info.operations = tx->get_operations();
 	info.deployed = tx->deploy;
 
-	std::unordered_set<addr_t> contracts;
+	std::set<addr_t> contracts;
 	for(const auto& in : info.inputs) {
 		contracts.insert(in.contract);
 		info.input_amounts[in.contract] += in.amount;
@@ -607,7 +607,7 @@ uint128 Node::get_balance(const addr_t& address, const addr_t& currency) const
 uint128 Node::get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency) const
 {
 	uint128 total = 0;
-	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
+	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
 		total += get_balance(address, currency);
 	}
 	return total;
@@ -642,7 +642,7 @@ std::map<addr_t, balance_t> Node::get_contract_balances(const addr_t& address) c
 std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, uint128> totals;
-	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
+	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
 		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
 		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result);
 		for(const auto& entry : result) {
@@ -657,7 +657,7 @@ std::map<addr_t, uint128> Node::get_total_balances(const std::vector<addr_t>& ad
 std::map<std::pair<addr_t, addr_t>, uint128> Node::get_all_balances(const std::vector<addr_t>& addresses) const
 {
 	std::map<std::pair<addr_t, addr_t>, uint128> totals;
-	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end())) {
+	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
 		std::vector<std::pair<std::pair<addr_t, addr_t>, uint128>> result;
 		balance_table.find_range(std::make_pair(address, addr_t()), std::make_pair(address, addr_t::ones()), result);
 		for(const auto& entry : result) {
