@@ -2516,7 +2516,7 @@ Vue.component('create-virtual-plot-contract', {
 				.then(data => this.binary = data);
 		fetch('/wapi/wallet/address?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.owner = data[0]);
+				.then(data => this.owner = data);
 		fetch('/wapi/wallet/keys?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.farmer_key = data.farmer_public_key);

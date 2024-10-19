@@ -151,10 +151,10 @@ module Node implements vnx.addons.HttpComponent {
 	vector<Transaction*> get_transactions(vector<hash_t> ids) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<tx_entry_t> get_history(vector<addr_t> addresses, uint since, uint until = -1, int limit = -1) const;
+	vector<tx_entry_t> get_history(vector<addr_t> addresses, query_filter_t filter) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<tx_entry_t> get_history_memo(vector<addr_t> addresses, string memo, int limit = -1) const;
+	vector<tx_entry_t> get_history_memo(vector<addr_t> addresses, string memo, query_filter_t filter) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_balance(addr_t address, addr_t currency) const;

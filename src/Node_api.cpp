@@ -376,41 +376,117 @@ std::vector<std::shared_ptr<const Transaction>> Node::get_transactions(const std
 	return list;
 }
 
-std::vector<tx_entry_t> Node::get_history(
-		const std::vector<addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) const
+inline bool filter_txio(const txio_entry_t& entry, const query_filter_t& filter)
 {
+	if(filter.type && entry.type != *filter.type) {
+		return false;
+	}
+	if(!filter.currency.empty() && !filter.currency.count(entry.contract)) {
+		return false;
+	}
+	return true;
+}
+
+std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, const query_filter_t& filter) const
+{
+	std::map<addr_t, uint32_t> count_map;
+	std::map<addr_t, std::tuple<addr_t, uint32_t, uint32_t>> state_map;
+
+	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
+		state_map[address] = std::make_tuple(address, filter.until, -1);
+	}
+	const uint32_t chunk_size = 100;
+	const uint64_t max_search = filter.max_search ? filter.max_search : -1;
+
+	uint64_t num_search = 0;
 	std::vector<tx_entry_t> res;
-	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end()))
-	{
-		std::vector<txio_entry_t> entries;
-		txio_log.find_last_range(std::make_tuple(address, since, 0), std::make_tuple(address, until, -1), entries, size_t(limit));
-		for(const auto& entry : entries) {
-			res.push_back(tx_entry_t::create_ex(entry));
+	while(!state_map.empty() && num_search < max_search) {
+		std::vector<addr_t> done;
+		for(auto& entry : state_map) {
+			const auto& address = entry.first;
+			std::vector<std::pair<std::tuple<addr_t, uint32_t, uint32_t>, txio_entry_t>> entries;
+			num_search += txio_log.find_last_range(
+					std::make_tuple(address, filter.since, 0), entry.second, entries, chunk_size);
+
+			auto& count = count_map[address];
+			for(const auto& entry : entries) {
+				if(filter_txio(entry.second, filter)) {
+					res.push_back(tx_entry_t::create_ex(entry.second));
+					count++;
+				}
+			}
+			if(entries.size()) {
+				entry.second = entries.back().first;
+			}
+			if(entries.size() < chunk_size || count >= uint32_t(filter.limit)) {
+				done.push_back(address);
+			}
+		}
+		for(const auto& address : done) {
+			// add remaining entries for last block
+			auto end = state_map[address];
+			auto begin = end;
+			std::get<2>(begin) = 0;
+			std::vector<txio_entry_t> more;
+			num_search += txio_log.find_last_range(begin, end, more, -1);
+			for(const auto& entry : more) {
+				if(filter_txio(entry, filter)) {
+					res.push_back(tx_entry_t::create_ex(entry));
+				}
+			}
+			state_map.erase(address);
 		}
 	}
 	std::sort(res.begin(), res.end(), [](const tx_entry_t& L, const tx_entry_t& R) -> bool {
 		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo, L.amount) >
 			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo, R.amount);
 	});
-	if(limit >= 0 && res.size() > size_t(limit)) {
-		res.resize(limit);
+	if(filter.limit >= 0 && res.size() > size_t(filter.limit)) {
+		size_t i = filter.limit;
+		for(const auto cutoff = res[i].height; i < res.size() && res[i].height == cutoff; ++i);
+		res.resize(i);
 	}
 	std::reverse(res.begin(), res.end());
 	return res;
 }
 
-std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const int32_t& limit) const
+std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const query_filter_t& filter) const
 {
+	std::map<addr_t, uint32_t> count_map;
+	std::map<addr_t, std::tuple<hash_t, uint32_t, uint32_t>> state_map;
+
+	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
+		state_map[address] = std::make_tuple(hash_t(address + memo), filter.until, -1);
+	}
+	const uint32_t chunk_size = 100;
+	const uint64_t max_search = filter.max_search ? filter.max_search : -1;
+
+	uint64_t num_search = 0;
 	std::vector<tx_entry_t> res;
-	for(const auto& address : std::unordered_set<addr_t>(addresses.begin(), addresses.end()))
-	{
-		const hash_t key(address + memo);
-		std::vector<std::pair<std::tuple<hash_t, uint32_t, uint32_t>, addr_t>> list;
-		memo_log.find_last_range(std::make_tuple(key, 0, 0), std::make_tuple(key, -1, -1), list, size_t(limit));
-		for(const auto& index : list) {
-			txio_entry_t entry;
-			if(txio_log.find(std::make_tuple(index.second, std::get<1>(index.first), std::get<2>(index.first)), entry)) {
-				res.push_back(tx_entry_t::create_ex(entry));
+	while(!state_map.empty() && num_search < max_search) {
+		std::vector<addr_t> done;
+		for(auto& entry : state_map) {
+			const auto& address = entry.first;
+			const auto& key = std::get<0>(entry.second);
+
+			std::vector<std::pair<std::tuple<hash_t, uint32_t, uint32_t>, addr_t>> entries;
+			num_search += memo_log.find_last_range(std::make_tuple(key, filter.since, 0), entry.second, entries, chunk_size);
+
+			auto& count = count_map[address];
+			for(const auto& index : entries) {
+				txio_entry_t entry;
+				if(txio_log.find(std::make_tuple(index.second, std::get<1>(index.first), std::get<2>(index.first)), entry)) {
+					if(filter_txio(entry, filter)) {
+						res.push_back(tx_entry_t::create_ex(entry));
+						count++;
+					}
+				}
+			}
+			if(entries.size()) {
+				entry.second = entries.back().first;
+			}
+			if(entries.size() < chunk_size || count >= uint32_t(filter.limit)) {
+				done.push_back(address);
 			}
 		}
 	}
@@ -418,8 +494,10 @@ std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addres
 		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo, L.amount) >
 			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo, R.amount);
 	});
-	if(limit >= 0 && res.size() > size_t(limit)) {
-		res.resize(limit);
+	if(filter.limit >= 0 && res.size() > size_t(filter.limit)) {
+		size_t i = filter.limit;
+		for(const auto cutoff = res[i].height; i < res.size() && res[i].height == cutoff; ++i);
+		res.resize(i);
 	}
 	std::reverse(res.begin(), res.end());
 	return res;

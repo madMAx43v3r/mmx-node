@@ -96,11 +96,11 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void update_cache(uint index) const;
 	
-	vector<tx_entry_t> get_history(uint index, uint since, uint until = -1, int limit = -1, optional<tx_type_e> type, optional<addr_t> currency) const;
+	vector<tx_entry_t> get_history(uint index, query_filter_t filter) const;
 	
-	vector<tx_entry_t> get_history_memo(uint index, string memo, int limit = -1, optional<addr_t> currency) const;
+	vector<tx_entry_t> get_history_memo(uint index, string memo, query_filter_t filter) const;
 	
-	vector<tx_log_entry_t> get_tx_log(uint index, int limit = -1, uint offset) const;
+	vector<tx_log_entry_t> get_tx_log(uint index, int limit = 100) const;
 	
 	vector<txin_t> gather_inputs_for(uint index, uint128 amount, addr_t currency, spend_options_t options) const;
 	

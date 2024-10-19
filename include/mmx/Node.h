@@ -90,9 +90,9 @@ protected:
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
 
-	std::vector<tx_entry_t> get_history(const std::vector<addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) const override;
+	std::vector<tx_entry_t> get_history(const std::vector<addr_t>& addresses, const query_filter_t& filter) const override;
 
-	std::vector<tx_entry_t> get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const int32_t& limit) const override;
+	std::vector<tx_entry_t> get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const query_filter_t& filter) const override;
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 

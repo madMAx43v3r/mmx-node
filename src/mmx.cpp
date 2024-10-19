@@ -966,10 +966,11 @@ int main(int argc, char** argv)
 			}
 			else if(command == "log")
 			{
-				int32_t since = 0;
-				vnx::read_config("$3", since);
+				mmx::query_filter_t filter;
+				filter.limit = limit;
+				vnx::read_config("$3", filter.since);
 
-				show_history(wallet.get_history(index, since, -1, limit), node, params);
+				show_history(wallet.get_history(index, filter), node, params);
 			}
 			else if(command == "lock")
 			{
@@ -1218,10 +1219,11 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Missing address argument! (node history <address> [since])";
 					goto failed;
 				}
-				int64_t since = 0;
-				vnx::read_config("$4", since);
+				mmx::query_filter_t filter;
+				filter.limit = limit;
+				vnx::read_config("$4", filter.since);
 
-				show_history(node.get_history({address}, since), node, params);
+				show_history(node.get_history({address}, filter), node, params);
 			}
 			else if(command == "peers")
 			{

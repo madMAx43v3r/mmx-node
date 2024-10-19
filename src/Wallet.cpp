@@ -672,49 +672,45 @@ std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint
 	return tx->inputs;
 }
 
-std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit,
-											const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const
+std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const query_filter_t& filter_) const
 {
 	const auto wallet = get_wallet(index);
 
+	auto filter = filter_;
+	if(filter.white_list) {
+		filter.currency = token_whitelist;
+	}
 	std::vector<tx_entry_t> result;
-	for(const auto& entry : node->get_history(wallet->get_all_addresses(), since, until, (type || currency ? -1 : limit))) {
-		if((!type || entry.type == *type) && (!currency || entry.contract == *currency)) {
-			auto tmp = entry;
-			tmp.is_validated = token_whitelist.count(entry.contract);
-			result.push_back(tmp);
-		}
+	for(auto& entry : node->get_history(wallet->get_all_addresses(), filter)) {
+		entry.is_validated = filter.white_list || token_whitelist.count(entry.contract);
+		result.push_back(entry);
 	}
 	return result;
 }
 
 std::vector<tx_entry_t> Wallet::get_history_memo(
-		const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<addr_t>& currency) const
+		const uint32_t& index, const std::string& memo, const query_filter_t& filter_) const
 {
 	const auto wallet = get_wallet(index);
 
+	auto filter = filter_;
+	if(filter.white_list) {
+		filter.currency = token_whitelist;
+	}
 	std::vector<tx_entry_t> result;
-	for(const auto& entry : node->get_history_memo(wallet->get_all_addresses(), memo, limit)) {
-		if(!currency || entry.contract == *currency) {
-			auto tmp = entry;
-			tmp.is_validated = token_whitelist.count(entry.contract);
-			result.push_back(tmp);
-		}
+	for(auto& entry : node->get_history_memo(wallet->get_all_addresses(), memo, filter)) {
+		entry.is_validated = filter.white_list || token_whitelist.count(entry.contract);
+		result.push_back(entry);
 	}
 	return result;
 }
 
-std::vector<tx_log_entry_t> Wallet::get_tx_log(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
+std::vector<tx_log_entry_t> Wallet::get_tx_log(const uint32_t& index, const int32_t& limit) const
 {
 	const auto wallet = get_wallet(index);
-	const size_t limit = limit_ >= 0 ? limit_ : uint32_t(-1);
 
 	std::vector<tx_log_entry_t> res;
-	tx_log.find_last(wallet->get_address(0), res, limit + offset);
-
-	if(res.size() > limit) {
-		res.resize(limit);
-	}
+	tx_log.find_last(wallet->get_address(0), res, limit);
 	return res;
 }
 

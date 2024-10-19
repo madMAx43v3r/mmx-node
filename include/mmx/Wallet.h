@@ -108,13 +108,12 @@ protected:
 	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint128& amount,
 											const addr_t& currency, const spend_options_t& options) const override;
 
-	std::vector<tx_entry_t> get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit,
-										const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const override;
+	std::vector<tx_entry_t> get_history(const uint32_t& index, const query_filter_t& filter) const override;
 
 	std::vector<tx_entry_t> get_history_memo(
-			const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<addr_t>& currency) const override;
+			const uint32_t& index, const std::string& memo, const query_filter_t& filter) const override;
 
-	std::vector<tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const override;
+	std::vector<tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit) const override;
 
 	balance_t get_balance(const uint32_t& index, const addr_t& currency) const override;
 
