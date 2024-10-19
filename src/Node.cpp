@@ -343,6 +343,8 @@ void Node::main()
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_nft_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_nft_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_template_binary.dat"));
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_escrow_binary.dat"));
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_time_lock_binary.dat"));
 		// TODO: testnet rewards
 
 		for(auto tx : block->tx_list) {
@@ -1150,11 +1152,20 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				swap_index.insert(std::make_tuple(hash_t("ANY" + currency), block->height, ticket), tx->id);
 				swap_index.insert(std::make_tuple(hash_t(token + currency), block->height, ticket), tx->id);
 			}
+			int owner_index = -1;
+
 			if(exec->binary == params->plot_binary
 				|| exec->binary == params->plot_nft_binary
-				|| exec->binary == params->offer_binary)
+				|| exec->binary == params->offer_binary
+				|| exec->binary == params->time_lock_binary)
 			{
-				owner_map.insert(std::make_tuple(exec->get_arg(0).to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
+				owner_index = 0;
+			}
+			if(exec->binary == params->escrow_binary) {
+				owner_index = 2;
+			}
+			if(owner_index >= 0) {
+				owner_map.insert(std::make_tuple(exec->get_arg(owner_index).to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
 			}
 			contract_log.insert(std::make_tuple(exec->binary, block->height, ticket), tx->id);
 		}
