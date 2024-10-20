@@ -73,6 +73,7 @@ public:
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
 	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_operations() const;
 	virtual std::map<::mmx::addr_t, std::pair<::mmx::uint128, ::mmx::uint128>> get_balance() const;
+	virtual std::vector<uint8_t> hash_serialize(const vnx::bool_t& full_hash = false) const;
 	virtual ::mmx::tx_index_t get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, const uint32_t& height = 0, const int64_t& file_offset = 0) const;
 	
 	static std::shared_ptr<Transaction> create();

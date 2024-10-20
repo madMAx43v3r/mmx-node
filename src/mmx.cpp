@@ -1262,14 +1262,24 @@ int main(int argc, char** argv)
 				else if(subject == "tx")
 				{
 					mmx::hash_t txid;
+					std::string format = "json";
 					vnx::read_config("$4", txid);
+					vnx::read_config("$5", format);
 
 					const auto tx = node.get_transaction(txid, true);
-					{
-						std::stringstream ss;
-						vnx::PrettyPrinter printer(ss);
-						vnx::accept(printer, tx);
-						std::cout << ss.str() << std::endl;
+					if(format == "json") {
+						std::cout << vnx::to_pretty_string(tx);
+					} else if(format == "compact") {
+						std::cout << vnx::to_string(tx) << std::endl;
+					} else if(format == "hash") {
+						const auto tmp = tx->hash_serialize(false);
+						std::cout << vnx::to_hex_string(tmp.data(), tmp.size()) << std::endl;
+					} else if(format == "full_hash") {
+						const auto tmp = tx->hash_serialize(true);
+						std::cout << vnx::to_hex_string(tmp.data(), tmp.size()) << std::endl;
+					} else {
+						vnx::log_error() << "invalid format: " << format << std::endl;
+						goto failed;
 					}
 				}
 				else if(subject == "contract")
