@@ -8,6 +8,7 @@
 #include <mmx/package.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -18,7 +19,7 @@ struct MMX_EXPORT txio_t : vnx::struct_t {
 	
 	::mmx::addr_t address;
 	::mmx::addr_t contract;
-	uint64_t amount = 0;
+	::mmx::uint128 amount;
 	vnx::optional<std::string> memo;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;

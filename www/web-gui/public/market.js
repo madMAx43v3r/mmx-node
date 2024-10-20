@@ -262,6 +262,7 @@ Vue.component('market-offers', {
 			req.index = this.wallet;
 			req.address = this.offer.address;
 			req.amount = this.trade_amount;
+			req.price = this.trade_estimate_data ? this.trade_estimate_data.inv_price : this.offer.inv_price;
 			req.options = {};
 			req.options.fee_ratio = this.fee_ratio;
 			if(estimate) {
@@ -297,6 +298,7 @@ Vue.component('market-offers', {
 			const req = {};
 			req.index = this.wallet;
 			req.address = address;
+			req.price = this.offer.inv_price;
 			req.options = {};
 			req.options.fee_ratio = this.fee_ratio;
 			if(estimate) {
@@ -326,12 +328,12 @@ Vue.component('market-offers', {
 			}
 		},
 		is_valid_trade() {
+			const bid_amount = this.trade_estimate_data ? parseFloat(this.trade_estimate_data.trade.amount) : 0;
 			return this.offer
 				&& this.trade_amount > 0
 				&& this.trade_amount <= this.wallet_balance
-				&& this.trade_estimate_data
-				&& this.trade_estimate_data.trade.amount > 0
-				&& this.trade_estimate_data.trade.amount <= this.offer.bid_balance;
+				&& bid_amount > 0
+				&& bid_amount <= this.offer.bid_balance;
 		},
 		is_valid_trade_amount() {
 			if(this.trade_amount > this.wallet_balance) {

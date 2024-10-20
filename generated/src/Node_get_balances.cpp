@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_balances::VNX_TYPE_HASH(0x1c8af02c41e96460ull);
-const vnx::Hash64 Node_get_balances::VNX_CODE_HASH(0x14ad68092a4fdaaull);
+const vnx::Hash64 Node_get_balances::VNX_CODE_HASH(0x59617d62fbeb0b88ull);
 
 vnx::Hash64 Node_get_balances::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,12 +48,16 @@ void Node_get_balances::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_balances;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, address);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, whitelist);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, limit);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_balances::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_balances\"";
 	_out << ", \"address\": "; vnx::write(_out, address);
+	_out << ", \"whitelist\": "; vnx::write(_out, whitelist);
+	_out << ", \"limit\": "; vnx::write(_out, limit);
 	_out << "}";
 }
 
@@ -67,6 +71,8 @@ vnx::Object Node_get_balances::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_balances";
 	_object["address"] = address;
+	_object["whitelist"] = whitelist;
+	_object["limit"] = limit;
 	return _object;
 }
 
@@ -74,6 +80,10 @@ void Node_get_balances::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "address") {
 			_entry.second.to(address);
+		} else if(_entry.first == "limit") {
+			_entry.second.to(limit);
+		} else if(_entry.first == "whitelist") {
+			_entry.second.to(whitelist);
 		}
 	}
 }
@@ -82,12 +92,22 @@ vnx::Variant Node_get_balances::get_field(const std::string& _name) const {
 	if(_name == "address") {
 		return vnx::Variant(address);
 	}
+	if(_name == "whitelist") {
+		return vnx::Variant(whitelist);
+	}
+	if(_name == "limit") {
+		return vnx::Variant(limit);
+	}
 	return vnx::Variant();
 }
 
 void Node_get_balances::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "address") {
 		_value.to(address);
+	} else if(_name == "whitelist") {
+		_value.to(whitelist);
+	} else if(_name == "limit") {
+		_value.to(limit);
 	}
 }
 
@@ -115,7 +135,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_balances::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_balances";
 	type_code->type_hash = vnx::Hash64(0x1c8af02c41e96460ull);
-	type_code->code_hash = vnx::Hash64(0x14ad68092a4fdaaull);
+	type_code->code_hash = vnx::Hash64(0x59617d62fbeb0b88ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -123,12 +143,25 @@ std::shared_ptr<vnx::TypeCode> Node_get_balances::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_balances>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_balances_return::static_get_type_code();
-	type_code->fields.resize(1);
+	type_code->fields.resize(3);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
 		field.name = "address";
 		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[1];
+		field.is_extended = true;
+		field.name = "whitelist";
+		field.code = {12, 11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.data_size = 4;
+		field.name = "limit";
+		field.value = vnx::to_string(100);
+		field.code = {7};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -171,12 +204,16 @@ void read(TypeInput& in, ::mmx::Node_get_balances& value, const TypeCode* type_c
 			}
 		}
 	}
-	in.read(type_code->total_field_size);
+	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[2]) {
+			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.whitelist, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -195,7 +232,10 @@ void write(TypeOutput& out, const ::mmx::Node_get_balances& value, const TypeCod
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
+	auto* const _buf = out.write(4);
+	vnx::write_value(_buf + 0, value.limit);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.whitelist, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_balances& value) {

@@ -15,13 +15,18 @@ function check_owner() const
 	}
 }
 
+function is_locked() const public
+{
+	return this.height < unlock_height;
+}
+
 function deposit() public {}
 
 function withdraw(address, amount, currency) public
 {
 	check_owner();
 	
-	if(this.height < unlock_height) {
+	if(is_locked()) {
 		fail("still locked", 2);
 	}
 	send(bech32(address), amount, bech32(currency));

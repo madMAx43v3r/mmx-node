@@ -8,6 +8,7 @@
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
+#include <mmx/uint128.hpp>
 
 
 namespace mmx {
@@ -16,10 +17,11 @@ struct MMX_EXPORT swap_entry_t : vnx::struct_t {
 	
 	
 	uint32_t height = 0;
+	int64_t time_stamp = 0;
 	::mmx::hash_t txid;
 	std::string type;
 	uint8_t index = 0;
-	uint64_t amount = 0;
+	::mmx::uint128 amount;
 	vnx::optional<vnx::float64_t> value;
 	vnx::optional<std::string> symbol;
 	vnx::optional<::mmx::addr_t> user;
@@ -64,16 +66,17 @@ struct MMX_EXPORT swap_entry_t : vnx::struct_t {
 
 template<typename T>
 void swap_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<swap_entry_t>(8);
+	_visitor.template type_begin<swap_entry_t>(9);
 	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("txid", 1); _visitor.accept(txid);
-	_visitor.type_field("type", 2); _visitor.accept(type);
-	_visitor.type_field("index", 3); _visitor.accept(index);
-	_visitor.type_field("amount", 4); _visitor.accept(amount);
-	_visitor.type_field("value", 5); _visitor.accept(value);
-	_visitor.type_field("symbol", 6); _visitor.accept(symbol);
-	_visitor.type_field("user", 7); _visitor.accept(user);
-	_visitor.template type_end<swap_entry_t>(8);
+	_visitor.type_field("time_stamp", 1); _visitor.accept(time_stamp);
+	_visitor.type_field("txid", 2); _visitor.accept(txid);
+	_visitor.type_field("type", 3); _visitor.accept(type);
+	_visitor.type_field("index", 4); _visitor.accept(index);
+	_visitor.type_field("amount", 5); _visitor.accept(amount);
+	_visitor.type_field("value", 6); _visitor.accept(value);
+	_visitor.type_field("symbol", 7); _visitor.accept(symbol);
+	_visitor.type_field("user", 8); _visitor.accept(user);
+	_visitor.template type_end<swap_entry_t>(9);
 }
 
 

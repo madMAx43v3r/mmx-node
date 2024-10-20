@@ -16,6 +16,7 @@ struct MMX_EXPORT tx_index_t : vnx::struct_t {
 	uint32_t height = 0;
 	uint32_t static_cost = 0;
 	uint32_t contract_read_cost = 0;
+	int64_t time_stamp = 0;
 	int64_t file_offset = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -58,12 +59,13 @@ struct MMX_EXPORT tx_index_t : vnx::struct_t {
 
 template<typename T>
 void tx_index_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_index_t>(4);
+	_visitor.template type_begin<tx_index_t>(5);
 	_visitor.type_field("height", 0); _visitor.accept(height);
 	_visitor.type_field("static_cost", 1); _visitor.accept(static_cost);
 	_visitor.type_field("contract_read_cost", 2); _visitor.accept(contract_read_cost);
-	_visitor.type_field("file_offset", 3); _visitor.accept(file_offset);
-	_visitor.template type_end<tx_index_t>(4);
+	_visitor.type_field("time_stamp", 3); _visitor.accept(time_stamp);
+	_visitor.type_field("file_offset", 4); _visitor.accept(file_offset);
+	_visitor.template type_end<tx_index_t>(5);
 }
 
 

@@ -42,6 +42,7 @@ public:
 	virtual uint64_t num_bytes(const vnx::bool_t& total = true) const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual ::vnx::Variant read_field(const std::string& name = "") const;
+	virtual ::vnx::Variant get_arg(const uint32_t& index = 0) const;
 	
 	static std::shared_ptr<Executable> create();
 	std::shared_ptr<vnx::Value> clone() const override;

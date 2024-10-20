@@ -94,7 +94,7 @@ vnx::bool_t Transaction::did_fail() const
 	return exec_result->did_fail;
 }
 
-hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
+std::vector<uint8_t> Transaction::hash_serialize(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -131,10 +131,15 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	}
 	out.flush();
 
-	return hash_t(buffer);
+	return buffer;
 }
 
-void Transaction::add_input(const addr_t& currency, const addr_t& address, const uint64_t& amount)
+hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
+{
+	return hash_t(hash_serialize(full_hash));
+}
+
+void Transaction::add_input(const addr_t& currency, const addr_t& address, const uint128& amount)
 {
 	txin_t in;
 	in.address = address;
@@ -143,7 +148,7 @@ void Transaction::add_input(const addr_t& currency, const addr_t& address, const
 	inputs.push_back(in);
 }
 
-void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint64_t& amount, const vnx::optional<std::string>& memo)
+void Transaction::add_output(const addr_t& currency, const addr_t& address, const uint128& amount, const vnx::optional<std::string>& memo)
 {
 	if(memo && memo->size() > txio_t::MAX_MEMO_SIZE) {
 		throw std::logic_error("memo too long");
@@ -282,10 +287,11 @@ std::map<addr_t, std::pair<uint128, uint128>> Transaction::get_balance() const
 	return balance;
 }
 
-tx_index_t Transaction::get_tx_index(std::shared_ptr<const ::mmx::ChainParams> params, const uint32_t& height, const int64_t& file_offset) const
+tx_index_t Transaction::get_tx_index(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> block, const int64_t& file_offset) const
 {
 	tx_index_t index;
-	index.height = height;
+	index.height = block->height;
+	index.time_stamp = block->time_stamp;
 	index.file_offset = file_offset;
 	index.static_cost = static_cost;
 	if(deploy) {

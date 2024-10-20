@@ -5,6 +5,7 @@
 #define INCLUDE_mmx_Wallet_get_contracts_HXX_
 
 #include <mmx/package.hxx>
+#include <mmx/hash_t.hpp>
 #include <vnx/Value.h>
 
 
@@ -15,6 +16,7 @@ public:
 	
 	uint32_t index = 0;
 	vnx::optional<std::string> type_name;
+	vnx::optional<::mmx::hash_t> type_hash;
 	
 	typedef ::vnx::Value Super;
 	
@@ -58,10 +60,11 @@ public:
 
 template<typename T>
 void Wallet_get_contracts::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_get_contracts>(2);
+	_visitor.template type_begin<Wallet_get_contracts>(3);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("type_name", 1); _visitor.accept(type_name);
-	_visitor.template type_end<Wallet_get_contracts>(2);
+	_visitor.type_field("type_hash", 2); _visitor.accept(type_hash);
+	_visitor.template type_end<Wallet_get_contracts>(3);
 }
 
 

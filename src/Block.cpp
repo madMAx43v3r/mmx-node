@@ -87,11 +87,11 @@ std::vector<txio_entry_t> Block::get_inputs(std::shared_ptr<const ChainParams> p
 			txio_t in;
 			in.address = *tx->sender;
 			in.amount = tx->exec_result->total_fee;
-			res.push_back(txio_entry_t::create_ex(tx->id, height, tx_type_e::TXFEE, in));
+			res.push_back(txio_entry_t::create_ex(tx->id, height, time_stamp, tx_type_e::TXFEE, in));
 		}
 		if(!tx->exec_result || !tx->exec_result->did_fail) {
 			for(const auto& in : tx->get_inputs()) {
-				res.push_back(txio_entry_t::create_ex(tx->id, height, tx_type_e::SPEND, in));
+				res.push_back(txio_entry_t::create_ex(tx->id, height, time_stamp, tx_type_e::SPEND, in));
 			}
 		}
 	}
@@ -106,26 +106,26 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 		txio_t out;
 		out.address = *vdf_reward_addr;
 		out.amount = params->vdf_reward;
-		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::VDF_REWARD, out));
+		res.push_back(txio_entry_t::create_ex(hash, height, time_stamp, tx_type_e::VDF_REWARD, out));
 	}
 	if(reward_addr && reward_amount) {
 		txio_t out;
 		out.address = *reward_addr;
 		out.amount = reward_amount;
-		res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::REWARD, out));
+		res.push_back(txio_entry_t::create_ex(hash, height, time_stamp, tx_type_e::REWARD, out));
 	}
 	{
 		txio_t out;
 		out.address = params->project_addr;
 		out.amount = calc_project_reward(params, tx_fees);
 		if(out.amount) {
-			res.push_back(txio_entry_t::create_ex(hash, height, tx_type_e::PROJECT_REWARD, out));
+			res.push_back(txio_entry_t::create_ex(hash, height, time_stamp, tx_type_e::PROJECT_REWARD, out));
 		}
 	}
 	for(const auto& tx : tx_list) {
 		if(!tx->exec_result || !tx->exec_result->did_fail) {
 			for(const auto& out : tx->get_outputs()) {
-				res.push_back(txio_entry_t::create_ex(tx->id, height, tx_type_e::RECEIVE, out));
+				res.push_back(txio_entry_t::create_ex(tx->id, height, time_stamp, tx_type_e::RECEIVE, out));
 			}
 		}
 	}

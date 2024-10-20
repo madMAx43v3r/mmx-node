@@ -17,6 +17,7 @@ struct MMX_EXPORT txio_entry_t : ::mmx::txio_t {
 	
 	::mmx::hash_t txid;
 	uint32_t height = 0;
+	int64_t time_stamp = 0;
 	::mmx::tx_type_e type;
 	
 	typedef ::mmx::txio_t Super;
@@ -32,7 +33,7 @@ struct MMX_EXPORT txio_entry_t : ::mmx::txio_t {
 	std::string get_type_name() const;
 	const vnx::TypeCode* get_type_code() const;
 	
-	static ::mmx::txio_entry_t create_ex(const ::mmx::hash_t& txid = ::mmx::hash_t(), const uint32_t& height = 0, const ::mmx::tx_type_e& type = ::mmx::tx_type_e(), const ::mmx::txio_t& txio = ::mmx::txio_t());
+	static ::mmx::txio_entry_t create_ex(const ::mmx::hash_t& txid = ::mmx::hash_t(), const uint32_t& height = 0, const int64_t& time_stamp = 0, const ::mmx::tx_type_e& type = ::mmx::tx_type_e(), const ::mmx::txio_t& txio = ::mmx::txio_t());
 	
 	static std::shared_ptr<txio_entry_t> create();
 	std::shared_ptr<txio_entry_t> clone() const;
@@ -63,15 +64,16 @@ struct MMX_EXPORT txio_entry_t : ::mmx::txio_t {
 
 template<typename T>
 void txio_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<txio_entry_t>(7);
+	_visitor.template type_begin<txio_entry_t>(8);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
 	_visitor.type_field("memo", 3); _visitor.accept(memo);
 	_visitor.type_field("txid", 4); _visitor.accept(txid);
 	_visitor.type_field("height", 5); _visitor.accept(height);
-	_visitor.type_field("type", 6); _visitor.accept(type);
-	_visitor.template type_end<txio_entry_t>(7);
+	_visitor.type_field("time_stamp", 6); _visitor.accept(time_stamp);
+	_visitor.type_field("type", 7); _visitor.accept(type);
+	_visitor.template type_end<txio_entry_t>(8);
 }
 
 

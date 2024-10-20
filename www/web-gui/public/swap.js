@@ -929,7 +929,7 @@ Vue.component('swap-liquid', {
 		update_user() {
 			fetch('/wapi/wallet/address?index=' + this.wallet)
 				.then(response => response.json())
-				.then(data => this.user_address = data[0]);
+				.then(data => this.user_address = data);
 			this.update_wallet();
 		},
 		update_price() {

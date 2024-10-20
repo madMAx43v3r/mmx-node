@@ -14,6 +14,11 @@ namespace operation {
 
 vnx::bool_t Execute::is_valid() const
 {
+	for(const auto& arg : args) {
+		if(!arg.is_json_strict(100)) {
+			return false;
+		}
+	}
 	return Super::is_valid() && !method.empty();
 }
 
@@ -45,6 +50,14 @@ uint64_t Execute::calc_cost(std::shared_ptr<const ChainParams> params) const
 		payload += arg.size();
 	}
 	return Super::calc_cost(params) + payload * params->min_txfee_byte;
+}
+
+vnx::Variant Execute::get_arg(const uint32_t& index) const
+{
+	if(index < args.size()) {
+		return args[index];
+	}
+	return vnx::Variant();
 }
 
 

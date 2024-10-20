@@ -76,6 +76,8 @@
 #include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_plot_nft_info.hxx>
 #include <mmx/Node_get_plot_nft_info_return.hxx>
+#include <mmx/Node_get_plot_nft_target.hxx>
+#include <mmx/Node_get_plot_nft_target_return.hxx>
 #include <mmx/Node_get_recent_offers.hxx>
 #include <mmx/Node_get_recent_offers_return.hxx>
 #include <mmx/Node_get_recent_offers_for.hxx>
@@ -175,6 +177,7 @@
 #include <mmx/plot_nft_info_t.hxx>
 #include <mmx/pooling_error_e.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/swap_entry_t.hxx>
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
@@ -578,12 +581,10 @@ std::vector<std::shared_ptr<const ::mmx::Transaction>> NodeClient::get_transacti
 	}
 }
 
-std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) {
+std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::addr_t>& addresses, const ::mmx::query_filter_t& filter) {
 	auto _method = ::mmx::Node_get_history::create();
 	_method->addresses = addresses;
-	_method->since = since;
-	_method->until = until;
-	_method->limit = limit;
+	_method->filter = filter;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_history_return>(_return_value)) {
 		return _result->_ret_0;
@@ -594,11 +595,11 @@ std::vector<::mmx::tx_entry_t> NodeClient::get_history(const std::vector<::mmx::
 	}
 }
 
-std::vector<::mmx::tx_entry_t> NodeClient::get_history_memo(const std::vector<::mmx::addr_t>& addresses, const std::string& memo, const int32_t& limit) {
+std::vector<::mmx::tx_entry_t> NodeClient::get_history_memo(const std::vector<::mmx::addr_t>& addresses, const std::string& memo, const ::mmx::query_filter_t& filter) {
 	auto _method = ::mmx::Node_get_history_memo::create();
 	_method->addresses = addresses;
 	_method->memo = memo;
-	_method->limit = limit;
+	_method->filter = filter;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_history_memo_return>(_return_value)) {
 		return _result->_ret_0;
@@ -623,9 +624,11 @@ std::vector<::mmx::tx_entry_t> NodeClient::get_history_memo(const std::vector<::
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_balances(const ::mmx::addr_t& address) {
+std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_balances(const ::mmx::addr_t& address, const std::set<::mmx::addr_t>& whitelist, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_balances::create();
 	_method->address = address;
+	_method->whitelist = whitelist;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_balances_return>(_return_value)) {
 		return _result->_ret_0;
@@ -636,9 +639,11 @@ std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_balances(const ::mmx::ad
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(const ::mmx::addr_t& address) {
+std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(const ::mmx::addr_t& address, const std::set<::mmx::addr_t>& whitelist, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_contract_balances::create();
 	_method->address = address;
+	_method->whitelist = whitelist;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_contract_balances_return>(_return_value)) {
 		return _result->_ret_0;
@@ -663,9 +668,11 @@ std::map<::mmx::addr_t, ::mmx::balance_t> NodeClient::get_contract_balances(cons
 	}
 }
 
-std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses) {
+std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_total_balances(const std::vector<::mmx::addr_t>& addresses, const std::set<::mmx::addr_t>& whitelist, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_total_balances::create();
 	_method->addresses = addresses;
+	_method->whitelist = whitelist;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_total_balances_return>(_return_value)) {
 		return _result->_ret_0;
@@ -676,9 +683,11 @@ std::map<::mmx::addr_t, ::mmx::uint128> NodeClient::get_total_balances(const std
 	}
 }
 
-std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> NodeClient::get_all_balances(const std::vector<::mmx::addr_t>& addresses) {
+std::map<std::pair<::mmx::addr_t, ::mmx::addr_t>, ::mmx::uint128> NodeClient::get_all_balances(const std::vector<::mmx::addr_t>& addresses, const std::set<::mmx::addr_t>& whitelist, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_all_balances::create();
 	_method->addresses = addresses;
+	_method->whitelist = whitelist;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_all_balances_return>(_return_value)) {
 		return _result->_ret_0;
@@ -855,7 +864,7 @@ std::map<std::string, ::mmx::vm::varptr_t> NodeClient::read_storage_object(const
 	}
 }
 
-::vnx::Variant NodeClient::call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, uint64_t>>& deposit) {
+::vnx::Variant NodeClient::call_contract(const ::mmx::addr_t& address, const std::string& method, const std::vector<::vnx::Variant>& args, const vnx::optional<::mmx::addr_t>& user, const vnx::optional<std::pair<::mmx::addr_t, ::mmx::uint128>>& deposit) {
 	auto _method = ::mmx::Node_call_contract::create();
 	_method->address = address;
 	_method->method = method;
@@ -880,6 +889,20 @@ vnx::optional<::mmx::plot_nft_info_t> NodeClient::get_plot_nft_info(const ::mmx:
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
 		return _return_value->get_field_by_index(0).to<vnx::optional<::mmx::plot_nft_info_t>>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
+::mmx::addr_t NodeClient::get_plot_nft_target(const ::mmx::addr_t& address, const vnx::optional<::mmx::addr_t>& farmer_addr) {
+	auto _method = ::mmx::Node_get_plot_nft_target::create();
+	_method->address = address;
+	_method->farmer_addr = farmer_addr;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_plot_nft_target_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<::mmx::addr_t>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
@@ -1008,7 +1031,7 @@ std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers(const int32_t& li
 	}
 }
 
-std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const uint64_t& min_bid, const int32_t& limit, const vnx::bool_t& state) {
+std::vector<::mmx::offer_data_t> NodeClient::get_recent_offers_for(const vnx::optional<::mmx::addr_t>& bid, const vnx::optional<::mmx::addr_t>& ask, const ::mmx::uint128& min_bid, const int32_t& limit, const vnx::bool_t& state) {
 	auto _method = ::mmx::Node_get_recent_offers_for::create();
 	_method->bid = bid;
 	_method->ask = ask;
@@ -1055,11 +1078,12 @@ std::vector<::mmx::trade_entry_t> NodeClient::get_trade_history_for(const vnx::o
 	}
 }
 
-std::vector<::mmx::swap_info_t> NodeClient::get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency) {
+std::vector<::mmx::swap_info_t> NodeClient::get_swaps(const uint32_t& since, const vnx::optional<::mmx::addr_t>& token, const vnx::optional<::mmx::addr_t>& currency, const int32_t& limit) {
 	auto _method = ::mmx::Node_get_swaps::create();
 	_method->since = since;
 	_method->token = token;
 	_method->currency = currency;
+	_method->limit = limit;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_swaps_return>(_return_value)) {
 		return _result->_ret_0;
@@ -1111,7 +1135,7 @@ std::vector<::mmx::swap_entry_t> NodeClient::get_swap_history(const ::mmx::addr_
 	}
 }
 
-std::array<::mmx::uint128, 2> NodeClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) {
+std::array<::mmx::uint128, 2> NodeClient::get_swap_trade_estimate(const ::mmx::addr_t& address, const uint32_t& i, const ::mmx::uint128& amount, const int32_t& num_iter) {
 	auto _method = ::mmx::Node_get_swap_trade_estimate::create();
 	_method->address = address;
 	_method->i = i;

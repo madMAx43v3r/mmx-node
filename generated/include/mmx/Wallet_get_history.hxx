@@ -5,8 +5,7 @@
 #define INCLUDE_mmx_Wallet_get_history_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/addr_t.hpp>
-#include <mmx/tx_type_e.hxx>
+#include <mmx/query_filter_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -16,11 +15,7 @@ class MMX_EXPORT Wallet_get_history : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	uint32_t since = 0;
-	uint32_t until = -1;
-	int32_t limit = -1;
-	vnx::optional<::mmx::tx_type_e> type;
-	vnx::optional<::mmx::addr_t> currency;
+	::mmx::query_filter_t filter;
 	
 	typedef ::vnx::Value Super;
 	
@@ -64,14 +59,10 @@ public:
 
 template<typename T>
 void Wallet_get_history::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_get_history>(6);
+	_visitor.template type_begin<Wallet_get_history>(2);
 	_visitor.type_field("index", 0); _visitor.accept(index);
-	_visitor.type_field("since", 1); _visitor.accept(since);
-	_visitor.type_field("until", 2); _visitor.accept(until);
-	_visitor.type_field("limit", 3); _visitor.accept(limit);
-	_visitor.type_field("type", 4); _visitor.accept(type);
-	_visitor.type_field("currency", 5); _visitor.accept(currency);
-	_visitor.template type_end<Wallet_get_history>(6);
+	_visitor.type_field("filter", 1); _visitor.accept(filter);
+	_visitor.template type_end<Wallet_get_history>(2);
 }
 
 

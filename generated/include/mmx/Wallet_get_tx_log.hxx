@@ -14,8 +14,7 @@ class MMX_EXPORT Wallet_get_tx_log : public ::vnx::Value {
 public:
 	
 	uint32_t index = 0;
-	int32_t limit = -1;
-	uint32_t offset = 0;
+	int32_t limit = 100;
 	
 	typedef ::vnx::Value Super;
 	
@@ -59,11 +58,10 @@ public:
 
 template<typename T>
 void Wallet_get_tx_log::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_get_tx_log>(3);
+	_visitor.template type_begin<Wallet_get_tx_log>(2);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("limit", 1); _visitor.accept(limit);
-	_visitor.type_field("offset", 2); _visitor.accept(offset);
-	_visitor.template type_end<Wallet_get_tx_log>(3);
+	_visitor.template type_end<Wallet_get_tx_log>(2);
 }
 
 

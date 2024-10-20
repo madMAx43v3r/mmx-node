@@ -56,14 +56,18 @@ private:
 
 	bool is_running = false;
 	int64_t last_restart = 0;
-	uint64_t checkpoint_iters = 1000;
+	uint64_t segment_iters = 1000;
 	uint64_t avg_iters_per_sec = 0;
 
 	std::map<uint64_t, hash_t> infuse[2];
 	std::map<uint64_t, hash_t> infuse_history[2];
 	std::map<uint64_t, vdf_point_t> history;
 
-	std::map<std::pair<uint64_t, uint64_t>, uint32_t> pending;		// [[end, start] => height]
+	struct request_t {
+		uint32_t height = 0;
+		uint64_t segment_iters = 0;
+	};
+	std::map<std::pair<uint64_t, uint64_t>, request_t> pending;		// [[end, start] => request]
 
 	std::shared_ptr<vdf_point_t> latest_point;
 

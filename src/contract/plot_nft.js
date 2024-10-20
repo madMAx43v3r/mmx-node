@@ -1,10 +1,9 @@
 
-const MAX_UNLOCK_DELAY = 10000;
+const UNLOCK_DELAY = 256;
 
 var owner;
 var target;
 var unlock_height = 0;
-var unlock_delay;
 var server_url;
 
 function init(owner_)
@@ -21,24 +20,33 @@ function check_owner() const
 
 function is_locked() const public
 {
-	return unlock_height == null || this.height < unlock_height;
+	var res = (unlock_height == null);
+	if(!res) {
+		res = (this.height < unlock_height);
+	}
+	return res;
 }
 
-function lock(target_, unlock_delay_, server_url_) public
+function mmx_reward_target(farmer) const public
+{
+	var addr = owner;
+	if(is_locked()) {
+		addr = target;
+	} else if(farmer) {
+		addr = bech32(farmer);
+	}
+	return addr;
+}
+
+function lock(target_, server_url_) public
 {
 	check_owner();
-	
-	unlock_delay_ = uint(unlock_delay_);		// make sure it's an integer
 	
 	if(is_locked()) {
 		fail("contract still locked", 2);
 	}
-	if(unlock_delay_ > MAX_UNLOCK_DELAY) {
-		fail("unlock delay too high", 4);
-	}
 	target = bech32(target_);
 	server_url = server_url_;
-	unlock_delay = unlock_delay_;
 	unlock_height = null;
 }
 
@@ -47,7 +55,7 @@ function unlock() public
 	check_owner();
 	
 	if(unlock_height == null) {
-		unlock_height = this.height + unlock_delay;
+		unlock_height = this.height + UNLOCK_DELAY;
 	}
 }
 
@@ -60,7 +68,7 @@ function claim_all(address, currency) public
 	} else {
 		check_owner();
 	}
-	if(currency != null) {
+	if(currency) {
 		currency = bech32(currency);
 	} else {
 		currency = bech32();

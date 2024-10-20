@@ -164,7 +164,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 {
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 
-	checkpoint_iters = (request->end - request->begin) / request->num_segments;
+	segment_iters = (request->end - request->begin) / request->num_segments;
 
 	if(request->has_start)
 	{
@@ -196,7 +196,10 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> request)
 	}
 
 	if(request->end > request->begin) {
-		pending.emplace(std::make_pair(request->end, request->begin), request->height);
+		request_t req;
+		req.height = request->height;
+		req.segment_iters = segment_iters;
+		pending.emplace(std::make_pair(request->end, request->begin), req);
 	}
 	update();
 }
@@ -218,7 +221,7 @@ void TimeLord::update()
 			{
 				auto proof = ProofOfTime::create();
 				proof->start = iters_begin;
-				proof->height = iter->second;
+				proof->height = iter->second.height;
 				proof->input = begin->second.output;
 
 				for(uint32_t k = 0; k < 2; ++k) {
@@ -250,6 +253,8 @@ void TimeLord::update()
 				proof->timelord_sig = signature_t::sign(timelord_sk, proof->hash);
 				proof->content_hash = proof->calc_hash().second;
 
+				log(DEBUG) << "Created VDF for height " << proof->height << " with " << proof->segments.size() << " segments";
+
 				publish(proof, output_proofs);
 
 				iter = pending.erase(iter);
@@ -275,11 +280,11 @@ void TimeLord::vdf_loop(vdf_point_t point)
 		const auto time_begin = vnx::get_wall_time_micros();
 
 		uint64_t next_target = 0;
-		uint64_t checkpoint_iters_ = 0;
+		uint64_t checkpoint_iters = 0;
 		{
 			std::lock_guard<std::recursive_mutex> lock(mutex);
 
-			checkpoint_iters_ = checkpoint_iters;
+			checkpoint_iters = segment_iters;
 
 			if(!is_running) {
 				break;
@@ -337,6 +342,7 @@ void TimeLord::vdf_loop(vdf_point_t point)
 					if(!next_target || iters_end < next_target) {
 						next_target = iters_end;
 					}
+					checkpoint_iters = iter->second.segment_iters;
 				}
 				if(iter != pending.begin()) {
 					do_notify = true;
@@ -348,7 +354,7 @@ void TimeLord::vdf_loop(vdf_point_t point)
 		}
 		do_notify = false;
 
-		const auto checkpoint = point.num_iters + checkpoint_iters_;
+		const auto checkpoint = point.num_iters + checkpoint_iters;
 
 		if(next_target <= point.num_iters) {
 			next_target = checkpoint;
@@ -377,7 +383,7 @@ void TimeLord::vdf_loop(vdf_point_t point)
 
 		const auto time_end = vnx::get_wall_time_micros();
 
-		if(time_end > time_begin && num_iters > checkpoint_iters_ / 2)
+		if(time_end > time_begin && num_iters > checkpoint_iters / 2)
 		{
 			// update estimated number of iterations per second
 			const auto speed = (num_iters * 1000000) / (time_end - time_begin);

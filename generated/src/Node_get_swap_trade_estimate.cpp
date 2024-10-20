@@ -5,6 +5,7 @@
 #include <mmx/Node_get_swap_trade_estimate.hxx>
 #include <mmx/Node_get_swap_trade_estimate_return.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_swap_trade_estimate::VNX_TYPE_HASH(0x1c3d2e0c3a431e9eull);
-const vnx::Hash64 Node_get_swap_trade_estimate::VNX_CODE_HASH(0xa9f22ec5e5347624ull);
+const vnx::Hash64 Node_get_swap_trade_estimate::VNX_CODE_HASH(0x59ac243a11f8e99dull);
 
 vnx::Hash64 Node_get_swap_trade_estimate::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -145,7 +146,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_trade_estimate::static_create_type_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_swap_trade_estimate";
 	type_code->type_hash = vnx::Hash64(0x1c3d2e0c3a431e9eull);
-	type_code->code_hash = vnx::Hash64(0xa9f22ec5e5347624ull);
+	type_code->code_hash = vnx::Hash64(0x59ac243a11f8e99dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -168,9 +169,9 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_trade_estimate::static_create_type_
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "amount";
-		field.code = {4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -225,9 +226,6 @@ void read(TypeInput& in, ::mmx::Node_get_swap_trade_estimate& value, const TypeC
 		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.i, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
-		}
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.num_iter, _field->code.data());
 		}
@@ -235,6 +233,7 @@ void read(TypeInput& in, ::mmx::Node_get_swap_trade_estimate& value, const TypeC
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.amount, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -253,11 +252,11 @@ void write(TypeOutput& out, const ::mmx::Node_get_swap_trade_estimate& value, co
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(16);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.i);
-	vnx::write_value(_buf + 4, value.amount);
-	vnx::write_value(_buf + 12, value.num_iter);
+	vnx::write_value(_buf + 4, value.num_iter);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.amount, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_swap_trade_estimate& value) {

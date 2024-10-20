@@ -20,6 +20,7 @@
 #include <mmx/uint128.hpp>
 #include <mmx/tx_index_t.hxx>
 #include <mmx/block_index_t.hxx>
+#include <mmx/trade_log_t.hxx>
 #include <mmx/table.h>
 #include <mmx/multi_table.h>
 #include <mmx/balance_cache_t.h>
@@ -89,9 +90,9 @@ protected:
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
 
-	std::vector<tx_entry_t> get_history(const std::vector<addr_t>& addresses, const uint32_t& since, const uint32_t& until, const int32_t& limit) const override;
+	std::vector<tx_entry_t> get_history(const std::vector<addr_t>& addresses, const query_filter_t& filter) const override;
 
-	std::vector<tx_entry_t> get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const int32_t& limit) const override;
+	std::vector<tx_entry_t> get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const query_filter_t& filter) const override;
 
 	std::shared_ptr<const Contract> get_contract(const addr_t& address) const override;
 
@@ -113,13 +114,16 @@ protected:
 
 	uint128 get_total_balance(const std::vector<addr_t>& addresses, const addr_t& currency) const override;
 
-	std::map<addr_t, uint128> get_balances(const addr_t& address) const override;
+	std::map<addr_t, uint128> get_balances(const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
 
-	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const;
+	std::map<addr_t, balance_t> get_contract_balances(
+			const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const;
 
-	std::map<addr_t, uint128> get_total_balances(const std::vector<addr_t>& addresses) const override;
+	std::map<addr_t, uint128> get_total_balances(
+			const std::vector<addr_t>& addresses, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
 
-	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(const std::vector<addr_t>& addresses) const override;
+	std::map<std::pair<addr_t, addr_t>, uint128> get_all_balances(
+			const std::vector<addr_t>& addresses, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
 
 	std::vector<exec_entry_t> get_exec_history(const addr_t& address, const int32_t& limit, const vnx::bool_t& recent) const override;
 
@@ -146,11 +150,13 @@ protected:
 	std::map<std::string, vm::varptr_t> read_storage_object(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 
 	vnx::Variant call_contract(	const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args = {},
-								const vnx::optional<addr_t>& user = nullptr, const vnx::optional<std::pair<addr_t, uint64_t>>& deposit = nullptr) const override;
+								const vnx::optional<addr_t>& user = nullptr, const vnx::optional<std::pair<addr_t, uint128>>& deposit = nullptr) const override;
 
 	uint128 get_total_supply(const addr_t& currency) const override;
 
 	vnx::optional<plot_nft_info_t> get_plot_nft_info(const addr_t& address) const override;
+
+	addr_t get_plot_nft_target(const addr_t& address, const vnx::optional<addr_t>& farmer_addr = nullptr) const override;
 
 	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
 
@@ -173,7 +179,7 @@ protected:
 	std::vector<offer_data_t> get_recent_offers(const int32_t& limit, const vnx::bool_t& state) const override;
 
 	std::vector<offer_data_t> get_recent_offers_for(
-			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint64_t& min_bid,
+			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const uint128& min_bid,
 			const int32_t& limit, const vnx::bool_t& state) const override;
 
 	std::vector<trade_entry_t> get_trade_history(const int32_t& limit, const uint32_t& since = 0) const override;
@@ -181,7 +187,8 @@ protected:
 	std::vector<trade_entry_t> get_trade_history_for(
 			const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask, const int32_t& limit, const uint32_t& since = 0) const override;
 
-	std::vector<swap_info_t> get_swaps(const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency) const override;
+	std::vector<swap_info_t> get_swaps(
+			const uint32_t& since, const vnx::optional<addr_t>& token, const vnx::optional<addr_t>& currency, const int32_t& limit) const override;
 
 	swap_info_t get_swap_info(const addr_t& address) const override;
 
@@ -189,7 +196,7 @@ protected:
 
 	std::vector<swap_entry_t> get_swap_history(const addr_t& address, const int32_t& limit) const override;
 
-	std::array<uint128, 2> get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint64_t& amount, const int32_t& num_iter) const override;
+	std::array<uint128, 2> get_swap_trade_estimate(const addr_t& address, const uint32_t& i, const uint128& amount, const int32_t& num_iter) const override;
 
 	std::array<uint128, 2> get_swap_fees_earned(const addr_t& address, const addr_t& user) const override;
 
@@ -241,6 +248,8 @@ private:
 	};
 
 	struct execution_context_t {
+		bool do_profile = false;
+		bool do_trace = false;
 		uint32_t height = 0;
 		std::shared_ptr<vm::StorageCache> storage;
 		std::unordered_map<addr_t, std::vector<hash_t>> mutate_map;				// [contract => TX ids]
@@ -279,6 +288,7 @@ private:
 
 	struct tx_pool_t {
 		bool is_valid = false;
+		bool is_skipped = false;
 		uint32_t cost = 0;
 		uint32_t fee = 0;
 		uint32_t luck = 0;	// random value
@@ -321,15 +331,13 @@ private:
 
 	void on_sync_done(const uint32_t height);
 
-	std::vector<tx_pool_t> validate_for_block();
+	std::vector<tx_pool_t> validate_for_block(const int64_t deadline_ms);
 
 	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block);
 
 	int get_offer_state(const addr_t& address) const;
 
-	std::vector<offer_data_t> fetch_offers_for(
-			const std::vector<addr_t>& addresses, const vnx::optional<addr_t>& bid, const vnx::optional<addr_t>& ask,
-			const bool state = false, const bool filter = false) const;
+	trade_entry_t make_trade_entry(const uint32_t& height, const trade_log_t& log) const;
 
 	std::tuple<vm::varptr_t, uint64_t, uint64_t> read_storage_entry_var(
 			const addr_t& contract, const std::string& name, const vm::varptr_t& key, const uint32_t& height = -1) const;
@@ -447,11 +455,15 @@ private:
 	std::shared_ptr<const VDF_Point> find_vdf_point(const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
 			const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const;
 
+	std::shared_ptr<const VDF_Point> find_vdf_point(std::shared_ptr<const BlockHeader> block) const;
+
 	std::shared_ptr<const VDF_Point> find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const;
 
 	std::vector<proof_data_t> find_proof(const hash_t& challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const;
+
+	vnx::optional<addr_t> get_vdf_reward_addr(std::shared_ptr<const BlockHeader> block) const;
 
 	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
 			int64_t* block_offset = nullptr, std::vector<int64_t>* tx_offsets = nullptr) const;
@@ -471,19 +483,19 @@ private:
 	hash_t state_hash;
 	std::shared_ptr<DataBase> db;
 
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> recv_log;	// [[address, height, counter] => entry]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> spend_log;	// [[address, height, counter] => entry]
+	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> txio_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
-	hash_uint_uint_table<hash_t, uint32_t, uint32_t, txio_entry_t> memo_log;	// [[hash(address | memo), height, counter] => entry]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> memo_log;			// [[hash(address | memo), height, counter] => address]
 
 	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [address, contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
 
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_bid_map;			// [[currency, height, counter] => contract]
-	hash_uint_uint_table<addr_t, uint32_t, uint32_t, addr_t> offer_ask_map;			// [[currency, height, counter] => contract]
-	uint_uint_table<uint32_t, uint32_t, std::tuple<addr_t, hash_t, uint64_t>> trade_log;	// [[height, counter] => [contract, txid, amount]]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> swap_index;			// TODO [[hash(bid, ask), height, counter] => contract]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> offer_index;			// [[hash(bid, ask), height, counter] => contract]
+	hash_uint_uint_table<hash_t, uint32_t, uint32_t, bool> trade_index;				// [hash(bid, ask), height, counter]
+	uint_uint_table<uint32_t, uint32_t, trade_log_t> trade_log;						// [[height, counter] => info]
 
 	balance_table_t<uint128> balance_table;										// [[address, currency] => balance]
 	balance_table_t<std::array<uint128, 2>> swap_liquid_map;					// [[address, swap] => [amount, amount]]
@@ -495,7 +507,7 @@ private:
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 
-	std::multimap<uint32_t, std::shared_ptr<const VDF_Point>> verified_vdfs;			// [height => output]
+	std::multimap<uint32_t, std::shared_ptr<const VDF_Point>> verified_vdfs;		// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]

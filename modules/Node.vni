@@ -32,6 +32,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint max_fork_length = 10000;			// to keep in memory at most (during sync)
 	uint max_blocks_per_height = 2;			// how many blocks to create at most per height
 	uint tx_pool_limit = 100;				// number of full blocks
+	uint max_tx_queue = 10000;				// pending transactions to verify
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint max_sync_ahead = 1000;				// how many blocks to fetch ahead at most
@@ -53,7 +54,9 @@ module Node implements vnx.addons.HttpComponent {
 	bool vdf_slave_mode = false;
 	bool verify_vdf_cpuopencl = false;			// verify VDF streams on cpu and opencl, if possible
 	bool verify_vdf_rewards = true;
-	bool debug_exec_fails = false;
+	bool exec_debug = false;					// dump memory on exec fail
+	bool exec_profile = false;					// write execution profiles
+	bool exec_trace = false;					// write execution traces
 	
 	string storage_path;
 	string database_path = "db/";
@@ -148,31 +151,31 @@ module Node implements vnx.addons.HttpComponent {
 	vector<Transaction*> get_transactions(vector<hash_t> ids) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<tx_entry_t> get_history(vector<addr_t> addresses, uint since, uint until = -1, int limit = -1) const;
+	vector<tx_entry_t> get_history(vector<addr_t> addresses, query_filter_t filter) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<tx_entry_t> get_history_memo(vector<addr_t> addresses, string memo, int limit = -1) const;
+	vector<tx_entry_t> get_history_memo(vector<addr_t> addresses, string memo, query_filter_t filter) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_balance(addr_t address, addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, uint128> get_balances(addr_t address) const;
+	map<addr_t, uint128> get_balances(addr_t address, set<addr_t> whitelist, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, balance_t> get_contract_balances(addr_t address) const;
+	map<addr_t, balance_t> get_contract_balances(addr_t address, set<addr_t> whitelist, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128 get_total_balance(vector<addr_t> addresses, addr_t currency) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<addr_t, uint128> get_total_balances(vector<addr_t> addresses) const;
+	map<addr_t, uint128> get_total_balances(vector<addr_t> addresses, set<addr_t> whitelist, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
-	map<pair<addr_t, addr_t>, uint128> get_all_balances(vector<addr_t> addresses) const;
+	map<pair<addr_t, addr_t>, uint128> get_all_balances(vector<addr_t> addresses, set<addr_t> whitelist, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<exec_entry_t> get_exec_history(addr_t address, int limit = -1, bool recent) const;
+	vector<exec_entry_t> get_exec_history(addr_t address, int limit = 100, bool recent) const;
 	
 	@Permission(permission_e.PUBLIC)
 	map<string, varptr_t> read_storage(addr_t contract, uint height = -1) const;
@@ -205,10 +208,13 @@ module Node implements vnx.addons.HttpComponent {
 	map<string, varptr_t> read_storage_object(addr_t contract, ulong address, uint height = -1) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, ulong>> deposit) const;
+	vnx.Variant call_contract(addr_t address, string method, vector<vnx.Variant> args, optional<addr_t> user, optional<pair<addr_t, uint128>> deposit) const;
 	
 	@Permission(permission_e.PUBLIC)
 	optional<plot_nft_info_t> get_plot_nft_info(addr_t address) const;
+	
+	@Permission(permission_e.PUBLIC)
+	addr_t get_plot_nft_target(addr_t address, optional<addr_t> farmer_addr) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;
@@ -238,7 +244,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<offer_data_t> get_recent_offers(int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, ulong min_bid, int limit = 100, bool state = true) const;
+	vector<offer_data_t> get_recent_offers_for(optional<addr_t> bid, optional<addr_t> ask, uint128 min_bid, int limit = 100, bool state = true) const;
 	
 	@Permission(permission_e.PUBLIC)
 	vector<trade_entry_t> get_trade_history(int limit = 100, uint since) const;
@@ -247,7 +253,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<trade_entry_t> get_trade_history_for(optional<addr_t> bid, optional<addr_t> ask, int limit = 100, uint since) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<swap_info_t> get_swaps(uint since, optional<addr_t> token, optional<addr_t> currency) const;
+	vector<swap_info_t> get_swaps(uint since, optional<addr_t> token, optional<addr_t> currency, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
 	swap_info_t get_swap_info(addr_t address) const;
@@ -259,7 +265,7 @@ module Node implements vnx.addons.HttpComponent {
 	vector<swap_entry_t> get_swap_history(addr_t address, int limit = 100) const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint128[2] get_swap_trade_estimate(addr_t address, uint i, ulong amount, int num_iter = 20) const;
+	uint128[2] get_swap_trade_estimate(addr_t address, uint i, uint128 amount, int num_iter = 20) const;
 	
 	@Permission(permission_e.PUBLIC)
 	uint128[2] get_swap_fees_earned(addr_t address, addr_t user) const;

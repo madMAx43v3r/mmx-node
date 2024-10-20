@@ -19,4 +19,6 @@ class FarmInfo {
 	optional<string> harvester;
 	optional<hash_t> harvester_id;
 	
+	optional<addr_t> reward_addr;
+	
 }

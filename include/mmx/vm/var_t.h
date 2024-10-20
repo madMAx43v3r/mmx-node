@@ -309,25 +309,53 @@ inline size_t num_bytes(const var_t& var) {
 	}
 }
 
+std::string to_string(const vartype_e& type);
+
+std::string to_string(const var_t& var);
+
+std::string to_string_value(const var_t& var);
+
+std::string to_string_value_hex(const var_t& var);
+
+uint64_t to_ref(const var_t& var);
+
+uint256_t to_uint(const var_t& var);
+
+hash_t to_hash(const var_t& var);
+
+addr_t to_addr(const var_t& var);
+
 inline size_t num_bytes(const var_t* var) {
 	return var ? num_bytes(*var) : 0;
 }
 
-std::string to_string(const vartype_e& type);
+inline std::string to_string(const var_t* var) {
+	return var ? to_string(*var) : "nullptr";
+}
 
-std::string to_string(const var_t* var);
+inline std::string to_string_value(const var_t* var) {
+	return var ? to_string_value(*var) : "nullptr";
+}
 
-std::string to_string_value(const var_t* var);
+inline std::string to_string_value_hex(const var_t* var) {
+	return var ? to_string_value_hex(*var) : "nullptr";
+}
 
-std::string to_string_value_hex(const var_t* var);
+inline uint64_t to_ref(const var_t* var) {
+	return var ? to_ref(*var) : 0;
+}
 
-uint64_t to_ref(const var_t* var);
+inline uint256_t to_uint(const var_t* var) {
+	return var ? to_uint(*var) : uint256_0;
+}
 
-uint256_t to_uint(const var_t* var);
+inline hash_t to_hash(const var_t* var) {
+	return var ? to_hash(*var) : hash_t();
+}
 
-hash_t to_hash(const var_t* var);
-
-addr_t to_addr(const var_t* var);
+inline addr_t to_addr(const var_t* var) {
+	return var ? to_addr(*var) : addr_t();
+}
 
 template<size_t N>
 std::unique_ptr<binary_t> to_binary(const bytes_t<N>& value) {

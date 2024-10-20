@@ -15,8 +15,6 @@ class Contract {
 	
 	optional<addr_t> get_owner() const;
 	
-	bool is_locked(uint height) const;
-	
 	void validate(Solution* solution, hash_t txid) const;
 	
 	vnx.Variant read_field(string name) const;

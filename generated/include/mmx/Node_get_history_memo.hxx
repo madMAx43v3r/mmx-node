@@ -6,6 +6,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -16,7 +17,7 @@ public:
 	
 	std::vector<::mmx::addr_t> addresses;
 	std::string memo;
-	int32_t limit = -1;
+	::mmx::query_filter_t filter;
 	
 	typedef ::vnx::Value Super;
 	
@@ -63,7 +64,7 @@ void Node_get_history_memo::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Node_get_history_memo>(3);
 	_visitor.type_field("addresses", 0); _visitor.accept(addresses);
 	_visitor.type_field("memo", 1); _visitor.accept(memo);
-	_visitor.type_field("limit", 2); _visitor.accept(limit);
+	_visitor.type_field("filter", 2); _visitor.accept(filter);
 	_visitor.template type_end<Node_get_history_memo>(3);
 }
 

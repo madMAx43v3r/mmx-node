@@ -24,16 +24,7 @@ const contract::method_t* find_method(std::shared_ptr<const contract::Binary> bi
 	return nullptr;
 }
 
-void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint128>& balance)
-{
-	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
-	engine->assign(addr, std::make_unique<vm::map_t>());
-	for(const auto& entry : balance) {
-		engine->write_key(addr, to_binary(entry.first), std::make_unique<vm::uint_t>(entry.second));
-	}
-}
-
-void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint64_t amount)
+void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint128& amount)
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
 	engine->assign(addr, std::make_unique<vm::array_t>());
@@ -229,6 +220,9 @@ public:
 	}
 
 	void list_begin(size_t size) override {
+		if(stack.size() >= vm::MAX_COPY_RECURSION) {
+			throw std::logic_error("assign recursion overflow");
+		}
 		const auto addr = engine->alloc();
 		engine->assign(addr, std::make_unique<vm::array_t>(size));
 		stack.emplace_back(addr);
@@ -243,6 +237,9 @@ public:
 	}
 
 	void map_begin(size_t size) override {
+		if(stack.size() >= vm::MAX_COPY_RECURSION) {
+			throw std::logic_error("assign recursion overflow");
+		}
 		const auto addr = engine->alloc();
 		engine->assign(addr, std::make_unique<vm::map_t>());
 		stack.emplace_back(addr);

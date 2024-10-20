@@ -8,11 +8,12 @@ class tx_info_t {
 
 	bool did_fail;
 	optional<uint> height;
+	optional<long> time_stamp;		// UNIX [ms]
 	optional<hash_t> block;
 	optional<string> message;
 	
-	long fee;
-	ulong cost;
+	uint fee;
+	uint cost;
 	
 	tx_note_e note;
 	

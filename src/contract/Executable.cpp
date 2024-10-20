@@ -17,6 +17,11 @@ namespace contract {
 
 bool Executable::is_valid() const
 {
+	for(const auto& arg : init_args) {
+		if(!arg.is_json_strict(100)) {
+			return false;
+		}
+	}
 	return Super::is_valid() && binary != addr_t();
 }
 
@@ -72,6 +77,14 @@ uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
 vnx::Variant Executable::read_field(const std::string& name) const
 {
 	return Super::read_field(name);
+}
+
+vnx::Variant Executable::get_arg(const uint32_t& index) const
+{
+	if(index < init_args.size()) {
+		return init_args[index];
+	}
+	return vnx::Variant();
 }
 
 

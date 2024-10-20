@@ -537,6 +537,7 @@ Vue.component('account-history-form', {
 				{text: this.$t('account_history_form.spend'), value: "SPEND"},
 				{text: this.$t('account_history_form.receive'), value: "RECEIVE"},
 				{text: this.$t('account_history_form.reward'), value: "REWARD"},
+				{text: "VDF " + this.$t('account_history_form.reward'), value: "VDF_REWARD"},
 				{text: this.$t('account_history_form.tx_fee'), value: "TXFEE"}
 			];
 		},
@@ -2515,7 +2516,7 @@ Vue.component('create-virtual-plot-contract', {
 				.then(data => this.binary = data);
 		fetch('/wapi/wallet/address?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.owner = data[0]);
+				.then(data => this.owner = data);
 		fetch('/wapi/wallet/keys?index=' + this.index)
 				.then(response => response.json())
 				.then(data => this.farmer_key = data.farmer_public_key);
