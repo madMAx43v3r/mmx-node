@@ -8,7 +8,7 @@
 	"challenge_interval": 256,
 	"commit_delay": 24,
 	"min_vdf_segments": 1000,
-	"num_vdf_segments": 1500,
+	"num_vdf_segments": 1020,
 	"max_vdf_segments": 2048,
 	"min_reward": 500000,
 	"min_txfee": 20000,
