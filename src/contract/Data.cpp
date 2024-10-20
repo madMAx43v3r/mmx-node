@@ -13,6 +13,11 @@
 namespace mmx {
 namespace contract {
 
+vnx::bool_t Data::is_valid() const
+{
+	return Super::is_valid() && value.is_json_strict(100);
+}
+
 hash_t Data::calc_hash(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;

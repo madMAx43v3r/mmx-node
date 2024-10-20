@@ -14,6 +14,11 @@ namespace operation {
 
 vnx::bool_t Execute::is_valid() const
 {
+	for(const auto& arg : args) {
+		if(!arg.is_json_strict(100)) {
+			return false;
+		}
+	}
 	return Super::is_valid() && !method.empty();
 }
 

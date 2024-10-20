@@ -17,6 +17,11 @@ namespace contract {
 
 bool Executable::is_valid() const
 {
+	for(const auto& arg : init_args) {
+		if(!arg.is_json_strict(100)) {
+			return false;
+		}
+	}
 	return Super::is_valid() && binary != addr_t();
 }
 
