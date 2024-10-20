@@ -220,6 +220,9 @@ public:
 	}
 
 	void list_begin(size_t size) override {
+		if(stack.size() >= vm::MAX_COPY_RECURSION) {
+			throw std::logic_error("assign recursion overflow");
+		}
 		const auto addr = engine->alloc();
 		engine->assign(addr, std::make_unique<vm::array_t>(size));
 		stack.emplace_back(addr);
@@ -234,6 +237,9 @@ public:
 	}
 
 	void map_begin(size_t size) override {
+		if(stack.size() >= vm::MAX_COPY_RECURSION) {
+			throw std::logic_error("assign recursion overflow");
+		}
 		const auto addr = engine->alloc();
 		engine->assign(addr, std::make_unique<vm::map_t>());
 		stack.emplace_back(addr);
