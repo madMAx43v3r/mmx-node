@@ -569,7 +569,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::to_binary(tx->id));
 
 	try {
-		vm::execute(engine, *method);
+		vm::execute(engine, *method, true);
 	} catch(...) {
 		error.code = engine->error_code;
 		error.address = engine->error_addr;

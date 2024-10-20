@@ -838,7 +838,7 @@ vnx::Variant Node::call_contract(
 			}
 			vm::set_args(engine, args);
 			try {
-				vm::execute(engine, *func, true);
+				vm::execute(engine, *func, false);
 			} catch(const std::exception& ex) {
 				throw std::runtime_error("exception at 0x" + vnx::to_hex_string(engine->error_addr) + ": " + ex.what());
 			}

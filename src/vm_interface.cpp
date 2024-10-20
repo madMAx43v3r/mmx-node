@@ -373,12 +373,12 @@ void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant
 	}
 }
 
-void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method, const bool read_only)
+void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method, const bool commit)
 {
 	engine->begin(method.entry_point);
 	engine->run();
 
-	if(!method.is_const && !read_only) {
+	if(!method.is_const && commit) {
 		engine->commit();
 	}
 	engine->check_gas();
