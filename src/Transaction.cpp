@@ -94,7 +94,7 @@ vnx::bool_t Transaction::did_fail() const
 	return exec_result->did_fail;
 }
 
-hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
+std::vector<uint8_t> Transaction::hash_serialize(const vnx::bool_t& full_hash) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -131,7 +131,12 @@ hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
 	}
 	out.flush();
 
-	return hash_t(buffer);
+	return buffer;
+}
+
+hash_t Transaction::calc_hash(const vnx::bool_t& full_hash) const
+{
+	return hash_t(hash_serialize(full_hash));
 }
 
 void Transaction::add_input(const addr_t& currency, const addr_t& address, const uint128& amount)

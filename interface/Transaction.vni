@@ -71,6 +71,8 @@ class Transaction extends TransactionBase {
 	
 	map<addr_t, pair<uint128, uint128>> get_balance() const;
 	
+	vector<uchar> hash_serialize(bool full_hash = false) const;
+	
 	tx_index_t get_tx_index(ChainParams* params, BlockHeader* block, long file_offset) const;
 	
 }
