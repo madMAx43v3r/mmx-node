@@ -48,6 +48,7 @@ public:
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual vnx::optional<uint32_t> find_field(const std::string& name = "") const;
 	virtual vnx::optional<::mmx::contract::method_t> find_method(const std::string& name = "") const;
+	virtual vnx::optional<uint32_t> find_line(const uint32_t& address = 0) const;
 	
 	static std::shared_ptr<Binary> create();
 	std::shared_ptr<vnx::Value> clone() const override;

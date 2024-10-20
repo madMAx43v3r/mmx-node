@@ -86,6 +86,15 @@ vnx::optional<method_t> Binary::find_method(const std::string& name) const
 	return nullptr;
 }
 
+vnx::optional<uint32_t> Binary::find_line(const uint32_t& address) const
+{
+	auto iter = line_info.upper_bound(address);
+	if(iter != line_info.begin()) {
+		return (--iter)->second;
+	}
+	return nullptr;
+}
+
 
 } // contract
 } // mmx

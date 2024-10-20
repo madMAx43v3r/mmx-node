@@ -37,4 +37,6 @@ class Binary extends mmx.Contract {
 	
 	optional<method_t> find_method(string name) const;
 	
+	optional<uint> find_line(uint address) const;
+	
 }
