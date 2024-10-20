@@ -177,6 +177,7 @@ public:
 	void read_balance(const uint64_t dst, const uint64_t currency);
 
 	frame_t& get_frame();
+	uint64_t get_stack_ptr();
 	uint64_t deref(const uint64_t src);
 	uint64_t alloc();
 

@@ -535,9 +535,9 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		const auto child = std::make_shared<vm::Engine>(address, storage_cache, false);
 		child->gas_limit = engine->gas_limit - std::min(engine->gas_used, engine->gas_limit);
 
-		const auto stack_ptr = engine->get_frame().stack_ptr;
+		const auto stack_ptr = engine->get_stack_ptr();
 		for(uint32_t i = 0; i < nargs; ++i) {
-			vm::copy(child, engine, vm::MEM_STACK + 1 + i, vm::MEM_STACK + stack_ptr + 1 + i);
+			vm::copy(child, engine, vm::MEM_STACK + 1 + i, stack_ptr + 1 + i);
 		}
 		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(engine->contract));
 		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
@@ -545,7 +545,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, true);
 
-		vm::copy(engine, child, vm::MEM_STACK + stack_ptr, vm::MEM_STACK);
+		vm::copy(engine, child, stack_ptr, vm::MEM_STACK);
 
 		engine->gas_used += child->gas_used;
 		engine->check_gas();

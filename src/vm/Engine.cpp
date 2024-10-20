@@ -1241,6 +1241,11 @@ Engine::frame_t& Engine::get_frame()
 	return call_stack.back();
 }
 
+uint64_t Engine::get_stack_ptr()
+{
+	return MEM_STACK + get_frame().stack_ptr;
+}
+
 uint64_t Engine::deref(const uint64_t src)
 {
 	const auto& var = read_fail(src);
