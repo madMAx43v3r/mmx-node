@@ -513,7 +513,6 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	vm::load(engine, binary);
 
 	std::map<addr_t, std::shared_ptr<const Contract>> contract_cache;
-
 	contract_cache[tx->id] = tx->deploy;
 
 	engine->remote_call = [this, tx, context, executable, storage_cache, &engine, &contract_cache, &exec_outputs, &exec_spend_map, &error]
