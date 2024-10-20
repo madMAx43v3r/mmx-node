@@ -23,3 +23,6 @@ Mainnet
 - Explorer search by block hash
 - Harvester VP partials support
 - Genesis rewards
+- method_t is_init
+- method_t is_auto ?
+- JSON parse recursion limit
