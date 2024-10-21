@@ -3,7 +3,7 @@ var source;
 var target;
 var agent;
 
-function init(source_, target_, agent_)
+function init(source_, agent_, target_)
 {
 	source = bech32(source_);
 	target = bech32(target_);
