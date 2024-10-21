@@ -54,7 +54,7 @@ public:
 		if((*this) >> 64) {
 			return vnx::Variant(to_hex_string());
 		}
-		return vnx::Variant(uint64_t(*this));
+		return vnx::Variant(lower());
 	}
 
 	double to_double() const {
