@@ -63,6 +63,7 @@ static constexpr auto kw_function = LEXY_KEYWORD("function", kw_id);
 static constexpr auto kw_namespace = LEXY_KEYWORD("package", kw_id);
 static constexpr auto kw_continue = LEXY_KEYWORD("continue", kw_id);
 static constexpr auto kw_break = LEXY_KEYWORD("break", kw_id);
+static constexpr auto kw_interface = LEXY_KEYWORD("interface", kw_id);
 
 struct comment {
 	static constexpr auto name = "mmx.lang.comment";
@@ -198,6 +199,11 @@ struct variable {
 			dsl::p<restricted_identifier> + dsl::opt(dsl::equal_sign >> dsl::recurse<expression>);
 };
 
+struct interface {
+	static constexpr auto name = "mmx.lang.interface";
+	static constexpr auto rule = kw_interface >> dsl::p<restricted_identifier>;
+};
+
 struct array {
 	static constexpr auto name = "mmx.lang.array";
 	static constexpr auto rule = dsl::square_bracketed.opt_list(dsl::recurse<expression>, dsl::trailing_sep(dsl::comma));
@@ -232,7 +238,7 @@ struct expression {
 
 struct statement {
 	static constexpr auto name = "mmx.lang.statement";
-	static constexpr auto rule = (dsl::p<variable> | kw_break | kw_continue | dsl::else_ >> dsl::p<expression>) + dsl::semicolon;
+	static constexpr auto rule = (dsl::p<variable> | dsl::p<interface> | kw_break | kw_continue | dsl::else_ >> dsl::p<expression>) + dsl::semicolon;
 };
 
 struct else_ex;
@@ -363,20 +369,26 @@ protected:
 	struct vref_t {
 		bool is_bool = false;
 		bool is_const = false;
+		bool is_interface = false;
 		uint32_t address = -1;
 		vnx::optional<uint32_t> key;
 		vnx::optional<function_t> func;
 		vnx::optional<std::string> name;
+		vnx::optional<std::string> method;
 
 		vref_t() = default;
 		vref_t(uint32_t address) : address(address) {}
 		vref_t(uint32_t address, std::string name) : address(address), name(name) {}
 		vref_t(uint32_t address, uint32_t key) : address(address), key(key) {}
+		vref_t(const std::string& name) : name(name) {}
 		vref_t(const function_t& func) : func(func), name(func.name) {}
 
 		void check_value() const {
 			if(func) {
 				throw std::logic_error("expected value not function");
+			}
+			if(is_interface) {
+				throw std::logic_error("expected value not interface");
 			}
 			if(address == uint32_t(-1) && name) {
 				throw std::logic_error("no such variable: " + (*name));
@@ -452,6 +464,7 @@ private:
 	std::vector<std::string> name_space;
 
 	std::map<varptr_t, uint32_t> const_table;
+	std::set<std::string> interface_set;
 	std::map<std::string, function_t> function_map;
 	std::map<uint32_t, uint32_t> line_info;
 	std::map<uint32_t, std::string> linker_map;
@@ -1051,6 +1064,18 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 
 		out.address = var.address;
 	}
+	else if(name == lang::interface::name)
+	{
+		if(list.size() != 2) {
+			throw std::logic_error("invalid interface declaration");
+		}
+		const auto qualifier = get_literal(list[0]);
+		const auto name = get_literal(list[1]);
+		debug(true) << qualifier << " " << name << std::endl;
+		if(!interface_set.emplace(name).second) {
+			throw std::logic_error("duplicate interface declaration");
+		}
+	}
 	else if(name == lang::if_ex::name)
 	{
 		if(list.size() < 5) {
@@ -1243,6 +1268,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			out.func = *func;
 			out.address = func->address;
 		}
+		else if(interface_set.count(name)) {
+			out.is_interface = true;
+		}
 		out.name = name;
 	}
 	else if(name == lang::array::name)
@@ -1398,7 +1426,11 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			}
 			const auto key = *rhs.name;
 
-			if(lhs->name && *lhs->name == "this" && !lhs->key) {
+			if(lhs->is_interface && !lhs->method) {
+				out = *lhs;
+				out.method = key;
+			}
+			else if(lhs->name && *lhs->name == "this" && !lhs->key) {
 				auto iter = this_obj_map.find(key);
 				if(iter == this_obj_map.end()) {
 					throw std::logic_error("no such variable: this." + key);
@@ -1496,22 +1528,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 	}
 	else if(name == lang::sub_expr::name)
 	{
-		if(lhs) {
-			if(!lhs->func) {
-				if(lhs->name) {
-					throw std::logic_error("not a function: " + *lhs->name);
-				}
-				throw std::logic_error("expected function name");
+		std::vector<node_t> args;
+		for(const auto& node : list) {
+			const std::string name(node.kind().name());
+			if(name == lang::expression::name) {
+				args.push_back(node);
 			}
+		}
+		if(lhs && lhs->func) {
 			const auto& name = lhs->func->name;
 
-			std::vector<node_t> args;
-			for(const auto& node : list) {
-				const std::string name(node.kind().name());
-				if(name == lang::expression::name) {
-					args.push_back(node);
-				}
-			}
 			if(name == "__nop") {
 				if(args.size()) {
 					throw std::logic_error("expected 0 arguments for __nop()");
@@ -1779,16 +1805,18 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(args.size() < 2) {
 					throw std::logic_error("expected at least two arguments for rcall(contract, method, ...)");
 				}
+				const auto contract = get(recurse(args[0]));
+				const auto method = get(recurse(args[1]));
+
 				std::vector<vref_t> fargs;
 				for(size_t i = 2; i < args.size(); ++i) {
-					fargs.push_back(recurse(args[i]));
+					fargs.push_back(recurse(args[i]));	// collect arguments first
 				}
 				const auto offset = stack.new_addr();
 				for(size_t i = 0; i < fargs.size(); ++i) {
 					copy(offset + 1 + i, fargs[i]);
 				}
-				code.emplace_back(OP_COPY, 0, offset, 0);
-				code.emplace_back(OP_RCALL, 0, get(recurse(args[0])), get(recurse(args[1])), offset - MEM_STACK, args.size() - 2);
+				code.emplace_back(OP_RCALL, 0, contract, method, offset - MEM_STACK, args.size() - 2);
 				out.address = offset;
 			}
 			else if(name == "balance") {
@@ -1809,7 +1837,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				std::vector<vref_t> fargs;
 				for(size_t i = 0; i < args.size(); ++i) {
-					fargs.push_back(recurse(args[i]));
+					fargs.push_back(recurse(args[i]));	// collect arguments first
 				}
 				const auto offset = stack.new_addr();
 				for(size_t i = 0; i < fargs.size(); ++i) {
@@ -1823,6 +1851,33 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_CALL, 0, -1, offset - MEM_STACK);
 				out.address = offset;
 			}
+		}
+		else if(lhs && lhs->is_interface) {
+			if(!lhs->name) {
+				throw std::logic_error("missing interface name");
+			}
+			if(!lhs->method) {
+				throw std::logic_error("missing method name");
+			}
+			const auto contract = get_const_address(*lhs->name);
+			const auto method = get_const_address(*lhs->method);
+
+			std::vector<vref_t> fargs;
+			for(size_t i = 0; i < args.size(); ++i) {
+				fargs.push_back(recurse(args[i]));	// collect arguments first
+			}
+			const auto offset = stack.new_addr();
+			for(size_t i = 0; i < fargs.size(); ++i) {
+				copy(offset + 1 + i, fargs[i]);
+			}
+			code.emplace_back(OP_RCALL, 0, contract, method, offset - MEM_STACK, args.size());
+			out.address = offset;
+		}
+		else if(lhs) {
+			if(lhs->name) {
+				throw std::logic_error("not a function: " + *lhs->name);
+			}
+			throw std::logic_error("expected function name");
 		}
 		else {
 			if(list.size() != 3) {
@@ -1899,6 +1954,8 @@ void Compiler::pop_scope()
 
 Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src, const bool validate)
 {
+	// this function does not allocate anything new on the stack
+	// so it's safe to use for preparing function call arguments
 	src.check_value();
 	dst.check_value();
 
@@ -1931,10 +1988,7 @@ uint32_t Compiler::get(const vref_t& src, const uint32_t* dst)
 		return dst_addr;
 	}
 	if(dst) {
-		vref_t vdst;
-		vdst.address = *dst;
-		copy(vdst, src);
-		return *dst;
+		return copy(*dst, src).address;
 	}
 	return src.address;
 }
