@@ -250,7 +250,7 @@ int main(int argc, char** argv)
 					for(const auto& out : child->outputs) {
 						if(verbose) {
 							std::cout << ">>> " << out.amount.to_string()
-									<< " [" << out.contract.to_string() << "] => " << out.address.to_string() << std::endl;
+									<< " [" << out.contract.to_string() << "] to " << out.address.to_string() << std::endl;
 						}
 						const auto src_bal = cache->get_balance(address, out.contract);
 						if(!src_bal || (*src_bal) < out.amount) {
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
 					for(const auto& out : child->mint_outputs) {
 						if(verbose) {
 							std::cout << "--> " << out.amount.to_string()
-									<< " [" << out.contract.to_string() << "] => " << out.address.to_string() << std::endl;
+									<< " [" << out.contract.to_string() << "] to " << out.address.to_string() << std::endl;
 						}
 						const auto dst_bal = cache->get_balance(out.address, out.contract);
 						cache->set_balance(out.address, out.contract, (dst_bal ? *dst_bal : uint128()) + out.amount);
@@ -277,6 +277,29 @@ int main(int argc, char** argv)
 				return;
 			}
 			if(name != "__test") {
+				if(method == "__deploy") {
+					const auto contract = vm::read(engine, stack_ptr + 1).to<std::shared_ptr<const Contract>>();
+					if(!contract) {
+						throw std::logic_error("invalid __deploy()");
+					}
+					const addr_t address = hash_t(name);
+					if(verbose) {
+						std::cout << "Deployed '" << name << "' as " << address.to_string() << std::endl << vnx::to_pretty_string(contract);
+					}
+					contract_map[address] = contract;
+
+					if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
+						engine->call(0, 3);
+						uint32_t i = 1;
+						for(const auto& arg : exec->init_args) {
+							vm::assign(engine, engine->get_stack_ptr() + i, arg); i++;
+						}
+						engine->remote_call(name, exec->init_method, exec->init_args.size());
+						engine->ret();
+					}
+					engine->write(stack_ptr, vm::to_binary(address));
+					return;
+				}
 				throw std::logic_error("invalid remote call to '" + name + "'");
 			}
 			if(method == "set_height") {
@@ -355,28 +378,6 @@ int main(int argc, char** argv)
 				}
 				binary_map[addr] = bin;
 				engine->write(stack_ptr, vm::to_binary(addr));
-			}
-			else if(method == "deploy") {
-				const auto name = vm::read(engine, stack_ptr + 1).to<std::string>();
-				const auto contract = vm::read(engine, stack_ptr + 2).to<std::shared_ptr<const Contract>>();
-				if(contract) {
-					const addr_t address = hash_t(name);
-					if(verbose) {
-						std::cout << "Deployed '" << name << "' as " << address.to_string() << std::endl << vnx::to_pretty_string(contract);
-					}
-					contract_map[address] = contract;
-
-					if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
-						engine->call(0, 3);
-						uint32_t i = 1;
-						for(const auto& arg : exec->init_args) {
-							vm::assign(engine, engine->get_stack_ptr() + i, arg); i++;
-						}
-						engine->remote_call(name, exec->init_method, exec->init_args.size());
-						engine->ret();
-					}
-					engine->write(stack_ptr, vm::to_binary(address));
-				}
 			}
 			else {
 				throw std::logic_error("invalid __test method: " + method);

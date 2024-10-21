@@ -7,7 +7,7 @@ const binary = __test.compile("src/contract/plot_nft.js", {});
 
 const owner = "mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z";
 
-const plot_nft_addr = __test.deploy("plot_nft", {
+const plot_nft_addr = plot_nft.__deploy({
 	__type: "mmx.contract.Executable",
 	binary: binary,
 	init_args: [owner]
