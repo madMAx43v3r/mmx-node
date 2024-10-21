@@ -26,3 +26,4 @@ Mainnet
 - method_t is_init
 - method_t is_auto ?
 - JSON parse recursion limit
+- Remove harvester_id ? causes issue with copy folder
