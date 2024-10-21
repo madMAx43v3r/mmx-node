@@ -151,9 +151,9 @@ bytes_t<N>& bytes_t<N>::from_uint(T value, const bool big_endian)
 {
 	for(size_t i = 0; i < N; ++i) {
 		if(big_endian) {
-			bytes[N - i - 1] = value & 0xFF;
+			bytes[N - i - 1] = value;
 		} else {
-			bytes[i] = value & 0xFF;
+			bytes[i] = value;
 		}
 		value >>= 8;
 	}
@@ -254,7 +254,7 @@ void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_
 		case CODE_ALT_UINT64: {
 			uint64_t tmp = 0;
 			vnx::read(in, tmp, type_code, code);
-			::memcpy(value.data(), &tmp, std::min(N, sizeof(tmp)));
+			value.from_uint(tmp);
 			break;
 		}
 		case CODE_DYNAMIC:
