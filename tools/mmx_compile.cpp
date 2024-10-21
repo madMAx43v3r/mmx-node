@@ -247,6 +247,28 @@ int main(int argc, char** argv)
 						std::cout << name << "." << method << "() => "
 								<< vm::read(child, vm::MEM_STACK).to_string() << std::endl;
 					}
+					for(const auto& out : child->outputs) {
+						if(verbose) {
+							std::cout << ">>> " << out.amount.to_string()
+									<< " [" << out.contract.to_string() << "] => " << out.address.to_string() << std::endl;
+						}
+						const auto src_bal = cache->get_balance(address, out.contract);
+						if(!src_bal || (*src_bal) < out.amount) {
+							throw std::logic_error("insufficient funds");
+						}
+						cache->set_balance(address, out.contract, (*src_bal) - out.amount);
+
+						const auto dst_bal = cache->get_balance(out.address, out.contract);
+						cache->set_balance(out.address, out.contract, (dst_bal ? *dst_bal : uint128()) + out.amount);
+					}
+					for(const auto& out : child->mint_outputs) {
+						if(verbose) {
+							std::cout << "--> " << out.amount.to_string()
+									<< " [" << out.contract.to_string() << "] => " << out.address.to_string() << std::endl;
+						}
+						const auto dst_bal = cache->get_balance(out.address, out.contract);
+						cache->set_balance(out.address, out.contract, (dst_bal ? *dst_bal : uint128()) + out.amount);
+					}
 					vm::copy(engine, child, stack_ptr, vm::MEM_STACK);
 					cache->commit();
 				}
@@ -281,14 +303,8 @@ int main(int argc, char** argv)
 				deposit = std::make_pair(amount.lower(), currency);
 			}
 			else if(method == "get_balance") {
-				const auto src = vm::read(engine, stack_ptr + 1);
+				const auto address = vm::read(engine, stack_ptr + 1).to<addr_t>();
 				const auto currency = vm::read(engine, stack_ptr + 2).to<addr_t>();
-				addr_t address;
-				if(src.is_string()) {
-					address = hash_t(src.to_string_value());
-				} else {
-					address = src.to<addr_t>();
-				}
 				if(auto balance = storage->get_balance(address, currency)) {
 					engine->write(stack_ptr, vm::uint_t(*balance));
 				} else {
@@ -306,8 +322,8 @@ int main(int argc, char** argv)
 			}
 			else if(method == "send") {
 				const auto dst = vm::read(engine, stack_ptr + 1);
-				const auto currency = vm::read(engine, stack_ptr + 2).to<addr_t>();
-				const auto amount = engine->read_fail<vm::uint_t>(stack_ptr + 3, vm::TYPE_UINT).value;
+				const auto amount = engine->read_fail<vm::uint_t>(stack_ptr + 2, vm::TYPE_UINT).value;
+				const auto currency = vm::read(engine, stack_ptr + 3).to<addr_t>();
 				if(amount >> 128) {
 					throw std::logic_error("amount too large");
 				}
@@ -323,7 +339,7 @@ int main(int argc, char** argv)
 				const auto balance = storage->get_balance(address, currency);
 				storage->set_balance(address, currency, (balance ? *balance : uint128()) + amount.lower());
 				if(verbose) {
-					std::cout << "Sent " << amount.str(10) << "[" << currency.to_string() << "] to " << dst_name << std::endl;
+					std::cout << "--> " << amount.str(10) << " [" << currency.to_string() << "] to " << dst_name << std::endl;
 				}
 			}
 			else if(method == "compile") {
