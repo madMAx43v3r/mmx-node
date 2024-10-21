@@ -84,7 +84,7 @@ function transfer(owner_) public
 {
 	check_owner();
 	
-	owner = owner_;
+	owner = bech32(owner_);
 }
 
 function set_server_url(server_url_) public
