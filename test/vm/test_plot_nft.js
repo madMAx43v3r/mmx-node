@@ -3,7 +3,7 @@ interface __test;
 interface plot_nft;
 
 const MMX = bech32();
-const binary = __test.compile("src/contract/plot_nft.js", {});
+const binary = __test.compile("src/contract/plot_nft.js");
 
 const owner = "mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z";
 
@@ -40,8 +40,8 @@ const pool_wallet = "mmx13nf0pdarcfdm7tmxxlchnq9yw8gdvnymg5avfad04t5yqu7myewq6wk
 
 __test.send(plot_nft_addr, 500000, MMX);
 
-plot_nft.claim_all(owner, MMX, {__test: true, user: owner, assert_fail: true});
-plot_nft.claim_all(pool_wallet, MMX, {__test: true, user: pool_target});
+plot_nft.claim_all(owner, MMX, {__test: 1, user: owner, assert_fail: true});
+plot_nft.claim_all(pool_wallet, MMX, {__test: 1, user: pool_target});
 
 __test.assert(__test.get_balance(pool_wallet, MMX) == 500000);
 
@@ -60,8 +60,8 @@ const owner_wallet = "mmx1mlurm4px73xghkdn02u60qff4f795nnmt04e4as595tf4luvasmsgg
 
 __test.send(plot_nft_addr, 500000, MMX);
 
-plot_nft.claim_all(owner_wallet, MMX, {__test: true, user: owner});
-plot_nft.claim_all(pool_wallet, MMX, {__test: true, user: pool_target, assert_fail: true});
+plot_nft.claim_all(owner_wallet, MMX, {__test: 1, user: owner});
+plot_nft.claim_all(pool_wallet, MMX, {__test: 1, user: pool_target, assert_fail: true});
 
 __test.assert(__test.get_balance(owner_wallet, MMX) == 500000);
 
