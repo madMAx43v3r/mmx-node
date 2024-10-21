@@ -320,7 +320,7 @@ vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
 			case vm::TYPE_ARRAY: {
 				const auto array = (const vm::array_t*)var;
 				std::vector<vnx::Variant> tmp;
-				for(uint64_t i = 0; i < array->size; ++i) {
+				for(uint32_t i = 0; i < array->size; ++i) {
 					tmp.push_back(convert(engine, engine->read_entry(array->address, i)));
 				}
 				return vnx::Variant(tmp);
