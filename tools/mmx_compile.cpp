@@ -94,6 +94,9 @@ int main(int argc, char** argv)
 	}
 
 	if(execute) {
+		if(verbose) {
+			std::cerr << "-------------------------------------------" << std::endl;
+		}
 		const auto time_begin = vnx::get_wall_time_micros();
 
 		auto storage = std::make_shared<vm::StorageRAM>();
@@ -101,10 +104,11 @@ int main(int argc, char** argv)
 		engine->is_debug = verbose;
 		engine->gas_limit = gas_limit;
 
-		uint32_t height = 1;
+		uint32_t height = 0;
+		addr_t user = engine->contract;
+		vnx::optional<std::pair<uint128, addr_t>> deposit;
 		std::map<addr_t, std::shared_ptr<const Contract>> contract_map;
 		std::map<addr_t, std::shared_ptr<const contract::Binary>> binary_map;
-		std::map<std::pair<addr_t, addr_t>, uint128> balance_map;
 
 		engine->log_func = [](uint32_t level, const std::string& msg) {
 			std::cout << "LOG[" << level << "] " << msg << std::endl;
@@ -112,9 +116,12 @@ int main(int argc, char** argv)
 		engine->event_func = [&engine](const std::string& name, const uint64_t data) {
 			std::cout << "EVENT[" << name << "] " << vm::read(engine, data).to_string() << std::endl;
 		};
-		engine->remote_call = [verbose, network, &engine, &storage, &height, &contract_map, &binary_map, &balance_map]
-			(const std::string& name, const std::string& method, const uint32_t nargs)
+		std::function<void(std::weak_ptr<vm::Engine>, const std::string&, const std::string&, const uint32_t)> remote_call;
+
+		remote_call = [verbose, network, storage, &height, &user, &deposit, &contract_map, &binary_map, &remote_call]
+			(std::weak_ptr<vm::Engine> w_engine, const std::string& name, const std::string& method, const uint32_t nargs)
 		{
+			const auto engine = w_engine.lock();
 			const addr_t address = hash_t(name);
 			std::shared_ptr<const contract::Executable> exec;
 			{
@@ -127,11 +134,16 @@ int main(int argc, char** argv)
 			engine->write(stack_ptr, vm::var_t());
 
 			if(exec) {
-				const auto child = std::make_shared<vm::Engine>(address, storage, false);
+				const auto cache = std::make_shared<vm::StorageCache>(storage);
+				const auto child = std::make_shared<vm::Engine>(address, cache, false);
 				child->gas_limit = engine->gas_limit;
-				child->log_func = engine->log_func;
-				child->event_func = engine->event_func;
-				child->remote_call = engine->remote_call;
+				child->log_func = [](uint32_t level, const std::string& msg) {
+					std::cout << "LOG[" << level << "] " << msg << std::endl;
+				};
+				child->event_func = [&child](const std::string& name, const uint64_t data) {
+					std::cout << "EVENT[" << name << "] " << vm::read(child, data).to_string() << std::endl;
+				};
+				child->remote_call = std::bind(remote_call, child, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				child->read_contract = [&child, &contract_map]
 					(const addr_t& address, const std::string& field, const uint64_t dst)
 				{
@@ -142,34 +154,46 @@ int main(int argc, char** argv)
 					throw std::logic_error("no such contract: " + address.to_string());
 				};
 
-				auto method_name = method;
-				const bool assert_fail = !method_name.empty() && method_name[0] == '!';
-				if(assert_fail) {
-					method_name = method_name.substr(1);
-				}
-				const bool is_deposit = !method_name.empty() && method_name[0] == '$';
-				if(is_deposit) {
-					method_name = method_name.substr(1);
+				bool assert_fail = false;
+
+				for(uint32_t i = 0; i < nargs; ++i) {
+					const auto src = stack_ptr + 1 + i;
+					const auto arg = vm::read(engine, src);
+					if(arg.is_object()) {
+						auto opt = arg.to_object();
+						if(opt["__test"]) {
+							if(auto value = opt["user"]) {
+								value.to(user);
+							}
+							if(auto value = opt["deposit"]) {
+								if(value.is_object()) {
+									auto obj = value.to_object();
+									deposit = std::make_pair(obj["amount"].to<uint128>(), obj["currency"].to<addr_t>());
+								} else {
+									value.to(deposit);
+								}
+							}
+							opt["assert_fail"].to(assert_fail);
+							break;
+						}
+					}
+					vm::copy(child, engine, vm::MEM_STACK + 1 + i, src);
 				}
 
-				for(uint32_t i = 0; i + (is_deposit ? 2 : 0) < nargs; ++i) {
-					vm::copy(child, engine, vm::MEM_STACK + 1 + i, stack_ptr + 1 + i);
+				if(verbose && user != engine->contract) {
+					std::cout << "user = " << user.to_string() << std::endl;
 				}
-				if(is_deposit) {
-					if(nargs < 2) {
-						throw std::logic_error("missing deposit arguments [amount, currency]");
-					}
-					const auto currency = vm::read(engine, stack_ptr + nargs - 1).to<addr_t>();
-					const auto amount = engine->read_fail<vm::uint_t>(stack_ptr + nargs - 2, vm::TYPE_UINT).value;
-					if(amount >> 80) {
-						throw std::logic_error("amount too large");
-					}
-					if(!assert_fail) {
-						balance_map[std::make_pair(address, currency)] += amount;
-					}
+				if(deposit) {
+					const auto& amount = deposit->first;
+					const auto& currency = deposit->second;
 					vm::set_deposit(child, currency, amount);
+					if(verbose) {
+						std::cout << "deposit = " << amount.to_string() << " [" << currency.to_string() << "]" << std::endl;
+					}
+					const auto balance = cache->get_balance(address, currency);
+					cache->set_balance(address, currency, (balance ? *balance : uint128()) + amount);
 				}
-				child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(engine->contract));
+				child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(user));
 				child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
 				child->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(network));
 				child->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(height));
@@ -185,11 +209,13 @@ int main(int argc, char** argv)
 				if(!binary) {
 					throw std::logic_error("no such binary: " + exec->binary.to_string());
 				}
-				const auto func = vm::find_method(binary, method_name);
+				const auto func = vm::find_method(binary, method);
 				if(!func) {
-					throw std::logic_error("no such method: " + method_name);
+					throw std::logic_error("no such method: " + method);
 				}
-				// TODO: check is_public || is_init
+				if(!func->is_payable && deposit) {
+					throw std::logic_error("method does not allow deposit: " + method);
+				}
 				vm::load(child, binary);
 
 				bool did_fail = true;
@@ -200,10 +226,10 @@ int main(int argc, char** argv)
 				catch(const std::exception& ex) {
 					if(verbose) {
 						if(assert_fail) {
-							std::cerr << "Call to " << name << "." << method_name << "() failed as expected with: "
+							std::cout << name << "." << method << "() failed as expected: "
 									<< ex.what()  << " (code " << child->error_code << ")" << std::endl;
 						} else {
-							std::cerr << "Call to " << name << "." << method_name << "() failed at " << vm::to_hex(child->error_addr)
+							std::cerr << name << "." << method << "() failed at " << vm::to_hex(child->error_addr)
 									<< " line " << vnx::to_string(binary->find_line(child->error_addr))
 									<< " with: " << ex.what() << " (code " << child->error_code << ")" << std::endl;
 						}
@@ -217,8 +243,15 @@ int main(int argc, char** argv)
 						throw std::logic_error("expected call to fail");
 					}
 				} else {
+					if(verbose) {
+						std::cout << name << "." << method << "() => "
+								<< vm::read(child, vm::MEM_STACK).to_string() << std::endl;
+					}
 					vm::copy(engine, child, stack_ptr, vm::MEM_STACK);
+					cache->commit();
 				}
+				user = engine->contract;
+				deposit = nullptr;
 				return;
 			}
 			if(name != "__test") {
@@ -227,8 +260,25 @@ int main(int argc, char** argv)
 			if(method == "set_height") {
 				height = vm::read(engine, stack_ptr + 1).to<uint32_t>();
 				if(verbose) {
-					std::cout << "Set height to " << height << std::endl;
+					std::cout << "height = " << height << std::endl;
 				}
+			}
+			else if(method == "inc_height") {
+				height += vm::read(engine, stack_ptr + 1).to<uint32_t>();
+				if(verbose) {
+					std::cout << "height = " << height << std::endl;
+				}
+			}
+			else if(method == "get_height") {
+				engine->write(stack_ptr, vm::uint_t(height));
+			}
+			else if(method == "set_user") {
+				user = vm::read(engine, stack_ptr + 1).to<addr_t>();
+			}
+			else if(method == "set_deposit") {
+				const auto currency = vm::read(engine, stack_ptr + 1).to<addr_t>();
+				const auto amount = engine->read_fail<vm::uint_t>(stack_ptr + 2, vm::TYPE_UINT).value;
+				deposit = std::make_pair(amount.lower(), currency);
 			}
 			else if(method == "get_balance") {
 				const auto src = vm::read(engine, stack_ptr + 1);
@@ -239,18 +289,26 @@ int main(int argc, char** argv)
 				} else {
 					address = src.to<addr_t>();
 				}
-				auto iter = balance_map.find(std::make_pair(address, currency));
-				if(iter != balance_map.end()) {
-					engine->write(stack_ptr, vm::uint_t(iter->second));
+				if(auto balance = storage->get_balance(address, currency)) {
+					engine->write(stack_ptr, vm::uint_t(*balance));
 				} else {
 					engine->write(stack_ptr, vm::uint_t());
+				}
+			}
+			else if(method == "assert") {
+				if(!vm::read(engine, stack_ptr + 1)) {
+					if(auto msg = vm::read(engine, stack_ptr + 2)) {
+						throw std::logic_error("assert failed (" + msg.to_string_value() + ")");
+					} else {
+						throw std::logic_error("assert failed");
+					}
 				}
 			}
 			else if(method == "send") {
 				const auto dst = vm::read(engine, stack_ptr + 1);
 				const auto currency = vm::read(engine, stack_ptr + 2).to<addr_t>();
 				const auto amount = engine->read_fail<vm::uint_t>(stack_ptr + 3, vm::TYPE_UINT).value;
-				if(amount >> 80) {
+				if(amount >> 128) {
 					throw std::logic_error("amount too large");
 				}
 				addr_t address;
@@ -262,7 +320,8 @@ int main(int argc, char** argv)
 					address = dst.to<addr_t>();
 					dst_name = address.to_string();
 				}
-				balance_map[std::make_pair(address, currency)] += amount.lower();
+				const auto balance = storage->get_balance(address, currency);
+				storage->set_balance(address, currency, (balance ? *balance : uint128()) + amount.lower());
 				if(verbose) {
 					std::cout << "Sent " << amount.str(10) << "[" << currency.to_string() << "] to " << dst_name << std::endl;
 				}
@@ -274,9 +333,9 @@ int main(int argc, char** argv)
 					std::cout << "Compiling " << vnx::to_string(list) << std::endl << vnx::to_pretty_string(flags);
 				}
 				const auto bin = vm::compile_files(list, flags);
-				const auto addr = bin->calc_hash();
+				const addr_t addr = bin->calc_hash();
 				if(verbose) {
-					std::cout << "Done: address = " << addr.to_string() << std::endl;
+					std::cout << "binary = " << addr.to_string() << std::endl;
 				}
 				binary_map[addr] = bin;
 				engine->write(stack_ptr, vm::to_binary(addr));
@@ -300,12 +359,15 @@ int main(int argc, char** argv)
 						engine->remote_call(name, exec->init_method, exec->init_args.size());
 						engine->ret();
 					}
+					engine->write(stack_ptr, vm::to_binary(address));
 				}
 			}
 			else {
 				throw std::logic_error("invalid __test method: " + method);
 			}
 		};
+
+		engine->remote_call = std::bind(remote_call, engine, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
 		vm::load(engine, binary);
 
