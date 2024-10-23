@@ -22,6 +22,9 @@ bool Binary::is_valid() const
 		if(method.is_payable && method.is_const) {
 			return false;
 		}
+		if(method.is_init && (method.is_const || method.is_public || method.is_payable)) {
+			return false;
+		}
 	}
 	return Super::is_valid();
 }

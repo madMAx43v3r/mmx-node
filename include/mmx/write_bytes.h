@@ -181,6 +181,7 @@ inline void write_bytes(vnx::OutputBuffer& out, const contract::method_t& value)
 	write_bytes(out, value.get_type_hash());
 	write_field(out, "name", value.name);
 	write_field(out, "info", value.info);
+	write_field(out, "is_init", value.is_init);
 	write_field(out, "is_const", value.is_const);
 	write_field(out, "is_public", value.is_public);
 	write_field(out, "is_payable", value.is_payable);

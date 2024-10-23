@@ -669,6 +669,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 			contract::method_t method;
 			method.name = func.name;
 			method.entry_point = func.address;
+			method.is_init = func.is_init;
 			method.is_const = func.is_const;
 			method.is_public = func.is_public;
 			method.is_payable = func.is_payable;

@@ -418,7 +418,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::vector<txout_t>& exec_outputs,
 					std::map<std::pair<addr_t, addr_t>, uint128>& exec_spend_map,
 					std::shared_ptr<vm::StorageCache> storage_cache,
-					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const
+					uint64_t& tx_cost, exec_error_t& error, const bool is_init) const
 {
 	auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract);
 	if(!executable) {
@@ -456,7 +456,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 	std::exception_ptr failed_ex;
 	try {
-		execute(tx, context, executable, exec_outputs, exec_spend_map, storage_cache, engine, op->method, error, is_public);
+		execute(tx, context, executable, exec_outputs, exec_spend_map, storage_cache, engine, op->method, error, is_init);
 	} catch(...) {
 		failed_ex = std::current_exception();
 	}
@@ -487,7 +487,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
-					exec_error_t& error, const bool is_public) const
+					exec_error_t& error, const bool is_init) const
 {
 	{
 		auto iter = context->mutate_map.find(engine->contract);
@@ -507,8 +507,14 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(!method) {
 		throw std::logic_error("no such method: " + method_name);
 	}
-	if(is_public && !method->is_public) {
-		throw std::logic_error("method is not public: " + method_name);
+	if(is_init) {
+		if(!method->is_init) {
+			throw std::logic_error("not a constructor: " + method_name);
+		}
+	} else {
+		if(!method->is_public) {
+			throw std::logic_error("method is not public: " + method_name);
+		}
 	}
 	vm::load(engine, binary);
 
@@ -542,7 +548,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
 		child->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 
-		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, true);
+		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, false);
 
 		vm::copy(engine, child, stack_ptr, vm::MEM_STACK);
 
@@ -716,7 +722,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				auto exec = operation::Execute::create();
 				exec->method = executable->init_method;
 				exec->args = executable->init_args;
-				execute(tx, context, exec, executable, tx->id, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, false);
+				execute(tx, context, exec, executable, tx->id, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, true);
 			}
 		}
 		error.operation = 0;
@@ -746,7 +752,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 			{
 				const auto solution = tx->get_solution(op->solution);
-				execute(tx, context, exec, contract, address, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, true);
+				execute(tx, context, exec, contract, address, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, false);
 			}
 			error.operation++;
 		}

@@ -22,7 +22,6 @@ Mainnet
 - Explorer search by block hash
 - Harvester VP partials support
 - Genesis rewards
-- method_t is_init
 - Remove harvester_id ? causes issue with copy folder
 - Unit tests for all smart contracts
 - Engine fuzzing
