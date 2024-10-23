@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 	bool assert_fail = false;
 	uint64_t gas_limit = -1;
 	std::string network = "mainnet";
-	std::string output = "binary.dat";
+	std::string output;
 	std::vector<std::string> file_names;
 	vnx::read_config("verbose", verbose);
 	vnx::read_config("opt-level", opt_level);
@@ -73,7 +73,17 @@ int main(int argc, char** argv)
 	std::shared_ptr<const contract::Binary> binary;
 
 	try {
-		binary = vm::compile_files(file_names, flags);
+		if(file_names.empty()) {
+			std::string source;
+			std::vector<char> buffer(4096);
+			while(std::cin.read(buffer.data(), buffer.size()) || std::cin.gcount() > 0) {
+				const auto bytes_read = std::cin.gcount();
+				source += std::string(buffer.data(), bytes_read);
+			}
+			binary = vm::compile(source, flags);
+		} else {
+			binary = vm::compile_files(file_names, flags);
+		}
 	}
 	catch(const std::exception& ex) {
 		std::cerr << "Compilation failed with:" << std::endl << "\t" << ex.what() << std::endl;
@@ -81,16 +91,18 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	if(txmode) {
-		auto tx = Transaction::create();
-		tx->deploy = binary;
-		tx->network = network;
-		tx->id = tx->calc_hash(false);
-		tx->content_hash = tx->calc_hash(true);
-		vnx::write_to_file(output, tx);
-		std::cout << addr_t(tx->id).to_string() << std::endl;
-	} else {
-		vnx::write_to_file(output, binary);
+	if(!output.empty()) {
+		if(txmode) {
+			auto tx = Transaction::create();
+			tx->deploy = binary;
+			tx->network = network;
+			tx->id = tx->calc_hash(false);
+			tx->content_hash = tx->calc_hash(true);
+			vnx::write_to_file(output, tx);
+			std::cout << addr_t(tx->id).to_string() << std::endl;
+		} else {
+			vnx::write_to_file(output, binary);
+		}
 	}
 
 	if(execute) {
