@@ -17,13 +17,13 @@ Mainnet
 - Swap warning for one-sided pool
 - VDF trust system (order queue by trust)
 - Increase min_sync_peers to 5 after launch
-- mmx_test framework
 - 1000 commas for balances
 - Binary line_info
 - Explorer search by block hash
 - Harvester VP partials support
 - Genesis rewards
 - method_t is_init
-- method_t is_auto ?
 - JSON parse recursion limit
 - Remove harvester_id ? causes issue with copy folder
+- Unit tests for all smart contracts
+- Engine fuzzing
