@@ -42,7 +42,7 @@ private:
 	};
 
 	static std::mutex mutex;
-	static const size_t hash_salt;
+	static const vnx::Hash64 hash_salt;
 	static std::array<cache_t, 16384> sig_cache;
 };
 
@@ -77,15 +77,5 @@ void accept(vnx::Visitor& visitor, const mmx::signature_t& value) {
 }
 
 } // vnx
-
-
-namespace std {
-	template<>
-	struct hash<typename mmx::signature_t> {
-		size_t operator()(const mmx::signature_t& x) const {
-			return std::hash<mmx::signature_t::super_t>{}(x);
-		}
-	};
-} // std
 
 #endif /* INCLUDE_MMX_SIGNATURE_T_HPP_ */
