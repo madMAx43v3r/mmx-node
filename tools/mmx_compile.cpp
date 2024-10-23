@@ -13,6 +13,9 @@
 #include <mmx/vm/StorageRAM.h>
 #include <mmx/vm/StorageCache.h>
 #include <mmx/vm_interface.h>
+#include <mmx/skey_t.hpp>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <mmx/secp256k1.hpp>
 
 #include <vnx/vnx.h>
@@ -162,8 +165,9 @@ int main(int argc, char** argv)
 					auto iter = contract_map.find(address);
 					if(iter != contract_map.end()) {
 						vm::assign(child, dst, iter->second->read_field(field));
+					} else {
+						throw std::logic_error("no such contract: " + address.to_string());
 					}
-					throw std::logic_error("no such contract: " + address.to_string());
 				};
 
 				bool assert_fail = false;
@@ -300,16 +304,27 @@ int main(int argc, char** argv)
 					}
 					contract_map[address] = contract;
 
+					bool is_fail = false;
 					if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
 						engine->call(0, 3);
 						uint32_t i = 1;
 						for(const auto& arg : exec->init_args) {
+							if(arg.is_object()) {
+								auto obj = arg.to_object();
+								if(obj["__test"] && obj["assert_fail"].to<bool>()) {
+									is_fail = true;
+								}
+							}
 							vm::assign(engine, engine->get_stack_ptr() + i, arg); i++;
 						}
 						engine->remote_call(name, exec->init_method, exec->init_args.size());
 						engine->ret();
 					}
-					engine->write(stack_ptr, vm::to_binary(address));
+					if(is_fail) {
+						contract_map.erase(address);
+					} else {
+						engine->write(stack_ptr, vm::to_binary(address));
+					}
 					return;
 				}
 				throw std::logic_error("invalid remote call: " + name + "." + method + "()");
@@ -354,6 +369,15 @@ int main(int argc, char** argv)
 						throw std::logic_error("assert failed");
 					}
 				}
+			}
+			else if(method == "get_public_key") {
+				const auto skey = vm::read(engine, stack_ptr + 1).to<skey_t>();
+				engine->write(stack_ptr, vm::to_binary(pubkey_t(skey)));
+			}
+			else if(method == "ecdsa_sign") {
+				const auto skey = vm::read(engine, stack_ptr + 1).to<skey_t>();
+				const auto hash = vm::read(engine, stack_ptr + 2).to<hash_t>();
+				engine->write(stack_ptr, vm::to_binary(signature_t::sign(skey, hash)));
 			}
 			else if(method == "send") {
 				const auto dst = vm::read(engine, stack_ptr + 1);
