@@ -229,8 +229,8 @@ private:
 	std::queue<hash_t> hash_queue;
 	std::unordered_map<hash_t, hash_info_t> hash_info;
 
-	std::unordered_map<pubkey_t, uint32_t> farmer_credits;
-	std::unordered_map<pubkey_t, uint32_t> timelord_credits;
+	std::map<pubkey_t, uint32_t> farmer_credits;
+	std::map<pubkey_t, uint32_t> timelord_credits;
 
 	double tx_upload_credits = 0;
 	double tx_upload_bandwidth = 0;

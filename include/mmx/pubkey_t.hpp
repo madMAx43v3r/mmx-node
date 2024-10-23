@@ -70,14 +70,4 @@ void accept(vnx::Visitor& visitor, const mmx::pubkey_t& value) {
 
 } // vnx
 
-
-namespace std {
-	template<>
-	struct hash<typename mmx::pubkey_t> {
-		size_t operator()(const mmx::pubkey_t& x) const {
-			return std::hash<mmx::pubkey_t::super_t>{}(x);
-		}
-	};
-} // std
-
 #endif /* INCLUDE_MMX_PUBKEY_T_HPP_ */

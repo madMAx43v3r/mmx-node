@@ -59,7 +59,7 @@ private:
 	std::shared_ptr<WalletAsyncClient> wallet;
 	std::shared_ptr<vnx::addons::HttpClientAsyncClient> http_async;
 
-	mutable std::unordered_map<pubkey_t, skey_t> key_map;
+	mutable std::map<pubkey_t, skey_t> key_map;
 	std::map<hash_t, std::shared_ptr<const vnx::Sample>> info_map;
 
 	std::map<addr_t, pooling_stats_t> nft_stats;

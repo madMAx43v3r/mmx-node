@@ -301,16 +301,4 @@ void accept(vnx::Visitor& visitor, const mmx::bytes_t<N>& value) {
 
 } // vnx
 
-
-namespace std {
-	template<size_t N>
-	struct hash<typename mmx::bytes_t<N>> {
-		size_t operator()(const mmx::bytes_t<N>& x) const {
-			size_t res = 0;
-			::memcpy(&res, x.bytes.data(), std::min(N, sizeof(size_t)));
-			return res;
-		}
-	};
-} // std
-
 #endif /* INCLUDE_MMX_BYTES_T_HPP_ */
