@@ -12,7 +12,7 @@ namespace contract {
 
 
 const vnx::Hash64 method_t::VNX_TYPE_HASH(0x1f62512698176a39ull);
-const vnx::Hash64 method_t::VNX_CODE_HASH(0xc1e9bd07bc925983ull);
+const vnx::Hash64 method_t::VNX_CODE_HASH(0xf70ca6386623ddb6ull);
 
 vnx::Hash64 method_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,11 +47,12 @@ void method_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, name);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, info);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, is_const);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, is_public);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, is_payable);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, entry_point);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, args);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, is_init);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, is_const);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, is_public);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, is_payable);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, entry_point);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, args);
 	_visitor.type_end(*_type_code);
 }
 
@@ -59,6 +60,7 @@ void method_t::write(std::ostream& _out) const {
 	_out << "{";
 	_out << "\"name\": "; vnx::write(_out, name);
 	_out << ", \"info\": "; vnx::write(_out, info);
+	_out << ", \"is_init\": "; vnx::write(_out, is_init);
 	_out << ", \"is_const\": "; vnx::write(_out, is_const);
 	_out << ", \"is_public\": "; vnx::write(_out, is_public);
 	_out << ", \"is_payable\": "; vnx::write(_out, is_payable);
@@ -78,6 +80,7 @@ vnx::Object method_t::to_object() const {
 	_object["__type"] = "mmx.contract.method_t";
 	_object["name"] = name;
 	_object["info"] = info;
+	_object["is_init"] = is_init;
 	_object["is_const"] = is_const;
 	_object["is_public"] = is_public;
 	_object["is_payable"] = is_payable;
@@ -96,6 +99,8 @@ void method_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(info);
 		} else if(_entry.first == "is_const") {
 			_entry.second.to(is_const);
+		} else if(_entry.first == "is_init") {
+			_entry.second.to(is_init);
 		} else if(_entry.first == "is_payable") {
 			_entry.second.to(is_payable);
 		} else if(_entry.first == "is_public") {
@@ -112,6 +117,9 @@ vnx::Variant method_t::get_field(const std::string& _name) const {
 	}
 	if(_name == "info") {
 		return vnx::Variant(info);
+	}
+	if(_name == "is_init") {
+		return vnx::Variant(is_init);
 	}
 	if(_name == "is_const") {
 		return vnx::Variant(is_const);
@@ -136,6 +144,8 @@ void method_t::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(name);
 	} else if(_name == "info") {
 		_value.to(info);
+	} else if(_name == "is_init") {
+		_value.to(is_init);
 	} else if(_name == "is_const") {
 		_value.to(is_const);
 	} else if(_name == "is_public") {
@@ -173,11 +183,11 @@ std::shared_ptr<vnx::TypeCode> method_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.method_t";
 	type_code->type_hash = vnx::Hash64(0x1f62512698176a39ull);
-	type_code->code_hash = vnx::Hash64(0xc1e9bd07bc925983ull);
+	type_code->code_hash = vnx::Hash64(0xf70ca6386623ddb6ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::contract::method_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<method_t>>(); };
-	type_code->fields.resize(7);
+	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -193,29 +203,35 @@ std::shared_ptr<vnx::TypeCode> method_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.data_size = 1;
-		field.name = "is_const";
+		field.name = "is_init";
 		field.code = {31};
 	}
 	{
 		auto& field = type_code->fields[3];
 		field.data_size = 1;
-		field.name = "is_public";
+		field.name = "is_const";
 		field.code = {31};
 	}
 	{
 		auto& field = type_code->fields[4];
 		field.data_size = 1;
-		field.name = "is_payable";
+		field.name = "is_public";
 		field.code = {31};
 	}
 	{
 		auto& field = type_code->fields[5];
+		field.data_size = 1;
+		field.name = "is_payable";
+		field.code = {31};
+	}
+	{
+		auto& field = type_code->fields[6];
 		field.data_size = 4;
 		field.name = "entry_point";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "args";
 		field.code = {12, 32};
@@ -265,15 +281,18 @@ void read(TypeInput& in, ::mmx::contract::method_t& value, const TypeCode* type_
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.is_const, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.is_init, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.is_public, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.is_const, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[4]) {
-			vnx::read_value(_buf + _field->offset, value.is_payable, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.is_public, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[5]) {
+			vnx::read_value(_buf + _field->offset, value.is_payable, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.entry_point, _field->code.data());
 		}
 	}
@@ -281,7 +300,7 @@ void read(TypeInput& in, ::mmx::contract::method_t& value, const TypeCode* type_
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.name, type_code, _field->code.data()); break;
 			case 1: vnx::read(in, value.info, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.args, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.args, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -300,14 +319,15 @@ void write(TypeOutput& out, const ::mmx::contract::method_t& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(7);
-	vnx::write_value(_buf + 0, value.is_const);
-	vnx::write_value(_buf + 1, value.is_public);
-	vnx::write_value(_buf + 2, value.is_payable);
-	vnx::write_value(_buf + 3, value.entry_point);
+	auto* const _buf = out.write(8);
+	vnx::write_value(_buf + 0, value.is_init);
+	vnx::write_value(_buf + 1, value.is_const);
+	vnx::write_value(_buf + 2, value.is_public);
+	vnx::write_value(_buf + 3, value.is_payable);
+	vnx::write_value(_buf + 4, value.entry_point);
 	vnx::write(out, value.name, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.info, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.args, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.args, type_code, type_code->fields[7].code.data());
 }
 
 void read(std::istream& in, ::mmx::contract::method_t& value) {

@@ -17,7 +17,7 @@ namespace contract {
 
 
 const vnx::Hash64 Binary::VNX_TYPE_HASH(0xbbeba47fc8b740e5ull);
-const vnx::Hash64 Binary::VNX_CODE_HASH(0x141e1ee4bcb10496ull);
+const vnx::Hash64 Binary::VNX_CODE_HASH(0xdafe5167bf0b4ebbull);
 
 vnx::Hash64 Binary::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -208,7 +208,7 @@ std::shared_ptr<vnx::TypeCode> Binary::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.contract.Binary";
 	type_code->type_hash = vnx::Hash64(0xbbeba47fc8b740e5ull);
-	type_code->code_hash = vnx::Hash64(0x141e1ee4bcb10496ull);
+	type_code->code_hash = vnx::Hash64(0xdafe5167bf0b4ebbull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::contract::Binary);
