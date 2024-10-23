@@ -300,7 +300,7 @@ int main(int argc, char** argv)
 					engine->write(stack_ptr, vm::to_binary(address));
 					return;
 				}
-				throw std::logic_error("invalid remote call to '" + name + "'");
+				throw std::logic_error("invalid remote call: " + name + "." + method + "()");
 			}
 			if(method == "set_height") {
 				height = vm::read(engine, stack_ptr + 1).to<uint32_t>();
