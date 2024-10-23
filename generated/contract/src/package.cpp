@@ -4,7 +4,6 @@
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/Identity.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/TokenBase.hxx>
@@ -52,18 +51,6 @@ void type<::mmx::contract::Executable>::create_dynamic_code(std::vector<uint16_t
 }
 
 void type<::mmx::contract::Executable>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Executable& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::contract::Identity>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_Identity;
-}
-
-void type<::mmx::contract::Identity>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::Identity());
-}
-
-void type<::mmx::contract::Identity>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::Identity& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -151,7 +138,6 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::contract::Binary::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Data::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::Executable::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::Identity::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::MultiSig::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TokenBase::static_create_type_code());
@@ -169,7 +155,6 @@ static struct vnx_static_init {
 const vnx::TypeCode* const vnx_native_type_code_Binary = vnx::get_type_code(vnx::Hash64(0xbbeba47fc8b740e5ull));
 const vnx::TypeCode* const vnx_native_type_code_Data = vnx::get_type_code(vnx::Hash64(0xadfeee3822244f50ull));
 const vnx::TypeCode* const vnx_native_type_code_Executable = vnx::get_type_code(vnx::Hash64(0xfa6a3ac9103ebb12ull));
-const vnx::TypeCode* const vnx_native_type_code_Identity = vnx::get_type_code(vnx::Hash64(0x69710dd250a33c5eull));
 const vnx::TypeCode* const vnx_native_type_code_MultiSig = vnx::get_type_code(vnx::Hash64(0x7d674c5f7297dedull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0x9b3cd508d7f41423ull));
 const vnx::TypeCode* const vnx_native_type_code_TokenBase = vnx::get_type_code(vnx::Hash64(0x5aeed4c96d232b5eull));

@@ -7,7 +7,6 @@
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/Identity.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/TokenBase.hxx>
@@ -43,15 +42,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::Executabl
 		} else {
 			value->accept_generic(visitor);
 		}
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::Identity> value) {
-	if(value) {
-		value->accept_generic(visitor);
 	} else {
 		visitor.accept(nullptr);
 	}
