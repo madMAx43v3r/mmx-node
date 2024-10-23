@@ -11,6 +11,15 @@
 
 namespace mmx {
 
+pubkey_t::pubkey_t(const skey_t& key)
+{
+	secp256k1_pubkey pubkey;
+	if(!secp256k1_ec_pubkey_create(g_secp256k1, &pubkey, key.data())) {
+		throw std::logic_error("secp256k1_ec_pubkey_create() failed");
+	}
+	*this = pubkey_t(pubkey);
+}
+
 pubkey_t::pubkey_t(const secp256k1_pubkey& key)
 {
 	size_t len = size();
@@ -27,15 +36,6 @@ secp256k1_pubkey pubkey_t::to_secp256k1() const
 		throw std::logic_error("secp256k1_ec_pubkey_parse() failed");
 	}
 	return res;
-}
-
-pubkey_t pubkey_t::from_skey(const skey_t& key)
-{
-	secp256k1_pubkey pubkey;
-	if(!secp256k1_ec_pubkey_create(g_secp256k1, &pubkey, key.data())) {
-		throw std::logic_error("secp256k1_ec_pubkey_create() failed");
-	}
-	return pubkey_t(pubkey);
 }
 
 

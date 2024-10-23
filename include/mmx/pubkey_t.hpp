@@ -21,6 +21,8 @@ public:
 
 	pubkey_t() = default;
 
+	pubkey_t(const skey_t& key);
+
 	pubkey_t(const std::vector<uint8_t>& bytes) : super_t(bytes) {}
 
 	pubkey_t(const secp256k1_pubkey& key);
@@ -28,8 +30,6 @@ public:
 	addr_t get_addr() const;
 
 	secp256k1_pubkey to_secp256k1() const;
-
-	static pubkey_t from_skey(const skey_t& key);
 
 };
 

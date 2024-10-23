@@ -81,7 +81,7 @@ void TimeLord::main()
 				log(WARN) << "Failed to write key to file: " << ex.what();
 			}
 		}
-		timelord_key = pubkey_t::from_skey(timelord_sk);
+		timelord_key = pubkey_t(timelord_sk);
 		log(DEBUG) << "Timelord Key: " << timelord_key;
 	}
 
