@@ -820,8 +820,7 @@ vnx::Variant Node::call_contract(
 			if(!func) {
 				throw std::runtime_error("no such method: " + method);
 			}
-			auto cache = std::make_shared<vm::StorageCache>(storage);
-			auto engine = std::make_shared<vm::Engine>(address, cache, func->is_const);
+			auto engine = std::make_shared<vm::Engine>(address, storage, func->is_const);
 			engine->gas_limit = params->max_tx_cost;
 			vm::load(engine, bin);
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
