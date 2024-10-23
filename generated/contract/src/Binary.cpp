@@ -3,7 +3,6 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/Binary.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/compile_flags_t.hxx>

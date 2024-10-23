@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_contract_Binary_HXX_
 
 #include <mmx/contract/package.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/compile_flags_t.hxx>
@@ -44,8 +43,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
-	virtual uint64_t num_bytes(const vnx::bool_t& total = true) const override;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual uint64_t num_bytes() const override;
 	virtual vnx::optional<uint32_t> find_field(const std::string& name = "") const;
 	virtual vnx::optional<::mmx::contract::method_t> find_method(const std::string& name = "") const;
 	virtual vnx::optional<uint32_t> find_line(const uint32_t& address = 0) const;

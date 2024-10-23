@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_contract_MultiSig_HXX_
 
 #include <mmx/contract/package.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/addr_t.hpp>
@@ -37,8 +36,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
-	virtual uint64_t num_bytes(const vnx::bool_t& total = true) const override;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual uint64_t num_bytes() const override;
 	virtual void validate(std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const override;
 	virtual ::vnx::Variant read_field(const std::string& name = "") const override;
 	

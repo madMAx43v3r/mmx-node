@@ -35,7 +35,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const;
-	virtual uint64_t num_bytes(const vnx::bool_t& total = true) const;
+	virtual uint64_t num_bytes() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const;
 	virtual void validate(std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const;

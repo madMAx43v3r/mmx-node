@@ -3,7 +3,6 @@
 
 #include <mmx/contract/package.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/hash_t.hpp>
