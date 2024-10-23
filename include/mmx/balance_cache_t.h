@@ -69,8 +69,8 @@ public:
 	std::map<std::pair<addr_t, addr_t>, uint128> balance;
 
 private:
-	balance_cache_t* const parent = nullptr;
-	const balance_table_t<uint128>* const source = nullptr;
+	balance_cache_t* parent = nullptr;
+	const balance_table_t<uint128>* source = nullptr;
 
 };
 

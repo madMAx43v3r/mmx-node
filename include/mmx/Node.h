@@ -84,7 +84,7 @@ protected:
 
 	vnx::optional<tx_info_t> get_tx_info(const hash_t& id) const override;
 
-	vnx::optional<tx_info_t> get_tx_info_for(std::shared_ptr<const Transaction> tx) const;
+	vnx::optional<tx_info_t> get_tx_info_for(std::shared_ptr<const Transaction> tx) const override;
 
 	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& include_pending = false) const override;
 
@@ -117,7 +117,7 @@ protected:
 	std::map<addr_t, uint128> get_balances(const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
 
 	std::map<addr_t, balance_t> get_contract_balances(
-			const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const;
+			const addr_t& address, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
 
 	std::map<addr_t, uint128> get_total_balances(
 			const std::vector<addr_t>& addresses, const std::set<addr_t>& whitelist, const int32_t& limit) const override;
@@ -138,10 +138,10 @@ protected:
 	std::pair<vm::varptr_t, uint64_t> read_storage_field(const addr_t& contract, const std::string& name, const uint32_t& height = -1) const override;
 
 	std::tuple<vm::varptr_t, uint64_t, uint64_t> read_storage_entry_addr(
-			const addr_t& contract, const std::string& name, const addr_t& key, const uint32_t& height = -1) const;
+			const addr_t& contract, const std::string& name, const addr_t& key, const uint32_t& height = -1) const override;
 
 	std::tuple<vm::varptr_t, uint64_t, uint64_t> read_storage_entry_string(
-			const addr_t& contract, const std::string& name, const std::string& key, const uint32_t& height = -1) const;
+			const addr_t& contract, const std::string& name, const std::string& key, const uint32_t& height = -1) const override;
 
 	std::vector<vm::varptr_t> read_storage_array(const addr_t& contract, const uint64_t& address, const uint32_t& height = -1) const override;
 

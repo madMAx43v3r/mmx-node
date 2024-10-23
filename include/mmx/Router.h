@@ -185,7 +185,7 @@ private:
 
 	void on_return(uint64_t client, std::shared_ptr<const Return> msg);
 
-	void on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg);
+	void on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg) override;
 
 	void on_pause(uint64_t client) override;
 

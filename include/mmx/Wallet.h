@@ -84,7 +84,7 @@ protected:
 			const uint32_t& index, const std::string& name, const vnx::optional<uint32_t>& owner, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> complete(
-			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
+			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> sign_off(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const override;
