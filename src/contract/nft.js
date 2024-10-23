@@ -3,6 +3,8 @@ var serial;
 var creator;
 var mint_height;
 
+interface template;
+
 function init(creator_)
 {
 	if(read("decimals") != 0) {
@@ -16,10 +18,10 @@ function init_n(creator_key, serial_, signature) static
 	if(read("decimals") != 0) {
 		fail("decimals not zero");
 	}
-	rcall("template", "add", serial_, creator_key, signature);
-	
-	serial = serial_;
+	serial = uint(serial_);
 	creator = sha256(creator_key);
+	
+	template.add(serial, creator_key, signature);
 }
 
 function mint_to(address, memo) public
