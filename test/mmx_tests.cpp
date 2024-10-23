@@ -12,6 +12,14 @@
 #include <mmx/tree_hash.h>
 #include <mmx/utils.h>
 
+#include <mmx/ChainParams.hxx>
+#include <mmx/contract/Data.hxx>
+#include <mmx/contract/Binary.hxx>
+#include <mmx/contract/MultiSig.hxx>
+#include <mmx/contract/Executable.hxx>
+#include <mmx/contract/VirtualPlot.hxx>
+#include <mmx/contract/WebData.hxx>
+
 #include <vnx/vnx.h>
 #include <vnx/test/Test.h>
 
@@ -122,6 +130,78 @@ int main(int argc, char** argv)
 			auto next = mmx::calc_btree_hash(list);
 			vnx::test::expect(next != hash, true);
 			hash = next;
+		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("Contract::num_bytes()")
+	{
+		auto params = mmx::ChainParams::create();
+		params->min_txfee_byte = 100;
+		const std::string str(1024 * 1024, 'A');
+		{
+			auto tmp = mmx::contract::Data::create();
+			tmp->value = str;
+			vnx::test::expect(tmp->num_bytes() > str.size(), true);
+			vnx::test::expect(tmp->calc_cost(params) > str.size() * params->min_txfee_byte, true);
+		}
+		{
+			auto tmp = mmx::contract::WebData::create();
+			tmp->mime_type = str;
+			tmp->payload = str;
+			vnx::test::expect(tmp->num_bytes() > 2 * str.size(), true);
+		}
+		{
+			auto tmp = mmx::contract::Binary::create();
+			tmp->binary.resize(str.size());
+			tmp->constant.resize(str.size());
+			tmp->compiler = str;
+			tmp->fields.emplace(str, 0);
+			tmp->methods.emplace(str, mmx::contract::method_t());
+			tmp->name = str;
+			tmp->source = str;
+			vnx::test::expect(tmp->num_bytes() > 7 * str.size(), true);
+		}
+		{
+			auto tmp = mmx::contract::Binary::create();
+			for(uint32_t i = 0; i < 1024; ++i) {
+				tmp->line_info.emplace(i, i);
+			}
+			vnx::test::expect(tmp->num_bytes() > 8 * 1024, true);
+		}
+		{
+			auto tmp = mmx::contract::TokenBase::create();
+			tmp->meta_data = str;
+			tmp->name = str;
+			tmp->symbol = str;
+			vnx::test::expect(tmp->num_bytes() > 3 * str.size(), true);
+		}
+		{
+			auto tmp = mmx::contract::Executable::create();
+			tmp->depends.emplace(str, mmx::addr_t());
+			tmp->init_args.emplace_back(str);
+			tmp->init_method = str;
+			tmp->meta_data = str;
+			tmp->name = str;
+			tmp->symbol = str;
+			vnx::test::expect(tmp->num_bytes() > 6 * str.size(), true);
+		}
+		{
+			auto tmp = mmx::contract::VirtualPlot::create();
+			tmp->depends.emplace(str, mmx::addr_t());
+			tmp->init_args.emplace_back(str);
+			tmp->init_method = str;
+			tmp->meta_data = str;
+			tmp->name = str;
+			tmp->symbol = str;
+			vnx::test::expect(tmp->num_bytes() > 6 * str.size(), true);
+		}
+		{
+			auto tmp = mmx::contract::MultiSig::create();
+			for(uint32_t i = 0; i < 256; ++i) {
+				tmp->owners.emplace(hash_t(std::to_string(i)));
+			}
+			vnx::test::expect(tmp->num_bytes() > 32 * 256, true);
 		}
 	}
 	VNX_TEST_END()
