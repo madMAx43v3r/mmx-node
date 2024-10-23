@@ -2103,6 +2103,9 @@ std::shared_ptr<const contract::Binary> compile_files(const std::vector<std::str
 	std::stringstream buffer;
 	for(const auto& src : file_names) {
 		std::ifstream stream(src);
+		if(!stream.good()) {
+			throw std::runtime_error("failed to read file: " + src);
+		}
 		buffer << stream.rdbuf();
 	}
 	return vm::compile(buffer.str(), flags);
