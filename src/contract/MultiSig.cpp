@@ -35,14 +35,9 @@ hash_t MultiSig::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t MultiSig::num_bytes(const vnx::bool_t& total) const
+uint64_t MultiSig::num_bytes() const
 {
-	return (total ? Super::num_bytes() : 0) + 32 * owners.size();
-}
-
-uint64_t MultiSig::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
+	return Super::num_bytes() + owners.size() * 32;
 }
 
 void MultiSig::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const

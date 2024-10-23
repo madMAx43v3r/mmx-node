@@ -33,14 +33,9 @@ hash_t WebData::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t WebData::num_bytes(const vnx::bool_t& total) const
+uint64_t WebData::num_bytes() const
 {
-	return (total ? Super::num_bytes() : 0) + mime_type.size() + payload.size();
-}
-
-uint64_t WebData::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
+	return Super::num_bytes() + mime_type.size() + payload.size();
 }
 
 vnx::Variant WebData::read_field(const std::string& name) const

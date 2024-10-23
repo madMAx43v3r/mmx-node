@@ -55,10 +55,9 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t Executable::num_bytes(const vnx::bool_t& total) const
+uint64_t Executable::num_bytes() const
 {
-	uint64_t sum = (total ? Super::num_bytes() : 0)
-			+ 32 + init_method.size() + depends.size() * 32;
+	uint64_t sum = Super::num_bytes() + 32 + init_method.size() + depends.size() * 32;
 
 	for(const auto& arg : init_args) {
 		sum += arg.size();
@@ -67,11 +66,6 @@ uint64_t Executable::num_bytes(const vnx::bool_t& total) const
 		sum += entry.first.size();
 	}
 	return sum;
-}
-
-uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
 }
 
 vnx::Variant Executable::read_field(const std::string& name) const

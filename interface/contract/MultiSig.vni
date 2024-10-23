@@ -14,9 +14,7 @@ class MultiSig extends mmx.Contract {
 	
 	hash_t calc_hash(bool full_hash) const;
 	
-	ulong num_bytes(bool total = true) const;
-	
-	ulong calc_cost(mmx.ChainParams* params) const;
+	ulong num_bytes() const;
 	
 	void validate(mmx.Solution* solution, hash_t txid) const;
 	

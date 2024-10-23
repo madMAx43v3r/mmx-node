@@ -9,7 +9,7 @@ class Contract {
 	
 	hash_t calc_hash(bool full_hash) const;
 	
-	ulong num_bytes(bool total = true) const;
+	ulong num_bytes() const;
 	
 	ulong calc_cost(ChainParams* params) const;
 	
