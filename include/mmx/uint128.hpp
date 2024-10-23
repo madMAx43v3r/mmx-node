@@ -32,15 +32,14 @@ public:
 
 	uint128(const uint128_t& value) : uint128_t(value) {}
 
-	uint128(const uint256_t& value) : uint128_t(value.lower()) {}
-
-	uint128(const std::string& str) {
-		if(str.substr(0, 2) == "0x") {
-			*this = uint128_t(str.substr(2), 16);
-		} else {
-			*this = uint128_t(str, 10);
+	uint128(const uint256_t& value) {
+		if(value >> 128) {
+			throw std::logic_error("uint128(uint256_t) overflow");
 		}
+		*this = value.lower();
 	}
+
+	uint128(const std::string& str);
 
 	std::string to_string() const {
 		return str(10);

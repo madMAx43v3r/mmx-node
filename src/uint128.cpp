@@ -10,8 +10,23 @@
 
 #include <vnx/Variant.hpp>
 
-#include <algorithm>
 
+namespace mmx {
+
+uint128::uint128(const std::string& str) {
+	uint256_t tmp;
+	if(str.substr(0, 2) == "0x") {
+		tmp = uint256_t(str.substr(2), 16);
+	} else {
+		tmp = uint256_t(str, 10);
+	}
+	if(tmp >> 128) {
+		throw std::logic_error("uint128(std::string) overflow");
+	}
+	*this = tmp.lower();
+}
+
+} // mmx
 
 namespace vnx {
 
