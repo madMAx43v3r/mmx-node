@@ -384,7 +384,9 @@ int main(int argc, char** argv)
 			}
 		};
 
-		engine->remote_call = std::bind(remote_call, engine, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+		engine->remote_call = std::bind(
+				remote_call, std::weak_ptr<vm::Engine>(engine),
+				std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 
 		vm::load(engine, binary);
 
