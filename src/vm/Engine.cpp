@@ -1757,6 +1757,7 @@ std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
 
 void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 {
+	std::cout << "-------------------------------------------" << std::endl;
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
 		std::cout << "[" << to_hex(iter->first) << "] " << to_string(iter->second.get());
 		if(auto var = iter->second.get()) {
