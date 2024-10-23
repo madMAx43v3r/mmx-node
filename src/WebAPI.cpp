@@ -1062,7 +1062,7 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 
 void WebAPI::shutdown()
 {
-	((WebAPI*)this)->set_timeout_millis(1000, [this]() {
+	((WebAPI*)this)->set_timeout_millis(1000, []() {
 		vnx::ProcessClient client("vnx.process");
 		client.trigger_shutdown_async();
 	});
@@ -1407,7 +1407,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			throw std::logic_error("limit > 100");
 		}
 		node->get_swaps(since, token, currency, limit,
-			[this, request_id, limit](const std::vector<swap_info_t>& list) {
+			[this, request_id](const std::vector<swap_info_t>& list) {
 				std::unordered_set<addr_t> token_set;
 				for(const auto& entry : list) {
 					token_set.insert(entry.tokens[0]);
@@ -1498,7 +1498,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				throw std::logic_error("limit > 1000");
 			}
 			node->get_swap_history(*address, limit,
-				[this, request_id, limit](const std::vector<swap_entry_t>& history) {
+				[this, request_id](const std::vector<swap_entry_t>& history) {
 					respond(request_id, render_value(history, get_context()));
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -1827,7 +1827,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			if(limit <= 1) {
 				const auto offset = get_param<uint32_t>(query, "offset");
 				wallet->get_address(index, offset,
-					[this, request_id, limit](const addr_t& address) {
+					[this, request_id](const addr_t& address) {
 						respond(request_id, vnx::Variant(address.to_string()));
 					},
 					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -2365,7 +2365,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		farmer->get_farmer_keys(
 			[this, request_id, limit, since](const std::vector<pubkey_t>& farmer_keys) {
 				node->get_farmed_blocks(farmer_keys, false, since, limit,
-					[this, request_id, limit](const std::vector<std::shared_ptr<const BlockHeader>> blocks) {
+					[this, request_id](const std::vector<std::shared_ptr<const BlockHeader>> blocks) {
 						respond(request_id, render_value(blocks, get_context()));
 					},
 					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
@@ -2446,7 +2446,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			throw std::logic_error("limit > 1000");
 		}
 		node->get_recent_offers_for(bid, ask, min_bid, limit, state,
-			[this, request_id, bid, ask, limit](const std::vector<offer_data_t>& offers) {
+			[this, request_id, bid, ask](const std::vector<offer_data_t>& offers) {
 				std::unordered_set<addr_t> addr_set;
 				std::vector<std::pair<offer_data_t, double>> result;
 				for(const auto& entry : offers) {
@@ -2506,7 +2506,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			throw std::logic_error("limit > 1000");
 		}
 		node->get_trade_history_for(bid, ask, limit, since,
-			[this, request_id, bid, ask, limit](const std::vector<trade_entry_t>& result) {
+			[this, request_id, bid, ask](const std::vector<trade_entry_t>& result) {
 				std::unordered_set<addr_t> addr_set;
 				for(const auto& entry : result) {
 					addr_set.insert(entry.bid_currency);
@@ -2747,7 +2747,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract,
 
 					for(size_t i = 0; i < count; ++i) {
 						resolve_vm_varptr(contract, ret[i], request_id, call_depth + 1,
-							[this, job, callback, count, i](const vnx::Variant& value) {
+							[job, callback, count, i](const vnx::Variant& value) {
 								job->out[i] = value;
 								if(++(job->k) == count) {
 									callback(vnx::Variant(job->out));
@@ -2784,7 +2784,7 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract,
 							}
 						}
 						resolve_vm_varptr(contract, entry.second, request_id, call_depth + 1,
-							[this, job, callback, count, key](const vnx::Variant& value) {
+							[job, callback, count, key](const vnx::Variant& value) {
 								job->out[key] = value;
 								if(++(job->k) == count) {
 									callback(vnx::Variant(job->out));
