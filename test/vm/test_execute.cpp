@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 
 	vnx::init("test_execute", argc, argv, options);
 
-	uint64_t gas_limit = 100 * 1000 * 1000;
+	uint64_t gas_limit = 25 * 1000 * 1000;
 	std::string network = "mainnet";
 	std::string file_name = "@";
 	vnx::read_config("file", file_name);

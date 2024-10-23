@@ -18,6 +18,11 @@ sudo make install
 
 ### Execute
 
-`echo core | sudo tee /proc/sys/kernel/core_pattern`
+```
+echo core | sudo tee /proc/sys/kernel/core_pattern
+```
 
-`afl-fuzz -i test/vm/AFL/inputs/ -o test/vm/AFL/ouputs/ ./build/test/test_execute @@`
+```
+cp build/test/test_execute .
+AFL_SKIP_CPUFREQ=1 afl-fuzz -i test/vm/AFL/inputs/ -o test/vm/AFL/outputs/ ./test_execute @@
+```
