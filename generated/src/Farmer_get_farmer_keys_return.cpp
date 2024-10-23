@@ -138,6 +138,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_get_farmer_keys_return::static_create_type
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Farmer_get_farmer_keys_return& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

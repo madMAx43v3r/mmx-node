@@ -202,6 +202,7 @@ std::shared_ptr<vnx::TypeCode> exec_error_t::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::exec_error_t& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

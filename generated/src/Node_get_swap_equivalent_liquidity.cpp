@@ -158,6 +158,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swap_equivalent_liquidity::static_create
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_swap_equivalent_liquidity& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

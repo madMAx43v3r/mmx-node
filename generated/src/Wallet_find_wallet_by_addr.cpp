@@ -141,6 +141,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_find_wallet_by_addr::static_create_type_co
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Wallet_find_wallet_by_addr& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

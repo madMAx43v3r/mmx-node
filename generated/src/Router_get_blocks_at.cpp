@@ -141,6 +141,7 @@ std::shared_ptr<vnx::TypeCode> Router_get_blocks_at::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Router_get_blocks_at& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

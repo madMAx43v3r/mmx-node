@@ -177,6 +177,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_complete::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Wallet_complete& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

@@ -209,6 +209,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_recent_offers_for::static_create_type_co
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_recent_offers_for& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

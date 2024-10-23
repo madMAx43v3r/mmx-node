@@ -167,6 +167,7 @@ std::shared_ptr<vnx::TypeCode> farmed_block_info_t::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::farmed_block_info_t& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

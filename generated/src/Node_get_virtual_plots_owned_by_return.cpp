@@ -140,6 +140,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_virtual_plots_owned_by_return::static_cr
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_virtual_plots_owned_by_return& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

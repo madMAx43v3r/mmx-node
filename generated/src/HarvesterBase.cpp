@@ -628,6 +628,7 @@ void HarvesterBase::http_request_chunk_async_return(const vnx::request_id_t& _re
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::HarvesterBase& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

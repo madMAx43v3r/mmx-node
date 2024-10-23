@@ -1913,6 +1913,7 @@ void NodeBase::http_request_chunk_async_return(const vnx::request_id_t& _request
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
