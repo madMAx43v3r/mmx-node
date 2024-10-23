@@ -20,7 +20,5 @@ echo "Unit tests [vm_storage_tests]"
 
 ./test/vm/engine_tests.sh
 
-echo "Unit tests [vm/test_plot_nft]"
-./build/tools/mmx_compile -e -f test/vm/test_plot_nft.js
-echo Pass
+./test/vm/contract_tests.sh
 
