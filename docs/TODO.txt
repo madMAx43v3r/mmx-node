@@ -23,7 +23,6 @@ Mainnet
 - Harvester VP partials support
 - Genesis rewards
 - method_t is_init
-- JSON parse recursion limit
 - Remove harvester_id ? causes issue with copy folder
 - Unit tests for all smart contracts
 - Engine fuzzing
