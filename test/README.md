@@ -4,7 +4,7 @@
 ### Install
 
 ```
-sudo apt install llvm clang gcc-10-plugin-dev ninja-build
+sudo apt install llvm clang ninja-build
 
 git clone https://github.com/AFLplusplus/AFLplusplus
 cd AFLplusplus
@@ -14,7 +14,10 @@ sudo make install
 
 ### Build with AFL
 
-`./make_devel.sh -DCMAKE_C_COMPILER=afl-clang-fast -DCMAKE_CXX_COMPILER=afl-clang-fast++`
+```
+export AFL_CC_COMPILER=LLVM
+./make_devel.sh -DCMAKE_C_COMPILER=afl-cc -DCMAKE_CXX_COMPILER=afl-c++
+```
 
 ### Execute
 
@@ -23,6 +26,5 @@ echo core | sudo tee /proc/sys/kernel/core_pattern
 ```
 
 ```
-cp build/test/test_execute .
-AFL_SKIP_CPUFREQ=1 afl-fuzz -i test/vm/AFL/inputs/ -o test/vm/AFL/outputs/ ./test_execute @@
+AFL_SKIP_CPUFREQ=1 afl-fuzz -a binary -i test/vm/AFL/inputs/ -o test/vm/AFL/outputs/ ./build/test/test_execute @@
 ```
