@@ -120,8 +120,6 @@ int main(int argc, char** argv)
 		engine->gas_limit = gas_limit;
 
 		uint32_t height = 0;
-		addr_t user = engine->contract;
-		vnx::optional<std::pair<uint128, addr_t>> deposit;
 		std::map<addr_t, std::shared_ptr<const Contract>> contract_map;
 		std::map<addr_t, std::shared_ptr<const contract::Binary>> binary_map;
 
@@ -134,7 +132,7 @@ int main(int argc, char** argv)
 		const auto main_engine = engine;
 		std::function<void(std::weak_ptr<vm::Engine>, const std::string&, const std::string&, const uint32_t)> remote_call;
 
-		remote_call = [verbose, network, storage, &main_engine, &height, &user, &deposit, &contract_map, &binary_map, &remote_call]
+		remote_call = [verbose, network, storage, &main_engine, &height, &contract_map, &binary_map, &remote_call]
 			(std::weak_ptr<vm::Engine> w_engine, const std::string& name, const std::string& method, const uint32_t nargs)
 		{
 			const auto engine = w_engine.lock();
@@ -172,6 +170,8 @@ int main(int argc, char** argv)
 				};
 
 				bool assert_fail = false;
+				vnx::optional<addr_t> user = engine->contract;
+				vnx::optional<std::pair<uint128, addr_t>> deposit;
 
 				for(uint32_t i = 0; i < nargs; ++i) {
 					const auto src = stack_ptr + 1 + i;
@@ -179,10 +179,11 @@ int main(int argc, char** argv)
 					if(arg.is_object()) {
 						auto opt = arg.to_object();
 						if(opt["__test"]) {
-							if(auto value = opt["user"]) {
+							const auto& value = opt["user"];
+							if(!value.empty()) {
 								value.to(user);
 							}
-							if(auto value = opt["deposit"]) {
+							if(const auto& value = opt["deposit"]) {
 								if(value.is_object()) {
 									auto obj = value.to_object();
 									deposit = std::make_pair(obj["amount"].to<uint128>(), obj["currency"].to<addr_t>());
@@ -200,8 +201,8 @@ int main(int argc, char** argv)
 					vm::copy(child, engine, vm::MEM_STACK + 1 + i, src);
 				}
 
-				if(verbose && user != engine->contract) {
-					std::cout << "user = " << user.to_string() << std::endl;
+				if(verbose && (!user || *user != engine->contract)) {
+					std::cout << "user = " << vnx::to_string(user) << std::endl;
 				}
 				if(deposit) {
 					const auto& amount = deposit->first;
@@ -213,7 +214,11 @@ int main(int argc, char** argv)
 					const auto balance = cache->get_balance(address, currency);
 					cache->set_balance(address, currency, (balance ? *balance : uint128()) + amount);
 				}
-				child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(user));
+				if(user) {
+					child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(*user));
+				} else {
+					child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
+				}
 				child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
 				child->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(network));
 				child->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(height));
@@ -292,8 +297,6 @@ int main(int argc, char** argv)
 					vm::copy(engine, child, stack_ptr, vm::MEM_STACK);
 					cache->commit();
 				}
-				user = engine->contract;
-				deposit = nullptr;
 				return;
 			}
 			if(name != "__test") {
@@ -350,14 +353,6 @@ int main(int argc, char** argv)
 			}
 			else if(method == "get_height") {
 				engine->write(stack_ptr, vm::uint_t(height));
-			}
-			else if(method == "set_user") {
-				user = vm::read(engine, stack_ptr + 1).to<addr_t>();
-			}
-			else if(method == "set_deposit") {
-				const auto currency = vm::read(engine, stack_ptr + 1).to<addr_t>();
-				const auto amount = engine->read_fail<vm::uint_t>(stack_ptr + 2, vm::TYPE_UINT).value;
-				deposit = std::make_pair(amount.lower(), currency);
 			}
 			else if(method == "get_balance") {
 				const auto address = vm::read(engine, stack_ptr + 1).to<addr_t>();
