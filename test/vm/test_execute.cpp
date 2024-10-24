@@ -33,13 +33,13 @@ int main(int argc, char** argv)
 
 	uint64_t gas_limit = 25 * 1000 * 1000;
 	std::string network = "mainnet";
-	std::string file_name = "@";
+	std::string file_name = "binary";
 	vnx::read_config("file", file_name);
 	vnx::read_config("gas", gas_limit);
 
 	try {
 		std::shared_ptr<const contract::Binary> binary;
-		if(file_name == "@") {
+		if(file_name == "binary") {
 			vnx::Memory data;
 			std::vector<char> buffer(4096);
 			while(std::cin.read(buffer.data(), buffer.size()) || std::cin.gcount() > 0) {
@@ -49,6 +49,8 @@ int main(int argc, char** argv)
 			vnx::MemoryInputStream stream(&data);
 			vnx::TypeInput in(&stream);
 			vnx::read(in, binary);
+		} else if(file_name == "json") {
+			vnx::read(std::cin).to(binary);
 		} else {
 			binary = vnx::read_from_file<contract::Binary>(file_name);
 		}
