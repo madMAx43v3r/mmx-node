@@ -19,8 +19,8 @@ const template_addr = template.__deploy({
 	init_args: [creator]
 });
 
-const txid = sha256("nft_1");
-const signature = to_string_hex(__test.ecdsa_sign(creator_skey, txid));
+const msg_0 = concat(to_string_bech32(template_addr), "/", to_string(0));
+const signature_0 = to_string_hex(__test.ecdsa_sign(creator_skey, sha256(msg_0)));
 
 // fail due to serial 0
 nft_1.__deploy({
@@ -28,19 +28,19 @@ nft_1.__deploy({
 	binary: nft_binary,
 	depends: {template: template_addr},
 	init_method: "init_n",
-	init_args: [creator_key_hex, 0, signature, {__test: 1, user: to_string_bech32(txid), assert_fail: true}]
+	init_args: [creator_key_hex, 0, signature_0, {__test: 1, assert_fail: true}]
 });
+
+const msg_1 = concat(to_string_bech32(template_addr), "/", to_string(1));
+const signature_1 = to_string_hex(__test.ecdsa_sign(creator_skey, sha256(msg_1)));
 
 const nft_1_addr = nft_1.__deploy({
 	__type: "mmx.contract.Executable",
 	binary: nft_binary,
 	depends: {template: template_addr},
 	init_method: "init_n",
-	init_args: [creator_key_hex, 1, signature, {__test: 1, user: to_string_bech32(txid)}]
+	init_args: [creator_key_hex, 1, signature_1]
 });
-
-const txid_test = sha256("nft_test");
-const signature_test = to_string_hex(__test.ecdsa_sign(creator_skey, txid_test));
 
 // fail due to duplicate serial
 nft_test.__deploy({
@@ -48,16 +48,16 @@ nft_test.__deploy({
 	binary: nft_binary,
 	depends: {template: template_addr},
 	init_method: "init_n",
-	init_args: [creator_key_hex, 1, signature_test, {__test: 1, user: to_string_bech32(txid_test), assert_fail: true}]
+	init_args: [creator_key_hex, 1, signature_1, {__test: 1, assert_fail: true}]
 });
 
-const txid_2 = sha256("nft_2");
-const signature_2 = to_string_hex(__test.ecdsa_sign(creator_skey, txid_2));
+const msg_2 = concat(to_string_bech32(template_addr), "/", to_string(2));
+const signature_2 = to_string_hex(__test.ecdsa_sign(creator_skey, sha256(msg_2)));
 
 const nft_2_addr = nft_2.__deploy({
 	__type: "mmx.contract.Executable",
 	binary: nft_binary,
 	depends: {template: template_addr},
 	init_method: "init_n",
-	init_args: [creator_key_hex, 2, signature_2, {__test: 1, user: to_string_bech32(txid_2)}]
+	init_args: [creator_key_hex, 2, signature_2]
 });

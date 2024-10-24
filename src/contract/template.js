@@ -9,6 +9,7 @@ function init(creator_)
 
 function add(serial, creator_key, signature) public
 {
+	// TODO: is_uint()
 	if(serial == 0 || typeof(serial) != 4) {
 		fail("invalid serial", 1);
 	}
@@ -18,7 +19,9 @@ function add(serial, creator_key, signature) public
 	if(sha256(creator_key) != creator) {
 		fail("invalid creator", 3);
 	}
-	if(!ecdsa_verify(this.user, creator_key, signature)) {
+	const msg = concat(to_string_bech32(this.address), "/", to_string(serial));
+	
+	if(!ecdsa_verify(sha256(msg), creator_key, signature)) {
 		fail("invalid signature", 4);
 	}
 	nfts[serial] = this.user;
