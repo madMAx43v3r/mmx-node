@@ -131,9 +131,10 @@ int main(int argc, char** argv)
 		engine->event_func = [&engine](const std::string& name, const uint64_t data) {
 			std::cout << "EVENT[" << name << "] " << vm::read(engine, data).to_string() << std::endl;
 		};
+		const auto main_engine = engine;
 		std::function<void(std::weak_ptr<vm::Engine>, const std::string&, const std::string&, const uint32_t)> remote_call;
 
-		remote_call = [verbose, network, storage, &height, &user, &deposit, &contract_map, &binary_map, &remote_call]
+		remote_call = [verbose, network, storage, &main_engine, &height, &user, &deposit, &contract_map, &binary_map, &remote_call]
 			(std::weak_ptr<vm::Engine> w_engine, const std::string& name, const std::string& method, const uint32_t nargs)
 		{
 			const auto engine = w_engine.lock();
@@ -192,6 +193,9 @@ int main(int argc, char** argv)
 							opt["assert_fail"].to(assert_fail);
 							break;
 						}
+					}
+					if(engine == main_engine && !arg.is_json_strict(100)) {
+						throw std::logic_error("argument not strict json: " + arg.to_string());
 					}
 					vm::copy(child, engine, vm::MEM_STACK + 1 + i, src);
 				}
@@ -299,9 +303,6 @@ int main(int argc, char** argv)
 						throw std::logic_error("invalid __deploy()");
 					}
 					const addr_t address = hash_t(name);
-					if(verbose) {
-						std::cout << "Deployed '" << name << "' as " << address.to_string() << std::endl << vnx::to_pretty_string(contract);
-					}
 					contract_map[address] = contract;
 
 					bool is_fail = false;
@@ -321,8 +322,14 @@ int main(int argc, char** argv)
 						engine->ret();
 					}
 					if(is_fail) {
+						if(verbose) {
+							std::cout << "Deployment of '" << name << "' failed as expected" << std::endl;
+						}
 						contract_map.erase(address);
 					} else {
+						if(verbose) {
+							std::cout << "Deployed '" << name << "' as " << address.to_string() << std::endl << vnx::to_pretty_string(contract);
+						}
 						engine->write(stack_ptr, vm::to_binary(address));
 					}
 					return;
