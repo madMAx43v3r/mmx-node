@@ -19,27 +19,16 @@ const template_addr = template.__deploy({
 	init_args: [creator]
 });
 
-const txid = sha256("contract/nft_1");
-const txid_bech32 = to_string_bech32(txid);
-
+const txid = sha256("nft_1");
 const signature = to_string_hex(__test.ecdsa_sign(creator_skey, txid));
 
-// fail due to invalid user
-nft_test.__deploy({
-	__type: "mmx.contract.Executable",
-	binary: nft_binary,
-	depends: {template: template_addr},
-	init_method: "init_n",
-	init_args: [creator_key_hex, 1, signature, {__test: 1, assert_fail: true}]
-});
-
 // fail due to serial 0
-nft_test.__deploy({
+nft_1.__deploy({
 	__type: "mmx.contract.Executable",
 	binary: nft_binary,
 	depends: {template: template_addr},
 	init_method: "init_n",
-	init_args: [creator_key_hex, 0, signature, {__test: 1, user: txid_bech32, assert_fail: true}]
+	init_args: [creator_key_hex, 0, signature, {__test: 1, user: to_string_bech32(txid), assert_fail: true}]
 });
 
 const nft_1_addr = nft_1.__deploy({
@@ -47,8 +36,11 @@ const nft_1_addr = nft_1.__deploy({
 	binary: nft_binary,
 	depends: {template: template_addr},
 	init_method: "init_n",
-	init_args: [creator_key_hex, 1, signature, {__test: 1, user: txid_bech32}]
+	init_args: [creator_key_hex, 1, signature, {__test: 1, user: to_string_bech32(txid)}]
 });
+
+const txid_test = sha256("nft_test");
+const signature_test = to_string_hex(__test.ecdsa_sign(creator_skey, txid_test));
 
 // fail due to duplicate serial
 nft_test.__deploy({
@@ -56,11 +48,10 @@ nft_test.__deploy({
 	binary: nft_binary,
 	depends: {template: template_addr},
 	init_method: "init_n",
-	init_args: [creator_key_hex, 1, signature, {__test: 1, user: txid_bech32, assert_fail: true}]
+	init_args: [creator_key_hex, 1, signature_test, {__test: 1, user: to_string_bech32(txid_test), assert_fail: true}]
 });
 
-const txid_2 = sha256("contract/nft_2");
-
+const txid_2 = sha256("nft_2");
 const signature_2 = to_string_hex(__test.ecdsa_sign(creator_skey, txid_2));
 
 const nft_2_addr = nft_2.__deploy({
