@@ -139,7 +139,7 @@ Note: Objects are maps with string keys.
 	- 6 = Binary
 	- 7 = Array
 	- 8 = Map
-- `concat(a, b)`: Returns concatenation of two (binary) strings (like `a + b` in JS)
+- `concat(a, b, [...])`: Returns concatenation of two or more (binary) strings (like `a + b + ...` in JS)
 - `memcpy(src, count, [offset])`
 	- Returns a sub-string of `src` with length `count` starting at `offset`
 	- `offset` defaults to `0`
@@ -190,7 +190,7 @@ Note: Objects are maps with string keys.
 	- Does nothing if `amount` is zero
 	- Returns `null` (ie. nothing)
 	- This is the only way to mint tokens on MMX blockchain
-- `sha256(msg)`: Computes SHA-2 256-bit hash for given input message (binary string)
+- `sha256(msg)`: Computes SHA-2 256-bit hash for given input message (binary or string)
 	- Returns hash as 32 bytes
 - `ecdsa_verify(msg, pubkey, signature)`: Verifies a ECDSA signature
 	- Returns `true` if valid, otherwise `false`
