@@ -18,10 +18,12 @@ function init_n(creator_key, serial_, signature) static
 	if(read("decimals") != 0) {
 		fail("decimals not zero");
 	}
+	creator_key = binary_hex(creator_key);
+	
 	serial = uint(serial_);
 	creator = sha256(creator_key);
 	
-	template.add(serial, creator_key, signature);
+	template.add(serial, creator_key, binary_hex(signature));
 }
 
 function mint_to(address, memo) public
