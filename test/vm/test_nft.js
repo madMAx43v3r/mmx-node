@@ -1,6 +1,5 @@
 
 interface __test;
-interface template;
 interface nft;
 
 const nft_binary = __test.compile("src/contract/nft.js");
