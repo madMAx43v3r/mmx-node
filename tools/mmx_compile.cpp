@@ -17,6 +17,7 @@
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <mmx/secp256k1.hpp>
+#include <mmx/utils.h>
 
 #include <vnx/vnx.h>
 
@@ -195,7 +196,7 @@ int main(int argc, char** argv)
 							break;
 						}
 					}
-					if(engine == main_engine && !arg.is_json_strict(100)) {
+					if(engine == main_engine && !is_json(arg)) {
 						throw std::logic_error("argument not strict json: " + arg.to_string());
 					}
 					vm::copy(child, engine, vm::MEM_STACK + 1 + i, src);

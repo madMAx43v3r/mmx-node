@@ -159,6 +159,7 @@ add_library(mmx_iface SHARED
 	src/VDF_Point.cpp
 	src/Partial.cpp
 	src/ChainParams.cpp
+	src/utils.cpp
 )
 
 add_library(mmx_vm SHARED

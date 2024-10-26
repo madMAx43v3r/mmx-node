@@ -7,6 +7,7 @@
 
 #include <mmx/operation/Execute.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -15,7 +16,7 @@ namespace operation {
 vnx::bool_t Execute::is_valid() const
 {
 	for(const auto& arg : args) {
-		if(!arg.is_json_strict(100)) {
+		if(!is_json(arg)) {
 			return false;
 		}
 	}

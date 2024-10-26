@@ -18,7 +18,7 @@ vnx::bool_t TokenBase::is_valid() const
 	return Super::is_valid() && name.size() <= 64 && symbol.size() <= 6
 			&& symbol != "MMX" && symbol.find_first_of(" \n\t\r\b\f") == std::string::npos
 			&& decimals >= 0 && decimals <= 18
-			&& meta_data.is_json_strict(100);
+			&& is_json(meta_data);
 }
 
 hash_t TokenBase::calc_hash(const vnx::bool_t& full_hash) const

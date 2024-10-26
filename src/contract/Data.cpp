@@ -15,7 +15,7 @@ namespace contract {
 
 vnx::bool_t Data::is_valid() const
 {
-	return Super::is_valid() && value.is_json_strict(100);
+	return Super::is_valid() && is_json(value);
 }
 
 hash_t Data::calc_hash(const vnx::bool_t& full_hash) const

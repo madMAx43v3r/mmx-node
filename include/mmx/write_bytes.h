@@ -41,8 +41,15 @@ void write_bytes(vnx::OutputBuffer& out, const std::set<T>& value);
 template<typename K, typename V>
 void write_bytes(vnx::OutputBuffer& out, const std::map<K, V>& value);
 
+void write_bytes(vnx::OutputBuffer& out, const vnx::Object& value);
+
 template<typename T>
 void write_field(vnx::OutputBuffer& out, const std::string& name, const T& value);
+
+inline void write_bytes(vnx::OutputBuffer& out, const bool& value) {
+	const uint8_t tmp = value ? 1 : 0;
+	out.write(&tmp, sizeof(tmp));
+}
 
 inline void write_bytes(vnx::OutputBuffer& out, const int64_t& value) {
 	out.write(&value, sizeof(value));
@@ -85,40 +92,51 @@ inline void write_bytes_cstr(vnx::OutputBuffer& out, const char* str) {
 	out.write(str, ::strlen(str));
 }
 
+inline void write_bytes(vnx::OutputBuffer& out, const std::string& value)
+{
+	write_bytes_cstr(out, "string<>");
+	write_bytes(out, uint64_t(value.size()));
+	out.write(value.data(), value.size());
+}
+
 template<size_t N>
 void write_bytes(vnx::OutputBuffer& out, const bytes_t<N>& value)
 {
 	write_bytes_cstr(out, "bytes<>");
-	write_bytes(out, uint16_t(value.size()));
-	out.write(value.data(), value.size());
-}
-
-inline void write_bytes(vnx::OutputBuffer& out, const std::string& value)
-{
-	write_bytes_cstr(out, "string<>");
-	write_bytes(out, uint32_t(value.size()));
+	write_bytes(out, uint64_t(value.size()));
 	out.write(value.data(), value.size());
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const std::vector<uint8_t>& value)
 {
-	write_bytes_cstr(out, "vector<>");
-	write_bytes(out, uint32_t(value.size()));
+	write_bytes_cstr(out, "bytes<>");
+	write_bytes(out, uint64_t(value.size()));
 	out.write(value.data(), value.size());
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const vnx::Buffer& value)
 {
-	write_bytes_cstr(out, "vector<>");
-	write_bytes(out, uint32_t(value.size()));
+	write_bytes_cstr(out, "bytes<>");
+	write_bytes(out, uint64_t(value.size()));
 	out.write(value.data(), value.size());
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const vnx::Variant& value)
 {
-	write_bytes_cstr(out, "variant<>");
-	if(value.empty()) {
-		write_bytes(out, vnx::Variant(nullptr).data);
+	if(value.is_null()) {
+		write_bytes_cstr(out, "NULL");
+	} else if(value.is_bool()) {
+		write_bytes(out, value.to<bool>());
+	} else if(value.is_ulong()) {
+		write_bytes(out, value.to<uint64_t>());
+	} else if(value.is_long()) {
+		write_bytes(out, value.to<int64_t>());
+	} else if(value.is_string()) {
+		write_bytes(out, value.to<std::string>());
+	} else if(value.is_array()) {
+		write_bytes(out, value.to<std::vector<vnx::Variant>>());
+	} else if(value.is_object()) {
+		write_bytes(out, value.to_object());
 	} else {
 		write_bytes(out, value.data);
 	}
@@ -193,10 +211,10 @@ template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const vnx::optional<T>& value) {
 	write_bytes_cstr(out, "optional<>");
 	if(value) {
-		write_bytes(out, uint8_t(1));
+		write_bytes(out, true);
 		write_bytes(out, *value);
 	} else {
-		write_bytes(out, uint8_t(0));
+		write_bytes(out, false);
 	}
 }
 
@@ -210,7 +228,7 @@ void write_bytes(vnx::OutputBuffer& out, const std::pair<T, S>& value) {
 template<typename T, size_t N>
 void write_bytes(vnx::OutputBuffer& out, const std::array<T, N>& value) {
 	write_bytes_cstr(out, "vector<>");
-	write_bytes(out, uint32_t(value.size()));
+	write_bytes(out, uint64_t(value.size()));
 	for(const auto& elem : value) {
 		write_bytes(out, elem);
 	}
@@ -219,7 +237,7 @@ void write_bytes(vnx::OutputBuffer& out, const std::array<T, N>& value) {
 template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value) {
 	write_bytes_cstr(out, "vector<>");
-	write_bytes(out, uint32_t(value.size()));
+	write_bytes(out, uint64_t(value.size()));
 	for(const auto& elem : value) {
 		write_bytes(out, elem);
 	}
@@ -228,7 +246,7 @@ void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value) {
 template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value, bool full_hash) {
 	write_bytes_cstr(out, "vector<>");
-	write_bytes(out, uint32_t(value.size()));
+	write_bytes(out, uint64_t(value.size()));
 	for(const auto& elem : value) {
 		write_bytes(out, elem, full_hash);
 	}
@@ -237,7 +255,7 @@ void write_bytes(vnx::OutputBuffer& out, const std::vector<T>& value, bool full_
 template<typename T>
 void write_bytes(vnx::OutputBuffer& out, const std::set<T>& value) {
 	write_bytes_cstr(out, "vector<>");
-	write_bytes(out, uint32_t(value.size()));
+	write_bytes(out, uint64_t(value.size()));
 	for(const auto& elem : value) {
 		write_bytes(out, elem);
 	}
@@ -245,12 +263,10 @@ void write_bytes(vnx::OutputBuffer& out, const std::set<T>& value) {
 
 template<typename K, typename V>
 void write_bytes(vnx::OutputBuffer& out, const std::map<K, V>& value) {
-	write_bytes_cstr(out, "map<>");
-	write_bytes(out, uint32_t(value.size()));
+	write_bytes_cstr(out, "vector<>");
+	write_bytes(out, uint64_t(value.size()));
 	for(const auto& entry : value) {
-		write_bytes_cstr(out, "pair<>");
-		write_bytes(out, entry.first);
-		write_bytes(out, entry.second);
+		write_bytes(out, entry);
 	}
 }
 

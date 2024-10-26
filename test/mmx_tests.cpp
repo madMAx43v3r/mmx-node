@@ -134,6 +134,33 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
+	VNX_TEST_BEGIN("is_json()")
+	{
+		vnx::test::expect(is_json(vnx::Variant()), true);
+		vnx::test::expect(is_json(vnx::Variant(nullptr)), true);
+		vnx::test::expect(is_json(vnx::Variant(false)), true);
+		vnx::test::expect(is_json(vnx::Variant(true)), true);
+		vnx::test::expect(is_json(vnx::Variant(1)), true);
+		vnx::test::expect(is_json(vnx::Variant(1 << 16)), true);
+		vnx::test::expect(is_json(vnx::Variant(uint64_t(1) << 32)), true);
+		vnx::test::expect(is_json(vnx::Variant(-1)), true);
+		vnx::test::expect(is_json(vnx::Variant(-256)), true);
+		vnx::test::expect(is_json(vnx::Variant(-65536)), true);
+		vnx::test::expect(is_json(vnx::Variant(-4294967296)), true);
+		vnx::test::expect(is_json(vnx::Variant("")), true);
+		vnx::test::expect(is_json(vnx::Variant("test")), true);
+		vnx::test::expect(is_json(vnx::Variant(std::vector<vnx::Variant>{})), true);
+		vnx::test::expect(is_json(vnx::Variant(std::vector<vnx::Variant>{vnx::Variant(1337), vnx::Variant("test")})), true);
+		vnx::test::expect(is_json(vnx::Variant(vnx::Object())), true);
+		vnx::test::expect(is_json(vnx::Variant(vnx::Object({{"test", vnx::Variant(1337)}, {"test1", vnx::Variant("test")}}))), true);
+
+		vnx::test::expect(is_json(vnx::Variant(std::array<int16_t, 10>())), false);
+		vnx::test::expect(is_json(vnx::Variant(std::vector<uint32_t>{1, 2, 3})), false);
+		vnx::test::expect(is_json(vnx::Variant(std::map<std::string, uint32_t>())), false);
+		vnx::test::expect(is_json(vnx::Variant(std::vector<vnx::Variant>{vnx::Variant(std::vector<uint32_t>{1, 2, 3})})), false);
+	}
+	VNX_TEST_END()
+
 	VNX_TEST_BEGIN("Contract::num_bytes()")
 	{
 		auto params = mmx::ChainParams::create();
