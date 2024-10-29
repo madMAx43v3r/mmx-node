@@ -12,6 +12,8 @@ add_executable(test_encoding test_encoding.cpp)
 add_executable(test_execute vm/test_execute.cpp)
 add_executable(database_fill database_fill.cpp)
 
+add_executable(test_write_bytes_vitest_gen test_write_bytes_vitest_gen.cpp)
+
 add_executable(mmx_tests mmx_tests.cpp)
 add_executable(vm_engine_tests vm/engine_tests.cpp)
 add_executable(vm_storage_tests vm/storage_tests.cpp)
@@ -32,4 +34,6 @@ target_link_libraries(test_execute mmx_vm mmx_iface)
 target_link_libraries(mmx_tests mmx_iface)
 target_link_libraries(vm_engine_tests mmx_vm)
 target_link_libraries(vm_storage_tests mmx_vm)
+
+target_link_libraries(test_write_bytes_vitest_gen mmx_iface)
 
