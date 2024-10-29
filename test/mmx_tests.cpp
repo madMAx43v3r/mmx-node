@@ -10,6 +10,7 @@
 #include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
 #include <mmx/tree_hash.h>
+#include <mmx/write_bytes.h>
 #include <mmx/utils.h>
 
 #include <mmx/ChainParams.hxx>
@@ -229,6 +230,47 @@ int main(int argc, char** argv)
 				tmp->owners.emplace(hash_t(std::to_string(i)));
 			}
 			vnx::test::expect(tmp->num_bytes() > 32 * 256, true);
+		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("write_bytes()")
+	{
+		{
+			const bool value = true;
+			std::vector<uint8_t> tmp;
+			vnx::VectorOutputStream stream(&tmp);
+			vnx::OutputBuffer out(&stream);
+			write_bytes(out, value);
+			out.flush();
+			vnx::test::expect(tmp.size(), 1u);
+		}
+		{
+			const vnx::Variant value(true);
+			std::vector<uint8_t> tmp;
+			vnx::VectorOutputStream stream(&tmp);
+			vnx::OutputBuffer out(&stream);
+			write_bytes(out, value);
+			out.flush();
+			vnx::test::expect(tmp.size(), 1u);
+		}
+		{
+			const vnx::Variant value(1337);
+			std::vector<uint8_t> tmp;
+			vnx::VectorOutputStream stream(&tmp);
+			vnx::OutputBuffer out(&stream);
+			write_bytes(out, value);
+			out.flush();
+			vnx::test::expect(tmp.size(), 8u);
+		}
+		{
+			const vnx::Variant value(-1337);
+			std::vector<uint8_t> tmp;
+			vnx::VectorOutputStream stream(&tmp);
+			vnx::OutputBuffer out(&stream);
+			write_bytes(out, value);
+			out.flush();
+			vnx::test::expect(tmp.size(), 8u);
 		}
 	}
 	VNX_TEST_END()
