@@ -37,8 +37,7 @@ function add_plan(name, amount, currency, target, memo, interval, start) public
 	if(start == null) {
 		start = this.height;
 	}
-	const plan = {
-		name: name,
+	plans[name] = {
 		amount: amount,
 		currency: bech32(currency),
 		target: bech32(target),
@@ -47,7 +46,6 @@ function add_plan(name, amount, currency, target, memo, interval, start) public
 		next_pay: start,
 		active: true
 	};
-	plans[name] = plan;
 }
 
 function cancel_plan(name) public
