@@ -172,9 +172,9 @@ uint64_t calc_min_reward_deduction(std::shared_ptr<const ChainParams> params, co
 inline
 uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t tx_fees)
 {
-	const uint64_t fee_deduction = calc_project_reward(params, tx_fees);
-
-	return reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
+	const auto fee_burn = tx_fees / 2;
+	const auto fee_deduction = calc_project_reward(params, tx_fees);
+	return reward + (tx_fees - std::max(fee_burn, fee_deduction));
 }
 
 inline
