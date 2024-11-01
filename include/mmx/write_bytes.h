@@ -179,13 +179,6 @@ inline void write_bytes(vnx::OutputBuffer& out, const ulong_fraction_t& value)
 	write_bytes(out, value.inverse);
 }
 
-inline void write_bytes(vnx::OutputBuffer& out, const time_segment_t& value)
-{
-	write_bytes_cstr(out, "time_segment_t<>");
-	write_bytes(out, value.num_iters);
-	write_bytes(out, value.output);
-}
-
 inline void write_bytes(vnx::OutputBuffer& out, const compile_flags_t& value)
 {
 	write_bytes_cstr(out, "compile_flags_t<>");

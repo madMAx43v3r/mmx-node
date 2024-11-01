@@ -31,7 +31,7 @@ std::pair<hash_t, hash_t> ProofOfTime::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(64 * 1024);
+	buffer.reserve(256 * 1024);
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
@@ -39,8 +39,17 @@ std::pair<hash_t, hash_t> ProofOfTime::calc_hash() const
 	write_field(out, "start", 	start);
 	write_field(out, "input", 	input);
 	write_field(out, "infuse", 	infuse);
-	write_field(out, "segments",		segments);
-	write_field(out, "reward_segments",	reward_segments);
+	write_field(out, "segments");
+	for(const auto& entry : segments) {
+		write_bytes(out, entry.num_iters);
+		for(const auto& hash : entry.output) {
+			write_bytes(out, hash);
+		}
+	}
+	write_field(out, "reward_segments");
+	for(const auto& hash : reward_segments) {
+		write_bytes(out, hash);
+	}
 	write_field(out, "reward_addr", 	reward_addr);
 	write_field(out, "timelord_key", 	timelord_key);
 	out.flush();
@@ -56,12 +65,20 @@ std::pair<hash_t, hash_t> ProofOfTime::calc_hash() const
 
 hash_t ProofOfTime::get_output(const uint32_t& chain) const
 {
-	if(chain > 1) {
-		throw std::logic_error("invalid chain");
+	if(chain > 2) {
+		throw std::logic_error("invalid chain index");
 	}
 	hash_t res;
-	if(!segments.empty()) {
+	if(chain <= 1) {
+		if(segments.empty()) {
+			throw std::logic_error("empty proof");
+		}
 		res = segments.back().output[chain];
+	} else {
+		if(reward_segments.empty()) {
+			throw std::logic_error("have no reward proof");
+		}
+		res = reward_segments.back();
 	}
 	return res;
 }
