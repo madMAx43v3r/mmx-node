@@ -48,7 +48,7 @@ uint64_t Execute::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
 	uint64_t payload = method.size();
 	for(const auto& arg : args) {
-		payload += arg.size();
+		payload += get_num_bytes(arg);
 	}
 	return Super::calc_cost(params) + payload * params->min_txfee_byte;
 }

@@ -34,7 +34,7 @@ hash_t Data::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t Data::num_bytes() const
 {
-	return Super::num_bytes() + value.size();
+	return Super::num_bytes() + get_num_bytes(value);
 }
 
 

@@ -40,7 +40,7 @@ hash_t TokenBase::calc_hash(const vnx::bool_t& full_hash) const
 
 uint64_t TokenBase::num_bytes() const
 {
-	return Super::num_bytes() + name.size() + symbol.size() + meta_data.size();
+	return Super::num_bytes() + name.size() + symbol.size() + get_num_bytes(meta_data);
 }
 
 

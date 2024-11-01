@@ -25,6 +25,8 @@ namespace mmx {
 
 bool is_json(const vnx::Variant& var);
 
+uint64_t get_num_bytes(const vnx::Variant& var);
+
 inline
 std::shared_ptr<const ChainParams> get_params()
 {

@@ -60,7 +60,7 @@ uint64_t Executable::num_bytes() const
 	uint64_t sum = Super::num_bytes() + 32 + init_method.size() + depends.size() * 32;
 
 	for(const auto& arg : init_args) {
-		sum += arg.size();
+		sum += get_num_bytes(arg);
 	}
 	for(const auto& entry : depends) {
 		sum += entry.first.size();
