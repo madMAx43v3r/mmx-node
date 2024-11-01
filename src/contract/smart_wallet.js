@@ -14,6 +14,13 @@ function check_owner()
 	}
 }
 
+function transfer(address, amount, currency, memo) public
+{
+	check_owner();
+	
+	send(bech32(address), uint(amount), bech32(currency), memo);
+}
+
 function add_plan(name, amount, currency, target, memo, interval, start) public
 {
 	check_owner();
