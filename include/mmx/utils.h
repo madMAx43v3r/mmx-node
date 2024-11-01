@@ -165,7 +165,7 @@ inline
 uint64_t calc_min_reward_deduction(std::shared_ptr<const ChainParams> params, const uint64_t txfee_buffer)
 {
 	const uint64_t divider = 8640;
-	const uint64_t min_deduction = 5000;
+	const uint64_t min_deduction = 1000;
 	return std::min(std::max(txfee_buffer / divider, min_deduction), txfee_buffer);
 }
 
