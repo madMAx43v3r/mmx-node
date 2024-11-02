@@ -3,6 +3,7 @@ Mainnet
 - Test remote calls again
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 - is_uint() / is_string() / etc
+- string() (same as to_string())
 - Website
 - Linux packages
 - Double check msg hashes again
@@ -24,4 +25,5 @@ Mainnet
 - Genesis rewards
 - Remove harvester_id ? causes issue with copy folder
 - Unit tests for all smart contracts
-- Engine fuzzing
+- Remove compiler bool auto-convert
+- Engine binary bit-wise ops
