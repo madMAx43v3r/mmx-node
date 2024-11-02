@@ -196,10 +196,10 @@ std::ostream& operator<<(std::ostream& out, const bytes_t<N>& bytes) {
 }
 
 template<size_t N, size_t M>
-std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
-	std::vector<uint8_t> res;
-	res.insert(res.end(), lhs.bytes.begin(), lhs.bytes.end());
-	res.insert(res.end(), rhs.bytes.begin(), rhs.bytes.end());
+bytes_t<N + M> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
+	bytes_t<N + M> res;
+	::memcpy(res.data(), lhs.data(), N);
+	::memcpy(res.data() + N, rhs.data(), M);
 	return res;
 }
 

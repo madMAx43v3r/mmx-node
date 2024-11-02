@@ -470,6 +470,17 @@ bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
 			if(iter != tx_pool.end()) {
 				iter->second = entry;
 			} else {
+				std::lock_guard<std::mutex> lock(mutex);
+
+				for(const auto& in : tx->get_inputs()) {
+					tx_pool_index.emplace(std::make_pair(in.address, tx->id), tx);
+				}
+				for(const auto& out : tx->get_outputs()) {
+					tx_pool_index.emplace(std::make_pair(out.address, tx->id), tx);
+					if(out.memo) {
+						tx_pool_index.emplace(std::make_pair(hash_t(out.address + (*out.memo)), tx->id), tx);
+					}
+				}
 				tx_pool[tx->id] = entry;
 			}
 			return true;
@@ -489,6 +500,17 @@ void Node::tx_pool_erase(const hash_t& txid)
 					if((iter2->second -= iter->second.fee) == 0) {
 						tx_pool_fees.erase(iter2);
 					}
+				}
+			}
+			std::lock_guard<std::mutex> lock(mutex);
+
+			for(const auto& in : tx->get_inputs()) {
+				tx_pool_index.erase(std::make_pair(in.address, tx->id));
+			}
+			for(const auto& out : tx->get_outputs()) {
+				tx_pool_index.erase(std::make_pair(out.address, tx->id));
+				if(out.memo) {
+					tx_pool_index.erase(std::make_pair(hash_t(out.address + (*out.memo)), tx->id));
 				}
 			}
 		}

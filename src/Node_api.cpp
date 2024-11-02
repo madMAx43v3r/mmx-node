@@ -333,9 +333,9 @@ vnx::optional<tx_info_t> Node::get_tx_info_for(std::shared_ptr<const Transaction
 	return info;
 }
 
-std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const bool& include_pending) const
+std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const bool& pending) const
 {
-	if(include_pending) {
+	if(pending) {
 		auto iter = tx_pool.find(id);
 		if(iter != tx_pool.end()) {
 			return iter->second.tx;
@@ -389,10 +389,14 @@ inline bool filter_txio(const txio_entry_t& entry, const query_filter_t& filter)
 
 std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, const query_filter_t& filter) const
 {
+	if(const auto& memo = filter.memo) {
+		return get_history_memo(addresses, *memo, filter);
+	}
 	std::map<addr_t, uint32_t> count_map;
 	std::map<addr_t, std::tuple<addr_t, uint32_t, uint32_t>> state_map;
 
-	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
+	const std::set<addr_t> address_set(addresses.begin(), addresses.end());
+	for(const auto& address : address_set) {
 		state_map[address] = std::make_tuple(address, filter.until, -1);
 	}
 	const uint32_t chunk_size = 100;
@@ -437,6 +441,40 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 			state_map.erase(address);
 		}
 	}
+
+	if(filter.with_pending) {
+		std::lock_guard<std::mutex> lock(mutex);
+		for(const auto& address : address_set) {
+			const auto begin = tx_pool_index.lower_bound(std::make_pair(address, hash_t()));
+			const auto end = tx_pool_index.upper_bound(std::make_pair(address, hash_t::ones()));
+			for(auto iter = begin; iter != end; ++iter) {
+				if(auto tx = iter->second) {
+					for(const auto& in : tx->get_inputs()) {
+						if(address_set.count(in.address)) {
+							tx_entry_t entry;
+							entry.txio_t::operator=(in);
+							entry.type = tx_type_e::SPEND;
+							entry.txid = tx->id;
+							entry.height = -1;
+							entry.is_pending = true;
+							res.push_back(entry);
+						}
+					}
+					for(const auto& out : tx->get_outputs()) {
+						if(address_set.count(out.address)) {
+							tx_entry_t entry;
+							entry.txio_t::operator=(out);
+							entry.type = tx_type_e::RECEIVE;
+							entry.txid = tx->id;
+							entry.height = -1;
+							entry.is_pending = true;
+							res.push_back(entry);
+						}
+					}
+				}
+			}
+		}
+	}
 	std::sort(res.begin(), res.end(), [](const tx_entry_t& L, const tx_entry_t& R) -> bool {
 		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo, L.amount) >
 			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo, R.amount);
@@ -455,7 +493,8 @@ std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addres
 	std::map<addr_t, uint32_t> count_map;
 	std::map<addr_t, std::tuple<hash_t, uint32_t, uint32_t>> state_map;
 
-	for(const auto& address : std::set<addr_t>(addresses.begin(), addresses.end())) {
+	const std::set<addr_t> address_set(addresses.begin(), addresses.end());
+	for(const auto& address : address_set) {
 		state_map[address] = std::make_tuple(hash_t(address + memo), filter.until, -1);
 	}
 	const uint32_t chunk_size = 100;
@@ -487,6 +526,33 @@ std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addres
 			}
 			if(entries.size() < chunk_size || count >= uint32_t(filter.limit)) {
 				done.push_back(address);
+			}
+		}
+		for(const auto& address : done) {
+			state_map.erase(address);
+		}
+	}
+
+	if(filter.with_pending) {
+		std::lock_guard<std::mutex> lock(mutex);
+		for(const auto& address : address_set) {
+			const hash_t key(address + memo);
+			const auto begin = tx_pool_index.lower_bound(std::make_pair(key, hash_t()));
+			const auto end = tx_pool_index.upper_bound(std::make_pair(key, hash_t::ones()));
+			for(auto iter = begin; iter != end; ++iter) {
+				if(auto tx = iter->second) {
+					for(const auto& out : tx->get_outputs()) {
+						if(address_set.count(out.address) && out.memo && (*out.memo) == memo) {
+							tx_entry_t entry;
+							entry.txio_t::operator=(out);
+							entry.type = tx_type_e::RECEIVE;
+							entry.txid = tx->id;
+							entry.height = -1;
+							entry.is_pending = true;
+							res.push_back(entry);
+						}
+					}
+				}
 			}
 		}
 	}

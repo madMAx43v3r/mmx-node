@@ -4,6 +4,8 @@ struct tx_entry_t extends txio_entry_t {
 	
 	bool is_validated;		// if token is in whitelist
 	
+	bool is_pending;		// if not confirmed yet
+	
 	
 	static tx_entry_t create_ex(txio_entry_t entry, bool validated);
 	

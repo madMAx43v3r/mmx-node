@@ -86,7 +86,7 @@ protected:
 
 	vnx::optional<tx_info_t> get_tx_info_for(std::shared_ptr<const Transaction> tx) const override;
 
-	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& include_pending = false) const override;
+	std::shared_ptr<const Transaction> get_transaction(const hash_t& id, const bool& pending = false) const override;
 
 	std::vector<std::shared_ptr<const Transaction>> get_transactions(const std::vector<hash_t>& ids) const override;
 
@@ -506,12 +506,13 @@ private:
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
+	std::map<std::pair<hash_t, hash_t>, std::shared_ptr<const Transaction>> tx_pool_index;		// [[key, txid] => tx]
 
 	std::multimap<uint32_t, std::shared_ptr<const VDF_Point>> verified_vdfs;		// [height => output]
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> pending_vdfs;		// [height => proof]
 
-	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]
-	std::unordered_multimap<uint32_t, hash_t> challenge_map;						// [height => challenge]
+	std::map<hash_t, std::vector<proof_data_t>> proof_map;							// [challenge => best proofs]
+	std::multimap<uint32_t, hash_t> challenge_map;									// [height => challenge]
 	std::map<std::pair<uint32_t, hash_t>, hash_t> created_blocks;					// [[height, proof hash] => block hash]
 	std::unordered_set<hash_t> purged_blocks;
 
@@ -552,7 +553,7 @@ private:
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
 
-	mutable std::mutex mutex;
+	mutable std::mutex mutex;								// contract_cache + tx_pool_index
 	mutable std::shared_ptr<const NetworkInfo> network;
 	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_cache;
 

@@ -1874,6 +1874,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		if(index >= 0) {
 			query_filter_t filter;
 			filter.max_search = 1000000;
+			filter.with_pending = true;
 			filter.limit = get_param<int32_t>(query, "limit", 100);
 			filter.since = get_param<uint32_t>(query, "since", 0);
 			filter.until = get_param<uint32_t>(query, "until", -1);
@@ -1894,6 +1895,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto memo = get_param<std::string>(query, "memo");
 			query_filter_t filter;
 			filter.max_search = 1000000;
+			filter.with_pending = true;
 			filter.limit = get_param<int32_t>(query, "limit", 100);
 			filter.since = get_param<uint32_t>(query, "since", 0);
 			filter.until = get_param<uint32_t>(query, "until", -1);

@@ -61,8 +61,6 @@ class Transaction extends TransactionBase {
 	
 	Solution* get_solution(uint index) const;
 	
-	txout_t get_output(uint index) const;
-	
 	vector<txin_t> get_inputs() const;
 	
 	vector<txout_t> get_outputs() const;

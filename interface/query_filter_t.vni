@@ -13,6 +13,10 @@ struct query_filter_t {
 	
 	optional<tx_type_e> type;
 	
+	optional<string> memo;
+	
 	bool white_list;			// if to apply whitelist
+	
+	bool with_pending;			// if to include unconfirmed transactions
 	
 }

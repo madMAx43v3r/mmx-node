@@ -169,20 +169,6 @@ std::shared_ptr<const Solution> Transaction::get_solution(const uint32_t& index)
 	return nullptr;
 }
 
-txout_t Transaction::get_output(const uint32_t& index) const
-{
-	if(index < outputs.size()) {
-		return outputs[index];
-	}
-	if(index >= outputs.size() && exec_result) {
-		const auto offset = index - outputs.size();
-		if(offset < exec_result->outputs.size()) {
-			return exec_result->outputs[offset];
-		}
-	}
-	throw std::logic_error("no such output");
-}
-
 std::vector<txin_t> Transaction::get_inputs() const
 {
 	auto res = inputs;

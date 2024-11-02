@@ -470,7 +470,12 @@ Vue.component('account-history', {
 			</template>
 
 			<template v-slot:item.height="{ item }">
-				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+				<template v-if="item.is_pending">
+					<i>pending</i>
+				</template>
+				<template v-else>
+					<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
+				</template>
 			</template>	
 			
 			<template v-slot:item.type="{ item }">
@@ -503,7 +508,9 @@ Vue.component('account-history', {
 			</template>
 
 			<template v-slot:item.time="{ item }">
-				<span class="text-no-wrap">{{new Date(item.time * 1000).toLocaleString()}}</span>
+				<template v-if="!item.is_pending">
+					<span class="text-no-wrap">{{new Date(item.time * 1000).toLocaleString()}}</span>
+				</template>
 			</template>
 
 		</v-data-table>

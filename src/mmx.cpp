@@ -58,7 +58,11 @@ std::shared_ptr<const mmx::contract::TokenBase> get_token(mmx::NodeClient& node,
 void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
 {
 	for(const auto& entry : history) {
-		std::cout << "[" << entry.height << "] ";
+		if(entry.is_pending) {
+			std::cout << "[pending] ";
+		} else {
+			std::cout << "[" << entry.height << "] ";
+		}
 		std::string arrow = "->";
 		switch(entry.type) {
 			case mmx::tx_type_e::SPEND:   std::cout << "SPEND   - "; arrow = "<-"; break;
@@ -968,6 +972,7 @@ int main(int argc, char** argv)
 			{
 				mmx::query_filter_t filter;
 				filter.limit = limit;
+				filter.with_pending = true;
 				vnx::read_config("$3", filter.since);
 
 				show_history(wallet.get_history(index, filter), node, params);
