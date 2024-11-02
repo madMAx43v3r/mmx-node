@@ -15,7 +15,7 @@ class MMX_EXPORT Node_get_transaction : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t id;
-	vnx::bool_t include_pending = 0;
+	vnx::bool_t pending = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -61,7 +61,7 @@ template<typename T>
 void Node_get_transaction::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<Node_get_transaction>(2);
 	_visitor.type_field("id", 0); _visitor.accept(id);
-	_visitor.type_field("include_pending", 1); _visitor.accept(include_pending);
+	_visitor.type_field("pending", 1); _visitor.accept(pending);
 	_visitor.template type_end<Node_get_transaction>(2);
 }
 

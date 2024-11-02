@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_entry_t::VNX_TYPE_HASH(0x438cda5719015870ull);
-const vnx::Hash64 tx_entry_t::VNX_CODE_HASH(0xe706d2abc9a6890aull);
+const vnx::Hash64 tx_entry_t::VNX_CODE_HASH(0x349db5d68f110d24ull);
 
 vnx::Hash64 tx_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -54,6 +54,7 @@ void tx_entry_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, time_stamp);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, type);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, is_validated);
+	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, is_pending);
 	_visitor.type_end(*_type_code);
 }
 
@@ -68,6 +69,7 @@ void tx_entry_t::write(std::ostream& _out) const {
 	_out << ", \"time_stamp\": "; vnx::write(_out, time_stamp);
 	_out << ", \"type\": "; vnx::write(_out, type);
 	_out << ", \"is_validated\": "; vnx::write(_out, is_validated);
+	_out << ", \"is_pending\": "; vnx::write(_out, is_pending);
 	_out << "}";
 }
 
@@ -89,6 +91,7 @@ vnx::Object tx_entry_t::to_object() const {
 	_object["time_stamp"] = time_stamp;
 	_object["type"] = type;
 	_object["is_validated"] = is_validated;
+	_object["is_pending"] = is_pending;
 	return _object;
 }
 
@@ -102,6 +105,8 @@ void tx_entry_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(contract);
 		} else if(_entry.first == "height") {
 			_entry.second.to(height);
+		} else if(_entry.first == "is_pending") {
+			_entry.second.to(is_pending);
 		} else if(_entry.first == "is_validated") {
 			_entry.second.to(is_validated);
 		} else if(_entry.first == "memo") {
@@ -144,6 +149,9 @@ vnx::Variant tx_entry_t::get_field(const std::string& _name) const {
 	if(_name == "is_validated") {
 		return vnx::Variant(is_validated);
 	}
+	if(_name == "is_pending") {
+		return vnx::Variant(is_pending);
+	}
 	return vnx::Variant();
 }
 
@@ -166,6 +174,8 @@ void tx_entry_t::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(type);
 	} else if(_name == "is_validated") {
 		_value.to(is_validated);
+	} else if(_name == "is_pending") {
+		_value.to(is_pending);
 	}
 }
 
@@ -193,7 +203,7 @@ std::shared_ptr<vnx::TypeCode> tx_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_entry_t";
 	type_code->type_hash = vnx::Hash64(0x438cda5719015870ull);
-	type_code->code_hash = vnx::Hash64(0xe706d2abc9a6890aull);
+	type_code->code_hash = vnx::Hash64(0x349db5d68f110d24ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::tx_entry_t);
 	type_code->parents.resize(2);
@@ -202,7 +212,7 @@ std::shared_ptr<vnx::TypeCode> tx_entry_t::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<tx_entry_t>>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::tx_type_e::static_get_type_code();
-	type_code->fields.resize(9);
+	type_code->fields.resize(10);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -257,6 +267,12 @@ std::shared_ptr<vnx::TypeCode> tx_entry_t::static_create_type_code() {
 		field.name = "is_validated";
 		field.code = {31};
 	}
+	{
+		auto& field = type_code->fields[9];
+		field.data_size = 1;
+		field.name = "is_pending";
+		field.code = {31};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -309,6 +325,9 @@ void read(TypeInput& in, ::mmx::tx_entry_t& value, const TypeCode* type_code, co
 		if(const auto* const _field = type_code->field_map[8]) {
 			vnx::read_value(_buf + _field->offset, value.is_validated, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[9]) {
+			vnx::read_value(_buf + _field->offset, value.is_pending, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -336,10 +355,11 @@ void write(TypeOutput& out, const ::mmx::tx_entry_t& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(13);
+	auto* const _buf = out.write(14);
 	vnx::write_value(_buf + 0, value.height);
 	vnx::write_value(_buf + 4, value.time_stamp);
 	vnx::write_value(_buf + 12, value.is_validated);
+	vnx::write_value(_buf + 13, value.is_pending);
 	vnx::write(out, value.address, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.contract, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.amount, type_code, type_code->fields[2].code.data());

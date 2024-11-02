@@ -554,10 +554,10 @@ std::vector<::mmx::addr_t> NodeClient::get_contracts_owned_by(const std::vector<
 	}
 }
 
-std::shared_ptr<const ::mmx::Transaction> NodeClient::get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& include_pending) {
+std::shared_ptr<const ::mmx::Transaction> NodeClient::get_transaction(const ::mmx::hash_t& id, const vnx::bool_t& pending) {
 	auto _method = ::mmx::Node_get_transaction::create();
 	_method->id = id;
-	_method->include_pending = include_pending;
+	_method->pending = pending;
 	auto _return_value = vnx_request(_method, false);
 	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_transaction_return>(_return_value)) {
 		return _result->_ret_0;

@@ -69,7 +69,6 @@ public:
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = false) const override;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual std::shared_ptr<const ::mmx::Solution> get_solution(const uint32_t& index = 0) const;
-	virtual ::mmx::txout_t get_output(const uint32_t& index = 0) const;
 	virtual std::vector<::mmx::txin_t> get_inputs() const;
 	virtual std::vector<::mmx::txout_t> get_outputs() const;
 	virtual std::vector<std::shared_ptr<const ::mmx::Operation>> get_operations() const;

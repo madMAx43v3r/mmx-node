@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 query_filter_t::VNX_TYPE_HASH(0x92b02006aeea9a76ull);
-const vnx::Hash64 query_filter_t::VNX_CODE_HASH(0xc6229c31792bc69eull);
+const vnx::Hash64 query_filter_t::VNX_CODE_HASH(0xd4593a6cc6eb5537ull);
 
 vnx::Hash64 query_filter_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,7 +52,9 @@ void query_filter_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, max_search);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, currency);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, type);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, white_list);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, memo);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, white_list);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, with_pending);
 	_visitor.type_end(*_type_code);
 }
 
@@ -64,7 +66,9 @@ void query_filter_t::write(std::ostream& _out) const {
 	_out << ", \"max_search\": "; vnx::write(_out, max_search);
 	_out << ", \"currency\": "; vnx::write(_out, currency);
 	_out << ", \"type\": "; vnx::write(_out, type);
+	_out << ", \"memo\": "; vnx::write(_out, memo);
 	_out << ", \"white_list\": "; vnx::write(_out, white_list);
+	_out << ", \"with_pending\": "; vnx::write(_out, with_pending);
 	_out << "}";
 }
 
@@ -83,7 +87,9 @@ vnx::Object query_filter_t::to_object() const {
 	_object["max_search"] = max_search;
 	_object["currency"] = currency;
 	_object["type"] = type;
+	_object["memo"] = memo;
 	_object["white_list"] = white_list;
+	_object["with_pending"] = with_pending;
 	return _object;
 }
 
@@ -95,6 +101,8 @@ void query_filter_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(limit);
 		} else if(_entry.first == "max_search") {
 			_entry.second.to(max_search);
+		} else if(_entry.first == "memo") {
+			_entry.second.to(memo);
 		} else if(_entry.first == "since") {
 			_entry.second.to(since);
 		} else if(_entry.first == "type") {
@@ -103,6 +111,8 @@ void query_filter_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(until);
 		} else if(_entry.first == "white_list") {
 			_entry.second.to(white_list);
+		} else if(_entry.first == "with_pending") {
+			_entry.second.to(with_pending);
 		}
 	}
 }
@@ -126,8 +136,14 @@ vnx::Variant query_filter_t::get_field(const std::string& _name) const {
 	if(_name == "type") {
 		return vnx::Variant(type);
 	}
+	if(_name == "memo") {
+		return vnx::Variant(memo);
+	}
 	if(_name == "white_list") {
 		return vnx::Variant(white_list);
+	}
+	if(_name == "with_pending") {
+		return vnx::Variant(with_pending);
 	}
 	return vnx::Variant();
 }
@@ -145,8 +161,12 @@ void query_filter_t::set_field(const std::string& _name, const vnx::Variant& _va
 		_value.to(currency);
 	} else if(_name == "type") {
 		_value.to(type);
+	} else if(_name == "memo") {
+		_value.to(memo);
 	} else if(_name == "white_list") {
 		_value.to(white_list);
+	} else if(_name == "with_pending") {
+		_value.to(with_pending);
 	}
 }
 
@@ -174,13 +194,13 @@ std::shared_ptr<vnx::TypeCode> query_filter_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.query_filter_t";
 	type_code->type_hash = vnx::Hash64(0x92b02006aeea9a76ull);
-	type_code->code_hash = vnx::Hash64(0xc6229c31792bc69eull);
+	type_code->code_hash = vnx::Hash64(0xd4593a6cc6eb5537ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::query_filter_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<query_filter_t>>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::tx_type_e::static_get_type_code();
-	type_code->fields.resize(7);
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -221,8 +241,20 @@ std::shared_ptr<vnx::TypeCode> query_filter_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[6];
+		field.is_extended = true;
+		field.name = "memo";
+		field.code = {33, 32};
+	}
+	{
+		auto& field = type_code->fields[7];
 		field.data_size = 1;
 		field.name = "white_list";
+		field.code = {31};
+	}
+	{
+		auto& field = type_code->fields[8];
+		field.data_size = 1;
+		field.name = "with_pending";
 		field.code = {31};
 	}
 	type_code->build();
@@ -280,14 +312,18 @@ void read(TypeInput& in, ::mmx::query_filter_t& value, const TypeCode* type_code
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.max_search, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[6]) {
+		if(const auto* const _field = type_code->field_map[7]) {
 			vnx::read_value(_buf + _field->offset, value.white_list, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[8]) {
+			vnx::read_value(_buf + _field->offset, value.with_pending, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 4: vnx::read(in, value.currency, type_code, _field->code.data()); break;
 			case 5: vnx::read(in, value.type, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.memo, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -306,14 +342,16 @@ void write(TypeOutput& out, const ::mmx::query_filter_t& value, const TypeCode* 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(17);
+	auto* const _buf = out.write(18);
 	vnx::write_value(_buf + 0, value.since);
 	vnx::write_value(_buf + 4, value.until);
 	vnx::write_value(_buf + 8, value.limit);
 	vnx::write_value(_buf + 12, value.max_search);
 	vnx::write_value(_buf + 16, value.white_list);
+	vnx::write_value(_buf + 17, value.with_pending);
 	vnx::write(out, value.currency, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.type, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.memo, type_code, type_code->fields[6].code.data());
 }
 
 void read(std::istream& in, ::mmx::query_filter_t& value) {

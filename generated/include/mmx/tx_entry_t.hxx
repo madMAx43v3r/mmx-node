@@ -14,6 +14,7 @@ struct MMX_EXPORT tx_entry_t : ::mmx::txio_entry_t {
 	
 	
 	vnx::bool_t is_validated = 0;
+	vnx::bool_t is_pending = 0;
 	
 	typedef ::mmx::txio_entry_t Super;
 	
@@ -59,7 +60,7 @@ struct MMX_EXPORT tx_entry_t : ::mmx::txio_entry_t {
 
 template<typename T>
 void tx_entry_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<tx_entry_t>(9);
+	_visitor.template type_begin<tx_entry_t>(10);
 	_visitor.type_field("address", 0); _visitor.accept(address);
 	_visitor.type_field("contract", 1); _visitor.accept(contract);
 	_visitor.type_field("amount", 2); _visitor.accept(amount);
@@ -69,7 +70,8 @@ void tx_entry_t::accept_generic(T& _visitor) const {
 	_visitor.type_field("time_stamp", 6); _visitor.accept(time_stamp);
 	_visitor.type_field("type", 7); _visitor.accept(type);
 	_visitor.type_field("is_validated", 8); _visitor.accept(is_validated);
-	_visitor.template type_end<tx_entry_t>(9);
+	_visitor.type_field("is_pending", 9); _visitor.accept(is_pending);
+	_visitor.template type_end<tx_entry_t>(10);
 }
 
 

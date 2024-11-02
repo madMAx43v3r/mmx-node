@@ -21,7 +21,9 @@ struct MMX_EXPORT query_filter_t : vnx::struct_t {
 	uint32_t max_search = 0;
 	std::set<::mmx::addr_t> currency;
 	vnx::optional<::mmx::tx_type_e> type;
+	vnx::optional<std::string> memo;
 	vnx::bool_t white_list = 0;
+	vnx::bool_t with_pending = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -63,15 +65,17 @@ struct MMX_EXPORT query_filter_t : vnx::struct_t {
 
 template<typename T>
 void query_filter_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<query_filter_t>(7);
+	_visitor.template type_begin<query_filter_t>(9);
 	_visitor.type_field("since", 0); _visitor.accept(since);
 	_visitor.type_field("until", 1); _visitor.accept(until);
 	_visitor.type_field("limit", 2); _visitor.accept(limit);
 	_visitor.type_field("max_search", 3); _visitor.accept(max_search);
 	_visitor.type_field("currency", 4); _visitor.accept(currency);
 	_visitor.type_field("type", 5); _visitor.accept(type);
-	_visitor.type_field("white_list", 6); _visitor.accept(white_list);
-	_visitor.template type_end<query_filter_t>(7);
+	_visitor.type_field("memo", 6); _visitor.accept(memo);
+	_visitor.type_field("white_list", 7); _visitor.accept(white_list);
+	_visitor.type_field("with_pending", 8); _visitor.accept(with_pending);
+	_visitor.template type_end<query_filter_t>(9);
 }
 
 
