@@ -829,7 +829,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 	switch(svar.type) {
 		case TYPE_NIL:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
+				case CONVTYPE_BOOL: write(dst, var_t(false)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
 				case CONVTYPE_ADDRESS: write(dst, vm::to_binary(addr_t())); break;
 				default: throw std::logic_error("invalid conversion: NIL to " + to_hex(dflags));
@@ -837,14 +837,14 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			break;
 		case TYPE_TRUE:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(TYPE_TRUE)); break;
+				case CONVTYPE_BOOL: write(dst, var_t(true)); break;
 				case CONVTYPE_UINT: write(dst, uint_t(1)); break;
 				default: throw std::logic_error("invalid conversion: TRUE to " + to_hex(dflags));
 			}
 			break;
 		case TYPE_FALSE:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
+				case CONVTYPE_BOOL: write(dst, var_t(false)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
 				default: throw std::logic_error("invalid conversion: FALSE to " + to_hex(dflags));
 			}
@@ -853,7 +853,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			const auto& value = ((const uint_t&)svar).value;
 			switch(dflags_0) {
 				case CONVTYPE_BOOL:
-					write(dst, var_t(value != uint256_0));
+					write(dst, var_t(bool(value)));
 					break;
 				case CONVTYPE_UINT:
 					write(dst, svar);
@@ -1063,7 +1063,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		default:
 			switch(dflags_0) {
 				case CONVTYPE_BOOL:
-					write(dst, var_t(TYPE_TRUE));
+					write(dst, var_t(true));
 					break;
 				default:
 					throw std::logic_error("invalid conversion: " + to_hex(uint32_t(svar.type)) + " to " + to_hex(dflags));
@@ -1205,6 +1205,27 @@ void Engine::read_balance(const uint64_t dst, const uint64_t currency)
 	write(dst, uint_t(get_balance(currency)));
 }
 
+bool Engine::is_true(const uint64_t src)
+{
+	return is_true(read_fail(src));
+}
+
+bool Engine::is_true(const var_t& var)
+{
+	switch(var.type) {
+		case TYPE_NIL:
+		case TYPE_FALSE:
+			return false;
+		case TYPE_UINT:
+			return ((const uint_t&)var).value;
+		case TYPE_STRING:
+		case TYPE_BINARY:
+			return ((const binary_t&)var).size;
+		default:
+			return true;
+	}
+}
+
 void Engine::jump(const uint64_t instr_ptr)
 {
 	get_frame().instr_ptr = instr_ptr;
@@ -1301,20 +1322,17 @@ void Engine::exec(const instr_t& instr)
 		return;
 	}
 	case OP_JUMPI:
-	case OP_JUMPN: {
-		const auto cond = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
-		const auto& var = read_fail(cond);
-		switch(var.type) {
-			case TYPE_TRUE:
-			case TYPE_FALSE: break;
-			default: throw invalid_type(var);
-		}
-		if((instr.code == OP_JUMPI) == (var.type == TYPE_TRUE)) {
+		if(is_true(deref_addr(instr.b, instr.flags & OPFLAG_REF_B))) {
 			jump(deref_value(instr.a, instr.flags & OPFLAG_REF_A));
 			return;
 		}
 		break;
-	}
+	case OP_JUMPN:
+		if(!is_true(deref_addr(instr.b, instr.flags & OPFLAG_REF_B))) {
+			jump(deref_value(instr.a, instr.flags & OPFLAG_REF_A));
+			return;
+		}
+		break;
 	case OP_CALL:
 		if(instr.flags & OPFLAG_REF_B) {
 			throw std::logic_error("OPFLAG_REF_B not supported");
@@ -1414,13 +1432,14 @@ void Engine::exec(const instr_t& instr)
 		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(src);
 		switch(var.type) {
-			case TYPE_TRUE: write(dst, var_t(TYPE_FALSE)); break;
-			case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
 			case TYPE_UINT:
 				write(dst, uint_t(~((const uint_t&)var).value));
 				break;
+			case TYPE_BINARY:
+				// TODO
+				break;
 			default:
-				throw invalid_type(var);
+				write(dst, var_t(!is_true(var)));
 		}
 		break;
 	}
@@ -1430,30 +1449,21 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		switch(L.type) {
-			case TYPE_TRUE:
-				switch(R.type) {
-					case TYPE_TRUE: write(dst, var_t(TYPE_FALSE)); break;
-					case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_FALSE:
-				switch(R.type) {
-					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
-					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_UINT:
-				if(R.type == TYPE_UINT) {
+		bool fallback = true;
+		if(L.type == R.type) {
+			switch(L.type) {
+				case TYPE_UINT:
+					fallback = false;
 					write(dst, uint_t(((const uint_t&)L).value ^ ((const uint_t&)R).value));
-				} else {
-					throw std::runtime_error("type mismatch");
-				}
-				break;
-			default:
-				throw invalid_type(L);
+					break;
+				case TYPE_BINARY:
+					// TODO
+					break;
+				default: break;
+			}
+		}
+		if(fallback) {
+			write(dst, var_t(is_true(L) ^ is_true(R)));
 		}
 		break;
 	}
@@ -1463,30 +1473,21 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		switch(L.type) {
-			case TYPE_TRUE:
-				switch(R.type) {
-					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
-					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_FALSE:
-				switch(R.type) {
-					case TYPE_TRUE:
-					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_UINT:
-				if(R.type == TYPE_UINT) {
+		bool fallback = true;
+		if(L.type == R.type) {
+			switch(L.type) {
+				case TYPE_UINT:
+					fallback = false;
 					write(dst, uint_t(((const uint_t&)L).value & ((const uint_t&)R).value));
-				} else {
-					throw std::runtime_error("type mismatch");
-				}
-				break;
-			default:
-				throw invalid_type(L);
+					break;
+				case TYPE_BINARY:
+					// TODO
+					break;
+				default: break;
+			}
+		}
+		if(fallback) {
+			write(dst, var_t(is_true(L) && is_true(R)));
 		}
 		break;
 	}
@@ -1496,30 +1497,21 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		switch(L.type) {
-			case TYPE_TRUE:
-				switch(R.type) {
-					case TYPE_TRUE:
-					case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_FALSE:
-				switch(R.type) {
-					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
-					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_UINT:
-				if(R.type == TYPE_UINT) {
+		bool fallback = true;
+		if(L.type == R.type) {
+			switch(L.type) {
+				case TYPE_UINT:
+					fallback = false;
 					write(dst, uint_t(((const uint_t&)L).value | ((const uint_t&)R).value));
-				} else {
-					throw std::runtime_error("type mismatch");
-				}
-				break;
-			default:
-				throw invalid_type(L);
+					break;
+				case TYPE_BINARY:
+					// TODO
+					break;
+				default: break;
+			}
+		}
+		if(fallback) {
+			write(dst, var_t(is_true(L) || is_true(R)));
 		}
 		break;
 	}

@@ -223,6 +223,9 @@ private:
 	uint64_t deref_addr(uint32_t src, const bool flag);
 	uint64_t deref_value(uint32_t src, const bool flag);
 
+	bool is_true(const uint64_t src);
+	bool is_true(const var_t& var);
+
 private:
 	bool have_init = false;
 	std::map<uint64_t, std::unique_ptr<var_t>> memory;
