@@ -994,8 +994,6 @@ void WebAPI::render_balances(const vnx::request_id_t& request_id, const vnx::opt
 
 void WebAPI::render_history(const vnx::request_id_t& request_id, std::vector<tx_entry_t> history) const
 {
-	std::reverse(history.begin(), history.end());
-
 	std::unordered_set<addr_t> addr_set;
 	for(const auto& entry : history) {
 		addr_set.insert(entry.contract);

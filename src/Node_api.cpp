@@ -484,7 +484,6 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		for(const auto cutoff = res[i].height; i < res.size() && res[i].height == cutoff; ++i);
 		res.resize(i);
 	}
-	std::reverse(res.begin(), res.end());
 	return res;
 }
 
@@ -565,7 +564,6 @@ std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addres
 		for(const auto cutoff = res[i].height; i < res.size() && res[i].height == cutoff; ++i);
 		res.resize(i);
 	}
-	std::reverse(res.begin(), res.end());
 	return res;
 }
 

@@ -57,6 +57,8 @@ std::shared_ptr<const mmx::contract::TokenBase> get_token(mmx::NodeClient& node,
 
 void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
 {
+	std::reverse(history.begin(), history.end());
+
 	for(const auto& entry : history) {
 		if(entry.is_pending) {
 			std::cout << "[pending] ";
