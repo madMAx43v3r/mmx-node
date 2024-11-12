@@ -25,5 +25,3 @@ Mainnet
 - Genesis rewards
 - Remove harvester_id ? causes issue with copy folder
 - Unit tests for all smart contracts
-- Remove compiler bool auto-convert
-- Engine binary bit-wise ops
