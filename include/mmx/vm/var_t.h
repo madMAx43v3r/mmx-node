@@ -146,8 +146,14 @@ struct binary_t : var_t {
 	~binary_t() {
 		::free(p_data);
 	}
-	void* data(const size_t offset = 0) {
-		return ((char*)p_data) + offset;
+	uint8_t& operator[](size_t index) {
+		return *(((uint8_t*)p_data) + index);
+	}
+	const uint8_t& operator[](size_t index) const {
+		return *(((const uint8_t*)p_data) + index);
+	}
+	uint8_t* data(const size_t offset = 0) {
+		return ((uint8_t*)p_data) + offset;
 	}
 	const uint8_t* data(const size_t offset = 0) const {
 		return ((const uint8_t*)p_data) + offset;
@@ -212,6 +218,7 @@ struct binary_t : var_t {
 	static std::unique_ptr<binary_t> alloc(const size_t size, const vartype_e type) {
 		auto bin = unsafe_alloc(size, type);
 		::memset(bin->data(), 0, bin->capacity);
+		bin->size = size;
 		return bin;
 	}
 	static std::unique_ptr<binary_t> unsafe_alloc(size_t size, const vartype_e type) {

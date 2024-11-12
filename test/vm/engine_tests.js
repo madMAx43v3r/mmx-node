@@ -37,16 +37,16 @@ if(false || false) {
 if(false && false) {
 	fail("false && false");
 }
-if(false ^ false) {
+if(false ^^ false) {
 	fail("false ^ false");
 }
-if(true ^ true) {
+if(true ^^ true) {
 	fail("true ^ true");
 }
-if(!(false ^ true)) {
+if(!(false ^^ true)) {
 	fail("false ^ true");
 }
-if(!(true ^ false)) {
+if(!(true ^^ false)) {
 	fail("false ^ true");
 }
 if(true) {
@@ -711,6 +711,19 @@ __nop();
 	if(array[1337] != null) {
 		fail("array[1337] != null");
 	}
+}
+
+if(~binary_hex("F000") != binary_hex("0FFF")) {
+	fail("~binary_hex");
+}
+if((binary_hex("F000") ^ binary_hex("FFF0")) != binary_hex("0FF0")) {
+	fail("binary ^ binary");
+}
+if((binary_hex("F000") & binary_hex("FFF0")) != binary_hex("F000")) {
+	fail("binary & binary");
+}
+if((binary_hex("F000") | binary_hex("FFF0")) != binary_hex("FFF0")) {
+	fail("binary | binary");
 }
 
 

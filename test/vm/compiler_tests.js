@@ -233,6 +233,76 @@ if(!(0 || null || 1)) {
 		fail("if(cond)");
 	}
 }
+{
+	var tmp = 1;
+	tmp += 1;
+	if(tmp != 2) {
+		fail("+=");
+	}
+}
+{
+	var tmp = 1;
+	tmp -= 1;
+	if(tmp != 0) {
+		fail("-=");
+	}
+}
+{
+	var tmp = 10;
+	tmp *= 2;
+	if(tmp != 20) {
+		fail("*=");
+	}
+}
+{
+	var tmp = 10;
+	tmp /= 2;
+	if(tmp != 5) {
+		fail("/=");
+	}
+}
+{
+	var tmp = 0;
+	tmp ^= 0xFF;
+	if(tmp != 0xFF) {
+		fail("^=");
+	}
+}
+{
+	var tmp = 0xFF;
+	tmp &= 0xFF;
+	if(tmp != 0xFF) {
+		fail("&=");
+	}
+}
+{
+	var tmp = 0;
+	tmp |= 0xFF;
+	if(tmp != 0xFF) {
+		fail("|=");
+	}
+}
+{
+	var tmp = false;
+	tmp ^^= true;
+	if(tmp != true) {
+		fail("^^=");
+	}
+}
+{
+	var tmp = false;
+	tmp &&= true;
+	if(tmp != false) {
+		fail("&&=");
+	}
+}
+{
+	var tmp = false;
+	tmp ||= true;
+	if(tmp != true) {
+		fail("||=");
+	}
+}
 
 
 

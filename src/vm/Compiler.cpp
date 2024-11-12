@@ -183,9 +183,10 @@ struct operator_ex : lexy::token_production {
 	static constexpr auto rule = dsl::literal_set(
 			dsl::lit_c<'.'>, dsl::lit_c<'+'>, dsl::lit_c<'-'>, dsl::lit_c<'*'>, dsl::lit_c<'/'>, dsl::lit_c<'!'>, dsl::lit_c<'='>,
 			dsl::lit_c<'>'>, dsl::lit_c<'<'>, dsl::lit_c<'&'>, dsl::lit_c<'|'>, dsl::lit_c<'^'>, dsl::lit_c<'~'>, dsl::lit_c<'%'>,
-			LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="), LEXY_LIT("&&"), LEXY_LIT("||"),
+			LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="), LEXY_LIT("^^"), LEXY_LIT("&&"), LEXY_LIT("||"),
 			LEXY_LIT("++"), LEXY_LIT("--"), LEXY_LIT(">>"), LEXY_LIT("<<"), LEXY_LIT("+="), LEXY_LIT("-="),
-			LEXY_LIT("*="), LEXY_LIT("/="), LEXY_LIT(">>="), LEXY_LIT("<<="), kw_return);
+			LEXY_LIT("*="), LEXY_LIT("/="), LEXY_LIT("^="), LEXY_LIT("&="), LEXY_LIT("|="),
+			LEXY_LIT("^^="), LEXY_LIT("&&="), LEXY_LIT("||="), LEXY_LIT(">>="), LEXY_LIT("<<="), kw_return);
 };
 
 struct qualifier : lexy::token_production {
@@ -510,7 +511,8 @@ Compiler::Compiler(const compile_flags_t& flags)
 	rank_map["=="] = rank++;
 	rank_map["&"] = rank;
 	rank_map["&&"] = rank++;
-	rank_map["^"] = rank++;
+	rank_map["^"] = rank;
+	rank_map["^^"] = rank++;
 	rank_map["|"] = rank;
 	rank_map["||"] = rank++;
 	rank_map["="] = rank;
@@ -518,6 +520,12 @@ Compiler::Compiler(const compile_flags_t& flags)
 	rank_map["-="] = rank;
 	rank_map["*="] = rank;
 	rank_map["/="] = rank;
+	rank_map["^="] = rank;
+	rank_map["&="] = rank;
+	rank_map["|="] = rank;
+	rank_map["^^="] = rank;
+	rank_map["&&="] = rank;
+	rank_map["||="] = rank;
 	rank_map[">>="] = rank;
 	rank_map["<<="] = rank++;
 	rank_map["break"] = rank;
@@ -531,8 +539,11 @@ Compiler::Compiler(const compile_flags_t& flags)
 	simple_code_map["/"] = OP_DIV;
 	simple_code_map["%"] = OP_MOD;
 	simple_code_map["&"] = OP_AND;
+	simple_code_map["&&"] = OP_AND;
 	simple_code_map["|"] = OP_OR;
+	simple_code_map["||"] = OP_OR;
 	simple_code_map["^"] = OP_XOR;
+	simple_code_map["^^"] = OP_XOR;
 	simple_code_map[">"] = OP_CMP_GT;
 	simple_code_map["<"] = OP_CMP_LT;
 	simple_code_map[">="] = OP_CMP_GTE;
@@ -1324,8 +1335,17 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				case OP_MUL:
 				case OP_DIV:
 				case OP_MOD:
-					op_flags |= math_flags; break;
-				default: break;
+					op_flags |= math_flags;
+					break;
+				case OP_XOR:
+				case OP_AND:
+				case OP_OR:
+					if(op == "^" || op == "&" || op == "|" || op == "^=" || op == "&=" || op == "|=") {
+						op_flags |= OPFLAG_BITWISE;
+					}
+					break;
+				default:
+					break;
 			}
 			auto rhs = get(recurse_expr(p_node, expr_len, nullptr, rank));
 
@@ -1346,10 +1366,12 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 										switch(op_code) {
 											case OP_DIV:
 												op_code = OP_SHR;
+												op_flags = 0;
 												rhs = count;
 												break;
 											case OP_MOD:
 												op_code = OP_AND;
+												op_flags = OPFLAG_BITWISE;
 												rhs = get_const_address((uint256_1 << count) - 1);
 												break;
 											default:
@@ -1447,18 +1469,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			}
 			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
 			out.address = stack.new_addr();
-			code.emplace_back(op == "!" ? OP_NOT : OP_NEG, 0, out.address, get(rhs));
-		}
-		else if(op == "&&" || op == "||") {
-			if(!lhs) {
-				throw std::logic_error("missing left operand");
-			}
-			if(expr_len < 1) {
-				throw std::logic_error("missing right operand");
-			}
-			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
-			out.address = stack.new_addr();
-			code.emplace_back(op == "&&" ? OP_AND : OP_OR, 0, out.address, get(*lhs), get(rhs));
+			code.emplace_back(OP_NOT, op == "~" ? OPFLAG_BITWISE : 0, out.address, get(rhs));
 		}
 		else if(op == "++" || op == "--") {
 			if(lhs) {

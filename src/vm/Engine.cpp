@@ -1417,22 +1417,24 @@ void Engine::exec(const instr_t& instr)
 		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(src);
-		write(dst, var_t(!is_true(var)));
-		break;
-	}
-	case OP_NEG: {
-		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
-		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
-		const auto& var = read_fail(src);
-		switch(var.type) {
-			case TYPE_UINT:
-				write(dst, uint_t(~((const uint_t&)var).value));
-				break;
-			case TYPE_BINARY:
-				// TODO
-				break;
-			default:
-				throw invalid_type(var);
+		if(instr.flags & OPFLAG_BITWISE) {
+			switch(var.type) {
+				case TYPE_UINT:
+					write(dst, uint_t(~((const uint_t&)var).value));
+					break;
+				case TYPE_BINARY: {
+					auto out = binary_t::alloc((const binary_t&)var);
+					for(uint32_t i = 0; i < out->size; ++i) {
+						(*out)[i] = ~(*out)[i];
+					}
+					assign(dst, std::move(out));
+					break;
+				}
+				default:
+					throw invalid_type(var);
+			}
+		} else {
+			write(dst, var_t(!is_true(var)));
 		}
 		break;
 	}
@@ -1442,20 +1444,31 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		bool fallback = true;
-		if(L.type == R.type) {
+		if(instr.flags & OPFLAG_BITWISE) {
+			if(L.type != R.type) {
+				throw std::runtime_error("type mismatch (bitwise XOR)");
+			}
 			switch(L.type) {
 				case TYPE_UINT:
-					fallback = false;
 					write(dst, uint_t(((const uint_t&)L).value ^ ((const uint_t&)R).value));
 					break;
-				case TYPE_BINARY:
-					// TODO
+				case TYPE_BINARY: {
+					const auto& lbin = (const binary_t&)L;
+					const auto& rbin = (const binary_t&)R;
+					if(lbin.size != rbin.size) {
+						throw std::runtime_error("binary length mismatch (bitwise XOR)");
+					}
+					auto out = binary_t::alloc(lbin.size, TYPE_BINARY);
+					for(uint32_t i = 0; i < out->size; ++i) {
+						(*out)[i] = lbin[i] ^ rbin[i];
+					}
+					assign(dst, std::move(out));
 					break;
-				default: break;
+				}
+				default:
+					throw invalid_type(L);
 			}
-		}
-		if(fallback) {
+		} else {
 			write(dst, var_t(is_true(L) ^ is_true(R)));
 		}
 		break;
@@ -1466,20 +1479,31 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		bool fallback = true;
-		if(L.type == R.type) {
+		if(instr.flags & OPFLAG_BITWISE) {
+			if(L.type != R.type) {
+				throw std::runtime_error("type mismatch (bitwise AND)");
+			}
 			switch(L.type) {
 				case TYPE_UINT:
-					fallback = false;
 					write(dst, uint_t(((const uint_t&)L).value & ((const uint_t&)R).value));
 					break;
-				case TYPE_BINARY:
-					// TODO
+				case TYPE_BINARY: {
+					const auto& lbin = (const binary_t&)L;
+					const auto& rbin = (const binary_t&)R;
+					if(lbin.size != rbin.size) {
+						throw std::runtime_error("binary length mismatch (bitwise AND)");
+					}
+					auto out = binary_t::alloc(lbin.size, TYPE_BINARY);
+					for(uint32_t i = 0; i < out->size; ++i) {
+						(*out)[i] = lbin[i] & rbin[i];
+					}
+					assign(dst, std::move(out));
 					break;
-				default: break;
+				}
+				default:
+					throw invalid_type(L);
 			}
-		}
-		if(fallback) {
+		} else {
 			write(dst, var_t(is_true(L) && is_true(R)));
 		}
 		break;
@@ -1490,20 +1514,31 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		bool fallback = true;
-		if(L.type == R.type) {
+		if(instr.flags & OPFLAG_BITWISE) {
+			if(L.type != R.type) {
+				throw std::runtime_error("type mismatch (bitwise OR)");
+			}
 			switch(L.type) {
 				case TYPE_UINT:
-					fallback = false;
 					write(dst, uint_t(((const uint_t&)L).value | ((const uint_t&)R).value));
 					break;
-				case TYPE_BINARY:
-					// TODO
+				case TYPE_BINARY: {
+					const auto& lbin = (const binary_t&)L;
+					const auto& rbin = (const binary_t&)R;
+					if(lbin.size != rbin.size) {
+						throw std::runtime_error("binary length mismatch (bitwise OR)");
+					}
+					auto out = binary_t::alloc(lbin.size, TYPE_BINARY);
+					for(uint32_t i = 0; i < out->size; ++i) {
+						(*out)[i] = lbin[i] | rbin[i];
+					}
+					assign(dst, std::move(out));
 					break;
-				default: break;
+				}
+				default:
+					throw invalid_type(L);
 			}
-		}
-		if(fallback) {
+		} else {
 			write(dst, var_t(is_true(L) || is_true(R)));
 		}
 		break;

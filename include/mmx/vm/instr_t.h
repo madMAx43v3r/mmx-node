@@ -23,6 +23,7 @@ static constexpr uint8_t OPFLAG_REF_C = (1 << 2);
 static constexpr uint8_t OPFLAG_REF_D = (1 << 3);
 static constexpr uint8_t OPFLAG_HARD_FAIL = (1 << 4);
 static constexpr uint8_t OPFLAG_CATCH_OVERFLOW = (1 << 5);
+static constexpr uint8_t OPFLAG_BITWISE = (1 << 6);
 
 enum opcode_e : uint8_t {
 
@@ -43,7 +44,6 @@ enum opcode_e : uint8_t {
 	OP_MOD,			// dst, lhs, rhs
 
 	OP_NOT = 0x40,	// dst, src
-	OP_NEG,			// dst, src
 	OP_XOR,			// dst, lhs, rhs
 	OP_AND,			// dst, lhs, rhs
 	OP_OR,			// dst, lhs, rhs

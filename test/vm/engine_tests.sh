@@ -2,12 +2,12 @@
 
 set -e
 
-echo "Unit tests [test/vm/engine_tests.js]"
-./build/tools/mmx_compile -e -f test/vm/engine_tests.js
-echo "Pass"
-
 echo "Unit tests [test/vm/compiler_tests.js]"
 ./build/tools/mmx_compile -e -f test/vm/compiler_tests.js
+echo "Pass"
+
+echo "Unit tests [test/vm/engine_tests.js]"
+./build/tools/mmx_compile -e -f test/vm/engine_tests.js
 echo "Pass"
 
 for file in test/vm/fails/*.js; do
