@@ -826,10 +826,13 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 //	const uint8_t sflags_1 = (sflags >> 8);
 
 	const auto& svar = read_fail(src);
+	if(dflags_0 == CONVTYPE_BOOL) {
+		write(dst, var_t(is_true(svar)));
+		return;
+	}
 	switch(svar.type) {
 		case TYPE_NIL:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(false)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
 				case CONVTYPE_ADDRESS: write(dst, vm::to_binary(addr_t())); break;
 				default: throw std::logic_error("invalid conversion: NIL to " + to_hex(dflags));
@@ -837,14 +840,12 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			break;
 		case TYPE_TRUE:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(true)); break;
 				case CONVTYPE_UINT: write(dst, uint_t(1)); break;
 				default: throw std::logic_error("invalid conversion: TRUE to " + to_hex(dflags));
 			}
 			break;
 		case TYPE_FALSE:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(false)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
 				default: throw std::logic_error("invalid conversion: FALSE to " + to_hex(dflags));
 			}
@@ -852,9 +853,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		case TYPE_UINT: {
 			const auto& value = ((const uint_t&)svar).value;
 			switch(dflags_0) {
-				case CONVTYPE_BOOL:
-					write(dst, var_t(bool(value)));
-					break;
 				case CONVTYPE_UINT:
 					write(dst, svar);
 					break;
@@ -908,9 +906,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		case TYPE_STRING: {
 			const auto& sstr = (const binary_t&)svar;
 			switch(dflags_0) {
-				case CONVTYPE_BOOL:
-					write(dst, var_t(bool(sstr.size)));
-					break;
 				case CONVTYPE_UINT: {
 					auto value = sstr.to_string();
 					const auto prefix_2 = value.substr(0, 2);
@@ -1002,9 +997,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
 			switch(dflags_0) {
-				case CONVTYPE_BOOL:
-					write(dst, var_t(bool(sbin.size)));
-					break;
 				case CONVTYPE_UINT: {
 					if(sbin.size != 32) {
 						throw std::runtime_error("invalid conversion: BINARY to UINT: size != 32");
@@ -1061,13 +1053,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			break;
 		}
 		default:
-			switch(dflags_0) {
-				case CONVTYPE_BOOL:
-					write(dst, var_t(true));
-					break;
-				default:
-					throw std::logic_error("invalid conversion: " + to_hex(uint32_t(svar.type)) + " to " + to_hex(dflags));
-			}
+			throw std::logic_error("invalid conversion: " + to_hex(uint32_t(svar.type)) + " to " + to_hex(dflags));
 	}
 }
 
@@ -1431,6 +1417,13 @@ void Engine::exec(const instr_t& instr)
 		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(src);
+		write(dst, var_t(!is_true(var)));
+		break;
+	}
+	case OP_NEG: {
+		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
+		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
+		const auto& var = read_fail(src);
 		switch(var.type) {
 			case TYPE_UINT:
 				write(dst, uint_t(~((const uint_t&)var).value));
@@ -1439,7 +1432,7 @@ void Engine::exec(const instr_t& instr)
 				// TODO
 				break;
 			default:
-				write(dst, var_t(!is_true(var)));
+				throw invalid_type(var);
 		}
 		break;
 	}

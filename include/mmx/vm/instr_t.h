@@ -43,6 +43,7 @@ enum opcode_e : uint8_t {
 	OP_MOD,			// dst, lhs, rhs
 
 	OP_NOT = 0x40,	// dst, src
+	OP_NEG,			// dst, src
 	OP_XOR,			// dst, lhs, rhs
 	OP_AND,			// dst, lhs, rhs
 	OP_OR,			// dst, lhs, rhs

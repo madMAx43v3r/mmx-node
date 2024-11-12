@@ -39,6 +39,7 @@ const struct global_init_t {
 		OPCODE_INFO(OP_DIV, 3);
 		OPCODE_INFO(OP_MOD, 3);
 		OPCODE_INFO(OP_NOT, 2);
+		OPCODE_INFO(OP_NEG, 2);
 		OPCODE_INFO(OP_XOR, 3);
 		OPCODE_INFO(OP_AND, 3);
 		OPCODE_INFO(OP_OR, 3);
