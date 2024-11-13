@@ -25,3 +25,4 @@ Mainnet
 - Genesis rewards
 - Remove harvester_id ? causes issue with copy folder
 - Unit tests for all smart contracts
+- >= 50% neutral voting should win
