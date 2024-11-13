@@ -421,6 +421,8 @@ private:
 
 	void check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) const noexcept;
 
+	size_t prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) const;
+
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
 

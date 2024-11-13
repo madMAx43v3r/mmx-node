@@ -85,7 +85,7 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 		mutate_set.insert(op->address == addr_t() ? tx->id : op->address);
 	}
 	{
-		auto list = std::vector<addr_t>(mutate_set.begin(), mutate_set.end());
+		std::vector<addr_t> list(mutate_set.begin(), mutate_set.end());
 		while(!list.empty()) {
 			std::vector<addr_t> more;
 			for(const auto& address : list) {
@@ -280,9 +280,24 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		throw std::logic_error("transactions not activated yet");
 	}
 
+	{
+		std::set<std::pair<addr_t, addr_t>> keys;
+		for(const auto& tx : block->tx_list) {
+			if(tx->sender) {
+				keys.emplace(*tx->sender, addr_t());
+			}
+			for(const auto& in : tx->inputs) {
+				keys.emplace(in.address, in.contract);
+			}
+		}
+		prefetch_balances(keys);
+	}
+
 	auto context = new_exec_context(block->height);
 	{
 		std::unordered_set<addr_t> tx_set;
+		tx_set.reserve(block->tx_count);
+
 		balance_cache_t balance_cache(&balance_table);
 
 		std::shared_ptr<const Transaction> prev;

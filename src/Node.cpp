@@ -975,6 +975,21 @@ void Node::commit(std::shared_ptr<const Block> block)
 	publish(block, output_committed_blocks, is_synced ? 0 : BLOCKING);
 }
 
+size_t Node::prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) const
+{
+	if(keys.size() < 64) {
+		return 0;
+	}
+	std::atomic<size_t> total {0};
+	for(const auto& key : keys) {
+		threads->add_task([this, &key, &total]() {
+			total += balance_table.count(key);
+		});
+	}
+	threads->sync();
+	return total;
+}
+
 void Node::apply(	std::shared_ptr<const Block> block,
 					std::shared_ptr<const execution_context_t> context, bool is_replay)
 {
@@ -1000,18 +1015,8 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			for(const auto& io : block_outputs) {
 				keys.emplace(io.address, io.contract);
 			}
-
-			// pre-load balance table entries in parallel
-			if(keys.size() >= 64) {
-				std::atomic<int32_t> total {0};
-				for(const auto& key : keys) {
-					threads->add_task([this, &key, &total]() {
-						total += balance_table.count(key);
-					});
-				}
-				threads->sync();
-				log(DEBUG) << "apply(): pre-loaded " << total << " / " << keys.size() << " balance entries at height " << block->height;
-			}
+			const auto count = prefetch_balances(keys);
+			log(DEBUG) << "apply(): pre-fetched " << count << " / " << keys.size() << " balance entries at height " << block->height;
 		}
 		for(const auto& out : block_outputs)
 		{
