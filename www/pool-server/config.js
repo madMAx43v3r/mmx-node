@@ -16,7 +16,7 @@ config.payout_interval = 8640;              // [blocks]
 config.payout_tx_expire = 1000;             // [blocks]
 config.payout_threshold = 10;               // [MMX]
 config.tx_output_cost = 0.01;               // [MMX]
-config.max_payout_count = 2000;
+config.max_payout_count = 1000;             // max number of payouts per transaction
 
 config.server_port = 8080;
 config.wallet_index = 0;                    // for pool wallet (payout)
