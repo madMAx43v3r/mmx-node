@@ -112,8 +112,12 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
 {
-	// Note: hash, tx_hash, tx_count, tx_cost, tx_fees and proof already verified
-	// Note: Block::is_valid() and validate() already called during pre_validate_blocks()
+	// Note: proof already verified before
+
+	if(!block->is_valid()) {
+		throw std::logic_error("static validation failed");
+	}
+	block->validate();
 
 	const auto prev = find_prev_header(block);
 	if(!prev) {

@@ -418,20 +418,27 @@ void Node::trigger_update()
 
 void Node::add_block(std::shared_ptr<const Block> block)
 {
+	try {
+		if(!block->is_valid()) {
+			throw std::logic_error("invalid block");
+		}
+		// need to verify farmer_sig before adding to fork tree
+		block->validate();
+	}
+	catch(const std::exception& ex) {
+		log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
+		return;
+	}
+	catch(...) {
+		return;
+	}
 	auto fork = std::make_shared<fork_t>();
 	fork->recv_time = vnx::get_wall_time_micros();
 	fork->block = block;
+	add_fork(fork);
 
-	if(block->farmer_sig) {
-		// need to verify farmer_sig first
-		pending_forks.push_back(fork);
-		if(is_synced) {
-			trigger_update();
-		}
-	} else if(block->is_valid()) {
-		add_fork(fork);
-	} else {
-		log(WARN) << "Got invalid block at height " << block->height;
+	if(is_synced && block->farmer_sig) {
+		trigger_update();
 	}
 }
 

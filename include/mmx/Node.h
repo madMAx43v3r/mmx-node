@@ -308,7 +308,6 @@ private:
 
 	void verify_vdfs();
 	void verify_proofs();
-	void pre_validate_blocks();
 	void verify_block_proofs();
 
 	void print_stats();
@@ -543,7 +542,6 @@ private:
 	vnx::optional<uint32_t> sync_peak;						// max height we can sync
 	std::unordered_set<hash_t> fetch_pending;				// block hash
 
-	std::vector<std::shared_ptr<fork_t>> pending_forks;
 	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_queue;
 

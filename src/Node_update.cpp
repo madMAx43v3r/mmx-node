@@ -56,39 +56,6 @@ void Node::verify_proofs()
 	pending_proofs = std::move(try_again);
 }
 
-void Node::pre_validate_blocks()
-{
-	for(const auto& fork : pending_forks) {
-		threads->add_task([this, fork]() {
-			const auto& block = fork->block;
-			try {
-				if(!block->is_valid()) {
-					throw std::logic_error("invalid block");
-				}
-				// need to verify farmer_sig before adding to fork tree
-				block->validate();
-			}
-			catch(const std::exception& ex) {
-				fork->is_invalid = true;
-				log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
-			}
-			catch(...) {
-				fork->is_invalid = true;
-			}
-		});
-	}
-	threads->sync();
-
-	const auto list = std::move(pending_forks);
-	pending_forks.clear();
-
-	for(const auto& fork : list) {
-		if(!fork->is_invalid) {
-			add_fork(fork);
-		}
-	}
-}
-
 void Node::verify_block_proofs()
 {
 	std::mutex mutex;
@@ -200,8 +167,6 @@ void Node::update()
 	verify_vdfs();
 
 	verify_proofs();
-
-	pre_validate_blocks();
 
 	verify_block_proofs();
 
