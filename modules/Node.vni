@@ -46,6 +46,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint vdf_verify_divider = 1;			// TODO: how many VDFs to verify when synced
 	
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
+	string opencl_device_name;				// when specified, opencl_device is a relative index
 	
 	bool do_sync = true;
 	bool db_replay = false;
