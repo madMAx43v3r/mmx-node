@@ -53,8 +53,8 @@ static constexpr uint64_t CONV_BECH32_STRING_COST = 1000;
 static constexpr uint64_t SHA256_BLOCK_COST = 2000;
 static constexpr uint64_t ECDSA_VERIFY_COST = 20000;
 
-static constexpr uint64_t MAX_KEY_BYTES = 1024;
-static constexpr uint64_t MAX_VALUE_BYTES = 64 * 1024;
+static constexpr uint64_t MAX_KEY_BYTES = 4096;
+static constexpr uint64_t MAX_VALUE_BYTES = 1024 * 1024;
 static constexpr uint64_t MAX_CALL_RECURSION = 1000;
 static constexpr uint64_t MAX_ERASE_RECURSION = 100;
 static constexpr uint64_t MAX_COPY_RECURSION = 100;
