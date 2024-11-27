@@ -40,11 +40,14 @@ std::unique_ptr<var_t> StorageProxy::read(const addr_t& contract, const uint64_t
 {
 	auto var = read_ex(backend->read(contract, src));
 
+	const auto size = num_bytes(var.get());
+	const auto blocks = size / 32;
+
 	if(engine->do_profile) {
 		engine->cost_map["STOR_READ_COST"]++;
-		engine->cost_map["STOR_READ_BYTE_COST"] += num_bytes(var.get());
+		engine->cost_map["STOR_READ_32_BYTE_COST"] += blocks;
 	}
-	engine->gas_used += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
+	engine->gas_used += STOR_READ_COST + blocks * STOR_READ_32_BYTE_COST;
 	engine->check_gas();
 
 	if(engine->do_trace) {
@@ -62,11 +65,14 @@ std::unique_ptr<var_t> StorageProxy::read(const addr_t& contract, const uint64_t
 {
 	auto var = read_ex(backend->read(contract, src, key));
 
+	const auto size = num_bytes(var.get());
+	const auto blocks = size / 32;
+
 	if(engine->do_profile) {
 		engine->cost_map["STOR_READ_COST"]++;
-		engine->cost_map["STOR_READ_BYTE_COST"] += num_bytes(var.get());
+		engine->cost_map["STOR_READ_32_BYTE_COST"] += blocks;
 	}
-	engine->gas_used += STOR_READ_COST + num_bytes(var.get()) * STOR_READ_BYTE_COST;
+	engine->gas_used += STOR_READ_COST + blocks * STOR_READ_32_BYTE_COST;
 	engine->check_gas();
 
 	if(engine->do_trace) {
@@ -157,11 +163,14 @@ uint64_t StorageProxy::lookup(const addr_t& contract, const var_t& value) const
 		t.value = clone(value);
 		trace.push_back(t);
 	}
+	const auto size = num_bytes(value);
+	const auto blocks = size / 32;
+
 	if(engine->do_profile) {
 		engine->cost_map["STOR_READ_COST"]++;
-		engine->cost_map["STOR_READ_BYTE_COST"] += num_bytes(value);
+		engine->cost_map["STOR_READ_32_BYTE_COST"] += blocks;
 	}
-	engine->gas_used += STOR_READ_COST + num_bytes(value) * STOR_READ_BYTE_COST;
+	engine->gas_used += STOR_READ_COST + blocks * STOR_READ_32_BYTE_COST;
 	engine->check_gas();
 
 	return backend->lookup(contract, value);
