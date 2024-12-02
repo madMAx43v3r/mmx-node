@@ -183,6 +183,9 @@ uint64_t calc_new_base_reward(std::shared_ptr<const ChainParams> params, std::sh
 	const auto& base_reward = prev->base_reward;
 	const auto& vote_sum = prev->reward_vote_sum;
 
+	if(prev->reward_vote_count < params->reward_adjust_interval / 2) {
+		return base_reward;
+	}
 	const auto step_size = std::max<int64_t>(base_reward / params->reward_adjust_div, params->min_reward_adjust);
 
 	int64_t reward = base_reward;

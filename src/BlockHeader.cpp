@@ -59,6 +59,7 @@ std::pair<hash_t, hash_t> BlockHeader::calc_hash() const
 	write_field(out, "reward_account", reward_account);
 	write_field(out, "reward_vote", reward_vote);
 	write_field(out, "reward_vote_sum", reward_vote_sum);
+	write_field(out, "reward_vote_count", reward_vote_count);
 	write_field(out, "base_reward", base_reward);
 	write_field(out, "static_cost", static_cost);
 	write_field(out, "total_cost", 	total_cost);
@@ -122,9 +123,11 @@ void BlockHeader::set_base_reward(std::shared_ptr<const ChainParams> params, std
 	if(height % params->reward_adjust_interval == 0) {
 		base_reward = calc_new_base_reward(params, prev);
 		reward_vote_sum = reward_vote;
+		reward_vote_count = (reward_vote ? 1 : 0);
 	} else {
 		base_reward = prev->base_reward;
 		reward_vote_sum = prev->reward_vote_sum + reward_vote;
+		reward_vote_count = prev->reward_vote_count + (reward_vote ? 1 : 0);
 	}
 }
 

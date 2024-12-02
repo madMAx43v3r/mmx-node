@@ -36,6 +36,7 @@ class BlockHeader {
 	
 	char reward_vote;					// 0 = unchanged, 1 = up, -1 = down
 	int  reward_vote_sum;
+	uint reward_vote_count;
 	ulong base_reward;
 	
 	ulong static_cost;

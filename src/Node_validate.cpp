@@ -239,12 +239,18 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		if(block->reward_vote_sum != block->reward_vote) {
 			throw std::logic_error("invalid reward_vote_sum");
 		}
+		if(block->reward_vote_count != (block->reward_vote ? 1 : 0)) {
+			throw std::logic_error("invalid reward_vote_count");
+		}
 	} else {
 		if(block->base_reward != prev->base_reward) {
 			throw std::logic_error("invalid base_reward");
 		}
 		if(block->reward_vote_sum != prev->reward_vote_sum + block->reward_vote) {
 			throw std::logic_error("invalid reward_vote_sum");
+		}
+		if(block->reward_vote_count != prev->reward_vote_count + (block->reward_vote ? 1 : 0)) {
+			throw std::logic_error("invalid reward_vote_count");
 		}
 	}
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
