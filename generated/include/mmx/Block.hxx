@@ -72,7 +72,7 @@ protected:
 
 template<typename T>
 void Block::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Block>(33);
+	_visitor.template type_begin<Block>(34);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("hash", 1); _visitor.accept(hash);
 	_visitor.type_field("prev", 2); _visitor.accept(prev);
@@ -97,16 +97,17 @@ void Block::accept_generic(T& _visitor) const {
 	_visitor.type_field("reward_account", 21); _visitor.accept(reward_account);
 	_visitor.type_field("reward_vote", 22); _visitor.accept(reward_vote);
 	_visitor.type_field("reward_vote_sum", 23); _visitor.accept(reward_vote_sum);
-	_visitor.type_field("base_reward", 24); _visitor.accept(base_reward);
-	_visitor.type_field("static_cost", 25); _visitor.accept(static_cost);
-	_visitor.type_field("total_cost", 26); _visitor.accept(total_cost);
-	_visitor.type_field("tx_count", 27); _visitor.accept(tx_count);
-	_visitor.type_field("tx_fees", 28); _visitor.accept(tx_fees);
-	_visitor.type_field("tx_hash", 29); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 30); _visitor.accept(farmer_sig);
-	_visitor.type_field("content_hash", 31); _visitor.accept(content_hash);
-	_visitor.type_field("tx_list", 32); _visitor.accept(tx_list);
-	_visitor.template type_end<Block>(33);
+	_visitor.type_field("reward_vote_count", 24); _visitor.accept(reward_vote_count);
+	_visitor.type_field("base_reward", 25); _visitor.accept(base_reward);
+	_visitor.type_field("static_cost", 26); _visitor.accept(static_cost);
+	_visitor.type_field("total_cost", 27); _visitor.accept(total_cost);
+	_visitor.type_field("tx_count", 28); _visitor.accept(tx_count);
+	_visitor.type_field("tx_fees", 29); _visitor.accept(tx_fees);
+	_visitor.type_field("tx_hash", 30); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 31); _visitor.accept(farmer_sig);
+	_visitor.type_field("content_hash", 32); _visitor.accept(content_hash);
+	_visitor.type_field("tx_list", 33); _visitor.accept(tx_list);
+	_visitor.template type_end<Block>(34);
 }
 
 
