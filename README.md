@@ -107,3 +107,27 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
 - Fixed Virtual Plots, they now win blocks at the expected rate. On TN11 it was ~20 times less.
 - Fixed block reward formula, average tx fee is subtracted from minimum reward again.
 
+### Mainnet-RC
+
+- Improved timelord reward voting: Majority vote out of 256 blocks wins, reward sent every 256 blocks.
+- Improved block reward voting: Majority vote out of 8640 block wins, 1% change up/down per day, >50% participation required.
+- Offer contract now supports price update (at most every 1080 blocks)
+- Pooling support + Reference Pool implementation
+- Improved difficulty adjustment algorithm (more stable at less than 100 TB)
+- VM improvements to reduce transaction costs
+- Send amount can now be up to 128-bit (was limited to 64-bit before)
+- Mint amount can now be up to 80-bit (was limited to 64-bit before)
+- Added block timestamps
+- Reduced default number of VDF segments to 1020 (was 1500 before, to reduce network traffic)
+- Increased number of proofs per block by ~2x (to reduce dummy blocks)
+- Smart Contract unit test framework
+- 50% TX fee burn (to avoid farmer spam attack + allow supply contraction)
+
+
+
+
+
+
+
+
+
