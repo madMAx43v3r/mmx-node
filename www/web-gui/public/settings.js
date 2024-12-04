@@ -8,9 +8,10 @@ Vue.component('node-settings', {
 			timelord: null,
 			open_port: null,
 			opencl_device: null,
-			opencl_platform: null,
 			opencl_device_list: null,
-			opencl_platform_list: null,
+			// NOTE: List of OpenCL devices from Node.cpp (names, relative index)
+			opencl_device_list_name: null,
+			opencl_device_list_index: null,
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
 			enable_timelord_reward: null,
@@ -32,29 +33,29 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
-					this.opencl_platform = data["opencl.platform"] != null ? data["opencl.platform"] : "";
-					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] : 0;
+					// NOTE: Initial list selection from Node.cpp (not relative, value index in list)
+					// TODO: Could have been 'Node.opencl_device' temporary assigned selidx in Node.cpp (find a way)
+					// TODO: But refresh of WebGUI browser, reload of real relative index from .json (find a way)
+					this.opencl_device = data["Node.opencl_device_selidx"] != null ? data["Node.opencl_device_selidx"] : -1;
+					// NOTE: Node.cpp list of OpenCL devices (names, realative index)
+					this.opencl_device_list_name = [];
+					this.opencl_device_list_index = [];
+					// NOTE: WebGUI list of OpenCL devices, with added "None" (-1, i.e. CPU)
 					this.opencl_device_list = [{name: "None", value: -1}];
 					{
-						let list = data["opencl.device_list"];
-						if(list) {
+						let listn = data["Node.device_list_name"];
+						if(listn) {
 							let i = 0;
-							for(const name of list) {
+							for(const name of listn) {
+								this.opencl_device_list_name.push(name);
 								this.opencl_device_list.push({name: name, value: i++});
 							}
-						} else {
-							this.opencl_device_list.push({name: "First device found", value: 0});
 						}
-					}
-					this.opencl_platform_list = [];
-					{
-						let list = data["opencl.platform_list"];
-						if(list) {
-							for(const name of list) {
-								this.opencl_platform_list.push({name: name, value: name});
+						let listi = data["Node.device_list_index"];
+						if(listi) {
+							for(const index of listi) {
+								this.opencl_device_list_index.push(index);
 							}
-						} else {
-							this.opencl_platform_list.push({name: "First platform found", value: ""});
 						}
 					}
 					this.farmer_reward_addr = data["Farmer.reward_addr"];
@@ -161,14 +162,15 @@ Vue.component('node-settings', {
 				this.set_config("Router.open_port", value, true);
 			}
 		},
-		opencl_platform(value, prev) {
-			if(prev != null) {
-				this.set_config("opencl.platform", value, true);
-			}
-		},
 		opencl_device(value, prev) {
 			if(prev != null) {
-				this.set_config("Node.opencl_device", value, true);
+				// TODO: Find a way to set a config value without .json write ? Need selection to persist in WebGUI (browser reload). Without duplicating selection logic from Node.cpp.
+				this.set_config("Node.opencl_device_selidx", value, true);
+				// NOTE: value is >= 0, real GPU entries. value < 0, it is -1 ('None')
+				// NOTE: device name last, visually shown 'restart needed to apply' (WebGUI)
+				this.set_config("opencl.platform", "", true);
+				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_index[value] : -1, true);
+				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_name[value] : "", true);
 			}
 		},
 		farmer_reward_addr(value, prev) {
@@ -274,14 +276,6 @@ Vue.component('node-settings', {
 						:label="$t('node_settings.open_port')"
 						class="my-0"
 					></v-checkbox>
-					
-					<v-select
-						v-model="opencl_platform"
-						label="OpenCL Platform"
-						:items="opencl_platform_list"
-						item-text="name"
-						item-value="value"
-					></v-select>
 
 					<v-select
 						v-model="opencl_device"
@@ -291,6 +285,16 @@ Vue.component('node-settings', {
 						item-value="value"
 					></v-select>
 
+				</v-card-text>
+			</v-card>
+
+			<!-- -------------------------------------------------------------------------------------------------- -->
+			<!-- NOTE: Suggestion to create a separate split/card/header for reward addresses (they are important)  -->
+			<!-- TODO: If going to stay, rework 'Reward' text to label text from settings                           -->
+			<!-- -------------------------------------------------------------------------------------------------- -->
+			<v-card class="my-2">
+				<v-card-title>{{ "Reward" }}</v-card-title>
+				<v-card-text>
 					<v-text-field
 						:label="$t('node_settings.farmer_reward_address')"
 						:placeholder="$t('common.reward_address_placeholder')"
