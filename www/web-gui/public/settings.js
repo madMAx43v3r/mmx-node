@@ -9,9 +9,8 @@ Vue.component('node-settings', {
 			open_port: null,
 			opencl_device: null,
 			opencl_device_list: null,
-			// NOTE: List of OpenCL devices from Node.cpp (names, relative index)
-			opencl_device_list_name: null,
-			opencl_device_list_index: null,
+			opencl_device_list_name: null, // NOTE: List of OpenCL devices from Node.cpp (names)
+			opencl_device_list_index: null, // NOTE: List of OpenCL devices from Node.cpp (relative index)
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
 			enable_timelord_reward: null,
@@ -33,15 +32,10 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
-					// NOTE: Initial list selection from Node.cpp (not relative, value index in list)
-					// TODO: Could have been 'Node.opencl_device' temporary assigned selidx in Node.cpp (find a way)
-					// TODO: But refresh of WebGUI browser, reload of real relative index from .json (find a way)
-					this.opencl_device = data["Node.opencl_device_selidx"] != null ? data["Node.opencl_device_selidx"] : -1;
-					// NOTE: Node.cpp list of OpenCL devices (names, realative index)
+					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] : -1; // NOTE: Current List selection (not relative, value index in WebGUI list), temporary 'hijack' for session, not value written to config .json (to support refresh of WebGUI browser)
 					this.opencl_device_list_name = [];
 					this.opencl_device_list_index = [];
-					// NOTE: WebGUI list of OpenCL devices, with added "None" (-1, i.e. CPU)
-					this.opencl_device_list = [{name: "None", value: -1}];
+					this.opencl_device_list = [{name: "None", value: -1}]; // NOTE: WebGUI list of OpenCL devices, with added -1/None
 					{
 						let listn = data["Node.device_list_name"];
 						if(listn) {
@@ -68,14 +62,15 @@ Vue.component('node-settings', {
 					this.plot_dirs = data["Harvester.plot_dirs"];
 				});
 		},
-		set_config(key, value, restart) {
+		set_config(key, value, file, restart) { // NOTE: Added boolean option to write or not to config file (.json)
 			var req = {};
 			req.key = key;
 			req.value = value;
+			req.file = file;
 			fetch('/wapi/config/set', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						this.result = {key: req.key, value: req.value, restart};
+						this.result = {key: req.key, value: req.value, file: req.file, restart};
 					} else {
 						response.text().then(data => {
 							this.error = data;
@@ -154,58 +149,55 @@ Vue.component('node-settings', {
 	watch: {
 		timelord(value, prev) {
 			if(prev != null) {
-				this.set_config("timelord", value, true);
+				this.set_config("timelord", value, true, true);
 			}
 		},
 		open_port(value, prev) {
 			if(prev != null) {
-				this.set_config("Router.open_port", value, true);
+				this.set_config("Router.open_port", value, true, true);
 			}
 		},
 		opencl_device(value, prev) {
 			if(prev != null) {
-				// TODO: Find a way to set a config value without .json write ? Need selection to persist in WebGUI (browser reload). Without duplicating selection logic from Node.cpp.
-				this.set_config("Node.opencl_device_selidx", value, true);
-				// NOTE: value is >= 0, real GPU entries. value < 0, it is -1 ('None')
-				// NOTE: device name last, visually shown 'restart needed to apply' (WebGUI)
-				this.set_config("opencl.platform", "", true);
-				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_index[value] : -1, true);
-				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_name[value] : "", true);
+				this.set_config("opencl.platform", "", true, true); // NOTE: Config change made, force any existing platform name config to ""
+				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_index[value] : -1, true, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
+				this.set_config("Node.opencl_device", value, false, true); // NOTE: 'Hijack' value temporary for device selection WebGUI (without config file write), browser reload
+				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_name[value] : "", true, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
 			}
 		},
 		farmer_reward_addr(value, prev) {
 			if(prev != "null") {
-				this.set_config("Farmer.reward_addr", value.length ? value : null, true);
+				this.set_config("Farmer.reward_addr", value.length ? value : null, true, true);
 			}
 		},
 		timelord_reward_addr(value, prev) {
 			if(prev != "null") {
-				this.set_config("TimeLord.reward_addr", value.length ? value : null, true);
+				this.set_config("TimeLord.reward_addr", value.length ? value : null, true, true);
 			}
 		},
 		enable_timelord_reward(value, prev) {
 			if(prev != null) {
-				this.set_config("TimeLord.enable_reward", value, true);
+				this.set_config("TimeLord.enable_reward", value, true, true);
 			}
 		},
 		verify_timelord_reward(value, prev) {
 			if(prev != null) {
-				this.set_config("Node.verify_vdf_rewards", value, true);
+				this.set_config("Node.verify_vdf_rewards", value, true, true);
 			}
 		},
 		harv_num_threads(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.num_threads", value, true);
+				this.set_config("Harvester.num_threads", value, true, true);
 			}
 		},
 		recursive_search(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.recursive_search", value ? true : false, true);
+				this.set_config("Harvester.recursive_search", value ? true : false, true, true);
 			}
 		},
 		reload_interval(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.reload_interval", value, true);
+				this.set_config("Harvester.reload_interval", value, true, true);
 			}
 		},
 		result(value) {
