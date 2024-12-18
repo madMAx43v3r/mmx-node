@@ -167,8 +167,7 @@ std::shared_ptr<const BlockHeader> Node::get_block_ex(const hash_t& hash, bool f
 {
 	auto iter = fork_tree.find(hash);
 	if(iter != fork_tree.end()) {
-		const auto& block = iter->second->block;
-		return full_block ? block : block->get_header();
+		return iter->second->block;
 	}
 	uint32_t height = 0;
 	if(hash_index.find(hash, height)) {
