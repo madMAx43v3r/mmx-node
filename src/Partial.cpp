@@ -18,7 +18,6 @@ hash_t Partial::calc_hash() const
 {
 	std::string tmp = get_type_name() + "/";
 	tmp += "height:" + std::to_string(height);
-	tmp += "challenge:" + challenge.to_string();
 	tmp += "contract:" + contract.to_string();
 	tmp += "account:" + account.to_string();
 	tmp += "pool_url:" + pool_url;
@@ -31,6 +30,7 @@ hash_t Partial::calc_hash() const
 		tmp += proof->get_type_name() + "/";
 		tmp += "score:" + std::to_string(proof->score);
 		tmp += "plot_id:" + proof->plot_id.to_string();
+		tmp += "challenge:" + proof->challenge.to_string();
 		tmp += "farmer_key:" + proof->farmer_key.to_string();
 	}
 	if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(proof))

@@ -2,15 +2,13 @@ package mmx;
 
 class VDF_Point {
 	
-	uint height;
+	ulong start;
+	ulong num_iters;
 	
-	ulong vdf_start;
-	ulong vdf_iters;
+	hash_t input;
+	hash_t output;
 	
-	hash_t input[2];
-	hash_t output[2];
-	
-	optional<hash_t> infused;					// chain 0
+	optional<hash_t> prev;						// block hash
 	
 	optional<addr_t> reward_addr;
 	

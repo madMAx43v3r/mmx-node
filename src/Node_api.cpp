@@ -1569,22 +1569,20 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 		return {pooling_error_e::INVALID_SIGNATURE, "Signature verification failed"};
 	}
 
-	const auto vdf_height = partial->height - params->challenge_delay;
-	const auto vdf_block = get_header_at(vdf_height);
-	if(!vdf_block) {
+	const auto challenge_height = partial->height - params->challenge_delay;
+	const auto challenge_block = get_header_at(challenge_height);
+	if(!challenge_block) {
 		return {pooling_error_e::CHALLENGE_NOT_FOUND,
-			"Could not find VDF block at height " + std::to_string(vdf_height)};
+			"Could not find challenge block at height " + std::to_string(challenge_height)};
 	}
-	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
-
-	const auto challenge = vdf_block->vdf_output[1];
+	const auto challenge = challenge_block->challenge;
 	if(partial->challenge != challenge) {
 		return {pooling_error_e::CHALLENGE_REVERTED,
-			"Challenge mismatch, expected " + challenge.to_string() + " for height " + std::to_string(vdf_height)};
+			"Challenge mismatch, expected " + challenge.to_string() + " for height " + std::to_string(challenge_height)};
 	}
 
 	try {
-		verify_proof(partial->proof, challenge, diff_block, partial->difficulty);
+		verify_proof(partial->proof, challenge, partial->difficulty);
 	} catch(const std::exception& ex) {
 		return {pooling_error_e::INVALID_PROOF,
 			"Invalid partial proof: " + std::string(ex.what())};

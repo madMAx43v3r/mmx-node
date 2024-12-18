@@ -112,7 +112,7 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
 {
-	// Note: proof already verified before
+	// Note: vdf_count + vdf_iters + vdf_output + vdf_reward_addr + proof + farmer_sig: already verified before
 
 	if(!block->is_valid()) {
 		throw std::logic_error("static validation failed");
@@ -141,54 +141,20 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_diff == 0 || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}
+	validate_diff_adjust(block->time_diff, prev->time_diff);
+
 	if(block->static_cost > params->max_block_size) {
 		throw std::logic_error("block size too high: " + std::to_string(block->static_cost));
 	}
 	if(block->total_cost > params->max_block_cost) {
 		throw std::logic_error("block cost too high: " + std::to_string(block->total_cost));
 	}
-	if(block->farmer_sig) {
-		// Note: farmer_sig already verified together with proof
-
-		validate_diff_adjust(block->time_diff, prev->time_diff);
-
-		const auto netspace_ratio = calc_new_netspace_ratio(
-				params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
-		if(block->netspace_ratio != netspace_ratio) {
-			throw std::logic_error("invalid netspace_ratio: " + std::to_string(block->netspace_ratio) + " != " + std::to_string(netspace_ratio));
-		}
-		const auto txfee_buffer = calc_new_txfee_buffer(params, prev);
-		if(block->txfee_buffer != txfee_buffer) {
-			throw std::logic_error("invalid txfee_buffer: " + std::to_string(block->txfee_buffer) + " != " + std::to_string(txfee_buffer));
-		}
-		if(block->reward_vote > 1 || block->reward_vote < -1) {
-			throw std::logic_error("invalid reward_vote: " + std::to_string(block->reward_vote));
-		}
-	} else {
-		if(block->time_stamp != prev->time_stamp + params->block_interval_ms) {
-			throw std::logic_error("invalid time_stamp");
-		}
-		if(block->time_diff != prev->time_diff) {
-			throw std::logic_error("invalid time_diff adjust");
-		}
-		if(block->netspace_ratio != prev->netspace_ratio) {
-			throw std::logic_error("invalid netspace_ratio adjust");
-		}
-		if(block->txfee_buffer != prev->txfee_buffer) {
-			throw std::logic_error("invalid txfee_buffer change");
-		}
-		if(block->reward_addr) {
-			throw std::logic_error("invalid reward_addr");
-		}
-		if(block->reward_account) {
-			throw std::logic_error("invalid reward_account");
-		}
-		if(block->reward_vote) {
-			throw std::logic_error("invalid reward_vote");
-		}
-		if(block->vdf_reward_vote) {
-			throw std::logic_error("invalid vdf_reward_vote");
-		}
+	const auto txfee_buffer = calc_new_txfee_buffer(params, prev);
+	if(block->txfee_buffer != txfee_buffer) {
+		throw std::logic_error("invalid txfee_buffer: " + std::to_string(block->txfee_buffer) + " != " + std::to_string(txfee_buffer));
+	}
+	if(block->reward_vote > 1 || block->reward_vote < -1) {
+		throw std::logic_error("invalid reward_vote: " + std::to_string(block->reward_vote));
 	}
 	vnx::optional<addr_t> reward_contract;
 
@@ -219,14 +185,14 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 
 	if(block->height % params->vdf_reward_interval == 0)
 	{
-		const auto address = get_vdf_reward_addr(block);
-		// Note: `vdf_reward_addr` and `address` are both optional
-		if(block->vdf_reward_addr != address) {
-			throw std::logic_error("invalid vdf_reward_addr");
+		const auto address = get_vdf_reward_winner(block);
+		// Note: `vdf_reward_payout` and `address` are both of type `vnx::optional`
+		if(block->vdf_reward_payout != address) {
+			throw std::logic_error("invalid vdf_reward_payout");
 		}
 	} else {
-		if(block->vdf_reward_addr) {
-			throw std::logic_error("invalid vdf_reward_addr (must be null)");
+		if(block->vdf_reward_payout) {
+			throw std::logic_error("invalid vdf_reward_payout (must be null)");
 		}
 	}
 
@@ -253,7 +219,16 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			throw std::logic_error("invalid reward_vote_count");
 		}
 	}
+	const auto proof_hash = block->proof ? block->proof->calc_proof_hash() : hash_t();
 	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
+
+	if(block->proof_hash != proof_hash) {
+		throw std::logic_error("invalid proof_hash");
+	}
+	const auto challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, proof_hash);
+	if(block->challenge != challenge) {
+		throw std::logic_error("invalid challenge");
+	}
 
 	if(block->height % params->challenge_interval == 0)
 	{
@@ -272,8 +247,8 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			throw std::logic_error("invalid proof_score_sum");
 		}
 	}
-
 	const auto diff_block = get_diff_header(block);
+
 	const auto weight = calc_block_weight(params, diff_block, block);
 	const auto total_weight = prev->total_weight + block->weight;
 	if(block->weight != weight) {
@@ -282,6 +257,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->total_weight != total_weight) {
 		throw std::logic_error("invalid total weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
 	}
+
 	if(block->height < params->transaction_activation && block->tx_count) {
 		throw std::logic_error("transactions not activated yet");
 	}

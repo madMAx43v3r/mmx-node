@@ -16,7 +16,6 @@ Content-Type: `application/json`
 Payload: Object
 - `height`: Block height the proof is for
 - `hash`: Message hash for signature (see below)
-- `challenge`: VDF challenge (hash) for this height and fork
 - `contract`: Plot NFT address
 - `account`: Payout address (can be multiple per NFT, first partial creates account)
 - `pool_url`: The base URL used to make this request
@@ -28,9 +27,10 @@ Payload: Object
 - `__type`: `mmx.Partial`
 
 The `proof` is an object as follows:
-- `__type`: Proof type (`mmx.ProofOfSpaceNFT` or `mmx.ProofOfStake`)
+- `__type`: Proof type (always `mmx.ProofOfSpaceNFT`)
 - `score`: Proof score
 - `plot_id`: Plot ID
+- `challenge`: challenge hash for this height and fork
 - `farmer_key`: Farmer Public Key
 
 For `proof.__type` == `mmx.ProofOfSpaceNFT` the following additional fields will be present:

@@ -160,6 +160,7 @@ add_library(mmx_iface SHARED
 	src/Partial.cpp
 	src/ChainParams.cpp
 	src/utils.cpp
+	src/NewBlock.cpp
 )
 
 add_library(mmx_vm SHARED

@@ -6,8 +6,6 @@ class Partial {
 	
 	hash_t hash;
 	
-	hash_t challenge;
-	
 	addr_t contract;					// plot NFT
 	
 	addr_t account;						// payout address
