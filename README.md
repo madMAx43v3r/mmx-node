@@ -110,7 +110,7 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
 ### Mainnet-RC
 
 - Improved timelord reward voting: Majority vote out of 256 blocks wins, reward sent every 256 blocks.
-- Improved block reward voting: Majority vote out of 8640 block wins, 1% change up/down per day, >50% participation required.
+- Improved block reward voting: Majority vote out of 8640 blocks wins, 1% change up/down per day, >50% participation required.
 - Offer contract now supports price update (at most every 1080 blocks)
 - Pooling support + Reference Pool implementation
 - Improved difficulty adjustment algorithm (more stable at less than 100 TB)

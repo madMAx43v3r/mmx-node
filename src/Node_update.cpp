@@ -25,17 +25,79 @@ namespace mmx {
 
 void Node::verify_vdfs()
 {
-	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
-		const auto& proof = iter->second;
-		if(!vdf_verify_pending.count(proof->height)) {
-			add_task([this, proof]() {
-				handle(proof);
-			});
-			iter = pending_vdfs.erase(iter);
-		} else {
-			iter++;
+	if(vdf_verify_pending.size() >= vdf_verify_max_pending) {
+		return;
+	}
+	std::vector<std::shared_ptr<const ProofOfTime>> try_again;
+	std::unordered_map<hash_t, std::pair<uint128_t, uint32_t>> weight_map;		// [vdf_output => [total_weight, vdf index]]
+	std::vector<std::pair<std::pair<uint128_t, uint32_t>, std::shared_ptr<const ProofOfTime>>> try_now;
+
+	const auto root = get_root();
+	weight_map[root->vdf_output] = std::make_pair(root->total_weight, 0);
+
+	for(auto iter = fork_index.upper_bound(root->height); iter != fork_index.end(); ++iter) {
+		const auto& fork = iter->second;
+		if(fork->is_verified) {
+			const auto& block = fork->block;
+			weight_map[block->vdf_output] = std::make_pair(block->total_weight, 0);
 		}
 	}
+
+	for(auto iter = vdf_index.upper_bound(root->vdf_iters); iter != vdf_index.end(); ++iter) {
+		const auto& point = iter->second;
+		const auto prev = weight_map.find(point->input);
+		if(prev != weight_map.end() && weight_map.count(point->output) == 0) {
+			const auto& value = prev->second;
+			weight_map[point->output] = std::make_pair(value.first, value.second + 1);
+		}
+	}
+
+	for(auto proof : vdf_queue) {
+		if(proof->start < root->vdf_iters) {
+			continue;		// too old
+		}
+		if(vdf_verify_pending.count(proof->hash)) {
+			continue;		// duplicate
+		}
+		const auto output = proof->get_output();
+		if(find_vdf_point(proof->start, proof->num_iters, proof->input, output)) {
+			continue;		// already verified
+		}
+		const auto iter = weight_map.find(proof->input);
+		if(iter != weight_map.end()) {
+			// VDF is connected to current fork tree
+			try_now.emplace_back(iter->second, proof);
+			continue;
+		}
+		// wait for missing blocks to come in
+		try_again.push_back(proof);
+	}
+
+	std::sort(try_now.begin(), try_now.end(),
+		[]( const std::pair<std::pair<uint128_t, uint32_t>, std::shared_ptr<const ProofOfTime>>& L,
+			const std::pair<std::pair<uint128_t, uint32_t>, std::shared_ptr<const ProofOfTime>>& R) -> bool {
+			return L.first > R.first;
+		});
+
+	// TODO: sort by timelord trust in case of competing proofs
+
+	for(const auto& entry : try_now) {
+		const auto& proof = entry.second;
+		if(vdf_verify_pending.size() >= vdf_verify_max_pending) {
+			try_again.push_back(proof);
+			continue;
+		}
+		vdf_verify_pending.insert(proof->hash);
+		try {
+			verify_vdf(proof);
+		} catch(const std::exception& ex) {
+			vdf_verify_pending.erase(proof->hash);
+			if(is_synced) {
+				log(WARN) << "VDF static verification at " << proof->get_vdf_iters() << " failed with: " << ex.what();
+			}
+		}
+	}
+	vdf_queue = try_again;
 }
 
 void Node::verify_proofs()
@@ -66,10 +128,8 @@ void Node::verify_block_proofs()
 			continue;
 		}
 		const auto& block = fork->block;
-		if(!fork->prev.lock()) {
-			if(auto prev = find_fork(block->prev)) {
-				fork->prev = prev;
-			}
+		if(!fork->prev) {
+			fork->prev = find_fork(block->prev);
 		}
 		if(!fork->diff_block) {
 			fork->diff_block = find_diff_header(block);
@@ -86,8 +146,9 @@ void Node::verify_block_proofs()
 		if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
 			continue;
 		}
-		if(auto point = find_vdf_point(block)) {
-			fork->vdf_point = point;
+		const auto vdf_points = find_vdf_points(block);
+		if(!vdf_points.empty()) {
+			fork->vdf_points = vdf_points;
 			fork->is_vdf_verified = true;
 		}
 		if(fork->is_vdf_verified || !is_synced) {
@@ -114,47 +175,6 @@ void Node::verify_block_proofs()
 		}
 	}
 	threads->sync();
-}
-
-void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
-{
-	if(auto vdf_point = find_next_vdf_point(prev))
-	{
-		const auto diff_block = get_diff_header(prev, 1);
-
-		auto block = Block::create();
-		block->version = 0;
-		block->prev = prev->hash;
-		block->height = prev->height + 1;
-		block->time_stamp = prev->time_stamp + params->block_interval_ms;
-		block->time_diff = prev->time_diff;
-		block->vdf_iters = vdf_point->vdf_iters;
-		block->vdf_output = vdf_point->output;
-		block->weight = calc_block_weight(params, diff_block, block);
-		block->total_weight = prev->total_weight + block->weight;
-		block->netspace_ratio = prev->netspace_ratio;
-		block->txfee_buffer = prev->txfee_buffer;
-
-		if(block->height % params->vdf_reward_interval == 0) {
-			block->vdf_reward_addr = get_vdf_reward_addr(block);
-		}
-		block->set_space_diff(params, prev);
-		block->set_base_reward(params, prev);
-		block->finalize();
-		add_block(block);
-	}
-}
-
-void Node::add_dummy_blocks(const uint32_t& height)
-{
-	const auto root = get_root();
-	if(height == root->height + 1) {
-		add_dummy_block(root);
-	}
-	const auto range = fork_index.equal_range(height - 1);
-	for(auto iter = range.first; iter != range.second; ++iter) {
-		add_dummy_block(iter->second->block);
-	}
 }
 
 void Node::update()
@@ -268,7 +288,7 @@ void Node::update()
 				sync_finish_ms = now_ms;
 				sync_retry++;
 			}
-		} else if(find_vdf_point(peak)) {
+		} else if(find_vdf_points(peak).size()) {
 			is_synced = true;
 			on_sync_done(peak->height);
 		}
@@ -800,14 +820,12 @@ std::shared_ptr<const Block> Node::make_block(
 	block->proof = proof.proof;
 	block->vdf_iters = vdf_point->vdf_iters;
 	block->vdf_output = vdf_point->output;
-	block->vdf_reward_vote = vdf_point->reward_addr;
+	block->vdf_reward_addr = vdf_point->reward_addr;
 	block->reward_vote = reward_vote;
 	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
-	block->netspace_ratio = calc_new_netspace_ratio(
-			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
 
 	if(block->height % params->vdf_reward_interval == 0) {
-		block->vdf_reward_addr = get_vdf_reward_addr(block);
+		block->vdf_reward_payout = get_vdf_reward_winner(block);
 	}
 
 	if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {

@@ -41,6 +41,9 @@ std::shared_ptr<const ChainParams> get_params()
 	if(params->commit_delay >= params->challenge_interval - params->challenge_delay) {
 		throw std::logic_error("commit_delay >= challenge_interval - challenge_delay");
 	}
+	if(params->time_diff_constant % (2 * params->vdf_segment_size)) {
+		throw std::logic_error("time_diff_constant not multiple of 2x vdf_segment_size");
+	}
 	return params;
 }
 
@@ -106,6 +109,23 @@ bool check_plot_filter(
 {
 	const hash_t hash(std::string("plot_filter") + plot_id + challenge);
 	return (hash.to_uint256() >> (256 - params->plot_filter)) == 0;
+}
+
+inline
+hash_t calc_next_challenge(
+		std::shared_ptr<const ChainParams> params, const hash_t& prev_challenge,
+		const uint32_t vdf_count, const hash_t& proof_hash)
+{
+	hash_t out = prev_challenge;
+	for(uint32_t i = 0; i < vdf_count; ++i) {
+		out = hash_t(std::string("next_challenge") + out);
+	}
+	const hash_t infuse_hash(std::string("proof_infusion_check") + out + proof_hash);
+
+	if(infuse_hash.to_uint256() % params->challenge_interval == 0) {
+		out = hash_t(std::string("challenge_infusion") + out + proof_hash);
+	}
+	return out;
 }
 
 inline

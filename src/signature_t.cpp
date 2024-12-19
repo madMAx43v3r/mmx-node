@@ -37,6 +37,14 @@ signature_t signature_t::sign(const skey_t& skey, const hash_t& hash)
 	return signature_t(sig);
 }
 
+signature_t signature_t::normalized() const
+{
+	secp256k1_ecdsa_signature out;
+	const auto sig = to_secp256k1();
+	secp256k1_ecdsa_signature_normalize(g_secp256k1, &out, &sig);
+	return signature_t(out);
+}
+
 bool signature_t::verify(const pubkey_t& pubkey, const hash_t& hash) const
 {
 	const size_t sig_hash = vnx::Hash64(crc64(), hash_salt);

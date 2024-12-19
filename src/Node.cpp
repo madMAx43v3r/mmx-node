@@ -34,8 +34,7 @@
 namespace mmx {
 
 Node::Node(const std::string& _vnx_name)
-	:	NodeBase(_vnx_name),
-		opencl_vdf(3)
+	:	NodeBase(_vnx_name)
 {
 	params = mmx::get_params();
 }
@@ -91,9 +90,11 @@ void Node::main()
 				if(size_t(opencl_device) < devices.size()) {
 					const auto device = devices[opencl_device];
 					opencl_context = automy::basic_opencl::create_context(platform, {device});
-					for(size_t i = 0; i < opencl_vdf.size(); ++i) {
-						opencl_vdf[i] = std::make_shared<OCL_VDF>(opencl_context, device);
+					// TODO: optimize vdf_verify_max_pending according to GPU size
+					for(uint32_t i = 0; i < vdf_verify_max_pending; ++i) {
+						opencl_vdf.push_back(std::make_shared<OCL_VDF>(opencl_context, device));
 					}
+					opencl_vdf_enable = true;
 					log(INFO) << "Using OpenCL GPU device [" << opencl_device << "] "
 							<< automy::basic_opencl::get_device_name(device)
 							<< " (total of " << devices.size() << " found)";
@@ -447,19 +448,9 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(!fork->recv_time) {
 		fork->recv_time = vnx::get_wall_time_micros();
 	}
-
 	if(auto block = fork->block) {
-		// compute balance deltas
-		fork->balance = balance_log_t();
-		for(const auto& out : block->get_outputs(params)) {
-			fork->balance.added[std::make_pair(out.address, out.contract)] += out.amount;
-		}
-		for(const auto& in : block->get_inputs(params)) {
-			fork->balance.removed[std::make_pair(in.address, in.contract)] += in.amount;
-		}
 		if(fork_tree.emplace(block->hash, fork).second) {
 			fork_index.emplace(block->height, fork);
-			add_dummy_block(block);
 		}
 	}
 }
@@ -523,40 +514,24 @@ void Node::handle(std::shared_ptr<const Transaction> tx)
 
 void Node::handle(std::shared_ptr<const ProofOfTime> proof)
 {
-	if(!recv_height(proof->height)) {
+	if(!proof->is_valid()) {
 		return;
 	}
-	if(find_vdf_point(	proof->height, proof->start, proof->get_vdf_iters(),
-						proof->input, {proof->get_output(0), proof->get_output(1)}))
-	{
-		return;		// already verified
-	}
-	if(vdf_verify_pending.count(proof->height)) {
-		pending_vdfs.emplace(proof->height, proof);
-		return;
-	}
-	try {
-		vdf_verify_pending.insert(proof->height);
-		verify_vdf(proof);
-	}
-	catch(const std::exception& ex) {
-		vdf_verify_pending.erase(proof->height);
-		if(is_synced) {
-			log(WARN) << "VDF verification for height " << proof->height << " failed with: " << ex.what();
-		}
-	}
+	vdf_queue.push_back(proof);
+	verify_vdfs();
 }
 
 void Node::handle(std::shared_ptr<const VDF_Point> value)
 {
-	if(verified_vdfs.count(value->height) == 0) {
+	const auto vdf_iters = value->start + value->num_iters;
+	if(!vdf_index.empty() && vdf_iters > vdf_index.rbegin()->first) {
 		log(INFO) << "-------------------------------------------------------------------------------";
 	}
-	verified_vdfs.emplace(value->height, value);
+	vdf_index.emplace(vdf_iters, value);
+	vdf_tree.emplace(value->output, value);
 
-	log(INFO) << "\U0001F552 Received VDF point for height " << value->height;
+	log(INFO) << "\U0001F552 Received VDF point at " << vdf_iters;
 
-	add_dummy_blocks(value->height);
 	trigger_update();
 }
 
@@ -795,16 +770,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				fork->context = validate(block);
 
 				if(!fork->is_vdf_verified) {
-					if(auto prev = find_prev_header(block)) {
-						if(auto infuse = find_prev_header(block, params->infuse_delay + 1)) {
-							log(INFO) << "Checking VDF for block at height " << block->height << " ...";
-							vdf_threads->add_task(std::bind(&Node::check_vdf_task, this, fork, prev, infuse));
-						} else {
-							throw std::logic_error("cannot verify");
-						}
-					} else {
-						throw std::logic_error("cannot verify");
-					}
+					check_vdf(fork);
 				}
 				fork->is_verified = true;
 			}
@@ -884,37 +850,54 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	throw std::logic_error("disconnected fork");
 }
 
+void Node::erase_fork(std::shared_ptr<const Block> block)
+{
+	if(fork_tree.erase(block->hash)) {
+		purged_blocks.insert(block->hash);
+		purged_blocks_log.emplace(block->height, block->hash);
+	}
+}
+
 void Node::purge_tree()
 {
+	uint32_t last_purge = 0;
 	const auto root = get_root();
+
 	for(auto iter = fork_index.begin(); iter != fork_index.end();)
 	{
 		const auto& fork = iter->second;
 		const auto& block = fork->block;
-		if(block->height <= root->height
-			|| purged_blocks.count(block->prev)
-			|| (!is_synced && fork->is_invalid))
-		{
-			if(fork_tree.erase(block->hash)) {
-				purged_blocks.insert(block->hash);
-			}
+		if(block->height <= root->height || purged_blocks.count(block->prev)) {
+			erase_fork(block);
+			last_purge = block->height;
 			iter = fork_index.erase(iter);
 		} else {
+			if(block->height > last_purge + 1) {
+				break;	// exit loop as no further purges are possible
+			}
 			iter++;
 		}
 	}
-	for(auto iter = fork_tree.begin(); iter != fork_tree.end();)
-	{
-		const auto& fork = iter->second;
-		const auto& block = fork->block;
-		if(block->height <= root->height) {
-			iter = fork_tree.erase(iter);
-		} else {
-			iter++;
-		}
+	while(purged_blocks_log.size() > 1000) {
+		const auto iter = purged_blocks_log.begin();
+		purged_blocks.erase(iter->second);
+		purged_blocks_log.erase(iter);
 	}
-	if(purged_blocks.size() > 10000) {
-		purged_blocks.clear();
+}
+
+void Node::purge_fork(const hash_t& hash)
+{
+	if(auto fork = find_fork(hash)) {
+		erase_fork(fork->block);
+		for(auto iter = fork_index.lower_bound(fork->block->height); iter != fork_index.end();) {
+			const auto& block = iter->second->block;
+			if(purged_blocks.count(block->prev)) {
+				erase_fork(block);
+				iter = fork_index.erase(iter);
+			} else {
+				iter++;
+			}
+		}
 	}
 }
 
@@ -947,16 +930,15 @@ void Node::commit(std::shared_ptr<const Block> block)
 		history.erase(history.begin());
 	}
 	fork_tree.erase(block->hash);
-
-	if(!pending_vdfs.empty()) {
-		pending_vdfs.erase(pending_vdfs.begin(), pending_vdfs.upper_bound(height));
+	{
+		const auto begin = vdf_index.begin();
+		const auto end = vdf_index.upper_bound(block->vdf_iters);
+		for(auto iter = begin; iter != end; ++iter) {
+			vdf_tree.erase(iter->second->output);
+		}
+		vdf_index.erase(begin, end);
 	}
-	if(!verified_vdfs.empty()) {
-		verified_vdfs.erase(verified_vdfs.begin(), verified_vdfs.upper_bound(height));
-	}
-	if(block->height % 16) {
-		purge_tree();
-	}
+	purge_tree();
 
 	if(is_synced) {
 		std::string ksize = "N/A";
@@ -1364,58 +1346,156 @@ std::shared_ptr<const BlockHeader> Node::get_diff_header(std::shared_ptr<const B
 	throw std::logic_error("cannot find diff header");
 }
 
+vnx::optional<hash_t> Node::get_infusion(std::shared_ptr<const BlockHeader> block, uint32_t offset) const
+{
+	if(offset > params->infuse_delay) {
+		return nullptr;
+	}
+	const uint32_t target = params->infuse_delay - offset;
+
+	if(auto prev = find_prev_header(block, target, true)) {
+		return prev->hash;
+	}
+	return nullptr;
+}
+
 bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset) const
 {
 	if(offset > params->challenge_delay) {
 		throw std::logic_error("offset out of range");
 	}
-	if(auto vdf_block = find_prev_header(block, params->challenge_delay - offset, true)) {
-		challenge = vdf_block->vdf_output[1];
-		return true;
+	const uint32_t target = params->challenge_delay - offset;
+
+	std::vector<std::shared_ptr<const BlockHeader>> chain = {block};
+	{
+		std::shared_ptr<const BlockHeader> iter = block;
+		for(uint32_t i = 0; i < target; ++i) {
+			if(auto block = find_prev_header(iter, 1, true)) {
+				chain.push_back(block);
+				iter = block;
+			} else {
+				return false;
+			}
+		}
 	}
-	return false;
+	std::reverse(chain.begin(), chain.end());
+
+	std::vector<hash_t> list;
+	std::shared_ptr<const BlockHeader> prev;
+	for(auto block : chain) {
+		if(prev) {
+			auto tmp = prev->challenge;
+			for(uint32_t i = 1; i < block->vdf_count; ++i) {
+				tmp = hash_t(std::string("next_challenge") + tmp);
+				list.push_back(tmp);
+			}
+		}
+		list.push_back(block->challenge);
+		prev = block;
+	}
+	std::reverse(list.begin(), list.end());
+
+	if(target >= list.size()) {
+		throw std::logic_error("cannot find challenge");
+	}
+	challenge = list[target];
+	return true;
 }
 
 std::shared_ptr<const VDF_Point>
-Node::find_vdf_point(	const uint32_t height, const uint64_t vdf_start, const uint64_t vdf_iters,
-						const std::array<hash_t, 2>& input, const std::array<hash_t, 2>& output) const
+Node::find_vdf_point(const uint64_t vdf_start, const uint64_t num_iters, const hash_t& input, const hash_t& output) const
 {
-	for(auto iter = verified_vdfs.lower_bound(height); iter != verified_vdfs.upper_bound(height); ++iter) {
-		const auto& point = iter->second;
-		if(vdf_start == point->vdf_start && vdf_iters == point->vdf_iters
-			&& input == point->input && output == point->output)
-		{
+	for(auto point : find_vdf_points(vdf_start, num_iters, input)) {
+		if(point->output == output) {
 			return point;
 		}
 	}
 	return nullptr;
 }
 
-std::shared_ptr<const VDF_Point>
-Node::find_vdf_point(std::shared_ptr<const BlockHeader> block) const
+std::vector<std::shared_ptr<const VDF_Point>>
+Node::find_vdf_points(const uint64_t vdf_start, const uint64_t num_iters, const hash_t& input) const
+{
+	const auto vdf_iters = vdf_start + num_iters;
+	std::vector<std::shared_ptr<const VDF_Point>> out;
+
+	const auto range = vdf_index.equal_range(vdf_iters);
+	for(auto iter = range.first; iter != range.second; ++iter) {
+		const auto& point = iter->second;
+		if(point->start == vdf_start && point->num_iters == num_iters && point->input == input) {
+			out.push_back(point);
+		}
+	}
+	return out;
+}
+
+std::vector<std::shared_ptr<const VDF_Point>>
+Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 {
 	const auto prev = find_prev_header(block);
 	if(!prev) {
-		return nullptr;
+		return {};
 	}
-	return find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output);
+	std::vector<std::shared_ptr<const VDF_Point>> out;
+	const auto num_iters = (block->vdf_iters - prev->vdf_iters) / block->vdf_count;
+
+	auto output = block->vdf_output;
+	while(out.size() < block->vdf_count) {
+		const auto range = vdf_tree.equal_range(output);
+		for(auto iter = range.first; iter != range.second; ++iter) {
+			const auto& point = iter->second;
+			if(point->output == output && point->num_iters == num_iters) {
+				output = point->input;
+				out.push_back(point);
+				continue;
+			}
+		}
+		return {};
+	}
+	if(output != prev->vdf_output) {
+		return {};
+	}
+	std::reverse(out.begin(), out.end());
+
+	for(uint32_t i = 0; i < out.size(); ++i) {
+		const auto& point = out[i];
+		// validate reward address
+		if(block->vdf_reward_addr) {
+			if(!point->reward_addr || *point->reward_addr != *block->vdf_reward_addr) {
+				return {};
+			}
+		} else if(point->reward_addr) {
+			return {};
+		}
+		// validate proper infusion
+		const auto infuse = get_infusion(prev, i);
+		if(infuse) {
+			if(!point->prev || *point->prev != *infuse) {
+				return {};
+			}
+		} else if(point->prev) {
+			return {};
+		}
+	}
+	return out;
 }
 
-std::shared_ptr<const VDF_Point> Node::find_next_vdf_point(std::shared_ptr<const BlockHeader> block) const
+std::vector<std::shared_ptr<const VDF_Point>> Node::find_next_vdf_points(std::shared_ptr<const BlockHeader> block) const
 {
 	if(auto diff_block = find_diff_header(block, 1))
 	{
 		const auto height = block->height + 1;
 		const auto infused = find_prev_header(block, params->infuse_delay);
-		const auto vdf_iters = block->vdf_iters + diff_block->time_diff * params->time_diff_constant;
+		const auto num_iters = diff_block->time_diff * params->time_diff_constant;
 
-		for(auto iter = verified_vdfs.lower_bound(height); iter != verified_vdfs.upper_bound(height); ++iter)
+		for(auto iter = vdf_index.lower_bound(height); iter != vdf_index.upper_bound(height); ++iter)
 		{
 			const auto& point = iter->second;
-			if(block->vdf_iters == point->vdf_start && vdf_iters == point->vdf_iters && block->vdf_output == point->input
-				&& ((!infused && !point->infused) || (infused && point->infused && infused->hash == *point->infused)))
+			if(block->vdf_iters == point->start && num_iters == point->num_iters && block->vdf_output == point->input)
 			{
-				return point;
+				if((!infused && !point->prev) || (infused && point->prev && infused->hash == *point->prev)) {
+					return point;
+				}
 			}
 		}
 	}
@@ -1441,7 +1521,7 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	}
 	uint64_t base_reward = 0;
 	uint64_t reward_deduction = 0;
-	if(auto prev = find_prev_header(block, 1)) {
+	if(auto prev = find_prev_header(block)) {
 		base_reward = prev->base_reward;
 		reward_deduction = calc_min_reward_deduction(params, prev->txfee_buffer);
 	}
@@ -1455,13 +1535,13 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	return mmx::calc_final_block_reward(params, reward, total_fees);
 }
 
-vnx::optional<addr_t> Node::get_vdf_reward_addr(std::shared_ptr<const BlockHeader> block) const
+vnx::optional<addr_t> Node::get_vdf_reward_winner(std::shared_ptr<const BlockHeader> block) const
 {
-	std::map<addr_t, uint32_t> count;
+	std::map<addr_t, uint32_t> win_map;
 	for(uint32_t i = 0; i < params->vdf_reward_interval; ++i) {
 		if(auto prev = find_prev_header(block)) {
-			if(auto vote = prev->vdf_reward_vote) {
-				count[*vote]++;
+			if(auto addr = prev->vdf_reward_addr) {
+				win_map[*addr] += prev->vdf_count;
 			}
 			block = prev;
 		} else {
@@ -1469,17 +1549,16 @@ vnx::optional<addr_t> Node::get_vdf_reward_addr(std::shared_ptr<const BlockHeade
 		}
 	}
 	hash_t max_hash;
-	uint32_t max_vote = 0;
+	uint32_t max_count = 0;
 	vnx::optional<addr_t> out;
 
-	for(const auto& entry : count) {
-		hash_t hash;
-		if(entry.second == max_vote) {
-			hash = hash_t(entry.first + block->prev);
-		}
-		if(entry.second > max_vote || hash > max_hash) {
-			out = entry.first;
-			max_vote = entry.second;
+	for(const auto& entry : win_map) {
+		const auto& address = entry.first;
+		const auto& count = entry.second;
+		const hash_t hash(address + block->proof_hash);
+		if(count > max_count || (count == max_count && hash < max_hash)) {
+			out = address;
+			max_count = count;
 			max_hash = hash;
 		}
 	}

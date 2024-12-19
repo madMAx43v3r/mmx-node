@@ -45,6 +45,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint num_vdf_threads = 8;
 	uint vdf_check_divider = 5000;			// how many VDFs to verify during sync
 	uint vdf_verify_divider = 1;			// TODO: how many VDFs to verify when synced
+	uint vdf_verify_max_pending = 2;		// how many VDFs to verify in parallel when synced
 	
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
 	
@@ -52,8 +53,6 @@ module Node implements vnx.addons.HttpComponent {
 	bool db_replay = false;
 	bool show_warnings = false;
 	bool vdf_slave_mode = false;
-	bool verify_vdf_cpuopencl = false;			// verify VDF streams on cpu and opencl, if possible
-	bool verify_vdf_rewards = true;
 	bool exec_debug = false;					// dump memory on exec fail
 	bool exec_profile = false;					// write execution profiles
 	bool exec_trace = false;					// write execution traces
@@ -299,6 +298,7 @@ module Node implements vnx.addons.HttpComponent {
 	
 	
 	void handle(Block value);
+	void handle(NewBlock value);
 	void handle(Transaction value);
 	void handle(ProofOfTime value);
 	void handle(ProofResponse value);
