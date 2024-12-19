@@ -332,6 +332,8 @@ hash_t to_hash(const var_t& var);
 
 addr_t to_addr(const var_t& var);
 
+uint32_t get_size(const var_t& var);
+
 inline size_t num_bytes(const var_t* var) {
 	return var ? num_bytes(*var) : 0;
 }
@@ -362,6 +364,10 @@ inline hash_t to_hash(const var_t* var) {
 
 inline addr_t to_addr(const var_t* var) {
 	return var ? to_addr(*var) : addr_t();
+}
+
+inline uint32_t get_size(const var_t* var) {
+	return var ? get_size(*var) : 0;
 }
 
 template<size_t N>

@@ -2591,7 +2591,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					[this, request_id, contract](const std::tuple<vm::varptr_t, uint64_t, uint64_t>& ret) {
 						const auto addr = std::get<1>(ret);
 						const auto key = std::get<2>(ret);
-						log(INFO) << "value = " << vm::to_string(std::get<0>(ret));
 						resolve_vm_varptr(contract, std::get<0>(ret), request_id, 0,
 							[this, request_id, addr, key](const vnx::Variant& value) {
 								vnx::Object out;
@@ -2772,20 +2771,25 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract,
 
 					for(const auto& entry : ret) {
 						std::string key;
+						vnx::optional<addr_t> key_addr;
 						if(auto var = entry.first) {
 							switch(var->type) {
 								case vm::TYPE_UINT:		key = vm::to_uint(var).str(10); break;
 								case vm::TYPE_STRING:	key = vm::to_string_value(var); break;
-								case vm::TYPE_BINARY:	key = vm::to_string_value_hex(var); break;
-								case vm::TYPE_MAP:
-								case vm::TYPE_ARRAY:
-								case vm::TYPE_REF:		key = std::to_string(vm::to_ref(var)); break;
+								case vm::TYPE_BINARY:	key = vm::to_string_value_hex(var);
+														if(vm::get_size(var) == 32) {
+															key_addr = vm::to_addr(var);
+														}
+														break;
 								default:				key = vm::to_string(var);
 							}
 						}
 						resolve_vm_varptr(contract, entry.second, request_id, call_depth + 1,
-							[job, callback, count, key](const vnx::Variant& value) {
+							[job, callback, count, key, key_addr](const vnx::Variant& value) {
 								job->out[key] = value;
+								if(key_addr) {
+									job->out[key_addr->to_string()] = value;
+								}
 								if(++(job->k) == count) {
 									callback(vnx::Variant(job->out));
 								}
