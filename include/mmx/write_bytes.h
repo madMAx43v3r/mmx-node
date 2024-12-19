@@ -17,6 +17,7 @@
 #include <mmx/compile_flags_t.hxx>
 #include <mmx/contract/method_t.hxx>
 
+#include <vnx/Util.hpp>
 #include <vnx/Buffer.hpp>
 #include <vnx/Output.hpp>
 #include <vnx/Object.hpp>
@@ -52,7 +53,8 @@ inline void write_bytes(vnx::OutputBuffer& out, const bool& value) {
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const int64_t& value) {
-	out.write(&value, sizeof(value));
+	const auto tmp = vnx::to_little_endian(value);
+	out.write(&tmp, sizeof(tmp));
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const int32_t& value) {
@@ -68,7 +70,8 @@ inline void write_bytes(vnx::OutputBuffer& out, const int8_t& value) {
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const uint64_t& value) {
-	out.write(&value, sizeof(value));
+	const auto tmp = vnx::to_little_endian(value);
+	out.write(&tmp, sizeof(tmp));
 }
 
 inline void write_bytes(vnx::OutputBuffer& out, const uint32_t& value) {

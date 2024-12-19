@@ -16,11 +16,11 @@ bool ProofResponse::is_valid() const
 	return request
 			&& harvester.size() < 4096
 			&& proof && proof->is_valid()
-			&& calc_hash() == hash
-			&& calc_hash(true) == content_hash;
+			&& hash == calc_hash()
+			&& content_hash == calc_content_hash();
 }
 
-mmx::hash_t ProofResponse::calc_hash(const vnx::bool_t& full_hash) const
+hash_t ProofResponse::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -28,18 +28,19 @@ mmx::hash_t ProofResponse::calc_hash(const vnx::bool_t& full_hash) const
 
 	buffer.reserve(4 * 1024);
 
+	// Note: farmer_addr, harvester and lookup_time_ms are not hashed (local info only)
+
 	write_bytes(out, get_type_hash());
 	write_field(out, "request",		request ? request->calc_hash() : hash_t());
 	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
-
-	// farmer_addr, harvester and lookup_time_ms are not hashed (local info only)
-
-	if(full_hash) {
-		write_field(out, "farmer_sig", farmer_sig);
-	}
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+hash_t ProofResponse::calc_content_hash() const
+{
+	return hash_t(hash + farmer_sig);
 }
 
 void ProofResponse::validate() const

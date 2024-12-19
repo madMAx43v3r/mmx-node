@@ -969,10 +969,10 @@ void Router::ban_peer(uint64_t client, const std::string& reason)
 
 void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 {
-	if(value->height + params->commit_delay < verified_peak_height) {
-		return; // prevent replay attack of old signed data
+	if(value->peak_height + params->commit_delay < verified_peak_height) {
+		return; 	// prevent replay attack of old signed data
 	}
-	if(!value->is_valid(params)) {
+	if(!value->is_valid()) {
 		disconnect(client);
 		return;
 	}
@@ -1003,9 +1003,9 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 {
 	if(block->height + params->commit_delay < verified_peak_height) {
-		return; // prevent replay attack of old signed data
+		return;		// prevent replay attack of old signed data
 	}
-	if(!block->is_valid() || !block->proof || !block->farmer_sig) {
+	if(!block->is_valid()) {
 		disconnect(client);
 		return;
 	}

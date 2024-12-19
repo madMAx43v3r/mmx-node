@@ -104,6 +104,10 @@ inline addr_t to_addr(const varptr_t& var) {
 	return to_addr(var.get());
 }
 
+inline uint32_t get_size(const varptr_t& var) {
+	return get_size(var.get());
+}
+
 
 } // vm
 } // mmx

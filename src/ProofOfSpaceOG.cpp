@@ -27,6 +27,7 @@ mmx::hash_t ProofOfSpaceOG::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "score", 		score);
 	write_field(out, "plot_id", 	plot_id);
+	write_field(out, "challenge", 	challenge);
 	write_field(out, "farmer_key", 	farmer_key);
 	write_field(out, "ksize", 		ksize);
 	write_field(out, "seed", 		seed);
@@ -34,6 +35,15 @@ mmx::hash_t ProofOfSpaceOG::calc_hash() const
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+mmx::hash_t ProofOfSpaceOG::calc_proof_hash() const
+{
+	auto tmp = proof_xs;
+	for(auto& x : tmp) {
+		x = vnx::to_little_endian(x);
+	}
+	return hash_t(challenge + hash_t(tmp.data(), tmp.size() * 4));
 }
 
 void ProofOfSpaceOG::validate() const

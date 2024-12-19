@@ -21,6 +21,11 @@ mmx::hash_t ProofOfSpace::calc_hash() const
 	throw std::logic_error("not implemented");
 }
 
+mmx::hash_t ProofOfSpace::calc_proof_hash() const
+{
+	throw std::logic_error("not implemented");
+}
+
 void ProofOfSpace::validate() const
 {
 	throw std::logic_error("not implemented");

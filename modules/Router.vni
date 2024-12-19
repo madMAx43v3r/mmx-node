@@ -35,6 +35,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	uint max_sent_cache = 20000;
 	uint max_hash_cache = 100000;
+	uint max_vdf_segments = 65536;			// for relay without verify
 	
 	uint max_credits = 100;
 	uint vdf_credits = 55;					// reward for valid vdf

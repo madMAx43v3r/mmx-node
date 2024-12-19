@@ -169,13 +169,11 @@ app.post('/partial', no_cache, async (req, res, next) =>
             res.json(out);
             return;
         }
-        var msg = proof.__type + ':' + partial.height + ':' + partial.challenge + ':' + proof.plot_id;
+        var msg = proof.__type + ':' + partial.height + ':' + proof.plot_id + ':' + proof.challenge;
 
         switch(proof.__type) {
             case 'mmx.ProofOfSpaceNFT':
                 msg += ':' + proof.ksize + ':' + proof.proof_xs.join(',');
-                break;
-            case 'mmx.ProofOfStake':
                 break;
             default:
                 out.error_code = 'INVALID_PROOF';

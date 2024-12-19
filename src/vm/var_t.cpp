@@ -456,6 +456,23 @@ addr_t to_addr(const var_t& var)
 	}
 }
 
+uint32_t get_size(const var_t& var)
+{
+	switch(var.type) {
+		case TYPE_STRING:
+		case TYPE_BINARY: {
+			const auto& bin = (const binary_t&)var;
+			return bin.size;
+		}
+		case TYPE_ARRAY: {
+			const auto& array = (const array_t&)var;
+			return array.size;
+		}
+		default:
+			return 0;
+	}
+}
+
 
 } // vm
 } // mmx
