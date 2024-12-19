@@ -16,7 +16,7 @@ class VDF_Point {
 	
 	// below not included in content_hash
 	
-	long recv_time;								// [usec]
+	long recv_time;								// [ms]
 	
 	ProofOfTime* proof;
 	

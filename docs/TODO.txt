@@ -26,9 +26,6 @@ Mainnet
 - Remove harvester_id ? causes issue with copy folder
 - Unit tests for all smart contracts
 - Refactor timelord / farmer credits to a boolean set
-- Check what happens if a proof response is received before the challenge block is verified (needs to be cached)
-- Remove second VDF stream, infuse proof randomly hash on avg every 256 blocks
-- Use proof hash as tie breaker in case of same score
 - VM access to farmer key address
 - VM keccak256 support ?
 - Make sure NewBlock->vdf_chain is valid for the block, otherwise forks will happen

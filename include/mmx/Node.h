@@ -224,7 +224,7 @@ protected:
 	void http_request_chunk_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 									const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& request_id) const override;
 
-	void handle(std::shared_ptr<const Block> block) override;
+	void handle(std::shared_ptr<const Block> value) override;
 
 	void handle(std::shared_ptr<const Transaction> tx) override;
 
@@ -263,7 +263,8 @@ private:
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
 		bool is_all_proof_verified = false;
-		int64_t recv_time = 0;
+		int64_t recv_time = 0;					// [ms]
+		uint32_t ahead_count = 0;				// how many blocks ahead of any competing fork
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
 		std::vector<std::shared_ptr<const VDF_Point>> vdf_points;
@@ -301,8 +302,6 @@ private:
 	void verify_block_proofs();
 
 	void print_stats();
-
-	bool recv_height(const uint32_t& height) const;
 
 	void add_fork(std::shared_ptr<fork_t> fork);
 
@@ -376,10 +375,7 @@ private:
 
 	void commit(std::shared_ptr<const Block> block);
 
-	void erase_fork(std::shared_ptr<const Block> block);
-
 	void purge_tree();
-	void purge_fork(const hash_t& hash);
 
 	void update_farmer_ranking();
 
@@ -395,13 +391,13 @@ private:
 
 	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
-	void verify_vdf(std::shared_ptr<const ProofOfTime> proof) const;
+	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t height, const uint32_t index);
 
 	void verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const;
 
-	void verify_vdf_success(std::shared_ptr<const VDF_Point> point);
+	void verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint32_t height, const uint32_t index);
 
-	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) noexcept;
+	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const uint32_t height, const uint32_t index) noexcept;
 
 	void check_vdf(std::shared_ptr<fork_t> fork);
 
@@ -440,6 +436,8 @@ private:
 	vnx::optional<hash_t> get_infusion(std::shared_ptr<const BlockHeader> block, uint32_t offset) const;
 
 	bool find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset = 0) const;
+
+	hash_t get_vdf_peak() const;
 
 	std::shared_ptr<const VDF_Point> find_vdf_point(
 			const uint64_t vdf_start, const uint64_t num_iters, const hash_t& input, const hash_t& output) const;
@@ -536,8 +534,8 @@ private:
 	vnx::optional<uint32_t> sync_peak;						// max height we can sync
 	std::unordered_set<hash_t> fetch_pending;				// block hash
 
-	std::vector<std::shared_ptr<const ProofResponse>> pending_proofs;
-	std::vector<std::shared_ptr<const ProofOfTime>> vdf_queue;
+	std::vector<std::pair<std::shared_ptr<const ProofResponse>, int64_t>> proof_queue;		// [data, recv_time_ms]
+	std::vector<std::pair<std::shared_ptr<const ProofOfTime>, int64_t>> vdf_queue;			// [data, recv_time_ms]
 	std::unordered_set<hash_t> vdf_verify_pending;								// [proof hash]
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_queue;	// [content_hash => tx]
 

@@ -20,11 +20,13 @@ class ProofOfTime {
 	
 	vector<hash_t> segments;
 	
-	hash_t content_hash;
+	uint peak_height;					// just a timestamp
 	
 	pubkey_t timelord_key;
 	
 	signature_t timelord_sig;
+	
+	hash_t content_hash;
 	
 	
 	bool is_valid() const;

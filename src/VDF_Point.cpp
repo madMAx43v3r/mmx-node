@@ -25,12 +25,11 @@ hash_t VDF_Point::calc_hash() const
 	buffer.reserve(4 * 1024);
 
 	write_bytes(out, get_type_hash());
-	write_field(out, "height", 		height);
-	write_field(out, "vdf_start", 	vdf_start);
-	write_field(out, "vdf_iters", 	vdf_iters);
+	write_field(out, "start", 		start);
+	write_field(out, "num_iters", 	num_iters);
 	write_field(out, "input", 		input);
 	write_field(out, "output", 		output);
-	write_field(out, "infused", 	infused);
+	write_field(out, "prev", 		prev);
 	write_field(out, "reward_addr", reward_addr);
 	out.flush();
 

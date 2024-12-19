@@ -23,7 +23,9 @@ class ProofResponse {
 	
 	bool is_valid() const;
 	
-	hash_t calc_hash(bool full_hash = false) const;
+	hash_t calc_hash() const;
+	
+	hash_t calc_content_hash() const;
 	
 	void validate() const;
 	

@@ -25,86 +25,140 @@ namespace mmx {
 
 void Node::verify_vdfs()
 {
-	if(vdf_verify_pending.size() >= vdf_verify_max_pending) {
+	if(vdf_queue.empty() || vdf_verify_pending.size() >= vdf_verify_max_pending) {
 		return;
 	}
-	std::vector<std::shared_ptr<const ProofOfTime>> try_again;
-	std::unordered_map<hash_t, std::pair<uint128_t, uint32_t>> weight_map;		// [vdf_output => [total_weight, vdf index]]
-	std::vector<std::pair<std::pair<uint128_t, uint32_t>, std::shared_ptr<const ProofOfTime>>> try_now;
+	const auto time_now = vnx::get_wall_time_millis();
+	const auto vdf_timeout = 20 * params->block_interval_ms;
+
+	struct vdf_fork_t {
+		uint32_t index = 0;
+		std::shared_ptr<const VDF_Point> point;
+		std::shared_ptr<const BlockHeader> base;
+		std::shared_ptr<const ProofOfTime> proof;
+	};
+	std::vector<std::shared_ptr<vdf_fork_t>> try_now;
+	std::vector<std::pair<std::shared_ptr<const ProofOfTime>, int64_t>> try_again;
+	std::unordered_map<hash_t, std::shared_ptr<vdf_fork_t>> fork_map;		// [vdf_output => fork]
 
 	const auto root = get_root();
-	weight_map[root->vdf_output] = std::make_pair(root->total_weight, 0);
+	const auto peak = get_peak();
+	{
+		auto fork = std::make_shared<vdf_fork_t>();
+		fork->base = root;
+		fork_map[root->vdf_output] = fork;
+	}
 
 	for(auto iter = fork_index.upper_bound(root->height); iter != fork_index.end(); ++iter) {
 		const auto& fork = iter->second;
 		if(fork->is_verified) {
 			const auto& block = fork->block;
-			weight_map[block->vdf_output] = std::make_pair(block->total_weight, 0);
+			const auto iter = fork_map.find(block->vdf_output);
+			if(iter != fork_map.end()) {
+				const auto& fork = iter->second;
+				if(block->total_weight > fork->base->total_weight) {
+					fork->base = block;
+				}
+			} else {
+				auto fork = std::make_shared<vdf_fork_t>();
+				fork->base = block;
+				fork_map[block->vdf_output] = fork;
+			}
 		}
 	}
 
 	for(auto iter = vdf_index.upper_bound(root->vdf_iters); iter != vdf_index.end(); ++iter) {
 		const auto& point = iter->second;
-		const auto prev = weight_map.find(point->input);
-		if(prev != weight_map.end() && weight_map.count(point->output) == 0) {
-			const auto& value = prev->second;
-			weight_map[point->output] = std::make_pair(value.first, value.second + 1);
+		const auto iter = fork_map.find(point->input);
+		if(iter != fork_map.end() && fork_map.count(point->output) == 0) {
+			const auto& prev = iter->second;
+			auto fork = std::make_shared<vdf_fork_t>();
+			fork->point = point;
+			fork->base = prev->base;
+			fork->index = prev->index + 1;
+			fork_map[point->output] = fork;
 		}
 	}
 
-	for(auto proof : vdf_queue) {
+	for(const auto& entry : vdf_queue) {
+		const auto& proof = entry.first;
 		if(proof->start < root->vdf_iters) {
 			continue;		// too old
 		}
 		if(vdf_verify_pending.count(proof->hash)) {
 			continue;		// duplicate
 		}
+		if(time_now - entry.second > vdf_timeout) {
+			continue;		// timeout
+		}
 		const auto output = proof->get_output();
 		if(find_vdf_point(proof->start, proof->num_iters, proof->input, output)) {
 			continue;		// already verified
 		}
-		const auto iter = weight_map.find(proof->input);
-		if(iter != weight_map.end()) {
+		const auto iter = fork_map.find(proof->input);
+		if(iter != fork_map.end()) {
+			const auto& prev = iter->second;
+			const auto height = prev->base->height;
+			const auto index = prev->index + 1;
+			const auto infuse = get_infusion(prev->base, prev->index);
+			if(proof->prev != infuse) {
+				log(WARN) << "Got VDF for " << height << " + " << index << " with invalid infusion: " << vnx::to_string(proof->prev);
+				continue;	// invalid
+			}
+			const auto diff_block = find_diff_header(prev->base);
+			if(!diff_block) {
+				try_again.emplace_back(proof, entry.second);	// should never happen
+				continue;
+			}
+			const auto expected_iters = diff_block->time_diff * params->time_diff_constant;
+			if(proof->num_iters != expected_iters) {
+				log(WARN) << "Got VDF for " << height << " + " << index << " with invalid num_iters:"
+						<< proof->num_iters << " != " << expected_iters;
+				continue;	// invalid
+			}
 			// VDF is connected to current fork tree
-			try_now.emplace_back(iter->second, proof);
+			auto fork = std::make_shared<vdf_fork_t>();
+			fork->base = prev->base;
+			fork->index = prev->index + 1;
+			fork->proof = proof;
+			try_now.emplace_back(fork);
 			continue;
 		}
-		// wait for missing blocks to come in
-		try_again.push_back(proof);
+		// wait for missing blocks / previous proofs to verify
+		try_again.emplace_back(proof, entry.second);
 	}
 
 	std::sort(try_now.begin(), try_now.end(),
-		[]( const std::pair<std::pair<uint128_t, uint32_t>, std::shared_ptr<const ProofOfTime>>& L,
-			const std::pair<std::pair<uint128_t, uint32_t>, std::shared_ptr<const ProofOfTime>>& R) -> bool {
-			return L.first > R.first;
+		[]( const std::shared_ptr<vdf_fork_t>& L, const std::shared_ptr<vdf_fork_t>& R) -> bool {
+			return std::make_pair(L->base->total_weight, L->index) > std::make_pair(R->base->total_weight, R->index);
 		});
 
 	// TODO: sort by timelord trust in case of competing proofs
 
-	for(const auto& entry : try_now) {
-		const auto& proof = entry.second;
+	for(const auto& fork : try_now) {
+		const auto& proof = fork->proof;
 		if(vdf_verify_pending.size() >= vdf_verify_max_pending) {
-			try_again.push_back(proof);
+			try_again.emplace_back(proof, time_now);
 			continue;
 		}
-		vdf_verify_pending.insert(proof->hash);
+		const auto height = fork->base->height;
+		const auto index = fork->index;
 		try {
-			verify_vdf(proof);
+			verify_vdf(proof, height, index);
 		} catch(const std::exception& ex) {
-			vdf_verify_pending.erase(proof->hash);
 			if(is_synced) {
-				log(WARN) << "VDF static verification at " << proof->get_vdf_iters() << " failed with: " << ex.what();
+				log(WARN) << "VDF static verification for " << height << " + " << index << " failed with: " << ex.what();
 			}
 		}
 	}
-	vdf_queue = try_again;
+	vdf_queue = std::move(try_again);
 }
 
 void Node::verify_proofs()
 {
 	std::vector<std::shared_ptr<const ProofResponse>> try_again;
 
-	for(const auto& response : pending_proofs) {
+	for(const auto& response : proof_queue) {
 		try {
 			if(!verify(response)) {
 				try_again.push_back(response);
@@ -115,7 +169,7 @@ void Node::verify_proofs()
 			// ignore
 		}
 	}
-	pending_proofs = std::move(try_again);
+	proof_queue = std::move(try_again);
 }
 
 void Node::verify_block_proofs()
@@ -146,11 +200,15 @@ void Node::verify_block_proofs()
 		if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
 			continue;
 		}
-		const auto vdf_points = find_vdf_points(block);
-		if(!vdf_points.empty()) {
-			fork->vdf_points = vdf_points;
-			fork->is_vdf_verified = true;
+		if(!fork->is_vdf_verified) {
+			const auto vdf_points = find_vdf_points(block);
+			if(vdf_points.size()) {
+				fork->vdf_points = vdf_points;
+				fork->is_vdf_verified = true;
+			}
 		}
+		// we don't verify VDFs here if still syncing
+		// instead it's done later when needed (competing forks)
 		if(fork->is_vdf_verified || !is_synced) {
 			threads->add_task([this, fork, &mutex]() {
 				const auto& block = fork->block;
@@ -222,25 +280,15 @@ void Node::update()
 	{
 		// commit to disk
 		const auto fork_line = get_fork_line();
-		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : max_fork_length;
 
-		size_t num_empty = 0;
-		for(const auto& fork : fork_line) {
-			if(!fork->block->farmer_sig) {
-				num_empty++;
-			}
-		}
-		if(num_empty < fork_line.size() / 2)
+		for(size_t i = 0; i + params->commit_delay < fork_line.size(); ++i)
 		{
-			for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
-			{
-				const auto& fork = fork_line[i];
-				const auto& block = fork->block;
-				if(!fork->is_vdf_verified) {
-					break;	// wait for VDF verify
-				}
-				commit(block);
+			const auto& fork = fork_line[i];
+			const auto& block = fork->block;
+			if(!fork->is_vdf_verified) {
+				break;	// wait for VDF verify
 			}
+			commit(block);
 		}
 	}
 	const auto root = get_root();
@@ -264,7 +312,7 @@ void Node::update()
 					msg << ", forked at " << forked_at->height;
 				}
 				if(auto vdf_point = fork->vdf_point) {
-					msg << ", delay " << (fork->recv_time - vdf_point->recv_time) / 1000 / 1e3 << " sec";
+					msg << ", delay " << (fork->recv_time - vdf_point->recv_time) / 1e3 << " sec";
 				}
 			} else {
 				msg << ", " << sync_pending.size() << " pending";
@@ -354,6 +402,7 @@ void Node::update()
 	}
 
 	// try to make a block
+	// TODO: refactor to new VDF scheme
 	for(uint32_t depth = 0; depth <= 1u && depth <= peak->height; ++depth)
 	{
 		const auto height = peak->height - depth;
@@ -383,12 +432,10 @@ void Node::update()
 					const auto key = std::make_pair(prev->height + 1, proof.hash);
 					if(!created_blocks.count(key))
 					{
-						if(auto vdf_point = find_next_vdf_point(prev)) {
+						const auto vdf_points = find_next_vdf_points(prev);
+						if(vdf_points.size()) {
 							try {
-								// make a full block only if (we extend peak or replace a dummy peak or replace a weaker peak) and (we got best score)
-								const bool is_better = (depth == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
-								const bool full_block = (depth == 0 || is_better) && proof_index == 0;
-								if(auto block = make_block(prev, vdf_point, proof, full_block)) {
+								if(auto block = make_block(prev, vdf_points, proof, proof_index == 0)) {
 									created_blocks[key] = block->hash;
 									add_block(block);
 								}
@@ -525,7 +572,7 @@ void Node::purge_tx_pool()
 	uint64_t total_pool_size = 0;
 	std::unordered_map<addr_t, std::pair<uint64_t, uint64_t>> sender_map;	// [sender => [balance, total fee]]
 
-	const uint64_t max_pool_size = uint64_t(tx_pool_limit) * params->max_block_size;
+	const uint64_t max_pool_size = uint64_t(max_tx_pool) * params->max_block_size;
 
 	// purge transactions from pool if overflowing
 	for(const auto& entry : all_tx) {

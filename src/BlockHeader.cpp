@@ -15,7 +15,7 @@ namespace mmx {
 vnx::bool_t BlockHeader::is_valid() const
 {
 	if(height) {
-		if(!farmer_sig || vdf_count < 1) {
+		if(!proof || !farmer_sig || vdf_count < 1) {
 			return false;
 		}
 	}
@@ -75,18 +75,22 @@ hash_t BlockHeader::calc_hash() const
 
 hash_t BlockHeader::calc_content_hash() const
 {
-	return hash_t(hash + farmer_sig);
+	if(farmer_sig) {
+		return hash_t(hash + (*farmer_sig));
+	}
+	return hash_t(hash.bytes);
 }
 
 void BlockHeader::validate() const
 {
-	if(farmer_sig) {
-		if(!proof) {
-			throw std::logic_error("missing proof");
-		}
-		if(!farmer_sig->verify(proof->farmer_key, hash)) {
-			throw std::logic_error("invalid farmer signature");
-		}
+	if(!proof) {
+		throw std::logic_error("missing proof");
+	}
+	if(!farmer_sig) {
+		throw std::logic_error("missing farmer signature");
+	}
+	if(!farmer_sig->verify(proof->farmer_key, hash)) {
+		throw std::logic_error("invalid farmer signature");
 	}
 }
 

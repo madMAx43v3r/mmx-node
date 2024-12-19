@@ -36,6 +36,7 @@ hash_t ProofOfTime::calc_hash() const
 	write_field(out, "prev", 	prev);
 	write_field(out, "reward_addr", 	reward_addr);
 	write_field(out, "segments", 		segments);
+	write_field(out, "peak_height", 	peak_height);
 	out.flush();
 
 	return hash_t(buffer);
