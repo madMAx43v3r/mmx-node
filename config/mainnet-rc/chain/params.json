@@ -7,7 +7,7 @@
 	"challenge_delay": 6,
 	"challenge_interval": 256,
 	"commit_delay": 24,
-	"score_target": 8192,
+	"score_target": 16384,
 	"vdf_segment_size": 50000,
 	"min_reward": 500000,
 	"min_txfee": 20000,
