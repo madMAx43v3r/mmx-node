@@ -956,7 +956,7 @@ void Router::print_stats()
 
 void Router::ban_peer(uint64_t client, const std::string& reason)
 {
-	if(block_peers.size() >= 10000000) {
+	if(block_peers.size() >= 1000000) {
 		log(WARN) << "block_peers overflow";
 		block_peers.erase(block_peers.begin());
 	}

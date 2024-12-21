@@ -13,9 +13,9 @@ namespace mmx {
 
 bool ProofResponse::is_valid() const
 {
-	return request
-			&& harvester.size() < 4096
-			&& proof && proof->is_valid()
+	return proof
+			&& proof->is_valid()
+			&& harvester.size() < 256
 			&& hash == calc_hash()
 			&& content_hash == calc_content_hash();
 }
@@ -26,13 +26,12 @@ hash_t ProofResponse::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(4 * 1024);
-
 	// Note: farmer_addr, harvester and lookup_time_ms are not hashed (local info only)
 
 	write_bytes(out, get_type_hash());
-	write_field(out, "request",		request ? request->calc_hash() : hash_t());
-	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
+	write_field(out, "base",	base);
+	write_field(out, "index",	index);
+	write_field(out, "proof", 	proof ? proof->calc_hash() : hash_t());
 	out.flush();
 
 	return hash_t(buffer);

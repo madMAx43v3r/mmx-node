@@ -4,7 +4,9 @@ class ProofResponse {
 	
 	hash_t hash;
 	
-	Challenge* request;
+	uint base;					// height
+	
+	uint index;					// vdf index relative to base height
 	
 	ProofOfSpace* proof;
 	

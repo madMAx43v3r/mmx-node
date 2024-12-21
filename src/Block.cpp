@@ -64,7 +64,6 @@ void Block::finalize()
 	tx_count = tx_list.size();
 	tx_hash = calc_tx_hash();
 	hash = calc_hash();
-	content_hash = calc_content_hash();
 }
 
 std::shared_ptr<const BlockHeader> Block::get_header() const

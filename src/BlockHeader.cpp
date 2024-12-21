@@ -39,6 +39,7 @@ hash_t BlockHeader::calc_hash() const
 	write_field(out, "support_flags", 	support_flags);
 	write_field(out, "prev",			prev);
 	write_field(out, "height", 			height);
+	write_field(out, "vdf_height", 		vdf_height);
 	write_field(out, "nonce", 			nonce);
 	write_field(out, "time_stamp", 		time_stamp);
 	write_field(out, "time_diff", 		time_diff);
@@ -53,7 +54,9 @@ hash_t BlockHeader::calc_hash() const
 	write_field(out, "proof", 			proof ? proof->calc_hash() : hash_t());
 	write_field(out, "proof_hash", 		proof_hash);
 	write_field(out, "challenge", 		challenge);
+	write_field(out, "is_space_fork",	is_space_fork);
 	write_field(out, "proof_score_sum", proof_score_sum);
+	write_field(out, "proof_score_count", proof_score_count);
 	write_field(out, "reward_amount", 	reward_amount);
 	write_field(out, "reward_addr", 	reward_addr);
 	write_field(out, "reward_contract", reward_contract);

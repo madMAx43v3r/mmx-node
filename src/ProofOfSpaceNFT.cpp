@@ -13,7 +13,7 @@ namespace mmx {
 
 vnx::bool_t ProofOfSpaceNFT::is_valid() const
 {
-	return Super::is_valid() && ksize > 0 && proof_xs.size() <= 1024;
+	return Super::is_valid() && ksize > 0 && proof_xs.size() <= 256;
 }
 
 mmx::hash_t ProofOfSpaceNFT::calc_hash() const
@@ -28,6 +28,7 @@ mmx::hash_t ProofOfSpaceNFT::calc_hash() const
 	write_field(out, "score", 		score);
 	write_field(out, "plot_id", 	plot_id);
 	write_field(out, "challenge", 	challenge);
+	write_field(out, "difficulty",	difficulty);
 	write_field(out, "farmer_key", 	farmer_key);
 	write_field(out, "ksize", 		ksize);
 	write_field(out, "seed", 		seed);

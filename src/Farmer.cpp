@@ -7,7 +7,6 @@
 
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
-#include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/WebRender.h>
 #include <mmx/utils.h>
 
@@ -358,14 +357,15 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
 
-	if(!out->reward_addr || std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+	if(!out->reward_addr) {
 		out->reward_addr = reward_addr;
-	} else {
+	}
+	if(out->reward_contract) {
 		out->reward_account = reward_addr;
 	}
-	out->hash = out->calc_hash().first;
+	out->hash = out->calc_hash();
 	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
-	out->content_hash = out->calc_hash().second;
+	out->content_hash = out->calc_content_hash();
 	return out;
 }
 

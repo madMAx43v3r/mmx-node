@@ -17,13 +17,11 @@ mmx::hash_t Challenge::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(4 * 1024);
-
 	write_bytes(out, get_type_hash());
-	write_field(out, "height",		height);
+	write_field(out, "base",		base);
+	write_field(out, "index",		index);
 	write_field(out, "challenge", 	challenge);
-	write_field(out, "diff_block_hash", diff_block_hash);
-	write_field(out, "space_diff",	space_diff);
+	write_field(out, "difficulty",	difficulty);
 	write_field(out, "max_delay",	max_delay);
 	out.flush();
 

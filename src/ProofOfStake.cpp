@@ -23,6 +23,7 @@ hash_t ProofOfStake::calc_hash() const
 	write_field(out, "score", 		score);
 	write_field(out, "plot_id", 	plot_id);
 	write_field(out, "challenge", 	challenge);
+	write_field(out, "difficulty",	difficulty);
 	write_field(out, "farmer_key", 	farmer_key);
 	out.flush();
 

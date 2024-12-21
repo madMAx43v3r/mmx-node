@@ -335,8 +335,8 @@ void Node::main()
 		block->time_stamp = int64_t(1729230897) * 1000;		// TODO
 		block->time_diff = params->initial_time_diff;
 		block->space_diff = params->initial_space_diff;
-		block->vdf_output[0] = hash_t("MMX/" + params->network + "/vdf/0");
-		block->vdf_output[1] = hash_t("MMX/" + params->network + "/vdf/1");
+		block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
+		block->challenge = hash_t("MMX/" + params->network + "/challenge");
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
@@ -503,11 +503,9 @@ void Node::handle(std::shared_ptr<const VDF_Point> value)
 	if(value->input == get_vdf_peak()) {
 		log(INFO) << "-------------------------------------------------------------------------------";
 	}
-	if(!vdf_tree.emplace(value->output, value).second) {
-		return;		// duplicate
-	}
 	const auto vdf_iters = value->start + value->num_iters;
 	vdf_index.emplace(vdf_iters, value);
+	vdf_tree.emplace(value->output, value);
 
 	log(INFO) << "\U0001F552 Received VDF point for " << vdf_iters;
 
@@ -731,12 +729,20 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	// check for competing forks
 	for(const auto& fork : fork_line)
 	{
-		if(fork_index.count(fork->block->height) > 1) {
+		uint32_t count = 0;
+		const auto range = fork_index.equal_range(fork->block->height);
+		for(auto iter = range.first; iter != range.second; ++iter) {
+			const auto& other = iter->second;
+			if(other->block->hash != fork->block->hash && other->block->prev != fork->block->prev) {
+				count++;
+			}
+		}
+		if(count) {
 			fork->ahead_count = 0;
 		} else if(auto prev = fork->prev.lock()) {
 			fork->ahead_count = prev->ahead_count + 1;
 		} else {
-			fork->ahead_count = -1;
+			fork->ahead_count = params->commit_delay;
 		}
 	}
 
@@ -753,7 +759,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				fork->context = validate(block);
 
 				if(!fork->is_vdf_verified) {
-					if(fork->ahead_count < params->commit_delay / 2) {
+					if(fork->ahead_count < params->commit_delay) {
 						check_vdf(fork);
 					} else {
 						fork->is_vdf_verified = true;
@@ -1286,46 +1292,17 @@ std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const
 	return block;
 }
 
-std::shared_ptr<const BlockHeader> Node::find_diff_header(std::shared_ptr<const BlockHeader> block, uint32_t offset) const
+bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& challenge, uint64_t& space_diff) const
 {
-	if(offset > params->challenge_interval) {
-		throw std::logic_error("offset out of range");
-	}
-	if(block) {
-		uint32_t height = block->height + offset;
-		height -= (height % params->challenge_interval);
-		if(auto prev = find_prev_header(block, (block->height + params->challenge_interval) - height, true)) {
-			return prev;
+	if(offset > params->challenge_delay)
+	{
+		hash_t tmp = block->challenge;
+		for(uint32_t i = 0; i < offset - params->challenge_delay; ++i) {
+			tmp = hash_t(std::string("next_challenge") + tmp);
 		}
-	}
-	return nullptr;
-}
-
-std::shared_ptr<const BlockHeader> Node::get_diff_header(std::shared_ptr<const BlockHeader> block, uint32_t offset) const
-{
-	if(auto header = find_diff_header(block, offset)) {
-		return header;
-	}
-	throw std::logic_error("cannot find diff header");
-}
-
-vnx::optional<hash_t> Node::get_infusion(std::shared_ptr<const BlockHeader> block, uint32_t offset) const
-{
-	if(offset > params->infuse_delay) {
-		return nullptr;
-	}
-	const uint32_t target = params->infuse_delay - offset;
-
-	if(auto prev = find_prev_header(block, target, true)) {
-		return prev->hash;
-	}
-	return nullptr;
-}
-
-bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset) const
-{
-	if(offset > params->challenge_delay) {
-		throw std::logic_error("offset out of range");
+		challenge = tmp;
+		space_diff = block->space_diff;
+		return true;
 	}
 	const uint32_t target = params->challenge_delay - offset;
 
@@ -1343,26 +1320,61 @@ bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& chal
 	}
 	std::reverse(chain.begin(), chain.end());
 
-	std::vector<hash_t> list;
+	std::vector<std::pair<hash_t, uint64_t>> list;
 	std::shared_ptr<const BlockHeader> prev;
 	for(auto block : chain) {
 		if(prev) {
 			auto tmp = prev->challenge;
 			for(uint32_t i = 1; i < block->vdf_count; ++i) {
 				tmp = hash_t(std::string("next_challenge") + tmp);
-				list.push_back(tmp);
+				list.emplace_back(tmp, prev->space_diff);
 			}
 		}
-		list.push_back(block->challenge);
+		list.emplace_back(block->challenge, block->space_diff);
 		prev = block;
 	}
 	std::reverse(list.begin(), list.end());
 
 	if(target >= list.size()) {
+		return false;
+	}
+	const auto& out = list[target];
+	challenge = out.first;
+	space_diff = out.second;
+	return true;
+}
+
+hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& space_diff) const
+{
+	hash_t challenge;
+	if(!find_challenge(block, offset, challenge, space_diff)) {
 		throw std::logic_error("cannot find challenge");
 	}
-	challenge = list[target];
-	return true;
+	return challenge;
+}
+
+bool Node::find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, vnx::optional<hash_t>& value, uint64_t& num_iters) const
+{
+	if(offset > params->infuse_delay) {
+		num_iters = block->time_diff * params->time_diff_constant;
+		return nullptr;
+	}
+	const uint32_t target = params->infuse_delay - offset;
+
+	if(auto prev = find_prev_header(block, target, true)) {
+		num_iters = prev->time_diff * params->time_diff_constant;
+		return prev->hash;
+	}
+	return false;
+}
+
+vnx::optional<hash_t> Node::get_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& num_iters) const
+{
+	vnx::optional<hash_t> value;
+	if(!find_infusion(block, offset, value, num_iters)) {
+		throw std::logic_error("cannot find infusion");
+	}
+	return value;
 }
 
 hash_t Node::get_vdf_peak() const
@@ -1379,10 +1391,12 @@ hash_t Node::get_vdf_peak() const
 }
 
 std::shared_ptr<const VDF_Point>
-Node::find_vdf_point(const uint64_t vdf_start, const uint64_t num_iters, const hash_t& input, const hash_t& output) const
+Node::find_vdf_point(const hash_t& input, const hash_t& output) const
 {
-	for(auto point : find_vdf_points(vdf_start, num_iters, input)) {
-		if(point->output == output) {
+	const auto range = vdf_tree.equal_range(output);
+	for(auto iter = range.first; iter != range.second; ++iter) {
+		const auto& point = iter->second;
+		if(point->input == input && point->output == output) {
 			return point;
 		}
 	}
@@ -1390,45 +1404,45 @@ Node::find_vdf_point(const uint64_t vdf_start, const uint64_t num_iters, const h
 }
 
 std::vector<std::shared_ptr<const VDF_Point>>
-Node::find_vdf_points(const uint64_t vdf_start, const uint64_t num_iters, const hash_t& input) const
-{
-	const auto vdf_iters = vdf_start + num_iters;
-	std::vector<std::shared_ptr<const VDF_Point>> out;
-
-	const auto range = vdf_index.equal_range(vdf_iters);
-	for(auto iter = range.first; iter != range.second; ++iter) {
-		const auto& point = iter->second;
-		if(point->start == vdf_start && point->num_iters == num_iters && point->input == input) {
-			out.push_back(point);
-		}
-	}
-	return out;
-}
-
-std::vector<std::shared_ptr<const VDF_Point>>
 Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 {
 	const auto prev = find_prev_header(block);
-	if(!prev || !block->vdf_count) {
+	if(!prev) {
 		return {};
 	}
 	std::vector<std::shared_ptr<const VDF_Point>> out;
-	const auto num_iters = (block->vdf_iters - prev->vdf_iters) / block->vdf_count;
 
 	auto output = block->vdf_output;
+	auto vdf_iters = prev->vdf_iters;
 	while(out.size() < block->vdf_count) {
-		const auto iter = vdf_tree.find(output);
-		if(iter != vdf_tree.end()) {
+		uint64_t num_iters = 0;
+		vnx::optional<hash_t> infuse;
+		const auto offset = block->vdf_count - out.size() - 1;
+		if(!find_infusion(prev, offset, infuse, num_iters)) {
+			return {};
+		}
+		bool found = false;
+		const auto range = vdf_tree.equal_range(output);
+		for(auto iter = range.first; iter != range.second; ++iter) {
 			const auto& point = iter->second;
-			if(point->output == output && point->num_iters == num_iters) {
+			if(point->output == output && point->num_iters == num_iters
+				&& point->prev == infuse && point->reward_addr == block->reward_addr)
+			{
 				output = point->input;
+				vdf_iters += num_iters;
 				out.push_back(point);
-				continue;
+				found = true;
+				break;
 			}
 		}
-		return {};
+		if(!found) {
+			return {};
+		}
 	}
 	if(output != prev->vdf_output) {
+		return {};
+	}
+	if(vdf_iters != block->vdf_iters) {
 		return {};
 	}
 	std::reverse(out.begin(), out.end());
@@ -1437,25 +1451,26 @@ Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 
 std::vector<std::shared_ptr<const VDF_Point>> Node::find_next_vdf_points(std::shared_ptr<const BlockHeader> block) const
 {
+	if(!block) {
+		return {};
+	}
 	struct vdf_fork_t {
 		std::shared_ptr<vdf_fork_t> prev;
 		std::shared_ptr<const VDF_Point> point;
 	};
-	const auto diff_block = find_diff_header(block, 1);
-	if(!diff_block) {
-		return {};
-	}
-	const auto num_iters = diff_block->time_diff * params->time_diff_constant;
-
 	std::vector<std::shared_ptr<vdf_fork_t>> peaks;
 	std::unordered_map<hash_t, std::shared_ptr<vdf_fork_t>> fork_map;
 	fork_map[block->vdf_output] = std::make_shared<vdf_fork_t>();
 
 	auto vdf_iters = block->vdf_iters;
-	for(uint32_t i = 0; true; ++i) {
+	for(uint32_t i = 0; true; ++i)
+	{
+		uint64_t num_iters = 0;
+		const auto infuse = get_infusion(block, i, num_iters);
 		vdf_iters += num_iters;
+
 		std::vector<std::shared_ptr<vdf_fork_t>> new_peaks;
-		const auto infuse = get_infusion(block, i);
+
 		const auto range = vdf_index.equal_range(vdf_iters);
 		for(auto iter = range.first; iter != range.second; ++iter) {
 			const auto& point = iter->second;
@@ -1489,19 +1504,24 @@ std::vector<std::shared_ptr<const VDF_Point>> Node::find_next_vdf_points(std::sh
 
 	std::vector<std::shared_ptr<const VDF_Point>> out;
 	for(auto fork = peaks[0]; fork; fork = fork->prev) {
-		out.push_back(fork->point);
+		if(auto point = fork->point) {
+			out.push_back(point);
+		}
 	}
 	std::reverse(out.begin(), out.end());
 	return out;
 }
 
-std::vector<Node::proof_data_t> Node::find_proof(const hash_t& challenge) const
+vnx::optional<Node::proof_data_t> Node::find_best_proof(const hash_t& challenge) const
 {
 	const auto iter = proof_map.find(challenge);
 	if(iter != proof_map.end()) {
-		return iter->second;
+		const auto& list = iter->second;
+		if(list.size()) {
+			return list.front();
+		}
 	}
-	return {};
+	return nullptr;
 }
 
 uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const

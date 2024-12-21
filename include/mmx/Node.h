@@ -268,7 +268,6 @@ private:
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
 		std::vector<std::shared_ptr<const VDF_Point>> vdf_points;
-		std::shared_ptr<const BlockHeader> diff_block;
 		std::shared_ptr<const execution_context_t> context;
 	};
 
@@ -288,7 +287,6 @@ private:
 
 	struct proof_data_t {
 		hash_t hash;
-		uint32_t height = 0;
 		vnx::Hash64 farmer_mac;
 		std::shared_ptr<const ProofOfSpace> proof;
 	};
@@ -317,7 +315,9 @@ private:
 
 	std::vector<tx_pool_t> validate_for_block(const int64_t deadline_ms);
 
-	std::shared_ptr<const Block> make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block);
+	std::shared_ptr<const Block> make_block(
+			std::shared_ptr<const BlockHeader> prev,
+			std::vector<std::shared_ptr<const VDF_Point>> vdf_points, const proof_data_t& proof);
 
 	int get_offer_state(const addr_t& address) const;
 
@@ -379,15 +379,14 @@ private:
 
 	void update_farmer_ranking();
 
-	void add_proof(	const uint32_t height, const hash_t& challenge,
-					std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac);
+	void add_proof(std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac);
 
 	bool verify(std::shared_ptr<const ProofResponse> value);
 
-	void verify_proof(std::shared_ptr<fork_t> fork, const hash_t& challenge) const;
+	void verify_proof(std::shared_ptr<fork_t> fork) const;
 
 	template<typename T>
-	uint256_t verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff) const;
+	void verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
 	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
@@ -401,7 +400,8 @@ private:
 
 	void check_vdf(std::shared_ptr<fork_t> fork);
 
-	void check_vdf_task(std::shared_ptr<fork_t> fork, std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const BlockHeader> infuse) noexcept;
+	void check_vdf_task(std::shared_ptr<fork_t> fork,
+			std::shared_ptr<const BlockHeader> prev, const std::map<uint64_t, vnx::optional<hash_t>>& infuse) noexcept;
 
 	size_t prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) const;
 
@@ -429,27 +429,23 @@ private:
 	std::shared_ptr<const BlockHeader> find_prev_header(
 			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamped = false) const;
 
-	std::shared_ptr<const BlockHeader> find_diff_header(std::shared_ptr<const BlockHeader> block, uint32_t offset = 0) const;
+	bool find_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& challenge, uint64_t& space_diff) const;
 
-	std::shared_ptr<const BlockHeader> get_diff_header(std::shared_ptr<const BlockHeader> block, uint32_t offset = 0) const;
+	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& space_diff) const;
 
-	vnx::optional<hash_t> get_infusion(std::shared_ptr<const BlockHeader> block, uint32_t offset) const;
+	bool find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, vnx::optional<hash_t>& value, uint64_t& num_iters) const;
 
-	bool find_challenge(std::shared_ptr<const BlockHeader> block, hash_t& challenge, uint32_t offset = 0) const;
+	vnx::optional<hash_t> get_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& num_iters) const;
 
 	hash_t get_vdf_peak() const;
 
-	std::shared_ptr<const VDF_Point> find_vdf_point(
-			const uint64_t vdf_start, const uint64_t num_iters, const hash_t& input, const hash_t& output) const;
-
-	std::vector<std::shared_ptr<const VDF_Point>> find_vdf_points(
-			const uint64_t vdf_start, const uint64_t num_iters, const hash_t& input) const;
+	std::shared_ptr<const VDF_Point> find_vdf_point(const hash_t& input, const hash_t& output) const;
 
 	std::vector<std::shared_ptr<const VDF_Point>> find_vdf_points(std::shared_ptr<const BlockHeader> block) const;
 
 	std::vector<std::shared_ptr<const VDF_Point>> find_next_vdf_points(std::shared_ptr<const BlockHeader> block) const;
 
-	std::vector<proof_data_t> find_proof(const hash_t& challenge) const;
+	vnx::optional<proof_data_t> find_best_proof(const hash_t& challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const;
 
@@ -498,12 +494,12 @@ private:
 	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
 	std::map<std::pair<hash_t, hash_t>, std::shared_ptr<const Transaction>> tx_pool_index;		// [[key, txid] => tx]
 
-	std::unordered_map<hash_t, std::shared_ptr<const VDF_Point>> vdf_tree;			// [output => proof]
+	std::multimap<hash_t, std::shared_ptr<const VDF_Point>> vdf_tree;				// [output => proof]
 	std::multimap<uint64_t, std::shared_ptr<const VDF_Point>> vdf_index;			// [iters => proof]
 
-	std::map<hash_t, std::vector<proof_data_t>> proof_map;							// [challenge => best proofs]
 	std::multimap<uint32_t, hash_t> challenge_map;									// [height => challenge]
-	std::map<std::pair<uint32_t, hash_t>, hash_t> created_blocks;					// [[height, proof hash] => block hash]
+	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]
+	std::unordered_map<hash_t, hash_t> created_blocks;								// [proof hash => block hash]
 	std::unordered_set<hash_t> purged_blocks;
 	std::multimap<uint32_t, hash_t> purged_blocks_log;
 

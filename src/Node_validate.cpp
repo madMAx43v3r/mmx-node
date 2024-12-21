@@ -112,7 +112,7 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
 {
-	// Note: vdf_count + vdf_iters + vdf_output + vdf_reward_addr + proof + farmer_sig: already verified before
+	// Note: vdf_count + vdf_iters + vdf_output + vdf_reward_addr + proof + weight + total_weight + farmer_sig: already verified before
 
 	if(!block->is_valid()) {
 		throw std::logic_error("static validation failed");
@@ -132,10 +132,13 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
-	if(block->time_stamp - prev->time_stamp > (params->block_interval_ms + params->block_interval_ms / 2)) {
+	if(block->vdf_height != prev->vdf_height + block->vdf_count) {
+		throw std::logic_error("invalid vdf_height");
+	}
+	if(block->time_stamp - prev->time_stamp > params->block_interval_ms * 2) {
 		throw std::logic_error("time stamp delta too high");
 	}
-	if(block->time_stamp - prev->time_stamp < (params->block_interval_ms / 2)) {
+	if(block->time_stamp - prev->time_stamp < params->block_interval_ms / 10) {
 		throw std::logic_error("time stamp delta too low");
 	}
 	if(block->time_diff == 0 || block->space_diff == 0) {
@@ -186,7 +189,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->height % params->vdf_reward_interval == 0)
 	{
 		const auto address = get_vdf_reward_winner(block);
-		// Note: `vdf_reward_payout` and `address` are both of type `vnx::optional`
 		if(block->vdf_reward_payout != address) {
 			throw std::logic_error("invalid vdf_reward_payout");
 		}
@@ -219,43 +221,46 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			throw std::logic_error("invalid reward_vote_count");
 		}
 	}
-	const auto proof_hash = block->proof ? block->proof->calc_proof_hash() : hash_t();
-	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
 
-	if(block->proof_hash != proof_hash) {
+	const auto& proof = block->proof;
+	if(!proof) {
+		throw std::logic_error("missing proof");
+	}
+	if(block->proof_hash != proof->calc_proof_hash()) {
 		throw std::logic_error("invalid proof_hash");
 	}
-	const auto challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, proof_hash);
+
+	bool is_space_fork = false;
+	const auto challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, block->proof_hash, is_space_fork);
 	if(block->challenge != challenge) {
 		throw std::logic_error("invalid challenge");
 	}
+	if(block->is_space_fork != is_space_fork) {
+		throw std::logic_error("invalid is_space_fork");
+	}
+	const auto proof_score_sum = proof->score + uint32_t(block->vdf_count - 1) << 16;
 
-	if(block->height % params->challenge_interval == 0)
-	{
+	if(is_space_fork) {
 		const auto space_diff = calc_new_space_diff(params, prev);
 		if(block->space_diff != space_diff) {
 			throw std::logic_error("invalid space_diff: " + std::to_string(block->space_diff) + " != " + std::to_string(space_diff));
 		}
-		if(block->proof_score_sum != proof_score) {
-			throw std::logic_error("invalid proof_score_sum");
+		if(block->proof_score_sum != proof_score_sum) {
+			throw std::logic_error("invalid proof_score_sum at space fork");
+		}
+		if(block->proof_score_count != block->vdf_count) {
+			throw std::logic_error("invalid proof_score_count at space fork");
 		}
 	} else {
 		if(block->space_diff != prev->space_diff) {
-			throw std::logic_error("invalid space_diff");
+			throw std::logic_error("invalid space_diff change");
 		}
-		if(block->proof_score_sum != prev->proof_score_sum + proof_score) {
+		if(block->proof_score_sum != prev->proof_score_sum + proof_score_sum) {
 			throw std::logic_error("invalid proof_score_sum");
 		}
-	}
-	const auto diff_block = get_diff_header(block);
-
-	const auto weight = calc_block_weight(params, diff_block, block);
-	const auto total_weight = prev->total_weight + block->weight;
-	if(block->weight != weight) {
-		throw std::logic_error("invalid block weight: " + block->weight.str(10) + " != " + weight.str(10));
-	}
-	if(block->total_weight != total_weight) {
-		throw std::logic_error("invalid total weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
+		if(block->proof_score_count != prev->proof_score_count + block->vdf_count) {
+			throw std::logic_error("invalid proof_score_count");
+		}
 	}
 
 	if(block->height < params->transaction_activation && block->tx_count) {
@@ -952,7 +957,7 @@ void Node::validate_diff_adjust(const uint64_t& block, const uint64_t& prev) con
 	if(block > prev && block - prev > max_update) {
 		throw std::logic_error("invalid difficulty adjustment upwards");
 	}
-	if(block < prev && prev - block > max_update) {
+	if(prev > block && prev - block > max_update) {
 		throw std::logic_error("invalid difficulty adjustment downwards");
 	}
 }

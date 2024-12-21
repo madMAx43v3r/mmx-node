@@ -2,11 +2,13 @@ package mmx;
 
 class ProofOfSpace {
 	
-	uint score;
+	ushort score;
 	
 	hash_t plot_id;
 	
 	hash_t challenge;				// global challenge (not plot local)
+	
+	ulong difficulty;
 	
 	pubkey_t farmer_key;
 	

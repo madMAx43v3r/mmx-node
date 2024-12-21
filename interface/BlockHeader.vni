@@ -9,6 +9,7 @@ class BlockHeader {
 	hash_t prev;
 	
 	uint height;
+	uint vdf_height;
 	ulong nonce;
 	long time_stamp;					// UNIX [ms]
 	
@@ -29,7 +30,9 @@ class BlockHeader {
 	hash_t proof_hash;
 	hash_t challenge;					// for proof lookups
 	
+	bool is_space_fork;					// if challenge is infused + space_diff update
 	uint proof_score_sum;				// for diff adjust
+	uint proof_score_count;
 	
 	ulong reward_amount;
 	optional<addr_t> reward_addr;

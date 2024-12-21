@@ -2,13 +2,13 @@ package mmx;
 
 class Challenge {
 	
-	uint height;
+	uint base;					// height
+	
+	uint index;					// vdf index relative to base height
 	
 	hash_t challenge;
 	
-	hash_t diff_block_hash;
-	
-	ulong space_diff;
+	ulong difficulty;
 	
 	uint max_delay;				// in blocks
 	

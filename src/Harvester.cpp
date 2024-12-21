@@ -279,7 +279,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						log(WARN) << "[" << my_name << "] Failed to create partial: " << ex.what() << " (" << prover->get_file_path() << ")";
 					}
 
-					const auto score = calc_proof_score(params, header->ksize, res.quality, value->space_diff);
+					const auto score = calc_proof_score(params, header->ksize, res.quality, value->difficulty);
 					if(score < params->score_threshold)
 					{
 						std::lock_guard<std::mutex> lock(job->mutex);
@@ -401,7 +401,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 			const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
 			if(balance) {
 				// TODO: partials
-				const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
+				const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->difficulty);
 				if(score < params->score_threshold) {
 					auto proof = std::make_shared<ProofOfStake>();
 					proof->farmer_key = entry.second.farmer_key;

@@ -14,9 +14,7 @@ class ChainParams {
 	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	
-	uint score_bits = 16;
-	uint score_target = 16384;				// defines how many proofs are found per block (must be less than score_threshold)
-	uint score_threshold = 65536;			// should be <= 2^score_bits
+	uint score_target = 16384;				// defines how many proofs are found per block (relative to 2^16)
 	
 	ulong min_reward = 200000;
 	ulong vdf_reward = 500000;				// per vdf_reward_interval

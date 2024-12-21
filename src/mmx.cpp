@@ -1208,7 +1208,7 @@ int main(int argc, char** argv)
 				const auto info = node.get_network_info();
 				std::cout << "Synced:     " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
 				std::cout << "Height:     " << info->height << std::endl;
-				std::cout << "Netspace:   " << info->total_space / pow(1000, 5) << " PB (" << info->netspace_ratio * 100 << " % physical)" << std::endl;
+				std::cout << "Netspace:   " << info->total_space / pow(1000, 2) << " PB (" << info->netspace_ratio * 100 << " % physical)" << std::endl;
 				std::cout << "VDF Speed:  " << info->vdf_speed << " MH/s" << std::endl;
 				std::cout << "Reward:     " << mmx::to_value(info->block_reward, params) << " MMX" << std::endl;
 				std::cout << "Supply:     " << mmx::to_value(info->total_supply, params) << " MMX" << std::endl;
