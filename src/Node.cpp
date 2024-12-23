@@ -46,10 +46,6 @@ void Node::init()
 
 void Node::main()
 {
-	if(max_blocks_per_height < 1) {
-		throw std::logic_error("max_blocks_per_height < 1");
-	}
-
 #ifdef WITH_OPENCL
 	cl_context opencl_context = nullptr;
 	try {
@@ -920,7 +916,7 @@ void Node::commit(std::shared_ptr<const Block> block)
 		}
 		Node::log(INFO)
 				<< "Committed height " << height << " with: ntx = " << block->tx_list.size()
-				<< ", k = " << ksize << ", score = " << (block->proof ? block->proof->score : params->score_threshold)
+				<< ", k = " << ksize << ", score = " << (block->proof ? std::to_string(block->proof->score) : "N/A")
 				<< ", tdiff = " << block->time_diff << ", sdiff = " << block->space_diff;
 	}
 	publish(block, output_committed_blocks, is_synced ? 0 : BLOCKING);
@@ -1296,8 +1292,12 @@ bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, const uint32
 {
 	if(offset > params->challenge_delay)
 	{
+		const auto advance = offset - params->challenge_delay;
+		if(advance > params->max_vdf_count) {
+			return false;
+		}
 		hash_t tmp = block->challenge;
-		for(uint32_t i = 0; i < offset - params->challenge_delay; ++i) {
+		for(uint32_t i = 0; i < advance; ++i) {
 			tmp = hash_t(std::string("next_challenge") + tmp);
 		}
 		challenge = tmp;
@@ -1342,6 +1342,27 @@ bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, const uint32
 	challenge = out.first;
 	space_diff = out.second;
 	return true;
+}
+
+bool Node::find_challenge(const uint32_t vdf_height, hash_t& challenge, uint64_t& space_diff) const
+{
+	auto block = get_peak();
+	if(block) {
+		if(vdf_height > block->vdf_height) {
+			if(vdf_height - block->vdf_height > params->max_vdf_count) {
+				return false;
+			}
+		} else if(block->vdf_height - vdf_height > max_history) {
+			return false;
+		}
+	}
+	while(block && block->height > vdf_height) {
+		block = find_prev_header(block);
+	}
+	if(!block) {
+		return false;
+	}
+	return find_challenge(block, vdf_height - block->height, challenge, space_diff);
 }
 
 hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& space_diff) const
@@ -1451,9 +1472,6 @@ Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 
 std::vector<std::shared_ptr<const VDF_Point>> Node::find_next_vdf_points(std::shared_ptr<const BlockHeader> block) const
 {
-	if(!block) {
-		return {};
-	}
 	struct vdf_fork_t {
 		std::shared_ptr<vdf_fork_t> prev;
 		std::shared_ptr<const VDF_Point> point;

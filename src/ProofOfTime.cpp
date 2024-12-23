@@ -24,19 +24,19 @@ hash_t ProofOfTime::calc_hash() const
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
 
-	buffer.reserve(256 * 1024);
+	buffer.reserve(64 * 1024);
 
 	write_bytes(out, get_type_hash());
-	write_field(out, "version", version);
-	write_field(out, "hash", 	hash);
-	write_field(out, "start", 	start);
-	write_field(out, "num_iters", 		num_iters);
-	write_field(out, "segment_size", 	segment_size);
-	write_field(out, "input", 	input);
-	write_field(out, "prev", 	prev);
-	write_field(out, "reward_addr", 	reward_addr);
-	write_field(out, "segments", 		segments);
-	write_field(out, "peak_height", 	peak_height);
+	write_field(out, "version", 	version);
+	write_field(out, "hash", 		hash);
+	write_field(out, "vdf_height", 	vdf_height);
+	write_field(out, "start", 		start);
+	write_field(out, "num_iters", 	num_iters);
+	write_field(out, "segment_size", segment_size);
+	write_field(out, "input", 		input);
+	write_field(out, "prev", 		prev);
+	write_field(out, "reward_addr", reward_addr);
+	write_field(out, "segments", 	segments);
 	out.flush();
 
 	return hash_t(buffer);

@@ -7,7 +7,7 @@
 
 #include <mmx/Node.h>
 #include <mmx/FarmerClient.hxx>
-#include <mmx/TimeInfusion.hxx>
+#include <mmx/Challenge.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
@@ -344,58 +344,49 @@ void Node::update()
 		update_timer->reset();
 		return;
 	}
+
 	{
-		// publish time infusions for VDF 0
-		auto infuse = TimeInfusion::create();
-		infuse->chain = 0;
-		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i <= params->infuse_delay; ++i)
-		{
-			if(auto prev = find_prev_header(peak, params->infuse_delay - i))
-			{
-				infuse->values[vdf_iters] = prev->hash;
-			}
-			auto diff_block = get_diff_header(peak, i + 1);
-			vdf_iters += diff_block->time_diff * params->time_diff_constant;
-		}
-		publish(infuse, output_timelord_infuse);
-	}
-	{
-		// publish next time infusion for VDF 1
-		uint32_t height = peak->height;
-		height -= (height % params->challenge_interval);
-		if(auto prev = find_prev_header(peak, peak->height - height))
-		{
-			if(prev->height >= params->challenge_interval)
-			{
-				if(auto diff_block = find_prev_header(prev, params->challenge_interval))
-				{
-					auto infuse = TimeInfusion::create();
-					infuse->chain = 1;
-					const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant * params->infuse_delay;
-					infuse->values[vdf_iters] = prev->hash;
-					publish(infuse, output_timelord_infuse);
-				}
-			}
-		}
-	}
-	{
+		const auto vdf_points = find_next_vdf_points(peak);
+		const auto vdf_advance = std::min<uint32_t>(
+				params->infuse_delay + vdf_points.size(), params->max_vdf_count);
+
 		// request next VDF proofs
 		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i < params->infuse_delay; ++i)
+		for(uint32_t i = 0; i <= vdf_advance; ++i)
 		{
+			uint64_t num_iters = 0;
+			const auto infuse = get_infusion(peak, i, num_iters);
+
 			auto request = IntervalRequest::create();
-			request->begin = vdf_iters;
+			request->start = vdf_iters;
+			request->end = vdf_iters + num_iters;
 			if(i == 0) {
-				request->has_start = true;
-				request->start_values = peak->vdf_output;
+				request->input = peak->vdf_output;
 			}
-			auto diff_block = get_diff_header(peak, i + 1);
-			vdf_iters += diff_block->time_diff * params->time_diff_constant;
-			request->end = vdf_iters;
-			request->height = peak->height + i + 1;
-			request->num_segments = params->num_vdf_segments;
+			request->infuse = infuse;
+			request->peak_height = peak->height;
+
 			publish(request, output_interval_request);
+
+			vdf_iters += num_iters;
+		}
+		const auto challenge_advance = std::min<uint32_t>(
+				params->challenge_delay + vdf_points.size(), params->max_vdf_count);
+
+		// publish challenges
+		for(uint32_t i = 1; i <= challenge_advance; ++i)
+		{
+			uint64_t space_diff = 0;
+			const auto challenge = get_challenge(peak, i, space_diff);
+
+			auto value = Challenge::create();
+			value->base = peak->height;
+			value->index = i;
+			value->vdf_height = peak->vdf_height + i;
+			value->challenge = challenge;
+			value->difficulty = space_diff;
+
+			publish(value, output_challenges);
 		}
 	}
 
@@ -412,25 +403,30 @@ void Node::update()
 				{
 					if(!created_blocks.count(proof->hash))
 					{
-						const auto vdf_points = find_next_vdf_points(find_prev_header(peak));
-						if(vdf_points.size()) {
-							if(auto block = make_block(prev, vdf_points, *proof)) {
-								add_block(block);
+						if(auto prev = find_prev_header(peak))
+						{
+							const auto vdf_points = find_next_vdf_points(prev);
+							if(vdf_points.size()) {
+								try {
+									if(auto block = make_block(prev, vdf_points, *proof)) {
+										add_block(block);
+									}
+								} catch(const std::exception& ex) {
+									log(WARN) << "Failed to create block at height " << peak->height << ": " << ex.what();
+								}
+								fork_to(peak->hash);
 							}
 						}
 					}
 				}
 			}
 		}
-		fork_to(peak->hash);
 	}
 
 	// try to extend peak
 	{
 		const auto vdf_points = find_next_vdf_points(peak);
 		if(vdf_points.size()) {
-			const auto& point = vdf_points.back();
-
 			hash_t challenge;
 			uint64_t space_diff = 0;
 			if(find_challenge(peak, vdf_points.size(), challenge, space_diff))
@@ -439,32 +435,19 @@ void Node::update()
 				{
 					if(vnx::get_pipe(proof->farmer_mac))
 					{
-						if(!created_blocks.count(proof->hash))
-						{
-							if(auto block = make_block(prev, vdf_points, *proof)) {
-								add_block(block);
+						if(!created_blocks.count(proof->hash)) {
+							try {
+								if(auto block = make_block(peak, vdf_points, *proof)) {
+									add_block(block);
+								}
+							} catch(const std::exception& ex) {
+								log(WARN) << "Failed to create block at height " << peak->height + 1 << ": " << ex.what();
 							}
+							fork_to(peak->hash);
 						}
 					}
 				}
 			}
-		}
-		fork_to(peak->hash);
-	}
-
-	// publish challenges
-	for(uint32_t i = 0; i <= params->challenge_delay; ++i)
-	{
-		if(auto vdf_block = find_prev_header(peak, params->challenge_delay - i))
-		{
-			auto value = Challenge::create();
-			value->height = peak->height + i;
-			value->challenge = vdf_block->vdf_output[1];
-			const auto diff_block = get_diff_header(peak, i);
-			value->difficulty = diff_block->difficulty;
-			value->diff_block_hash = diff_block->hash;
-			value->max_delay = 1 + i;
-			publish(value, output_challenges);
 		}
 	}
 }
@@ -882,6 +865,7 @@ std::shared_ptr<const Block> Node::make_block(
 	for(auto point : vdf_points) {
 		block->vdf_iters += point->num_iters;
 	}
+	block->challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, block->proof_hash, block->is_space_fork);
 
 	if(block->height % params->vdf_reward_interval == 0) {
 		block->vdf_reward_payout = get_vdf_reward_winner(block);
@@ -898,11 +882,6 @@ std::shared_ptr<const Block> Node::make_block(
 			block->reward_addr = address;
 		}
 	}
-
-	block->challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, block->proof_hash, block->is_space_fork);
-
-	block->proof_score_sum = prev->proof_score_sum + block->proof->score + uint32_t(block->vdf_count - 1) << 16;
-	block->proof_score_count = prev->proof_score_count + block->vdf_count;
 
 	{
 		auto delta_ms = time_begin - prev->time_stamp;
@@ -929,7 +908,7 @@ std::shared_ptr<const Block> Node::make_block(
 	uint64_t total_fees = 0;
 	if(block->height >= params->transaction_activation)
 	{
-		const auto deadline = vdf_point->recv_time + params->block_interval_ms - 1000;
+		const auto deadline = vdf_point->recv_time + params->block_interval_ms;
 		const auto tx_list = validate_for_block(deadline);
 		// select transactions
 		for(const auto& entry : tx_list) {
@@ -949,7 +928,8 @@ std::shared_ptr<const Block> Node::make_block(
 
 	const auto result = farmer.sign_block(block);
 	if(!result) {
-		throw std::logic_error("farmer refused to sign block");
+		log(WARN) << "Farmer refused to sign block at height " << block->height;
+		return nullptr;
 	}
 	block->BlockHeader::operator=(*result);
 

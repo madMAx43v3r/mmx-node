@@ -115,14 +115,19 @@ block_index_t BlockHeader::get_block_index(const int64_t& file_offset) const
 
 void BlockHeader::set_space_diff(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
-	const uint32_t proof_score = proof ? proof->score : params->score_threshold;
+	if(!proof || !vdf_count) {
+		throw std::logic_error("invalid block state");
+	}
+	const auto score_sum = proof->score + uint32_t(vdf_count - 1) << 16;
 
 	if(height % params->challenge_interval == 0) {
 		space_diff = calc_new_space_diff(params, prev);
-		proof_score_sum = proof_score;
+		proof_score_sum = score_sum;
+		proof_score_count = vdf_count;
 	} else {
 		space_diff = prev->space_diff;
-		proof_score_sum = prev->proof_score_sum + proof_score;
+		proof_score_sum = prev->proof_score_sum + score_sum;
+		proof_score_count = prev->proof_score_count + vdf_count;
 	}
 }
 

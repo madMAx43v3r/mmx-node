@@ -6,6 +6,8 @@ class ProofOfTime {
 	
 	hash_t hash;
 	
+	uint vdf_height;
+	
 	ulong start;						// [iters]
 	
 	ulong num_iters;
@@ -19,8 +21,6 @@ class ProofOfTime {
 	optional<addr_t> reward_addr;
 	
 	vector<hash_t> segments;
-	
-	uint peak_height;					// just a timestamp
 	
 	pubkey_t timelord_key;
 	

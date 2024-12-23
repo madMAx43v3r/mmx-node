@@ -13,6 +13,7 @@ class ChainParams {
 	uint challenge_delay = 9;				// blocks until new challange is active
 	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
+	uint max_vdf_count = 100;				// chain will halt if no proof is found within this time
 	
 	uint score_target = 16384;				// defines how many proofs are found per block (relative to 2^16)
 	

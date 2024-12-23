@@ -431,6 +431,8 @@ private:
 
 	bool find_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& challenge, uint64_t& space_diff) const;
 
+	bool find_challenge(const uint32_t vdf_height, hash_t& challenge, uint64_t& space_diff) const;
+
 	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& space_diff) const;
 
 	bool find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, vnx::optional<hash_t>& value, uint64_t& num_iters) const;

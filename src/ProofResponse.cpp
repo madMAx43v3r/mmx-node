@@ -29,9 +29,8 @@ hash_t ProofResponse::calc_hash() const
 	// Note: farmer_addr, harvester and lookup_time_ms are not hashed (local info only)
 
 	write_bytes(out, get_type_hash());
-	write_field(out, "base",	base);
-	write_field(out, "index",	index);
-	write_field(out, "proof", 	proof ? proof->calc_hash() : hash_t());
+	write_field(out, "vdf_height",	vdf_height);
+	write_field(out, "proof", 		proof ? proof->calc_hash() : hash_t());
 	out.flush();
 
 	return hash_t(buffer);

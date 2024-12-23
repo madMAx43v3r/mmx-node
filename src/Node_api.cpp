@@ -115,7 +115,6 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->address_count = mmx_address_count;
 			info->genesis_hash = get_genesis_hash();
 			info->average_txfee = avg_txfee;
-			info->netspace_ratio = double(peak->netspace_ratio) / (uint64_t(1) << (2 * params->max_diff_adjust));
 			{
 				size_t num_blocks = 0;
 				for(const auto& fork : get_fork_line()) {
@@ -1568,23 +1567,19 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 		return {pooling_error_e::INVALID_SIGNATURE, "Signature verification failed"};
 	}
 
-	const auto challenge_height = partial->height - params->challenge_delay;
-	const auto challenge_block = get_header_at(challenge_height);
-	if(!challenge_block) {
-		return {pooling_error_e::CHALLENGE_NOT_FOUND,
-			"Could not find challenge block at height " + std::to_string(challenge_height)};
+	hash_t challenge;
+	uint64_t space_diff = 0;
+	if(!find_challenge(partial->vdf_height, challenge, space_diff)) {
+		return {pooling_error_e::CHALLENGE_NOT_FOUND, "Could not find challenge"};
 	}
-	const auto challenge = challenge_block->challenge;
-	if(partial->challenge != challenge) {
-		return {pooling_error_e::CHALLENGE_REVERTED,
-			"Challenge mismatch, expected " + challenge.to_string() + " for height " + std::to_string(challenge_height)};
+	if(partial->proof->challenge != challenge) {
+		return {pooling_error_e::CHALLENGE_REVERTED, "Challenge mismatch, expected " + challenge.to_string()};
 	}
 
 	try {
-		verify_proof(partial->proof, challenge, partial->difficulty);
+		verify_proof(partial->proof, challenge, space_diff);
 	} catch(const std::exception& ex) {
-		return {pooling_error_e::INVALID_PROOF,
-			"Invalid partial proof: " + std::string(ex.what())};
+		return {pooling_error_e::INVALID_PROOF, "Invalid proof: " + std::string(ex.what())};
 	}
 
 	if(pool_target) {
@@ -1597,27 +1592,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 			if(std::get<0>(ret) != pooling_error_e::NONE) {
 				return ret;
 			}
-		}
-		else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(partial->proof))
-		{
-			if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
-				if(!plot->reward_address) {
-					return {pooling_error_e::INVALID_CONTRACT, "VirtualPlot has no fixed reward address"};
-				}
-				const auto contract = *plot->reward_address;
-
-				if(partial->contract != contract) {
-					return {pooling_error_e::INVALID_CONTRACT, "Partial 'contract' does not match virtual plot"};
-				}
-				const auto ret = verify_plot_nft_target(contract, *pool_target);
-				if(std::get<0>(ret) != pooling_error_e::NONE) {
-					return ret;
-				}
-			} else {
-				return {pooling_error_e::INVALID_CONTRACT, "No such VirtualPlot: " + stake->plot_id.to_string()};
-			}
-		}
-		else {
+		} else {
 			return {pooling_error_e::INVALID_CONTRACT, "Invalid proof type: " + partial->proof->get_type_name()};
 		}
 	}

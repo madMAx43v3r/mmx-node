@@ -49,13 +49,14 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	if(!value->is_valid()) {
 		throw std::logic_error("invalid response");
 	}
-	const auto prev = get_header_at(value->base);
-	if(!prev) {
-		return false;
+	if(auto root = get_root()) {
+		if(value->vdf_height <= root->vdf_height) {
+			throw std::logic_error("proof too old: vdf_height = " + std::to_string(value->vdf_height));
+		}
 	}
 	hash_t challenge;
 	uint64_t space_diff = 0;
-	if(!find_challenge(prev, value->index, challenge, space_diff)) {
+	if(!find_challenge(value->vdf_height, challenge, space_diff)) {
 		return false;
 	}
 	verify_proof(value->proof, challenge, space_diff);
@@ -76,7 +77,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	if(!block->proof) {
 		throw std::logic_error("missing proof");
 	}
-	if(block->vdf_count > 1000000) {
+	if(block->vdf_count > params->max_vdf_count) {
 		throw std::logic_error("invalid vdf_count");
 	}
 
@@ -157,7 +158,7 @@ void Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t&
 	}
 	const auto score = get_proof_score(proof->calc_proof_hash());
 	if(score != proof->score) {
-		throw std::logic_error("proof score mismatch: expected " + std::to_string(proof->score) + " but got " + score);
+		throw std::logic_error("proof score mismatch: expected " + std::to_string(proof->score) + " but got " + std::to_string(score));
 	}
 }
 
@@ -284,12 +285,7 @@ void Node::verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const
 
 void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint32_t height, const uint32_t index)
 {
-	if(point->input == get_vdf_peak()) {
-		if(is_synced) {
-			log(INFO) << "-------------------------------------------------------------------------------";
-		}
-		publish(point->proof, output_verified_vdfs);
-	}
+	const auto took_ms = vnx::get_wall_time_millis() - point->recv_time;
 	const auto vdf_iters = point->start + point->num_iters;
 
 	vdf_tree.emplace(point->output, point);
@@ -298,12 +294,36 @@ void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint
 
 	publish(point, output_vdf_points);
 
-	const auto elapsed = (vnx::get_wall_time_micros() - point->recv_time) / 1000;
-	if(elapsed > params->block_interval_ms) {
-		log(WARN) << "VDF verification took longer than block interval, unable to keep sync!";
+	if(point->input == get_vdf_peak()) {
+		if(is_synced) {
+			log(INFO) << "-------------------------------------------------------------------------------";
+		}
+		publish(point->proof, output_verified_vdfs);
 	}
-	else if(elapsed > params->block_interval_ms / 2) {
-		log(WARN) << "VDF verification took longer than recommended: " << elapsed / 1e3 << " sec";
+
+	if(took_ms > params->block_interval_ms) {
+		log(WARN) << "VDF verification took longer than block interval, unable to keep sync!";
+	} else if(took_ms > params->block_interval_ms / 2) {
+		log(WARN) << "VDF verification took longer than recommended: " << took_ms / 1e3 << " sec";
+	}
+
+	// check if this proof helps advancing the chain
+	if(auto peak = get_peak()) {
+		auto input = point->input;
+		auto vdf_height = point->vdf_height;
+		while(vdf_height > peak->vdf_height) {
+			if(input == peak->vdf_output) {
+				stuck_timer->reset();
+				break;
+			}
+			const auto iter = vdf_tree.find(input);
+			if(iter != vdf_tree.end()) {
+				input = iter->second->input;
+				vdf_height--;
+			} else {
+				break;
+			}
+		}
 	}
 
 	std::shared_ptr<const VDF_Point> prev;
@@ -322,7 +342,7 @@ void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint
 			u8"\U0001F556", u8"\U0001F557", u8"\U0001F558", u8"\U0001F559", u8"\U0001F55A", u8"\U0001F55B" };
 
 	log(INFO) << clocks[(height + index) % 12] << " Verified VDF for height "
-			<< height << " + " << index << ss_delta.str() << ", took " << elapsed / 1e3 << " sec";
+			<< height << " + " << index << ss_delta.str() << ", took " << took_ms / 1e3 << " sec";
 
 	trigger_update();
 }
@@ -349,6 +369,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const uint3
 			verify_vdf_cpu(proof);
 		}
 		auto point = VDF_Point::create();
+		point->vdf_height = proof->vdf_height;
 		point->start = proof->start;
 		point->num_iters = proof->num_iters;
 		point->input = proof->input;

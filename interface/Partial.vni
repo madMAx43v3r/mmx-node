@@ -2,7 +2,7 @@ package mmx;
 
 class Partial {
 	
-	uint height;
+	uint vdf_height;
 	
 	hash_t hash;
 	
@@ -13,8 +13,6 @@ class Partial {
 	string pool_url;
 	
 	string harvester;					// name (defaults to hostname)
-	
-	ulong difficulty;					// partial diff used
 	
 	uint lookup_time_ms;
 	

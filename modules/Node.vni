@@ -19,7 +19,6 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.TopicPtr output_committed_blocks = "node.committed_blocks";
 	vnx.TopicPtr output_transactions = "node.transactions";
 	vnx.TopicPtr output_interval_request = "timelord.requests";
-	vnx.TopicPtr output_timelord_infuse = "timelord.infuse";
 	vnx.TopicPtr output_challenges = "harvester.challenges";
 	vnx.TopicPtr output_vdf_points = "node.vdf_points";
 	

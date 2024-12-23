@@ -1,9 +1,0 @@
-package mmx;
-
-class TimeInfusion {
-	
-	uint chain;
-	
-	map<ulong, hash_t> values;			// [iters => hash]
-	
-}

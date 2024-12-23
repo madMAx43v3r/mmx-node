@@ -2,15 +2,12 @@ package mmx;
 
 class IntervalRequest {
 	
-	ulong begin;
+	uint vdf_height;
+	
+	ulong start;
 	ulong end;
 	
-	hash_t start_values[2];
-	
-	bool has_start;				// if start_values are valid
-	
-	uint num_segments;			// target number of segments
-	
-	uint height;
+	optional<hash_t> input;
+	optional<hash_t> infuse;
 	
 }
