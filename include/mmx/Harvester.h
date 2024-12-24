@@ -64,7 +64,7 @@ private:
 
 	// thread safe
 	void send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const ProofOfSpace> proof,
-						const uint32_t score, const int64_t time_begin_ms) const;
+						const int64_t time_begin_ms) const;
 
 private:
 	bool is_ready = false;

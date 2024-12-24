@@ -14,6 +14,7 @@
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 
+#include <vnx/Util.hpp>
 #include <vnx/Config.hpp>
 
 #include <uint128_t.h>
@@ -173,6 +174,16 @@ inline
 uint16_t get_proof_score(const hash_t& proof_hash)
 {
 	return (uint16_t(proof_hash.bytes[0]) << 8) | proof_hash.bytes[1];
+}
+
+inline
+hash_t calc_proof_hash(const hash_t& challenge, const std::vector<uint32_t>& proof_xs)
+{
+	auto tmp = proof_xs;
+	for(auto& x : tmp) {
+		x = vnx::to_little_endian(x);
+	}
+	return hash_t(challenge + hash_t(tmp.data(), tmp.size() * 4));
 }
 
 inline

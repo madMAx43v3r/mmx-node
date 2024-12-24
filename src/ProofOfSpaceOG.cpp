@@ -7,6 +7,7 @@
 
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -40,11 +41,7 @@ mmx::hash_t ProofOfSpaceOG::calc_hash() const
 
 mmx::hash_t ProofOfSpaceOG::calc_proof_hash() const
 {
-	auto tmp = proof_xs;
-	for(auto& x : tmp) {
-		x = vnx::to_little_endian(x);
-	}
-	return hash_t(challenge + hash_t(tmp.data(), tmp.size() * 4));
+	return mmx::calc_proof_hash(challenge, proof_xs);
 }
 
 void ProofOfSpaceOG::validate() const
