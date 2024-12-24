@@ -69,9 +69,9 @@ void Node::verify_vdfs()
 
 	for(auto iter = vdf_index.upper_bound(root->vdf_iters); iter != vdf_index.end(); ++iter) {
 		const auto& point = iter->second;
-		const auto iter = fork_map.find(point->input);
-		if(iter != fork_map.end() && fork_map.count(point->output) == 0) {
-			const auto& prev = iter->second;
+		const auto iter2 = fork_map.find(point->input);
+		if(iter2 != fork_map.end() && fork_map.count(point->output) == 0) {
+			const auto& prev = iter2->second;
 			auto fork = std::make_shared<vdf_fork_t>();
 			fork->point = point;
 			fork->base = prev->base;
@@ -158,7 +158,7 @@ void Node::verify_proofs()
 	const auto time_now = vnx::get_wall_time_millis();
 	const auto proof_timeout = 20 * params->block_interval_ms;
 
-	std::vector<std::pair<int64_t, std::shared_ptr<const ProofResponse>>> try_again;
+	std::vector<std::pair<std::shared_ptr<const ProofResponse>, int64_t>> try_again;
 
 	for(const auto& entry : proof_queue) {
 		if(time_now - entry.second > proof_timeout) {
@@ -170,7 +170,7 @@ void Node::verify_proofs()
 				try_again.emplace_back(response, entry.second);
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << "Got invalid proof for height " << response->base << " + " << response->index << ": " << ex.what();
+			log(WARN) << "Got invalid proof for VDF height " << response->vdf_height << ": " << ex.what();
 		} catch(...) {
 			// ignore
 		}
