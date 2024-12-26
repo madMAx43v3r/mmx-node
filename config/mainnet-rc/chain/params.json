@@ -8,6 +8,7 @@
 	"challenge_interval": 256,
 	"commit_delay": 24,
 	"score_target": 16384,
+	"proofs_per_height": 3,
 	"vdf_segment_size": 500000,
 	"min_reward": 500000,
 	"min_txfee": 20000,
