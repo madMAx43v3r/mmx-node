@@ -151,10 +151,10 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->vdf_height != prev->vdf_height + block->vdf_count) {
 		throw std::logic_error("invalid vdf_height");
 	}
-	if(block->time_stamp - prev->time_stamp > params->block_interval_ms * 2) {
+	if(block->time_stamp - prev->time_stamp > block->vdf_count * params->block_interval_ms * 2) {
 		throw std::logic_error("time stamp delta too high");
 	}
-	if(block->time_stamp - prev->time_stamp < params->block_interval_ms / 10) {
+	if(block->time_stamp - prev->time_stamp < block->vdf_count * params->block_interval_ms / 10) {
 		throw std::logic_error("time stamp delta too low");
 	}
 	if(block->time_diff == 0 || block->space_diff == 0) {

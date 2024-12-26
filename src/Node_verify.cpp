@@ -93,6 +93,9 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	if(block->vdf_iters != expected_iters) {
 		throw std::logic_error("invalid vdf_iters: " + std::to_string(block->vdf_iters) + " != " + std::to_string(expected_iters));
 	}
+	if(block->time_diff < params->time_diff_divider) {
+		throw std::logic_error("time_diff too low");
+	}
 	validate_diff_adjust(block->time_diff, prev->time_diff);	// need to check here to avoid VDF verify attack
 
 	// need to verify challenge and space_diff update here
@@ -104,7 +107,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	if(block->is_space_fork != is_space_fork) {
 		throw std::logic_error("invalid is_space_fork");
 	}
-	const auto proof_score_sum = block->proof->score + uint32_t(block->vdf_count - 1) << 16;
+	const auto proof_score_sum = block->proof->score + (uint32_t(block->vdf_count - 1) << 16);
 
 	if(is_space_fork) {
 		const auto space_diff = calc_new_space_diff(params, prev);
@@ -211,7 +214,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof)
 	if(!prev) {
 		throw std::logic_error("could not find infused block");
 	}
-	const auto num_iters = prev->time_diff * params->time_diff_constant;
+	const auto num_iters = get_block_iters(params, prev->time_diff);
 
 	if(proof->num_iters != num_iters) {
 		throw std::logic_error("invalid num_iters");

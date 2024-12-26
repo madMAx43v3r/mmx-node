@@ -27,11 +27,12 @@ class ChainParams {
 	uint reward_adjust_interval = 8640;		// [blocks]
 	uint target_mmx_gold_price = 2000;		// [MMX / ounce]
 	
-	ulong time_diff_constant = 100000;
+	ulong time_diff_divider = 1000;			// fixed-point precision
+	ulong time_diff_constant = 1000000;
 	ulong space_diff_constant = 100000000;
 	ulong virtual_space_constant = 500;
 	
-	ulong initial_time_diff = 50000;		// [iters/sec]
+	ulong initial_time_diff = 50;
 	ulong initial_space_diff = 10;
 	
 	ulong min_txfee = 100;					// per tx

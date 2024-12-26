@@ -177,6 +177,12 @@ uint16_t get_proof_score(const hash_t& proof_hash)
 }
 
 inline
+uint64_t get_block_iters(std::shared_ptr<const ChainParams> params, const uint64_t time_diff)
+{
+	return (time_diff / params->time_diff_divider) * params->time_diff_constant;
+}
+
+inline
 hash_t calc_proof_hash(const hash_t& challenge, const std::vector<uint32_t>& proof_xs)
 {
 	auto tmp = proof_xs;

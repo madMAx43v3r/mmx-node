@@ -827,10 +827,10 @@ std::shared_ptr<const Block> Node::make_block(
 		auto delta_ms = time_begin - prev->time_stamp;
 		{
 			// set new time diff
-			const auto gain = pow(2, -params->max_diff_adjust);
-			const auto factor = double(params->block_interval_ms) / delta_ms;
+			const auto gain = 1 / pow(2, params->max_diff_adjust);
+			const auto factor = double(params->block_interval_ms * block->vdf_count) / delta_ms;
 			const auto new_diff = prev->time_diff * (1 - gain + factor * gain);
-			block->time_diff = std::max<int64_t>(new_diff + 0.5, 1);
+			block->time_diff = std::max<int64_t>(new_diff + 0.5, params->time_diff_divider);
 		}
 		// limit time diff update
 		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
@@ -840,8 +840,8 @@ std::shared_ptr<const Block> Node::make_block(
 		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
 
 		// set time stamp
-		delta_ms = std::min(delta_ms, 2 * params->block_interval_ms);
-		delta_ms = std::max(delta_ms, params->block_interval_ms / 10);
+		delta_ms = std::min(delta_ms, block->vdf_count * params->block_interval_ms * 2);
+		delta_ms = std::max(delta_ms, block->vdf_count * params->block_interval_ms / 10);
 		block->time_stamp = prev->time_stamp + delta_ms;
 	}
 

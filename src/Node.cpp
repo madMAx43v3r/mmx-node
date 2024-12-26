@@ -328,7 +328,7 @@ void Node::main()
 		auto block = Block::create();
 		block->nonce = params->port;
 		block->time_stamp = vnx::get_wall_time_millis();	// TODO
-		block->time_diff = params->initial_time_diff;
+		block->time_diff = params->initial_time_diff * params->time_diff_divider;
 		block->space_diff = params->initial_space_diff;
 		block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
 		block->challenge = hash_t("MMX/" + params->network + "/challenge");
@@ -1398,7 +1398,7 @@ bool Node::find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_
 		}
 	}
 	if(block) {
-		num_iters = block->time_diff * params->time_diff_constant;
+		num_iters = get_block_iters(params, block->time_diff);
 		value = block->hash;
 		return true;
 	}
