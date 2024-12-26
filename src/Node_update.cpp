@@ -823,23 +823,23 @@ std::shared_ptr<const Block> Node::make_block(
 		}
 	}
 
+	if(auto ref = find_prev_header(prev, 100))
 	{
-		auto delta_ms = time_begin - prev->time_stamp;
-		{
-			// set new time diff
-			const auto gain = 1 / pow(2, params->max_diff_adjust);
-			const auto factor = double(params->block_interval_ms * block->vdf_count) / delta_ms;
-			const auto new_diff = prev->time_diff * (1 - gain + factor * gain);
-			block->time_diff = std::max<int64_t>(new_diff + 0.5, params->time_diff_divider);
-		}
+		// set new time diff
+		const auto delta_ms = prev->time_stamp - ref->time_stamp;
+		const auto factor = double(params->block_interval_ms * 100) / delta_ms;
+		block->time_diff = std::max<int64_t>(prev->time_diff * factor + 0.5, params->time_diff_divider);
+
 		// limit time diff update
 		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
 		if(prev->time_diff > max_update) {
 			block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
 		}
 		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
-
+	}
+	{
 		// set time stamp
+		auto delta_ms = time_begin - prev->time_stamp;
 		delta_ms = std::min(delta_ms, block->vdf_count * params->block_interval_ms * 2);
 		delta_ms = std::max(delta_ms, block->vdf_count * params->block_interval_ms / 10);
 		block->time_stamp = prev->time_stamp + delta_ms;
