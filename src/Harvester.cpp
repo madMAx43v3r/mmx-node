@@ -379,7 +379,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				log(slow_time > 20 ? WARN : DEBUG) << "[" << my_name << "] Slowest plot took " << slow_time << " sec (" << job->slow_plot << ")";
 			}
 			const auto delay_sec = (time_end - recv_time_ms) / 1e3;
-			log(INFO) << "[" << my_name << "] " << job->num_passed << " / " << job->total_plots
+			log(INFO) << "[" << my_name << "] " << job->num_passed << " of " << job->total_plots
 					<< " plots were eligible for height " << value->vdf_height
 					<< ", max lookup " << slow_time << " sec, delay " << delay_sec << " sec";
 		}
