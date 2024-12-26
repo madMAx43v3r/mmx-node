@@ -364,7 +364,7 @@ void Router::handle(std::shared_ptr<const ProofResponse> value)
 	const auto& hash = value->content_hash;
 	if(relay_msg_hash(hash)) {
 		if(is_ours) {
-			log(INFO) << "Broadcasting proof for VDF height " << value->vdf_height << " with score " << value->proof->score;
+			log(INFO) << "Broadcasting proof for height " << value->vdf_height << " with score " << value->proof->score;
 		}
 		auto copy = vnx::clone(value);
 		copy->harvester.clear();			// clear local information
