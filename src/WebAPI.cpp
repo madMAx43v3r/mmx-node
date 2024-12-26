@@ -2410,10 +2410,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				break;
 			}
 			const auto& value = iter->first;
-			vnx::Object tmp;
-			if(value->request) {
-				tmp = render(*value->request);
-			}
+			auto tmp = render(*value);
 			if(value->proof) {
 				tmp["proof"] = render(*value->proof);
 			}

@@ -15,7 +15,7 @@ bool ProofResponse::is_valid() const
 {
 	return proof
 			&& proof->is_valid()
-			&& harvester.size() < 256
+			&& harvester.size() < 1024
 			&& hash == calc_hash()
 			&& content_hash == calc_content_hash();
 }

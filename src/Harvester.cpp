@@ -92,7 +92,7 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 	out->proof = proof;
 	out->vdf_height = request->vdf_height;
 	out->farmer_addr = farmer_addr;
-	out->harvester = my_name.substr(0, 256);
+	out->harvester = my_name.substr(0, 1024);
 	out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin_ms;
 	out->hash = out->calc_hash();
 

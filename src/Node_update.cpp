@@ -188,7 +188,7 @@ void Node::verify_block_proofs()
 			continue;
 		}
 		const auto& block = fork->block;
-		if(!fork->prev) {
+		if(!fork->prev.lock()) {
 			fork->prev = find_fork(block->prev);
 		}
 		if(auto prev = fork->prev.lock()) {
@@ -358,13 +358,13 @@ void Node::update()
 			const auto infuse = get_infusion(peak, i, num_iters);
 
 			auto request = IntervalRequest::create();
+			request->vdf_height = peak->height + i + 1;
 			request->start = vdf_iters;
 			request->end = vdf_iters + num_iters;
 			if(i == 0) {
 				request->input = peak->vdf_output;
 			}
 			request->infuse = infuse;
-			request->peak_height = peak->height;
 
 			publish(request, output_interval_request);
 

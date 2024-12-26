@@ -229,8 +229,9 @@ private:
 	std::queue<hash_t> hash_queue;
 	std::unordered_map<hash_t, hash_info_t> hash_info;
 
-	std::map<pubkey_t, uint32_t> farmer_credits;
-	std::map<pubkey_t, uint32_t> timelord_credits;
+	std::set<pubkey_t> farmer_credit;
+	std::set<pubkey_t> timelord_credit;
+	std::set<pubkey_t> our_timelords;
 
 	double tx_upload_credits = 0;
 	double tx_upload_bandwidth = 0;
@@ -251,6 +252,7 @@ private:
 	mutable std::default_random_engine rand_engine;
 
 	uint32_t next_request_id = 0;
+	uint32_t verified_vdf_height = 0;
 	uint32_t verified_peak_height = 0;
 	int64_t last_query_ms = 0;
 

@@ -20,7 +20,6 @@ Payload: Object
 - `account`: Payout address (can be multiple per NFT, first partial creates account)
 - `pool_url`: The base URL used to make this request
 - `harvester`: Harvester name, usually hostname
-- `difficulty`: Partial difficulty used when performing lookup (might be different than current setting)
 - `lookup_time_ms`: Harvester lookup time (ms)
 - `proof`: Proof, can be Proof of Space or Proof of Stake (see below)
 - `farmer_sig`: Farmer signature based on `hash` and `proof.farmer_key`
@@ -31,6 +30,7 @@ The `proof` is an object as follows:
 - `score`: Proof score
 - `plot_id`: Plot ID
 - `challenge`: challenge hash for this height and fork
+- `difficulty`: Partial difficulty used when performing lookup (might be different than current setting)
 - `farmer_key`: Farmer Public Key
 
 For `proof.__type` == `mmx.ProofOfSpaceNFT` the following additional fields will be present:

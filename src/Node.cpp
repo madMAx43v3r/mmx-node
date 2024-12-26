@@ -426,14 +426,21 @@ void Node::add_block(std::shared_ptr<const Block> block)
 		log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
 		return;
 	}
-	catch(...) {
+	// validate farmer_sig before purging to prevent spoofing attack
+	if(purged_blocks.count(block->prev)) {
+		purge_block(block);
 		return;
 	}
 	auto fork = std::make_shared<fork_t>();
 	fork->block = block;
 	add_fork(fork);
 
-	if(is_synced && block->farmer_sig) {
+	if(is_synced) {
+		if(auto root = get_root()) {
+			if(block->height > root->height + 1 && !fork_tree.count(block->prev)) {
+				// TODO: fetch missing previous
+			}
+		}
 		trigger_update();
 	}
 }
@@ -474,10 +481,6 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
-	if(purged_blocks.count(block->prev)) {
-		purged_blocks.insert(block->hash);
-		return;
-	}
 	add_block(block);
 }
 
@@ -850,19 +853,19 @@ void Node::purge_tree()
 			|| purged_blocks.count(block->prev)
 			|| (is_synced && !fork->is_connected && time_now - fork->recv_time > block_timeout))
 		{
-			if(fork_tree.erase(block->hash)) {
-				purged_blocks.insert(block->hash);
-				purged_blocks_log.emplace(block->height, block->hash);
-			}
+			purge_block(block);
+			fork_tree.erase(block->hash);
 			iter = fork_index.erase(iter);
 		} else {
 			iter++;
 		}
 	}
-	while(purged_blocks_log.size() > 10000) {
-		const auto iter = purged_blocks_log.begin();
-		purged_blocks.erase(iter->second);
-		purged_blocks_log.erase(iter);
+}
+
+void Node::purge_block(std::shared_ptr<const Block> block)
+{
+	if(purged_blocks.insert(block->hash).second) {
+		purged_blocks_log.emplace(block->height, block->hash);
 	}
 }
 
@@ -904,6 +907,12 @@ void Node::commit(std::shared_ptr<const Block> block)
 		vdf_index.erase(begin, end);
 	}
 	purge_tree();
+
+	while(purged_blocks_log.size() > 10000) {
+		const auto iter = purged_blocks_log.begin();
+		purged_blocks.erase(iter->second);
+		purged_blocks_log.erase(iter);
+	}
 
 	if(is_synced) {
 		std::string ksize = "N/A";
@@ -1378,13 +1387,15 @@ bool Node::find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_
 {
 	if(offset > params->infuse_delay) {
 		num_iters = block->time_diff * params->time_diff_constant;
-		return nullptr;
+		value = nullptr;
+		return true;
 	}
 	const uint32_t target = params->infuse_delay - offset;
 
 	if(auto prev = find_prev_header(block, target, true)) {
 		num_iters = prev->time_diff * params->time_diff_constant;
-		return prev->hash;
+		value = prev->hash;
+		return true;
 	}
 	return false;
 }

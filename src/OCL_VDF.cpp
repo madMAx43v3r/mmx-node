@@ -50,7 +50,7 @@ OCL_VDF::OCL_VDF(cl_context context, cl_device_id device)
 	queue = automy::basic_opencl::create_command_queue(context, device);
 }
 
-void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain)
+void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof)
 {
 	const size_t local = 64;
 	const size_t width = proof->segments.size() + (local - (proof->segments.size() % local)) % local;
@@ -59,29 +59,23 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	}
 	hash.resize(width * 32);
 	{
-		auto input = proof->input[chain % 2];
-		if(chain < 2) {
-			if(auto infuse = proof->infuse[chain]) {
-				input = hash_t(input + (*infuse));
-			}
-		} else if(proof->reward_addr) {
+		auto input = proof->input;
+		if(proof->prev) {
+			input = hash_t(input + (*proof->prev));
+		}
+		if(proof->reward_addr) {
 			input = hash_t(input + (*proof->reward_addr));
 		}
-		for(size_t i = 0; i < proof->segments.size(); ++i) {
+		for(size_t i = 0; i < proof->segments.size(); ++i)
+		{
 			::memcpy(hash.data() + i * 32, input.data(), input.size());
-			if(chain < 2) {
-				input = proof->segments[i].output[chain];
-			} else {
-				input = proof->reward_segments[i];
-			}
+			input = proof->segments[i];
 		}
 	}
 
 	num_iters.resize(width);
-	uint32_t max_num_iters = 0;
 	for(size_t i = 0; i < proof->segments.size(); ++i) {
-		num_iters[i] = proof->segments[i].num_iters;
-		max_num_iters = std::max(max_num_iters, num_iters[i]);
+		num_iters[i] = proof->segment_size;
 	}
 
 	hash_buf.alloc_min(context, width * 32);
@@ -90,29 +84,26 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t c
 	hash_buf.upload(queue, hash, false);
 	num_iters_buf.upload(queue, num_iters, false);
 
+	const uint32_t max_iters = 5000;
+
 	kernel->set("hash", hash_buf);
 	kernel->set("num_iters", num_iters_buf);
+	kernel->set("max_iters", max_iters);
 
-	for(uint32_t k = 0; k < max_num_iters; k += 4096) {
+	for(uint32_t k = 0; k < proof->segment_size; k += max_iters) {
 		kernel->enqueue(queue, width, local);
 	}
 	queue->flush();
 }
 
-void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain)
+void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof)
 {
 	hash_buf.download(queue, hash.data(), true);
 
 	for(size_t i = 0; i < proof->segments.size(); ++i)
 	{
-		const uint8_t* output = nullptr;
-		if(chain < 2) {
-			output = proof->segments[i].output[chain].data();
-		} else {
-			output = proof->reward_segments[i].data();
-		}
-		if(::memcmp(hash.data() + i * 32, output, 32)) {
-			throw std::logic_error("invalid output on chain " + std::to_string(chain) + ", segment " + std::to_string(i));
+		if(::memcmp(hash.data() + i * 32, proof->segments[i].data(), 32)) {
+			throw std::logic_error("invalid output at segment " + std::to_string(i));
 		}
 	}
 }
@@ -125,7 +116,9 @@ void OCL_VDF::release()
 
 #else
 
-OCL_VDF::OCL_VDF(cl_context context, cl_device_id device) {}
+OCL_VDF::OCL_VDF(cl_context context, cl_device_id device) {
+	throw std::logic_error("did not compile with OpenCL support");
+}
 
 void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
 

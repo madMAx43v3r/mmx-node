@@ -1,11 +1,11 @@
 
 __kernel
-void rsha256_kernel(__global uint* hash, __global uint* num_iters)
+void rsha256_kernel(__global uint* hash, __global uint* num_iters, uint max_iters)
 {
 	const uint id = get_global_id(0);
 	
 	const uint num_iters_org = num_iters[id];
-	const uint num_iters_i = min(num_iters_org, (uint)4096);
+	const uint num_iters_i = min(num_iters_org, max_iters);
 	
 	if(num_iters_i == 0) {
 		return;

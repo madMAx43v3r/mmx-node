@@ -377,6 +377,8 @@ private:
 
 	void purge_tree();
 
+	void purge_block(std::shared_ptr<const Block> block);
+
 	void update_farmer_ranking();
 
 	void add_proof(std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac);
