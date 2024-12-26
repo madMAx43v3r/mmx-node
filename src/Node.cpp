@@ -853,8 +853,9 @@ void Node::purge_tree()
 			|| purged_blocks.count(block->prev)
 			|| (is_synced && !fork->is_connected && time_now - fork->recv_time > block_timeout))
 		{
-			purge_block(block);
-			fork_tree.erase(block->hash);
+			if(fork_tree.erase(block->hash)) {
+				purge_block(block);
+			}
 			iter = fork_index.erase(iter);
 		} else {
 			iter++;
