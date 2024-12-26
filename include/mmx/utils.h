@@ -153,7 +153,7 @@ inline
 uint128_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
 	// TODO: is it off by 2x ?
-	const auto ideal = ((uint128_t(space_diff) * params->space_diff_constant) << 16) / params->score_target;
+	const auto ideal = uint128_t(space_diff) * params->space_diff_constant * params->proofs_per_height;
 	return to_effective_space(ideal);
 }
 
