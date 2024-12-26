@@ -298,6 +298,9 @@ void Router::handle(std::shared_ptr<const Block> block)
 		broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
 		block_counter++;
 	}
+	vdf_history.erase(vdf_history.begin(), vdf_history.upper_bound(verified_vdf_height));
+	farmer_credit.erase(farmer_credit.begin(), farmer_credit.upper_bound(verified_vdf_height));
+
 	verified_vdf_height = block->vdf_height;
 	verified_peak_height = block->height;
 }
@@ -331,13 +334,10 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 			log(INFO) << u8"\U0000231B Broadcasting VDF for height " << value->vdf_height;
 		}
 		broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
-		vdf_counter++;
-	}
 
-	auto& did_reward = hash_info[hash].did_reward;
-	if(!did_reward) {
-		did_reward = true;
-		timelord_credit.insert(value->timelord_key);
+		vdf_history.emplace(value->vdf_height, value);
+		timelord_credit[value->timelord_key] = 1;
+		vdf_counter++;
 	}
 }
 
@@ -370,12 +370,9 @@ void Router::handle(std::shared_ptr<const ProofResponse> value)
 		copy->harvester.clear();			// clear local information
 		copy->farmer_addr = vnx::Hash64();	// clear local information
 		broadcast(copy, hash, {node_type_e::FULL_NODE}, is_ours);
+
+		farmer_credit[value->vdf_height].insert(value->proof->farmer_key);
 		proof_counter++;
-	}
-	auto& did_reward = hash_info[hash].did_reward;
-	if(!did_reward) {
-		did_reward = true;
-		farmer_credit.insert(value->proof->farmer_key);
 	}
 }
 
@@ -921,15 +918,9 @@ void Router::save_data()
 		}
 	}
 	{
-		std::ofstream file(storage_path + "farmer_credit.txt", std::ios::trunc);
-		for(const auto& entry : farmer_credit) {
-			file << entry << std::endl;
-		}
-	}
-	{
 		std::ofstream file(storage_path + "timelord_credit.txt", std::ios::trunc);
 		for(const auto& entry : timelord_credit) {
-			file << entry << std::endl;
+			file << entry.first << std::endl << "\t" << entry.second;
 		}
 	}
 }
@@ -941,7 +932,7 @@ void Router::print_stats()
 			  << " vdf/s, " << float(proof_counter * 1000) / stats_interval_ms
 			  << " proof/s, " << float(block_counter * 1000) / stats_interval_ms
 			  << " block/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
-			  << " peers, " << farmer_credit.size() << " farmers, " << timelord_credit.size() << " timelords, "
+			  << " peers, " << timelord_credit.size() << " timelords, "
 			  << float(tx_upload_sum * 1000) / stats_interval_ms << " MMX/s tx upload, "
 			  << tx_drop_counter << " / " << vdf_drop_counter << " / " << proof_drop_counter << " / " << block_drop_counter << " dropped";
 	tx_counter = 0;
@@ -986,8 +977,11 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 			disconnect(client);
 			return;
 		}
-		if(timelord_credit.count(value->timelord_key)) {
+
+		auto iter = timelord_credit.find(value->timelord_key);
+		if(iter != timelord_credit.end() && iter->second > 0) {
 			if(relay_msg_hash(hash)) {
+				iter->second--;
 				relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 				vdf_counter++;
 			}
@@ -1017,7 +1011,8 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 		}
 		const auto farmer_key = block->proof->farmer_key;
 
-		if(farmer_credit.count(farmer_key)) {
+		auto iter = farmer_credit.find(block->vdf_height);
+		if(iter != farmer_credit.end() && iter->second.erase(farmer_key)) {
 			if(relay_msg_hash(hash)) {
 				relay(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
 				block_counter++;
@@ -1581,6 +1576,9 @@ void Router::on_connect(uint64_t client, const std::string& address)
 
 	if(peer_set.size() < max_peer_set) {
 		send_request(peer, Router_get_peers::create());
+	}
+	for(const auto& entry : vdf_history) {
+		send_to(peer, entry.second);	// make sure peer has all needed VDFs for current and next block
 	}
 	log(DEBUG) << "Connected to peer " << peer->address;
 }

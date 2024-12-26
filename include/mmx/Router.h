@@ -216,6 +216,7 @@ private:
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
 	std::map<std::string, uint64_t> connect_tasks;
+	std::map<uint32_t, std::shared_ptr<const ProofOfTime>> vdf_history;		// [vdf_height => proof]
 
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
@@ -223,14 +224,13 @@ private:
 
 	struct hash_info_t {
 		bool did_relay = false;
-		bool did_reward = false;
 	};
 
 	std::queue<hash_t> hash_queue;
 	std::unordered_map<hash_t, hash_info_t> hash_info;
 
-	std::set<pubkey_t> farmer_credit;
-	std::set<pubkey_t> timelord_credit;
+	std::map<uint32_t, std::set<pubkey_t>> farmer_credit;
+	std::map<pubkey_t, uint32_t> timelord_credit;
 	std::set<pubkey_t> our_timelords;
 
 	double tx_upload_credits = 0;
