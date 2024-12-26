@@ -372,7 +372,12 @@ exec_result_t Node::validate(std::shared_ptr<const Transaction> tx) const
 	if(tx->exec_result) {
 		throw std::logic_error("exec_result not null");
 	}
-	auto context = new_exec_context(get_height() + 1);
+	const auto height = get_height() + 1;
+
+	if(height < params->transaction_activation) {
+		throw std::logic_error("transactions not live yet");
+	}
+	auto context = new_exec_context(height);
 	context->do_profile = exec_profile;
 	context->do_trace = exec_trace;
 	prepare_context(context, tx);
