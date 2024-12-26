@@ -99,7 +99,7 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 
 	const auto delay_sec = out->lookup_time_ms / 1e3;
 	log(INFO) << "[" << my_name << "] Found proof with score " << proof->score << " for height "
-			<< request->base << " + " << request->index << ", delay " << delay_sec << " sec";
+			<< request->vdf_height << ", delay " << delay_sec << " sec";
 
 	publish(out, output_proofs);
 }
@@ -114,7 +114,7 @@ void Harvester::check_queue()
 		const auto delay_ms = now_ms - entry.recv_time_ms;
 
 		if(delay_ms > params->challenge_delay * params->block_interval_ms) {
-			log(WARN) << "[" << my_name << "] Missed deadline for height " << entry.request->base << " + " << entry.request->index;
+			log(WARN) << "[" << my_name << "] Missed deadline for height " << entry.request->vdf_height;
 			iter = lookup_queue.erase(iter);
 		} else {
 			iter++;
@@ -373,7 +373,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 			}
 			const auto delay_sec = (time_end - recv_time_ms) / 1e3;
 			log(INFO) << "[" << my_name << "] " << job->num_passed << " / " << job->total_plots
-					<< " plots were eligible for height " << value->base << " + " << value->index
+					<< " plots were eligible for height " << value->vdf_height
 					<< ", max lookup " << slow_time << " sec, delay " << delay_sec << " sec";
 		}
 	});

@@ -7,7 +7,8 @@ class IntervalRequest {
 	ulong start;
 	ulong end;
 	
+	hash_t infuse;
+	
 	optional<hash_t> input;
-	optional<hash_t> infuse;
 	
 }

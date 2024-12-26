@@ -16,7 +16,7 @@ class ProofOfTime {
 	
 	hash_t input;
 	
-	optional<hash_t> prev;				// block hash
+	hash_t prev;						// infused block hash
 	
 	optional<addr_t> reward_addr;
 	

@@ -2,9 +2,6 @@ package mmx;
 
 class Challenge {
 	
-	uint base;					// height
-	uint index;					// vdf index relative to base height
-	
 	uint vdf_height;
 	
 	hash_t challenge;

@@ -59,10 +59,8 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof)
 	}
 	hash.resize(width * 32);
 	{
-		auto input = proof->input;
-		if(proof->prev) {
-			input = hash_t(input + (*proof->prev));
-		}
+		auto input = hash_t(proof->input + proof->prev);
+
 		if(proof->reward_addr) {
 			input = hash_t(input + (*proof->reward_addr));
 		}

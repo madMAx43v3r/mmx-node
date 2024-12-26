@@ -1317,11 +1317,13 @@ bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, const uint32
 	{
 		std::shared_ptr<const BlockHeader> iter = block;
 		for(uint32_t i = 0; i < target; ++i) {
-			if(auto block = find_prev_header(iter, 1, true)) {
+			if(auto block = find_prev_header(iter)) {
 				chain.push_back(block);
 				iter = block;
-			} else {
+			} else if(iter->height) {
 				return false;
+			} else {
+				break;
 			}
 		}
 	}
@@ -1342,8 +1344,10 @@ bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, const uint32
 	}
 	std::reverse(list.begin(), list.end());
 
-	if(target >= list.size()) {
-		return false;
+	while(target >= list.size()) {
+		// generate challenges for "before" genesis
+		const auto prev = list.back();
+		list.emplace_back(hash_t(std::string("prev_challenge") + prev.first), prev.second);
 	}
 	const auto& out = list[target];
 	challenge = out.first;
@@ -1369,7 +1373,7 @@ bool Node::find_challenge(const uint32_t vdf_height, hash_t& challenge, uint64_t
 	if(!block) {
 		return false;
 	}
-	return find_challenge(block, vdf_height - block->height, challenge, space_diff);
+	return find_challenge(block, vdf_height - block->vdf_height, challenge, space_diff);
 }
 
 hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& space_diff) const
@@ -1381,26 +1385,28 @@ hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const uint3
 	return challenge;
 }
 
-bool Node::find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, vnx::optional<hash_t>& value, uint64_t& num_iters) const
+bool Node::find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& value, uint64_t& num_iters) const
 {
-	if(offset > params->infuse_delay) {
-		num_iters = block->time_diff * params->time_diff_constant;
-		value = nullptr;
-		return true;
-	}
-	const uint32_t target = params->infuse_delay - offset;
+	if(offset < params->infuse_delay)
+	{
+		const uint32_t delta = params->infuse_delay - offset;
+		const uint32_t target = block->vdf_height > delta ? block->vdf_height - delta : 0;
 
-	if(auto prev = find_prev_header(block, target, true)) {
-		num_iters = prev->time_diff * params->time_diff_constant;
-		value = prev->hash;
+		while(block && block->vdf_height > target) {
+			block = find_prev_header(block);
+		}
+	}
+	if(block) {
+		num_iters = block->time_diff * params->time_diff_constant;
+		value = block->hash;
 		return true;
 	}
 	return false;
 }
 
-vnx::optional<hash_t> Node::get_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& num_iters) const
+hash_t Node::get_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& num_iters) const
 {
-	vnx::optional<hash_t> value;
+	hash_t value;
 	if(!find_infusion(block, offset, value, num_iters)) {
 		throw std::logic_error("cannot find infusion");
 	}
@@ -1445,8 +1451,8 @@ Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 	auto output = block->vdf_output;
 	auto vdf_iters = prev->vdf_iters;
 	while(out.size() < block->vdf_count) {
+		hash_t infuse;
 		uint64_t num_iters = 0;
-		vnx::optional<hash_t> infuse;
 		const auto offset = block->vdf_count - out.size() - 1;
 		if(!find_infusion(prev, offset, infuse, num_iters)) {
 			return {};
@@ -1456,7 +1462,7 @@ Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 		for(auto iter = range.first; iter != range.second; ++iter) {
 			const auto& point = iter->second;
 			if(point->output == output && point->num_iters == num_iters
-				&& point->prev == infuse && point->reward_addr == block->reward_addr)
+				&& point->prev == infuse && point->reward_addr == block->vdf_reward_addr)
 			{
 				output = point->input;
 				vdf_iters += num_iters;
@@ -1470,9 +1476,6 @@ Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 		}
 	}
 	if(output != prev->vdf_output) {
-		return {};
-	}
-	if(vdf_iters != block->vdf_iters) {
 		return {};
 	}
 	std::reverse(out.begin(), out.end());
@@ -1494,18 +1497,22 @@ std::vector<std::shared_ptr<const VDF_Point>> Node::find_next_vdf_points(std::sh
 	{
 		uint64_t num_iters = 0;
 		const auto infuse = get_infusion(block, i, num_iters);
-		vdf_iters += num_iters;
 
+		vdf_iters += num_iters;
 		std::vector<std::shared_ptr<vdf_fork_t>> new_peaks;
 
 		const auto range = vdf_index.equal_range(vdf_iters);
-		for(auto iter = range.first; iter != range.second; ++iter) {
+		for(auto iter = range.first; iter != range.second; ++iter)
+		{
 			const auto& point = iter->second;
-			if(point->num_iters == num_iters && point->prev == infuse) {
+			if(point->num_iters == num_iters && point->prev == infuse)
+			{
 				const auto iter = fork_map.find(point->input);
-				if(iter != fork_map.end()) {
+				if(iter != fork_map.end())
+				{
 					const auto& prev = iter->second;
-					if(!prev->point || point->reward_addr == prev->point->reward_addr) {
+					if(!prev->point || point->reward_addr == prev->point->reward_addr)
+					{
 						auto fork = std::make_shared<vdf_fork_t>();
 						fork->prev = prev;
 						fork->point = point;

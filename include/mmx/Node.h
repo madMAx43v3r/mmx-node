@@ -386,18 +386,18 @@ private:
 
 	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
-	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const uint32_t height, const uint32_t index);
+	void verify_vdf(std::shared_ptr<const ProofOfTime> proof);
 
 	void verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const;
 
-	void verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint32_t height, const uint32_t index);
+	void verify_vdf_success(std::shared_ptr<const VDF_Point> point);
 
-	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const uint32_t height, const uint32_t index) noexcept;
+	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) noexcept;
 
 	void check_vdf(std::shared_ptr<fork_t> fork);
 
 	void check_vdf_task(std::shared_ptr<fork_t> fork,
-			std::shared_ptr<const BlockHeader> prev, const std::map<uint64_t, vnx::optional<hash_t>>& infuse) noexcept;
+			std::shared_ptr<const BlockHeader> prev, const std::map<uint64_t, hash_t>& infuse) noexcept;
 
 	size_t prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) const;
 
@@ -431,9 +431,9 @@ private:
 
 	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& space_diff) const;
 
-	bool find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, vnx::optional<hash_t>& value, uint64_t& num_iters) const;
+	bool find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& value, uint64_t& num_iters) const;
 
-	vnx::optional<hash_t> get_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& num_iters) const;
+	hash_t get_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& num_iters) const;
 
 	hash_t get_vdf_peak() const;
 
@@ -529,6 +529,7 @@ private:
 	std::vector<std::pair<std::shared_ptr<const ProofResponse>, int64_t>> proof_queue;		// [data, recv_time_ms]
 	std::vector<std::pair<std::shared_ptr<const ProofOfTime>, int64_t>> vdf_queue;			// [data, recv_time_ms]
 	std::unordered_set<hash_t> vdf_verify_pending;								// [proof hash]
+	std::map<pubkey_t, int64_t> timelord_trust;									// [timelord key => trust]
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_queue;	// [content_hash => tx]
 
 	std::shared_mutex db_mutex;								// covers DB as well as history

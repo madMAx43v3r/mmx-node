@@ -252,8 +252,7 @@ void TimeLord::update()
 
 void TimeLord::vdf_loop(vdf_point_t point)
 {
-	while(vnx_do_run())
-	{
+	while(vnx_do_run()) {
 		{
 			std::lock_guard<std::mutex> lock(mutex);
 
@@ -280,9 +279,8 @@ void TimeLord::vdf_loop(vdf_point_t point)
 			// apply infusion
 			auto iter = infuse.find(point.num_iters);
 			if(iter != infuse.end()) {
-				if(auto prev = iter->second) {
-					point.output = hash_t(point.output + (*prev));
-				}
+				point.output = hash_t(point.output + iter->second);
+
 				if(reward_addr) {
 					point.output = hash_t(point.output + (*reward_addr));
 				}
@@ -293,9 +291,9 @@ void TimeLord::vdf_loop(vdf_point_t point)
 		point.output = compute(point.output, segment_iters);
 		point.num_iters += segment_iters;
 
+		// update estimated speed
 		const auto time_end = vnx::get_wall_time_micros();
 		if(time_end > time_begin) {
-			// update estimated number of iterations per second
 			const auto speed = (segment_iters * 1000000) / (time_end - time_begin);
 			avg_iters_per_sec = (avg_iters_per_sec * 1023 + speed) / 1024;
 		}

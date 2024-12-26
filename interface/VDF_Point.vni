@@ -10,7 +10,7 @@ class VDF_Point {
 	hash_t input;
 	hash_t output;
 	
-	optional<hash_t> prev;						// block hash
+	hash_t prev;						// infused block hash
 	
 	optional<addr_t> reward_addr;
 	

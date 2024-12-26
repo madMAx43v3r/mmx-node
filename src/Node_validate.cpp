@@ -112,7 +112,23 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
 {
-	// Note: vdf_count + vdf_iters + vdf_output + vdf_reward_addr + proof + weight + total_weight + farmer_sig: already verified before
+	/*
+	 * The following fields have already been verified in `Node::verify_proof()` or see note:
+	 * - vdf_count				(Node::find_vdf_points() + Node::verify_proof())
+	 * - vdf_iters
+	 * - vdf_output				(Node::find_vdf_points())
+	 * - vdf_reward_addr		(Node::find_vdf_points())
+	 * - proof
+	 * - proof_hash
+	 * - challenge
+	 * - is_space_fork
+	 * - time_diff
+	 * - space_diff
+	 * - proof_score_sum
+	 * - proof_score_count
+	 * - weight
+	 * - total_weight
+	 */
 
 	if(!block->is_valid()) {
 		throw std::logic_error("static validation failed");
@@ -144,8 +160,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_diff == 0 || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}
-	validate_diff_adjust(block->time_diff, prev->time_diff);
-
 	if(block->static_cost > params->max_block_size) {
 		throw std::logic_error("block size too high: " + std::to_string(block->static_cost));
 	}
@@ -164,11 +178,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->reward_addr) {
 		if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
 			reward_contract = proof->contract;
-		}
-		if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-			if(auto plot = get_contract_as<contract::VirtualPlot>(proof->plot_id)) {
-				reward_contract = plot->reward_address;
-			}
 		}
 	}
 	if(block->reward_contract != reward_contract) {
@@ -219,47 +228,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		}
 		if(block->reward_vote_count != prev->reward_vote_count + (block->reward_vote ? 1 : 0)) {
 			throw std::logic_error("invalid reward_vote_count");
-		}
-	}
-
-	const auto& proof = block->proof;
-	if(!proof) {
-		throw std::logic_error("missing proof");
-	}
-	if(block->proof_hash != proof->calc_proof_hash()) {
-		throw std::logic_error("invalid proof_hash");
-	}
-
-	bool is_space_fork = false;
-	const auto challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, block->proof_hash, is_space_fork);
-	if(block->challenge != challenge) {
-		throw std::logic_error("invalid challenge");
-	}
-	if(block->is_space_fork != is_space_fork) {
-		throw std::logic_error("invalid is_space_fork");
-	}
-	const auto proof_score_sum = proof->score + uint32_t(block->vdf_count - 1) << 16;
-
-	if(is_space_fork) {
-		const auto space_diff = calc_new_space_diff(params, prev);
-		if(block->space_diff != space_diff) {
-			throw std::logic_error("invalid space_diff: " + std::to_string(block->space_diff) + " != " + std::to_string(space_diff));
-		}
-		if(block->proof_score_sum != proof_score_sum) {
-			throw std::logic_error("invalid proof_score_sum at space fork");
-		}
-		if(block->proof_score_count != block->vdf_count) {
-			throw std::logic_error("invalid proof_score_count at space fork");
-		}
-	} else {
-		if(block->space_diff != prev->space_diff) {
-			throw std::logic_error("invalid space_diff change");
-		}
-		if(block->proof_score_sum != prev->proof_score_sum + proof_score_sum) {
-			throw std::logic_error("invalid proof_score_sum");
-		}
-		if(block->proof_score_count != prev->proof_score_count + block->vdf_count) {
-			throw std::logic_error("invalid proof_score_count");
 		}
 	}
 
