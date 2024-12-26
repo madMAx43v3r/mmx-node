@@ -16,12 +16,12 @@ namespace mmx {
 class MMX_EXPORT VDF_Point : public ::vnx::Value {
 public:
 	
-	uint32_t height = 0;
-	uint64_t vdf_start = 0;
-	uint64_t vdf_iters = 0;
-	std::array<::mmx::hash_t, 2> input = {};
-	std::array<::mmx::hash_t, 2> output = {};
-	vnx::optional<::mmx::hash_t> infused;
+	uint32_t vdf_height = 0;
+	uint64_t start = 0;
+	uint64_t num_iters = 0;
+	::mmx::hash_t input;
+	::mmx::hash_t output;
+	::mmx::hash_t prev;
 	vnx::optional<::mmx::addr_t> reward_addr;
 	::mmx::hash_t content_hash;
 	int64_t recv_time = 0;
@@ -76,12 +76,12 @@ protected:
 template<typename T>
 void VDF_Point::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<VDF_Point>(10);
-	_visitor.type_field("height", 0); _visitor.accept(height);
-	_visitor.type_field("vdf_start", 1); _visitor.accept(vdf_start);
-	_visitor.type_field("vdf_iters", 2); _visitor.accept(vdf_iters);
+	_visitor.type_field("vdf_height", 0); _visitor.accept(vdf_height);
+	_visitor.type_field("start", 1); _visitor.accept(start);
+	_visitor.type_field("num_iters", 2); _visitor.accept(num_iters);
 	_visitor.type_field("input", 3); _visitor.accept(input);
 	_visitor.type_field("output", 4); _visitor.accept(output);
-	_visitor.type_field("infused", 5); _visitor.accept(infused);
+	_visitor.type_field("prev", 5); _visitor.accept(prev);
 	_visitor.type_field("reward_addr", 6); _visitor.accept(reward_addr);
 	_visitor.type_field("content_hash", 7); _visitor.accept(content_hash);
 	_visitor.type_field("recv_time", 8); _visitor.accept(recv_time);

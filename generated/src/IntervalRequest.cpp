@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 IntervalRequest::VNX_TYPE_HASH(0xa4e39be061f13d71ull);
-const vnx::Hash64 IntervalRequest::VNX_CODE_HASH(0x28618433b990a561ull);
+const vnx::Hash64 IntervalRequest::VNX_CODE_HASH(0x7da3de79e64223a8ull);
 
 vnx::Hash64 IntervalRequest::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -46,23 +46,21 @@ void IntervalRequest::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_co
 void IntervalRequest::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_IntervalRequest;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, begin);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, end);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, start_values);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, has_start);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, num_segments);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, height);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, vdf_height);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, start);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, end);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, infuse);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, input);
 	_visitor.type_end(*_type_code);
 }
 
 void IntervalRequest::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.IntervalRequest\"";
-	_out << ", \"begin\": "; vnx::write(_out, begin);
+	_out << ", \"vdf_height\": "; vnx::write(_out, vdf_height);
+	_out << ", \"start\": "; vnx::write(_out, start);
 	_out << ", \"end\": "; vnx::write(_out, end);
-	_out << ", \"start_values\": "; vnx::write(_out, start_values);
-	_out << ", \"has_start\": "; vnx::write(_out, has_start);
-	_out << ", \"num_segments\": "; vnx::write(_out, num_segments);
-	_out << ", \"height\": "; vnx::write(_out, height);
+	_out << ", \"infuse\": "; vnx::write(_out, infuse);
+	_out << ", \"input\": "; vnx::write(_out, input);
 	_out << "}";
 }
 
@@ -75,68 +73,60 @@ void IntervalRequest::read(std::istream& _in) {
 vnx::Object IntervalRequest::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.IntervalRequest";
-	_object["begin"] = begin;
+	_object["vdf_height"] = vdf_height;
+	_object["start"] = start;
 	_object["end"] = end;
-	_object["start_values"] = start_values;
-	_object["has_start"] = has_start;
-	_object["num_segments"] = num_segments;
-	_object["height"] = height;
+	_object["infuse"] = infuse;
+	_object["input"] = input;
 	return _object;
 }
 
 void IntervalRequest::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "begin") {
-			_entry.second.to(begin);
-		} else if(_entry.first == "end") {
+		if(_entry.first == "end") {
 			_entry.second.to(end);
-		} else if(_entry.first == "has_start") {
-			_entry.second.to(has_start);
-		} else if(_entry.first == "height") {
-			_entry.second.to(height);
-		} else if(_entry.first == "num_segments") {
-			_entry.second.to(num_segments);
-		} else if(_entry.first == "start_values") {
-			_entry.second.to(start_values);
+		} else if(_entry.first == "infuse") {
+			_entry.second.to(infuse);
+		} else if(_entry.first == "input") {
+			_entry.second.to(input);
+		} else if(_entry.first == "start") {
+			_entry.second.to(start);
+		} else if(_entry.first == "vdf_height") {
+			_entry.second.to(vdf_height);
 		}
 	}
 }
 
 vnx::Variant IntervalRequest::get_field(const std::string& _name) const {
-	if(_name == "begin") {
-		return vnx::Variant(begin);
+	if(_name == "vdf_height") {
+		return vnx::Variant(vdf_height);
+	}
+	if(_name == "start") {
+		return vnx::Variant(start);
 	}
 	if(_name == "end") {
 		return vnx::Variant(end);
 	}
-	if(_name == "start_values") {
-		return vnx::Variant(start_values);
+	if(_name == "infuse") {
+		return vnx::Variant(infuse);
 	}
-	if(_name == "has_start") {
-		return vnx::Variant(has_start);
-	}
-	if(_name == "num_segments") {
-		return vnx::Variant(num_segments);
-	}
-	if(_name == "height") {
-		return vnx::Variant(height);
+	if(_name == "input") {
+		return vnx::Variant(input);
 	}
 	return vnx::Variant();
 }
 
 void IntervalRequest::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "begin") {
-		_value.to(begin);
+	if(_name == "vdf_height") {
+		_value.to(vdf_height);
+	} else if(_name == "start") {
+		_value.to(start);
 	} else if(_name == "end") {
 		_value.to(end);
-	} else if(_name == "start_values") {
-		_value.to(start_values);
-	} else if(_name == "has_start") {
-		_value.to(has_start);
-	} else if(_name == "num_segments") {
-		_value.to(num_segments);
-	} else if(_name == "height") {
-		_value.to(height);
+	} else if(_name == "infuse") {
+		_value.to(infuse);
+	} else if(_name == "input") {
+		_value.to(input);
 	}
 }
 
@@ -164,47 +154,41 @@ std::shared_ptr<vnx::TypeCode> IntervalRequest::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.IntervalRequest";
 	type_code->type_hash = vnx::Hash64(0xa4e39be061f13d71ull);
-	type_code->code_hash = vnx::Hash64(0x28618433b990a561ull);
+	type_code->code_hash = vnx::Hash64(0x7da3de79e64223a8ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::IntervalRequest);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<IntervalRequest>(); };
-	type_code->fields.resize(6);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
-		field.data_size = 8;
-		field.name = "begin";
-		field.code = {4};
+		field.data_size = 4;
+		field.name = "vdf_height";
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[1];
+		field.data_size = 8;
+		field.name = "start";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[2];
 		field.data_size = 8;
 		field.name = "end";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[2];
-		field.is_extended = true;
-		field.name = "start_values";
-		field.code = {11, 2, 11, 32, 1};
-	}
-	{
 		auto& field = type_code->fields[3];
-		field.data_size = 1;
-		field.name = "has_start";
-		field.code = {31};
+		field.is_extended = true;
+		field.name = "infuse";
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[4];
-		field.data_size = 4;
-		field.name = "num_segments";
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[5];
-		field.data_size = 4;
-		field.name = "height";
-		field.code = {3};
+		field.is_extended = true;
+		field.name = "input";
+		field.code = {33, 11, 32, 1};
 	}
 	type_code->build();
 	return type_code;
@@ -256,24 +240,19 @@ void read(TypeInput& in, ::mmx::IntervalRequest& value, const TypeCode* type_cod
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.begin, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.vdf_height, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.start, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.end, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.has_start, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[4]) {
-			vnx::read_value(_buf + _field->offset, value.num_segments, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[5]) {
-			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 2: vnx::read(in, value.start_values, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.infuse, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.input, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -292,13 +271,12 @@ void write(TypeOutput& out, const ::mmx::IntervalRequest& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(25);
-	vnx::write_value(_buf + 0, value.begin);
-	vnx::write_value(_buf + 8, value.end);
-	vnx::write_value(_buf + 16, value.has_start);
-	vnx::write_value(_buf + 17, value.num_segments);
-	vnx::write_value(_buf + 21, value.height);
-	vnx::write(out, value.start_values, type_code, type_code->fields[2].code.data());
+	auto* const _buf = out.write(20);
+	vnx::write_value(_buf + 0, value.vdf_height);
+	vnx::write_value(_buf + 4, value.start);
+	vnx::write_value(_buf + 12, value.end);
+	vnx::write(out, value.infuse, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.input, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::IntervalRequest& value) {

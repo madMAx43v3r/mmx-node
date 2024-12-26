@@ -6,7 +6,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/IntervalRequest.hxx>
-#include <mmx/TimeInfusion.hxx>
 #include <mmx/addr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -17,15 +16,12 @@ namespace mmx {
 class MMX_EXPORT TimeLordBase : public ::vnx::Module {
 public:
 	
-	::vnx::TopicPtr input_infuse = "timelord.infuse";
 	::vnx::TopicPtr input_request = "timelord.requests";
 	::vnx::TopicPtr output_proofs = "timelord.proof";
-	uint32_t max_history = 65536;
-	uint32_t restart_holdoff = 60000;
+	uint32_t max_history = 1000000;
 	std::string node_server = "Node";
 	std::string wallet_server = "Wallet";
 	std::string storage_path;
-	vnx::bool_t enable_reward = 0;
 	vnx::optional<::mmx::addr_t> reward_addr;
 	
 	typedef ::vnx::Module Super;
@@ -64,7 +60,6 @@ protected:
 	using Super::handle;
 	
 	virtual void stop_vdf() = 0;
-	virtual void handle(std::shared_ptr<const ::mmx::TimeInfusion> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::IntervalRequest> _value) {}
 	
 	void vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) override;
@@ -74,18 +69,15 @@ protected:
 
 template<typename T>
 void TimeLordBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<TimeLordBase>(10);
-	_visitor.type_field("input_infuse", 0); _visitor.accept(input_infuse);
-	_visitor.type_field("input_request", 1); _visitor.accept(input_request);
-	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
-	_visitor.type_field("max_history", 3); _visitor.accept(max_history);
-	_visitor.type_field("restart_holdoff", 4); _visitor.accept(restart_holdoff);
-	_visitor.type_field("node_server", 5); _visitor.accept(node_server);
-	_visitor.type_field("wallet_server", 6); _visitor.accept(wallet_server);
-	_visitor.type_field("storage_path", 7); _visitor.accept(storage_path);
-	_visitor.type_field("enable_reward", 8); _visitor.accept(enable_reward);
-	_visitor.type_field("reward_addr", 9); _visitor.accept(reward_addr);
-	_visitor.template type_end<TimeLordBase>(10);
+	_visitor.template type_begin<TimeLordBase>(7);
+	_visitor.type_field("input_request", 0); _visitor.accept(input_request);
+	_visitor.type_field("output_proofs", 1); _visitor.accept(output_proofs);
+	_visitor.type_field("max_history", 2); _visitor.accept(max_history);
+	_visitor.type_field("node_server", 3); _visitor.accept(node_server);
+	_visitor.type_field("wallet_server", 4); _visitor.accept(wallet_server);
+	_visitor.type_field("storage_path", 5); _visitor.accept(storage_path);
+	_visitor.type_field("reward_addr", 6); _visitor.accept(reward_addr);
+	_visitor.template type_end<TimeLordBase>(7);
 }
 
 

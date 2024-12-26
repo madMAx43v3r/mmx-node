@@ -33,7 +33,6 @@
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_info_t.hxx>
 #include <mmx/uint128.hpp>
-#include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/vm/varptr_t.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -152,14 +151,6 @@ public:
 	vnx::optional<::mmx::plot_nft_info_t> get_plot_nft_info(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
 	::mmx::addr_t get_plot_nft_target(const ::mmx::addr_t& address = ::mmx::addr_t(), const vnx::optional<::mmx::addr_t>& farmer_addr = nullptr);
-	
-	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const std::vector<::mmx::addr_t>& addresses = {});
-	
-	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_for(const ::mmx::pubkey_t& farmer_key = ::mmx::pubkey_t());
-	
-	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<::mmx::addr_t>& addresses = {});
-	
-	uint64_t get_virtual_plot_balance(const ::mmx::addr_t& plot_id = ::mmx::addr_t(), const vnx::optional<::mmx::hash_t>& block_hash = nullptr);
 	
 	::mmx::offer_data_t get_offer(const ::mmx::addr_t& address = ::mmx::addr_t());
 	

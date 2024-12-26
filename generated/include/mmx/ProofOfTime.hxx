@@ -5,12 +5,10 @@
 #define INCLUDE_mmx_ProofOfTime_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
-#include <mmx/time_segment_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -19,15 +17,16 @@ namespace mmx {
 class MMX_EXPORT ProofOfTime : public ::vnx::Value {
 public:
 	
-	::mmx::hash_t hash;
 	uint32_t version = 0;
-	uint32_t height = 0;
+	::mmx::hash_t hash;
+	uint32_t vdf_height = 0;
 	uint64_t start = 0;
-	std::array<::mmx::hash_t, 2> input = {};
-	std::array<vnx::optional<::mmx::hash_t>, 2> infuse = {};
-	std::vector<::mmx::time_segment_t> segments;
-	std::vector<::mmx::hash_t> reward_segments;
+	uint64_t num_iters = 0;
+	uint32_t segment_size = 0;
+	::mmx::hash_t input;
+	::mmx::hash_t prev;
 	vnx::optional<::mmx::addr_t> reward_addr;
+	std::vector<::mmx::hash_t> segments;
 	::mmx::pubkey_t timelord_key;
 	::mmx::signature_t timelord_sig;
 	::mmx::hash_t content_hash;
@@ -45,10 +44,10 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
-	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
-	virtual std::pair<::mmx::hash_t, ::mmx::hash_t> calc_hash() const;
-	virtual ::mmx::hash_t get_output(const uint32_t& chain = 0) const;
-	virtual uint64_t get_num_iters() const;
+	virtual vnx::bool_t is_valid() const;
+	virtual ::mmx::hash_t calc_hash() const;
+	virtual ::mmx::hash_t calc_content_hash() const;
+	virtual ::mmx::hash_t get_output() const;
 	virtual uint64_t get_vdf_iters() const;
 	virtual void validate() const;
 	
@@ -84,20 +83,21 @@ protected:
 
 template<typename T>
 void ProofOfTime::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfTime>(12);
-	_visitor.type_field("hash", 0); _visitor.accept(hash);
-	_visitor.type_field("version", 1); _visitor.accept(version);
-	_visitor.type_field("height", 2); _visitor.accept(height);
+	_visitor.template type_begin<ProofOfTime>(13);
+	_visitor.type_field("version", 0); _visitor.accept(version);
+	_visitor.type_field("hash", 1); _visitor.accept(hash);
+	_visitor.type_field("vdf_height", 2); _visitor.accept(vdf_height);
 	_visitor.type_field("start", 3); _visitor.accept(start);
-	_visitor.type_field("input", 4); _visitor.accept(input);
-	_visitor.type_field("infuse", 5); _visitor.accept(infuse);
-	_visitor.type_field("segments", 6); _visitor.accept(segments);
-	_visitor.type_field("reward_segments", 7); _visitor.accept(reward_segments);
+	_visitor.type_field("num_iters", 4); _visitor.accept(num_iters);
+	_visitor.type_field("segment_size", 5); _visitor.accept(segment_size);
+	_visitor.type_field("input", 6); _visitor.accept(input);
+	_visitor.type_field("prev", 7); _visitor.accept(prev);
 	_visitor.type_field("reward_addr", 8); _visitor.accept(reward_addr);
-	_visitor.type_field("timelord_key", 9); _visitor.accept(timelord_key);
-	_visitor.type_field("timelord_sig", 10); _visitor.accept(timelord_sig);
-	_visitor.type_field("content_hash", 11); _visitor.accept(content_hash);
-	_visitor.template type_end<ProofOfTime>(12);
+	_visitor.type_field("segments", 9); _visitor.accept(segments);
+	_visitor.type_field("timelord_key", 10); _visitor.accept(timelord_key);
+	_visitor.type_field("timelord_sig", 11); _visitor.accept(timelord_sig);
+	_visitor.type_field("content_hash", 12); _visitor.accept(content_hash);
+	_visitor.template type_end<ProofOfTime>(13);
 }
 
 

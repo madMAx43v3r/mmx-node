@@ -14,11 +14,9 @@ namespace mmx {
 class MMX_EXPORT Challenge : public ::vnx::Value {
 public:
 	
-	uint32_t height = 0;
+	uint32_t vdf_height = 0;
 	::mmx::hash_t challenge;
-	::mmx::hash_t diff_block_hash;
-	uint64_t space_diff = 0;
-	uint32_t max_delay = 0;
+	uint64_t difficulty = 0;
 	
 	typedef ::vnx::Value Super;
 	
@@ -32,8 +30,6 @@ public:
 	vnx::Hash64 get_type_hash() const override;
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
-	
-	virtual ::mmx::hash_t calc_hash() const;
 	
 	static std::shared_ptr<Challenge> create();
 	std::shared_ptr<vnx::Value> clone() const override;
@@ -67,13 +63,11 @@ protected:
 
 template<typename T>
 void Challenge::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Challenge>(5);
-	_visitor.type_field("height", 0); _visitor.accept(height);
+	_visitor.template type_begin<Challenge>(3);
+	_visitor.type_field("vdf_height", 0); _visitor.accept(vdf_height);
 	_visitor.type_field("challenge", 1); _visitor.accept(challenge);
-	_visitor.type_field("diff_block_hash", 2); _visitor.accept(diff_block_hash);
-	_visitor.type_field("space_diff", 3); _visitor.accept(space_diff);
-	_visitor.type_field("max_delay", 4); _visitor.accept(max_delay);
-	_visitor.template type_end<Challenge>(5);
+	_visitor.type_field("difficulty", 2); _visitor.accept(difficulty);
+	_visitor.template type_end<Challenge>(3);
 }
 
 

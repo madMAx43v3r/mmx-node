@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 LookupInfo::VNX_TYPE_HASH(0xb7b2ff343487dd63ull);
-const vnx::Hash64 LookupInfo::VNX_CODE_HASH(0xc8ba1e4a53376dbfull);
+const vnx::Hash64 LookupInfo::VNX_CODE_HASH(0x62dcd0e9316eb657ull);
 
 vnx::Hash64 LookupInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,7 +48,7 @@ void LookupInfo::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, id);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, name);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, height);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, vdf_height);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, num_passed);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, num_total);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, slow_time_ms);
@@ -62,7 +62,7 @@ void LookupInfo::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.LookupInfo\"";
 	_out << ", \"id\": "; vnx::write(_out, id);
 	_out << ", \"name\": "; vnx::write(_out, name);
-	_out << ", \"height\": "; vnx::write(_out, height);
+	_out << ", \"vdf_height\": "; vnx::write(_out, vdf_height);
 	_out << ", \"num_passed\": "; vnx::write(_out, num_passed);
 	_out << ", \"num_total\": "; vnx::write(_out, num_total);
 	_out << ", \"slow_time_ms\": "; vnx::write(_out, slow_time_ms);
@@ -83,7 +83,7 @@ vnx::Object LookupInfo::to_object() const {
 	_object["__type"] = "mmx.LookupInfo";
 	_object["id"] = id;
 	_object["name"] = name;
-	_object["height"] = height;
+	_object["vdf_height"] = vdf_height;
 	_object["num_passed"] = num_passed;
 	_object["num_total"] = num_total;
 	_object["slow_time_ms"] = slow_time_ms;
@@ -95,9 +95,7 @@ vnx::Object LookupInfo::to_object() const {
 
 void LookupInfo::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "height") {
-			_entry.second.to(height);
-		} else if(_entry.first == "id") {
+		if(_entry.first == "id") {
 			_entry.second.to(id);
 		} else if(_entry.first == "name") {
 			_entry.second.to(name);
@@ -113,6 +111,8 @@ void LookupInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(total_delay_ms);
 		} else if(_entry.first == "total_time_ms") {
 			_entry.second.to(total_time_ms);
+		} else if(_entry.first == "vdf_height") {
+			_entry.second.to(vdf_height);
 		}
 	}
 }
@@ -124,8 +124,8 @@ vnx::Variant LookupInfo::get_field(const std::string& _name) const {
 	if(_name == "name") {
 		return vnx::Variant(name);
 	}
-	if(_name == "height") {
-		return vnx::Variant(height);
+	if(_name == "vdf_height") {
+		return vnx::Variant(vdf_height);
 	}
 	if(_name == "num_passed") {
 		return vnx::Variant(num_passed);
@@ -153,8 +153,8 @@ void LookupInfo::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(id);
 	} else if(_name == "name") {
 		_value.to(name);
-	} else if(_name == "height") {
-		_value.to(height);
+	} else if(_name == "vdf_height") {
+		_value.to(vdf_height);
 	} else if(_name == "num_passed") {
 		_value.to(num_passed);
 	} else if(_name == "num_total") {
@@ -194,7 +194,7 @@ std::shared_ptr<vnx::TypeCode> LookupInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.LookupInfo";
 	type_code->type_hash = vnx::Hash64(0xb7b2ff343487dd63ull);
-	type_code->code_hash = vnx::Hash64(0xc8ba1e4a53376dbfull);
+	type_code->code_hash = vnx::Hash64(0x62dcd0e9316eb657ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::LookupInfo);
@@ -215,7 +215,7 @@ std::shared_ptr<vnx::TypeCode> LookupInfo::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.data_size = 4;
-		field.name = "height";
+		field.name = "vdf_height";
 		field.code = {3};
 	}
 	{
@@ -304,7 +304,7 @@ void read(TypeInput& in, ::mmx::LookupInfo& value, const TypeCode* type_code, co
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.vdf_height, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.num_passed, _field->code.data());
@@ -346,7 +346,7 @@ void write(TypeOutput& out, const ::mmx::LookupInfo& value, const TypeCode* type
 		type_code = type_code->depends[code[1]];
 	}
 	auto* const _buf = out.write(36);
-	vnx::write_value(_buf + 0, value.height);
+	vnx::write_value(_buf + 0, value.vdf_height);
 	vnx::write_value(_buf + 4, value.num_passed);
 	vnx::write_value(_buf + 8, value.num_total);
 	vnx::write_value(_buf + 12, value.slow_time_ms);

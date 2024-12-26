@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_ProofResponse_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/Challenge.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/signature_t.hpp>
@@ -19,7 +18,7 @@ class MMX_EXPORT ProofResponse : public ::vnx::Value {
 public:
 	
 	::mmx::hash_t hash;
-	std::shared_ptr<const ::mmx::Challenge> request;
+	uint32_t vdf_height = 0;
 	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
 	::mmx::signature_t farmer_sig;
 	::mmx::hash_t content_hash;
@@ -41,7 +40,8 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual vnx::bool_t is_valid() const;
-	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = false) const;
+	virtual ::mmx::hash_t calc_hash() const;
+	virtual ::mmx::hash_t calc_content_hash() const;
 	virtual void validate() const;
 	
 	static std::shared_ptr<ProofResponse> create();
@@ -78,7 +78,7 @@ template<typename T>
 void ProofResponse::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<ProofResponse>(8);
 	_visitor.type_field("hash", 0); _visitor.accept(hash);
-	_visitor.type_field("request", 1); _visitor.accept(request);
+	_visitor.type_field("vdf_height", 1); _visitor.accept(vdf_height);
 	_visitor.type_field("proof", 2); _visitor.accept(proof);
 	_visitor.type_field("farmer_sig", 3); _visitor.accept(farmer_sig);
 	_visitor.type_field("content_hash", 4); _visitor.accept(content_hash);

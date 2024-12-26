@@ -26,7 +26,6 @@ public:
 	uint64_t address_count = 0;
 	vnx::float64_t vdf_speed = 0;
 	vnx::float64_t block_size = 0;
-	vnx::float64_t netspace_ratio = 0;
 	uint64_t average_txfee = 0;
 	::mmx::hash_t genesis_hash;
 	std::string name;
@@ -76,7 +75,7 @@ protected:
 
 template<typename T>
 void NetworkInfo::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NetworkInfo>(16);
+	_visitor.template type_begin<NetworkInfo>(15);
 	_visitor.type_field("is_synced", 0); _visitor.accept(is_synced);
 	_visitor.type_field("height", 1); _visitor.accept(height);
 	_visitor.type_field("synced_since", 2); _visitor.accept(synced_since);
@@ -89,11 +88,10 @@ void NetworkInfo::accept_generic(T& _visitor) const {
 	_visitor.type_field("address_count", 9); _visitor.accept(address_count);
 	_visitor.type_field("vdf_speed", 10); _visitor.accept(vdf_speed);
 	_visitor.type_field("block_size", 11); _visitor.accept(block_size);
-	_visitor.type_field("netspace_ratio", 12); _visitor.accept(netspace_ratio);
-	_visitor.type_field("average_txfee", 13); _visitor.accept(average_txfee);
-	_visitor.type_field("genesis_hash", 14); _visitor.accept(genesis_hash);
-	_visitor.type_field("name", 15); _visitor.accept(name);
-	_visitor.template type_end<NetworkInfo>(16);
+	_visitor.type_field("average_txfee", 12); _visitor.accept(average_txfee);
+	_visitor.type_field("genesis_hash", 13); _visitor.accept(genesis_hash);
+	_visitor.type_field("name", 14); _visitor.accept(name);
+	_visitor.template type_end<NetworkInfo>(15);
 }
 
 

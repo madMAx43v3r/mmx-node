@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Partial::VNX_TYPE_HASH(0x2c849b13a7efd71aull);
-const vnx::Hash64 Partial::VNX_CODE_HASH(0x2e0db6c4c3b81bb0ull);
+const vnx::Hash64 Partial::VNX_CODE_HASH(0xca1340c22c20b48full);
 
 vnx::Hash64 Partial::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,30 +49,26 @@ void Partial::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, cons
 void Partial::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Partial;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, height);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, vdf_height);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, hash);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, challenge);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, contract);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, account);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, pool_url);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, harvester);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, difficulty);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, lookup_time_ms);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, proof);
-	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, farmer_sig);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, contract);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, account);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, pool_url);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, harvester);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, lookup_time_ms);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, proof);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, farmer_sig);
 	_visitor.type_end(*_type_code);
 }
 
 void Partial::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Partial\"";
-	_out << ", \"height\": "; vnx::write(_out, height);
+	_out << ", \"vdf_height\": "; vnx::write(_out, vdf_height);
 	_out << ", \"hash\": "; vnx::write(_out, hash);
-	_out << ", \"challenge\": "; vnx::write(_out, challenge);
 	_out << ", \"contract\": "; vnx::write(_out, contract);
 	_out << ", \"account\": "; vnx::write(_out, account);
 	_out << ", \"pool_url\": "; vnx::write(_out, pool_url);
 	_out << ", \"harvester\": "; vnx::write(_out, harvester);
-	_out << ", \"difficulty\": "; vnx::write(_out, difficulty);
 	_out << ", \"lookup_time_ms\": "; vnx::write(_out, lookup_time_ms);
 	_out << ", \"proof\": "; vnx::write(_out, proof);
 	_out << ", \"farmer_sig\": "; vnx::write(_out, farmer_sig);
@@ -88,14 +84,12 @@ void Partial::read(std::istream& _in) {
 vnx::Object Partial::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Partial";
-	_object["height"] = height;
+	_object["vdf_height"] = vdf_height;
 	_object["hash"] = hash;
-	_object["challenge"] = challenge;
 	_object["contract"] = contract;
 	_object["account"] = account;
 	_object["pool_url"] = pool_url;
 	_object["harvester"] = harvester;
-	_object["difficulty"] = difficulty;
 	_object["lookup_time_ms"] = lookup_time_ms;
 	_object["proof"] = proof;
 	_object["farmer_sig"] = farmer_sig;
@@ -106,39 +100,32 @@ void Partial::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "account") {
 			_entry.second.to(account);
-		} else if(_entry.first == "challenge") {
-			_entry.second.to(challenge);
 		} else if(_entry.first == "contract") {
 			_entry.second.to(contract);
-		} else if(_entry.first == "difficulty") {
-			_entry.second.to(difficulty);
 		} else if(_entry.first == "farmer_sig") {
 			_entry.second.to(farmer_sig);
 		} else if(_entry.first == "harvester") {
 			_entry.second.to(harvester);
 		} else if(_entry.first == "hash") {
 			_entry.second.to(hash);
-		} else if(_entry.first == "height") {
-			_entry.second.to(height);
 		} else if(_entry.first == "lookup_time_ms") {
 			_entry.second.to(lookup_time_ms);
 		} else if(_entry.first == "pool_url") {
 			_entry.second.to(pool_url);
 		} else if(_entry.first == "proof") {
 			_entry.second.to(proof);
+		} else if(_entry.first == "vdf_height") {
+			_entry.second.to(vdf_height);
 		}
 	}
 }
 
 vnx::Variant Partial::get_field(const std::string& _name) const {
-	if(_name == "height") {
-		return vnx::Variant(height);
+	if(_name == "vdf_height") {
+		return vnx::Variant(vdf_height);
 	}
 	if(_name == "hash") {
 		return vnx::Variant(hash);
-	}
-	if(_name == "challenge") {
-		return vnx::Variant(challenge);
 	}
 	if(_name == "contract") {
 		return vnx::Variant(contract);
@@ -151,9 +138,6 @@ vnx::Variant Partial::get_field(const std::string& _name) const {
 	}
 	if(_name == "harvester") {
 		return vnx::Variant(harvester);
-	}
-	if(_name == "difficulty") {
-		return vnx::Variant(difficulty);
 	}
 	if(_name == "lookup_time_ms") {
 		return vnx::Variant(lookup_time_ms);
@@ -168,12 +152,10 @@ vnx::Variant Partial::get_field(const std::string& _name) const {
 }
 
 void Partial::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "height") {
-		_value.to(height);
+	if(_name == "vdf_height") {
+		_value.to(vdf_height);
 	} else if(_name == "hash") {
 		_value.to(hash);
-	} else if(_name == "challenge") {
-		_value.to(challenge);
 	} else if(_name == "contract") {
 		_value.to(contract);
 	} else if(_name == "account") {
@@ -182,8 +164,6 @@ void Partial::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(pool_url);
 	} else if(_name == "harvester") {
 		_value.to(harvester);
-	} else if(_name == "difficulty") {
-		_value.to(difficulty);
 	} else if(_name == "lookup_time_ms") {
 		_value.to(lookup_time_ms);
 	} else if(_name == "proof") {
@@ -217,16 +197,16 @@ std::shared_ptr<vnx::TypeCode> Partial::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Partial";
 	type_code->type_hash = vnx::Hash64(0x2c849b13a7efd71aull);
-	type_code->code_hash = vnx::Hash64(0x2e0db6c4c3b81bb0ull);
+	type_code->code_hash = vnx::Hash64(0xca1340c22c20b48full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Partial);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Partial>(); };
-	type_code->fields.resize(11);
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
-		field.name = "height";
+		field.name = "vdf_height";
 		field.code = {3};
 	}
 	{
@@ -238,53 +218,41 @@ std::shared_ptr<vnx::TypeCode> Partial::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
-		field.name = "challenge";
+		field.name = "contract";
 		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
-		field.name = "contract";
+		field.name = "account";
 		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
-		field.name = "account";
-		field.code = {11, 32, 1};
-	}
-	{
-		auto& field = type_code->fields[5];
-		field.is_extended = true;
 		field.name = "pool_url";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[5];
 		field.is_extended = true;
 		field.name = "harvester";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[7];
-		field.data_size = 8;
-		field.name = "difficulty";
-		field.code = {4};
-	}
-	{
-		auto& field = type_code->fields[8];
+		auto& field = type_code->fields[6];
 		field.data_size = 4;
 		field.name = "lookup_time_ms";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[9];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "proof";
 		field.code = {16};
 	}
 	{
-		auto& field = type_code->fields[10];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "farmer_sig";
 		field.code = {33, 11, 64, 1};
@@ -339,25 +307,21 @@ void read(TypeInput& in, ::mmx::Partial& value, const TypeCode* type_code, const
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.vdf_height, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[7]) {
-			vnx::read_value(_buf + _field->offset, value.difficulty, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[8]) {
+		if(const auto* const _field = type_code->field_map[6]) {
 			vnx::read_value(_buf + _field->offset, value.lookup_time_ms, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.hash, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.challenge, type_code, _field->code.data()); break;
-			case 3: vnx::read(in, value.contract, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.account, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.pool_url, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.harvester, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.proof, type_code, _field->code.data()); break;
-			case 10: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.account, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.pool_url, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.harvester, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.proof, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -376,18 +340,16 @@ void write(TypeOutput& out, const ::mmx::Partial& value, const TypeCode* type_co
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(16);
-	vnx::write_value(_buf + 0, value.height);
-	vnx::write_value(_buf + 4, value.difficulty);
-	vnx::write_value(_buf + 12, value.lookup_time_ms);
+	auto* const _buf = out.write(8);
+	vnx::write_value(_buf + 0, value.vdf_height);
+	vnx::write_value(_buf + 4, value.lookup_time_ms);
 	vnx::write(out, value.hash, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.challenge, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.contract, type_code, type_code->fields[3].code.data());
-	vnx::write(out, value.account, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.pool_url, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.harvester, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.proof, type_code, type_code->fields[9].code.data());
-	vnx::write(out, value.farmer_sig, type_code, type_code->fields[10].code.data());
+	vnx::write(out, value.contract, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.account, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.pool_url, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.harvester, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.proof, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.farmer_sig, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::Partial& value) {

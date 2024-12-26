@@ -154,14 +154,6 @@
 #include <mmx/Node_get_tx_info_return.hxx>
 #include <mmx/Node_get_tx_info_for.hxx>
 #include <mmx/Node_get_tx_info_for_return.hxx>
-#include <mmx/Node_get_virtual_plot_balance.hxx>
-#include <mmx/Node_get_virtual_plot_balance_return.hxx>
-#include <mmx/Node_get_virtual_plots.hxx>
-#include <mmx/Node_get_virtual_plots_return.hxx>
-#include <mmx/Node_get_virtual_plots_for.hxx>
-#include <mmx/Node_get_virtual_plots_for_return.hxx>
-#include <mmx/Node_get_virtual_plots_owned_by.hxx>
-#include <mmx/Node_get_virtual_plots_owned_by_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -226,7 +218,6 @@
 #include <mmx/Router_kick_peer.hxx>
 #include <mmx/Router_kick_peer_return.hxx>
 #include <mmx/Solution.hxx>
-#include <mmx/TimeInfusion.hxx>
 #include <mmx/TimeLord_stop_vdf.hxx>
 #include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <mmx/Transaction.hxx>
@@ -300,8 +291,6 @@
 #include <mmx/Wallet_get_total_balances_return.hxx>
 #include <mmx/Wallet_get_tx_log.hxx>
 #include <mmx/Wallet_get_tx_log_return.hxx>
-#include <mmx/Wallet_get_virtual_plots.hxx>
-#include <mmx/Wallet_get_virtual_plots_return.hxx>
 #include <mmx/Wallet_import_wallet.hxx>
 #include <mmx/Wallet_import_wallet_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
@@ -1717,78 +1706,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_tx_info_fo
 }
 
 template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plot_balance> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plot_balance_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_for> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_for_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_owned_by> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_owned_by_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_read_storage> value) {
 	if(value) {
 		value->accept_generic(visitor);
@@ -2365,15 +2282,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_kick_peer_re
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Solution> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::TimeInfusion> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -3035,24 +2943,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_tx_log> 
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_tx_log_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_virtual_plots> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_virtual_plots_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

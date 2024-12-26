@@ -7,6 +7,7 @@
 #include <mmx/package.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/signature_t.hpp>
 
 
 namespace mmx {
@@ -14,6 +15,7 @@ namespace mmx {
 class MMX_EXPORT ProofOfStake : public ::mmx::ProofOfSpace {
 public:
 	
+	::mmx::signature_t proof_sig;
 	
 	typedef ::mmx::ProofOfSpace Super;
 	
@@ -29,6 +31,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual ::mmx::hash_t calc_hash() const override;
+	virtual ::mmx::hash_t calc_proof_hash() const override;
 	virtual void validate() const override;
 	
 	static std::shared_ptr<ProofOfStake> create();
@@ -63,11 +66,14 @@ protected:
 
 template<typename T>
 void ProofOfStake::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfStake>(3);
+	_visitor.template type_begin<ProofOfStake>(6);
 	_visitor.type_field("score", 0); _visitor.accept(score);
 	_visitor.type_field("plot_id", 1); _visitor.accept(plot_id);
-	_visitor.type_field("farmer_key", 2); _visitor.accept(farmer_key);
-	_visitor.template type_end<ProofOfStake>(3);
+	_visitor.type_field("challenge", 2); _visitor.accept(challenge);
+	_visitor.type_field("difficulty", 3); _visitor.accept(difficulty);
+	_visitor.type_field("farmer_key", 4); _visitor.accept(farmer_key);
+	_visitor.type_field("proof_sig", 5); _visitor.accept(proof_sig);
+	_visitor.template type_end<ProofOfStake>(6);
 }
 
 
