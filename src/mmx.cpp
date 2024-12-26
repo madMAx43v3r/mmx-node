@@ -432,11 +432,6 @@ int main(int argc, char** argv)
 								}
 							}
 						}
-						if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
-							const auto balance = node.get_virtual_plot_balance(entry.first);
-							std::cout << ", " << mmx::to_value(balance, params) << " MMX";
-							std::cout << ", " << mmx::get_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
-						}
 						std::cout << ")" << std::endl;
 
 						for(const auto& entry : wallet.get_total_balances({address}))
@@ -1724,10 +1719,6 @@ int main(int argc, char** argv)
 				}
 				std::cout << "Physical size:  " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
 				std::cout << "Effective size: " << info->total_bytes_effective / pow(1000, 4) << " TBe" << std::endl;
-				const auto virtual_bytes = mmx::get_virtual_plot_size(params, info->total_balance);
-				std::cout << "Virtual size:   " << mmx::to_value(info->total_balance, params) << " MMX ("
-						<< virtual_bytes / pow(1000, 4) << " TBe)" << std::endl;
-				std::cout << "Total size:     " << (info->total_bytes_effective + virtual_bytes) / pow(1000, 4) << " TBe" << std::endl;
 				std::cout << "Plots:" << std::endl;
 				uint64_t total_plots = 0;
 				for(const auto& entry : info->plot_count) {

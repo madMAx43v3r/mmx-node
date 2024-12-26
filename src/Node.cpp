@@ -134,7 +134,6 @@ void Node::main()
 		db->open_async(contract_map, database_path + "contract_map");
 		db->open_async(contract_log, database_path + "contract_log");
 		db->open_async(deploy_map, database_path + "deploy_map");
-		db->open_async(vplot_map, database_path + "vplot_map");
 		db->open_async(owner_map, database_path + "owner_map");
 		db->open_async(swap_index, database_path + "swap_index");
 		db->open_async(offer_index, database_path + "offer_index");
@@ -888,11 +887,12 @@ void Node::commit(std::shared_ptr<const Block> block)
 	const auto height = block->height;
 	history[height] = block->get_header();
 	{
-		const auto range = challenge_map.equal_range(height);
-		for(auto iter = range.first; iter != range.second; ++iter) {
+		const auto begin = challenge_map.begin();
+		const auto end = challenge_map.upper_bound(block->vdf_height);
+		for(auto iter = begin; iter != end; ++iter) {
 			proof_map.erase(iter->second);
 		}
-		challenge_map.erase(range.first, range.second);
+		challenge_map.erase(begin, end);
 	}
 	while(history.size() > max_history) {
 		history.erase(history.begin());
@@ -1142,9 +1142,6 @@ void Node::apply(	std::shared_ptr<const Block> block,
 		}
 		if(auto owner = contract->get_owner()) {
 			owner_map.insert(std::make_tuple(*owner, block->height, ticket), std::make_pair(tx->id, type_hash));
-		}
-		if(auto plot = std::dynamic_pointer_cast<const contract::VirtualPlot>(contract)) {
-			vplot_map.insert(plot->farmer_key, tx->id);
 		}
 	}
 	for(const auto& op : tx->execute)

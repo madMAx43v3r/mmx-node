@@ -427,14 +427,6 @@ public:
 		set(tmp);
 	}
 
-	void accept(const virtual_plot_info_t& value) {
-		auto tmp = render(value, context);
-		if(context) {
-			tmp["balance"] = to_amount_object(value.balance, context->params->decimals);
-		}
-		set(tmp);
-	}
-
 	void accept(const offer_data_t& value) {
 		auto tmp = render(value, context);
 		if(context) {
@@ -1800,24 +1792,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 400, "wallet/contracts?index");
 		}
 	}
-	else if(sub_path == "/wallet/plots") {
-		const auto iter_index = query.find("index");
-		if(iter_index != query.end()) {
-			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			wallet->get_virtual_plots(index,
-				[this, request_id](const std::vector<virtual_plot_info_t>& plots) {
-					auto result = plots;
-					std::sort(result.begin(), result.end(),
-						[](const virtual_plot_info_t& L, const virtual_plot_info_t& R) -> bool {
-							return L.balance == R.balance ? L.address < R.address : L.balance > R.balance;
-						});
-					respond(request_id, render_value(result, get_context()));
-				},
-				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
-		} else {
-			respond_status(request_id, 400, "wallet/plots?index");
-		}
-	}
 	else if(sub_path == "/wallet/address") {
 		const auto index = get_param<int32_t>(query, "index", -1);
 		if(index >= 0) {
@@ -2351,7 +2325,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				vnx::Object out;
 				if(info) {
 					out = render(*info);
-					out["total_virtual_bytes"] = mmx::get_virtual_plot_size(params, info->total_balance);
 				}
 				respond(request_id, out);
 			},

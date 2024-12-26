@@ -220,7 +220,7 @@ void Node::verify_block_proofs()
 
 					if(auto proof = block->proof) {
 						std::lock_guard<std::mutex> lock(mutex);
-						add_proof(proof, vnx::Hash64());
+						add_proof(proof, block->vdf_height, vnx::Hash64());
 					}
 				} catch(const std::exception& ex) {
 					fork->is_invalid = true;

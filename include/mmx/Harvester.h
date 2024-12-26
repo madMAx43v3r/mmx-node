@@ -71,7 +71,6 @@ private:
 	hash_t harvester_id;
 	uint64_t total_bytes = 0;
 	uint64_t total_bytes_effective = 0;
-	uint64_t total_balance = 0;
 
 	vnx::Hash64 farmer_addr;
 	std::shared_ptr<NodeClient> node;
@@ -83,7 +82,6 @@ private:
 	std::unordered_set<hash_t> already_checked;
 	std::unordered_map<hash_t, std::string> id_map;
 	std::unordered_map<std::string, std::shared_ptr<pos::Prover>> plot_map;
-	std::unordered_map<addr_t, virtual_plot_info_t> virtual_map;
 
 	std::map<addr_t, uint32_t> plot_contract_set;
 	std::map<addr_t, plot_nft_info_t> plot_nfts;

@@ -399,9 +399,6 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 			out->plot_count[prover->get_ksize()]++;
 		}
 	}
-	for(const auto& entry : virtual_map) {
-		out->total_balance += entry.second.balance;
-	}
 	for(const auto& entry : plot_nfts) {
 		const auto& nft = entry.second;
 		auto& info = out->pool_info[nft.address];
@@ -587,25 +584,8 @@ void Harvester::reload()
 		total_bytes_effective += get_effective_plot_size(prover->get_ksize());
 	}
 
-	// gather virtual plots
-	virtual_map.clear();
-	total_balance = 0;
-	if(farm_virtual_plots) {
-		for(const auto& farmer_key : farmer_keys) {
-			for(const auto& plot : node->get_virtual_plots_for(farmer_key)) {
-				virtual_map[plot.address] = plot;
-				total_balance += plot.balance;
-			}
-		}
-	}
-
 	// gather plot NFTs
 	plot_contract_set.clear();
-	for(const auto& entry : virtual_map) {
-		if(const auto& addr = entry.second.reward_address) {
-			plot_contract_set[*addr]++;
-		}
-	}
 	for(const auto& entry : plot_map) {
 		if(const auto& addr = entry.second->get_contract()) {
 			plot_contract_set[*addr]++;
@@ -626,9 +606,8 @@ void Harvester::reload()
 		});
 	}
 	log(INFO) << "[" << my_name << "] Loaded " << plot_map.size() << " plots, "
-			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe, "
-			<< virtual_map.size() << " virtual plots, " << total_balance / pow(10, params->decimals) << " MMX total, took "
-			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe"
+			<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 }
 
 void Harvester::add_plot_dir(const std::string& path)

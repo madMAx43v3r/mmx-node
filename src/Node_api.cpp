@@ -53,9 +53,6 @@
 #include <mmx/Node_read_storage_object.hxx>
 #include <mmx/Node_call_contract.hxx>
 #include <mmx/Node_get_total_supply.hxx>
-#include <mmx/Node_get_virtual_plots.hxx>
-#include <mmx/Node_get_virtual_plots_for.hxx>
-#include <mmx/Node_get_virtual_plots_owned_by.hxx>
 #include <mmx/Node_get_offer.hxx>
 #include <mmx/Node_fetch_offers.hxx>
 #include <mmx/Node_get_offers.hxx>
@@ -968,36 +965,6 @@ addr_t Node::get_plot_nft_target(const addr_t& address, const vnx::optional<addr
 	return address;
 }
 
-std::vector<virtual_plot_info_t> Node::get_virtual_plots(const std::vector<addr_t>& addresses) const
-{
-	std::vector<virtual_plot_info_t> result;
-	for(const auto& address : addresses) {
-		if(auto plot = get_contract_as<const contract::VirtualPlot>(address)) {
-			virtual_plot_info_t info;
-			info.address = address;
-			info.farmer_key = plot->farmer_key;
-			info.reward_address = plot->reward_address;
-			info.balance = get_balance(address, addr_t());
-			info.size_bytes = get_virtual_plot_size(params, info.balance);
-			info.owner = to_addr(read_storage_field(address, "owner").first);
-			result.push_back(info);
-		}
-	}
-	return result;
-}
-
-std::vector<virtual_plot_info_t> Node::get_virtual_plots_for(const pubkey_t& farmer_key) const
-{
-	std::vector<addr_t> addresses;
-	vplot_map.find(farmer_key, addresses);
-	return get_virtual_plots(addresses);
-}
-
-std::vector<virtual_plot_info_t> Node::get_virtual_plots_owned_by(const std::vector<addr_t>& addresses) const
-{
-	return get_virtual_plots(get_contracts_owned_by(addresses, params->plot_binary));
-}
-
 offer_data_t Node::get_offer(const addr_t& address) const
 {
 	auto data = read_storage(address);
@@ -1674,9 +1641,6 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case Node_read_storage_object::VNX_TYPE_ID:
 		case Node_call_contract::VNX_TYPE_ID:
 		case Node_get_total_supply::VNX_TYPE_ID:
-		case Node_get_virtual_plots::VNX_TYPE_ID:
-		case Node_get_virtual_plots_for::VNX_TYPE_ID:
-		case Node_get_virtual_plots_owned_by::VNX_TYPE_ID:
 		case Node_get_offer::VNX_TYPE_ID:
 		case Node_fetch_offers::VNX_TYPE_ID:
 		case Node_get_offers::VNX_TYPE_ID:

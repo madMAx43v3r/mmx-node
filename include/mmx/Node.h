@@ -158,12 +158,6 @@ protected:
 
 	addr_t get_plot_nft_target(const addr_t& address, const vnx::optional<addr_t>& farmer_addr = nullptr) const override;
 
-	std::vector<virtual_plot_info_t> get_virtual_plots(const std::vector<addr_t>& addresses) const override;
-
-	std::vector<virtual_plot_info_t> get_virtual_plots_for(const pubkey_t& farmer_key) const override;
-
-	std::vector<virtual_plot_info_t> get_virtual_plots_owned_by(const std::vector<addr_t>& addresses) const override;
-
 	offer_data_t get_offer(const addr_t& address) const override;
 
 	std::vector<offer_data_t> fetch_offers(const std::vector<addr_t>& addresses, const vnx::bool_t& state, const vnx::bool_t& closed = false) const override;
@@ -381,7 +375,7 @@ private:
 
 	void update_farmer_ranking();
 
-	void add_proof(std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac);
+	void add_proof(std::shared_ptr<const ProofOfSpace> proof, const uint32_t vdf_height, const vnx::Hash64 farmer_mac);
 
 	bool verify(std::shared_ptr<const ProofResponse> value);
 
@@ -501,7 +495,7 @@ private:
 	std::multimap<hash_t, std::shared_ptr<const VDF_Point>> vdf_tree;				// [output => proof]
 	std::multimap<uint64_t, std::shared_ptr<const VDF_Point>> vdf_index;			// [iters => proof]
 
-	std::multimap<uint32_t, hash_t> challenge_map;									// [height => challenge]
+	std::multimap<uint32_t, hash_t> challenge_map;									// [vdf height => challenge]
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]
 	std::unordered_map<hash_t, hash_t> created_blocks;								// [proof hash => block hash]
 	std::unordered_set<hash_t> purged_blocks;
@@ -519,11 +513,9 @@ private:
 	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
 	uint_table<uint32_t, block_index_t> block_index;							// [height => index]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
+	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;			// [farmer key => info]
 
-	hash_multi_table<pubkey_t, addr_t> vplot_map;							// [farmer key => contract]
-	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;		// [farmer key => info]
-
-	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;				// sorted by count DSC [farmer key => num. blocks]
+	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;					// sorted by count DSC [farmer key => num. blocks]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;

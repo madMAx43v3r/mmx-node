@@ -213,18 +213,6 @@ module Node implements vnx.addons.HttpComponent {
 	addr_t get_plot_nft_target(addr_t address, optional<addr_t> farmer_addr) const;
 	
 	@Permission(permission_e.PUBLIC)
-	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<virtual_plot_info_t> get_virtual_plots_for(pubkey_t farmer_key) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<virtual_plot_info_t> get_virtual_plots_owned_by(vector<addr_t> addresses) const;
-	
-	@Permission(permission_e.PUBLIC)
-	ulong get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
-	
-	@Permission(permission_e.PUBLIC)
 	offer_data_t get_offer(addr_t address) const;
 	
 	@Permission(permission_e.PUBLIC)

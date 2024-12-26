@@ -19,7 +19,7 @@
 
 namespace mmx {
 
-void Node::add_proof(std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash64 farmer_mac)
+void Node::add_proof(std::shared_ptr<const ProofOfSpace> proof, const uint32_t vdf_height, const vnx::Hash64 farmer_mac)
 {
 	auto& list = proof_map[proof->challenge];
 
@@ -30,7 +30,7 @@ void Node::add_proof(std::shared_ptr<const ProofOfSpace> proof, const vnx::Hash6
 		}
 	}
 	if(list.empty()) {
-		challenge_map.emplace(get_height() + params->challenge_delay, proof->challenge);
+		challenge_map.emplace(vdf_height, proof->challenge);
 	}
 	proof_data_t data;
 	data.hash = hash;
@@ -61,7 +61,7 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	}
 	verify_proof(value->proof, challenge, space_diff);
 
-	add_proof(value->proof, value->farmer_addr);
+	add_proof(value->proof, value->vdf_height, value->farmer_addr);
 
 	publish(value, output_verified_proof);
 	return true;
