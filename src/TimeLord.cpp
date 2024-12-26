@@ -140,7 +140,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> req)
 				is_fork = true;
 				log(WARN) << "Missed infusion at " << start << " iterations, restarting ...";
 			}
-			log(DEBUG) << "Infusing at " << start << " iterations: " << vnx::to_string(req->infuse);
+			log(DEBUG) << "Infusing at " << start << " iterations: " << req->infuse.to_string();
 		}
 		infuse[start] = req->infuse;
 
