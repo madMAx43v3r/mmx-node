@@ -188,6 +188,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		std::unordered_map<addr_t, pool_conf_t> pool_config;
 		std::atomic<uint64_t> num_left {0};
 		std::atomic<uint64_t> num_passed {0};
+		std::atomic<uint32_t> num_proofs {0};
 	};
 	const auto job = std::make_shared<lookup_job_t>();
 	job->total_plots = id_map.size();
@@ -253,6 +254,9 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						std::vector<uint32_t> proof_xs;
 						if(is_solo_proof || is_partial_proof)
 						{
+							if(job->num_proofs++ >= max_proofs) {
+								continue;	// limit proofs per height
+							}
 							if(res.proof.size()) {
 								proof_xs = res.proof;	// SSD plot
 							} else {
@@ -365,6 +369,9 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				out->slow_plot = job->slow_plot;
 			}
 			publish(out, output_lookups);
+		}
+		if(job->num_proofs > max_proofs) {
+			log(WARN) << "Skipped fetching " << job->num_proofs - max_proofs << " proofs, difficulty too low!";
 		}
 		if(job->total_plots) {
 			const auto slow_time = job->slow_time_ms / 1e3;
