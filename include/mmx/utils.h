@@ -302,7 +302,7 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params,
 inline
 uint64_t get_vdf_speed(std::shared_ptr<const ChainParams> params, const uint64_t time_diff)
 {
-	return (uint128_t(time_diff) * params->time_diff_constant * 1000) / params->block_interval_ms;
+	return (uint128_t(time_diff) * params->time_diff_constant * 1000) / params->time_diff_divider / params->block_interval_ms;
 }
 
 inline
