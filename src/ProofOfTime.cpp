@@ -28,7 +28,6 @@ hash_t ProofOfTime::calc_hash() const
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", 	version);
-	write_field(out, "hash", 		hash);
 	write_field(out, "vdf_height", 	vdf_height);
 	write_field(out, "start", 		start);
 	write_field(out, "num_iters", 	num_iters);

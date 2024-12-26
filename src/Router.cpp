@@ -86,13 +86,13 @@ void Router::main()
 	log(INFO) << "Global TX upload limit: " << tx_upload_bandwidth << " MMX/s";
 	log(INFO) << "Peer TX pending limit: " << max_pending_cost_value << " MMX";
 
-	subscribe(input_vdfs, max_queue_ms);
 	subscribe(input_verified_vdfs, max_queue_ms);
 	subscribe(input_verified_proof, max_queue_ms);
 	subscribe(input_verified_blocks, max_queue_ms);
 	subscribe(input_verified_transactions, max_queue_ms);
 	subscribe(input_transactions, max_queue_ms);
 	subscribe(input_vdf_points, max_queue_ms);
+	subscribe(input_vdfs, max_queue_ms);
 
 	node_id = hash_t::random();
 	{
@@ -318,7 +318,9 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 void Router::handle(std::shared_ptr<const ProofOfTime> value)
 {
 	if(vnx_sample && vnx_sample->topic == input_vdfs) {
-		our_timelords.insert(value->timelord_key);
+		if(our_timelords.insert(value->timelord_key).second) {
+			log(INFO) << "Our Timelord: " << value->timelord_key.to_string();
+		}
 		return;
 	}
 	const bool is_ours = our_timelords.count(value->timelord_key);

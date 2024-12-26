@@ -272,13 +272,6 @@ void Node::verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const
 void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint32_t height, const uint32_t index)
 {
 	const auto took_ms = vnx::get_wall_time_millis() - point->recv_time;
-	const auto vdf_iters = point->start + point->num_iters;
-
-	vdf_tree.emplace(point->output, point);
-	vdf_index.emplace(vdf_iters, point);
-	vdf_verify_pending.erase(point->proof->hash);
-
-	publish(point, output_vdf_points);
 
 	if(point->input == get_vdf_peak()) {
 		if(is_synced) {
@@ -286,6 +279,13 @@ void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint
 		}
 		publish(point->proof, output_verified_vdfs);
 	}
+	const auto vdf_iters = point->start + point->num_iters;
+
+	vdf_tree.emplace(point->output, point);
+	vdf_index.emplace(vdf_iters, point);
+	vdf_verify_pending.erase(point->proof->hash);
+
+	publish(point, output_vdf_points);
 
 	if(took_ms > params->block_interval_ms) {
 		log(WARN) << "VDF verification took longer than block interval, unable to keep sync!";
@@ -300,7 +300,7 @@ void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint
 			auto input = point->input;
 			while(vdf_height > peak->vdf_height) {
 				if(input == peak->vdf_output) {
-					stuck_timer->reset();
+					stuck_timer->reset();	// if so, make sure we keep sync status
 					break;
 				}
 				const auto iter = vdf_tree.find(input);
@@ -330,7 +330,8 @@ void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point, const uint
 			u8"\U0001F556", u8"\U0001F557", u8"\U0001F558", u8"\U0001F559", u8"\U0001F55A", u8"\U0001F55B" };
 
 	log(INFO) << clocks[(height + index) % 12] << " Verified VDF for height "
-			<< height << " + " << index << ss_delta.str() << ", took " << took_ms / 1e3 << " sec";
+			<< height << " + " << index << " (" << point->vdf_height << ")"
+			<< ss_delta.str() << ", took " << took_ms / 1e3 << " sec";
 
 	trigger_update();
 }

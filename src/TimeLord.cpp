@@ -200,26 +200,30 @@ void TimeLord::update()
 		const auto req = iter->second;
 
 		auto end = history.find(req->end);
-		auto begin = history.find(req->start);
-		if(end != history.end() && begin != history.end())
+		if(end != history.end())
 		{
-			auto proof = ProofOfTime::create();
-			proof->vdf_height = req->vdf_height;
-			proof->start = req->start;
-			proof->num_iters = req->end - req->start;
-			proof->segment_size = segment_iters;
-			proof->input = begin->second;
-			proof->prev = req->infuse;
-			proof->reward_addr = reward_addr;
+			auto begin = history.find(req->start);
+			if(begin != history.end())
+			{
+				auto proof = ProofOfTime::create();
+				proof->vdf_height = req->vdf_height;
+				proof->start = req->start;
+				proof->num_iters = req->end - req->start;
+				proof->segment_size = segment_iters;
+				proof->input = begin->second;
+				proof->prev = req->infuse;
+				proof->reward_addr = reward_addr;
+				proof->timelord_key = timelord_key;
+				proof->segments.reserve(1024);
 
-			end++;
-			begin++;
-			for(auto iter = begin; iter != end; ++iter) {
-				proof->segments.push_back(iter->second);
+				end++;
+				begin++;
+				for(auto iter = begin; iter != end; ++iter) {
+					proof->segments.push_back(iter->second);
+				}
+				out.push_back(proof);
+				peak_iters = req->end;
 			}
-			out.push_back(proof);
-
-			peak_iters = req->end;
 			iter = pending.erase(iter);
 		} else {
 			break;
@@ -236,7 +240,6 @@ void TimeLord::update()
 	lock.unlock();	// --------------------------------------------------------------------------------------------
 
 	for(auto proof : out) {
-		proof->timelord_key = timelord_key;
 		proof->hash = proof->calc_hash();
 		proof->timelord_sig = signature_t::sign(timelord_sk, proof->hash);
 		proof->content_hash = proof->calc_content_hash();

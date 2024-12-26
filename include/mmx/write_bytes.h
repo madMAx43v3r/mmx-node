@@ -13,7 +13,6 @@
 #include <mmx/txin_t.hxx>
 #include <mmx/txout_t.hxx>
 #include <mmx/ulong_fraction_t.hxx>
-#include <mmx/time_segment_t.hxx>
 #include <mmx/compile_flags_t.hxx>
 #include <mmx/contract/method_t.hxx>
 

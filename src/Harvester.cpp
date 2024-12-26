@@ -95,6 +95,7 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 	out->harvester = my_name.substr(0, 1024);
 	out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin_ms;
 	out->hash = out->calc_hash();
+	out->content_hash = out->calc_content_hash();
 
 	const auto delay_sec = out->lookup_time_ms / 1e3;
 	log(INFO) << "[" << my_name << "] Found proof with score " << proof->score << " for height "
@@ -372,7 +373,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 			}
 			const auto delay_sec = (time_end - recv_time_ms) / 1e3;
 			log(INFO) << "[" << my_name << "] " << job->num_passed << " / " << job->total_plots
-					<< " plots were eligible for height " << value->base + " + " << value->index
+					<< " plots were eligible for height " << value->base << " + " << value->index
 					<< ", max lookup " << slow_time << " sec, delay " << delay_sec << " sec";
 		}
 	});

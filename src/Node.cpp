@@ -352,6 +352,7 @@ void Node::main()
 			}
 		}
 		block->finalize();
+		block->content_hash = block->calc_content_hash();
 
 		if(!block->is_valid()) {
 			throw std::logic_error("invalid genesis block");
