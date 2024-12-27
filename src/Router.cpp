@@ -1384,7 +1384,9 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 					if(existing->node_id) {
 						if(id == *existing->node_id) {
 							if(peer && fixed_peers.count(peer->address)) {
-								disconnect(existing->client);
+								if(existing->is_outbound) {
+									disconnect(existing->client);
+								}
 							} else {
 								log(INFO) << "Already connected to " << existing->address << ", disconnecting from " << (peer ? peer->address : "?");
 								disconnect(client);
