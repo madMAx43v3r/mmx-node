@@ -1534,6 +1534,12 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 		return {pooling_error_e::INVALID_SIGNATURE, "Signature verification failed"};
 	}
 
+	if(auto peak = get_peak()) {
+		if(partial->vdf_height > peak->vdf_height) {
+			return {pooling_error_e::CHALLENGE_NOT_CONFIRMED, "Partial height not reached yet"};
+		}
+	}
+
 	hash_t challenge;
 	uint64_t space_diff = 0;
 	if(!find_challenge(partial->vdf_height, challenge, space_diff)) {
