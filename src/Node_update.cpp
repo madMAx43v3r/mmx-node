@@ -167,8 +167,6 @@ void Node::verify_block_proofs()
 				} catch(const std::exception& ex) {
 					fork->is_invalid = true;
 					log(WARN) << "Proof verification failed for a block at height " << block->height << ": " << ex.what();
-				} catch(...) {
-					fork->is_invalid = true;
 				}
 			});
 		}
