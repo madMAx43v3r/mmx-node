@@ -51,7 +51,7 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 	}
 	if(auto root = get_root()) {
 		if(value->vdf_height <= root->vdf_height) {
-			throw std::logic_error("proof too old: vdf_height = " + std::to_string(value->vdf_height));
+			throw std::logic_error("proof too old");
 		}
 	}
 	hash_t challenge;
