@@ -436,10 +436,17 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	add_fork(fork);
 
 	if(is_synced) {
-		if(auto root = get_root()) {
-			if(block->height > root->height + 1 && !fork_tree.count(block->prev)) {
-				// TODO: fetch missing previous
-			}
+		if(!fork_tree.count(block->prev)) {
+			// fetch missed previous
+			router->get_blocks_at(block->height - 1,
+				[this](const std::vector<std::shared_ptr<const Block>>& blocks) {
+					const auto root = get_root();
+					for(auto block : blocks) {
+						if(block->height > root->height) {
+							add_block(block);
+						}
+					}
+				});
 		}
 		trigger_update();
 	}
