@@ -193,6 +193,11 @@ void TimeLord::update()
 {
 	std::unique_lock<std::mutex> lock(mutex);
 
+	// clear old requests first
+	if(!history.empty()) {
+		const auto begin = history.begin()->first;
+		pending.erase(pending.begin(), pending.lower_bound(begin));
+	}
 	std::vector<std::shared_ptr<ProofOfTime>> out;
 
 	for(auto iter = pending.begin(); iter != pending.end();)
