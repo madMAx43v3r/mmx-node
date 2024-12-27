@@ -419,6 +419,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) noexcept
 	}
 	catch(const std::exception& ex) {
 		add_task([this, proof]() {
+			timelord_trust[proof->timelord_key] = 0;
 			vdf_verify_pending.erase(proof->hash);
 			verify_vdfs();
 		});
