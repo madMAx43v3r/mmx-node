@@ -26,6 +26,7 @@
 	"min_fee_ratio": [1, 2, 3, 5, 10],
 	"initial_time_diff":  200,
 	"initial_space_diff": 1,
+	"initial_time_stamp": 1735300598368,
 	"time_diff_constant": 1000000,
 	"space_diff_constant": 100000000000,
 	"virtual_space_constant": 8108,

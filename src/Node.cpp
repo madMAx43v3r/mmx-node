@@ -327,7 +327,7 @@ void Node::main()
 	{
 		auto block = Block::create();
 		block->nonce = params->port;
-		block->time_stamp = vnx::get_wall_time_millis();	// TODO
+		block->time_stamp = params->initial_time_stamp;
 		block->time_diff = params->initial_time_diff * params->time_diff_divider;
 		block->space_diff = params->initial_space_diff;
 		block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
