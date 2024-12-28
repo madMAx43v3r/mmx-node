@@ -107,7 +107,7 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	if(block->is_space_fork != is_space_fork) {
 		throw std::logic_error("invalid is_space_fork");
 	}
-	const auto proof_count = calc_proof_count(block->proof->score);
+	const auto proof_count = calc_proof_count(params, block->proof->score);
 
 	if(is_space_fork) {
 		const auto space_diff = calc_new_space_diff(params, prev);

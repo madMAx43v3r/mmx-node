@@ -249,9 +249,9 @@ uint64_t get_virtual_plot_size(std::shared_ptr<const ChainParams> params, const 
 }
 
 inline
-uint32_t calc_proof_count(const uint16_t score)
+uint32_t calc_proof_count(std::shared_ptr<const ChainParams> params, const uint16_t score)
 {
-	const auto limit = 64;
+	const int limit = params->proofs_per_height * 3;
 	// 384 will round correctly to preserve average
 	return score ? std::min((384 / score) - 1, limit) : limit;
 }

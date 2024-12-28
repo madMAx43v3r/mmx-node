@@ -118,7 +118,7 @@ void BlockHeader::set_space_diff(std::shared_ptr<const ChainParams> params, std:
 	if(!proof || !vdf_count) {
 		throw std::logic_error("invalid block state");
 	}
-	const auto proof_count = calc_proof_count(proof->score);
+	const auto proof_count = calc_proof_count(params, proof->score);
 
 	if(is_space_fork) {
 		space_diff = calc_new_space_diff(params, prev);
