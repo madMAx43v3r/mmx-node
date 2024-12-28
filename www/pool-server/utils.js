@@ -11,7 +11,8 @@ async function get_synced_height()
 function calc_eff_space(points_rate)
 {
     // points_rate = points per block (height)
-    return points_rate * config.space_diff_constant * 2.467 * 1e-12;    // [TB]
+    // the win chance of a k32 at diff 1 is: 0.6979321856
+    return points_rate * config.space_diff_constant * 1.43 * 2.4 * 1e-12;    // [TB]
 }
 
 function sleep(ms)
