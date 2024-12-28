@@ -311,7 +311,7 @@ void Node::update()
 			vdf_iters += num_iters;
 		}
 		const auto challenge_advance = std::min<uint32_t>(
-				vdf_points.size() + params->challenge_delay, params->max_vdf_count);
+				vdf_points.size() + params->challenge_delay - 1, params->max_vdf_count);
 
 		// publish challenges
 		for(uint32_t i = 1; i <= challenge_advance; ++i)
