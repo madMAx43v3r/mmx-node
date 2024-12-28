@@ -180,11 +180,9 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		std::mutex mutex;
 		std::condition_variable signal;
 		size_t total_plots = 0;
-		uint32_t best_score = -1;
 		int64_t slow_time_ms = 0;
 		int64_t time_begin = 0;
 		std::string slow_plot;
-		std::shared_ptr<pos::Prover> best_plot;
 		std::unordered_map<addr_t, pool_conf_t> pool_config;
 		std::atomic<uint64_t> num_left {0};
 		std::atomic<uint64_t> num_passed {0};
@@ -314,14 +312,6 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 							proof->farmer_key = header->farmer_key;
 
 							send_response(value, proof, recv_time_ms);
-
-							std::lock_guard<std::mutex> lock(job->mutex);
-
-							if(score < job->best_score || !job->best_plot)
-							{
-								job->best_score = score;
-								job->best_plot = prover;
-							}
 						}
 					} catch(const std::exception& ex) {
 						log(WARN) << "[" << my_name << "] Failed to process quality "
