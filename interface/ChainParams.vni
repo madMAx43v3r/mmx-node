@@ -15,7 +15,6 @@ class ChainParams {
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	uint max_vdf_count = 100;				// chain will halt if no proof is found within this time
 	
-	uint score_target = 16384;				// 2^16 / (proofs_per_height + 1)
 	uint proofs_per_height = 3;
 	
 	ulong min_reward = 200000;

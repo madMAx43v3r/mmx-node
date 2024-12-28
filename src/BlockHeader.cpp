@@ -55,8 +55,8 @@ hash_t BlockHeader::calc_hash() const
 	write_field(out, "proof_hash", 		proof_hash);
 	write_field(out, "challenge", 		challenge);
 	write_field(out, "is_space_fork",	is_space_fork);
-	write_field(out, "proof_score_sum", proof_score_sum);
-	write_field(out, "proof_score_count", proof_score_count);
+	write_field(out, "space_fork_len",	space_fork_len);
+	write_field(out, "space_fork_proofs", space_fork_proofs);
 	write_field(out, "reward_amount", 	reward_amount);
 	write_field(out, "reward_addr", 	reward_addr);
 	write_field(out, "reward_contract", reward_contract);
@@ -118,16 +118,16 @@ void BlockHeader::set_space_diff(std::shared_ptr<const ChainParams> params, std:
 	if(!proof || !vdf_count) {
 		throw std::logic_error("invalid block state");
 	}
-	const auto score_sum = proof->score + (uint32_t(vdf_count - 1) << 16);
+	const auto proof_count = calc_proof_count(proof->score);
 
 	if(is_space_fork) {
 		space_diff = calc_new_space_diff(params, prev);
-		proof_score_sum = score_sum;
-		proof_score_count = vdf_count;
+		space_fork_len = vdf_count;
+		space_fork_proofs = proof_count;
 	} else {
 		space_diff = prev->space_diff;
-		proof_score_sum = prev->proof_score_sum + score_sum;
-		proof_score_count = prev->proof_score_count + vdf_count;
+		space_fork_len = prev->space_fork_len + vdf_count;
+		space_fork_proofs = prev->space_fork_proofs + proof_count;
 	}
 }
 

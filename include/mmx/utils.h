@@ -152,8 +152,9 @@ uint128_t to_effective_space(const uint128_t num_bytes)
 inline
 uint128_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	// TODO: is it off by 2x ?
-	const auto ideal = uint128_t(space_diff) * params->space_diff_constant * params->proofs_per_height;
+	auto ideal = uint128_t(space_diff) * params->space_diff_constant * params->proofs_per_height;
+	// the win chance of a k32 at diff 1 is: 0.6979321856
+	ideal = (ideal * 143) / 100;
 	return to_effective_space(ideal);
 }
 
@@ -173,7 +174,7 @@ bool check_proof_threshold(std::shared_ptr<const ChainParams> params,
 inline
 uint16_t get_proof_score(const hash_t& proof_hash)
 {
-	return (uint16_t(proof_hash.bytes[0]) << 8) | proof_hash.bytes[1];
+	return proof_hash.bytes[0];
 }
 
 inline
@@ -248,28 +249,32 @@ uint64_t get_virtual_plot_size(std::shared_ptr<const ChainParams> params, const 
 }
 
 inline
+uint32_t calc_proof_count(const uint16_t score)
+{
+	const auto limit = 64;
+	// 384 will round correctly to preserve average
+	return score ? std::min((384 / score) - 1, limit) : limit;
+}
+
+inline
 uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
 	const uint64_t diff = prev->space_diff;
-	if(diff >> 60) {
-		return diff - (diff / 256);		// clamp to 60 bits (should never happen)
+	if(diff >> 48) {
+		return diff - (diff / 1024);		// clamp to 48 bits (should never happen)
 	}
-	if(prev->proof_score_count == 0) {
-		return prev->space_diff;		// should only happen at genesis
+	if(prev->space_fork_len == 0) {
+		return prev->space_diff;			// should only happen at genesis
 	}
-	const uint32_t avg_score = prev->proof_score_sum / prev->proof_score_count;
+	const uint32_t expected_count = prev->space_fork_len * params->proofs_per_height;
 
-	int64_t delta = 0;
-	if(avg_score < params->score_target / 2) {
-		delta = diff;	// clamp to doubling
-	} else {
-		const uint64_t new_diff = (uint128_t(diff) * params->score_target) / avg_score;
-		delta = new_diff - diff;
-	}
-	delta /= std::max((16u * params->challenge_interval) / prev->proof_score_count, 16u);
+	const uint64_t new_diff = (uint128_t(diff) * prev->space_fork_proofs) / expected_count;
+
+	int64_t delta = new_diff - diff;
+	delta /= std::max((16 * params->challenge_interval) / prev->space_fork_len, 16u);
 
 	if(delta == 0) {
-		delta = (avg_score < params->score_target ? 1 : -1);
+		delta = (prev->space_fork_proofs > expected_count ? 1 : -1);
 	}
 	return std::max<int64_t>(diff + delta, 1);
 }

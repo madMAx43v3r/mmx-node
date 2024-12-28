@@ -31,8 +31,8 @@ class BlockHeader {
 	hash_t challenge;					// for proof lookups
 	
 	bool is_space_fork;					// if challenge is infused + space_diff update
-	uint proof_score_sum;				// for diff adjust
-	uint proof_score_count;
+	uint space_fork_len;				// current length of space fork
+	uint space_fork_proofs;				// total number of proofs since last space fork
 	
 	ulong reward_amount;
 	optional<addr_t> reward_addr;

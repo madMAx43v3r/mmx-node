@@ -107,28 +107,28 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	if(block->is_space_fork != is_space_fork) {
 		throw std::logic_error("invalid is_space_fork");
 	}
-	const auto proof_score_sum = block->proof->score + (uint32_t(block->vdf_count - 1) << 16);
+	const auto proof_count = calc_proof_count(block->proof->score);
 
 	if(is_space_fork) {
 		const auto space_diff = calc_new_space_diff(params, prev);
 		if(block->space_diff != space_diff) {
 			throw std::logic_error("invalid space_diff: " + std::to_string(block->space_diff) + " != " + std::to_string(space_diff));
 		}
-		if(block->proof_score_sum != proof_score_sum) {
-			throw std::logic_error("invalid proof_score_sum at space fork");
+		if(block->space_fork_len != block->vdf_count) {
+			throw std::logic_error("invalid space_fork_len at space fork");
 		}
-		if(block->proof_score_count != block->vdf_count) {
-			throw std::logic_error("invalid proof_score_count at space fork");
+		if(block->space_fork_proofs != proof_count) {
+			throw std::logic_error("invalid space_fork_proofs at space fork");
 		}
 	} else {
 		if(block->space_diff != prev->space_diff) {
 			throw std::logic_error("invalid space_diff change");
 		}
-		if(block->proof_score_sum != prev->proof_score_sum + proof_score_sum) {
-			throw std::logic_error("invalid proof_score_sum");
+		if(block->space_fork_len != prev->space_fork_len + block->vdf_count) {
+			throw std::logic_error("invalid space_fork_len");
 		}
-		if(block->proof_score_count != prev->proof_score_count + block->vdf_count) {
-			throw std::logic_error("invalid proof_score_count");
+		if(block->space_fork_proofs != prev->space_fork_proofs + proof_count) {
+			throw std::logic_error("invalid space_fork_proofs");
 		}
 	}
 
