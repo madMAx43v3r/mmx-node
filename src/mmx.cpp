@@ -1373,7 +1373,8 @@ int main(int argc, char** argv)
 						hash.from_string(arg);
 						block = node.get_block(hash);
 					} else {
-						block = node.get_block_at(std::strtoul(arg.c_str(), nullptr, 10));
+						const auto height = arg.size() ? vnx::from_string<uint32_t>(arg) : node.get_height();
+						block = node.get_block_at(height);
 					}
 					vnx::PrettyPrinter printer(std::cout);
 					vnx::accept(printer, block);
@@ -1390,7 +1391,8 @@ int main(int argc, char** argv)
 						hash.from_string(arg);
 						block = node.get_header(hash);
 					} else {
-						block = node.get_header_at(std::strtoul(arg.c_str(), nullptr, 10));
+						const auto height = arg.size() ? vnx::from_string<uint32_t>(arg) : node.get_height();
+						block = node.get_header_at(height);
 					}
 					vnx::PrettyPrinter printer(std::cout);
 					vnx::accept(printer, block);
