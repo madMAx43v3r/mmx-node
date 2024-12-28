@@ -41,8 +41,8 @@ public:
 	::mmx::hash_t proof_hash;
 	::mmx::hash_t challenge;
 	vnx::bool_t is_space_fork = 0;
-	uint32_t proof_score_sum = 0;
-	uint32_t proof_score_count = 0;
+	uint32_t space_fork_len = 0;
+	uint32_t space_fork_proofs = 0;
 	uint64_t reward_amount = 0;
 	vnx::optional<::mmx::addr_t> reward_addr;
 	vnx::optional<::mmx::addr_t> reward_contract;
@@ -136,8 +136,8 @@ void BlockHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("proof_hash", 18); _visitor.accept(proof_hash);
 	_visitor.type_field("challenge", 19); _visitor.accept(challenge);
 	_visitor.type_field("is_space_fork", 20); _visitor.accept(is_space_fork);
-	_visitor.type_field("proof_score_sum", 21); _visitor.accept(proof_score_sum);
-	_visitor.type_field("proof_score_count", 22); _visitor.accept(proof_score_count);
+	_visitor.type_field("space_fork_len", 21); _visitor.accept(space_fork_len);
+	_visitor.type_field("space_fork_proofs", 22); _visitor.accept(space_fork_proofs);
 	_visitor.type_field("reward_amount", 23); _visitor.accept(reward_amount);
 	_visitor.type_field("reward_addr", 24); _visitor.accept(reward_addr);
 	_visitor.type_field("reward_contract", 25); _visitor.accept(reward_contract);

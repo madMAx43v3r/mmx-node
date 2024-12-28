@@ -19,7 +19,7 @@ namespace mmx {
 
 
 const vnx::Hash64 BlockHeader::VNX_TYPE_HASH(0xcaae941a2fc712a6ull);
-const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xee94a54605c5b2f9ull);
+const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xcbfd61de36e5fdabull);
 
 vnx::Hash64 BlockHeader::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -73,8 +73,8 @@ void BlockHeader::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, proof_hash);
 	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, challenge);
 	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, is_space_fork);
-	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, proof_score_sum);
-	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, proof_score_count);
+	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, space_fork_len);
+	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, space_fork_proofs);
 	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, reward_amount);
 	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, reward_addr);
 	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, reward_contract);
@@ -117,8 +117,8 @@ void BlockHeader::write(std::ostream& _out) const {
 	_out << ", \"proof_hash\": "; vnx::write(_out, proof_hash);
 	_out << ", \"challenge\": "; vnx::write(_out, challenge);
 	_out << ", \"is_space_fork\": "; vnx::write(_out, is_space_fork);
-	_out << ", \"proof_score_sum\": "; vnx::write(_out, proof_score_sum);
-	_out << ", \"proof_score_count\": "; vnx::write(_out, proof_score_count);
+	_out << ", \"space_fork_len\": "; vnx::write(_out, space_fork_len);
+	_out << ", \"space_fork_proofs\": "; vnx::write(_out, space_fork_proofs);
 	_out << ", \"reward_amount\": "; vnx::write(_out, reward_amount);
 	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
 	_out << ", \"reward_contract\": "; vnx::write(_out, reward_contract);
@@ -168,8 +168,8 @@ vnx::Object BlockHeader::to_object() const {
 	_object["proof_hash"] = proof_hash;
 	_object["challenge"] = challenge;
 	_object["is_space_fork"] = is_space_fork;
-	_object["proof_score_sum"] = proof_score_sum;
-	_object["proof_score_count"] = proof_score_count;
+	_object["space_fork_len"] = space_fork_len;
+	_object["space_fork_proofs"] = space_fork_proofs;
 	_object["reward_amount"] = reward_amount;
 	_object["reward_addr"] = reward_addr;
 	_object["reward_contract"] = reward_contract;
@@ -213,10 +213,6 @@ void BlockHeader::from_object(const vnx::Object& _object) {
 			_entry.second.to(proof);
 		} else if(_entry.first == "proof_hash") {
 			_entry.second.to(proof_hash);
-		} else if(_entry.first == "proof_score_count") {
-			_entry.second.to(proof_score_count);
-		} else if(_entry.first == "proof_score_sum") {
-			_entry.second.to(proof_score_sum);
 		} else if(_entry.first == "reward_account") {
 			_entry.second.to(reward_account);
 		} else if(_entry.first == "reward_addr") {
@@ -233,6 +229,10 @@ void BlockHeader::from_object(const vnx::Object& _object) {
 			_entry.second.to(reward_vote_sum);
 		} else if(_entry.first == "space_diff") {
 			_entry.second.to(space_diff);
+		} else if(_entry.first == "space_fork_len") {
+			_entry.second.to(space_fork_len);
+		} else if(_entry.first == "space_fork_proofs") {
+			_entry.second.to(space_fork_proofs);
 		} else if(_entry.first == "static_cost") {
 			_entry.second.to(static_cost);
 		} else if(_entry.first == "support_flags") {
@@ -337,11 +337,11 @@ vnx::Variant BlockHeader::get_field(const std::string& _name) const {
 	if(_name == "is_space_fork") {
 		return vnx::Variant(is_space_fork);
 	}
-	if(_name == "proof_score_sum") {
-		return vnx::Variant(proof_score_sum);
+	if(_name == "space_fork_len") {
+		return vnx::Variant(space_fork_len);
 	}
-	if(_name == "proof_score_count") {
-		return vnx::Variant(proof_score_count);
+	if(_name == "space_fork_proofs") {
+		return vnx::Variant(space_fork_proofs);
 	}
 	if(_name == "reward_amount") {
 		return vnx::Variant(reward_amount);
@@ -437,10 +437,10 @@ void BlockHeader::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(challenge);
 	} else if(_name == "is_space_fork") {
 		_value.to(is_space_fork);
-	} else if(_name == "proof_score_sum") {
-		_value.to(proof_score_sum);
-	} else if(_name == "proof_score_count") {
-		_value.to(proof_score_count);
+	} else if(_name == "space_fork_len") {
+		_value.to(space_fork_len);
+	} else if(_name == "space_fork_proofs") {
+		_value.to(space_fork_proofs);
 	} else if(_name == "reward_amount") {
 		_value.to(reward_amount);
 	} else if(_name == "reward_addr") {
@@ -500,7 +500,7 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.BlockHeader";
 	type_code->type_hash = vnx::Hash64(0xcaae941a2fc712a6ull);
-	type_code->code_hash = vnx::Hash64(0xee94a54605c5b2f9ull);
+	type_code->code_hash = vnx::Hash64(0xcbfd61de36e5fdabull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
@@ -635,13 +635,13 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	{
 		auto& field = type_code->fields[21];
 		field.data_size = 4;
-		field.name = "proof_score_sum";
+		field.name = "space_fork_len";
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[22];
 		field.data_size = 4;
-		field.name = "proof_score_count";
+		field.name = "space_fork_proofs";
 		field.code = {3};
 	}
 	{
@@ -823,10 +823,10 @@ void read(TypeInput& in, ::mmx::BlockHeader& value, const TypeCode* type_code, c
 			vnx::read_value(_buf + _field->offset, value.is_space_fork, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[21]) {
-			vnx::read_value(_buf + _field->offset, value.proof_score_sum, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.space_fork_len, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[22]) {
-			vnx::read_value(_buf + _field->offset, value.proof_score_count, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.space_fork_proofs, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[23]) {
 			vnx::read_value(_buf + _field->offset, value.reward_amount, _field->code.data());
@@ -907,8 +907,8 @@ void write(TypeOutput& out, const ::mmx::BlockHeader& value, const TypeCode* typ
 	vnx::write_value(_buf + 48, value.vdf_count);
 	vnx::write_value(_buf + 52, value.vdf_iters);
 	vnx::write_value(_buf + 60, value.is_space_fork);
-	vnx::write_value(_buf + 61, value.proof_score_sum);
-	vnx::write_value(_buf + 65, value.proof_score_count);
+	vnx::write_value(_buf + 61, value.space_fork_len);
+	vnx::write_value(_buf + 65, value.space_fork_proofs);
 	vnx::write_value(_buf + 69, value.reward_amount);
 	vnx::write_value(_buf + 77, value.reward_vote);
 	vnx::write_value(_buf + 78, value.reward_vote_sum);
