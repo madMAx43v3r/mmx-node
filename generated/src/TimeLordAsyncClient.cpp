@@ -4,7 +4,6 @@
 #include <mmx/package.hxx>
 #include <mmx/TimeLordAsyncClient.hxx>
 #include <mmx/IntervalRequest.hxx>
-#include <mmx/TimeInfusion.hxx>
 #include <mmx/TimeLord_stop_vdf.hxx>
 #include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <mmx/addr_t.hpp>

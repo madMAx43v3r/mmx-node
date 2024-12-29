@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 pooling_error_e::VNX_TYPE_HASH(0xec786b877a93f17ull);
-const vnx::Hash64 pooling_error_e::VNX_CODE_HASH(0x67403d1659447023ull);
+const vnx::Hash64 pooling_error_e::VNX_CODE_HASH(0x598a3a53e6c7f787ull);
 
 vnx::Hash64 pooling_error_e::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -43,6 +43,7 @@ void pooling_error_e::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_co
 
 vnx::bool_t pooling_error_e::is_valid() const {
 	switch(value) {
+		case CHALLENGE_NOT_CONFIRMED: return true;
 		case CHALLENGE_NOT_FOUND: return true;
 		case CHALLENGE_REVERTED: return true;
 		case DUPLICATE_PARTIAL: return true;
@@ -65,6 +66,7 @@ vnx::bool_t pooling_error_e::is_valid() const {
 
 std::string pooling_error_e::to_string() const {
 	switch(value) {
+		case CHALLENGE_NOT_CONFIRMED: return "\"CHALLENGE_NOT_CONFIRMED\"";
 		case CHALLENGE_NOT_FOUND: return "\"CHALLENGE_NOT_FOUND\"";
 		case CHALLENGE_REVERTED: return "\"CHALLENGE_REVERTED\"";
 		case DUPLICATE_PARTIAL: return "\"DUPLICATE_PARTIAL\"";
@@ -87,6 +89,7 @@ std::string pooling_error_e::to_string() const {
 
 std::string pooling_error_e::to_string_value() const {
 	switch(value) {
+		case CHALLENGE_NOT_CONFIRMED: return "CHALLENGE_NOT_CONFIRMED";
 		case CHALLENGE_NOT_FOUND: return "CHALLENGE_NOT_FOUND";
 		case CHALLENGE_REVERTED: return "CHALLENGE_REVERTED";
 		case DUPLICATE_PARTIAL: return "DUPLICATE_PARTIAL";
@@ -109,6 +112,7 @@ std::string pooling_error_e::to_string_value() const {
 
 std::string pooling_error_e::to_string_value_full() const {
 	switch(value) {
+		case CHALLENGE_NOT_CONFIRMED: return "mmx.pooling_error_e.CHALLENGE_NOT_CONFIRMED";
 		case CHALLENGE_NOT_FOUND: return "mmx.pooling_error_e.CHALLENGE_NOT_FOUND";
 		case CHALLENGE_REVERTED: return "mmx.pooling_error_e.CHALLENGE_REVERTED";
 		case DUPLICATE_PARTIAL: return "mmx.pooling_error_e.DUPLICATE_PARTIAL";
@@ -139,7 +143,8 @@ void pooling_error_e::from_string_value(const std::string& _name) {
 	vnx::Variant var;
 	vnx::from_string_value(_name, var);
 	if(var.is_string()) {
-		if(_name == "CHALLENGE_NOT_FOUND") value = CHALLENGE_NOT_FOUND;
+		if(_name == "CHALLENGE_NOT_CONFIRMED") value = CHALLENGE_NOT_CONFIRMED;
+		else if(_name == "CHALLENGE_NOT_FOUND") value = CHALLENGE_NOT_FOUND;
 		else if(_name == "CHALLENGE_REVERTED") value = CHALLENGE_REVERTED;
 		else if(_name == "DUPLICATE_PARTIAL") value = DUPLICATE_PARTIAL;
 		else if(_name == "INVALID_ACCOUNT") value = INVALID_ACCOUNT;
@@ -164,6 +169,7 @@ void pooling_error_e::from_string_value(const std::string& _name) {
 void pooling_error_e::accept(vnx::Visitor& _visitor) const {
 	std::string _name;
 	switch(value) {
+		case CHALLENGE_NOT_CONFIRMED: _name = "CHALLENGE_NOT_CONFIRMED"; break;
 		case CHALLENGE_NOT_FOUND: _name = "CHALLENGE_NOT_FOUND"; break;
 		case CHALLENGE_REVERTED: _name = "CHALLENGE_REVERTED"; break;
 		case DUPLICATE_PARTIAL: _name = "DUPLICATE_PARTIAL"; break;
@@ -186,6 +192,7 @@ void pooling_error_e::accept(vnx::Visitor& _visitor) const {
 
 void pooling_error_e::write(std::ostream& _out) const {
 	switch(value) {
+		case CHALLENGE_NOT_CONFIRMED: _out << "\"CHALLENGE_NOT_CONFIRMED\""; break;
 		case CHALLENGE_NOT_FOUND: _out << "\"CHALLENGE_NOT_FOUND\""; break;
 		case CHALLENGE_REVERTED: _out << "\"CHALLENGE_REVERTED\""; break;
 		case DUPLICATE_PARTIAL: _out << "\"DUPLICATE_PARTIAL\""; break;
@@ -262,7 +269,7 @@ std::shared_ptr<vnx::TypeCode> pooling_error_e::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.pooling_error_e";
 	type_code->type_hash = vnx::Hash64(0xec786b877a93f17ull);
-	type_code->code_hash = vnx::Hash64(0x67403d1659447023ull);
+	type_code->code_hash = vnx::Hash64(0x598a3a53e6c7f787ull);
 	type_code->is_native = true;
 	type_code->is_enum = true;
 	type_code->native_size = sizeof(::mmx::pooling_error_e);
@@ -274,6 +281,7 @@ std::shared_ptr<vnx::TypeCode> pooling_error_e::static_create_type_code() {
 		field.name = "value";
 		field.code = {3};
 	}
+	type_code->enum_map[1645788267] = "CHALLENGE_NOT_CONFIRMED";
 	type_code->enum_map[471927302] = "CHALLENGE_NOT_FOUND";
 	type_code->enum_map[1760085717] = "CHALLENGE_REVERTED";
 	type_code->enum_map[271202490] = "DUPLICATE_PARTIAL";

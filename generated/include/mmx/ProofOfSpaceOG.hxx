@@ -33,6 +33,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash() const override;
+	virtual ::mmx::hash_t calc_proof_hash() const override;
 	virtual void validate() const override;
 	
 	static std::shared_ptr<ProofOfSpaceOG> create();
@@ -67,14 +68,16 @@ protected:
 
 template<typename T>
 void ProofOfSpaceOG::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfSpaceOG>(6);
+	_visitor.template type_begin<ProofOfSpaceOG>(8);
 	_visitor.type_field("score", 0); _visitor.accept(score);
 	_visitor.type_field("plot_id", 1); _visitor.accept(plot_id);
-	_visitor.type_field("farmer_key", 2); _visitor.accept(farmer_key);
-	_visitor.type_field("ksize", 3); _visitor.accept(ksize);
-	_visitor.type_field("seed", 4); _visitor.accept(seed);
-	_visitor.type_field("proof_xs", 5); _visitor.accept(proof_xs);
-	_visitor.template type_end<ProofOfSpaceOG>(6);
+	_visitor.type_field("challenge", 2); _visitor.accept(challenge);
+	_visitor.type_field("difficulty", 3); _visitor.accept(difficulty);
+	_visitor.type_field("farmer_key", 4); _visitor.accept(farmer_key);
+	_visitor.type_field("ksize", 5); _visitor.accept(ksize);
+	_visitor.type_field("seed", 6); _visitor.accept(seed);
+	_visitor.type_field("proof_xs", 7); _visitor.accept(proof_xs);
+	_visitor.template type_end<ProofOfSpaceOG>(8);
 }
 
 

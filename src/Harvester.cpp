@@ -10,7 +10,6 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/LookupInfo.hxx>
 #include <mmx/Partial.hxx>
 #include <mmx/utils.h>
@@ -86,20 +85,22 @@ void Harvester::main()
 }
 
 void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::shared_ptr<const ProofOfSpace> proof,
-								const uint32_t score, const int64_t time_begin_ms) const
+								const int64_t time_begin_ms) const
 {
+	// Note: NEEDS TO BE THREAD SAFE
 	auto out = ProofResponse::create();
 	out->proof = proof;
-	out->request = request;
+	out->vdf_height = request->vdf_height;
 	out->farmer_addr = farmer_addr;
-	out->harvester = my_name.substr(0, 256);
+	out->harvester = my_name.substr(0, 1024);
 	out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin_ms;
+	out->hash = out->calc_hash();
+	out->content_hash = out->calc_content_hash();
 
 	const auto delay_sec = out->lookup_time_ms / 1e3;
-	log(INFO) << "[" << my_name << "] Found proof with score " << score << " for height " << request->height << ", delay " << delay_sec << " sec";
+	log(INFO) << "[" << my_name << "] Found proof with score " << proof->score << " for height "
+			<< request->vdf_height << ", delay " << delay_sec << " sec";
 
-	out->hash = out->calc_hash();
-	out->content_hash = out->calc_hash(true);
 	publish(out, output_proofs);
 }
 
@@ -110,10 +111,10 @@ void Harvester::check_queue()
 	for(auto iter = lookup_queue.begin(); iter != lookup_queue.end();)
 	{
 		const auto& entry = iter->second;
-		const auto delay_sec = (now_ms - entry.recv_time_ms) / 1e3;
+		const auto delay_ms = now_ms - entry.recv_time_ms;
 
-		if(delay_sec > params->get_block_time() * entry.request->max_delay) {
-			log(WARN) << "[" << my_name << "] Missed deadline for height " << entry.request->height << " due to delay of " << delay_sec << " sec";
+		if(delay_ms > params->challenge_delay * params->block_interval_ms) {
+			log(WARN) << "[" << my_name << "] Missed deadline for height " << entry.request->vdf_height;
 			iter = lookup_queue.erase(iter);
 		} else {
 			iter++;
@@ -130,13 +131,13 @@ void Harvester::check_queue()
 
 void Harvester::handle(std::shared_ptr<const Challenge> value)
 {
-	if(!is_ready || value->max_delay < 2) {
+	if(!is_ready) {
 		return;
 	}
 	if(!already_checked.insert(value->challenge).second) {
 		return;
 	}
-	auto& entry = lookup_queue[value->height];
+	auto& entry = lookup_queue[value->vdf_height];
 
 	const auto prev = entry.request;
 	if(!prev || prev->challenge != value->challenge) {
@@ -179,15 +180,13 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		std::mutex mutex;
 		std::condition_variable signal;
 		size_t total_plots = 0;
-		uint32_t best_score = -1;
 		int64_t slow_time_ms = 0;
 		int64_t time_begin = 0;
 		std::string slow_plot;
-		pos::proof_data_t best_proof;
-		std::shared_ptr<pos::Prover> best_plot;
 		std::unordered_map<addr_t, pool_conf_t> pool_config;
 		std::atomic<uint64_t> num_left {0};
 		std::atomic<uint64_t> num_passed {0};
+		std::atomic<uint32_t> num_proofs {0};
 	};
 	const auto job = std::make_shared<lookup_job_t>();
 	job->total_plots = id_map.size();
@@ -207,9 +206,6 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		}
 	}
 
-	const auto max_delay_sec = params->get_block_time() * (value->max_delay - 0.5);
-	const auto deadline_ms = recv_time_ms + int64_t(max_delay_sec * 1000);
-
 	for(const auto& entry : id_map)
 	{
 		const auto iter = plot_map.find(entry.second);
@@ -221,23 +217,21 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		const auto& plot_id = entry.first;
 		const auto& prover = iter->second;
 
-		threads->add_task([this, plot_id, prover, value, job, recv_time_ms, deadline_ms]()
+		threads->add_task([this, plot_id, prover, value, job, recv_time_ms]()
 		{
 			const auto header = prover->get_header();
-			const bool passed = check_plot_filter(params, value->challenge, plot_id);
 			const auto time_begin = vnx::get_wall_time_millis();
-			const bool expired = time_begin > deadline_ms;
+			const bool passed_filter = check_plot_filter(params, value->challenge, plot_id);
 
-			const pool_conf_t* pool_config = nullptr;
-			if(auto contract = header->contract) {
-				auto iter = job->pool_config.find(*contract);
-				if(iter != job->pool_config.end()) {
-					pool_config = &iter->second;
-				}
-			}
-
-			if(passed && !expired) try
+			if(passed_filter) try
 			{
+				const pool_conf_t* pool_config = nullptr;
+				if(auto contract = header->contract) {
+					auto iter = job->pool_config.find(*contract);
+					if(iter != job->pool_config.end()) {
+						pool_config = &iter->second;
+					}
+				}
 				const auto challenge = get_plot_challenge(value->challenge, plot_id);
 				const auto qualities = prover->get_qualities(challenge, params->plot_filter);
 
@@ -247,62 +241,91 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						log(WARN) << "[" << my_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
 						continue;
 					}
-					if(pool_config) try {
-						const auto score = calc_proof_score(params, header->ksize, res.quality, pool_config->difficulty);
-						if(score < params->score_threshold)
+					try {
+						const auto is_solo_proof =
+								check_proof_threshold(params, header->ksize, res.quality, value->difficulty);
+						const auto is_partial_proof = pool_config ?
+								check_proof_threshold(params, header->ksize, res.quality, pool_config->difficulty) : false;
+
+						hash_t hash;
+						uint16_t score = -1;
+						std::vector<uint32_t> proof_xs;
+						if(is_solo_proof || is_partial_proof)
 						{
+							if(job->num_proofs++ >= max_proofs) {
+								continue;	// limit proofs per height
+							}
+							if(res.proof.size()) {
+								proof_xs = res.proof;	// SSD plot
+							} else {
+								proof_xs = fetch_full_proof(prover, challenge, res.index);
+							}
+							hash = calc_proof_hash(value->challenge, proof_xs);
+							score = get_proof_score(hash);
+						}
+
+						if(is_partial_proof) {
 							auto proof = std::make_shared<ProofOfSpaceNFT>();
 							proof->seed = header->seed;
 							proof->ksize = header->ksize;
 							proof->plot_id = header->plot_id;
+							proof->challenge = value->challenge;
+							proof->difficulty = pool_config->difficulty;
 							proof->farmer_key = header->farmer_key;
 							proof->contract = *header->contract;
 							proof->score = score;
-							if(res.proof.size()) {
-								proof->proof_xs = res.proof;
-							} else {
-								proof->proof_xs = fetch_full_proof(prover, challenge, res.index);
-							}
+							proof->proof_xs = proof_xs;
+
 							auto out = Partial::create();
-							out->height = value->height;
-							out->challenge = value->challenge;
+							out->vdf_height = value->vdf_height;
 							out->contract = *header->contract;
 							out->account = pool_config->owner;
 							out->pool_url = pool_config->server_url;
-							out->difficulty = pool_config->difficulty;
 							out->proof = proof;
 							out->harvester = my_name;
 							out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin;
+
 							publish(out, output_partials);
 						}
-					} catch(const std::exception& ex) {
-						log(WARN) << "[" << my_name << "] Failed to create partial: " << ex.what() << " (" << prover->get_file_path() << ")";
-					}
 
-					const auto score = calc_proof_score(params, header->ksize, res.quality, value->space_diff);
-					if(score < params->score_threshold)
-					{
-						std::lock_guard<std::mutex> lock(job->mutex);
+						if(is_solo_proof) {
+							std::shared_ptr<ProofOfSpace> proof;
 
-						if(score < job->best_score || !job->best_plot)
-						{
-							job->best_score = score;
-							job->best_plot = prover;
-							job->best_proof = res;
+							if(header->contract) {
+								auto out = std::make_shared<ProofOfSpaceNFT>();
+								out->seed = header->seed;
+								out->ksize = header->ksize;
+								out->contract = *header->contract;
+								out->proof_xs = proof_xs;
+								proof = out;
+							} else {
+								auto out = std::make_shared<ProofOfSpaceOG>();
+								out->seed = header->seed;
+								out->ksize = header->ksize;
+								out->proof_xs = proof_xs;
+								proof = out;
+							}
+							proof->score = score;
+							proof->plot_id = header->plot_id;
+							proof->challenge = value->challenge;
+							proof->difficulty = value->difficulty;
+							proof->farmer_key = header->farmer_key;
+
+							send_response(value, proof, recv_time_ms);
 						}
+					} catch(const std::exception& ex) {
+						log(WARN) << "[" << my_name << "] Failed to process quality "
+								<< res.index << ": " << ex.what() << " (" << prover->get_file_path() << ")";
 					}
 				}
 			} catch(const std::exception& ex) {
 				log(WARN) << "[" << my_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
 			}
 
-			if(passed && expired) {
-				log(DEBUG) << "Skipping quality lookup for height " << value->height << " due to deadline overshoot";
-			}
 			const auto time_lookup = vnx::get_wall_time_millis() - time_begin;
 			{
 				std::lock_guard<std::mutex> lock(job->mutex);
-				if(passed) {
+				if(passed_filter) {
 					if(time_lookup > job->slow_time_ms) {
 						job->slow_time_ms = time_lookup;
 						job->slow_plot = prover->get_file_path();
@@ -315,66 +338,18 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		});
 	}
 
-	threads->add_task([this, value, job, max_delay_sec, recv_time_ms, deadline_ms]()
+	threads->add_task([this, value, job, recv_time_ms]()
 	{
 		std::unique_lock<std::mutex> lock(job->mutex);
 		while(job->num_left) {
-			const int64_t timeout_ms = deadline_ms - vnx::get_wall_time_millis();
-			if(job->signal.wait_for(lock, std::chrono::milliseconds(timeout_ms)) == std::cv_status::timeout) {
-				log(WARN) << "[" << my_name << "] Lookup for height " << value->height << " took longer than allowable delay of " << max_delay_sec << " sec";
-				break;
-			}
+			job->signal.wait(lock);
 		}
 		const auto time_end = vnx::get_wall_time_millis();
-
-		if(auto prover = job->best_plot)
-		{
-			auto proof_xs = job->best_proof.proof;
-			if(proof_xs.empty()) {
-				try {
-					const auto time_begin = vnx::get_wall_time_millis();
-					const auto data = prover->get_full_proof(value->challenge, job->best_proof.index);
-					if(data.valid) {
-						proof_xs = data.proof;
-						const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
-						log(elapsed > 20 ? WARN : DEBUG) << "[" << my_name << "] Fetching full proof took " << elapsed << " sec (" << prover->get_file_path() << ")";
-					} else {
-						throw std::runtime_error(data.error_msg);
-					}
-				} catch(const std::exception& ex) {
-					log(WARN) << "[" << my_name << "] Failed to fetch full proof: " << ex.what() << " (" << prover->get_file_path() << ")";
-				}
-			}
-			if(!proof_xs.empty()) {
-				std::shared_ptr<ProofOfSpace> proof;
-
-				const auto header = prover->get_header();
-				if(header->contract) {
-					auto out = std::make_shared<ProofOfSpaceNFT>();
-					out->seed = header->seed;
-					out->ksize = header->ksize;
-					out->contract = *header->contract;
-					out->proof_xs = proof_xs;
-					proof = out;
-				} else {
-					auto out = std::make_shared<ProofOfSpaceOG>();
-					out->seed = header->seed;
-					out->ksize = header->ksize;
-					out->proof_xs = proof_xs;
-					proof = out;
-				}
-				proof->score = job->best_score;
-				proof->plot_id = header->plot_id;
-				proof->farmer_key = header->farmer_key;
-
-				send_response(value, proof, job->best_score, recv_time_ms);
-			}
-		}
 		{
 			auto out = LookupInfo::create();
 			out->id = harvester_id;
 			out->name = my_name;
-			out->height = value->height;
+			out->vdf_height = value->vdf_height;
 			out->num_total = job->total_plots;
 			out->num_passed = job->num_passed;
 			out->total_time_ms = time_end - job->time_begin;
@@ -385,39 +360,20 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 			}
 			publish(out, output_lookups);
 		}
+		if(job->num_proofs > max_proofs) {
+			log(WARN) << "Skipped fetching " << job->num_proofs - max_proofs << " proofs, difficulty too low!";
+		}
 		if(job->total_plots) {
 			const auto slow_time = job->slow_time_ms / 1e3;
 			if(job->num_passed) {
 				log(slow_time > 20 ? WARN : DEBUG) << "[" << my_name << "] Slowest plot took " << slow_time << " sec (" << job->slow_plot << ")";
 			}
 			const auto delay_sec = (time_end - recv_time_ms) / 1e3;
-			log(INFO) << "[" << my_name << "] " << job->num_passed << " / " << job->total_plots
-					<< " plots were eligible for height " << value->height << ", max lookup " << slow_time << " sec, delay " << delay_sec << " sec";
+			log(INFO) << "[" << my_name << "] " << job->num_passed << " of " << job->total_plots
+					<< " plots were eligible for height " << value->vdf_height
+					<< ", max lookup " << slow_time << " sec, delay " << delay_sec << " sec";
 		}
 	});
-
-	for(const auto& entry : virtual_map) {
-		try {
-			const auto balance = node->get_virtual_plot_balance(entry.first, value->diff_block_hash);
-			if(balance) {
-				// TODO: partials
-				const auto score = calc_virtual_score(params, value->challenge, entry.first, balance, value->space_diff);
-				if(score < params->score_threshold) {
-					auto proof = std::make_shared<ProofOfStake>();
-					proof->farmer_key = entry.second.farmer_key;
-					proof->plot_id = entry.first;
-					proof->score = score;
-					send_response(value, proof, score, recv_time_ms);
-				}
-			}
-		} catch(const std::exception& ex) {
-			log(WARN) << "[" << my_name << "] Failed to check virtual plot: " << ex.what() << " (" << entry.first << ")";
-		}
-	}
-	const auto delay_sec = (vnx::get_wall_time_millis() - recv_time_ms) / 1e3;
-	if(delay_sec > max_delay_sec) {
-		log(WARN) << "[" << my_name << "] Virtual plots check for height " << value->height << " took longer than allowable delay: " << delay_sec << " sec";
-	}
 
 	// trigger next lookup right away
 	lookup_timer->set_millis(0);
@@ -440,9 +396,6 @@ std::shared_ptr<const FarmInfo> Harvester::get_farm_info() const
 		if(const auto& prover = entry.second) {
 			out->plot_count[prover->get_ksize()]++;
 		}
-	}
-	for(const auto& entry : virtual_map) {
-		out->total_balance += entry.second.balance;
 	}
 	for(const auto& entry : plot_nfts) {
 		const auto& nft = entry.second;
@@ -629,25 +582,8 @@ void Harvester::reload()
 		total_bytes_effective += get_effective_plot_size(prover->get_ksize());
 	}
 
-	// gather virtual plots
-	virtual_map.clear();
-	total_balance = 0;
-	if(farm_virtual_plots) {
-		for(const auto& farmer_key : farmer_keys) {
-			for(const auto& plot : node->get_virtual_plots_for(farmer_key)) {
-				virtual_map[plot.address] = plot;
-				total_balance += plot.balance;
-			}
-		}
-	}
-
 	// gather plot NFTs
 	plot_contract_set.clear();
-	for(const auto& entry : virtual_map) {
-		if(const auto& addr = entry.second.reward_address) {
-			plot_contract_set[*addr]++;
-		}
-	}
 	for(const auto& entry : plot_map) {
 		if(const auto& addr = entry.second->get_contract()) {
 			plot_contract_set[*addr]++;
@@ -668,9 +604,8 @@ void Harvester::reload()
 		});
 	}
 	log(INFO) << "[" << my_name << "] Loaded " << plot_map.size() << " plots, "
-			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe, "
-			<< virtual_map.size() << " virtual plots, " << total_balance / pow(10, params->decimals) << " MMX total, took "
-			<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe"
+			<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 }
 
 void Harvester::add_plot_dir(const std::string& path)

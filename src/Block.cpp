@@ -63,9 +63,7 @@ void Block::finalize()
 	}
 	tx_count = tx_list.size();
 	tx_hash = calc_tx_hash();
-	const auto all_hash = calc_hash();
-	hash = all_hash.first;
-	content_hash = all_hash.second;
+	hash = calc_hash();
 }
 
 std::shared_ptr<const BlockHeader> Block::get_header() const
@@ -102,9 +100,9 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 {
 	std::vector<txio_entry_t> res;
 
-	if(vdf_reward_addr) {
+	if(vdf_reward_payout) {
 		txio_t out;
-		out.address = *vdf_reward_addr;
+		out.address = *vdf_reward_payout;
 		out.amount = params->vdf_reward;
 		res.push_back(txio_entry_t::create_ex(hash, height, time_stamp, tx_type_e::VDF_REWARD, out));
 	}

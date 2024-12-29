@@ -26,6 +26,7 @@ module Harvester implements vnx.addons.HttpComponent {
 	
 	uint num_threads = 32;					// for plot lookups
 	uint max_recursion = 4;					// for recursive_search
+	uint max_proofs = 4;					// per challenge
 	
 	bool recursive_search = true;
 	bool farm_virtual_plots = true;

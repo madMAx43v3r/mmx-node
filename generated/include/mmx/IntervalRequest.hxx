@@ -14,12 +14,11 @@ namespace mmx {
 class MMX_EXPORT IntervalRequest : public ::vnx::Value {
 public:
 	
-	uint64_t begin = 0;
+	uint32_t vdf_height = 0;
+	uint64_t start = 0;
 	uint64_t end = 0;
-	std::array<::mmx::hash_t, 2> start_values = {};
-	vnx::bool_t has_start = 0;
-	uint32_t num_segments = 0;
-	uint32_t height = 0;
+	::mmx::hash_t infuse;
+	vnx::optional<::mmx::hash_t> input;
 	
 	typedef ::vnx::Value Super;
 	
@@ -66,14 +65,13 @@ protected:
 
 template<typename T>
 void IntervalRequest::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<IntervalRequest>(6);
-	_visitor.type_field("begin", 0); _visitor.accept(begin);
-	_visitor.type_field("end", 1); _visitor.accept(end);
-	_visitor.type_field("start_values", 2); _visitor.accept(start_values);
-	_visitor.type_field("has_start", 3); _visitor.accept(has_start);
-	_visitor.type_field("num_segments", 4); _visitor.accept(num_segments);
-	_visitor.type_field("height", 5); _visitor.accept(height);
-	_visitor.template type_end<IntervalRequest>(6);
+	_visitor.template type_begin<IntervalRequest>(5);
+	_visitor.type_field("vdf_height", 0); _visitor.accept(vdf_height);
+	_visitor.type_field("start", 1); _visitor.accept(start);
+	_visitor.type_field("end", 2); _visitor.accept(end);
+	_visitor.type_field("infuse", 3); _visitor.accept(infuse);
+	_visitor.type_field("input", 4); _visitor.accept(input);
+	_visitor.template type_end<IntervalRequest>(5);
 }
 
 

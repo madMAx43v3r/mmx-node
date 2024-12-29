@@ -16,7 +16,7 @@ public:
 	
 	::mmx::hash_t id;
 	std::string name;
-	uint32_t height = 0;
+	uint32_t vdf_height = 0;
 	uint32_t num_passed = 0;
 	uint32_t num_total = 0;
 	int64_t slow_time_ms = 0;
@@ -72,7 +72,7 @@ void LookupInfo::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<LookupInfo>(9);
 	_visitor.type_field("id", 0); _visitor.accept(id);
 	_visitor.type_field("name", 1); _visitor.accept(name);
-	_visitor.type_field("height", 2); _visitor.accept(height);
+	_visitor.type_field("vdf_height", 2); _visitor.accept(vdf_height);
 	_visitor.type_field("num_passed", 3); _visitor.accept(num_passed);
 	_visitor.type_field("num_total", 4); _visitor.accept(num_total);
 	_visitor.type_field("slow_time_ms", 5); _visitor.accept(slow_time_ms);

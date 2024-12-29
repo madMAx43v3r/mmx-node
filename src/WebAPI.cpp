@@ -427,14 +427,6 @@ public:
 		set(tmp);
 	}
 
-	void accept(const virtual_plot_info_t& value) {
-		auto tmp = render(value, context);
-		if(context) {
-			tmp["balance"] = to_amount_object(value.balance, context->params->decimals);
-		}
-		set(tmp);
-	}
-
 	void accept(const offer_data_t& value) {
 		auto tmp = render(value, context);
 		if(context) {
@@ -645,7 +637,7 @@ public:
 			tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
 			tmp["reward_amount"] = to_amount_object(value->reward_amount, context->params->decimals);
 			tmp["base_reward"] = to_amount_object(value->base_reward, context->params->decimals);
-			tmp["vdf_reward"] = to_amount_object(value->vdf_reward_addr ? context->params->vdf_reward : 0, context->params->decimals);
+			tmp["vdf_reward"] = to_amount_object(value->vdf_reward_payout ? context->params->vdf_reward : 0, context->params->decimals);
 			tmp["project_reward"] = to_amount_object(calc_project_reward(context->params, value->tx_fees), context->params->decimals);
 			tmp["project_reward_addr"] = context->params->project_addr.to_string();
 			tmp["txfee_buffer"] = to_amount_object(value->txfee_buffer, context->params->decimals);
@@ -779,7 +771,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					auto& out = job->result[i];
 					out["height"] = block->height;
 					out["tx_count"] = block->tx_count;
-					out["netspace"] = double(calc_total_netspace(params, block->space_diff)) * pow(1000, -5);
+					out["netspace"] = double(uint64_t(calc_total_netspace(params, block->space_diff) / 1000 / 1000 / 1000)) * pow(1000, -2);
 					out["vdf_speed"] = get_vdf_speed(params, block->time_diff) / 1e6;
 					if(auto proof = block->proof) {
 						out["score"] = proof->score;
@@ -1800,24 +1792,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 400, "wallet/contracts?index");
 		}
 	}
-	else if(sub_path == "/wallet/plots") {
-		const auto iter_index = query.find("index");
-		if(iter_index != query.end()) {
-			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
-			wallet->get_virtual_plots(index,
-				[this, request_id](const std::vector<virtual_plot_info_t>& plots) {
-					auto result = plots;
-					std::sort(result.begin(), result.end(),
-						[](const virtual_plot_info_t& L, const virtual_plot_info_t& R) -> bool {
-							return L.balance == R.balance ? L.address < R.address : L.balance > R.balance;
-						});
-					respond(request_id, render_value(result, get_context()));
-				},
-				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
-		} else {
-			respond_status(request_id, 400, "wallet/plots?index");
-		}
-	}
 	else if(sub_path == "/wallet/address") {
 		const auto index = get_param<int32_t>(query, "index", -1);
 		if(index >= 0) {
@@ -2351,7 +2325,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				vnx::Object out;
 				if(info) {
 					out = render(*info);
-					out["total_virtual_bytes"] = mmx::get_virtual_plot_size(params, info->total_balance);
 				}
 				respond(request_id, out);
 			},
@@ -2410,10 +2383,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				break;
 			}
 			const auto& value = iter->first;
-			vnx::Object tmp;
-			if(value->request) {
-				tmp = render(*value->request);
-			}
+			auto tmp = render(*value);
 			if(value->proof) {
 				tmp["proof"] = render(*value->proof);
 			}
@@ -2591,7 +2561,6 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					[this, request_id, contract](const std::tuple<vm::varptr_t, uint64_t, uint64_t>& ret) {
 						const auto addr = std::get<1>(ret);
 						const auto key = std::get<2>(ret);
-						log(INFO) << "value = " << vm::to_string(std::get<0>(ret));
 						resolve_vm_varptr(contract, std::get<0>(ret), request_id, 0,
 							[this, request_id, addr, key](const vnx::Variant& value) {
 								vnx::Object out;
@@ -2772,20 +2741,25 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract,
 
 					for(const auto& entry : ret) {
 						std::string key;
+						vnx::optional<addr_t> key_addr;
 						if(auto var = entry.first) {
 							switch(var->type) {
 								case vm::TYPE_UINT:		key = vm::to_uint(var).str(10); break;
 								case vm::TYPE_STRING:	key = vm::to_string_value(var); break;
-								case vm::TYPE_BINARY:	key = vm::to_string_value_hex(var); break;
-								case vm::TYPE_MAP:
-								case vm::TYPE_ARRAY:
-								case vm::TYPE_REF:		key = std::to_string(vm::to_ref(var)); break;
+								case vm::TYPE_BINARY:	key = vm::to_string_value_hex(var);
+														if(vm::get_size(var) == 32) {
+															key_addr = vm::to_addr(var);
+														}
+														break;
 								default:				key = vm::to_string(var);
 							}
 						}
 						resolve_vm_varptr(contract, entry.second, request_id, call_depth + 1,
-							[job, callback, count, key](const vnx::Variant& value) {
+							[job, callback, count, key, key_addr](const vnx::Variant& value) {
 								job->out[key] = value;
+								if(key_addr) {
+									job->out[key_addr->to_string()] = value;
+								}
 								if(++(job->k) == count) {
 									callback(vnx::Variant(job->out));
 								}

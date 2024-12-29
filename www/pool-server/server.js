@@ -105,7 +105,8 @@ app.post('/partial', no_cache, async (req, res, next) =>
         let response_time = null;
 
         if(sync_height) {
-            response_time = (config.challenge_delay - (partial.height - sync_height)) * config.block_interval + (now - sync_time);
+        	// TODO: refactor to new VDF scheme
+            response_time = (config.challenge_delay - (partial.vdf_height - sync_height)) * config.block_interval + (now - sync_time);
 
             if(response_time > config.max_response_time) {
                 is_valid = false;
@@ -119,10 +120,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
         }
         out.response_time = response_time;
 
-        console.log('/partial', 'height', partial.height, 'diff', partial.difficulty,
-            'response', response_time / 1e3, 'time', now, 'account', partial.account);
-
-        if(partial.height < 0 || partial.height > 4294967295
+        if(partial.vdf_height < 0 || partial.vdf_height > 4294967295
             || partial.lookup_time_ms < 0 || partial.lookup_time_ms > 4294967295)
         {
             out.error_code = 'INVALID_PARTIAL';
@@ -137,6 +135,10 @@ app.post('/partial', no_cache, async (req, res, next) =>
             return;
         }
         const proof = partial.proof;
+        const partial_diff = proof.difficulty;
+        
+        console.log('/partial', 'height', partial.vdf_height, 'diff', partial_diff,
+            'response', response_time / 1e3, 'time', now, 'account', partial.account);
 
         if(proof.__type == 'mmx.ProofOfSpaceNFT') {
             const ksize = proof.ksize;
@@ -163,19 +165,17 @@ app.post('/partial', no_cache, async (req, res, next) =>
             }
         }
 
-        if(partial.difficulty < 1 || partial.difficulty > 4503599627370495) {
+        if(partial_diff < 1 || partial_diff > 4503599627370495) {
             out.error_code = 'INVALID_DIFFICULTY';
             out.error_message = 'Invalid numeric value for difficulty';
             res.json(out);
             return;
         }
-        var msg = proof.__type + ':' + partial.height + ':' + partial.challenge + ':' + proof.plot_id;
+        var msg = proof.__type + ':' + partial.vdf_height + ':' + proof.plot_id + ':' + proof.challenge;
 
         switch(proof.__type) {
             case 'mmx.ProofOfSpaceNFT':
                 msg += ':' + proof.ksize + ':' + proof.proof_xs.join(',');
-                break;
-            case 'mmx.ProofOfStake':
                 break;
             default:
                 out.error_code = 'INVALID_PROOF';
@@ -197,19 +197,19 @@ app.post('/partial', no_cache, async (req, res, next) =>
         if(account) {
             difficulty = account.difficulty;
         }
-        if(partial.difficulty < difficulty) {
+        if(partial_diff < difficulty) {
             is_valid = false;
             out.error_code = 'PARTIAL_NOT_GOOD_ENOUGH';
-            out.error_message = 'Partial difficulty too low: ' + partial.difficulty + ' < ' + difficulty;
+            out.error_message = 'Partial difficulty too low: ' + partial_diff + ' < ' + difficulty;
         }
 
         const entry = new dbs.Partial({
             hash: hash,
-            height: partial.height,
+            height: partial.vdf_height,
             account: partial.account,
             contract: partial.contract,
             harvester: partial.harvester,
-            difficulty: partial.difficulty,
+            difficulty: partial_diff,
             lookup_time: partial.lookup_time_ms,
             response_time: response_time,
             time: now,
@@ -248,6 +248,7 @@ async function update_height()
         const now = Date.now();
         const value = await utils.get_synced_height();
         if(value) {
+        	// TODO: refactor to new VDF scheme
             if(!sync_height) {
                 console.log("Node synced at height " + value);
             }

@@ -32,6 +32,8 @@ public:
 
 	secp256k1_ecdsa_signature to_secp256k1() const;
 
+	signature_t normalized() const;
+
 	static signature_t sign(const skey_t& skey, const hash_t& hash);
 
 private:

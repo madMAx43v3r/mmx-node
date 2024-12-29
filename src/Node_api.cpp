@@ -53,9 +53,6 @@
 #include <mmx/Node_read_storage_object.hxx>
 #include <mmx/Node_call_contract.hxx>
 #include <mmx/Node_get_total_supply.hxx>
-#include <mmx/Node_get_virtual_plots.hxx>
-#include <mmx/Node_get_virtual_plots_for.hxx>
-#include <mmx/Node_get_virtual_plots_owned_by.hxx>
 #include <mmx/Node_get_offer.hxx>
 #include <mmx/Node_fetch_offers.hxx>
 #include <mmx/Node_get_offers.hxx>
@@ -110,12 +107,11 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			const auto avg_txfee = calc_min_reward_deduction(params, peak->txfee_buffer);
 			info->block_reward = (peak->height >= params->reward_activation ?
 					(peak->base_reward + std::max<int64_t>(params->min_reward - avg_txfee, 0)) : 0);
-			info->total_space = calc_total_netspace(params, peak->space_diff);
+			info->total_space = calc_total_netspace(params, peak->space_diff) / 1000 / 1000 / 1000;
 			info->total_supply = get_total_supply(addr_t());
 			info->address_count = mmx_address_count;
 			info->genesis_hash = get_genesis_hash();
 			info->average_txfee = avg_txfee;
-			info->netspace_ratio = double(peak->netspace_ratio) / (uint64_t(1) << (2 * params->max_diff_adjust));
 			{
 				size_t num_blocks = 0;
 				for(const auto& fork : get_fork_line()) {
@@ -167,8 +163,7 @@ std::shared_ptr<const BlockHeader> Node::get_block_ex(const hash_t& hash, bool f
 {
 	auto iter = fork_tree.find(hash);
 	if(iter != fork_tree.end()) {
-		const auto& block = iter->second->block;
-		return full_block ? block : block->get_header();
+		return iter->second->block;
 	}
 	uint32_t height = 0;
 	if(hash_index.find(hash, height)) {
@@ -970,36 +965,6 @@ addr_t Node::get_plot_nft_target(const addr_t& address, const vnx::optional<addr
 	return address;
 }
 
-std::vector<virtual_plot_info_t> Node::get_virtual_plots(const std::vector<addr_t>& addresses) const
-{
-	std::vector<virtual_plot_info_t> result;
-	for(const auto& address : addresses) {
-		if(auto plot = get_contract_as<const contract::VirtualPlot>(address)) {
-			virtual_plot_info_t info;
-			info.address = address;
-			info.farmer_key = plot->farmer_key;
-			info.reward_address = plot->reward_address;
-			info.balance = get_balance(address, addr_t());
-			info.size_bytes = get_virtual_plot_size(params, info.balance);
-			info.owner = to_addr(read_storage_field(address, "owner").first);
-			result.push_back(info);
-		}
-	}
-	return result;
-}
-
-std::vector<virtual_plot_info_t> Node::get_virtual_plots_for(const pubkey_t& farmer_key) const
-{
-	std::vector<addr_t> addresses;
-	vplot_map.find(farmer_key, addresses);
-	return get_virtual_plots(addresses);
-}
-
-std::vector<virtual_plot_info_t> Node::get_virtual_plots_owned_by(const std::vector<addr_t>& addresses) const
-{
-	return get_virtual_plots(get_contracts_owned_by(addresses, params->plot_binary));
-}
-
 offer_data_t Node::get_offer(const addr_t& address) const
 {
 	auto data = read_storage(address);
@@ -1569,25 +1534,25 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 		return {pooling_error_e::INVALID_SIGNATURE, "Signature verification failed"};
 	}
 
-	const auto vdf_height = partial->height - params->challenge_delay;
-	const auto vdf_block = get_header_at(vdf_height);
-	if(!vdf_block) {
-		return {pooling_error_e::CHALLENGE_NOT_FOUND,
-			"Could not find VDF block at height " + std::to_string(vdf_height)};
+	if(auto peak = get_peak()) {
+		if(partial->vdf_height > peak->vdf_height) {
+			return {pooling_error_e::CHALLENGE_NOT_CONFIRMED, "Partial height not reached yet"};
+		}
 	}
-	const auto diff_block = get_diff_header(vdf_block, params->challenge_delay);
 
-	const auto challenge = vdf_block->vdf_output[1];
-	if(partial->challenge != challenge) {
-		return {pooling_error_e::CHALLENGE_REVERTED,
-			"Challenge mismatch, expected " + challenge.to_string() + " for height " + std::to_string(vdf_height)};
+	hash_t challenge;
+	uint64_t space_diff = 0;
+	if(!find_challenge(partial->vdf_height, challenge, space_diff)) {
+		return {pooling_error_e::CHALLENGE_NOT_FOUND, "Could not find challenge"};
+	}
+	if(partial->proof->challenge != challenge) {
+		return {pooling_error_e::CHALLENGE_REVERTED, "Challenge mismatch, expected " + challenge.to_string()};
 	}
 
 	try {
-		verify_proof(partial->proof, challenge, diff_block, partial->difficulty);
+		verify_proof(partial->proof, challenge, space_diff);
 	} catch(const std::exception& ex) {
-		return {pooling_error_e::INVALID_PROOF,
-			"Invalid partial proof: " + std::string(ex.what())};
+		return {pooling_error_e::INVALID_PROOF, "Invalid proof: " + std::string(ex.what())};
 	}
 
 	if(pool_target) {
@@ -1600,27 +1565,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 			if(std::get<0>(ret) != pooling_error_e::NONE) {
 				return ret;
 			}
-		}
-		else if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(partial->proof))
-		{
-			if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
-				if(!plot->reward_address) {
-					return {pooling_error_e::INVALID_CONTRACT, "VirtualPlot has no fixed reward address"};
-				}
-				const auto contract = *plot->reward_address;
-
-				if(partial->contract != contract) {
-					return {pooling_error_e::INVALID_CONTRACT, "Partial 'contract' does not match virtual plot"};
-				}
-				const auto ret = verify_plot_nft_target(contract, *pool_target);
-				if(std::get<0>(ret) != pooling_error_e::NONE) {
-					return ret;
-				}
-			} else {
-				return {pooling_error_e::INVALID_CONTRACT, "No such VirtualPlot: " + stake->plot_id.to_string()};
-			}
-		}
-		else {
+		} else {
 			return {pooling_error_e::INVALID_CONTRACT, "Invalid proof type: " + partial->proof->get_type_name()};
 		}
 	}
@@ -1702,9 +1647,6 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case Node_read_storage_object::VNX_TYPE_ID:
 		case Node_call_contract::VNX_TYPE_ID:
 		case Node_get_total_supply::VNX_TYPE_ID:
-		case Node_get_virtual_plots::VNX_TYPE_ID:
-		case Node_get_virtual_plots_for::VNX_TYPE_ID:
-		case Node_get_virtual_plots_owned_by::VNX_TYPE_ID:
 		case Node_get_offer::VNX_TYPE_ID:
 		case Node_fetch_offers::VNX_TYPE_ID:
 		case Node_get_offers::VNX_TYPE_ID:

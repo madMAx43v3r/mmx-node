@@ -9,6 +9,7 @@ add_executable(test_database_reads test_database_reads.cpp)
 add_executable(test_mem_hash test_mem_hash.cpp)
 add_executable(test_pos_compute test_pos_compute.cpp)
 add_executable(test_encoding test_encoding.cpp)
+add_executable(test_score_target test_score_target.cpp)
 add_executable(test_execute vm/test_execute.cpp)
 add_executable(database_fill database_fill.cpp)
 

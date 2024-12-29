@@ -27,9 +27,9 @@ class OCL_VDF {
 public:
 	OCL_VDF(cl_context context, cl_device_id device);
 
-	void compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain);
+	void compute(std::shared_ptr<const ProofOfTime> proof);
 
-	void verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain);
+	void verify(std::shared_ptr<const ProofOfTime> proof);
 
 	static void release();
 

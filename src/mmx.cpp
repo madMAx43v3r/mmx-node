@@ -432,11 +432,6 @@ int main(int argc, char** argv)
 								}
 							}
 						}
-						if(auto plot = std::dynamic_pointer_cast<const mmx::contract::VirtualPlot>(contract)) {
-							const auto balance = node.get_virtual_plot_balance(entry.first);
-							std::cout << ", " << mmx::to_value(balance, params) << " MMX";
-							std::cout << ", " << mmx::get_virtual_plot_size(params, balance) / pow(1000, 4) << " TB";
-						}
 						std::cout << ")" << std::endl;
 
 						for(const auto& entry : wallet.get_total_balances({address}))
@@ -1208,7 +1203,7 @@ int main(int argc, char** argv)
 				const auto info = node.get_network_info();
 				std::cout << "Synced:     " << (node.get_synced_height() ? "Yes" : "No") << std::endl;
 				std::cout << "Height:     " << info->height << std::endl;
-				std::cout << "Netspace:   " << info->total_space / pow(1000, 5) << " PB (" << info->netspace_ratio * 100 << " % physical)" << std::endl;
+				std::cout << "Netspace:   " << info->total_space / pow(1000, 2) << " PB" << std::endl;
 				std::cout << "VDF Speed:  " << info->vdf_speed << " MH/s" << std::endl;
 				std::cout << "Reward:     " << mmx::to_value(info->block_reward, params) << " MMX" << std::endl;
 				std::cout << "Supply:     " << mmx::to_value(info->total_supply, params) << " MMX" << std::endl;
@@ -1378,7 +1373,8 @@ int main(int argc, char** argv)
 						hash.from_string(arg);
 						block = node.get_block(hash);
 					} else {
-						block = node.get_block_at(std::strtoul(arg.c_str(), nullptr, 10));
+						const auto height = arg.size() ? vnx::from_string<uint32_t>(arg) : node.get_height();
+						block = node.get_block_at(height);
 					}
 					vnx::PrettyPrinter printer(std::cout);
 					vnx::accept(printer, block);
@@ -1395,7 +1391,8 @@ int main(int argc, char** argv)
 						hash.from_string(arg);
 						block = node.get_header(hash);
 					} else {
-						block = node.get_header_at(std::strtoul(arg.c_str(), nullptr, 10));
+						const auto height = arg.size() ? vnx::from_string<uint32_t>(arg) : node.get_height();
+						block = node.get_header_at(height);
 					}
 					vnx::PrettyPrinter printer(std::cout);
 					vnx::accept(printer, block);
@@ -1724,10 +1721,6 @@ int main(int argc, char** argv)
 				}
 				std::cout << "Physical size:  " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
 				std::cout << "Effective size: " << info->total_bytes_effective / pow(1000, 4) << " TBe" << std::endl;
-				const auto virtual_bytes = mmx::get_virtual_plot_size(params, info->total_balance);
-				std::cout << "Virtual size:   " << mmx::to_value(info->total_balance, params) << " MMX ("
-						<< virtual_bytes / pow(1000, 4) << " TBe)" << std::endl;
-				std::cout << "Total size:     " << (info->total_bytes_effective + virtual_bytes) / pow(1000, 4) << " TBe" << std::endl;
 				std::cout << "Plots:" << std::endl;
 				uint64_t total_plots = 0;
 				for(const auto& entry : info->plot_count) {

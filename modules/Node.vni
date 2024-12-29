@@ -19,7 +19,6 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.TopicPtr output_committed_blocks = "node.committed_blocks";
 	vnx.TopicPtr output_transactions = "node.transactions";
 	vnx.TopicPtr output_interval_request = "timelord.requests";
-	vnx.TopicPtr output_timelord_infuse = "timelord.infuse";
 	vnx.TopicPtr output_challenges = "harvester.challenges";
 	vnx.TopicPtr output_vdf_points = "node.vdf_points";
 	
@@ -29,9 +28,7 @@ module Node implements vnx.addons.HttpComponent {
 	int sync_loss_delay = 60;				// when to re-sync if stuck [sec]
 	
 	uint max_history = 1000;				// max block header history
-	uint max_fork_length = 10000;			// to keep in memory at most (during sync)
-	uint max_blocks_per_height = 2;			// how many blocks to create at most per height
-	uint tx_pool_limit = 100;				// number of full blocks
+	uint max_tx_pool = 100;					// number of full blocks
 	uint max_tx_queue = 10000;				// pending transactions to verify
 	
 	uint max_sync_jobs = 64;				// number of parallel requests
@@ -45,6 +42,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint num_vdf_threads = 8;
 	uint vdf_check_divider = 5000;			// how many VDFs to verify during sync
 	uint vdf_verify_divider = 1;			// TODO: how many VDFs to verify when synced
+	uint vdf_verify_max_pending = 2;		// how many VDFs to verify in parallel when synced
 	
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)
 	
@@ -52,8 +50,6 @@ module Node implements vnx.addons.HttpComponent {
 	bool db_replay = false;
 	bool show_warnings = false;
 	bool vdf_slave_mode = false;
-	bool verify_vdf_cpuopencl = false;			// verify VDF streams on cpu and opencl, if possible
-	bool verify_vdf_rewards = true;
 	bool exec_debug = false;					// dump memory on exec fail
 	bool exec_profile = false;					// write execution profiles
 	bool exec_trace = false;					// write execution traces
@@ -215,18 +211,6 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	addr_t get_plot_nft_target(addr_t address, optional<addr_t> farmer_addr) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<virtual_plot_info_t> get_virtual_plots(vector<addr_t> addresses) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<virtual_plot_info_t> get_virtual_plots_for(pubkey_t farmer_key) const;
-	
-	@Permission(permission_e.PUBLIC)
-	vector<virtual_plot_info_t> get_virtual_plots_owned_by(vector<addr_t> addresses) const;
-	
-	@Permission(permission_e.PUBLIC)
-	ulong get_virtual_plot_balance(addr_t plot_id, optional<hash_t> block_hash) const;
 	
 	@Permission(permission_e.PUBLIC)
 	offer_data_t get_offer(addr_t address) const;

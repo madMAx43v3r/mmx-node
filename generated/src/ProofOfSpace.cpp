@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofOfSpace::VNX_TYPE_HASH(0x9269760ad5fd0058ull);
-const vnx::Hash64 ProofOfSpace::VNX_CODE_HASH(0xe9d2fe4584ca5a61ull);
+const vnx::Hash64 ProofOfSpace::VNX_CODE_HASH(0x912ddf3fa6db3763ull);
 
 vnx::Hash64 ProofOfSpace::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,7 +49,9 @@ void ProofOfSpace::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, score);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, plot_id);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, farmer_key);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, challenge);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, difficulty);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, farmer_key);
 	_visitor.type_end(*_type_code);
 }
 
@@ -57,6 +59,8 @@ void ProofOfSpace::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.ProofOfSpace\"";
 	_out << ", \"score\": "; vnx::write(_out, score);
 	_out << ", \"plot_id\": "; vnx::write(_out, plot_id);
+	_out << ", \"challenge\": "; vnx::write(_out, challenge);
+	_out << ", \"difficulty\": "; vnx::write(_out, difficulty);
 	_out << ", \"farmer_key\": "; vnx::write(_out, farmer_key);
 	_out << "}";
 }
@@ -72,13 +76,19 @@ vnx::Object ProofOfSpace::to_object() const {
 	_object["__type"] = "mmx.ProofOfSpace";
 	_object["score"] = score;
 	_object["plot_id"] = plot_id;
+	_object["challenge"] = challenge;
+	_object["difficulty"] = difficulty;
 	_object["farmer_key"] = farmer_key;
 	return _object;
 }
 
 void ProofOfSpace::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "farmer_key") {
+		if(_entry.first == "challenge") {
+			_entry.second.to(challenge);
+		} else if(_entry.first == "difficulty") {
+			_entry.second.to(difficulty);
+		} else if(_entry.first == "farmer_key") {
 			_entry.second.to(farmer_key);
 		} else if(_entry.first == "plot_id") {
 			_entry.second.to(plot_id);
@@ -95,6 +105,12 @@ vnx::Variant ProofOfSpace::get_field(const std::string& _name) const {
 	if(_name == "plot_id") {
 		return vnx::Variant(plot_id);
 	}
+	if(_name == "challenge") {
+		return vnx::Variant(challenge);
+	}
+	if(_name == "difficulty") {
+		return vnx::Variant(difficulty);
+	}
 	if(_name == "farmer_key") {
 		return vnx::Variant(farmer_key);
 	}
@@ -106,6 +122,10 @@ void ProofOfSpace::set_field(const std::string& _name, const vnx::Variant& _valu
 		_value.to(score);
 	} else if(_name == "plot_id") {
 		_value.to(plot_id);
+	} else if(_name == "challenge") {
+		_value.to(challenge);
+	} else if(_name == "difficulty") {
+		_value.to(difficulty);
 	} else if(_name == "farmer_key") {
 		_value.to(farmer_key);
 	}
@@ -135,17 +155,17 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofOfSpace";
 	type_code->type_hash = vnx::Hash64(0x9269760ad5fd0058ull);
-	type_code->code_hash = vnx::Hash64(0xe9d2fe4584ca5a61ull);
+	type_code->code_hash = vnx::Hash64(0x912ddf3fa6db3763ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfSpace);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ProofOfSpace>(); };
-	type_code->fields.resize(3);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
-		field.data_size = 4;
+		field.data_size = 2;
 		field.name = "score";
-		field.code = {3};
+		field.code = {2};
 	}
 	{
 		auto& field = type_code->fields[1];
@@ -155,6 +175,18 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpace::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "challenge";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.data_size = 8;
+		field.name = "difficulty";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "farmer_key";
 		field.code = {11, 33, 1};
@@ -211,11 +243,15 @@ void read(TypeInput& in, ::mmx::ProofOfSpace& value, const TypeCode* type_code, 
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.score, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[3]) {
+			vnx::read_value(_buf + _field->offset, value.difficulty, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.plot_id, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.challenge, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -234,10 +270,12 @@ void write(TypeOutput& out, const ::mmx::ProofOfSpace& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(4);
+	auto* const _buf = out.write(10);
 	vnx::write_value(_buf + 0, value.score);
+	vnx::write_value(_buf + 2, value.difficulty);
 	vnx::write(out, value.plot_id, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.farmer_key, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.challenge, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.farmer_key, type_code, type_code->fields[4].code.data());
 }
 
 void read(std::istream& in, ::mmx::ProofOfSpace& value) {

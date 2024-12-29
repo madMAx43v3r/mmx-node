@@ -111,7 +111,6 @@ add_library(mmx_iface SHARED
 	src/Transaction.cpp
 	src/Operation.cpp
 	src/Contract.cpp
-	src/Challenge.cpp
 	src/Solution.cpp
 	src/ProofOfTime.cpp
 	src/ProofOfSpace.cpp

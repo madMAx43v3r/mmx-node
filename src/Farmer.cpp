@@ -7,7 +7,6 @@
 
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
-#include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/WebRender.h>
 #include <mmx/utils.h>
 
@@ -256,7 +255,7 @@ void Farmer::handle(std::shared_ptr<const ProofResponse> value) try
 
 	auto out = vnx::clone(value);
 	out->farmer_sig = signature_t::sign(farmer_sk, value->hash);
-	out->content_hash = out->calc_hash(true);
+	out->content_hash = out->calc_content_hash();
 	publish(out, output_proofs);
 }
 catch(const std::exception& ex) {
@@ -295,7 +294,7 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 					if(is_valid) {
 						const auto points = res["points"].to<int64_t>();
 						const auto response_ms = res["response_time"].to<int64_t>();
-						stats.valid_points += (points > 0 ? points : out->difficulty);
+						stats.valid_points += (points > 0 ? points : out->proof->difficulty);
 						stats.total_partials++;
 						stats.total_response_time += response_ms;
 						log(INFO) << "Partial accepted: points = " << points
@@ -319,12 +318,12 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 					stats.error_count[pooling_error_e::SERVER_ERROR]++;
 					log(WARN) << "Partial failed due to: unknown error [" << out->harvester << "] (" << out->pool_url << ")";
 				}
-				stats.failed_points += out->difficulty;
+				stats.failed_points += out->proof->difficulty;
 			}
 		},
 		[this, out](const std::exception& ex) {
 			auto& stats = nft_stats[out->contract];
-			stats.failed_points += out->difficulty;
+			stats.failed_points += out->proof->difficulty;
 			stats.error_count[pooling_error_e::SERVER_ERROR]++;
 			log(WARN) << "Failed to send partial to " << out->pool_url << " due to: " << ex.what();
 		});
@@ -358,14 +357,15 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
 
-	if(!out->reward_addr || std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+	if(!out->reward_addr) {
 		out->reward_addr = reward_addr;
-	} else {
+	}
+	if(out->reward_contract) {
 		out->reward_account = reward_addr;
 	}
-	out->hash = out->calc_hash().first;
+	out->hash = out->calc_hash();
 	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
-	out->content_hash = out->calc_hash().second;
+	out->content_hash = out->calc_content_hash();
 	return out;
 }
 

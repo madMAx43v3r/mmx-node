@@ -405,7 +405,7 @@ Vue.component('block-view', {
 									</tr>
 									<tr>
 										<td class="key-cell">{{ $t('block_view.space_diff') }}</td>
-										<td>{{data.space_diff}}</td>
+										<td>{{data.space_diff}}<template v-if="data.is_space_fork"> (updated)</template></td>
 									</tr>
 									<tr>
 										<td class="key-cell">Reward Vote</td>
@@ -423,18 +423,26 @@ Vue.component('block-view', {
 										<td class="key-cell">Avg. TX Fee</td>
 										<td><b>{{data.average_txfee.value}}</b>&nbsp; MMX</td>
 									</tr>
-									<template v-if="data.vdf_reward_vote">
-										<tr>
-											<td class="key-cell">Timelord Vote</td>
-											<td><router-link :to="'/explore/address/' + data.vdf_reward_vote">{{data.vdf_reward_vote}}</router-link></td>
-										</tr>
-									</template>
 									<template v-if="data.vdf_reward_addr">
 										<tr>
-											<td class="key-cell">Timelord Reward</td>
+											<td class="key-cell">Timelord Address</td>
 											<td><router-link :to="'/explore/address/' + data.vdf_reward_addr">{{data.vdf_reward_addr}}</router-link></td>
 										</tr>
 									</template>
+									<template v-if="data.vdf_reward_payout">
+										<tr>
+											<td class="key-cell">Timelord Reward</td>
+											<td><router-link :to="'/explore/address/' + data.vdf_reward_payout">{{data.vdf_reward_payout}}</router-link></td>
+										</tr>
+									</template>
+									<tr>
+										<td class="key-cell">VDF Height</td>
+										<td>{{data.vdf_height}}</td>
+									</tr>
+									<tr>
+										<td class="key-cell">VDF Count</td>
+										<td>{{data.vdf_count}}</td>
+									</tr>
 									<tr>
 										<td class="key-cell">{{ $t('block_view.vdf_iterations') }}</td>
 										<td>{{data.vdf_iters}}</td>
@@ -457,36 +465,38 @@ Vue.component('block-view', {
 											<td><router-link :to="'/explore/address/' + data.reward_account">{{data.reward_account}}</router-link></td>
 										</tr>
 									</template>
-									<template v-if="data.proof">
-										<tr>
-											<td class="key-cell">Block Reward</td>
-											<td><b>{{data.reward_amount.value}}</b>&nbsp; MMX</td>
-										</tr>
-										<tr>
-											<td class="key-cell">TX Fees</td>
-											<td><b>{{data.tx_fees.value}}</b>&nbsp; MMX</td>
-										</tr>
-										<tr>
-											<td class="key-cell">{{ $t('block_view.tx_count') }}</td>
-											<td>{{data.tx_count}}</td>
-										</tr>
-										<tr>
-											<td class="key-cell">{{ $t('block_view.k_size') }}</td>
-											<td>{{data.proof.ksize}}</td>
-										</tr>
-										<tr>
-											<td class="key-cell">{{ $t('block_view.proof_score') }}</td>
-											<td>{{data.proof.score}}</td>
-										</tr>
-										<tr>
-											<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
-											<td>{{data.proof.plot_id}}</td>
-										</tr>
-										<tr>
-											<td class="key-cell">{{ $t('block_view.farmer_key') }}</td>
-											<td><router-link :to="'/explore/farmer/' + data.proof.farmer_key">{{data.proof.farmer_key}}</router-link></td>
-										</tr>
-									</template>
+									<tr>
+										<td class="key-cell">Block Reward</td>
+										<td><b>{{data.reward_amount.value}}</b>&nbsp; MMX</td>
+									</tr>
+									<tr>
+										<td class="key-cell">TX Fees</td>
+										<td><b>{{data.tx_fees.value}}</b>&nbsp; MMX</td>
+									</tr>
+									<tr>
+										<td class="key-cell">{{ $t('block_view.tx_count') }}</td>
+										<td>{{data.tx_count}}</td>
+									</tr>
+									<tr>
+										<td class="key-cell">{{ $t('block_view.k_size') }}</td>
+										<td>{{data.proof.ksize}}</td>
+									</tr>
+									<tr>
+										<td class="key-cell">{{ $t('block_view.proof_score') }}</td>
+										<td>{{data.proof.score}}</td>
+									</tr>
+									<tr>
+										<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
+										<td>{{data.proof.plot_id}}</td>
+									</tr>
+									<tr>
+										<td class="key-cell">Challenge</td>
+										<td>{{data.proof.challenge}}</td>
+									</tr>
+									<tr>
+										<td class="key-cell">{{ $t('block_view.farmer_key') }}</td>
+										<td><router-link :to="'/explore/farmer/' + data.proof.farmer_key">{{data.proof.farmer_key}}</router-link></td>
+									</tr>
 								</tbody>
 							</template>
 						</v-simple-table>

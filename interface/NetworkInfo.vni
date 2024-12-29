@@ -14,14 +14,13 @@ class NetworkInfo {
 	
 	ulong block_reward;			// MMX * 1e6
 	
-	ulong total_space;			// [bytes]
+	ulong total_space;			// [GB]
 	ulong total_supply;			// MMX * 1e6
 	
 	ulong address_count;
 	
 	double vdf_speed;			// [MH/s]
 	double block_size;			// 0 to 1
-	double netspace_ratio;		// physical space [0 to 1]
 	
 	ulong average_txfee;		// MMX * 1e6
 	
