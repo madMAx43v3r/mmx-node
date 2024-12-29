@@ -127,7 +127,10 @@ void Node::verify_votes()
 							iter->second = true;
 							fork->votes++;
 							publish(vote, output_verified_votes);
-							log(DEBUG) << "Received vote for block at height " << fork->block->height << ", total is now " << fork->votes;
+
+							const auto delay_ms = entry.second - fork->recv_time;
+							log(DEBUG) << "Received vote for block at height " << fork->block->height
+									<< ", total is now " << fork->votes << ", delay " << delay_ms / 1e3 << " sec";
 						}
 						continue;
 					} else {
@@ -401,7 +404,7 @@ void Node::update()
 						vote->content_hash = vote->calc_content_hash();
 						publish(vote, output_votes);
 						publish(vote, output_verified_votes);
-						log(INFO) << "Voted for block at height " << peak->height;
+						log(INFO) << "Voted for block at height " << peak->height << ": " << vote->hash;
 					}
 					catch(const std::exception& ex) {
 						log(WARN) << "Failed to sign vote for height " << peak->height << ": " << ex.what();
