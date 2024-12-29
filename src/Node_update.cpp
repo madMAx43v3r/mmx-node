@@ -108,7 +108,7 @@ void Node::verify_vdfs()
 void Node::verify_votes()
 {
 	const auto time_now = vnx::get_wall_time_millis();
-	const auto vote_timeout = 10 * params->block_interval_ms;
+	const auto vote_timeout = 3 * params->block_interval_ms;
 
 	std::vector<std::pair<std::shared_ptr<const ValidatorVote>, int64_t>> try_again;
 

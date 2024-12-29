@@ -541,6 +541,7 @@ void Node::handle(std::shared_ptr<const ValidatorVote> value)
 		return;
 	}
 	vote_queue.emplace_back(value, vnx::get_wall_time_millis());
+	verify_votes();
 }
 
 #ifdef WITH_JEMALLOC
