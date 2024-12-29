@@ -12,7 +12,7 @@ class VDF_Point {
 	
 	hash_t prev;						// infused block hash
 	
-	optional<addr_t> reward_addr;
+	addr_t reward_addr;
 	
 	hash_t content_hash;
 	

@@ -283,10 +283,7 @@ void Node::verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const
 				point[j] = segments[i - 1];
 			} else {
 				point[j] = hash_t(proof->input + proof->prev);
-
-				if(proof->reward_addr) {
-					point[j] = hash_t(point[j] + (*proof->reward_addr));
-				}
+				point[j] = hash_t(point[j] + proof->reward_addr);
 			}
 		}
 		if(have_sha_ni || have_sha_arm) {
@@ -339,10 +336,26 @@ void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point)
 	const auto took_ms = vnx::get_wall_time_millis() - point->recv_time;
 	const auto proof = point->proof;
 
-	if(point->input == get_vdf_peak()) {
+	const auto peak = get_peak();
+	const auto chain = find_next_vdf_points(peak);
+
+	bool is_advance = false;
+	if(chain.empty()) {
+		is_advance = point->input == peak->vdf_output;
+	} else {
+		const auto prev = chain.back();
+		is_advance = point->input == prev->output;
+	}
+
+	if(is_advance) {
+		if(chain.size() >= params->max_vdf_count) {
+			log(WARN) << "VDF chain reached maximum length, discarded VDF for height " << point->vdf_height;
+			return;
+		}
 		if(is_synced) {
 			log(INFO) << "-------------------------------------------------------------------------------";
 		}
+		stuck_timer->reset();	// make sure we keep sync status
 		timelord_trust[proof->timelord_key] += 2;
 
 		publish(proof, output_verified_vdfs);
@@ -359,27 +372,6 @@ void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point)
 		log(WARN) << "VDF verification took longer than block interval, unable to keep sync!";
 	} else if(took_ms > params->block_interval_ms / 2) {
 		log(WARN) << "VDF verification took longer than recommended: " << took_ms / 1e3 << " sec";
-	}
-
-	// check if this proof helps advancing the chain
-	if(auto peak = get_peak()) {
-		auto vdf_height = point->vdf_height;
-		if(vdf_height > peak->vdf_height && vdf_height - peak->vdf_height <= params->max_vdf_count) {
-			auto input = point->input;
-			while(vdf_height > peak->vdf_height) {
-				if(input == peak->vdf_output) {
-					stuck_timer->reset();	// if so, make sure we keep sync status
-					break;
-				}
-				const auto iter = vdf_tree.find(input);
-				if(iter != vdf_tree.end()) {
-					input = iter->second->input;
-					vdf_height--;
-				} else {
-					break;
-				}
-			}
-		}
 	}
 
 	std::shared_ptr<const VDF_Point> prev;
@@ -460,25 +452,21 @@ void Node::check_vdf(std::shared_ptr<fork_t> fork)
 		throw std::logic_error("cannot check VDF");
 	}
 	// TODO: test it
-	uint64_t vdf_iters = prev->vdf_iters;
-	std::map<uint64_t, hash_t> infuse_map;
+	std::vector<std::tuple<uint64_t, hash_t, addr_t>> list;
 	for(uint32_t i = 0; i < block->vdf_count; ++i) {
 		uint64_t num_iters = 0;
-		infuse_map[vdf_iters] = get_infusion(prev, i, num_iters);
-		vdf_iters += num_iters;
-	}
-	if(vdf_iters != block->vdf_iters) {
-		throw std::logic_error("invalid vdf_iters");
+		const auto infuse = get_infusion(prev, i, num_iters);
+		list.emplace_back(num_iters, infuse, block->vdf_reward_addr[i]);
 	}
 	log(INFO) << "Checking VDF for height " << block->height << " ...";
 
-	vdf_threads->add_task(std::bind(&Node::check_vdf_task, this, fork, prev, infuse_map));
+	vdf_threads->add_task(std::bind(&Node::check_vdf_task, this, fork, prev, list));
 }
 
 void Node::check_vdf_task(
 		std::shared_ptr<fork_t> fork,
 		std::shared_ptr<const BlockHeader> prev,
-		const std::map<uint64_t, hash_t>& infuse) noexcept
+		const std::vector<std::tuple<uint64_t, hash_t, addr_t>>& list) noexcept
 {
 	static bool have_sha_ni = sha256_ni_available();
 
@@ -486,22 +474,15 @@ void Node::check_vdf_task(
 	const auto time_begin = vnx::get_wall_time_millis();
 	const auto& block = fork->block;
 
-	auto next = infuse.begin();
 	auto point = prev->vdf_output;
 	uint64_t vdf_iters = prev->vdf_iters;
 
-	while(vdf_iters < block->vdf_iters)
+	for(const auto& entry : list)
 	{
-		if(next != infuse.end() && next->first == vdf_iters)
-		{
-			point = hash_t(point + next->second);
+		const auto num_iters = std::get<0>(entry);
+		point = hash_t(point + std::get<1>(entry));
+		point = hash_t(point + std::get<2>(entry));
 
-			if(auto addr = block->vdf_reward_addr) {
-				point = hash_t(point + *addr);
-			}
-			next++;
-		}
-		const auto num_iters = (next != infuse.end() ? next->first : block->vdf_iters) - vdf_iters;
 		if(have_sha_ni) {
 			recursive_sha256_ni(point.bytes.data(), num_iters);
 		} else {

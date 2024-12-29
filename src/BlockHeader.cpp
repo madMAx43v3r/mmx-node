@@ -26,6 +26,7 @@ vnx::bool_t BlockHeader::is_valid() const
 	}
 	return version == 0
 			&& (!reward_amount || reward_addr)
+			&& vdf_count == vdf_reward_addr.size()
 			&& hash == calc_hash()
 			&& content_hash == calc_content_hash();
 }

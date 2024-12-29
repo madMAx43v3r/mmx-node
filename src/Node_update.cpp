@@ -360,6 +360,8 @@ void Node::update()
 			request->end = vdf_iters + num_iters;
 			if(i == 0) {
 				request->input = peak->vdf_output;
+			} else if(i - 1 < vdf_points.size()) {
+				request->input = vdf_points[i - 1]->output;
 			}
 			request->infuse = infuse;
 
@@ -869,7 +871,6 @@ std::shared_ptr<const Block> Node::make_block(
 	if(proof.empty()) {
 		return nullptr;
 	}
-	const auto vdf_point = vdf_points.back();
 	const auto time_begin = vnx::get_wall_time_millis();
 
 	// reset state to previous block
@@ -881,20 +882,21 @@ std::shared_ptr<const Block> Node::make_block(
 	block->time_diff = prev->time_diff;
 	block->vdf_count = vdf_points.size();
 	block->vdf_height = prev->vdf_height + block->vdf_count;
-	block->vdf_output = vdf_point->output;
-	block->vdf_reward_addr = vdf_point->reward_addr;
 	block->reward_vote = reward_vote;
 	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
+
+	block->vdf_iters = prev->vdf_iters;
+	for(auto point : vdf_points) {
+		block->vdf_iters += point->num_iters;
+		block->vdf_output = point->output;
+		block->vdf_reward_addr.push_back(point->reward_addr);
+	}
 
 	for(const auto& entry : proof) {
 		block->proof.push_back(entry.proof);
 	}
 	block->proof_hash = proof[0].hash;
 
-	block->vdf_iters = prev->vdf_iters;
-	for(auto point : vdf_points) {
-		block->vdf_iters += point->num_iters;
-	}
 	block->challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, block->proof_hash, block->is_space_fork);
 
 	if(block->height % params->vdf_reward_interval == 0) {

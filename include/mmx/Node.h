@@ -409,7 +409,7 @@ private:
 	void check_vdf(std::shared_ptr<fork_t> fork);
 
 	void check_vdf_task(std::shared_ptr<fork_t> fork,
-			std::shared_ptr<const BlockHeader> prev, const std::map<uint64_t, hash_t>& infuse) noexcept;
+			std::shared_ptr<const BlockHeader> prev, const std::vector<std::tuple<uint64_t, hash_t, addr_t>>& list) noexcept;
 
 	size_t prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) const;
 

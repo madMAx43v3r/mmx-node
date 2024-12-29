@@ -515,7 +515,7 @@ void Node::handle(std::shared_ptr<const ProofOfTime> value)
 
 void Node::handle(std::shared_ptr<const VDF_Point> value)
 {
-	if(value->input == get_vdf_peak()) {
+	if(value->vdf_height > get_vdf_height()) {
 		log(INFO) << "-------------------------------------------------------------------------------";
 	}
 	if(find_vdf_point(value->input, value->output)) {
@@ -1522,10 +1522,12 @@ Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 		}
 		bool found = false;
 		const auto range = vdf_tree.equal_range(output);
-		for(auto iter = range.first; iter != range.second; ++iter) {
+		for(auto iter = range.first; iter != range.second; ++iter)
+		{
 			const auto& point = iter->second;
-			if(point->output == output && point->num_iters == num_iters
-				&& point->prev == infuse && point->reward_addr == block->vdf_reward_addr)
+			if(point->output == output
+				&& point->prev == infuse
+				&& point->num_iters == num_iters)
 			{
 				output = point->input;
 				vdf_iters += num_iters;
@@ -1564,18 +1566,12 @@ std::vector<std::shared_ptr<const VDF_Point>> Node::find_next_vdf_points(std::sh
 		for(auto iter = range.first; iter != range.second; ++iter)
 		{
 			const auto& point = iter->second;
-			if(point->num_iters == num_iters && point->prev == infuse)
+			if(fork_map.count(point->input)
+				&& point->prev == infuse
+				&& point->num_iters == num_iters)
 			{
-				const auto iter = fork_map.find(point->input);
-				if(iter != fork_map.end())
-				{
-					const auto& prev = iter->second;
-					if(!prev || point->reward_addr == prev->reward_addr)
-					{
-						fork_map[point->output] = point;
-						new_peaks.push_back(point);
-					}
-				}
+				fork_map[point->output] = point;
+				new_peaks.push_back(point);
 			}
 		}
 		if(new_peaks.size()) {
@@ -1662,8 +1658,8 @@ vnx::optional<addr_t> Node::get_vdf_reward_winner(std::shared_ptr<const BlockHea
 	std::map<addr_t, uint32_t> win_map;
 	for(uint32_t i = 0; i < params->vdf_reward_interval; ++i) {
 		if(auto prev = find_prev_header(block)) {
-			if(auto addr = prev->vdf_reward_addr) {
-				win_map[*addr] += prev->vdf_count;
+			for(const auto& addr : prev->vdf_reward_addr) {
+				win_map[addr]++;
 			}
 			block = prev;
 		} else {

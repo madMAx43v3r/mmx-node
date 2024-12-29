@@ -217,7 +217,7 @@ void TimeLord::update()
 				proof->segment_size = segment_iters;
 				proof->input = begin->second;
 				proof->prev = req->infuse;
-				proof->reward_addr = reward_addr;
+				proof->reward_addr = reward_addr ? *reward_addr : addr_t();
 				proof->timelord_key = timelord_key;
 				proof->segments.reserve(1024);
 
@@ -285,10 +285,7 @@ void TimeLord::vdf_loop(vdf_point_t point)
 			auto iter = infuse.find(point.num_iters);
 			if(iter != infuse.end()) {
 				point.output = hash_t(point.output + iter->second);
-
-				if(reward_addr) {
-					point.output = hash_t(point.output + (*reward_addr));
-				}
+				point.output = hash_t(point.output + (reward_addr ? *reward_addr : addr_t()));
 			}
 		}
 		const auto time_begin = vnx::get_wall_time_micros();

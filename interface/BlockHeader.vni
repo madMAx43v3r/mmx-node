@@ -22,7 +22,7 @@ class BlockHeader {
 	uint vdf_count;						// how many blocks delta
 	ulong vdf_iters;
 	hash_t vdf_output;
-	optional<addr_t> vdf_reward_addr;		// for this block
+	vector<addr_t> vdf_reward_addr;			// for this block
 	optional<addr_t> vdf_reward_payout;		// for bundle payout
 	
 	vector<ProofOfSpace*> proof;
