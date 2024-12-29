@@ -1,6 +1,6 @@
 {
 	"num_sync_retries": 5,
-	"sync_loss_delay": 60,
+	"sync_loss_delay": 300,
 	"max_sync_jobs": 100,
 	"max_history": 1000,
 	"validate_interval_ms": 500,
