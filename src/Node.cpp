@@ -1393,6 +1393,14 @@ hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const uint3
 	return challenge;
 }
 
+uint64_t Node::get_time_diff(std::shared_ptr<const BlockHeader> infused) const
+{
+	if(auto prev = find_prev_header(infused, params->commit_delay, true)) {
+		return prev->time_diff;
+	}
+	throw std::logic_error("cannot get time difficulty");
+}
+
 bool Node::find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& value, uint64_t& num_iters) const
 {
 	if(offset < params->infuse_delay)
@@ -1405,7 +1413,7 @@ bool Node::find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_
 		}
 	}
 	if(block) {
-		num_iters = get_block_iters(params, block->time_diff);
+		num_iters = get_block_iters(params, get_time_diff(block));
 		value = block->hash;
 		return true;
 	}

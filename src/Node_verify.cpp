@@ -214,7 +214,7 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof)
 	if(!prev) {
 		throw std::logic_error("could not find infused block");
 	}
-	const auto num_iters = get_block_iters(params, prev->time_diff);
+	const auto num_iters = get_block_iters(params, get_time_diff(prev));
 
 	if(proof->num_iters != num_iters) {
 		throw std::logic_error("invalid num_iters");

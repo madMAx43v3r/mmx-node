@@ -431,6 +431,8 @@ private:
 
 	hash_t get_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& space_diff) const;
 
+	uint64_t get_time_diff(std::shared_ptr<const BlockHeader> infused) const;
+
 	bool find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& value, uint64_t& num_iters) const;
 
 	hash_t get_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& num_iters) const;
