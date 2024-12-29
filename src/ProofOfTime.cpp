@@ -14,6 +14,9 @@ namespace mmx {
 bool ProofOfTime::is_valid() const
 {
 	return version == 0
+		&& vdf_height
+		&& num_iters
+		&& segments.size()
 		&& hash == calc_hash()
 		&& content_hash == calc_content_hash();
 }
@@ -49,7 +52,7 @@ hash_t ProofOfTime::calc_content_hash() const
 hash_t ProofOfTime::get_output() const
 {
 	if(segments.empty()) {
-		throw std::logic_error("empty proof");
+		return hash_t();
 	}
 	return segments.back();
 }

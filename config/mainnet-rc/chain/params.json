@@ -9,6 +9,7 @@
 	"commit_delay": 24,
 	"score_target": 16384,
 	"proofs_per_height": 4,
+	"max_validators": 11,
 	"vdf_segment_size": 250000,
 	"min_reward": 500000,
 	"min_txfee": 20000,

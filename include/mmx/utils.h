@@ -249,14 +249,6 @@ uint64_t get_virtual_plot_size(std::shared_ptr<const ChainParams> params, const 
 }
 
 inline
-uint32_t calc_proof_count(std::shared_ptr<const ChainParams> params, const uint16_t score)
-{
-	const int limit = params->proofs_per_height * 2;
-	// 384 will round correctly to preserve average
-	return score ? std::min((384 / score) - 1, limit) : limit;
-}
-
-inline
 uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
 	const uint64_t diff = prev->space_diff;
@@ -296,12 +288,12 @@ inline
 uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params,
 							std::shared_ptr<const BlockHeader> block, std::shared_ptr<const BlockHeader> prev)
 {
-	if(!block->proof) {
+	if(block->proof.empty()) {
 		return 0;
 	}
 	const auto num_iters = (block->vdf_iters - prev->vdf_iters) / block->vdf_count;
 	const auto time_diff = num_iters / params->time_diff_constant;
-	return uint128_t(time_diff) * block->proof->difficulty;
+	return uint128_t(time_diff) * block->proof[0]->difficulty;
 }
 
 inline

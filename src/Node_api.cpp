@@ -77,6 +77,8 @@
 #include <mmx/Node_validate.hxx>
 #include <mmx/Node_verify_plot_nft_target.hxx>
 #include <mmx/Node_verify_partial.hxx>
+#include <mmx/Node_get_vdf_peak.hxx>
+#include <mmx/Node_get_vdf_height.hxx>
 
 #include <vnx/vnx.h>
 #include <vnx/InternalError.hxx>
@@ -98,6 +100,7 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			auto info = NetworkInfo::create();
 			info->is_synced = is_synced;
 			info->height = peak->height;
+			info->vdf_height = peak->vdf_height;
 			info->time_stamp = peak->time_stamp;
 			info->synced_since = synced_since;
 			info->name = params->network;
@@ -1572,6 +1575,16 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 	return {pooling_error_e::NONE, ""};
 }
 
+uint32_t Node::get_vdf_height() const
+{
+	return get_vdf_peak_ex().first;
+}
+
+hash_t Node::get_vdf_peak() const
+{
+	return get_vdf_peak_ex().second;
+}
+
 void Node::http_request_async(	std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,
 								const vnx::request_id_t& request_id) const
 {
@@ -1671,6 +1684,8 @@ std::shared_ptr<vnx::Value> Node::vnx_call_switch(std::shared_ptr<const vnx::Val
 		case Node_validate::VNX_TYPE_ID:
 		case Node_verify_plot_nft_target::VNX_TYPE_ID:
 		case Node_verify_partial::VNX_TYPE_ID:
+		case Node_get_vdf_peak::VNX_TYPE_ID:
+		case Node_get_vdf_height::VNX_TYPE_ID:
 			api_threads->add_task(std::bind(&Node::async_api_call, this, method, request_id));
 			return nullptr;
 		default:

@@ -5,6 +5,7 @@ import mmx.vm.varptr_t;
 module Node implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_vdfs = "network.vdfs";
+	vnx.TopicPtr input_votes = "network.votes";
 	vnx.TopicPtr input_proof = "network.proof";
 	vnx.TopicPtr input_blocks = "network.blocks";
 	vnx.TopicPtr input_transactions = "network.transactions";
@@ -13,6 +14,7 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.TopicPtr input_vdf_points = "network.vdf_points";
 
 	vnx.TopicPtr output_verified_vdfs = "node.verified_vdfs";
+	vnx.TopicPtr output_verified_votes = "node.verified_votes";
 	vnx.TopicPtr output_verified_proof = "node.verified_proof";
 	vnx.TopicPtr output_verified_blocks = "node.verified_blocks";
 	vnx.TopicPtr output_verified_transactions = "node.verified_transactions";
@@ -21,6 +23,7 @@ module Node implements vnx.addons.HttpComponent {
 	vnx.TopicPtr output_interval_request = "timelord.requests";
 	vnx.TopicPtr output_challenges = "harvester.challenges";
 	vnx.TopicPtr output_vdf_points = "node.vdf_points";
+	vnx.TopicPtr output_votes = "node.votes";
 	
 	int max_queue_ms = 10000;				// [ms]
 	int update_interval_ms = 1000;			// [ms]
@@ -77,6 +80,12 @@ module Node implements vnx.addons.HttpComponent {
 	
 	@Permission(permission_e.PUBLIC)
 	optional<uint> get_synced_height() const;
+	
+	@Permission(permission_e.PUBLIC)
+	uint get_vdf_height() const;
+	
+	@Permission(permission_e.PUBLIC)
+	hash_t get_vdf_peak() const;
 	
 	@Permission(permission_e.PUBLIC)
 	Block* get_block(hash_t hash) const;
@@ -287,5 +296,6 @@ module Node implements vnx.addons.HttpComponent {
 	void handle(ProofOfTime value);
 	void handle(ProofResponse value);
 	void handle(VDF_Point value);
+	void handle(ValidatorVote value);
 	
 }

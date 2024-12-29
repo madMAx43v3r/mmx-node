@@ -87,6 +87,7 @@ void Router::main()
 	log(INFO) << "Peer TX pending limit: " << max_pending_cost_value << " MMX";
 
 	subscribe(input_verified_vdfs, max_queue_ms);
+	subscribe(input_verified_votes, max_queue_ms);
 	subscribe(input_verified_proof, max_queue_ms);
 	subscribe(input_verified_blocks, max_queue_ms);
 	subscribe(input_verified_transactions, max_queue_ms);
@@ -320,11 +321,14 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> value)
 {
-	if(vnx_sample && vnx_sample->topic == input_vdfs) {
+	if(vnx_sample && vnx_sample->topic == input_vdfs)
+	{
 		if(our_timelords.insert(value->timelord_key).second) {
-			log(INFO) << "Our Timelord: " << value->timelord_key.to_string();
+			log(INFO) << "Our Timelord: " << value->timelord_key;
 		}
-		return;
+		if(value->vdf_height <= verified_vdf_height) {
+			return;		// too slow
+		}
 	}
 	const bool is_ours = our_timelords.count(value->timelord_key);
 
@@ -373,6 +377,15 @@ void Router::handle(std::shared_ptr<const ProofResponse> value)
 
 		farmer_credit[value->vdf_height].insert(value->proof->farmer_key);
 		proof_counter++;
+	}
+}
+
+void Router::handle(std::shared_ptr<const ValidatorVote> value)
+{
+	const auto& hash = value->content_hash;
+	if(relay_msg_hash(hash)) {
+		broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, false);
+		vote_counter++;
 	}
 }
 
@@ -920,7 +933,7 @@ void Router::save_data()
 	{
 		std::ofstream file(storage_path + "timelord_credit.txt", std::ios::trunc);
 		for(const auto& entry : timelord_credit) {
-			file << entry.first << std::endl << "\t" << entry.second;
+			file << entry.first << "\t" << entry.second << std::endl;
 		}
 	}
 }
@@ -931,13 +944,15 @@ void Router::print_stats()
 			  << " tx/s, " << float(vdf_counter * 1000) / stats_interval_ms
 			  << " vdf/s, " << float(proof_counter * 1000) / stats_interval_ms
 			  << " proof/s, " << float(block_counter * 1000) / stats_interval_ms
-			  << " block/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
+			  << " block/s, " << float(vote_counter * 1000) / stats_interval_ms
+			  << " votes/s, " << synced_peers.size() << " / " <<  peer_map.size() << " / " << peer_set.size()
 			  << " peers, " << timelord_credit.size() << " timelords, "
 			  << float(tx_upload_sum * 1000) / stats_interval_ms << " MMX/s tx upload, "
 			  << tx_drop_counter << " / " << vdf_drop_counter << " / " << proof_drop_counter << " / " << block_drop_counter << " dropped";
 	tx_counter = 0;
 	tx_upload_sum = 0;
 	vdf_counter = 0;
+	vote_counter = 0;
 	proof_counter = 0;
 	block_counter = 0;
 	upload_counter = 0;
@@ -1009,7 +1024,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 			disconnect(client);
 			return;
 		}
-		const auto farmer_key = block->proof->farmer_key;
+		const auto farmer_key = block->proof[0]->farmer_key;
 
 		auto iter = farmer_credit.find(block->vdf_height);
 		if(iter != farmer_credit.end() && iter->second.erase(farmer_key)) {
@@ -1024,11 +1039,19 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 	}
 }
 
+void Router::on_vote(uint64_t client, std::shared_ptr<const ValidatorVote> value)
+{
+	if(!value->is_valid()) {
+		disconnect(client);
+		return;
+	}
+	if(receive_msg_hash(value->content_hash, client)) {
+		publish(value, output_votes);
+	}
+}
+
 void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> value)
 {
-	if(value->vdf_height + params->commit_delay < verified_vdf_height) {
-		return; 	// prevent replay attack of old signed data
-	}
 	if(!value->is_valid()) {
 		disconnect(client);
 		return;
@@ -1045,7 +1068,7 @@ void Router::on_vdf_point(uint64_t client, std::shared_ptr<const VDF_Point> valu
 			if(value->is_valid()) {
 				if(receive_msg_hash(value->content_hash, client)) {
 					auto copy = vnx::clone(value);
-					copy->recv_time = vnx::get_wall_time_micros();
+					copy->recv_time = vnx::get_wall_time_millis();
 					publish(copy, output_vdf_points);
 				}
 			}
@@ -1506,6 +1529,11 @@ void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 	case Block::VNX_TYPE_ID:
 		if(auto value = std::dynamic_pointer_cast<const Block>(msg)) {
 			on_block(client, value);
+		}
+		break;
+	case ValidatorVote::VNX_TYPE_ID:
+		if(auto value = std::dynamic_pointer_cast<const ValidatorVote>(msg)) {
+			on_vote(client, value);
 		}
 		break;
 	case Transaction::VNX_TYPE_ID:

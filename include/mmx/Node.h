@@ -60,6 +60,10 @@ protected:
 
 	uint32_t get_height() const override;
 
+	uint32_t get_vdf_height() const override;
+
+	hash_t get_vdf_peak() const override;
+
 	vnx::optional<uint32_t> get_synced_height() const override;
 
 	std::shared_ptr<const Block> get_block(const hash_t& hash) const override;
@@ -228,6 +232,8 @@ protected:
 
 	void handle(std::shared_ptr<const VDF_Point> value) override;
 
+	void handle(std::shared_ptr<const ValidatorVote> value) override;
+
 	std::shared_ptr<vnx::Value> vnx_call_switch(std::shared_ptr<const vnx::Value> method, const vnx::request_id_t& request_id) override;
 
 private:
@@ -258,9 +264,14 @@ private:
 		bool is_proof_verified = false;
 		bool is_all_proof_verified = false;
 		int64_t recv_time = 0;					// [ms]
+		uint32_t votes = 0;						// validator votes
+		uint32_t total_votes = 0;
 		uint32_t ahead_count = 0;				// how many blocks ahead of any competing fork
+		uint256_t proof_score_224 = 0;			// high (256-32) bits of proof hash
+		uint256_t proof_score_sum = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
+		std::map<pubkey_t, bool> validators;
 		std::vector<std::shared_ptr<const VDF_Point>> vdf_points;
 		std::shared_ptr<const execution_context_t> context;
 	};
@@ -290,6 +301,7 @@ private:
 	void update_control();
 
 	void verify_vdfs();
+	void verify_votes();
 	void verify_proofs();
 	void verify_block_proofs();
 
@@ -311,7 +323,7 @@ private:
 
 	std::shared_ptr<const Block> make_block(
 			std::shared_ptr<const BlockHeader> prev,
-			std::vector<std::shared_ptr<const VDF_Point>> vdf_points, const proof_data_t& proof);
+			std::vector<std::shared_ptr<const VDF_Point>> vdf_points, const hash_t& challenge);
 
 	int get_offer_state(const addr_t& address) const;
 
@@ -386,13 +398,13 @@ private:
 
 	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
 
-	void verify_vdf(std::shared_ptr<const ProofOfTime> proof);
+	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const int64_t recv_time);
 
 	void verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const;
 
 	void verify_vdf_success(std::shared_ptr<const VDF_Point> point);
 
-	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof) noexcept;
+	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64_t recv_time) noexcept;
 
 	void check_vdf(std::shared_ptr<fork_t> fork);
 
@@ -437,13 +449,15 @@ private:
 
 	hash_t get_infusion(std::shared_ptr<const BlockHeader> block, const uint32_t offset, uint64_t& num_iters) const;
 
-	hash_t get_vdf_peak() const;
-
 	std::shared_ptr<const VDF_Point> find_vdf_point(const hash_t& input, const hash_t& output) const;
 
 	std::vector<std::shared_ptr<const VDF_Point>> find_vdf_points(std::shared_ptr<const BlockHeader> block) const;
 
 	std::vector<std::shared_ptr<const VDF_Point>> find_next_vdf_points(std::shared_ptr<const BlockHeader> block) const;
+
+	std::pair<uint32_t, hash_t> get_vdf_peak_ex() const;
+
+	std::set<pubkey_t> get_validators(std::shared_ptr<const BlockHeader> block) const;
 
 	vnx::optional<proof_data_t> find_best_proof(const hash_t& challenge) const;
 
@@ -498,10 +512,12 @@ private:
 	std::multimap<uint64_t, std::shared_ptr<const VDF_Point>> vdf_index;			// [iters => proof]
 
 	std::multimap<uint32_t, hash_t> challenge_map;									// [vdf height => challenge]
-	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => best proofs]
+	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => sorted proofs]
 	std::unordered_map<hash_t, hash_t> created_blocks;								// [proof hash => block hash]
+	std::unordered_map<hash_t, hash_t> voted_blocks;								// [prev => block hash]
 	std::unordered_set<hash_t> purged_blocks;
 	std::multimap<uint32_t, hash_t> purged_blocks_log;
+	std::map<pubkey_t, vnx::Hash64> farmer_keys;									// [key => farmer_mac] our farmer keys
 
 	bool is_synced = false;
 	bool update_pending = false;
@@ -530,6 +546,7 @@ private:
 
 	std::vector<std::pair<std::shared_ptr<const ProofResponse>, int64_t>> proof_queue;		// [data, recv_time_ms]
 	std::vector<std::pair<std::shared_ptr<const ProofOfTime>, int64_t>> vdf_queue;			// [data, recv_time_ms]
+	std::vector<std::pair<std::shared_ptr<const ValidatorVote>, int64_t>> vote_queue;		// [data, recv_time_ms]
 	std::unordered_set<hash_t> vdf_verify_pending;								// [proof hash]
 	std::map<pubkey_t, int64_t> timelord_trust;									// [timelord key => trust]
 	std::unordered_map<hash_t, std::shared_ptr<const Transaction>> tx_queue;	// [content_hash => tx]

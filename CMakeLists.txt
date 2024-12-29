@@ -159,6 +159,7 @@ add_library(mmx_iface SHARED
 	src/Partial.cpp
 	src/ChainParams.cpp
 	src/utils.cpp
+	src/ValidatorVote.cpp
 )
 
 add_library(mmx_vm SHARED

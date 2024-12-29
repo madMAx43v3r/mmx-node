@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 			{
 				block_count++;
 
-				if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof))
+				if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof[0]))
 				{
 					if(auto addr = block->reward_addr)
 					{

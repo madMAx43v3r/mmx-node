@@ -3,6 +3,7 @@ package mmx;
 module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	
 	vnx.TopicPtr input_verified_vdfs = "node.verified_vdfs";
+	vnx.TopicPtr input_verified_votes = "node.verified_votes";
 	vnx.TopicPtr input_verified_proof = "node.verified_proof";
 	vnx.TopicPtr input_verified_blocks = "node.verified_blocks";
 	vnx.TopicPtr input_verified_transactions = "node.verified_transactions";
@@ -11,6 +12,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	vnx.TopicPtr input_vdfs = "timelord.proof";
 	
 	vnx.TopicPtr output_vdfs = "network.vdfs";
+	vnx.TopicPtr output_votes = "network.votes";
 	vnx.TopicPtr output_proof = "network.proof";
 	vnx.TopicPtr output_blocks = "network.blocks";
 	vnx.TopicPtr output_transactions = "network.transactions";
@@ -84,5 +86,6 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	void handle(ProofOfTime sample);
 	void handle(ProofResponse sample);
 	void handle(VDF_Point sample);
+	void handle(ValidatorVote sample);
 	
 }

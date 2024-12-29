@@ -773,8 +773,8 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 					out["tx_count"] = block->tx_count;
 					out["netspace"] = double(uint64_t(calc_total_netspace(params, block->space_diff) / 1000 / 1000 / 1000)) * pow(1000, -2);
 					out["vdf_speed"] = get_vdf_speed(params, block->time_diff) / 1e6;
-					if(auto proof = block->proof) {
-						out["score"] = proof->score;
+					if(block->proof.size()) {
+						out["score"] = block->proof[0]->score;
 					} else {
 						out["score"] = nullptr;
 					}

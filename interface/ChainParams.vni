@@ -16,6 +16,7 @@ class ChainParams {
 	uint max_vdf_count = 100;				// chain will halt if no proof is found within this time
 	
 	uint proofs_per_height = 3;
+	uint max_validators = 11;
 	
 	ulong min_reward = 200000;
 	ulong vdf_reward = 500000;				// per vdf_reward_interval

@@ -25,7 +25,7 @@ class BlockHeader {
 	optional<addr_t> vdf_reward_addr;		// for this block
 	optional<addr_t> vdf_reward_payout;		// for bundle payout
 	
-	ProofOfSpace* proof;
+	vector<ProofOfSpace*> proof;
 	
 	hash_t proof_hash;
 	hash_t challenge;					// for proof lookups

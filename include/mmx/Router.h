@@ -72,6 +72,8 @@ protected:
 
 	void handle(std::shared_ptr<const VDF_Point> value) override;
 
+	void handle(std::shared_ptr<const ValidatorVote> value) override;
+
 private:
 	struct send_item_t {
 		bool reliable = false;
@@ -155,6 +157,8 @@ private:
 
 	void on_block(uint64_t client, std::shared_ptr<const Block> block);
 
+	void on_vote(uint64_t client, std::shared_ptr<const ValidatorVote> value);
+
 	void on_proof(uint64_t client, std::shared_ptr<const ProofResponse> response);
 
 	void on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx);
@@ -216,7 +220,7 @@ private:
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
 	std::map<std::string, uint64_t> connect_tasks;
-	std::map<uint32_t, std::shared_ptr<const ProofOfTime>> vdf_history;		// [vdf_height => proof]
+	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> vdf_history;		// [vdf_height => proof]
 
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
@@ -258,6 +262,7 @@ private:
 
 	size_t tx_counter = 0;
 	size_t vdf_counter = 0;
+	size_t vote_counter = 0;
 	size_t block_counter = 0;
 	size_t proof_counter = 0;
 	size_t upload_counter = 0;

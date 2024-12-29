@@ -15,12 +15,16 @@ namespace mmx {
 vnx::bool_t BlockHeader::is_valid() const
 {
 	if(height) {
-		if(!proof || !farmer_sig || vdf_count < 1) {
+		if(proof.empty() || !farmer_sig || vdf_count < 1) {
+			return false;
+		}
+	}
+	for(auto p : proof) {
+		if(!p || !p->is_valid()) {
 			return false;
 		}
 	}
 	return version == 0
-			&& (!proof || proof->is_valid())
 			&& (!reward_amount || reward_addr)
 			&& hash == calc_hash()
 			&& content_hash == calc_content_hash();
@@ -51,7 +55,13 @@ hash_t BlockHeader::calc_hash() const
 	write_field(out, "vdf_output", 		vdf_output);
 	write_field(out, "vdf_reward_addr", vdf_reward_addr);
 	write_field(out, "vdf_reward_payout", vdf_reward_payout);
-	write_field(out, "proof", 			proof ? proof->calc_hash() : hash_t());
+	{
+		std::vector<hash_t> list;
+		for(auto p : proof) {
+			list.push_back(p->calc_hash());
+		}
+		write_field(out, "proof", 		list);
+	}
 	write_field(out, "proof_hash", 		proof_hash);
 	write_field(out, "challenge", 		challenge);
 	write_field(out, "is_space_fork",	is_space_fork);
@@ -86,13 +96,13 @@ hash_t BlockHeader::calc_content_hash() const
 
 void BlockHeader::validate() const
 {
-	if(!proof) {
+	if(proof.empty()) {
 		throw std::logic_error("missing proof");
 	}
 	if(!farmer_sig) {
 		throw std::logic_error("missing farmer signature");
 	}
-	if(!farmer_sig->verify(proof->farmer_key, hash)) {
+	if(!farmer_sig->verify(proof[0]->farmer_key, hash)) {
 		throw std::logic_error("invalid farmer signature");
 	}
 }
@@ -115,10 +125,7 @@ block_index_t BlockHeader::get_block_index(const int64_t& file_offset) const
 
 void BlockHeader::set_space_diff(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
-	if(!proof || !vdf_count) {
-		throw std::logic_error("invalid block state");
-	}
-	const auto proof_count = calc_proof_count(params, proof->score);
+	const auto proof_count = proof.size();
 
 	if(is_space_fork) {
 		space_diff = calc_new_space_diff(params, prev);

@@ -38,6 +38,8 @@ protected:
 
 	std::shared_ptr<const BlockHeader> sign_block(std::shared_ptr<const BlockHeader> block) const override;
 
+	signature_t sign_vote(std::shared_ptr<const ValidatorVote> vote) const override;
+
 	void handle(std::shared_ptr<const FarmInfo> value) override;
 
 	void handle(std::shared_ptr<const ProofResponse> value) override;

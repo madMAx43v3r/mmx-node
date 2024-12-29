@@ -349,10 +349,10 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 	if(!block) {
 		throw std::logic_error("!block");
 	}
-	if(!block->proof) {
+	if(block->proof.empty()) {
 		throw std::logic_error("!proof");
 	}
-	const auto farmer_sk = get_skey(block->proof->farmer_key);
+	const auto farmer_sk = get_skey(block->proof[0]->farmer_key);
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
@@ -367,6 +367,16 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
 	out->content_hash = out->calc_content_hash();
 	return out;
+}
+
+signature_t Farmer::sign_vote(std::shared_ptr<const ValidatorVote> vote) const
+{
+	if(!vote) {
+		throw std::logic_error("!vote");
+	}
+	const auto farmer_sk = get_skey(vote->farmer_key);
+	const hash_t msg("MMX/validator/vote/" + vote->hash + vote->farmer_key);
+	return signature_t::sign(farmer_sk, msg);
 }
 
 

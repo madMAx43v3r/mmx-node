@@ -8,7 +8,6 @@
 #include <mmx/Node.h>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/Binary.hxx>
@@ -114,6 +113,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 {
 	/*
 	 * The following fields have already been verified in `Node::verify_proof()` or see note:
+	 * - vdf_height
 	 * - vdf_count				(Node::find_vdf_points() + Node::verify_proof())
 	 * - vdf_iters
 	 * - vdf_output				(Node::find_vdf_points())
@@ -148,9 +148,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
-	if(block->vdf_height != prev->vdf_height + block->vdf_count) {
-		throw std::logic_error("invalid vdf_height");
-	}
 	if(block->time_stamp - prev->time_stamp > block->vdf_count * params->block_interval_ms * 2) {
 		throw std::logic_error("time stamp delta too high");
 	}
@@ -176,7 +173,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	vnx::optional<addr_t> reward_contract;
 
 	if(block->reward_addr) {
-		if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
+		if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof[0])) {
 			reward_contract = proof->contract;
 		}
 	}
