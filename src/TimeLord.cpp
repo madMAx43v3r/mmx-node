@@ -9,6 +9,7 @@
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/WalletClient.hxx>
 #include <mmx/utils.h>
+#include <mmx/helpers.h>
 
 #include <vnx/vnx.h>
 
@@ -160,10 +161,14 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> req)
 		begin.num_iters = start;
 
 		if(is_running) {
-			const bool is_fork = peak && history[start] != *input;
+			const bool is_fork = peak
+					&& find_value(history, start) != input
+					&& (!is_reset || start > peak->num_iters);
 			if(is_fork) {
 				if(start >= peak->num_iters) {
-					log(INFO) << "Another Timelord was faster, restarting ...";
+					if(!is_reset) {
+						log(INFO) << "Another Timelord was faster, restarting ...";
+					}
 				} else {
 					log(WARN) << "Our VDF forked from the network, restarting ...";
 				}

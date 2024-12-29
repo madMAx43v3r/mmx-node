@@ -344,6 +344,8 @@ void Node::update()
 
 	{
 		const auto vdf_points = find_next_vdf_points(peak);
+		const auto vdf_output = vdf_points.empty() ? peak->vdf_output : vdf_points.back()->output;
+
 		const auto vdf_advance = std::min<uint32_t>(
 				vdf_points.size() + params->infuse_delay, params->max_vdf_count);
 
@@ -354,21 +356,20 @@ void Node::update()
 			uint64_t num_iters = 0;
 			const auto infuse = get_infusion(peak, i, num_iters);
 
-			auto request = IntervalRequest::create();
-			request->vdf_height = peak->vdf_height + i + 1;
-			request->start = vdf_iters;
-			request->end = vdf_iters + num_iters;
-			if(i == 0) {
-				request->input = peak->vdf_output;
-			} else if(i - 1 < vdf_points.size()) {
-				request->input = vdf_points[i - 1]->output;
-			}
-			request->infuse = infuse;
+			auto req = IntervalRequest::create();
+			req->vdf_height = peak->vdf_height + i + 1;
+			req->start = vdf_iters;
+			req->end = vdf_iters + num_iters;
+			req->infuse = infuse;
 
-			publish(request, output_interval_request);
+			if(i == vdf_points.size()) {
+				req->input = vdf_output;	// for start or restart
+			}
+			publish(req, output_interval_request);
 
 			vdf_iters += num_iters;
 		}
+
 		const auto challenge_advance = std::min<uint32_t>(
 				vdf_points.size() + params->challenge_delay - 1, params->max_vdf_count);
 
