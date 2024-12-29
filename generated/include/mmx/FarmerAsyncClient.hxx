@@ -9,8 +9,10 @@
 #include <mmx/FarmInfo.hxx>
 #include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -46,6 +48,10 @@ public:
 	
 	uint64_t sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr, 
 			const std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t sign_vote(std::shared_ptr<const ::mmx::ValidatorVote> vote = nullptr, 
+			const std::function<void(const ::mmx::signature_t&)>& _callback = std::function<void(const ::mmx::signature_t&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t vnx_get_config_object(
@@ -96,6 +102,7 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<::mmx::pubkey_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_keys;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::FarmInfo>)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farm_info;
 	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::BlockHeader>)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_block;
+	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::signature_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_sign_vote;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Object&)>, std::function<void(const vnx::exception&)>>> vnx_queue_vnx_get_config_object;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::vnx::Variant&)>, std::function<void(const vnx::exception&)>>> vnx_queue_vnx_get_config;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_vnx_set_config_object;

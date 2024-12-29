@@ -43,6 +43,8 @@ class Farmer_get_partial_diffs;
 class Farmer_get_partial_diffs_return;
 class Farmer_sign_block;
 class Farmer_sign_block_return;
+class Farmer_sign_vote;
+class Farmer_sign_vote_return;
 class HarvesterBase;
 class Harvester_add_plot_dir;
 class Harvester_add_plot_dir_return;
@@ -177,6 +179,10 @@ class Node_get_tx_info;
 class Node_get_tx_info_return;
 class Node_get_tx_info_for;
 class Node_get_tx_info_for_return;
+class Node_get_vdf_height;
+class Node_get_vdf_height_return;
+class Node_get_vdf_peak;
+class Node_get_vdf_peak_return;
 class Node_read_storage;
 class Node_read_storage_return;
 class Node_read_storage_array;
@@ -248,6 +254,7 @@ class TimeLord_stop_vdf_return;
 class Transaction;
 class TransactionBase;
 class VDF_Point;
+class ValidatorVote;
 class WalletBase;
 class Wallet_accept_offer;
 class Wallet_accept_offer_return;
@@ -442,6 +449,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_par
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_get_partial_diffs_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_vote; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_vote_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_HarvesterBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_add_plot_dir; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Harvester_add_plot_dir_return; ///< \private
@@ -576,6 +585,10 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_in
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_vdf_height; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_vdf_height_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_vdf_peak; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_vdf_peak_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_array; ///< \private
@@ -647,6 +660,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Transaction; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TransactionBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VDF_Point; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ValidatorVote; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WalletBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_accept_offer; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Wallet_accept_offer_return; ///< \private
@@ -838,6 +852,8 @@ void read(TypeInput& in, ::mmx::Farmer_get_partial_diffs& value, const TypeCode*
 void read(TypeInput& in, ::mmx::Farmer_get_partial_diffs_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_sign_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Farmer_sign_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_sign_vote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Farmer_sign_vote_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::HarvesterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Harvester_add_plot_dir& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Harvester_add_plot_dir_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -972,6 +988,10 @@ void read(TypeInput& in, ::mmx::Node_get_tx_info& value, const TypeCode* type_co
 void read(TypeInput& in, ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_info_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_vdf_height& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_vdf_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_vdf_peak& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_vdf_peak_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_read_storage_array& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1043,6 +1063,7 @@ void read(TypeInput& in, ::mmx::TimeLord_stop_vdf_return& value, const TypeCode*
 void read(TypeInput& in, ::mmx::Transaction& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TransactionBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::VDF_Point& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ValidatorVote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::WalletBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_accept_offer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Wallet_accept_offer_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1237,6 +1258,8 @@ void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diffs& value, const 
 void write(TypeOutput& out, const ::mmx::Farmer_get_partial_diffs_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_sign_block& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Farmer_sign_block_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_sign_vote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Farmer_sign_vote_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::HarvesterBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Harvester_add_plot_dir& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Harvester_add_plot_dir_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1371,6 +1394,10 @@ void write(TypeOutput& out, const ::mmx::Node_get_tx_info& value, const TypeCode
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_tx_info_for_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_vdf_height& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_vdf_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_vdf_peak& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_vdf_peak_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_read_storage_array& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1442,6 +1469,7 @@ void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf_return& value, const 
 void write(TypeOutput& out, const ::mmx::Transaction& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TransactionBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::VDF_Point& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ValidatorVote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::WalletBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_accept_offer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Wallet_accept_offer_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1636,6 +1664,8 @@ void read(std::istream& in, ::mmx::Farmer_get_partial_diffs& value); ///< \priva
 void read(std::istream& in, ::mmx::Farmer_get_partial_diffs_return& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_sign_block& value); ///< \private
 void read(std::istream& in, ::mmx::Farmer_sign_block_return& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_sign_vote& value); ///< \private
+void read(std::istream& in, ::mmx::Farmer_sign_vote_return& value); ///< \private
 void read(std::istream& in, ::mmx::HarvesterBase& value); ///< \private
 void read(std::istream& in, ::mmx::Harvester_add_plot_dir& value); ///< \private
 void read(std::istream& in, ::mmx::Harvester_add_plot_dir_return& value); ///< \private
@@ -1770,6 +1800,10 @@ void read(std::istream& in, ::mmx::Node_get_tx_info& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info_for& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_tx_info_for_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_vdf_height& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_vdf_height_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_vdf_peak& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_vdf_peak_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_read_storage_array& value); ///< \private
@@ -1841,6 +1875,7 @@ void read(std::istream& in, ::mmx::TimeLord_stop_vdf_return& value); ///< \priva
 void read(std::istream& in, ::mmx::Transaction& value); ///< \private
 void read(std::istream& in, ::mmx::TransactionBase& value); ///< \private
 void read(std::istream& in, ::mmx::VDF_Point& value); ///< \private
+void read(std::istream& in, ::mmx::ValidatorVote& value); ///< \private
 void read(std::istream& in, ::mmx::WalletBase& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_accept_offer& value); ///< \private
 void read(std::istream& in, ::mmx::Wallet_accept_offer_return& value); ///< \private
@@ -2035,6 +2070,8 @@ void write(std::ostream& out, const ::mmx::Farmer_get_partial_diffs& value); ///
 void write(std::ostream& out, const ::mmx::Farmer_get_partial_diffs_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_sign_block& value); ///< \private
 void write(std::ostream& out, const ::mmx::Farmer_sign_block_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_sign_vote& value); ///< \private
+void write(std::ostream& out, const ::mmx::Farmer_sign_vote_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::HarvesterBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Harvester_add_plot_dir& value); ///< \private
 void write(std::ostream& out, const ::mmx::Harvester_add_plot_dir_return& value); ///< \private
@@ -2169,6 +2206,10 @@ void write(std::ostream& out, const ::mmx::Node_get_tx_info& value); ///< \priva
 void write(std::ostream& out, const ::mmx::Node_get_tx_info_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_info_for& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_tx_info_for_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_vdf_height& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_vdf_height_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_vdf_peak& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_vdf_peak_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_read_storage_array& value); ///< \private
@@ -2240,6 +2281,7 @@ void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf_return& value); ///
 void write(std::ostream& out, const ::mmx::Transaction& value); ///< \private
 void write(std::ostream& out, const ::mmx::TransactionBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::VDF_Point& value); ///< \private
+void write(std::ostream& out, const ::mmx::ValidatorVote& value); ///< \private
 void write(std::ostream& out, const ::mmx::WalletBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_accept_offer& value); ///< \private
 void write(std::ostream& out, const ::mmx::Wallet_accept_offer_return& value); ///< \private
@@ -2434,6 +2476,8 @@ void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diffs& value); ///
 void accept(Visitor& visitor, const ::mmx::Farmer_get_partial_diffs_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_sign_block& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Farmer_sign_block_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_sign_vote& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Farmer_sign_vote_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::HarvesterBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Harvester_add_plot_dir& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Harvester_add_plot_dir_return& value); ///< \private
@@ -2568,6 +2612,10 @@ void accept(Visitor& visitor, const ::mmx::Node_get_tx_info& value); ///< \priva
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_tx_info_for_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_vdf_height& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_vdf_height_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_vdf_peak& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_vdf_peak_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_read_storage_array& value); ///< \private
@@ -2639,6 +2687,7 @@ void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf_return& value); ///
 void accept(Visitor& visitor, const ::mmx::Transaction& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TransactionBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::VDF_Point& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ValidatorVote& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::WalletBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_accept_offer& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Wallet_accept_offer_return& value); ///< \private
@@ -2850,6 +2899,10 @@ template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_block> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_block_return> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_vote> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_vote_return> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Harvester_add_plot_dir> value); ///< \private
 template<typename V>
@@ -3115,6 +3168,14 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_tx_info_fo
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_tx_info_for_return> value); ///< \private
 template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_height> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_height_return> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_peak> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_peak_return> value); ///< \private
+template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_read_storage> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_read_storage_return> value); ///< \private
@@ -3252,6 +3313,8 @@ template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::TransactionBase> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::VDF_Point> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ValidatorVote> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_accept_offer> value); ///< \private
 template<typename V>
@@ -3933,6 +3996,52 @@ struct type<::mmx::Farmer_sign_block_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_block_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_sign_vote> {
+	void read(TypeInput& in, ::mmx::Farmer_sign_vote& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_sign_vote& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_sign_vote& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_sign_vote& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_sign_vote& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_vote& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Farmer_sign_vote_return> {
+	void read(TypeInput& in, ::mmx::Farmer_sign_vote_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Farmer_sign_vote_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Farmer_sign_vote_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Farmer_sign_vote_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Farmer_sign_vote_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_vote_return& value, bool special = false);
 };
 
 /// \private
@@ -7013,6 +7122,98 @@ struct type<::mmx::Node_get_tx_info_for_return> {
 
 /// \private
 template<>
+struct type<::mmx::Node_get_vdf_height> {
+	void read(TypeInput& in, ::mmx::Node_get_vdf_height& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_vdf_height& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_vdf_height& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_vdf_height& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_vdf_height& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_vdf_height& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_vdf_height_return> {
+	void read(TypeInput& in, ::mmx::Node_get_vdf_height_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_vdf_height_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_vdf_height_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_vdf_height_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_vdf_height_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_vdf_height_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_vdf_peak> {
+	void read(TypeInput& in, ::mmx::Node_get_vdf_peak& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_vdf_peak& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_vdf_peak& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_vdf_peak& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_vdf_peak& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_vdf_peak& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_vdf_peak_return> {
+	void read(TypeInput& in, ::mmx::Node_get_vdf_peak_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_vdf_peak_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_vdf_peak_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_vdf_peak_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_vdf_peak_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_vdf_peak_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::Node_read_storage> {
 	void read(TypeInput& in, ::mmx::Node_read_storage& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -8636,6 +8837,29 @@ struct type<::mmx::VDF_Point> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::VDF_Point& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ValidatorVote> {
+	void read(TypeInput& in, ::mmx::ValidatorVote& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ValidatorVote& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ValidatorVote& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ValidatorVote& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ValidatorVote& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ValidatorVote& value, bool special = false);
 };
 
 /// \private

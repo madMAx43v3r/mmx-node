@@ -37,7 +37,7 @@ public:
 	::mmx::hash_t vdf_output;
 	vnx::optional<::mmx::addr_t> vdf_reward_addr;
 	vnx::optional<::mmx::addr_t> vdf_reward_payout;
-	std::shared_ptr<const ::mmx::ProofOfSpace> proof;
+	std::vector<std::shared_ptr<const ::mmx::ProofOfSpace>> proof;
 	::mmx::hash_t proof_hash;
 	::mmx::hash_t challenge;
 	vnx::bool_t is_space_fork = 0;

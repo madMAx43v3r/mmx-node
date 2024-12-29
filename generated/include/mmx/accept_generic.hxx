@@ -22,6 +22,8 @@
 #include <mmx/Farmer_get_partial_diffs_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
 #include <mmx/Farmer_sign_block_return.hxx>
+#include <mmx/Farmer_sign_vote.hxx>
+#include <mmx/Farmer_sign_vote_return.hxx>
 #include <mmx/Harvester_add_plot_dir.hxx>
 #include <mmx/Harvester_add_plot_dir_return.hxx>
 #include <mmx/Harvester_get_farm_info.hxx>
@@ -154,6 +156,10 @@
 #include <mmx/Node_get_tx_info_return.hxx>
 #include <mmx/Node_get_tx_info_for.hxx>
 #include <mmx/Node_get_tx_info_for_return.hxx>
+#include <mmx/Node_get_vdf_height.hxx>
+#include <mmx/Node_get_vdf_height_return.hxx>
+#include <mmx/Node_get_vdf_peak.hxx>
+#include <mmx/Node_get_vdf_peak_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -223,6 +229,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/TransactionBase.hxx>
 #include <mmx/VDF_Point.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
 #include <mmx/Wallet_accept_offer_return.hxx>
 #include <mmx/Wallet_add_account.hxx>
@@ -510,6 +517,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_block> 
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_block_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_vote> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_vote_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -1706,6 +1731,42 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_tx_info_fo
 }
 
 template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_height> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_height_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_peak> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_peak_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_read_storage> value) {
 	if(value) {
 		value->accept_generic(visitor);
@@ -2331,6 +2392,15 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::TransactionBase> va
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::VDF_Point> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ValidatorVote> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

@@ -15,6 +15,7 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/VDF_Point.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>
@@ -48,6 +49,7 @@ class MMX_EXPORT NodeBase : public ::vnx::Module {
 public:
 	
 	::vnx::TopicPtr input_vdfs = "network.vdfs";
+	::vnx::TopicPtr input_votes = "network.votes";
 	::vnx::TopicPtr input_proof = "network.proof";
 	::vnx::TopicPtr input_blocks = "network.blocks";
 	::vnx::TopicPtr input_transactions = "network.transactions";
@@ -55,6 +57,7 @@ public:
 	::vnx::TopicPtr input_harvester_proof = "farmer.proof";
 	::vnx::TopicPtr input_vdf_points = "network.vdf_points";
 	::vnx::TopicPtr output_verified_vdfs = "node.verified_vdfs";
+	::vnx::TopicPtr output_verified_votes = "node.verified_votes";
 	::vnx::TopicPtr output_verified_proof = "node.verified_proof";
 	::vnx::TopicPtr output_verified_blocks = "node.verified_blocks";
 	::vnx::TopicPtr output_verified_transactions = "node.verified_transactions";
@@ -63,6 +66,7 @@ public:
 	::vnx::TopicPtr output_interval_request = "timelord.requests";
 	::vnx::TopicPtr output_challenges = "harvester.challenges";
 	::vnx::TopicPtr output_vdf_points = "node.vdf_points";
+	::vnx::TopicPtr output_votes = "node.votes";
 	int32_t max_queue_ms = 10000;
 	int32_t update_interval_ms = 1000;
 	int32_t validate_interval_ms = 500;
@@ -136,6 +140,8 @@ protected:
 	virtual ::mmx::hash_t get_genesis_hash() const = 0;
 	virtual uint32_t get_height() const = 0;
 	virtual vnx::optional<uint32_t> get_synced_height() const = 0;
+	virtual uint32_t get_vdf_height() const = 0;
+	virtual ::mmx::hash_t get_vdf_peak() const = 0;
 	virtual std::shared_ptr<const ::mmx::Block> get_block(const ::mmx::hash_t& hash) const = 0;
 	virtual std::shared_ptr<const ::mmx::Block> get_block_at(const uint32_t& height) const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header(const ::mmx::hash_t& hash) const = 0;
@@ -209,6 +215,7 @@ protected:
 	virtual void handle(std::shared_ptr<const ::mmx::ProofOfTime> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::ProofResponse> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::VDF_Point> _value) {}
+	virtual void handle(std::shared_ptr<const ::mmx::ValidatorVote> _value) {}
 	virtual void http_request_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const vnx::request_id_t& _request_id) const = 0;
 	void http_request_async_return(const vnx::request_id_t& _request_id, const std::shared_ptr<const ::vnx::addons::HttpResponse>& _ret_0) const;
 	virtual void http_request_chunk_async(std::shared_ptr<const ::vnx::addons::HttpRequest> request, const std::string& sub_path, const int64_t& offset, const int64_t& max_bytes, const vnx::request_id_t& _request_id) const = 0;
@@ -221,56 +228,59 @@ protected:
 
 template<typename T>
 void NodeBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NodeBase>(48);
+	_visitor.template type_begin<NodeBase>(51);
 	_visitor.type_field("input_vdfs", 0); _visitor.accept(input_vdfs);
-	_visitor.type_field("input_proof", 1); _visitor.accept(input_proof);
-	_visitor.type_field("input_blocks", 2); _visitor.accept(input_blocks);
-	_visitor.type_field("input_transactions", 3); _visitor.accept(input_transactions);
-	_visitor.type_field("input_timelord_vdfs", 4); _visitor.accept(input_timelord_vdfs);
-	_visitor.type_field("input_harvester_proof", 5); _visitor.accept(input_harvester_proof);
-	_visitor.type_field("input_vdf_points", 6); _visitor.accept(input_vdf_points);
-	_visitor.type_field("output_verified_vdfs", 7); _visitor.accept(output_verified_vdfs);
-	_visitor.type_field("output_verified_proof", 8); _visitor.accept(output_verified_proof);
-	_visitor.type_field("output_verified_blocks", 9); _visitor.accept(output_verified_blocks);
-	_visitor.type_field("output_verified_transactions", 10); _visitor.accept(output_verified_transactions);
-	_visitor.type_field("output_committed_blocks", 11); _visitor.accept(output_committed_blocks);
-	_visitor.type_field("output_transactions", 12); _visitor.accept(output_transactions);
-	_visitor.type_field("output_interval_request", 13); _visitor.accept(output_interval_request);
-	_visitor.type_field("output_challenges", 14); _visitor.accept(output_challenges);
-	_visitor.type_field("output_vdf_points", 15); _visitor.accept(output_vdf_points);
-	_visitor.type_field("max_queue_ms", 16); _visitor.accept(max_queue_ms);
-	_visitor.type_field("update_interval_ms", 17); _visitor.accept(update_interval_ms);
-	_visitor.type_field("validate_interval_ms", 18); _visitor.accept(validate_interval_ms);
-	_visitor.type_field("sync_loss_delay", 19); _visitor.accept(sync_loss_delay);
-	_visitor.type_field("max_history", 20); _visitor.accept(max_history);
-	_visitor.type_field("max_tx_pool", 21); _visitor.accept(max_tx_pool);
-	_visitor.type_field("max_tx_queue", 22); _visitor.accept(max_tx_queue);
-	_visitor.type_field("max_sync_jobs", 23); _visitor.accept(max_sync_jobs);
-	_visitor.type_field("max_sync_ahead", 24); _visitor.accept(max_sync_ahead);
-	_visitor.type_field("num_sync_retries", 25); _visitor.accept(num_sync_retries);
-	_visitor.type_field("replay_height", 26); _visitor.accept(replay_height);
-	_visitor.type_field("num_threads", 27); _visitor.accept(num_threads);
-	_visitor.type_field("num_db_threads", 28); _visitor.accept(num_db_threads);
-	_visitor.type_field("num_api_threads", 29); _visitor.accept(num_api_threads);
-	_visitor.type_field("num_vdf_threads", 30); _visitor.accept(num_vdf_threads);
-	_visitor.type_field("vdf_check_divider", 31); _visitor.accept(vdf_check_divider);
-	_visitor.type_field("vdf_verify_divider", 32); _visitor.accept(vdf_verify_divider);
-	_visitor.type_field("vdf_verify_max_pending", 33); _visitor.accept(vdf_verify_max_pending);
-	_visitor.type_field("opencl_device", 34); _visitor.accept(opencl_device);
-	_visitor.type_field("do_sync", 35); _visitor.accept(do_sync);
-	_visitor.type_field("db_replay", 36); _visitor.accept(db_replay);
-	_visitor.type_field("show_warnings", 37); _visitor.accept(show_warnings);
-	_visitor.type_field("vdf_slave_mode", 38); _visitor.accept(vdf_slave_mode);
-	_visitor.type_field("exec_debug", 39); _visitor.accept(exec_debug);
-	_visitor.type_field("exec_profile", 40); _visitor.accept(exec_profile);
-	_visitor.type_field("exec_trace", 41); _visitor.accept(exec_trace);
-	_visitor.type_field("storage_path", 42); _visitor.accept(storage_path);
-	_visitor.type_field("database_path", 43); _visitor.accept(database_path);
-	_visitor.type_field("router_name", 44); _visitor.accept(router_name);
-	_visitor.type_field("timelord_name", 45); _visitor.accept(timelord_name);
-	_visitor.type_field("mmx_usd_swap_addr", 46); _visitor.accept(mmx_usd_swap_addr);
-	_visitor.type_field("metalsdev_api_key", 47); _visitor.accept(metalsdev_api_key);
-	_visitor.template type_end<NodeBase>(48);
+	_visitor.type_field("input_votes", 1); _visitor.accept(input_votes);
+	_visitor.type_field("input_proof", 2); _visitor.accept(input_proof);
+	_visitor.type_field("input_blocks", 3); _visitor.accept(input_blocks);
+	_visitor.type_field("input_transactions", 4); _visitor.accept(input_transactions);
+	_visitor.type_field("input_timelord_vdfs", 5); _visitor.accept(input_timelord_vdfs);
+	_visitor.type_field("input_harvester_proof", 6); _visitor.accept(input_harvester_proof);
+	_visitor.type_field("input_vdf_points", 7); _visitor.accept(input_vdf_points);
+	_visitor.type_field("output_verified_vdfs", 8); _visitor.accept(output_verified_vdfs);
+	_visitor.type_field("output_verified_votes", 9); _visitor.accept(output_verified_votes);
+	_visitor.type_field("output_verified_proof", 10); _visitor.accept(output_verified_proof);
+	_visitor.type_field("output_verified_blocks", 11); _visitor.accept(output_verified_blocks);
+	_visitor.type_field("output_verified_transactions", 12); _visitor.accept(output_verified_transactions);
+	_visitor.type_field("output_committed_blocks", 13); _visitor.accept(output_committed_blocks);
+	_visitor.type_field("output_transactions", 14); _visitor.accept(output_transactions);
+	_visitor.type_field("output_interval_request", 15); _visitor.accept(output_interval_request);
+	_visitor.type_field("output_challenges", 16); _visitor.accept(output_challenges);
+	_visitor.type_field("output_vdf_points", 17); _visitor.accept(output_vdf_points);
+	_visitor.type_field("output_votes", 18); _visitor.accept(output_votes);
+	_visitor.type_field("max_queue_ms", 19); _visitor.accept(max_queue_ms);
+	_visitor.type_field("update_interval_ms", 20); _visitor.accept(update_interval_ms);
+	_visitor.type_field("validate_interval_ms", 21); _visitor.accept(validate_interval_ms);
+	_visitor.type_field("sync_loss_delay", 22); _visitor.accept(sync_loss_delay);
+	_visitor.type_field("max_history", 23); _visitor.accept(max_history);
+	_visitor.type_field("max_tx_pool", 24); _visitor.accept(max_tx_pool);
+	_visitor.type_field("max_tx_queue", 25); _visitor.accept(max_tx_queue);
+	_visitor.type_field("max_sync_jobs", 26); _visitor.accept(max_sync_jobs);
+	_visitor.type_field("max_sync_ahead", 27); _visitor.accept(max_sync_ahead);
+	_visitor.type_field("num_sync_retries", 28); _visitor.accept(num_sync_retries);
+	_visitor.type_field("replay_height", 29); _visitor.accept(replay_height);
+	_visitor.type_field("num_threads", 30); _visitor.accept(num_threads);
+	_visitor.type_field("num_db_threads", 31); _visitor.accept(num_db_threads);
+	_visitor.type_field("num_api_threads", 32); _visitor.accept(num_api_threads);
+	_visitor.type_field("num_vdf_threads", 33); _visitor.accept(num_vdf_threads);
+	_visitor.type_field("vdf_check_divider", 34); _visitor.accept(vdf_check_divider);
+	_visitor.type_field("vdf_verify_divider", 35); _visitor.accept(vdf_verify_divider);
+	_visitor.type_field("vdf_verify_max_pending", 36); _visitor.accept(vdf_verify_max_pending);
+	_visitor.type_field("opencl_device", 37); _visitor.accept(opencl_device);
+	_visitor.type_field("do_sync", 38); _visitor.accept(do_sync);
+	_visitor.type_field("db_replay", 39); _visitor.accept(db_replay);
+	_visitor.type_field("show_warnings", 40); _visitor.accept(show_warnings);
+	_visitor.type_field("vdf_slave_mode", 41); _visitor.accept(vdf_slave_mode);
+	_visitor.type_field("exec_debug", 42); _visitor.accept(exec_debug);
+	_visitor.type_field("exec_profile", 43); _visitor.accept(exec_profile);
+	_visitor.type_field("exec_trace", 44); _visitor.accept(exec_trace);
+	_visitor.type_field("storage_path", 45); _visitor.accept(storage_path);
+	_visitor.type_field("database_path", 46); _visitor.accept(database_path);
+	_visitor.type_field("router_name", 47); _visitor.accept(router_name);
+	_visitor.type_field("timelord_name", 48); _visitor.accept(timelord_name);
+	_visitor.type_field("mmx_usd_swap_addr", 49); _visitor.accept(mmx_usd_swap_addr);
+	_visitor.type_field("metalsdev_api_key", 50); _visitor.accept(metalsdev_api_key);
+	_visitor.template type_end<NodeBase>(51);
 }
 
 

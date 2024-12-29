@@ -18,10 +18,14 @@
 #include <mmx/Farmer_get_partial_diffs_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
 #include <mmx/Farmer_sign_block_return.hxx>
+#include <mmx/Farmer_sign_vote.hxx>
+#include <mmx/Farmer_sign_vote_return.hxx>
 #include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
@@ -266,22 +270,23 @@ std::shared_ptr<vnx::TypeCode> FarmerBase::static_create_type_code() {
 	type_code->code_hash = vnx::Hash64(0x4183adfd55745a8dull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::FarmerBase);
-	type_code->methods.resize(15);
+	type_code->methods.resize(16);
 	type_code->methods[0] = ::mmx::Farmer_get_farm_info::static_get_type_code();
 	type_code->methods[1] = ::mmx::Farmer_get_farmer_keys::static_get_type_code();
 	type_code->methods[2] = ::mmx::Farmer_get_mac_addr::static_get_type_code();
 	type_code->methods[3] = ::mmx::Farmer_get_partial_diff::static_get_type_code();
 	type_code->methods[4] = ::mmx::Farmer_get_partial_diffs::static_get_type_code();
 	type_code->methods[5] = ::mmx::Farmer_sign_block::static_get_type_code();
-	type_code->methods[6] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[7] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[8] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[9] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[10] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[11] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[12] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[13] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[14] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[6] = ::mmx::Farmer_sign_vote::static_get_type_code();
+	type_code->methods[7] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[8] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[9] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[10] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[11] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[12] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[13] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[14] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[15] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->fields.resize(12);
 	{
 		auto& field = type_code->fields[0];
@@ -424,6 +429,12 @@ std::shared_ptr<vnx::Value> FarmerBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Farmer_sign_block>(_method);
 			auto _return_value = ::mmx::Farmer_sign_block_return::create();
 			_return_value->_ret_0 = sign_block(_args->block);
+			return _return_value;
+		}
+		case 0x655117e05d64b5fcull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Farmer_sign_vote>(_method);
+			auto _return_value = ::mmx::Farmer_sign_vote_return::create();
+			_return_value->_ret_0 = sign_vote(_args->vote);
 			return _return_value;
 		}
 		case 0xbbc7f1a01044d294ull: {

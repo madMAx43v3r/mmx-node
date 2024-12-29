@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Block::VNX_TYPE_HASH(0x94965d816d328467ull);
-const vnx::Hash64 Block::VNX_CODE_HASH(0xdda27980ee050020ull);
+const vnx::Hash64 Block::VNX_CODE_HASH(0xde55c687a7ac90ecull);
 
 vnx::Hash64 Block::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -507,7 +507,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Block";
 	type_code->type_hash = vnx::Hash64(0x94965d816d328467ull);
-	type_code->code_hash = vnx::Hash64(0xdda27980ee050020ull);
+	type_code->code_hash = vnx::Hash64(0xde55c687a7ac90ecull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Block);
@@ -621,7 +621,7 @@ std::shared_ptr<vnx::TypeCode> Block::static_create_type_code() {
 		auto& field = type_code->fields[17];
 		field.is_extended = true;
 		field.name = "proof";
-		field.code = {16};
+		field.code = {12, 16};
 	}
 	{
 		auto& field = type_code->fields[18];

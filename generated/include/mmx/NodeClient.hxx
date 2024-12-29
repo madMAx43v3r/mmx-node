@@ -15,6 +15,7 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/VDF_Point.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/balance_t.hxx>
 #include <mmx/exec_entry_t.hxx>
@@ -59,6 +60,10 @@ public:
 	uint32_t get_height();
 	
 	vnx::optional<uint32_t> get_synced_height();
+	
+	uint32_t get_vdf_height();
+	
+	::mmx::hash_t get_vdf_peak();
 	
 	std::shared_ptr<const ::mmx::Block> get_block(const ::mmx::hash_t& hash = ::mmx::hash_t());
 	

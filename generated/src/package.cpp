@@ -20,6 +20,8 @@
 #include <mmx/Farmer_get_partial_diffs_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
 #include <mmx/Farmer_sign_block_return.hxx>
+#include <mmx/Farmer_sign_vote.hxx>
+#include <mmx/Farmer_sign_vote_return.hxx>
 #include <mmx/HarvesterBase.hxx>
 #include <mmx/Harvester_add_plot_dir.hxx>
 #include <mmx/Harvester_add_plot_dir_return.hxx>
@@ -154,6 +156,10 @@
 #include <mmx/Node_get_tx_info_return.hxx>
 #include <mmx/Node_get_tx_info_for.hxx>
 #include <mmx/Node_get_tx_info_for_return.hxx>
+#include <mmx/Node_get_vdf_height.hxx>
+#include <mmx/Node_get_vdf_height_return.hxx>
+#include <mmx/Node_get_vdf_peak.hxx>
+#include <mmx/Node_get_vdf_peak_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -225,6 +231,7 @@
 #include <mmx/Transaction.hxx>
 #include <mmx/TransactionBase.hxx>
 #include <mmx/VDF_Point.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/WalletBase.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
 #include <mmx/Wallet_accept_offer_return.hxx>
@@ -620,6 +627,30 @@ void type<::mmx::Farmer_sign_block_return>::create_dynamic_code(std::vector<uint
 }
 
 void type<::mmx::Farmer_sign_block_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_block_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Farmer_sign_vote>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_sign_vote;
+}
+
+void type<::mmx::Farmer_sign_vote>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Farmer_sign_vote());
+}
+
+void type<::mmx::Farmer_sign_vote>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_vote& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Farmer_sign_vote_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Farmer_sign_vote_return;
+}
+
+void type<::mmx::Farmer_sign_vote_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Farmer_sign_vote_return());
+}
+
+void type<::mmx::Farmer_sign_vote_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Farmer_sign_vote_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -2207,6 +2238,54 @@ void type<::mmx::Node_get_tx_info_for_return>::create_dynamic_code(std::vector<u
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::Node_get_vdf_height>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_vdf_height;
+}
+
+void type<::mmx::Node_get_vdf_height>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_vdf_height());
+}
+
+void type<::mmx::Node_get_vdf_height>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_vdf_height& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_vdf_height_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_vdf_height_return;
+}
+
+void type<::mmx::Node_get_vdf_height_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_vdf_height_return());
+}
+
+void type<::mmx::Node_get_vdf_height_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_vdf_height_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_vdf_peak>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_vdf_peak;
+}
+
+void type<::mmx::Node_get_vdf_peak>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_vdf_peak());
+}
+
+void type<::mmx::Node_get_vdf_peak>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_vdf_peak& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_vdf_peak_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_vdf_peak_return;
+}
+
+void type<::mmx::Node_get_vdf_peak_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_vdf_peak_return());
+}
+
+void type<::mmx::Node_get_vdf_peak_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_vdf_peak_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::Node_read_storage>::get_type_code() {
 	return mmx::vnx_native_type_code_Node_read_storage;
 }
@@ -3032,6 +3111,18 @@ void type<::mmx::VDF_Point>::create_dynamic_code(std::vector<uint16_t>& code) {
 }
 
 void type<::mmx::VDF_Point>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::VDF_Point& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ValidatorVote>::get_type_code() {
+	return mmx::vnx_native_type_code_ValidatorVote;
+}
+
+void type<::mmx::ValidatorVote>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ValidatorVote());
+}
+
+void type<::mmx::ValidatorVote>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ValidatorVote& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5150,6 +5241,8 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Farmer_get_partial_diffs_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_sign_block::static_create_type_code());
 	vnx::register_type_code(::mmx::Farmer_sign_block_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Farmer_sign_vote::static_create_type_code());
+	vnx::register_type_code(::mmx::Farmer_sign_vote_return::static_create_type_code());
 	vnx::register_type_code(::mmx::HarvesterBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_add_plot_dir::static_create_type_code());
 	vnx::register_type_code(::mmx::Harvester_add_plot_dir_return::static_create_type_code());
@@ -5284,6 +5377,10 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_tx_info_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_tx_info_for::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_tx_info_for_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_vdf_height::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_vdf_height_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_vdf_peak::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_vdf_peak_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_read_storage_array::static_create_type_code());
@@ -5355,6 +5452,7 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Transaction::static_create_type_code());
 	vnx::register_type_code(::mmx::TransactionBase::static_create_type_code());
 	vnx::register_type_code(::mmx::VDF_Point::static_create_type_code());
+	vnx::register_type_code(::mmx::ValidatorVote::static_create_type_code());
 	vnx::register_type_code(::mmx::WalletBase::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_accept_offer::static_create_type_code());
 	vnx::register_type_code(::mmx::Wallet_accept_offer_return::static_create_type_code());
@@ -5548,6 +5646,8 @@ const vnx::TypeCode* const vnx_native_type_code_Farmer_get_partial_diffs = vnx::
 const vnx::TypeCode* const vnx_native_type_code_Farmer_get_partial_diffs_return = vnx::get_type_code(vnx::Hash64(0x439549fd31330df6ull));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block = vnx::get_type_code(vnx::Hash64(0x6924b10f345eb316ull));
 const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_block_return = vnx::get_type_code(vnx::Hash64(0xb8acce9269f91310ull));
+const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_vote = vnx::get_type_code(vnx::Hash64(0x655117e05d64b5fcull));
+const vnx::TypeCode* const vnx_native_type_code_Farmer_sign_vote_return = vnx::get_type_code(vnx::Hash64(0x40848c38fe18b587ull));
 const vnx::TypeCode* const vnx_native_type_code_HarvesterBase = vnx::get_type_code(vnx::Hash64(0xc17118896cde1555ull));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_add_plot_dir = vnx::get_type_code(vnx::Hash64(0x61714d1c7ecaffddull));
 const vnx::TypeCode* const vnx_native_type_code_Harvester_add_plot_dir_return = vnx::get_type_code(vnx::Hash64(0x8b5f7bc4f34fb5d5ull));
@@ -5682,6 +5782,10 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info = vnx::get_type
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_return = vnx::get_type_code(vnx::Hash64(0x3668f41cc643227full));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for = vnx::get_type_code(vnx::Hash64(0xba1c6e6eccfe9369ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_tx_info_for_return = vnx::get_type_code(vnx::Hash64(0xfd527dc84681a04ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_vdf_height = vnx::get_type_code(vnx::Hash64(0x33db3aa655c4e5feull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_vdf_height_return = vnx::get_type_code(vnx::Hash64(0x5f83cae2903e53bfull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_vdf_peak = vnx::get_type_code(vnx::Hash64(0xf3449b43830283ddull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_vdf_peak_return = vnx::get_type_code(vnx::Hash64(0x837f2b6433a274a1ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage = vnx::get_type_code(vnx::Hash64(0xd74cd2b291cb9cd6ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_return = vnx::get_type_code(vnx::Hash64(0xab73866ba23ed19aull));
 const vnx::TypeCode* const vnx_native_type_code_Node_read_storage_array = vnx::get_type_code(vnx::Hash64(0xe5826950ca0a442bull));
@@ -5753,6 +5857,7 @@ const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf_return = vnx::
 const vnx::TypeCode* const vnx_native_type_code_Transaction = vnx::get_type_code(vnx::Hash64(0xce0462acdceaa5bcull));
 const vnx::TypeCode* const vnx_native_type_code_TransactionBase = vnx::get_type_code(vnx::Hash64(0x6697ffbf3611887dull));
 const vnx::TypeCode* const vnx_native_type_code_VDF_Point = vnx::get_type_code(vnx::Hash64(0x1671551501b6c956ull));
+const vnx::TypeCode* const vnx_native_type_code_ValidatorVote = vnx::get_type_code(vnx::Hash64(0xc056a2ff24cdee25ull));
 const vnx::TypeCode* const vnx_native_type_code_WalletBase = vnx::get_type_code(vnx::Hash64(0x62207fd96d3aead7ull));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_accept_offer = vnx::get_type_code(vnx::Hash64(0x3299e81eb354b78full));
 const vnx::TypeCode* const vnx_native_type_code_Wallet_accept_offer_return = vnx::get_type_code(vnx::Hash64(0xb44ec1a26ab66acdull));

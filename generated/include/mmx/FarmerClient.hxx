@@ -9,8 +9,10 @@
 #include <mmx/FarmInfo.hxx>
 #include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -35,6 +37,8 @@ public:
 	std::shared_ptr<const ::mmx::FarmInfo> get_farm_info();
 	
 	std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block = nullptr);
+	
+	::mmx::signature_t sign_vote(std::shared_ptr<const ::mmx::ValidatorVote> vote = nullptr);
 	
 	::vnx::Object vnx_get_config_object();
 	

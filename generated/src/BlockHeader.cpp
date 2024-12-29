@@ -19,7 +19,7 @@ namespace mmx {
 
 
 const vnx::Hash64 BlockHeader::VNX_TYPE_HASH(0xcaae941a2fc712a6ull);
-const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xcbfd61de36e5fdabull);
+const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0x6c1b3177ca777976ull);
 
 vnx::Hash64 BlockHeader::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -500,7 +500,7 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.BlockHeader";
 	type_code->type_hash = vnx::Hash64(0xcaae941a2fc712a6ull);
-	type_code->code_hash = vnx::Hash64(0xcbfd61de36e5fdabull);
+	type_code->code_hash = vnx::Hash64(0x6c1b3177ca777976ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
@@ -612,7 +612,7 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 		auto& field = type_code->fields[17];
 		field.is_extended = true;
 		field.name = "proof";
-		field.code = {16};
+		field.code = {12, 16};
 	}
 	{
 		auto& field = type_code->fields[18];
