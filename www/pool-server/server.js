@@ -171,11 +171,11 @@ app.post('/partial', no_cache, async (req, res, next) =>
             res.json(out);
             return;
         }
-        var msg = proof.__type + ':' + partial.vdf_height + ':' + proof.plot_id + ':' + proof.challenge;
+        var msg = proof.plot_id + ':' + proof.challenge;
 
         switch(proof.__type) {
             case 'mmx.ProofOfSpaceNFT':
-                msg += ':' + proof.ksize + ':' + proof.proof_xs.join(',');
+                msg += ':' + proof.proof_xs.join(',');
                 break;
             default:
                 out.error_code = 'INVALID_PROOF';
