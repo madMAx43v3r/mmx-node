@@ -1615,8 +1615,8 @@ std::set<pubkey_t> Node::get_validators(std::shared_ptr<const BlockHeader> block
 				}
 			} else {
 				// disable for testing
-				set.erase(key);
-				farmer_set.insert(key);
+//				set.erase(key);
+//				farmer_set.insert(key);
 			}
 		}
 		block = find_prev_header(block);
