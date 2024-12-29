@@ -35,7 +35,7 @@ public:
 	uint32_t vdf_count = 0;
 	uint64_t vdf_iters = 0;
 	::mmx::hash_t vdf_output;
-	vnx::optional<::mmx::addr_t> vdf_reward_addr;
+	std::vector<::mmx::addr_t> vdf_reward_addr;
 	vnx::optional<::mmx::addr_t> vdf_reward_payout;
 	std::vector<std::shared_ptr<const ::mmx::ProofOfSpace>> proof;
 	::mmx::hash_t proof_hash;

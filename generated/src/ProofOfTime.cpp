@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofOfTime::VNX_TYPE_HASH(0xa84a63942b8e5c6aull);
-const vnx::Hash64 ProofOfTime::VNX_CODE_HASH(0x19ded1fc3c6a110dull);
+const vnx::Hash64 ProofOfTime::VNX_CODE_HASH(0x969604802b05b4cdull);
 
 vnx::Hash64 ProofOfTime::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -237,7 +237,7 @@ std::shared_ptr<vnx::TypeCode> ProofOfTime::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofOfTime";
 	type_code->type_hash = vnx::Hash64(0xa84a63942b8e5c6aull);
-	type_code->code_hash = vnx::Hash64(0x19ded1fc3c6a110dull);
+	type_code->code_hash = vnx::Hash64(0x969604802b05b4cdull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfTime);
@@ -295,7 +295,7 @@ std::shared_ptr<vnx::TypeCode> ProofOfTime::static_create_type_code() {
 		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "reward_addr";
-		field.code = {33, 11, 32, 1};
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[9];

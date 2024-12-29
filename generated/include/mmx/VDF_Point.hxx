@@ -22,7 +22,7 @@ public:
 	::mmx::hash_t input;
 	::mmx::hash_t output;
 	::mmx::hash_t prev;
-	vnx::optional<::mmx::addr_t> reward_addr;
+	::mmx::addr_t reward_addr;
 	::mmx::hash_t content_hash;
 	int64_t recv_time = 0;
 	std::shared_ptr<const ::mmx::ProofOfTime> proof;

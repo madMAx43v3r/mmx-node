@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 VDF_Point::VNX_TYPE_HASH(0x1671551501b6c956ull);
-const vnx::Hash64 VDF_Point::VNX_CODE_HASH(0xad4b28f4608d6207ull);
+const vnx::Hash64 VDF_Point::VNX_CODE_HASH(0x5031dd26ac22d68eull);
 
 vnx::Hash64 VDF_Point::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -206,7 +206,7 @@ std::shared_ptr<vnx::TypeCode> VDF_Point::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.VDF_Point";
 	type_code->type_hash = vnx::Hash64(0x1671551501b6c956ull);
-	type_code->code_hash = vnx::Hash64(0xad4b28f4608d6207ull);
+	type_code->code_hash = vnx::Hash64(0x5031dd26ac22d68eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::VDF_Point);
@@ -252,7 +252,7 @@ std::shared_ptr<vnx::TypeCode> VDF_Point::static_create_type_code() {
 		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "reward_addr";
-		field.code = {33, 11, 32, 1};
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[7];

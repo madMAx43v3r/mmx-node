@@ -25,7 +25,7 @@ public:
 	uint32_t segment_size = 0;
 	::mmx::hash_t input;
 	::mmx::hash_t prev;
-	vnx::optional<::mmx::addr_t> reward_addr;
+	::mmx::addr_t reward_addr;
 	std::vector<::mmx::hash_t> segments;
 	::mmx::pubkey_t timelord_key;
 	::mmx::signature_t timelord_sig;
