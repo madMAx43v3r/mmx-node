@@ -376,6 +376,7 @@ void Node::main()
 	subscribe(input_transactions, max_queue_ms);
 	subscribe(input_timelord_vdfs, max_queue_ms);
 	subscribe(input_harvester_proof, max_queue_ms);
+	subscribe(output_votes, max_queue_ms);
 
 	set_timer_millis(30 * 1000, std::bind(&Node::purge_tx_pool, this));
 	set_timer_millis(300 * 1000, std::bind(&Node::print_stats, this));
