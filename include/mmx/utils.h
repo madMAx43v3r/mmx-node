@@ -152,9 +152,9 @@ uint128_t to_effective_space(const uint128_t num_bytes)
 inline
 uint128_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	auto ideal = uint128_t(space_diff) * params->space_diff_constant * params->proofs_per_height;
 	// the win chance of a k32 at diff 1 is: 0.6979321856
-	ideal = (ideal * 143) / 100;
+	// don't ask why times two, it works
+	const auto ideal = uint128_t(space_diff) * params->space_diff_constant * params->proofs_per_height * 2;
 	return to_effective_space(ideal);
 }
 
