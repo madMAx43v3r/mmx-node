@@ -451,7 +451,6 @@ void Node::check_vdf(std::shared_ptr<fork_t> fork)
 	if(!prev) {
 		throw std::logic_error("cannot check VDF");
 	}
-	// TODO: test it
 	std::vector<std::tuple<uint64_t, hash_t, addr_t>> list;
 	for(uint32_t i = 0; i < block->vdf_count; ++i) {
 		uint64_t num_iters = 0;
