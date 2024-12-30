@@ -1599,22 +1599,13 @@ std::vector<std::shared_ptr<const VDF_Point>> Node::find_next_vdf_points(std::sh
 
 std::set<pubkey_t> Node::get_validators(std::shared_ptr<const BlockHeader> block) const
 {
+	block = find_prev_header(block, params->commit_delay);
+
 	std::set<pubkey_t> set;
-	std::set<pubkey_t> farmer_set;
-	while(block && set.size() < params->max_validators && farmer_set.size() < max_history)
+	for(uint32_t k = 0; block && k < max_history && set.size() < params->max_validators; ++k)
 	{
-		for(size_t i = 0; i < block->proof.size(); ++i)
-		{
-			const auto& key = block->proof[i]->farmer_key;
-			if(i) {
-				if(!farmer_set.count(key) && set.size() < params->max_validators) {
-					set.insert(key);
-				}
-			} else {
-				// disable for testing
-				set.erase(key);
-				farmer_set.insert(key);
-			}
+		for(size_t i = 1; i < block->proof.size(); ++i) {
+			set.insert(block->proof[i]->farmer_key);
 		}
 		block = find_prev_header(block);
 	}
