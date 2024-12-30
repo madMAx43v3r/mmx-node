@@ -273,7 +273,7 @@ void TimeLord::vdf_loop(vdf_point_t point)
 				point = *peak;
 				history.clear();
 				is_reset = false;
-				log(INFO) << "Restarted VDF at " << point.num_iters;
+				log(DEBUG) << "Restarted VDF at " << point.num_iters;
 			} else {
 				if(!peak) {
 					peak = std::make_shared<vdf_point_t>();
