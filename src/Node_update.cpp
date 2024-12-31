@@ -922,7 +922,10 @@ std::shared_ptr<const Block> Node::make_block(
 		const auto delta_ms = prev->time_stamp - ref->time_stamp;
 		const auto delta_blocks = prev->height - ref->height;
 		const auto factor = double(params->block_interval_ms * delta_blocks) / delta_ms;
-		block->time_diff = std::max<int64_t>(prev->time_diff * factor + 0.5, params->time_diff_divider);
+
+		if(auto commit = find_prev_header(ref, params->commit_delay, true)) {
+			block->time_diff = std::max<int64_t>(commit->time_diff * factor + 0.5, params->time_diff_divider);
+		}
 
 		// limit time diff update
 		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
