@@ -916,7 +916,7 @@ std::shared_ptr<const Block> Node::make_block(
 		}
 	}
 
-	if(auto ref = find_prev_header(prev, 100))
+	if(auto ref = find_prev_header(prev, 10))
 	{
 		// set new time diff
 		const auto delta_ms = prev->time_stamp - ref->time_stamp;
