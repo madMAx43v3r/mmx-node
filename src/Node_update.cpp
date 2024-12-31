@@ -920,7 +920,8 @@ std::shared_ptr<const Block> Node::make_block(
 	{
 		// set new time diff
 		const auto delta_ms = prev->time_stamp - ref->time_stamp;
-		const auto factor = double(params->block_interval_ms * 100) / delta_ms;
+		const auto delta_blocks = prev->height - ref->height;
+		const auto factor = double(params->block_interval_ms * delta_blocks) / delta_ms;
 		block->time_diff = std::max<int64_t>(prev->time_diff * factor + 0.5, params->time_diff_divider);
 
 		// limit time diff update
