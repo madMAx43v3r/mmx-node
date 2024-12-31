@@ -20,6 +20,9 @@
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/contract/WebData.hxx>
+#include <mmx/contract/MultiSig.hxx>
+#include <mmx/solution/MultiSig.hxx>
+#include <mmx/solution/PubKey.hxx>
 
 #include <vnx/vnx.h>
 #include <vnx/test/Test.h>
@@ -27,11 +30,26 @@
 #include <map>
 #include <iostream>
 
+void expect_throw(const std::function<void()>& code)
+{
+	bool did_throw = false;
+	try {
+		code();
+	} catch(...) {
+		did_throw = true;
+	}
+	if(!did_throw) {
+		throw std::logic_error("expected failure");
+	}
+}
+
 using namespace mmx;
 
 
 int main(int argc, char** argv)
 {
+	mmx::secp256k1_init();
+
 	vnx::test::init("mmx");
 
 	VNX_TEST_BEGIN("uint128")
@@ -274,6 +292,95 @@ int main(int argc, char** argv)
 		}
 	}
 	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("MultiSig")
+	{
+		const hash_t txid;
+		std::vector<std::pair<skey_t, pubkey_t>> keys;
+		for(int i = 0; i < 10; ++i) {
+			const auto skey = skey_t(hash_t(std::to_string(i)));
+			keys.emplace_back(skey, pubkey_t(skey));
+		}
+		{
+			auto tmp = mmx::contract::MultiSig::create();
+			for(int i = 0; i < 3; ++i) {
+				tmp->owners.insert(keys[i].second.get_addr());
+			}
+			tmp->num_required = 1;
+			vnx::test::expect(tmp->is_valid(), true);
+
+			for(int i = 0; i < 3; ++i) {
+				auto sol = mmx::solution::PubKey::create();
+				sol->pubkey = keys[i].second;
+				sol->signature = signature_t::sign(keys[i].first, txid);
+				tmp->validate(sol, txid);
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required;
+				for(int i = 0; i < 3; ++i) {
+					auto tmp = mmx::solution::PubKey::create();
+					tmp->pubkey = keys[i].second;
+					tmp->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[tmp->pubkey.get_addr()] = tmp;
+				}
+				tmp->validate(sol, txid);
+			}
+			{
+				auto sol = mmx::solution::PubKey::create();
+				const auto skey = skey_t(hash_t::random());
+				sol->pubkey = pubkey_t(skey);
+				sol->signature = signature_t::sign(skey, txid);
+				expect_throw([=]() {
+					tmp->validate(sol, txid);
+				});
+			}
+		}
+		{
+			auto tmp = mmx::contract::MultiSig::create();
+			for(int i = 0; i < 5; ++i) {
+				tmp->owners.insert(keys[i].second.get_addr());
+			}
+			tmp->num_required = 3;
+			vnx::test::expect(tmp->is_valid(), true);
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				for(int i = 0; i < 3; ++i) {
+					auto tmp = mmx::solution::PubKey::create();
+					tmp->pubkey = keys[i].second;
+					tmp->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[tmp->pubkey.get_addr()] = tmp;
+				}
+				tmp->validate(sol, txid);
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				for(int i = 2; i < 5; ++i) {
+					auto tmp = mmx::solution::PubKey::create();
+					tmp->pubkey = keys[i].second;
+					tmp->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[tmp->pubkey.get_addr()] = tmp;
+				}
+				tmp->validate(sol, txid);
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				for(uint32_t i = 0; i < tmp->num_required; ++i) {
+					auto tmp = mmx::solution::PubKey::create();
+					const auto skey = skey_t(hash_t::random());
+					tmp->pubkey = skey;
+					tmp->signature = signature_t::sign(skey, txid);
+					sol->solutions[tmp->pubkey.get_addr()] = tmp;
+				}
+				expect_throw([=]() {
+					tmp->validate(sol, txid);
+				});
+			}
+		}
+	}
+	VNX_TEST_END()
+
+	mmx::secp256k1_free();
 
 	return vnx::test::done();
 }
