@@ -28,6 +28,7 @@
 	"initial_time_diff":  500,
 	"initial_space_diff": 40,
 	"initial_time_stamp": 1735582869000,
+	"time_diff_divider": 100,
 	"time_diff_constant": 1000000,
 	"space_diff_constant": 100000000000,
 	"virtual_space_constant": 8108,
