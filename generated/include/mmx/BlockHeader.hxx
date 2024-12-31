@@ -52,6 +52,7 @@ public:
 	int32_t reward_vote_sum = 0;
 	uint32_t reward_vote_count = 0;
 	uint64_t base_reward = 0;
+	::mmx::addr_t project_addr;
 	uint64_t static_cost = 0;
 	uint64_t total_cost = 0;
 	uint32_t tx_count = 0;
@@ -116,7 +117,7 @@ protected:
 
 template<typename T>
 void BlockHeader::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<BlockHeader>(39);
+	_visitor.template type_begin<BlockHeader>(40);
 	_visitor.type_field("version", 0); _visitor.accept(version);
 	_visitor.type_field("support_flags", 1); _visitor.accept(support_flags);
 	_visitor.type_field("hash", 2); _visitor.accept(hash);
@@ -148,15 +149,16 @@ void BlockHeader::accept_generic(T& _visitor) const {
 	_visitor.type_field("reward_vote_sum", 28); _visitor.accept(reward_vote_sum);
 	_visitor.type_field("reward_vote_count", 29); _visitor.accept(reward_vote_count);
 	_visitor.type_field("base_reward", 30); _visitor.accept(base_reward);
-	_visitor.type_field("static_cost", 31); _visitor.accept(static_cost);
-	_visitor.type_field("total_cost", 32); _visitor.accept(total_cost);
-	_visitor.type_field("tx_count", 33); _visitor.accept(tx_count);
-	_visitor.type_field("tx_fees", 34); _visitor.accept(tx_fees);
-	_visitor.type_field("txfee_buffer", 35); _visitor.accept(txfee_buffer);
-	_visitor.type_field("tx_hash", 36); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 37); _visitor.accept(farmer_sig);
-	_visitor.type_field("content_hash", 38); _visitor.accept(content_hash);
-	_visitor.template type_end<BlockHeader>(39);
+	_visitor.type_field("project_addr", 31); _visitor.accept(project_addr);
+	_visitor.type_field("static_cost", 32); _visitor.accept(static_cost);
+	_visitor.type_field("total_cost", 33); _visitor.accept(total_cost);
+	_visitor.type_field("tx_count", 34); _visitor.accept(tx_count);
+	_visitor.type_field("tx_fees", 35); _visitor.accept(tx_fees);
+	_visitor.type_field("txfee_buffer", 36); _visitor.accept(txfee_buffer);
+	_visitor.type_field("tx_hash", 37); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 38); _visitor.accept(farmer_sig);
+	_visitor.type_field("content_hash", 39); _visitor.accept(content_hash);
+	_visitor.template type_end<BlockHeader>(40);
 }
 
 
