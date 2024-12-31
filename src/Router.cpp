@@ -1608,8 +1608,10 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	if(peer_set.size() < max_peer_set) {
 		send_request(peer, Router_get_peers::create());
 	}
-	for(const auto& entry : vdf_history) {
-		send_to(peer, entry.second);	// make sure peer has all needed VDFs for current and next block
+	if(is_synced) {
+		for(const auto& entry : vdf_history) {
+			send_to(peer, entry.second);	// make sure peer has all needed VDFs for current and next block
+		}
 	}
 	log(DEBUG) << "Connected to peer " << peer->address;
 }
