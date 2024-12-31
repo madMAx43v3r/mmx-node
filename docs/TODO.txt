@@ -1,7 +1,4 @@
 After Mainnet
-- unsafe_add() / unsafe_sub() / unsafe_mul()
-- is_uint() / is_string() / etc
-- string() (same as to_string())
 - Website
 - Linux packages
 - Harvester latency graphs
@@ -14,13 +11,17 @@ After Mainnet
 - 1000 commas for balances
 - Explorer search by block hash
 - WebGUI password local storage
+- unsafe_add() / unsafe_sub() / unsafe_mul()
+- is_uint() / is_string() / etc
 
 Mainnet
 - Genesis rewards
 - Unit tests for all smart contracts
+- Whitepaper
+- CUDA plotter open-source
 
 Mainnet-RC
-- Multisig (maybe just smart contract?)
+- Multisig
 - Test remote calls again
 - Double check msg hashes again
 - New project wallet
@@ -28,4 +29,7 @@ Mainnet-RC
 - Test mainnet-rc changes
 - Binary line_info
 - Pool update for new VDF scheme
-
+- Update binaries
+- Use relay for project reward
+- VM string() (same as to_string())
+- Update seed peers
