@@ -352,7 +352,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 	if(block->proof.empty()) {
 		throw std::logic_error("!proof");
 	}
-	const auto farmer_sk = get_skey(block->proof[0]->farmer_key);
+	const auto farmer_sk = get_skey(block->get_farmer_key());
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
