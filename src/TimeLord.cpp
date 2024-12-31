@@ -69,7 +69,7 @@ void TimeLord::main()
 			}
 		}
 		if(timelord_sk == skey_t()) {
-			timelord_sk = hash_t::random();
+			timelord_sk = skey_t(hash_t::random());
 			try {
 				file.open("wb");
 				vnx::write_generic(file.out, timelord_sk);

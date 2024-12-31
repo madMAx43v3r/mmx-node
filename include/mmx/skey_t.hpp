@@ -20,7 +20,7 @@ public:
 
 	skey_t() = default;
 
-	skey_t(const hash_t& hash) : super_t(hash) {}
+	explicit skey_t(const hash_t& hash) : super_t(hash) {}
 
 	~skey_t() {
 		::memset(data(), 0, size());

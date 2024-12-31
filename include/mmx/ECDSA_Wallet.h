@@ -97,8 +97,8 @@ public:
 			std::pair<skey_t, pubkey_t> keys;
 			{
 				const auto tmp = hmac_sha512_n(account.first, account.second, i);
-				keys.first = tmp.first;
-				keys.second = pubkey_t(tmp.first);
+				keys.first = skey_t(tmp.first);
+				keys.second = pubkey_t(skey_t(tmp.first));
 			}
 			const auto addr = keys.second.get_addr();
 			if(i == 0) {
@@ -558,8 +558,8 @@ private:
 	{
 		const auto master = pbkdf2_hmac_sha512(seed_value, hash_t("MMX/farmer_keys"), PBKDF2_ITERS);
 		const auto tmp = hmac_sha512_n(master.first, master.second, 0);
-		farmer_key.first = tmp.first;
-		farmer_key.second = pubkey_t(tmp.first);
+		farmer_key.first = skey_t(tmp.first);
+		farmer_key.second = pubkey_t(skey_t(tmp.first));
 	}
 
 private:
