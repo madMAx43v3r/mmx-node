@@ -701,10 +701,7 @@ void Node::validate_new()
 std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 {
 	const auto peak = get_peak();
-	if(!peak) {
-		return {};
-	}
-	auto context = new_exec_context(peak->height + 1);
+	const auto context = new_exec_context(peak->height + 1);
 
 	std::vector<tx_pool_t> all_tx;
 	all_tx.reserve(tx_pool.size());
