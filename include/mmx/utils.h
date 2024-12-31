@@ -45,6 +45,9 @@ std::shared_ptr<const ChainParams> get_params()
 	if(params->time_diff_constant % (2 * params->vdf_segment_size)) {
 		throw std::logic_error("time_diff_constant not multiple of 2x vdf_segment_size");
 	}
+	if(params->max_tx_cost > params->max_block_size / 5) {
+		throw std::logic_error("max_tx_cost > band size");
+	}
 	return params;
 }
 
