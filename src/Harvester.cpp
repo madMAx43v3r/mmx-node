@@ -21,6 +21,11 @@ namespace mmx {
 Harvester::Harvester(const std::string& _vnx_name)
 	:	HarvesterBase(_vnx_name)
 {
+	if(my_name.empty()) {
+		my_name = vnx::get_host_name();
+	}
+	params = get_params();
+	harvester_id = hash_t::random();
 }
 
 void Harvester::init()
@@ -32,32 +37,6 @@ void Harvester::init()
 
 void Harvester::main()
 {
-	params = get_params();
-	if(my_name.empty()) {
-		my_name = vnx::get_host_name();
-	}
-	{
-		vnx::File file(storage_path + "harvester_id.dat");
-		if(file.exists()) {
-			try {
-				file.open("rb");
-				vnx::read_generic(file.in, harvester_id);
-				file.close();
-			} catch(...) {
-				// ignore
-			}
-		}
-		if(harvester_id == hash_t()) {
-			harvester_id = hash_t::random();
-			try {
-				file.open("wb");
-				vnx::write_generic(file.out, harvester_id);
-				file.close();
-			} catch(const std::exception& ex) {
-				log(WARN) << "Failed to write " << file.get_path() << ": " << ex.what();
-			}
-		}
-	}
 	node = std::make_shared<NodeClient>(node_server);
 	farmer = std::make_shared<FarmerClient>(farmer_server);
 	node_async = std::make_shared<NodeAsyncClient>(node_server);
