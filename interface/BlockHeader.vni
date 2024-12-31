@@ -68,6 +68,8 @@ class BlockHeader {
 	
 	BlockHeader* get_header() const;
 	
+	pubkey_t get_farmer_key() const;
+	
 	block_index_t get_block_index(long file_offset) const;
 	
 	void set_space_diff(ChainParams* params, BlockHeader* prev);

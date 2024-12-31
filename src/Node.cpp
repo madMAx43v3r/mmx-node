@@ -1116,7 +1116,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			info.reward = block->reward_amount;
 			info.reward_addr = (block->reward_addr ? *block->reward_addr : addr_t());
 
-			const auto& farmer_key = block->proof[0]->farmer_key;
+			const auto& farmer_key = block->get_farmer_key();
 			farmer_block_map.insert(farmer_key, info);
 
 			bool found = false;
@@ -1278,7 +1278,7 @@ void Node::revert(const uint32_t height)
 		for(int64_t i = peak->height; i >= int64_t(height); --i) {
 			if(auto header = get_header_at(i)) {
 				if(header->height) {
-					const auto& farmer_key = header->proof[0]->farmer_key;
+					const auto& farmer_key = header->get_farmer_key();
 					for(auto& entry : farmer_ranking) {
 						if(entry.first == farmer_key) {
 							if(entry.second) {

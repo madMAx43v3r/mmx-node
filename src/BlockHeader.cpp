@@ -97,13 +97,10 @@ hash_t BlockHeader::calc_content_hash() const
 
 void BlockHeader::validate() const
 {
-	if(proof.empty()) {
-		throw std::logic_error("missing proof");
-	}
 	if(!farmer_sig) {
 		throw std::logic_error("missing farmer signature");
 	}
-	if(!farmer_sig->verify(proof[0]->farmer_key, hash)) {
+	if(!farmer_sig->verify(get_farmer_key(), hash)) {
 		throw std::logic_error("invalid farmer signature");
 	}
 }
@@ -111,6 +108,14 @@ void BlockHeader::validate() const
 std::shared_ptr<const BlockHeader> BlockHeader::get_header() const
 {
 	return vnx::clone(*this);
+}
+
+pubkey_t BlockHeader::get_farmer_key() const
+{
+	if(proof.empty()) {
+		throw std::logic_error("block has no proof");
+	}
+	return proof[0]->farmer_key;
 }
 
 block_index_t BlockHeader::get_block_index(const int64_t& file_offset) const
