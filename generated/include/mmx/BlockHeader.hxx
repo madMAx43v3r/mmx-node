@@ -10,6 +10,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/block_index_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <mmx/uint128.hpp>
 #include <vnx/Value.h>
@@ -78,6 +79,7 @@ public:
 	virtual ::mmx::hash_t calc_content_hash() const;
 	virtual void validate() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;
+	virtual ::mmx::pubkey_t get_farmer_key() const;
 	virtual ::mmx::block_index_t get_block_index(const int64_t& file_offset = 0) const;
 	virtual void set_space_diff(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, std::shared_ptr<const ::mmx::BlockHeader> prev = nullptr);
 	virtual void set_base_reward(std::shared_ptr<const ::mmx::ChainParams> params = nullptr, std::shared_ptr<const ::mmx::BlockHeader> prev = nullptr);

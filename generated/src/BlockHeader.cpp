@@ -8,6 +8,7 @@
 #include <mmx/addr_t.hpp>
 #include <mmx/block_index_t.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/pubkey_t.hpp>
 #include <mmx/signature_t.hpp>
 #include <mmx/uint128.hpp>
 #include <vnx/Value.h>
