@@ -916,15 +916,20 @@ std::shared_ptr<const Block> Node::make_block(
 		}
 	}
 
-	if(auto ref = find_prev_header(prev, 10))
+	if(auto ref = find_prev_header(prev, 100))
 	{
 		// set new time diff
 		const auto delta_ms = prev->time_stamp - ref->time_stamp;
 		const auto delta_blocks = prev->height - ref->height;
 		const auto factor = double(params->block_interval_ms * delta_blocks) / delta_ms;
 
-		if(auto commit = find_prev_header(ref, params->commit_delay, true)) {
-			block->time_diff = std::max<int64_t>(commit->time_diff * factor + 0.5, params->time_diff_divider);
+		const auto delay = params->commit_delay + params->infuse_delay;
+		const auto begin = find_prev_header(ref, delay, true);
+		const auto end =   find_prev_header(prev, delay, true);
+
+		if(begin && end) {
+			const auto avg_diff = (begin->time_diff + end->time_diff) / 2;
+			block->time_diff = std::max<int64_t>(avg_diff * factor + 0.5, params->time_diff_divider);
 		}
 
 		// limit time diff update
