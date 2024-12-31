@@ -76,6 +76,7 @@ hash_t BlockHeader::calc_hash() const
 	write_field(out, "reward_vote_sum", reward_vote_sum);
 	write_field(out, "reward_vote_count", reward_vote_count);
 	write_field(out, "base_reward", 	base_reward);
+	write_field(out, "project_addr", 	project_addr);
 	write_field(out, "static_cost", 	static_cost);
 	write_field(out, "total_cost", 		total_cost);
 	write_field(out, "tx_count", 		tx_count);

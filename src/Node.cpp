@@ -336,6 +336,7 @@ void Node::main()
 		block->space_diff = params->initial_space_diff;
 		block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
 		block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
+		block->project_addr = params->project_addr;
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));

@@ -44,6 +44,8 @@ class BlockHeader {
 	uint reward_vote_count;
 	ulong base_reward;
 	
+	addr_t project_addr;
+	
 	ulong static_cost;
 	ulong total_cost;
 	

@@ -114,7 +114,7 @@ std::vector<txio_entry_t> Block::get_outputs(std::shared_ptr<const ChainParams> 
 	}
 	{
 		txio_t out;
-		out.address = params->project_addr;
+		out.address = project_addr;
 		out.amount = calc_project_reward(params, tx_fees);
 		if(out.amount) {
 			res.push_back(txio_entry_t::create_ex(hash, height, time_stamp, tx_type_e::PROJECT_REWARD, out));
