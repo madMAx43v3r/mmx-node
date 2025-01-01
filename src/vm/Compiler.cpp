@@ -398,7 +398,7 @@ protected:
 		}
 	};
 
-	void parse(parse_tree_t& tree, const std::string& source);
+	void parse(parse_tree_t& tree);
 
 	vref_t recurse(const node_t& node);
 
@@ -434,7 +434,9 @@ protected:
 
 	void print_debug_info(const node_t& node) const;
 
-	void print_debug_code();
+	void handle_new_code();
+
+	uint32_t get_line_number(const node_t& node) const;
 
 	static std::vector<node_t> get_children(const node_t& node);
 
@@ -447,7 +449,6 @@ protected:
 private:
 	int depth = 0;
 	int curr_pass = 0;
-	int curr_line = -1;
 	bool have_return = false;
 
 	uint8_t math_flags = 0;
@@ -471,6 +472,7 @@ private:
 	std::map<std::string, int> simple_code_map;
 	std::map<std::string, uint32_t> this_obj_map;
 
+	std::string source;
 	std::shared_ptr<contract::Binary> binary;
 
 	mutable std::stringstream debug_out;
@@ -612,18 +614,20 @@ Compiler::Compiler(const compile_flags_t& flags)
 	}
 }
 
-std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& source)
+std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& source_)
 {
 	if(curr_pass) {
-		return nullptr;
+		throw std::logic_error("invalid state");
 	}
+	source = source_;
+
 	binary = std::make_shared<contract::Binary>();
 	binary->source = source;
 	binary->compiler = std::string("mmx") + "-" + version;
 	binary->build_flags = flags;
 
 	parse_tree_t tree;
-	parse(tree, source);
+	parse(tree);
 
 	debug() << std::endl;
 	dump_parse_tree(tree.root(), debug());
@@ -638,7 +642,6 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		recurse(tree.root());
 
 		curr_pass++;
-		curr_line = -1;
 		frame.clear();
 
 		debug() << std::endl << "Second pass ..." << std::endl;
@@ -659,8 +662,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 	}
 	catch(const std::exception& ex) {
 		if(curr_node) {
-			const auto loc = lexy::get_input_location(lexy::string_input<lexy::utf8_encoding>(source), curr_node->position());
-			throw std::logic_error(std::string("error at line ") + std::to_string(loc.line_nr()) + ": " + ex.what());
+			throw std::logic_error(std::string("error at line ") + std::to_string(get_line_number(*curr_node)) + ": " + ex.what());
 		} else {
 			throw std::logic_error(std::string("error: ") +  + ex.what());
 		}
@@ -695,14 +697,21 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		}
 	}
 	binary->binary = vm::serialize(code);
-	binary->line_info = line_info;
-
+	{
+		uint32_t prev = 0;
+		for(const auto& entry : line_info) {
+			if(entry.second != prev) {
+				binary->line_info.insert(entry);
+				prev = entry.second;
+			}
+		}
+	}
 	debug() << std::endl;
 	dump_code(debug(), binary);
 	return binary;
 }
 
-void Compiler::parse(parse_tree_t& tree, const std::string& source)
+void Compiler::parse(parse_tree_t& tree)
 {
 	const auto result = lexy::parse_as_tree<lang::source>(
 			tree, lexy::string_input<lexy::utf8_encoding>(source), lexy_ext::report_error);
@@ -722,6 +731,13 @@ std::vector<Compiler::node_t> Compiler::get_children(const node_t& node)
 		}
 	}
 	return list;
+}
+
+uint32_t Compiler::get_line_number(const node_t& node) const
+{
+	const auto loc = lexy::get_input_location(
+			lexy::string_input<lexy::utf8_encoding>(source), node.position());
+	return loc.line_nr();
 }
 
 std::string Compiler::to_source(const node_t& node)
@@ -869,9 +885,16 @@ void Compiler::print_debug_info(const node_t& node) const
 	debug() << std::endl;
 }
 
-void Compiler::print_debug_code()
+void Compiler::handle_new_code()
 {
+	vnx::optional<uint32_t> line;
+	if(curr_node) {
+		line = get_line_number(*curr_node);
+	}
 	for(auto i = code_offset; i < code.size(); ++i) {
+		if(line) {
+			line_info[i] = *line;
+		}
 		debug(true) << to_string(code[i]) << std::endl;
 	}
 	code_offset = code.size();
@@ -879,7 +902,7 @@ void Compiler::print_debug_code()
 
 Compiler::vref_t Compiler::recurse(const node_t& node)
 {
-	print_debug_code();
+	handle_new_code();
 	print_debug_info(node);
 
 	vref_t out;
@@ -1258,7 +1281,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		throw std::logic_error("invalid statement: " + name);
 	}
 
-	print_debug_code();
+	handle_new_code();
 	depth--;
 
 	return out;
@@ -2008,7 +2031,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 		throw std::logic_error("invalid expression");
 	}
 
-	print_debug_code();
+	handle_new_code();
 	depth--;
 
 	return recurse_expr(p_node, expr_len, &out, lhs_rank);

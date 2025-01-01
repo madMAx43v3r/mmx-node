@@ -26,7 +26,6 @@ Mainnet-RC
 - New project wallet
 - Check remaining in-source TODOs
 - Test mainnet-rc changes
-- Binary line_info
 - Pool update for new VDF scheme
 - Update binaries
 - Use relay for project reward

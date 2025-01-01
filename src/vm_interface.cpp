@@ -8,6 +8,7 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 #include <mmx/uint128.hpp>
+#include <mmx/helpers.h>
 
 #include <vnx/vnx.h>
 
@@ -387,7 +388,7 @@ void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& metho
 void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, const vnx::optional<std::string>& method)
 {
 	{
-		size_t i = 0;
+		uint32_t i = 0;
 		out << "constants:" << std::endl;
 		for(const auto& var : mmx::vm::read_constants(bin)) {
 			out << "  [0x" << vnx::to_hex_string(i++) << "] " << mmx::vm::to_string(var.get()) << std::endl;
@@ -397,29 +398,29 @@ void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, c
 	for(const auto& entry : bin->fields) {
 		out << "  [0x" << vnx::to_hex_string(entry.second) << "] " << entry.first << std::endl;
 	}
-	std::map<size_t, mmx::contract::method_t> method_table;
+	std::map<uint32_t, mmx::contract::method_t> method_table;
 	for(const auto& entry : bin->methods) {
 		method_table[entry.second.entry_point] = entry.second;
 	}
 	std::vector<mmx::vm::instr_t> code;
 	const auto length = mmx::vm::deserialize(code, bin->binary.data(), bin->binary.size());
-	size_t i = 0;
+
+	uint32_t i = 0;
 	if(method) {
-		auto iter = bin->methods.find(*method);
-		if(iter == bin->methods.end()) {
+		if(auto tmp = bin->find_method(*method)) {
+			i = tmp->entry_point;
+		} else {
 			out << "No such method: " << *method << std::endl;
 			return;
 		}
-		i = iter->second.entry_point;
 	}
 	out << "code:" << std::endl;
 
 	for(; i < code.size(); ++i) {
-		auto iter = method_table.find(i);
-		if(iter != method_table.end()) {
-			out << iter->second.name << " (";
+		if(auto entry = find_value(method_table, i)) {
+			out << entry->name << " (";
 			int k = 0;
-			for(const auto& arg : iter->second.args) {
+			for(const auto& arg : entry->args) {
 				if(k++) {
 					out << ", ";
 				}
@@ -427,7 +428,8 @@ void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, c
 			}
 			out << ")" << std::endl;
 		}
-		out << "  [0x" << vnx::to_hex_string(i) << "] " << to_string(code[i]) << std::endl;
+		const auto line = bin->find_line(i);
+		out << "  [0x" << vnx::to_hex_string(i) << ", L" << (line ? *line : -1) << "] " << to_string(code[i]) << std::endl;
 
 		if(method && code[i].code == mmx::vm::OP_RET) {
 			break;
