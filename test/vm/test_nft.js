@@ -18,4 +18,4 @@ nft.mint_to(wallet, null, {__test: 1, assert_fail: true});
 nft.mint_to(wallet, null, {__test: 1, user: creator});
 nft.mint_to(wallet, null, {__test: 1, user: creator, assert_fail: true});
 
-__test.assert(__test.get_balance(wallet, nft_addr) == 1);
+assert(__test.get_balance(wallet, nft_addr) == 1);
