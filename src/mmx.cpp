@@ -1157,7 +1157,9 @@ int main(int argc, char** argv)
 				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			if(output) {
-				vnx::write_to_file(*output, tx);
+				auto out = vnx::clone(tx);
+				out->reset(node.get_params());
+				vnx::write_to_file(*output, out);
 			}
 		}
 		else if(module == "node")
