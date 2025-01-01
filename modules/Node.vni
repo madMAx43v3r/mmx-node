@@ -79,10 +79,13 @@ module Node implements vnx.addons.HttpComponent {
 	uint get_height() const;
 	
 	@Permission(permission_e.PUBLIC)
+	uint get_vdf_height() const;
+	
+	@Permission(permission_e.PUBLIC)
 	optional<uint> get_synced_height() const;
 	
 	@Permission(permission_e.PUBLIC)
-	uint get_vdf_height() const;
+	optional<uint> get_synced_vdf_height() const;
 	
 	@Permission(permission_e.PUBLIC)
 	hash_t get_vdf_peak() const;

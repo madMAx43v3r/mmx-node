@@ -157,6 +157,14 @@ vnx::optional<uint32_t> Node::get_synced_height() const
 	return nullptr;
 }
 
+vnx::optional<uint32_t> Node::get_synced_vdf_height() const
+{
+	if(is_synced) {
+		return get_vdf_height();
+	}
+	return nullptr;
+}
+
 std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 {
 	return std::dynamic_pointer_cast<const Block>(get_block_ex(hash, true));
