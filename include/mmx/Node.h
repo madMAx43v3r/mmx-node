@@ -402,7 +402,7 @@ private:
 
 	void verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const;
 
-	void verify_vdf_success(std::shared_ptr<const VDF_Point> point);
+	void verify_vdf_success(std::shared_ptr<const VDF_Point> point, const int64_t took_ms);
 
 	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64_t recv_time) noexcept;
 

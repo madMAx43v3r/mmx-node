@@ -331,12 +331,10 @@ void Node::verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const
 	}
 }
 
-void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point)
+void Node::verify_vdf_success(std::shared_ptr<const VDF_Point> point, const int64_t took_ms)
 {
-	const auto took_ms = vnx::get_wall_time_millis() - point->recv_time;
-	const auto proof = point->proof;
-
 	const auto peak = get_peak();
+	const auto proof = point->proof;
 	const auto chain = find_next_vdf_points(peak);
 
 	bool is_advance = false;
@@ -407,6 +405,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 			engine = opencl_vdf.back();
 			opencl_vdf.pop_back();
 		}
+		const auto begin = vnx::get_wall_time_millis();
 
 		if(engine) {
 			engine->compute(proof);
@@ -414,6 +413,8 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 		} else {
 			verify_vdf_cpu(proof);
 		}
+		const auto took_ms = vnx::get_wall_time_millis() - begin;
+
 		auto point = VDF_Point::create();
 		point->vdf_height = proof->vdf_height;
 		point->start = proof->start;
@@ -426,7 +427,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 		point->proof = proof;
 		point->content_hash = point->calc_hash();
 
-		add_task(std::bind(&Node::verify_vdf_success, this, point));
+		add_task(std::bind(&Node::verify_vdf_success, this, point, took_ms));
 	}
 	catch(const std::exception& ex) {
 		add_task([this, proof]() {
