@@ -339,6 +339,9 @@ public:
 			}
 		}
 		try {
+			if(options.nonce) {
+				tx->nonce = *options.nonce;
+			}
 			tx->network = params->network;
 			tx->finalize();
 
