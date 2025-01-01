@@ -633,6 +633,13 @@ int main(int argc, char** argv)
 						args.push_back(tmp);
 					}
 				}
+				if(auto exec = std::dynamic_pointer_cast<const mmx::contract::Executable>(node.get_contract(contract))) {
+					if(auto bin = std::dynamic_pointer_cast<const mmx::contract::Binary>(node.get_contract(exec->binary))) {
+						if(auto meth = bin->find_method(method)) {
+							args.resize(meth->args.size());
+						}
+					}
+				}
 				if(!spend_options.user && offset >= 0) {
 					spend_options.user = wallet.get_address(index, offset);
 				}
