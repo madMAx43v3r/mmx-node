@@ -1731,7 +1731,8 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					throw std::logic_error("expected 1 or 2 arguments for fail(message, [code])");
 				}
 				code.emplace_back(OP_FAIL, args.size() > 1 ? OPFLAG_REF_B : 0,
-						get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
+						get(recurse(args[0])),
+						args.size() > 1 ? get(recurse(args[1])) : 0);
 				out.address = 0;
 			}
 			else if(name == "log") {
@@ -1889,14 +1890,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_BALANCE, 0, out.address, currency);
 			}
 			else if(name == "assert") {
-				if(args.size() < 1 || args.size() > 2) {
-					throw std::logic_error("expected 1-2 arguments for assert(condition, [message])");
+				if(args.size() < 1 || args.size() > 3) {
+					throw std::logic_error("expected 1-3 arguments for assert(condition, [message], [code])");
 				}
 				code.emplace_back(OP_JUMPI, 0, code.size() + 2, get(recurse(args[0])));
-				if(args.size() < 2) {
+				if(args.size() == 1) {
 					code.emplace_back(OP_FAIL, 0, get_const_address("assert(" + to_source(args[0]) + ")"));
 				} else {
-					code.emplace_back(OP_FAIL, 0, get(recurse(args[1])));
+					code.emplace_back(OP_FAIL, args.size() > 2 ? OPFLAG_REF_B : 0,
+							get(recurse(args[1])),
+							args.size() > 2 ? get(recurse(args[2])) : 0);
 				}
 				out.address = 0;
 			}
