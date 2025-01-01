@@ -75,7 +75,7 @@ std::string exec_result_t::get_error_msg() const
 				if(error->line) {
 					location += ", line " + std::to_string(*error->line);
 				}
-				return "[" + std::to_string(error->operation) + "] exception at " + location + ": " + error->message + code;
+				return "exception at " + location + ": " + error->message + code + " (op " + std::to_string(error->operation) + ")";
 			} else {
 				return error->message + code;
 			}
