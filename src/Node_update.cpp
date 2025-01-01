@@ -881,7 +881,7 @@ std::shared_ptr<const Block> Node::make_block(
 	block->vdf_count = vdf_points.size();
 	block->vdf_height = prev->vdf_height + block->vdf_count;
 	block->reward_vote = reward_vote;
-	block->project_addr = params->project_addr;
+	block->project_addr = prev->project_addr;
 	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
 
 	block->vdf_iters = prev->vdf_iters;

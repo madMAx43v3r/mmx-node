@@ -25,6 +25,4 @@ Mainnet-RC
 - New project wallet
 - Check remaining in-source TODOs
 - Test mainnet-rc changes
-- Update binaries
-- Use relay for project reward
 - GUI fixes for new stuff

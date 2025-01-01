@@ -336,7 +336,6 @@ void Node::main()
 		block->space_diff = params->initial_space_diff;
 		block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
 		block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
-		block->project_addr = params->project_addr;
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
@@ -346,6 +345,17 @@ void Node::main()
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_template_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_escrow_binary.dat"));
 		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_time_lock_binary.dat"));
+		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_relay_binary.dat"));
+
+		if(auto tx = vnx::read_from_file<Transaction>("data/tx_project_relay.dat")) {
+			auto exec = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy);
+			if(tx->expires != 0xFFFFFFFF || !tx->sender || !tx->is_valid(params) || !exec || exec->binary != params->relay_binary) {
+				throw std::logic_error("invalid tx_project_relay");
+			}
+			block->project_addr = tx->id;
+		} else {
+			throw std::logic_error("failed to load tx_project_relay");
+		}
 		// TODO: testnet rewards
 
 		for(auto tx : block->tx_list) {

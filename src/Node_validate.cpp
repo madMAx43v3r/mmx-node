@@ -231,7 +231,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->height < params->transaction_activation && block->tx_count) {
 		throw std::logic_error("transactions not activated yet");
 	}
-	if(block->project_addr != params->project_addr) {
+	if(block->project_addr != prev->project_addr) {
 		throw std::logic_error("invalid project_addr");
 	}
 

@@ -638,7 +638,6 @@ public:
 			tmp["base_reward"] = to_amount_object(value->base_reward, context->params->decimals);
 			tmp["vdf_reward"] = to_amount_object(value->vdf_reward_payout ? context->params->vdf_reward : 0, context->params->decimals);
 			tmp["project_reward"] = to_amount_object(calc_project_reward(context->params, value->tx_fees), context->params->decimals);
-			tmp["project_reward_addr"] = context->params->project_addr.to_string();
 			tmp["txfee_buffer"] = to_amount_object(value->txfee_buffer, context->params->decimals);
 			tmp["average_txfee"] = to_amount_object(calc_min_reward_deduction(context->params, value->txfee_buffer), context->params->decimals);
 			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
