@@ -1,72 +1,59 @@
 
 null;
+assert(true);
+assert(true, "test");
+assert(1 == 1);
 
 {
 	var test;
-	if(test != null) {
-		fail("empty var");
-	}
+	assert(test == null);
 }
 
 function test1(a, b = 1) {
 	return a + b;
 }
 
-if(test1(1) != 2) {
-	fail("test1");
-}
+assert(test1(1) == 2);
+assert(test1(1, 2) == 3);
 
-if(concat(string(1), string(2), string(3)) != "123") {
-	fail("concat()", 1);
-}
+assert(concat(string(1), string(2), string(3)) == "123");
 
 {
 	var map = {};
-	if(map.test != null) {
-		fail("map.test != null");
-	}
+	assert(map.test == null);
 }
 {
 	var map = {};
 	map.tmp = 123;
-	if(map.tmp != 123) {
-		fail("var to key assignment");
-	}
+	assert(map.tmp == 123);
+}
+{
+	var map = {"test": 123};
+	map.test = 1234;
+	assert(map.test == 1234);
 }
 {
 	var map = {"test": 123};
 	const tmp = map.test;
-	if(tmp != 123) {
-		fail("key to var assignment");
-	}
+	assert(tmp == 123);
 	map.tmp = map.test;
-	if(map.tmp != 123) {
-		fail("key to key assignment");
-	}
+	assert(map.tmp == 123);
 }
 
-if(balance() != 0) {
-	fail("balance() != 0");
-}
-if(balance(sha256("test")) != 0) {
-	fail("balance(test) != 0");
-}
-if(this.balance[bech32()] != 0) {
-	fail("this.balance != 0");
-}
+assert(balance() == 0);
+assert(balance(sha256("test")) == 0);
+assert(this.balance[bech32()] == 0);
 {
 	var tmp = balance();
-	if(tmp != 0) {
-		fail("balance() != 0");
-	}
+	assert(tmp == 0);
 	tmp = 1337;
+	assert(balance() == 0);
 }
 {
 	var tmp = this.balance[bech32()];
-	if(tmp != 0) {
-		fail("this.balance != 0");
-	}
+	assert(tmp == 0);
 	tmp = 1337;
+	assert(balance(bech32()) == 0);
 }
 
 {
@@ -75,9 +62,7 @@ if(this.balance[bech32()] != 0) {
 		entry = 0;
 	}
 	for(const entry of array) {
-		if(entry == 0) {
-			fail("var entry of array (integer)");
-		}
+		assert(entry);
 	}
 }
 {
@@ -86,9 +71,7 @@ if(this.balance[bech32()] != 0) {
 		entry = "0";
 	}
 	for(const entry of array) {
-		if(entry == "0") {
-			fail("var entry of array (string)");
-		}
+		assert(entry != "0");
 	}
 }
 {
@@ -97,9 +80,7 @@ if(this.balance[bech32()] != 0) {
 		entry = [];
 	}
 	for(const entry of array) {
-		if(size(entry) == 0) {
-			fail("var entry of array (array)");
-		}
+		assert(size(entry));
 	}
 }
 {
@@ -108,61 +89,39 @@ if(this.balance[bech32()] != 0) {
 		entry = {val: 0};
 	}
 	for(const entry of array) {
-		if(entry.val == 0) {
-			fail("var entry of array (object)");
-		}
+		assert(entry.val);
 	}
 }
 
 {
 	var obj = {key: "value"};
-	if(obj.key != "value") {
-		fail("object key (1)");
-	}
+	assert(obj.key == "value");
 }
 {
 	var obj = {"key": "value"};
-	if(obj.key != "value") {
-		fail("object key (2)");
-	}
+	assert(obj.key == "value");
 }
 {
 	var obj = {test: 123, key: "value"};
-	if(obj.key != "value") {
-		fail("object key (3)");
-	}
+	assert(obj.key == "value");
 }
 {
 	var obj = { key : "value" };
-	if(obj.key != "value") {
-		fail("object key (4)");
-	}
+	assert(obj.key == "value");
 }
 {
 	var obj = { 	key		 : 	"value" };
-	if(obj.key != "value") {
-		fail("object key (5)");
-	}
+	assert(obj.key == "value");
 }
 {
 	var obj = {_key_: "value"};
-	if(obj._key_ != "value") {
-		fail("object _key_");
-	}
+	assert(obj._key_ == "value");
 }
 
-if(1337 / 16 != 83) {
-	fail("1337 / 16 != 83");
-}
-if(1337 % 16 != 9) {
-	fail("1337 % 16 != 9");
-}
-if(1337133713371337 / 1024 != 1305794641964) {
-	fail("1337133713371337 / 1024 != 1305794641964");
-}
-if(1337133713371337 % 1024 != 201) {
-	fail("1337133713371337 % 1024 != 201");
-}
+assert(1337 / 16 == 83);
+assert(1337 % 16 == 9);
+assert(1337133713371337 / 1024 == 1305794641964);
+assert(1337133713371337 % 1024 == 201);
 
 if(false) {
 	fail("if(false)");
@@ -236,73 +195,71 @@ if(!(0 || null || 1)) {
 {
 	var tmp = 1;
 	tmp += 1;
-	if(tmp != 2) {
-		fail("+=");
-	}
+	assert(tmp == 2);
 }
 {
 	var tmp = 1;
 	tmp -= 1;
-	if(tmp != 0) {
-		fail("-=");
-	}
+	assert(tmp == 0);
 }
 {
 	var tmp = 10;
 	tmp *= 2;
-	if(tmp != 20) {
-		fail("*=");
-	}
+	assert(tmp == 20);
 }
 {
 	var tmp = 10;
 	tmp /= 2;
-	if(tmp != 5) {
-		fail("/=");
-	}
+	assert(tmp == 5);
 }
 {
 	var tmp = 0;
 	tmp ^= 0xFF;
-	if(tmp != 0xFF) {
-		fail("^=");
-	}
+	assert(tmp == 0xFF);
 }
 {
 	var tmp = 0xFF;
 	tmp &= 0xFF;
-	if(tmp != 0xFF) {
-		fail("&=");
-	}
+	assert(tmp == 0xFF);
 }
 {
 	var tmp = 0;
 	tmp |= 0xFF;
-	if(tmp != 0xFF) {
-		fail("|=");
-	}
+	assert(tmp == 0xFF);
 }
 {
 	var tmp = false;
 	tmp ^^= true;
-	if(tmp != true) {
-		fail("^^=");
-	}
+	assert(tmp == true);
 }
 {
 	var tmp = false;
 	tmp &&= true;
-	if(tmp != false) {
-		fail("&&=");
-	}
+	assert(tmp == false);
 }
 {
 	var tmp = false;
 	tmp ||= true;
-	if(tmp != true) {
-		fail("||=");
-	}
+	assert(tmp == true);
 }
-
+{
+	assert(is_uint(1337));
+	assert(is_string("test"));
+	assert(is_binary(bech32()));
+	assert(is_array([]));
+	assert(is_map({}));
+}
+{
+	assert(!is_uint(null));
+	assert(!is_uint(true));
+	assert(!is_uint(false));
+	assert(!is_uint("test"));
+	assert(!is_string(null));
+	assert(!is_string(true));
+	assert(!is_string(false));
+	assert(!is_string(1337));
+	assert(!is_array(null));
+	assert(!is_map(null));
+}
 
 

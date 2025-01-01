@@ -438,6 +438,8 @@ protected:
 
 	static std::vector<node_t> get_children(const node_t& node);
 
+	static std::string to_source(const node_t& node);
+
 	static std::string get_literal(const node_t& node);
 
 	static varptr_t parse_constant(const node_t& node);
@@ -595,6 +597,12 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["string_bech32"].name = "string_bech32";
 	function_map["rcall"].name = "rcall";
 	function_map["balance"].name = "balance";
+	function_map["is_uint"].name = "is_uint";
+	function_map["is_string"].name = "is_string";
+	function_map["is_binary"].name = "is_binary";
+	function_map["is_array"].name = "is_array";
+	function_map["is_map"].name = "is_map";
+	function_map["assert"].name = "assert";
 
 	global.section = MEM_STATIC;
 
@@ -714,6 +722,29 @@ std::vector<Compiler::node_t> Compiler::get_children(const node_t& node)
 		}
 	}
 	return list;
+}
+
+std::string Compiler::to_source(const node_t& node)
+{
+    std::string source;
+    if(node.kind().is_token()) {
+        const auto token = node.lexeme();
+        source.append(token.begin(), token.end());
+    } else {
+        for(const auto& child : node.children()) {
+            source += to_source(child);
+        }
+    }
+    std::string out;
+    for(auto c : source) {
+        switch(c) {
+			case '\r': break;
+			case '\n': out += "\\n"; break;
+            case '\t': out += "\\t"; break;
+            default: out += c; break;
+        }
+    }
+    return out;
 }
 
 std::string Compiler::get_literal(const node_t& node)
@@ -1627,6 +1658,46 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = stack.new_addr();
 				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
 			}
+			else if(name == "is_uint") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_uint()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_UINT)));
+			}
+			else if(name == "is_string") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_string()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_STRING)));
+			}
+			else if(name == "is_binary") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_binary()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_BINARY)));
+			}
+			else if(name == "is_array") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_array()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_ARRAY)));
+			}
+			else if(name == "is_map") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_map()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_MAP)));
+			}
 			else if(name == "concat") {
 				if(args.size() < 2) {
 					throw std::logic_error("expected 2 or more arguments for concat()");
@@ -1816,6 +1887,18 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				const auto currency = args.size() > 0 ? get(recurse(args[0])) : get_const_address(addr_t());
 				out.address = stack.new_addr();
 				code.emplace_back(OP_BALANCE, 0, out.address, currency);
+			}
+			else if(name == "assert") {
+				if(args.size() < 1 || args.size() > 2) {
+					throw std::logic_error("expected 1-2 arguments for assert(condition, [message])");
+				}
+				code.emplace_back(OP_JUMPI, 0, code.size() + 2, get(recurse(args[0])));
+				if(args.size() < 2) {
+					code.emplace_back(OP_FAIL, 0, get_const_address("assert(" + to_source(args[0]) + ")"));
+				} else {
+					code.emplace_back(OP_FAIL, 0, get(recurse(args[1])));
+				}
+				out.address = 0;
 			}
 			else {
 				if(curr_function && curr_function->is_const && lhs->func->root && !lhs->func->is_const) {
