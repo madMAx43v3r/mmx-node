@@ -993,16 +993,17 @@ void Router::on_vdf(uint64_t client, std::shared_ptr<const ProofOfTime> value)
 			disconnect(client);
 			return;
 		}
-
-		auto iter = timelord_credit.find(value->timelord_key);
-		if(iter != timelord_credit.end() && iter->second > 0) {
-			if(relay_msg_hash(hash)) {
-				iter->second--;
-				relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
-				vdf_counter++;
+		if(value->segments.size() < max_vdf_segments) {
+			auto iter = timelord_credit.find(value->timelord_key);
+			if(iter != timelord_credit.end() && iter->second > 0) {
+				if(relay_msg_hash(hash)) {
+					iter->second--;
+					relay(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE});
+					vdf_counter++;
+				}
+			} else {
+				log(DEBUG) << "Timelord " << value->timelord_key << " has no credit to relay VDF for height " << value->vdf_height << ", verifying first.";
 			}
-		} else {
-			log(DEBUG) << "Timelord " << value->timelord_key << " has no credit to relay VDF for height " << value->vdf_height << ", verifying first.";
 		}
 		publish(value, output_vdfs);
 	}
