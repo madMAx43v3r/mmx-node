@@ -68,7 +68,7 @@ function claim_all(currency) public
 	} else {
 		currency = bech32();
 	}
-	send(target, balance(currency), currency, "mmx_plot_nft_claim");
+	send(this.user, balance(currency), currency, "mmx_plot_nft_claim");
 }
 
 function transfer(owner_) public
