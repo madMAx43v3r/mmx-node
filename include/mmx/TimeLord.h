@@ -57,7 +57,6 @@ private:
 	std::map<uint64_t, hash_t> history;
 	std::map<uint64_t, hash_t> infuse;
 
-	uint64_t peak_iters = 0;
 	std::map<uint64_t, std::shared_ptr<const IntervalRequest>> pending;		// [end => request]
 
 	std::shared_ptr<vdf_point_t> peak;
