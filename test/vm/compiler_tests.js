@@ -16,7 +16,7 @@ if(test1(1) != 2) {
 	fail("test1");
 }
 
-if(concat(to_string(1), to_string(2), to_string(3)) != "123") {
+if(concat(string(1), string(2), string(3)) != "123") {
 	fail("concat()", 1);
 }
 

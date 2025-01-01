@@ -2,7 +2,7 @@
 interface __test;
 interface plot_nft;
 
-const MMX = to_string_bech32(bech32());
+const MMX = string_bech32(bech32());
 const binary = __test.compile("src/contract/plot_nft.js");
 
 const owner = "mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z";

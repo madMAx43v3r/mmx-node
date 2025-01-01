@@ -19,7 +19,7 @@ function add(serial, creator_key, signature) public
 	if(sha256(creator_key) != creator) {
 		fail("invalid creator", 3);
 	}
-	const msg = concat(to_string_bech32(this.address), "/", to_string(serial));
+	const msg = concat(string_bech32(this.address), "/", string(serial));
 	
 	if(!ecdsa_verify(sha256(msg), creator_key, signature)) {
 		fail("invalid signature", 4);

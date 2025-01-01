@@ -35,7 +35,7 @@ function mmx_reward_target(farmer) const public
 	} else if(farmer) {
 		addr = bech32(farmer);
 	}
-	return to_string_bech32(addr);
+	return string_bech32(addr);
 }
 
 function lock(target_, server_url_) public

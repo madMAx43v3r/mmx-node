@@ -164,13 +164,13 @@ Note: Objects are maps with string keys.
 	- Binary strings are parsed in big endian: `[00, FF]` => `0x00FF` / `255`
 - `uint_le(v)`: Same as `uint()` except binary strings are parsed in little endian.
 - `uint_hex(v)`: Same as `uint()` except strings are parsed in hex, even without `0x` prefix.
-- `to_string(v)`: Converts to a string
+- `string(v)`: Converts to a string
 	- Integers are converted to decimal
 	- String inputs are returned as-is
 	- Binary strings are converted as-is (like memcpy())
-- `to_string_hex(v)`: Same as `to_string()` except:
+- `string_hex(v)`: Same as `string()` except:
 	- Converts integers and binary strings to a hex string, without `0x` prefix.
-- `to_string_bech32(v)`: Same as `to_string()` except:
+- `string_bech32(v)`: Same as `string()` except:
 	- Converts binary string to a bech32 address string `mmx1...` (fails if not 32 bytes)
 	- Converts `null` to zero address string `mmx1qqqq...`
 - `balance([currency])`: Returns current balance for given currency (for the contract)

@@ -172,14 +172,14 @@ if((3 >> 0) != 3) {
 	fail("3 >> 0");
 }
 if(3 / 1 != 3) {
-	fail(concat("div 3 / 1 => ", to_string(3 / 1)));
+	fail(concat("div 3 / 1 => ", string(3 / 1)));
 }
 if(13371337 / 1024 != 13057) {
 	fail("div 13371337 / 1024");
 }
 for(var i = 1; i < 100; ++i) {
 	if((11 * i) / i != 11) {
-		fail(concat("div (11 * i) / i: ", to_string(i)));
+		fail(concat("div (11 * i) / i: ", string(i)));
 	}
 }
 
@@ -203,7 +203,7 @@ if(13371337 % 1024 != 969) {
 }
 for(var i = 1; i < 100; ++i) {
 	if((11 * i) % i != 0) {
-		fail(concat("mod (11 * i) % i: ", to_string(i)));
+		fail(concat("mod (11 * i) % i: ", string(i)));
 	}
 }
 
@@ -275,7 +275,7 @@ if(bech32("mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev") != b
 if(bech32("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") != binary_hex("09292D77A8DF8E790D467F458B29591C1AFB11F0676CC7ABBB778C60D90D38F7")) {
 	fail("bech32", 2);
 }
-if(to_string_bech32(binary_hex("09292D77A8DF8E790D467F458B29591C1AFB11F0676CC7ABBB778C60D90D38F7")) != "mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") {
+if(string_bech32(binary_hex("09292D77A8DF8E790D467F458B29591C1AFB11F0676CC7ABBB778C60D90D38F7")) != "mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") {
 	fail("bech32", 3);
 }
 if(bech32("MMX") != bech32()) {
@@ -287,34 +287,34 @@ if(bech32() != binary_hex("00000000000000000000000000000000000000000000000000000
 if(bech32(null) != bech32()) {
 	fail("bech32", 6);
 }
-if(to_string(1337) != "1337") {
-	fail("to_string(1337)");
+if(string(1337) != "1337") {
+	fail("string(1337)");
 }
-if(to_string(18446744073709551615) != "18446744073709551615") {
-	fail("to_string(18446744073709551615)");
+if(string(18446744073709551615) != "18446744073709551615") {
+	fail("string(18446744073709551615)");
 }
-if(to_string(340282366920938463463374607431768211455) != "340282366920938463463374607431768211455") {
-	fail("to_string(340282366920938463463374607431768211455)");
+if(string(340282366920938463463374607431768211455) != "340282366920938463463374607431768211455") {
+	fail("string(340282366920938463463374607431768211455)");
 }
-if(to_string_hex(0x01234567ABCDE) != "1234567abcde") {
-	fail("to_string_hex(0x01234567ABCDE)");
+if(string_hex(0x01234567ABCDE) != "1234567abcde") {
+	fail("string_hex(0x01234567ABCDE)");
 }
-if(to_string_hex(0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855) != "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") {
-	fail("to_string_hex(0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855)");
+if(string_hex(0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855) != "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") {
+	fail("string_hex(0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855)");
 }
-if(to_string_bech32(bech32("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")) != "mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") {
-	fail("to_string_bech32(mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf)");
+if(string_bech32(bech32("mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf")) != "mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf") {
+	fail("string_bech32(mmx17uuqmktq33mmh278d3nlqy0mrgw9j2vtg4l5vrte3m06saed9yys2q5hrf)");
 }
-if(to_string(binary("ABCDEF")) != "ABCDEF") {
+if(string(binary("ABCDEF")) != "ABCDEF") {
 	fail("binary(ABCDEF)");
 }
-if(to_string_hex(binary("AB")) != "4142") {
+if(string_hex(binary("AB")) != "4142") {
 	fail("binary(AB)");
 }
-if(to_string_hex(binary_hex("0123456789ABCDEF")) != "0123456789ABCDEF") {
+if(string_hex(binary_hex("0123456789ABCDEF")) != "0123456789ABCDEF") {
 	fail("binary_hex(0123456789ABCDEF)");
 }
-if(to_string_hex(binary_hex("0x0123456789ABCDEF")) != "0123456789ABCDEF") {
+if(string_hex(binary_hex("0x0123456789ABCDEF")) != "0123456789ABCDEF") {
 	fail("binary_hex(0x0123456789ABCDEF)");
 }
 if(concat("A", "BC", "D") != "ABCD") {
@@ -448,8 +448,8 @@ if([] == []) {
 if({} == {}) {
 	fail("[] == []");
 }
-if(to_string("test") != "test") {
-	fail("to_string(test)");
+if(string("test") != "test") {
+	fail("string(test)");
 }
 
 __nop();
