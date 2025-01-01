@@ -203,6 +203,7 @@ int main(int argc, char** argv)
 	options["l"] = "gas-limit";
 	options["N"] = "limit";
 	options["v"] = "verbose";
+	options["o"] = "output";
 	options["node"] = "address";
 	options["file"] = "path";
 	options["index"] = "0..?";
@@ -218,6 +219,8 @@ int main(int argc, char** argv)
 	options["user"] = "mmx-admin";
 	options["passwd"] = "PASSWD";
 	options["mnemonic"] = "words";
+	options["output"] = "file name";
+	options["nonce"] = "value > 0";
 
 	vnx::write_config("log_level", 2);
 
@@ -233,6 +236,8 @@ int main(int argc, char** argv)
 	std::string user = "mmx-admin";
 	std::string passwd;
 	vnx::optional<std::string> memo;
+	vnx::optional<std::string> output;
+	vnx::optional<uint64_t> nonce;
 	int64_t index = 0;
 	int64_t offset = 0;
 	int32_t limit = -1;
@@ -263,6 +268,8 @@ int main(int argc, char** argv)
 	vnx::read_config("memo", memo);
 	vnx::read_config("limit", limit);
 	vnx::read_config("verbose", verbose);
+	vnx::read_config("output", output);
+	vnx::read_config("nonce", nonce);
 
 	bool did_fail = false;
 	auto params = mmx::get_params();
@@ -281,6 +288,11 @@ int main(int argc, char** argv)
 	spend_options.fee_ratio = fee_ratio * 1024;
 	spend_options.gas_limit = mmx::to_amount(gas_limit, params);
 	spend_options.memo = memo;
+	spend_options.nonce = nonce;
+	if(output) {
+		spend_options.auto_send = false;
+		spend_options.expire_at = -1;
+	}
 
 	mmx::NodeClient node("Node");
 	{
@@ -334,6 +346,8 @@ int main(int argc, char** argv)
 			vnx::read_config("node", node_url);
 
 			mmx::WalletClient wallet("Wallet");
+
+			std::shared_ptr<const mmx::Transaction> tx;
 
 			if(command != "create") {
 				vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
@@ -529,9 +543,8 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.send(index, mojo, target, contract, spend_options);
+				tx = wallet.send(index, mojo, target, contract, spend_options);
 				std::cout << "Sent " << mmx::to_value(mojo, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
-				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "send_from")
 			{
@@ -553,9 +566,8 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.send_from(index, mojo, target, source, contract, spend_options);
+				tx = wallet.send_from(index, mojo, target, source, contract, spend_options);
 				std::cout << "Sent " << mmx::to_value(mojo, token->decimals) << " " << token->symbol << " (" << mojo << ") to " << target << std::endl;
-				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "transfer")
 			{
@@ -566,9 +578,8 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.send(index, 1, target, contract, spend_options);
+				tx = wallet.send(index, 1, target, contract, spend_options);
 				std::cout << "Sent " << contract << " to " << target << std::endl;
-				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "mint")
 			{
@@ -589,10 +600,9 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.execute(index, contract, "mint_to",
+				tx = wallet.execute(index, contract, "mint_to",
 						{vnx::Variant(target.to_string()), mojo.to_var_arg(), vnx::Variant(memo)}, nullptr, spend_options);
 				std::cout << "Minted " << mmx::to_value(mojo, token->decimals) << " (" << mojo << ") " << token->symbol << " to " << target << std::endl;
-				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "deploy")
 			{
@@ -618,9 +628,8 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				const auto tx = wallet.deploy(index, payload, spend_options);
+				tx = wallet.deploy(index, payload, spend_options);
 				std::cout << "Deployed " << payload->get_type_name() << " as [" << mmx::addr_t(tx->id) << "]" << std::endl;
-				std::cout << "Transaction ID: " << tx->id << std::endl;
 			}
 			else if(command == "exec" || command == "deposit")
 			{
@@ -646,7 +655,6 @@ int main(int argc, char** argv)
 				if(wallet.is_locked(index)) {
 					spend_options.passphrase = vnx::input_password("Passphrase: ");
 				}
-				std::shared_ptr<const mmx::Transaction> tx;
 				if(command == "exec") {
 					tx = wallet.execute(index, contract, method, args, nullptr, spend_options);
 					std::cout << "Executed " << method << "() with ";
@@ -662,9 +670,6 @@ int main(int argc, char** argv)
 				vnx::PrettyPrinter printer(std::cout);
 				vnx::accept(printer, args);
 				std::cout << std::endl;
-				if(tx) {
-					std::cout << "Transaction ID: " << tx->id << std::endl;
-				}
 			}
 			else if(command == "offer")
 			{
@@ -693,9 +698,9 @@ int main(int argc, char** argv)
 					std::cout << "Offering " << amount << " " << bid_token->symbol
 							<< " for " << ask_amount << " " << ask_token->symbol << std::endl;
 
-					if(auto tx = wallet.make_offer(index, offset, bid_value, bid, ask_value, ask, spend_options)) {
+					tx = wallet.make_offer(index, offset, bid_value, bid, ask_value, ask, spend_options);
+					if(tx) {
 						std::cout << "Contract: " << mmx::addr_t(tx->id) << std::endl;
-						std::cout << "Transaction ID: " << tx->id << std::endl;
 					}
 				}
 				else if(subject == "cancel") {
@@ -709,9 +714,7 @@ int main(int argc, char** argv)
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.cancel_offer(index, address, spend_options)) {
-						std::cout << "Transaction ID: " << tx->id << std::endl;
-					}
+					tx = wallet.cancel_offer(index, address, spend_options);
 				}
 				else if(subject == "withdraw")
 				{
@@ -725,9 +728,7 @@ int main(int argc, char** argv)
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.offer_withdraw(index, address, spend_options)) {
-						std::cout << "Transaction ID: " << tx->id << std::endl;
-					}
+					tx = wallet.offer_withdraw(index, address, spend_options);
 				}
 				else {
 					std::cerr << "mmx wallet offer [cancel | withdraw]" << std::endl;
@@ -758,9 +759,7 @@ int main(int argc, char** argv)
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.offer_trade(index, address, ask_amount, offset, data.inv_price, spend_options)) {
-						std::cout << "Transaction ID: " << tx->id << std::endl;
-					}
+					tx = wallet.offer_trade(index, address, ask_amount, offset, data.inv_price, spend_options);
 				}
 			}
 			else if(command == "accept")
@@ -786,9 +785,7 @@ int main(int argc, char** argv)
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.accept_offer(index, address, offset, data.inv_price, spend_options)) {
-						std::cout << "Transaction ID: " << tx->id << std::endl;
-					}
+					tx = wallet.accept_offer(index, address, offset, data.inv_price, spend_options);
 				}
 			}
 			else if(command == "buy" || command == "sell")
@@ -820,9 +817,7 @@ int main(int argc, char** argv)
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.swap_trade(index, contract, deposit_amount, info.tokens[i], min_trade_amount, 20, spend_options)) {
-						std::cout << "Transaction ID: " << tx->id << std::endl;
-					}
+					tx = wallet.swap_trade(index, contract, deposit_amount, info.tokens[i], min_trade_amount, 20, spend_options);
 				}
 			}
 			else if(command == "swap")
@@ -888,9 +883,7 @@ int main(int argc, char** argv)
 						if(wallet.is_locked(index)) {
 							spend_options.passphrase = vnx::input_password("Passphrase: ");
 						}
-						if(auto tx = wallet.swap_add_liquid(index, contract, add_amount, offset, spend_options)) {
-							std::cout << "Transaction ID: " << tx->id << std::endl;
-						}
+						tx = wallet.swap_add_liquid(index, contract, add_amount, offset, spend_options);
 					}
 				}
 				else if(action == "remove")
@@ -934,9 +927,7 @@ int main(int argc, char** argv)
 						if(wallet.is_locked(index)) {
 							spend_options.passphrase = vnx::input_password("Passphrase: ");
 						}
-						if(auto tx = wallet.swap_rem_liquid(index, contract, rem_amount, spend_options)) {
-							std::cout << "Transaction ID: " << tx->id << std::endl;
-						}
+						tx = wallet.swap_rem_liquid(index, contract, rem_amount, spend_options);
 					}
 				}
 				else if(action == "payout")
@@ -946,9 +937,7 @@ int main(int argc, char** argv)
 					}
 					spend_options.user = wallet.get_address(index, offset);
 
-					if(auto tx = wallet.execute(index, contract, "payout", {}, nullptr, spend_options)) {
-						std::cout << "Transaction ID: " << tx->id << std::endl;
-					}
+					tx = wallet.execute(index, contract, "payout", {}, nullptr, spend_options);
 				}
 				else if(action == "info")
 				{
@@ -1082,9 +1071,7 @@ int main(int argc, char** argv)
 							spend_options.passphrase = vnx::input_password("Passphrase: ");
 						}
 						if(pre_accept || accept_prompt()) {
-							if(auto tx = wallet.plotnft_exec(contract, "lock", {vnx::Variant(target.to_string()), vnx::Variant(url)}, spend_options)) {
-								std::cout << "Transaction ID: " << tx->id << std::endl;
-							}
+							tx = wallet.plotnft_exec(contract, "lock", {vnx::Variant(target.to_string()), vnx::Variant(url)}, spend_options);
 						}
 					} else {
 						std::cerr << "Usage: mmx wallet plotnft join <pool_url> -x <plot_nft_address>" << std::endl;
@@ -1098,9 +1085,7 @@ int main(int argc, char** argv)
 						if(wallet.is_locked(index)) {
 							spend_options.passphrase = vnx::input_password("Passphrase: ");
 						}
-						if(auto tx = wallet.plotnft_exec(contract, "lock", {vnx::Variant(target), vnx::Variant()}, spend_options)) {
-							std::cout << "Transaction ID: " << tx->id << std::endl;
-						}
+						tx = wallet.plotnft_exec(contract, "lock", {vnx::Variant(target), vnx::Variant()}, spend_options);
 					} else {
 						std::cerr << "Usage: mmx wallet plotnft lock <target_address> -x <plot_nft_address>" << std::endl;
 						goto failed;
@@ -1114,9 +1099,7 @@ int main(int argc, char** argv)
 					if(wallet.is_locked(index)) {
 						spend_options.passphrase = vnx::input_password("Passphrase: ");
 					}
-					if(auto tx = wallet.plotnft_exec(contract, "unlock", {}, spend_options)) {
-						std::cout << "Transaction ID: " << tx->id << std::endl;
-					}
+					tx = wallet.plotnft_exec(contract, "unlock", {}, spend_options);
 				}
 				else if(command == "create") {
 					std::string name;
@@ -1125,9 +1108,7 @@ int main(int argc, char** argv)
 						if(wallet.is_locked(index)) {
 							spend_options.passphrase = vnx::input_password("Passphrase: ");
 						}
-						if(auto tx = wallet.plotnft_create(index, name, offset, spend_options)) {
-							std::cout << "Transaction ID: " << tx->id << std::endl;
-						}
+						tx = wallet.plotnft_create(index, name, offset, spend_options);
 					} else {
 						std::cerr << "Usage: mmx wallet plotnft create <name>" << std::endl;
 						goto failed;
@@ -1170,6 +1151,13 @@ int main(int argc, char** argv)
 			}
 			else {
 				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | import | remove | accounts | keys | lock | unlock | plotnft]" << std::endl;
+			}
+
+			if(tx) {
+				std::cout << "Transaction ID: " << tx->id << std::endl;
+			}
+			if(output) {
+				vnx::write_to_file(*output, tx);
 			}
 		}
 		else if(module == "node")
@@ -1701,7 +1689,7 @@ int main(int argc, char** argv)
 				std::cout << "Price: " << price << " " << symbols[1] << " / " << symbols[0] << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | history | offers | swaps | swap | sync | revert | call | read | dump | dump_code]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | history | offers | swaps | swap | sync | revert | call | send | read | dump | dump_code]" << std::endl;
 			}
 		}
 		else if(module == "farm" || module == "harvester")
