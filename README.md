@@ -131,6 +131,10 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
   - Previously if a farmer got lucky to find multiple blocks in a row:
     - He could also replace them at will until another farmer found the next block
     - This is now also impossible, unless the farmer has close to 50% or more netspace
+- 50% TX fee burn (to avoid farmer spam attack + allow supply contraction)
+  - Project fee is taken from burned amount
+- Virtual Plots have been removed due to an attack vector
+  - Together with the un-bounded block reward voting it was possible to generate a heavier chain with minimal real netspace
 - Improved block reward voting: Majority vote out of 8640 blocks wins, 1% change up/down per day, >50% participation required.
 - Offer contract now supports price update (at most every 1080 blocks)
 - Pooling support + Reference Pool implementation
@@ -140,8 +144,6 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
 - Mint amount can now be up to 80-bit (was limited to 64-bit before)
 - Added block timestamps
 - Smart Contract unit test framework
-- 50% TX fee burn (to avoid farmer spam attack + allow supply contraction)
-  - Project fee is taken from burned amount
 
 
 
