@@ -6,12 +6,26 @@ const utils = require('./utils.js');
 const config = require('./config.js');
 
 var db = null;
+var vdf_height = null;
 var sync_height = null;
 var balance_lock = false;
 
 const api_token_header = {
     headers: {'x-api-token': config.api_token}
 };
+
+async function query_height()
+{
+    try {
+        vdf_height = await utils.get_vdf_height();
+        sync_height = await utils.get_synced_height();
+        if(!sync_height) {
+            console.log('Waiting for node sync ...');
+        }
+    } catch(e) {
+        console.log("Failed to query sync height:", e.message);
+    }
+}
 
 async function update_account(address, reward, pool_share, points, count, height, opt)
 {
@@ -49,7 +63,7 @@ async function update()
             await conn.startTransaction();
             const opt = {session: conn};
 
-            const start_height = sync_height - config.share_window;
+            const start_height = vdf_height - config.share_window;
 
             const result = await dbs.Partial.aggregate([
                 {$match: {pending: false, valid: true, height: {$gte: start_height}}},
@@ -109,7 +123,7 @@ async function update()
                 };
             }
             pool.partial_errors = partial_errors;
-            pool.last_update = sync_height;
+            pool.last_update = vdf_height;
             await pool.save(opt);
 
             let total_rewards = 0;
@@ -159,7 +173,7 @@ async function update()
                 const pool_share = entry.points / total_points;
                 const reward_share = total_rewards * pool_share;
                 res.push(update_account(
-                    entry._id, reward_share, pool_share, entry.points, entry.count, sync_height, opt));
+                    entry._id, reward_share, pool_share, entry.points, entry.count, vdf_height, opt));
             }
             await Promise.all(res);
 
@@ -171,7 +185,7 @@ async function update()
                     "fee", fee_value, "MMX", "total_points", total_points, "total_partials", total_partials);
             }
             console.log(
-                "height", sync_height, "points_rate", pool.points_rate, "partial_rate", pool.partial_rate, "farmers", pool.farmers,
+                "vdf_height", vdf_height, "points_rate", pool.points_rate, "partial_rate", pool.partial_rate, "farmers", pool.farmers,
                 "reward_enable", reward_enable, "uptime", uptime, "/", config.share_window_hours, "hours"
             );
             if(total_points_failed) {
@@ -191,25 +205,14 @@ async function update()
     }
 }
 
-var check_lock = false;
+var find_blocks_lock = false;
 
-async function check()
+async function find_blocks()
 {
-    try {
-        sync_height = await utils.get_synced_height();
-        if(!sync_height) {
-            console.log('Waiting for node sync ...');
-            return;
-        }
-    } catch(e) {
-        console.log("Failed to query sync height:", e.message);
+    if(find_blocks_lock) {
         return;
     }
-    
-    if(check_lock) {
-        return;
-    }
-    check_lock = true;
+    find_blocks_lock = true;
     try {
         let since = 0;
         {
@@ -219,7 +222,7 @@ async function check()
             }
         }
         const res = await axios.get(config.node_url + '/wapi/address/history?id='
-            + config.pool_target + "&since=" + since + "&until=" + (sync_height - 1) + "&limit=-1",
+            + config.pool_target + "&since=" + since + "&limit=-1",
             api_token_header
         );
 
@@ -241,10 +244,11 @@ async function check()
                 const block = new dbs.Block({
                     hash: header.hash,
                     height: header.height,
+                    vdf_height: header.vdf_height,
                     account: header.reward_account,
                     contract: header.reward_contract,
                     reward_addr: header.reward_addr,
-                    farmer_key: header.proof.farmer_key,
+                    farmer_key: header.farmer_key,
                     reward: entry.amount,
                     reward_value: entry.value,
                     time: entry.time_stamp,
@@ -259,7 +263,7 @@ async function check()
     } catch(e) {
         console.log("check() failed:", e.message);
     } finally {
-        check_lock = false;
+        find_blocks_lock = false;
     }
 }
 
@@ -529,14 +533,16 @@ async function main()
 {
     db = await mongoose.connect(config.mongodb_uri);
 
-    await check();
+    await query_height();
     await update();
     await payout();
+    await find_blocks();
     await check_payout();
 
-    setInterval(check, config.block_interval / 5);
+    setInterval(query_height, config.block_interval / 10);
     setInterval(update, config.share_interval * 1000);
     setInterval(payout, 15 * 60 * 1000);
+    setInterval(find_blocks, config.block_interval / 2);
     setInterval(check_payout, 60 * 1000);
 }
 

@@ -8,6 +8,18 @@ async function get_synced_height()
     return res.data;
 }
 
+async function get_synced_vdf_height()
+{
+    const res = await axios.get(config.node_url + '/api/node/get_synced_vdf_height');
+    return res.data;
+}
+
+async function get_vdf_height()
+{
+    const res = await axios.get(config.node_url + '/api/node/get_vdf_height');
+    return res.data;
+}
+
 function calc_eff_space(points_rate)
 {
     // points_rate = points per block (height)
@@ -20,5 +32,7 @@ function sleep(ms)
 }
 
 exports.get_synced_height = get_synced_height;
+exports.get_synced_vdf_height = get_synced_vdf_height;
+exports.get_vdf_height = get_vdf_height;
 exports.calc_eff_space = calc_eff_space;
 exports.sleep = sleep;

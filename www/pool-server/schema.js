@@ -34,6 +34,7 @@ const account = new mongoose.Schema({
 const block = new mongoose.Schema({
     hash: {type: String, unique: true},
     height: {type: Number, index: true},
+    vdf_height: {type: Number, index: true},
     account: {type: String, index: true},
     contract: {type: String, index: true},
     farmer_key: {type: String, index: true},

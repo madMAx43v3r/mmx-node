@@ -11,7 +11,7 @@ const { createHash } = require('crypto');
 var db = null;
 var app = express();
 
-var sync_height = false;
+var vdf_height = false;
 var sync_time = null;
 
 app.use(express.json());
@@ -104,9 +104,8 @@ app.post('/partial', no_cache, async (req, res, next) =>
         let is_valid = true;
         let response_time = null;
 
-        if(sync_height) {
-        	// TODO: refactor to new VDF scheme
-            response_time = (config.challenge_delay - (partial.vdf_height - sync_height)) * config.block_interval + (now - sync_time);
+        if(vdf_height) {
+            response_time = (config.challenge_delay - 1 - (partial.vdf_height - vdf_height)) * config.block_interval + (now - sync_time);
 
             if(response_time > config.max_response_time) {
                 is_valid = false;
@@ -246,28 +245,27 @@ async function update_height()
 {
     try {
         const now = Date.now();
-        const value = await utils.get_synced_height();
+        const value = await utils.get_synced_vdf_height();
         if(value) {
-        	// TODO: refactor to new VDF scheme
-            if(!sync_height) {
-                console.log("Node synced at height " + value);
+            if(vdf_height == null) {
+                console.log("Node synced at VDF height " + value);
             }
-            if(!sync_height || value > sync_height) {
-                console.log("New peak at", value, "time", now, "delta", now - sync_time);
+            if(vdf_height == null || value > vdf_height) {
+                console.log("New VDF peak at", value, "time", now, "delta", now - sync_time);
                 sync_time = now;
-                sync_height = value;
+                vdf_height = value;
             }
         } else {
-            if(sync_height) {
+            if(vdf_height) {
                 console.error("Node lost sync");
             }
-            sync_height = null;
+            vdf_height = null;
         }
     } catch(e) {
-        if(sync_height != null) {
+        if(vdf_height) {
             console.error("Failed to get current height:", e.message);
         }
-        sync_height = null;
+        vdf_height = null;
     }
 }
 
