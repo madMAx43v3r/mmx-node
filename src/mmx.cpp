@@ -1309,6 +1309,19 @@ int main(int argc, char** argv)
 				const auto peers = router.get_known_peers();
 				std::cout << "Got " << peers.size() << " known peers" << std::endl;
 			}
+			else if(command == "send")
+			{
+				std::string file_name;
+				vnx::read_config("$3", file_name);
+
+				if(auto tx = vnx::read_from_file<mmx::Transaction>(file_name)) {
+					node.add_transaction(tx, true);
+					std::cout << "Transaction ID: " << tx->id.to_string();
+				} else {
+					std::cout << "Failed to read transaction '" << file_name << "'" << std::endl;
+					goto failed;
+				}
+			}
 			else if(command == "tx")
 			{
 				mmx::hash_t txid;
