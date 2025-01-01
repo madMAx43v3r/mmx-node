@@ -56,7 +56,7 @@ function unlock() public
 	}
 }
 
-function claim_all(address, currency) public
+function claim_all(currency) public
 {
 	if(is_locked()) {
 		assert(this.user == target, "user not target", 3);
@@ -68,11 +68,7 @@ function claim_all(address, currency) public
 	} else {
 		currency = bech32();
 	}
-	const amount = this.balance[currency];
-	if(amount == 0) {
-		fail("nothing to claim", 5);
-	}
-	send(bech32(address), amount, currency, "mmx_plot_nft_claim");
+	send(target, balance(currency), currency, "mmx_plot_nft_claim");
 }
 
 function transfer(owner_) public
