@@ -135,7 +135,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	}
 //	std::cout << "Table 1 took " << (vnx::get_time_millis() - t1_begin) << " ms" << std::endl;
 
-	// sort function for proof ordering
+	// sort function for proof ordering (enforce unique proofs)
 	const auto sort_func =
 		[&M_tmp](const std::pair<uint32_t, uint32_t>& L, const std::pair<uint32_t, uint32_t>& R) -> bool {
 			if(L.first == R.first) {

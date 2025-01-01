@@ -34,7 +34,7 @@ target_link_libraries(test_space_diff mmx_iface mmx_pos)
 target_link_libraries(test_encoding mmx_pos)
 target_link_libraries(test_execute mmx_vm mmx_iface)
 
-target_link_libraries(mmx_tests mmx_iface)
+target_link_libraries(mmx_tests mmx_iface mmx_pos)
 target_link_libraries(vm_engine_tests mmx_vm)
 target_link_libraries(vm_storage_tests mmx_vm)
 
