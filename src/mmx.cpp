@@ -1306,7 +1306,7 @@ int main(int argc, char** argv)
 
 				if(auto tx = vnx::read_from_file<mmx::Transaction>(file_name)) {
 					node.add_transaction(tx, true);
-					std::cout << "Transaction ID: " << tx->id.to_string();
+					std::cout << "Transaction ID: " << tx->id.to_string() << std::endl;
 				} else {
 					std::cout << "Failed to read transaction '" << file_name << "'" << std::endl;
 					goto failed;
