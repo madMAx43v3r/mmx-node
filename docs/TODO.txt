@@ -32,4 +32,4 @@ Mainnet-RC
 - Update binaries
 - Use relay for project reward
 - VM string() (same as to_string())
-- Update seed peers
+- GUI fixes for new stuff
