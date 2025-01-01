@@ -21,6 +21,7 @@ Mainnet
 - CUDA plotter open-source
 - min_ksize = 29
 - New project wallet
+- Test new block reward voting scheme
 
 Mainnet-RC
 - Double check msg hashes again
