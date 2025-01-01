@@ -1284,19 +1284,17 @@ void Node::revert(const uint32_t height)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
 
-	if(const auto peak = get_peak()) {
+	if(auto peak = get_peak()) {
 		// revert farmer_ranking
-		for(int64_t i = peak->height; i >= int64_t(height); --i) {
+		for(uint32_t i = peak->height; i >= height && i > 0; --i) {
 			if(auto header = get_header_at(i)) {
-				if(header->height) {
-					const auto& farmer_key = header->get_farmer_key();
-					for(auto& entry : farmer_ranking) {
-						if(entry.first == farmer_key) {
-							if(entry.second) {
-								entry.second--;
-							}
-							break;
+				const auto& farmer_key = header->get_farmer_key();
+				for(auto& entry : farmer_ranking) {
+					if(entry.first == farmer_key) {
+						if(entry.second) {
+							entry.second--;
 						}
+						break;
 					}
 				}
 			}
