@@ -14,16 +14,14 @@ function deposit() public {}
 
 function unlock(currency) public
 {
-	if(this.user != agent) {
-		fail("user != agent");
-	}
+	assert(this.user == agent, "invalid user");
+	
 	send(target, balance(currency), currency, "mmx_escrow_unlock");
 }
 
 function revoke(currency) public
 {
-	if(this.user != agent) {
-		fail("user != agent");
-	}
+	assert(this.user == agent, "invalid user");
+	
 	send(source, balance(currency), currency, "mmx_escrow_revoke");
 }

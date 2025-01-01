@@ -10,9 +10,7 @@ function init(owner_, unlock_height_)
 
 function check_owner() const
 {
-	if(this.user != owner) {
-		fail("user != owner", 1);
-	}
+	assert(this.user == owner, "user not owner", 1);
 }
 
 function is_locked() const public
@@ -26,9 +24,8 @@ function withdraw(address, amount, currency) public
 {
 	check_owner();
 	
-	if(is_locked()) {
-		fail("still locked", 2);
-	}
+	assert(!is_locked(), "still locked", 2);
+	
 	send(bech32(address), amount, bech32(currency));
 }
 
@@ -36,8 +33,7 @@ function set_unlock_height(height) public
 {
 	check_owner();
 	
-	if(height < unlock_height) {
-		fail("invalid height", 3);
-	}
+	assert(height >= unlock_height, "invalid height", 3);
+	
 	unlock_height = height;
 }

@@ -7,11 +7,10 @@ function init(owner_)
 	owner = bech32(owner_);
 }
 
-function claim(currency)
+function claim_all(currency)
 {
-	if(this.user != owner) {
-		fail("user != owner");
-	}
+	assert(this.user == owner, "user not owner", 1);
+	
 	if(!currency) {
 		currency = bech32();
 	} else {
@@ -22,20 +21,17 @@ function claim(currency)
 
 function transfer(new_owner)
 {
-	if(this.user != owner) {
-		fail("user != owner");
-	}
+	assert(this.user == owner, "user not owner", 1);
+	
 	transfer_target = bech32(new_owner);
 }
 
 function complete()
 {
-	if(!transfer_target) {
-		fail("no pending transfer");
-	}
-	if(this.user != transfer_target) {
-		fail("user != transfer_target");
-	}
+	assert(transfer_target, "no pending transfer");
+	
+	assert(this.user == transfer_target, "user not target");
+	
 	owner = transfer_target;
 	transfer_target = null;
 }

@@ -7,17 +7,15 @@ interface template;
 
 function init(creator_)
 {
-	if(read("decimals") != 0) {
-		fail("decimals not zero");
-	}
+	assert(read("decimals") == 0, "decimals not zero");
+	
 	creator = bech32(creator_);
 }
 
 function init_n(creator_key, serial_, signature) static
 {
-	if(read("decimals") != 0) {
-		fail("decimals not zero");
-	}
+	assert(read("decimals") == 0, "decimals not zero");
+	
 	creator_key = binary_hex(creator_key);
 	
 	serial = uint(serial_);
@@ -28,12 +26,10 @@ function init_n(creator_key, serial_, signature) static
 
 function mint_to(address, memo) public
 {
-	if(this.user != creator) {
-		fail("user != creator", 1);
-	}
-	if(is_minted()) {
-		fail("already minted", 2);
-	}
+	assert(this.user == creator, "invalid user", 1);
+	
+	assert(!is_minted(), "already minted", 2);
+	
 	mint_height = this.height;
 	
 	if(memo == null) {

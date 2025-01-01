@@ -8,9 +8,7 @@ function init(owner_)
 
 function check_owner()
 {
-	if(this.user != owner) {
-		fail("user != owner", 1);
-	}
+	assert(this.user == owner, "user not owner", 1);
 }
 
 function mint_to(address, amount, memo) public

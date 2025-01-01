@@ -13,9 +13,7 @@ function init(owner_)
 
 function check_owner() const
 {
-	if(this.user != owner) {
-		fail("user != owner", 1);
-	}
+	assert(this.user == owner, "user not owner", 1);
 }
 
 function is_locked() const public
@@ -42,9 +40,8 @@ function lock(target_, server_url_) public
 {
 	check_owner();
 	
-	if(is_locked()) {
-		fail("contract still locked", 2);
-	}
+	assert(!is_locked(), "contract still locked", 2);
+	
 	target = bech32(target_);
 	server_url = server_url_;
 	unlock_height = null;
@@ -62,9 +59,7 @@ function unlock() public
 function claim_all(address, currency) public
 {
 	if(is_locked()) {
-		if(this.user != target) {
-			fail("user != target", 3);
-		}
+		assert(this.user == target, "user not target", 3);
 	} else {
 		check_owner();
 	}

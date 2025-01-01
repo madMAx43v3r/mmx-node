@@ -23,17 +23,13 @@ function init(owner_, bid_currency_, ask_currency_, inv_price_, partner_)
 
 function check_owner()
 {
-	if(this.user != owner) {
-		fail("user != owner", 1);
-	}
+	assert(this.user == owner, "user not owner", 1);
 }
 
 function check_partner()
 {
 	if(partner) {
-		if(this.user != partner) {
-			fail("user != partner", 2);
-		}
+		assert(this.user == partner, "user not partner", 2);
 	}
 }
 
@@ -68,9 +64,7 @@ function set_price(new_price) public
 	check_owner();
 	
 	if(last_update != null) {
-		if(this.height - last_update < UPDATE_INTERVAL) {
-			fail("update too soon", 7);
-		}
+		assert(this.height - last_update >= UPDATE_INTERVAL, "update too soon", 7);
 	}
 	new_price = uint(new_price);
 	
@@ -84,16 +78,13 @@ function trade(dst_addr, price) public payable
 {
 	check_partner();
 	
-	if(uint(price) != inv_price) {
-		fail("price changed", 6);
-	}
-	if(this.deposit.currency != ask_currency) {
-		fail("currency mismatch", 3);
-	}
+	assert(uint(price) == inv_price, "price changed", 6);
+	
+	assert(this.deposit.currency == ask_currency, "currency mismatch", 3);
+	
 	const bid_amount = (this.deposit.amount * inv_price) >> FRACT_BITS;
-	if(bid_amount == 0) {
-		fail("empty trade", 4);
-	}
+	assert(bid_amount > 0, "empty trade", 4);
+	
 	send(bech32(dst_addr), bid_amount, bid_currency, "mmx_offer_trade");
 }
 
@@ -101,17 +92,14 @@ function accept(dst_addr, price) public payable
 {
 	check_partner();
 	
-	if(uint(price) != inv_price) {
-		fail("price changed", 6);
-	}
-	if(this.deposit.currency != ask_currency) {
-		fail("currency mismatch", 3);
-	}
+	assert(uint(price) == inv_price, "price changed", 6);
+	
+	assert(this.deposit.currency == ask_currency, "currency mismatch", 3);
+	
 	// take whatever is left in case another trade happened before
 	const bid_amount = min((this.deposit.amount * inv_price) >> FRACT_BITS, balance(bid_currency));
-	if(bid_amount == 0) {
-		fail("empty offer", 5);
-	}
+	assert(bid_amount > 0, "empty offer", 5);
+	
 	const ask_amount = ((bid_amount << FRACT_BITS) + inv_price - 1) / inv_price;	// round up
 	const ret_amount = this.deposit.amount - ask_amount;	// will fail on underflow
 	
