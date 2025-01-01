@@ -11,5 +11,6 @@ set -e
 ./build/tools/mmx_compile -n $1 -f src/contract/template.js -t -o data/tx_template_binary.dat > config/default/chain/params/template_binary
 ./build/tools/mmx_compile -n $1 -f src/contract/escrow.js -t -o data/tx_escrow_binary.dat > config/default/chain/params/escrow_binary
 ./build/tools/mmx_compile -n $1 -f src/contract/time_lock.js -t -o data/tx_time_lock_binary.dat > config/default/chain/params/time_lock_binary
+./build/tools/mmx_compile -n $1 -f src/contract/relay.js -t -o data/tx_relay_binary.dat > config/default/chain/params/relay_binary
 
 echo OK
