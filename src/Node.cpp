@@ -114,7 +114,7 @@ void Node::main()
 	}
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
 	api_threads = std::make_shared<vnx::ThreadPool>(num_api_threads);
-	vdf_threads = std::make_shared<vnx::ThreadPool>(num_vdf_threads);
+	vdf_threads = std::make_shared<vnx::ThreadPool>(std::max(num_vdf_threads, vdf_verify_max_pending));
 	fetch_threads = std::make_shared<vnx::ThreadPool>(2);
 
 	router = std::make_shared<RouterAsyncClient>(router_name);
