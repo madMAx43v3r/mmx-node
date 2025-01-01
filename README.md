@@ -109,19 +109,39 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
 
 ### Mainnet-RC
 
-- Improved timelord reward voting: Majority vote out of 256 blocks wins, reward sent every 256 blocks.
+- New VDF scheme:
+  - Single VDF stream with infused Timelord reward
+  - No longer possible to steal or disable Timelord reward
+  - Proof challenges are now deterministic, apart from random infusions every 256 blocks on average
+  - If a proof's hash passes a filter, it will change future challenges and update difficutly
+  - Timelord rewards are now paid out every 50 blocks in bulk to fastest TL
+- VDF segment count is now dynamic, depending on TL speed:
+  - This means VDF verify time wont increase unless the GPU is at it's compute limit
+  - Previously VDF verify time would increase even if the GPU is not maxed out, due to fixed parallel work
+  - CPU verify is unchanged
+- All proofs found are now included in blocks
+  - Yields accurate netspace estimation
+  - Supports extra security (see below)
+- Recent blocks are further secured via a new voting scheme:
+  - Up to 21 farmers who found a lesser proof (didn't make a block) recently can act as a validator
+  - These validators vote on the first block received per height
+  - Only blocks made with the best known proof are voted for
+  - This prevents reverting recent blocks via double signing in most cases
+  - Previously it was always possible to replace the current peak via double signing, this is now impossible
+  - Previously if a farmer got lucky to find multiple blocks in a row:
+    - He could also replace them at will until another farmer found the next block
+    - This is now also impossible, unless the farmer has close to 50% or more netspace
 - Improved block reward voting: Majority vote out of 8640 blocks wins, 1% change up/down per day, >50% participation required.
 - Offer contract now supports price update (at most every 1080 blocks)
 - Pooling support + Reference Pool implementation
-- Improved difficulty adjustment algorithm (more stable at less than 100 TB)
+- Improved difficulty adjustment algorithm (targets 4 proofs per block)
 - VM improvements to reduce transaction costs
 - Send amount can now be up to 128-bit (was limited to 64-bit before)
 - Mint amount can now be up to 80-bit (was limited to 64-bit before)
 - Added block timestamps
-- Reduced default number of VDF segments to 1020 (was 1500 before, to reduce network traffic)
-- Increased number of proofs per block by ~2x (to reduce dummy blocks)
 - Smart Contract unit test framework
 - 50% TX fee burn (to avoid farmer spam attack + allow supply contraction)
+  - Project fee is taken from burned amount
 
 
 
