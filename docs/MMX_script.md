@@ -105,10 +105,11 @@ Note: Objects are maps with string keys.
 - `!=`: Not equal (any types)
 - `==`: Equals (any types, strict, no implicit conversions)
 - `&`: Bitwise AND (integers only)
-- `&&`: Logical AND (boolean only)
+- `&&`: Logical AND
 - `^`: Bitwise XOR (integers only)
+- `^^`: Logical XOR
 - `|`: Bitwise OR (integers only)
-- `||`: Logical OR (boolean only)
+- `||`: Logical OR
 - `=`: Right to left assignment
 - `+=`: Inplace addition (integers only)
 - `-=`: Inplace subtraction (integers only)
@@ -146,6 +147,8 @@ Note: Objects are maps with string keys.
 	- `src` must be a string or binary string
 	- Out of bounds access will fail execution
 - `fail(message, [code])`: Fails execution with string `message` and optional integer `code`
+- `assert(condition, [message], [code])`: Fails execution if `condition` does not evaluate `true`
+	- If `message` is not specified, it will print source code instead.
 - `bech32(addr)`: Parses a bech32 address string and returns 32 bytes.
 	- Returns 32 zero bytes if no argument given, which corresponds to the zero address.
 - `binary(v)`: Converts to a binary
@@ -173,6 +176,11 @@ Note: Objects are maps with string keys.
 - `string_bech32(v)`: Same as `string()` except:
 	- Converts binary string to a bech32 address string `mmx1...` (fails if not 32 bytes)
 	- Converts `null` to zero address string `mmx1qqqq...`
+- `is_uint(v)`: Returns `true` if argument is of type integer
+- `is_string(v)`: Returns `true` if argument is of type string
+- `is_binary(v)`: Returns `true` if argument is of type binary
+- `is_array(v)`: Returns `true` if argument is of type array
+- `is_map(v)`: Returns `true` if argument is of type map
 - `balance([currency])`: Returns current balance for given currency (for the contract)
 	- `currency` defaults to MMX if not specified (32-byte binary)
 - `send(address, amount, [currency], [memo])`: Transfer funds from contract to an address
@@ -251,6 +259,7 @@ By default MMX script does *not* perform any implicit type conversion except in 
 - `!cond`: `cond` is casted to `bool`, same as `!bool(cond)`
 - `A && B`: `A` and `B` are casted to `bool`, same as `bool(A) && bool(B)`
 - `A || B`: `A` and `B` are casted to `bool`, same as `bool(A) || bool(B)`
+- `A ^^ B`: `A` and `B` are casted to `bool`, same as `bool(A) || bool(B)`
 
 For example the following is valid code:
 ```
