@@ -153,6 +153,8 @@ class Node_get_swaps;
 class Node_get_swaps_return;
 class Node_get_synced_height;
 class Node_get_synced_height_return;
+class Node_get_synced_vdf_height;
+class Node_get_synced_vdf_height_return;
 class Node_get_total_balance;
 class Node_get_total_balance_return;
 class Node_get_total_balances;
@@ -559,6 +561,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swaps
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_swaps_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_vdf_height; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_vdf_height_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balances; ///< \private
@@ -962,6 +966,8 @@ void read(TypeInput& in, ::mmx::Node_get_swaps& value, const TypeCode* type_code
 void read(TypeInput& in, ::mmx::Node_get_swaps_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_synced_height& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_synced_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_synced_vdf_height& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Node_get_synced_vdf_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_total_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_total_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Node_get_total_balances& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1368,6 +1374,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_swaps& value, const TypeCode* 
 void write(TypeOutput& out, const ::mmx::Node_get_swaps_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_synced_height& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_synced_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_synced_vdf_height& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Node_get_synced_vdf_height_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_total_balance& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_total_balance_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Node_get_total_balances& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1774,6 +1782,8 @@ void read(std::istream& in, ::mmx::Node_get_swaps& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_swaps_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_synced_height& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_synced_height_return& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_synced_vdf_height& value); ///< \private
+void read(std::istream& in, ::mmx::Node_get_synced_vdf_height_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_total_balance& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_total_balance_return& value); ///< \private
 void read(std::istream& in, ::mmx::Node_get_total_balances& value); ///< \private
@@ -2180,6 +2190,8 @@ void write(std::ostream& out, const ::mmx::Node_get_swaps& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_swaps_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_synced_height& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_synced_height_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_synced_vdf_height& value); ///< \private
+void write(std::ostream& out, const ::mmx::Node_get_synced_vdf_height_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_total_balance& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_total_balance_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Node_get_total_balances& value); ///< \private
@@ -2586,6 +2598,8 @@ void accept(Visitor& visitor, const ::mmx::Node_get_swaps& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_swaps_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_synced_height& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_synced_height_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_synced_vdf_height& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Node_get_synced_vdf_height_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_total_balance& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_total_balance_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Node_get_total_balances& value); ///< \private
@@ -3115,6 +3129,10 @@ template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_height> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_height_return> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_vdf_height> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_vdf_height_return> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_total_balance> value); ///< \private
 template<typename V>
@@ -6520,6 +6538,52 @@ struct type<::mmx::Node_get_synced_height_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_height_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_synced_vdf_height> {
+	void read(TypeInput& in, ::mmx::Node_get_synced_vdf_height& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_synced_vdf_height& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_synced_vdf_height& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_synced_vdf_height& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_synced_vdf_height& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_vdf_height& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Node_get_synced_vdf_height_return> {
+	void read(TypeInput& in, ::mmx::Node_get_synced_vdf_height_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Node_get_synced_vdf_height_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Node_get_synced_vdf_height_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Node_get_synced_vdf_height_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Node_get_synced_vdf_height_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_vdf_height_return& value, bool special = false);
 };
 
 /// \private

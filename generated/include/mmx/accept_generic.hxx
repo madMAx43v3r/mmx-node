@@ -130,6 +130,8 @@
 #include <mmx/Node_get_swaps_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
+#include <mmx/Node_get_synced_vdf_height.hxx>
+#include <mmx/Node_get_synced_vdf_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
 #include <mmx/Node_get_total_balance_return.hxx>
 #include <mmx/Node_get_total_balances.hxx>
@@ -1489,6 +1491,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_hei
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_height_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_vdf_height> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_vdf_height_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

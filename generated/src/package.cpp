@@ -130,6 +130,8 @@
 #include <mmx/Node_get_swaps_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
+#include <mmx/Node_get_synced_vdf_height.hxx>
+#include <mmx/Node_get_synced_vdf_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
 #include <mmx/Node_get_total_balance_return.hxx>
 #include <mmx/Node_get_total_balances.hxx>
@@ -1923,6 +1925,30 @@ void type<::mmx::Node_get_synced_height_return>::create_dynamic_code(std::vector
 }
 
 void type<::mmx::Node_get_synced_height_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_height_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_synced_vdf_height>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_synced_vdf_height;
+}
+
+void type<::mmx::Node_get_synced_vdf_height>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_synced_vdf_height());
+}
+
+void type<::mmx::Node_get_synced_vdf_height>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_vdf_height& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::Node_get_synced_vdf_height_return>::get_type_code() {
+	return mmx::vnx_native_type_code_Node_get_synced_vdf_height_return;
+}
+
+void type<::mmx::Node_get_synced_vdf_height_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::Node_get_synced_vdf_height_return());
+}
+
+void type<::mmx::Node_get_synced_vdf_height_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Node_get_synced_vdf_height_return& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5351,6 +5377,8 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::Node_get_swaps_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_synced_height::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_synced_height_return::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_synced_vdf_height::static_create_type_code());
+	vnx::register_type_code(::mmx::Node_get_synced_vdf_height_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_total_balance::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_total_balance_return::static_create_type_code());
 	vnx::register_type_code(::mmx::Node_get_total_balances::static_create_type_code());
@@ -5756,6 +5784,8 @@ const vnx::TypeCode* const vnx_native_type_code_Node_get_swaps = vnx::get_type_c
 const vnx::TypeCode* const vnx_native_type_code_Node_get_swaps_return = vnx::get_type_code(vnx::Hash64(0x6c94172788fc0d28ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height = vnx::get_type_code(vnx::Hash64(0xc4fb44ec3d1a8bb7ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_height_return = vnx::get_type_code(vnx::Hash64(0xd466ce92d1bbe9dbull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_vdf_height = vnx::get_type_code(vnx::Hash64(0x3c9ce92abd3b42c6ull));
+const vnx::TypeCode* const vnx_native_type_code_Node_get_synced_vdf_height_return = vnx::get_type_code(vnx::Hash64(0x1122764a35c86b4ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance = vnx::get_type_code(vnx::Hash64(0x91e9019d224db4b0ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balance_return = vnx::get_type_code(vnx::Hash64(0x3336380a894f52a8ull));
 const vnx::TypeCode* const vnx_native_type_code_Node_get_total_balances = vnx::get_type_code(vnx::Hash64(0xf54c4ec46ee6053aull));

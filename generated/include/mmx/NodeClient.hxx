@@ -59,9 +59,11 @@ public:
 	
 	uint32_t get_height();
 	
+	uint32_t get_vdf_height();
+	
 	vnx::optional<uint32_t> get_synced_height();
 	
-	uint32_t get_vdf_height();
+	vnx::optional<uint32_t> get_synced_vdf_height();
 	
 	::mmx::hash_t get_vdf_peak();
 	

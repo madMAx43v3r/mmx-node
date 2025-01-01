@@ -100,6 +100,8 @@
 #include <mmx/Node_get_swaps_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
+#include <mmx/Node_get_synced_vdf_height.hxx>
+#include <mmx/Node_get_synced_vdf_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
 #include <mmx/Node_get_total_balance_return.hxx>
 #include <mmx/Node_get_total_balances.hxx>
@@ -276,6 +278,18 @@ uint32_t NodeClient::get_height() {
 	}
 }
 
+uint32_t NodeClient::get_vdf_height() {
+	auto _method = ::mmx::Node_get_vdf_height::create();
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_vdf_height_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<uint32_t>();
+	} else {
+		throw std::logic_error("NodeClient: invalid return value");
+	}
+}
+
 vnx::optional<uint32_t> NodeClient::get_synced_height() {
 	auto _method = ::mmx::Node_get_synced_height::create();
 	auto _return_value = vnx_request(_method, false);
@@ -288,13 +302,13 @@ vnx::optional<uint32_t> NodeClient::get_synced_height() {
 	}
 }
 
-uint32_t NodeClient::get_vdf_height() {
-	auto _method = ::mmx::Node_get_vdf_height::create();
+vnx::optional<uint32_t> NodeClient::get_synced_vdf_height() {
+	auto _method = ::mmx::Node_get_synced_vdf_height::create();
 	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_vdf_height_return>(_return_value)) {
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Node_get_synced_vdf_height_return>(_return_value)) {
 		return _result->_ret_0;
 	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<uint32_t>();
+		return _return_value->get_field_by_index(0).to<vnx::optional<uint32_t>>();
 	} else {
 		throw std::logic_error("NodeClient: invalid return value");
 	}
