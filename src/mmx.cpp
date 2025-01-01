@@ -1158,7 +1158,7 @@ int main(int argc, char** argv)
 			}
 			if(output) {
 				auto out = vnx::clone(tx);
-				out->reset(node.get_params());
+				out->reset(params);
 				vnx::write_to_file(*output, out);
 			}
 		}
