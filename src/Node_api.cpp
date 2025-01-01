@@ -1544,11 +1544,8 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 	if(!partial->farmer_sig->verify(partial->proof->farmer_key, partial->hash)) {
 		return {pooling_error_e::INVALID_SIGNATURE, "Signature verification failed"};
 	}
-
-	if(auto peak = get_peak()) {
-		if(partial->vdf_height > peak->vdf_height) {
-			return {pooling_error_e::CHALLENGE_NOT_CONFIRMED, "Partial height not reached yet"};
-		}
+	if(partial->vdf_height > get_vdf_height()) {
+		return {pooling_error_e::CHALLENGE_NOT_CONFIRMED, "Partial height not reached yet"};
 	}
 
 	hash_t challenge;
@@ -1561,7 +1558,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 	}
 
 	try {
-		verify_proof(partial->proof, challenge, space_diff);
+		verify_proof(partial->proof, challenge, partial->proof->difficulty);
 	} catch(const std::exception& ex) {
 		return {pooling_error_e::INVALID_PROOF, "Invalid proof: " + std::string(ex.what())};
 	}
