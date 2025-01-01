@@ -105,12 +105,13 @@ app.post('/partial', no_cache, async (req, res, next) =>
         let response_time = null;
 
         if(vdf_height) {
-            response_time = (config.challenge_delay - 1 - (partial.vdf_height - vdf_height)) * config.block_interval + (now - sync_time);
+            const delta = vdf_height - partial.vdf_height;
+            response_time = delta * config.block_interval + (now - sync_time);
 
-            if(response_time > config.max_response_time) {
+            if(delta >= 0) {
                 is_valid = false;
                 out.error_code = 'PARTIAL_TOO_LATE';
-                out.error_message = 'Partial received too late: ' + response_time / 1e3 + ' sec';
+                out.error_message = 'Partial received ' + response_time / 1e3 + ' sec too late';
             }
         } else {
             is_valid = false;
@@ -241,7 +242,7 @@ app.use((err, req, res, next) => {
 });
 
 
-async function update_height()
+async function query_height()
 {
     try {
         const now = Date.now();
@@ -275,7 +276,7 @@ async function main()
 
     http.createServer(app).listen(config.server_port);
 
-    setInterval(update_height, 500);
+    setInterval(query_height, 500);
 
     console.log("Listening on port " + config.server_port);
 }

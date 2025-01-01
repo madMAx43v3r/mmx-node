@@ -6,7 +6,6 @@ config.partial_expiry = 100;                // [blocks]
 config.account_delay = 48;                  // [blocks]
 config.share_window = 8640;                 // [blocks]
 config.block_interval = 10 * 1000;          // [ms]
-config.max_response_time = 50 * 1000;       // [ms]
 config.share_window_hours = 24;             // [hours]
 config.share_interval = 5 * 60;             // [sec]
 config.min_difficulty = 1;                  // diff 1 gives ~0.7 partials per k32 per height
