@@ -349,7 +349,7 @@ void Node::main()
 
 		if(auto tx = vnx::read_from_file<Transaction>("data/tx_project_relay.dat")) {
 			auto exec = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy);
-			if(tx->expires != 0xFFFFFFFF || !tx->sender || !tx->is_valid(params) || !exec || exec->binary != params->relay_binary) {
+			if(!tx->is_valid(params) || !tx->sender || tx->expires != 0xFFFFFFFF || !exec || exec->binary != params->relay_binary) {
 				throw std::logic_error("invalid tx_project_relay");
 			}
 			block->project_addr = tx->id;
