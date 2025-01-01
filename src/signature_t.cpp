@@ -7,12 +7,18 @@
 
 #include <mmx/signature_t.hpp>
 
+#include <tuple>
+
 
 namespace mmx {
 
-std::mutex signature_t::mutex;
-const vnx::Hash64 signature_t::hash_salt = vnx::Hash64::rand();
-std::array<signature_t::cache_t, 16384> signature_t::sig_cache;
+std::mutex g_mutex;
+
+// prevent attacker from generating cache collisions on every node
+const auto hash_salt = vnx::Hash64::rand();
+
+std::array<std::tuple<hash_t, pubkey_t, signature_t>, 16384> g_sig_cache;
+
 
 signature_t::signature_t(const secp256k1_ecdsa_signature& sig)
 {
@@ -49,10 +55,12 @@ bool signature_t::verify(const pubkey_t& pubkey, const hash_t& hash) const
 {
 	const size_t sig_hash = vnx::Hash64(crc64(), hash_salt);
 
-	auto& entry = sig_cache[sig_hash % sig_cache.size()];
+	const auto entry = std::make_tuple(hash, pubkey, *this);
+
+	auto& cache = g_sig_cache[sig_hash % g_sig_cache.size()];
 	{
-		std::lock_guard lock(mutex);
-		if(entry.sig == *this && entry.pubkey == pubkey && entry.hash == hash) {
+		std::lock_guard lock(g_mutex);
+		if(entry == cache) {
 			return true;
 		}
 	}
@@ -60,10 +68,8 @@ bool signature_t::verify(const pubkey_t& pubkey, const hash_t& hash) const
 	const auto key = pubkey.to_secp256k1();
 	const bool res = secp256k1_ecdsa_verify(g_secp256k1, &sig, hash.data(), &key);
 	if(res) {
-		std::lock_guard lock(mutex);
-		entry.sig = *this;
-		entry.hash = hash;
-		entry.pubkey = pubkey;
+		std::lock_guard lock(g_mutex);
+		cache = entry;
 	}
 	return res;
 }

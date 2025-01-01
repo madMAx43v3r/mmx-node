@@ -36,16 +36,6 @@ public:
 
 	static signature_t sign(const skey_t& skey, const hash_t& hash);
 
-private:
-	struct cache_t {
-		bytes_t<64> sig;
-		hash_t hash;
-		pubkey_t pubkey;
-	};
-
-	static std::mutex mutex;
-	static const vnx::Hash64 hash_salt;
-	static std::array<cache_t, 16384> sig_cache;
 };
 
 } // mmx
