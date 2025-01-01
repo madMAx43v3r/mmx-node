@@ -246,12 +246,6 @@ uint64_t get_effective_plot_size(const int ksize)
 }
 
 inline
-uint64_t get_virtual_plot_size(std::shared_ptr<const ChainParams> params, const uint64_t balance)
-{
-	return to_effective_space(balance * params->virtual_space_constant);
-}
-
-inline
 uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
 	const uint64_t diff = prev->space_diff;

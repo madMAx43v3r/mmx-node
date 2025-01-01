@@ -30,7 +30,6 @@
 	"time_diff_divider": 100,
 	"time_diff_constant": 1000000,
 	"space_diff_constant": 100000000000,
-	"virtual_space_constant": 8108,
 	"vdf_reward": 500000,
 	"vdf_reward_interval": 50,
 	"reward_adjust_div": 100,
