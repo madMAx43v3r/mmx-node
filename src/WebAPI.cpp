@@ -631,7 +631,6 @@ public:
 
 	void augment_block_header(vnx::Object& tmp, std::shared_ptr<const BlockHeader> value) {
 		if(context) {
-			tmp["time"] = value->time_stamp / 1e3;
 			tmp["tx_fees"] = to_amount_object(value->tx_fees, context->params->decimals);
 			tmp["total_cost"] = to_amount_object(value->total_cost, context->params->decimals);
 			tmp["static_cost"] = to_amount_object(value->static_cost, context->params->decimals);
@@ -644,6 +643,10 @@ public:
 			tmp["average_txfee"] = to_amount_object(calc_min_reward_deduction(context->params, value->txfee_buffer), context->params->decimals);
 			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
 			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
+		}
+		tmp["time"] = value->time_stamp / 1e3;
+		if(value->proof.size()) {
+			tmp["farmer_key"] = value->proof[0]->farmer_key.to_string();
 		}
 	}
 
