@@ -535,7 +535,7 @@ private:
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
 	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;			// [farmer key => info]
 
-	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;					// sorted by count DSC [farmer key => num. blocks]
+	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;					// sorted by count DSC [farmer key => num blocks]
 
 	uint32_t sync_pos = 0;									// current sync height
 	uint32_t sync_retry = 0;
