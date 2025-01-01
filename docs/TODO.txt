@@ -14,18 +14,17 @@ After Mainnet
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 
 Mainnet
+- Multisig wallet support
 - Genesis rewards
 - Unit tests for all smart contracts
 - Whitepaper
 - CUDA plotter open-source
 
 Mainnet-RC
-- Multisig
 - Double check msg hashes again
 - New project wallet
 - Check remaining in-source TODOs
 - Test mainnet-rc changes
-- Pool update for new VDF scheme
 - Update binaries
 - Use relay for project reward
 - GUI fixes for new stuff
