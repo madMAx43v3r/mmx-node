@@ -15,14 +15,15 @@ After Mainnet
 
 Mainnet
 - Multisig wallet support
-- Genesis rewards
+- Genesis rewards (fix T8)
 - Unit tests for all smart contracts
 - Whitepaper
 - CUDA plotter open-source
+- min_ksize = 29
+- New project wallet
 
 Mainnet-RC
 - Double check msg hashes again
-- New project wallet
 - Check remaining in-source TODOs
 - Test mainnet-rc changes
-- GUI fixes for new stuff
+- GUI fixes for new stuff / removed VPs
