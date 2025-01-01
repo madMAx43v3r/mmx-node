@@ -1425,7 +1425,7 @@ bool Node::find_challenge(const uint32_t vdf_height, hash_t& challenge, uint64_t
 			return false;
 		}
 	}
-	while(block && block->height > vdf_height) {
+	while(block && block->vdf_height > vdf_height) {
 		block = find_prev_header(block);
 	}
 	if(!block) {
