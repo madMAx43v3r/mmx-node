@@ -58,7 +58,8 @@ int main(int argc, char** argv)
 	bool with_timelord = true;
 	bool with_harvester = true;
 	uint32_t wapi_threads = 1;
-	std::string public_endpoint = "0.0.0.0:11330";
+	std::string public_endpoint = "0.0.0.0:11330";		// for remote farmer, etc
+
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
@@ -159,6 +160,7 @@ int main(int argc, char** argv)
 			module.start_detached();
 		}
 		{
+			// for remote harvesters
 			vnx::Handle<vnx::Server> module = new vnx::Server("Server3", vnx::Endpoint::from_url("0.0.0.0:11333"));
 			module->use_authentication = true;
 			module->default_access = "USER";
