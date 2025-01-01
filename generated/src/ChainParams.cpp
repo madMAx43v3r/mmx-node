@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x59819acc96c471b4ull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x569b63b8158241cdull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -97,7 +97,7 @@ void ChainParams::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[47], 47); vnx::accept(_visitor, plot_nft_binary);
 	_visitor.type_field(_type_code->fields[48], 48); vnx::accept(_visitor, escrow_binary);
 	_visitor.type_field(_type_code->fields[49], 49); vnx::accept(_visitor, time_lock_binary);
-	_visitor.type_field(_type_code->fields[50], 50); vnx::accept(_visitor, project_addr);
+	_visitor.type_field(_type_code->fields[50], 50); vnx::accept(_visitor, relay_binary);
 	_visitor.type_field(_type_code->fields[51], 51); vnx::accept(_visitor, fixed_project_reward);
 	_visitor.type_field(_type_code->fields[52], 52); vnx::accept(_visitor, project_ratio);
 	_visitor.type_field(_type_code->fields[53], 53); vnx::accept(_visitor, reward_activation);
@@ -157,7 +157,7 @@ void ChainParams::write(std::ostream& _out) const {
 	_out << ", \"plot_nft_binary\": "; vnx::write(_out, plot_nft_binary);
 	_out << ", \"escrow_binary\": "; vnx::write(_out, escrow_binary);
 	_out << ", \"time_lock_binary\": "; vnx::write(_out, time_lock_binary);
-	_out << ", \"project_addr\": "; vnx::write(_out, project_addr);
+	_out << ", \"relay_binary\": "; vnx::write(_out, relay_binary);
 	_out << ", \"fixed_project_reward\": "; vnx::write(_out, fixed_project_reward);
 	_out << ", \"project_ratio\": "; vnx::write(_out, project_ratio);
 	_out << ", \"reward_activation\": "; vnx::write(_out, reward_activation);
@@ -224,7 +224,7 @@ vnx::Object ChainParams::to_object() const {
 	_object["plot_nft_binary"] = plot_nft_binary;
 	_object["escrow_binary"] = escrow_binary;
 	_object["time_lock_binary"] = time_lock_binary;
-	_object["project_addr"] = project_addr;
+	_object["relay_binary"] = relay_binary;
 	_object["fixed_project_reward"] = fixed_project_reward;
 	_object["project_ratio"] = project_ratio;
 	_object["reward_activation"] = reward_activation;
@@ -308,12 +308,12 @@ void ChainParams::from_object(const vnx::Object& _object) {
 			_entry.second.to(plot_nft_binary);
 		} else if(_entry.first == "port") {
 			_entry.second.to(port);
-		} else if(_entry.first == "project_addr") {
-			_entry.second.to(project_addr);
 		} else if(_entry.first == "project_ratio") {
 			_entry.second.to(project_ratio);
 		} else if(_entry.first == "proofs_per_height") {
 			_entry.second.to(proofs_per_height);
+		} else if(_entry.first == "relay_binary") {
+			_entry.second.to(relay_binary);
 		} else if(_entry.first == "reward_activation") {
 			_entry.second.to(reward_activation);
 		} else if(_entry.first == "reward_adjust_div") {
@@ -499,8 +499,8 @@ vnx::Variant ChainParams::get_field(const std::string& _name) const {
 	if(_name == "time_lock_binary") {
 		return vnx::Variant(time_lock_binary);
 	}
-	if(_name == "project_addr") {
-		return vnx::Variant(project_addr);
+	if(_name == "relay_binary") {
+		return vnx::Variant(relay_binary);
 	}
 	if(_name == "fixed_project_reward") {
 		return vnx::Variant(fixed_project_reward);
@@ -618,8 +618,8 @@ void ChainParams::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(escrow_binary);
 	} else if(_name == "time_lock_binary") {
 		_value.to(time_lock_binary);
-	} else if(_name == "project_addr") {
-		_value.to(project_addr);
+	} else if(_name == "relay_binary") {
+		_value.to(relay_binary);
 	} else if(_name == "fixed_project_reward") {
 		_value.to(fixed_project_reward);
 	} else if(_name == "project_ratio") {
@@ -655,7 +655,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0x59819acc96c471b4ull);
+	type_code->code_hash = vnx::Hash64(0x569b63b8158241cdull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
@@ -1005,7 +1005,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	{
 		auto& field = type_code->fields[50];
 		field.is_extended = true;
-		field.name = "project_addr";
+		field.name = "relay_binary";
 		field.code = {11, 32, 1};
 	}
 	{
@@ -1226,7 +1226,7 @@ void read(TypeInput& in, ::mmx::ChainParams& value, const TypeCode* type_code, c
 			case 47: vnx::read(in, value.plot_nft_binary, type_code, _field->code.data()); break;
 			case 48: vnx::read(in, value.escrow_binary, type_code, _field->code.data()); break;
 			case 49: vnx::read(in, value.time_lock_binary, type_code, _field->code.data()); break;
-			case 50: vnx::read(in, value.project_addr, type_code, _field->code.data()); break;
+			case 50: vnx::read(in, value.relay_binary, type_code, _field->code.data()); break;
 			case 52: vnx::read(in, value.project_ratio, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
@@ -1300,7 +1300,7 @@ void write(TypeOutput& out, const ::mmx::ChainParams& value, const TypeCode* typ
 	vnx::write(out, value.plot_nft_binary, type_code, type_code->fields[47].code.data());
 	vnx::write(out, value.escrow_binary, type_code, type_code->fields[48].code.data());
 	vnx::write(out, value.time_lock_binary, type_code, type_code->fields[49].code.data());
-	vnx::write(out, value.project_addr, type_code, type_code->fields[50].code.data());
+	vnx::write(out, value.relay_binary, type_code, type_code->fields[50].code.data());
 	vnx::write(out, value.project_ratio, type_code, type_code->fields[52].code.data());
 }
 

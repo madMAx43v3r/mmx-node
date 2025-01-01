@@ -65,7 +65,7 @@ public:
 	::mmx::addr_t plot_nft_binary;
 	::mmx::addr_t escrow_binary;
 	::mmx::addr_t time_lock_binary;
-	::mmx::addr_t project_addr;
+	::mmx::addr_t relay_binary;
 	uint64_t fixed_project_reward = 50000;
 	::mmx::uint_fraction_t project_ratio;
 	uint32_t reward_activation = 50000;
@@ -169,7 +169,7 @@ void ChainParams::accept_generic(T& _visitor) const {
 	_visitor.type_field("plot_nft_binary", 47); _visitor.accept(plot_nft_binary);
 	_visitor.type_field("escrow_binary", 48); _visitor.accept(escrow_binary);
 	_visitor.type_field("time_lock_binary", 49); _visitor.accept(time_lock_binary);
-	_visitor.type_field("project_addr", 50); _visitor.accept(project_addr);
+	_visitor.type_field("relay_binary", 50); _visitor.accept(relay_binary);
 	_visitor.type_field("fixed_project_reward", 51); _visitor.accept(fixed_project_reward);
 	_visitor.type_field("project_ratio", 52); _visitor.accept(project_ratio);
 	_visitor.type_field("reward_activation", 53); _visitor.accept(reward_activation);

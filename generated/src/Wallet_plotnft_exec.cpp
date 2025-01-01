@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_plotnft_exec::VNX_TYPE_HASH(0xca9e9d0dfde795d1ull);
-const vnx::Hash64 Wallet_plotnft_exec::VNX_CODE_HASH(0x8964a8e5cd090ae4ull);
+const vnx::Hash64 Wallet_plotnft_exec::VNX_CODE_HASH(0x4c5f4c17a6934bacull);
 
 vnx::Hash64 Wallet_plotnft_exec::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -147,7 +147,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_plotnft_exec::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.plotnft_exec";
 	type_code->type_hash = vnx::Hash64(0xca9e9d0dfde795d1ull);
-	type_code->code_hash = vnx::Hash64(0x8964a8e5cd090ae4ull);
+	type_code->code_hash = vnx::Hash64(0x4c5f4c17a6934bacull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;

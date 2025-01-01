@@ -22,6 +22,7 @@ struct MMX_EXPORT spend_options_t : vnx::struct_t {
 	uint32_t gas_limit = 5000000;
 	vnx::optional<uint32_t> expire_at;
 	vnx::optional<uint32_t> expire_delta;
+	vnx::optional<uint64_t> nonce;
 	vnx::optional<::mmx::addr_t> user;
 	vnx::optional<::mmx::addr_t> sender;
 	vnx::optional<std::string> passphrase;
@@ -70,21 +71,22 @@ struct MMX_EXPORT spend_options_t : vnx::struct_t {
 
 template<typename T>
 void spend_options_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<spend_options_t>(13);
+	_visitor.template type_begin<spend_options_t>(14);
 	_visitor.type_field("auto_send", 0); _visitor.accept(auto_send);
 	_visitor.type_field("mark_spent", 1); _visitor.accept(mark_spent);
 	_visitor.type_field("fee_ratio", 2); _visitor.accept(fee_ratio);
 	_visitor.type_field("gas_limit", 3); _visitor.accept(gas_limit);
 	_visitor.type_field("expire_at", 4); _visitor.accept(expire_at);
 	_visitor.type_field("expire_delta", 5); _visitor.accept(expire_delta);
-	_visitor.type_field("user", 6); _visitor.accept(user);
-	_visitor.type_field("sender", 7); _visitor.accept(sender);
-	_visitor.type_field("passphrase", 8); _visitor.accept(passphrase);
-	_visitor.type_field("note", 9); _visitor.accept(note);
-	_visitor.type_field("memo", 10); _visitor.accept(memo);
-	_visitor.type_field("owner_map", 11); _visitor.accept(owner_map);
-	_visitor.type_field("contract_map", 12); _visitor.accept(contract_map);
-	_visitor.template type_end<spend_options_t>(13);
+	_visitor.type_field("nonce", 6); _visitor.accept(nonce);
+	_visitor.type_field("user", 7); _visitor.accept(user);
+	_visitor.type_field("sender", 8); _visitor.accept(sender);
+	_visitor.type_field("passphrase", 9); _visitor.accept(passphrase);
+	_visitor.type_field("note", 10); _visitor.accept(note);
+	_visitor.type_field("memo", 11); _visitor.accept(memo);
+	_visitor.type_field("owner_map", 12); _visitor.accept(owner_map);
+	_visitor.type_field("contract_map", 13); _visitor.accept(contract_map);
+	_visitor.template type_end<spend_options_t>(14);
 }
 
 

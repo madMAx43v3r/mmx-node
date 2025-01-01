@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_offer_withdraw::VNX_TYPE_HASH(0x790a334fbf5dd1e6ull);
-const vnx::Hash64 Wallet_offer_withdraw::VNX_CODE_HASH(0x8f893df8081766cfull);
+const vnx::Hash64 Wallet_offer_withdraw::VNX_CODE_HASH(0x4ab2d90a638d2787ull);
 
 vnx::Hash64 Wallet_offer_withdraw::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -136,7 +136,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_offer_withdraw::static_create_type_code() 
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.offer_withdraw";
 	type_code->type_hash = vnx::Hash64(0x790a334fbf5dd1e6ull);
-	type_code->code_hash = vnx::Hash64(0x8f893df8081766cfull);
+	type_code->code_hash = vnx::Hash64(0x4ab2d90a638d2787ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
