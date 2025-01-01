@@ -7,7 +7,6 @@
 	"challenge_delay": 6,
 	"challenge_interval": 256,
 	"commit_delay": 24,
-	"score_target": 16384,
 	"proofs_per_height": 4,
 	"max_validators": 21,
 	"vdf_segment_size": 250000,
