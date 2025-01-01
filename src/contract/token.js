@@ -27,7 +27,7 @@ function transfer(owner_) public
 {
 	check_owner();
 	
-	owner = owner_;
+	owner = bech32(owner_);
 }
 
 function recover(amount, currency) public
