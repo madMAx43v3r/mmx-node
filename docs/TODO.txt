@@ -21,7 +21,6 @@ Mainnet
 
 Mainnet-RC
 - Multisig
-- Test remote calls again
 - Double check msg hashes again
 - New project wallet
 - Check remaining in-source TODOs
