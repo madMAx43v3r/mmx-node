@@ -1283,24 +1283,36 @@ void Node::apply(	std::shared_ptr<const Block> block,
 void Node::revert(const uint32_t height)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
+	const auto peak = get_peak();
 
-	if(auto peak = get_peak()) {
+	for(auto block = peak; block && block->height >= height; block = find_prev_header(block))
+	{
 		// revert farmer_ranking
-		for(uint32_t i = peak->height; i >= height && i > 0; --i) {
-			if(auto header = get_header_at(i)) {
-				const auto& farmer_key = header->get_farmer_key();
-				for(auto& entry : farmer_ranking) {
-					if(entry.first == farmer_key) {
-						if(entry.second) {
-							entry.second--;
-						}
-						break;
+		if(block->height) {
+			const auto& farmer_key = block->get_farmer_key();
+			for(auto& entry : farmer_ranking) {
+				if(entry.first == farmer_key) {
+					if(entry.second) {
+						entry.second--;
 					}
+					break;
 				}
 			}
 		}
-		update_farmer_ranking();
+		// store reverted blocks on-disk for evidence
+		if(is_synced && block->height < peak->height)
+		{
+			const auto file_name = storage_path + "blocks/"
+					+ std::to_string(block->height) + "_" + block->hash.to_string() + ".dat";
+			try {
+				vnx::write_to_file(file_name, block);
+			} catch(const std::exception& ex) {
+				log(WARN) << "Failed to write block: " << ex.what() << " (" << file_name << ")";
+			}
+		}
 	}
+	update_farmer_ranking();
+
 	if(block_chain) {
 		block_index_t entry;
 		if(block_index.find(height, entry)) {
