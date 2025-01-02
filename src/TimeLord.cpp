@@ -85,6 +85,10 @@ void TimeLord::main()
 
 	set_timer_millis(10000, std::bind(&TimeLord::print_info, this));
 
+	set_timer_millis(2000, [this]() {
+		peak_iters = 0;		// force new output
+	});
+
 	Super::main();
 
 	stop_vdf();
