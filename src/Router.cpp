@@ -321,9 +321,6 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> value)
 {
-	if(!is_synced) {
-		return;
-	}
 	if(vnx_sample && vnx_sample->topic == input_vdfs)
 	{
 		if(our_timelords.insert(value->timelord_key).second) {
@@ -1612,10 +1609,8 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	if(peer_set.size() < max_peer_set) {
 		send_request(peer, Router_get_peers::create());
 	}
-	if(is_synced) {
-		for(const auto& entry : vdf_history) {
-			send_to(peer, entry.second);	// make sure peer has all needed VDFs for current and next block
-		}
+	for(const auto& entry : vdf_history) {
+		send_to(peer, entry.second);	// make sure peer has all needed VDFs for current and next block
 	}
 	log(DEBUG) << "Connected to peer " << peer->address;
 }

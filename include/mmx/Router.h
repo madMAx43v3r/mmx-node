@@ -212,7 +212,6 @@ private:
 	bool receive_msg_hash(const hash_t& hash, uint64_t client);
 
 private:
-	bool is_synced = false;
 	bool is_connected = false;
 
 	hash_t node_id;
