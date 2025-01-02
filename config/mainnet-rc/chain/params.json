@@ -8,7 +8,7 @@
 	"challenge_interval": 256,
 	"commit_delay": 24,
 	"proofs_per_height": 4,
-	"max_validators": 21,
+	"max_validators": 31,
 	"vdf_segment_size": 250000,
 	"min_reward": 500000,
 	"min_txfee": 20000,
