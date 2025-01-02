@@ -778,7 +778,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 		const auto range = fork_index.equal_range(fork->block->height);
 		for(auto iter = range.first; iter != range.second; ++iter) {
 			const auto& other = iter->second;
-			if(other->block->hash != fork->block->hash && other->block->prev != fork->block->prev) {
+			if(other->is_connected && other->block->hash != fork->block->hash && other->block->prev != fork->block->prev) {
 				count++;
 			}
 		}
