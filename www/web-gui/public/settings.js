@@ -13,8 +13,6 @@ Vue.component('node-settings', {
 			opencl_platform_list: null,
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
-			enable_timelord_reward: null,
-			verify_timelord_reward: null,
 			harv_num_threads: null,
 			reload_interval: null,
 			recursive_search: null,
@@ -59,8 +57,6 @@ Vue.component('node-settings', {
 					}
 					this.farmer_reward_addr = data["Farmer.reward_addr"];
 					this.timelord_reward_addr = data["TimeLord.reward_addr"];
-					this.enable_timelord_reward = data["TimeLord.enable_reward"];
-					this.verify_timelord_reward = data["Node.verify_vdf_rewards"];
 					this.harv_num_threads = data["Harvester.num_threads"];
 					this.reload_interval = data["Harvester.reload_interval"];
 					this.recursive_search = data["Harvester.recursive_search"];
@@ -256,17 +252,6 @@ Vue.component('node-settings', {
 					<v-checkbox
 						v-model="timelord"
 						:label="$t('node_settings.enable_timelord')"
-						class="my-0"
-					></v-checkbox>
-					<v-checkbox
-						:disabled="!timelord"
-						v-model="enable_timelord_reward"
-						:label="$t('node_settings.enable_timelord_reward')"
-						class="my-0"
-					></v-checkbox>
-					<v-checkbox
-						v-model="verify_timelord_reward"
-						:label="$t('node_settings.verify_timelord_reward')"
 						class="my-0"
 					></v-checkbox>
 					<v-checkbox
