@@ -70,12 +70,16 @@ std::string exec_result_t::get_error_msg() const
 					code = " (code " + name + ")";
 				}
 			}
-			if(error->operation < uint32_t(-1)) {
-				std::string location = "0x" + vnx::to_hex_string(error->address);
-				if(error->line) {
-					location += ", line " + std::to_string(*error->line);
+			if(error->operation != 0xFFFFFFFF) {
+				std::string location;
+				if(error->address != 0xFFFFFFFF) {
+					location = "exception at 0x" + vnx::to_hex_string(error->address);
+					if(error->line) {
+						location += ", line " + std::to_string(*error->line);
+					}
+					location += ": ";
 				}
-				return "[" + std::to_string(error->operation) + "] exception at " + location + ": " + error->message + code;
+				return location + error->message + code + " (op " + std::to_string(error->operation) + ")";
 			} else {
 				return error->message + code;
 			}

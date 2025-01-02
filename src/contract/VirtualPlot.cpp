@@ -15,7 +15,7 @@ namespace contract {
 
 vnx::bool_t VirtualPlot::is_valid() const
 {
-	return Super::is_valid() && farmer_key != pubkey_t() && (!reward_address || *reward_address != addr_t());
+	return Super::is_valid() && farmer_key != pubkey_t() && (!reward_address || (*reward_address) != addr_t());
 }
 
 hash_t VirtualPlot::calc_hash(const vnx::bool_t& full_hash) const
@@ -40,14 +40,9 @@ hash_t VirtualPlot::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t VirtualPlot::num_bytes(const vnx::bool_t& total) const
+uint64_t VirtualPlot::num_bytes() const
 {
-	return (total ? Super::num_bytes() : 0) + 48 + (reward_address ? 32 : 0);
-}
-
-uint64_t VirtualPlot::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
+	return Super::num_bytes() + 32 + (reward_address ? 32 : 0);
 }
 
 vnx::Variant VirtualPlot::read_field(const std::string& name) const

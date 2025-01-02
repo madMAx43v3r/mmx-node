@@ -1,0 +1,22 @@
+package mmx;
+
+struct query_filter_t {
+	
+	uint since;					// included
+	uint until = -1;			// included
+	
+	int limit = -1;				// (-1 = no limit)
+	
+	uint max_search;			// max number of rows to search (0 = no limit)
+	
+	set<addr_t> currency;
+	
+	optional<tx_type_e> type;
+	
+	optional<string> memo;
+	
+	bool white_list;			// if to apply whitelist
+	
+	bool with_pending;			// if to include unconfirmed transactions
+	
+}

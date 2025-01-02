@@ -116,6 +116,7 @@ std::shared_ptr<vnx::TypeCode> Harvester_add_plot_dir_return::static_create_type
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Harvester_add_plot_dir_return& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

@@ -22,6 +22,8 @@
 #include <mmx/Farmer_get_partial_diffs_return.hxx>
 #include <mmx/Farmer_sign_block.hxx>
 #include <mmx/Farmer_sign_block_return.hxx>
+#include <mmx/Farmer_sign_vote.hxx>
+#include <mmx/Farmer_sign_vote_return.hxx>
 #include <mmx/Harvester_add_plot_dir.hxx>
 #include <mmx/Harvester_add_plot_dir_return.hxx>
 #include <mmx/Harvester_get_farm_info.hxx>
@@ -104,6 +106,8 @@
 #include <mmx/Node_get_params_return.hxx>
 #include <mmx/Node_get_plot_nft_info.hxx>
 #include <mmx/Node_get_plot_nft_info_return.hxx>
+#include <mmx/Node_get_plot_nft_target.hxx>
+#include <mmx/Node_get_plot_nft_target_return.hxx>
 #include <mmx/Node_get_recent_offers.hxx>
 #include <mmx/Node_get_recent_offers_return.hxx>
 #include <mmx/Node_get_recent_offers_for.hxx>
@@ -126,6 +130,8 @@
 #include <mmx/Node_get_swaps_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
 #include <mmx/Node_get_synced_height_return.hxx>
+#include <mmx/Node_get_synced_vdf_height.hxx>
+#include <mmx/Node_get_synced_vdf_height_return.hxx>
 #include <mmx/Node_get_total_balance.hxx>
 #include <mmx/Node_get_total_balance_return.hxx>
 #include <mmx/Node_get_total_balances.hxx>
@@ -152,14 +158,10 @@
 #include <mmx/Node_get_tx_info_return.hxx>
 #include <mmx/Node_get_tx_info_for.hxx>
 #include <mmx/Node_get_tx_info_for_return.hxx>
-#include <mmx/Node_get_virtual_plot_balance.hxx>
-#include <mmx/Node_get_virtual_plot_balance_return.hxx>
-#include <mmx/Node_get_virtual_plots.hxx>
-#include <mmx/Node_get_virtual_plots_return.hxx>
-#include <mmx/Node_get_virtual_plots_for.hxx>
-#include <mmx/Node_get_virtual_plots_for_return.hxx>
-#include <mmx/Node_get_virtual_plots_owned_by.hxx>
-#include <mmx/Node_get_virtual_plots_owned_by_return.hxx>
+#include <mmx/Node_get_vdf_height.hxx>
+#include <mmx/Node_get_vdf_height_return.hxx>
+#include <mmx/Node_get_vdf_peak.hxx>
+#include <mmx/Node_get_vdf_peak_return.hxx>
 #include <mmx/Node_read_storage.hxx>
 #include <mmx/Node_read_storage_return.hxx>
 #include <mmx/Node_read_storage_array.hxx>
@@ -224,12 +226,12 @@
 #include <mmx/Router_kick_peer.hxx>
 #include <mmx/Router_kick_peer_return.hxx>
 #include <mmx/Solution.hxx>
-#include <mmx/TimeInfusion.hxx>
 #include <mmx/TimeLord_stop_vdf.hxx>
 #include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/TransactionBase.hxx>
 #include <mmx/VDF_Point.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/Wallet_accept_offer.hxx>
 #include <mmx/Wallet_accept_offer_return.hxx>
 #include <mmx/Wallet_add_account.hxx>
@@ -252,6 +254,8 @@
 #include <mmx/Wallet_execute_return.hxx>
 #include <mmx/Wallet_export_wallet.hxx>
 #include <mmx/Wallet_export_wallet_return.hxx>
+#include <mmx/Wallet_find_wallet_by_addr.hxx>
+#include <mmx/Wallet_find_wallet_by_addr_return.hxx>
 #include <mmx/Wallet_gather_inputs_for.hxx>
 #include <mmx/Wallet_gather_inputs_for_return.hxx>
 #include <mmx/Wallet_get_account.hxx>
@@ -296,8 +300,6 @@
 #include <mmx/Wallet_get_total_balances_return.hxx>
 #include <mmx/Wallet_get_tx_log.hxx>
 #include <mmx/Wallet_get_tx_log_return.hxx>
-#include <mmx/Wallet_get_virtual_plots.hxx>
-#include <mmx/Wallet_get_virtual_plots_return.hxx>
 #include <mmx/Wallet_import_wallet.hxx>
 #include <mmx/Wallet_import_wallet_return.hxx>
 #include <mmx/Wallet_is_locked.hxx>
@@ -312,6 +314,10 @@
 #include <mmx/Wallet_offer_trade_return.hxx>
 #include <mmx/Wallet_offer_withdraw.hxx>
 #include <mmx/Wallet_offer_withdraw_return.hxx>
+#include <mmx/Wallet_plotnft_create.hxx>
+#include <mmx/Wallet_plotnft_create_return.hxx>
+#include <mmx/Wallet_plotnft_exec.hxx>
+#include <mmx/Wallet_plotnft_exec_return.hxx>
 #include <mmx/Wallet_release.hxx>
 #include <mmx/Wallet_release_return.hxx>
 #include <mmx/Wallet_release_all.hxx>
@@ -513,6 +519,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_block> 
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_block_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_vote> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Farmer_sign_vote_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -1259,6 +1283,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_i
 }
 
 template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_target> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_plot_nft_target_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_recent_offers> value) {
 	if(value) {
 		value->accept_generic(visitor);
@@ -1449,6 +1491,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_hei
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_height_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_vdf_height> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_synced_vdf_height_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -1691,7 +1751,7 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_tx_info_fo
 }
 
 template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plot_balance> value) {
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_height> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -1700,7 +1760,7 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_pl
 }
 
 template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plot_balance_return> value) {
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_height_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -1709,7 +1769,7 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_pl
 }
 
 template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots> value) {
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_peak> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -1718,43 +1778,7 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_pl
 }
 
 template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_for> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_for_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_owned_by> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_virtual_plots_owned_by_return> value) {
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Node_get_vdf_peak_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -2347,15 +2371,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Solution> value) {
 }
 
 template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::TimeInfusion> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::TimeLord_stop_vdf> value) {
 	if(value) {
 		value->accept_generic(visitor);
@@ -2397,6 +2412,15 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::TransactionBase> va
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::VDF_Point> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ValidatorVote> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -2595,6 +2619,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_export_walle
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_export_wallet_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_find_wallet_by_addr> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_find_wallet_by_addr_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
@@ -2999,24 +3041,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_tx_log_r
 }
 
 template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_virtual_plots> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_virtual_plots_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_import_wallet> value) {
 	if(value) {
 		value->accept_generic(visitor);
@@ -3135,6 +3159,42 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_offer_withdr
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_offer_withdraw_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_plotnft_create> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_plotnft_create_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_plotnft_exec> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_plotnft_exec_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

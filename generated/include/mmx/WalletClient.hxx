@@ -16,14 +16,13 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/offer_data_t.hxx>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <mmx/skey_t.hpp>
 #include <mmx/spend_options_t.hxx>
 #include <mmx/tx_entry_t.hxx>
 #include <mmx/tx_log_entry_t.hxx>
-#include <mmx/tx_type_e.hxx>
 #include <mmx/txin_t.hxx>
 #include <mmx/uint128.hpp>
-#include <mmx/virtual_plot_info_t.hxx>
 #include <vnx/Module.h>
 #include <vnx/Variant.hpp>
 #include <vnx/addons/HttpData.hxx>
@@ -39,33 +38,37 @@ public:
 	
 	WalletClient(vnx::Hash64 service_addr);
 	
-	std::shared_ptr<const ::mmx::Transaction> send(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> send(const uint32_t& index = 0, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> send_many(const uint32_t& index = 0, const std::vector<std::pair<::mmx::addr_t, uint64_t>>& amounts = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> send_many(const uint32_t& index = 0, const std::vector<std::pair<::mmx::addr_t, ::mmx::uint128>>& amounts = {}, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> send_from(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& src_addr = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> send_from(const uint32_t& index = 0, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& dst_addr = ::mmx::addr_t(), const ::mmx::addr_t& src_addr = ::mmx::addr_t(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> deploy(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Contract> contract = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> execute(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const vnx::optional<uint32_t>& user = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> deposit(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> deposit(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index = 0, const uint32_t& owner = 0, const uint64_t& bid_amount = 0, const ::mmx::addr_t& bid_currency = ::mmx::addr_t(), const uint64_t& ask_amount = 0, const ::mmx::addr_t& ask_currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> make_offer(const uint32_t& index = 0, const uint32_t& owner = 0, const ::mmx::uint128& bid_amount = ::mmx::uint128(), const ::mmx::addr_t& bid_currency = ::mmx::addr_t(), const ::mmx::uint128& ask_amount = ::mmx::uint128(), const ::mmx::addr_t& ask_currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> offer_trade(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const uint32_t& dst_addr = 0, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> offer_trade(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128(), const uint32_t& dst_addr = 0, const ::mmx::uint128& price = ::mmx::uint128(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> offer_withdraw(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> accept_offer(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& dst_addr = 0, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> accept_offer(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const uint32_t& dst_addr = 0, const ::mmx::uint128& price = ::mmx::uint128(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> cancel_offer(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> swap_trade(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const vnx::optional<uint64_t>& min_trade = nullptr, const int32_t& num_iter = 20, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> swap_trade(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const vnx::optional<::mmx::uint128>& min_trade = nullptr, const int32_t& num_iter = 20, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> swap_add_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<uint64_t, 2>& amount = {}, const uint32_t& pool_idx = 0, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> swap_add_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<::mmx::uint128, 2>& amount = {}, const uint32_t& pool_idx = 0, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
-	std::shared_ptr<const ::mmx::Transaction> swap_rem_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<uint64_t, 2>& amount = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::shared_ptr<const ::mmx::Transaction> swap_rem_liquid(const uint32_t& index = 0, const ::mmx::addr_t& address = ::mmx::addr_t(), const std::array<::mmx::uint128, 2>& amount = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	
+	std::shared_ptr<const ::mmx::Transaction> plotnft_exec(const ::mmx::addr_t& address = ::mmx::addr_t(), const std::string& method = "", const std::vector<::vnx::Variant>& args = {}, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	
+	std::shared_ptr<const ::mmx::Transaction> plotnft_create(const uint32_t& index = 0, const std::string& name = "", const vnx::optional<uint32_t>& owner = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	std::shared_ptr<const ::mmx::Transaction> complete(const uint32_t& index = 0, std::shared_ptr<const ::mmx::Transaction> tx = nullptr, const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
@@ -101,13 +104,13 @@ public:
 	
 	void update_cache_async(const uint32_t& index = 0);
 	
-	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const uint32_t& since = 0, const uint32_t& until = -1, const int32_t& limit = -1, const vnx::optional<::mmx::tx_type_e>& type = nullptr, const vnx::optional<::mmx::addr_t>& currency = nullptr);
+	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const ::mmx::query_filter_t& filter = ::mmx::query_filter_t());
 	
-	std::vector<::mmx::tx_entry_t> get_history_memo(const uint32_t& index = 0, const std::string& memo = "", const int32_t& limit = -1, const vnx::optional<::mmx::addr_t>& currency = nullptr);
+	std::vector<::mmx::tx_entry_t> get_history_memo(const uint32_t& index = 0, const std::string& memo = "", const ::mmx::query_filter_t& filter = ::mmx::query_filter_t());
 	
-	std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index = 0, const int32_t& limit = -1, const uint32_t& offset = 0);
+	std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index = 0, const int32_t& limit = 100);
 	
-	std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index = 0, const uint64_t& amount = 0, const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
+	std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index = 0, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());
 	
 	::mmx::balance_t get_balance(const uint32_t& index = 0, const ::mmx::addr_t& currency = ::mmx::addr_t());
 	
@@ -117,11 +120,9 @@ public:
 	
 	std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr);
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr, const vnx::optional<::mmx::hash_t>& type_hash = nullptr);
 	
-	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr);
-	
-	std::vector<::mmx::virtual_plot_info_t> get_virtual_plots(const uint32_t& index = 0);
+	std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts_owned(const uint32_t& index = 0, const vnx::optional<std::string>& type_name = nullptr, const vnx::optional<::mmx::hash_t>& type_hash = nullptr);
 	
 	std::vector<::mmx::offer_data_t> get_offers(const uint32_t& index = 0, const vnx::bool_t& state = 0);
 	
@@ -130,6 +131,8 @@ public:
 	::mmx::addr_t get_address(const uint32_t& index = 0, const uint32_t& offset = 0);
 	
 	std::vector<::mmx::addr_t> get_all_addresses(const int32_t& index = 0);
+	
+	int32_t find_wallet_by_addr(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
 	::mmx::account_info_t get_account(const uint32_t& index = 0);
 	

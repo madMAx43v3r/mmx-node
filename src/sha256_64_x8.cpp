@@ -32,7 +32,7 @@ void sha256_64_x8(uint8_t* out, uint8_t* in, const uint64_t length)
 	} else if(have_avx2) {
 		sha256_avx2_64_x8(out, in, length);
 	} else {
-		for (int i = 0; i < 8; ++i) {
+		for(int i = 0; i < 8; ++i) {
 			const mmx::hash_t hash(in + i * 64, length);
 			::memcpy(out + i * 32, hash.data(), 32);
 		}

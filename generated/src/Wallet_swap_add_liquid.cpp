@@ -6,6 +6,7 @@
 #include <mmx/Wallet_swap_add_liquid_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_swap_add_liquid::VNX_TYPE_HASH(0xe053d1ae718e2f64ull);
-const vnx::Hash64 Wallet_swap_add_liquid::VNX_CODE_HASH(0x940647e388d9b3e0ull);
+const vnx::Hash64 Wallet_swap_add_liquid::VNX_CODE_HASH(0xd639284ecbb947beull);
 
 vnx::Hash64 Wallet_swap_add_liquid::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -156,7 +157,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_add_liquid::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.swap_add_liquid";
 	type_code->type_hash = vnx::Hash64(0xe053d1ae718e2f64ull);
-	type_code->code_hash = vnx::Hash64(0x940647e388d9b3e0ull);
+	type_code->code_hash = vnx::Hash64(0xd639284ecbb947beull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -181,9 +182,9 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_add_liquid::static_create_type_code()
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 16;
+		field.is_extended = true;
 		field.name = "amount";
-		field.code = {11, 2, 4};
+		field.code = {11, 2, 11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -209,6 +210,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_swap_add_liquid::static_create_type_code()
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Wallet_swap_add_liquid& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -243,9 +245,6 @@ void read(TypeInput& in, ::mmx::Wallet_swap_add_liquid& value, const TypeCode* t
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
-		}
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.pool_idx, _field->code.data());
 		}
@@ -253,6 +252,7 @@ void read(TypeInput& in, ::mmx::Wallet_swap_add_liquid& value, const TypeCode* t
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.amount, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.options, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
@@ -272,11 +272,11 @@ void write(TypeOutput& out, const ::mmx::Wallet_swap_add_liquid& value, const Ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(24);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write_value(_buf + 4, value.amount);
-	vnx::write_value(_buf + 20, value.pool_idx);
+	vnx::write_value(_buf + 4, value.pool_idx);
 	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.amount, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.options, type_code, type_code->fields[4].code.data());
 }
 

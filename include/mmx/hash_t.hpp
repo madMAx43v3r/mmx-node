@@ -149,7 +149,9 @@ namespace std {
 	template<>
 	struct hash<typename mmx::hash_t> {
 		size_t operator()(const mmx::hash_t& x) const {
-			return std::hash<mmx::hash_t::super_t>{}(x);
+			size_t res = 0;
+			::memcpy(&res, x.data(), std::min(x.size(), sizeof(res)));
+			return res;
 		}
 	};
 } // std

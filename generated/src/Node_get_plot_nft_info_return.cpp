@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_plot_nft_info_return::VNX_TYPE_HASH(0x4d3661c719d8496bull);
-const vnx::Hash64 Node_get_plot_nft_info_return::VNX_CODE_HASH(0x8a50c1ed6160c99full);
+const vnx::Hash64 Node_get_plot_nft_info_return::VNX_CODE_HASH(0x26113e260e20e7acull);
 
 vnx::Hash64 Node_get_plot_nft_info_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_plot_nft_info_return::static_create_type
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_plot_nft_info.return";
 	type_code->type_hash = vnx::Hash64(0x4d3661c719d8496bull);
-	type_code->code_hash = vnx::Hash64(0x8a50c1ed6160c99full);
+	type_code->code_hash = vnx::Hash64(0x26113e260e20e7acull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -140,6 +140,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_plot_nft_info_return::static_create_type
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_plot_nft_info_return& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

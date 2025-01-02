@@ -10,6 +10,8 @@
 
 #include <mmx/vm/Storage.h>
 
+#include <vector>
+
 
 namespace mmx {
 namespace vm {
@@ -19,8 +21,19 @@ class Engine;
 class StorageProxy : public Storage {
 public:
 	Engine* const engine;
+
 	const std::shared_ptr<Storage> backend;
+
 	const bool read_only;
+
+	struct trace_t {
+		std::string type;
+		addr_t contract;
+		uint64_t addr = 0;
+		uint64_t key = 0;
+		varptr_t value;
+	};
+	mutable std::vector<trace_t> trace;
 
 	StorageProxy(Engine* engine, std::shared_ptr<Storage> backend, bool read_only);
 
@@ -33,6 +46,8 @@ public:
 	void write(const addr_t& contract, const uint64_t dst, const uint64_t key, const var_t& value) override;
 
 	uint64_t lookup(const addr_t& contract, const var_t& value) const override;
+
+	std::unique_ptr<uint128> get_balance(const addr_t& contract, const addr_t& currency) override;
 
 	using Storage::write;
 	using Storage::lookup;

@@ -32,18 +32,10 @@ public:
 
 	secp256k1_ecdsa_signature to_secp256k1() const;
 
+	signature_t normalized() const;
+
 	static signature_t sign(const skey_t& skey, const hash_t& hash);
 
-private:
-	struct cache_t {
-		bytes_t<64> sig;
-		hash_t hash;
-		pubkey_t pubkey;
-	};
-
-	static std::mutex mutex;
-	static const size_t hash_salt;
-	static std::array<cache_t, 16384> sig_cache;
 };
 
 } // mmx
@@ -77,15 +69,5 @@ void accept(vnx::Visitor& visitor, const mmx::signature_t& value) {
 }
 
 } // vnx
-
-
-namespace std {
-	template<>
-	struct hash<typename mmx::signature_t> {
-		size_t operator()(const mmx::signature_t& x) const {
-			return std::hash<mmx::signature_t::super_t>{}(x);
-		}
-	};
-} // std
 
 #endif /* INCLUDE_MMX_SIGNATURE_T_HPP_ */

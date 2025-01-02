@@ -4,6 +4,8 @@ struct pooling_info_t {
 	
 	addr_t contract;
 	
+	optional<string> name;
+	
 	optional<string> server_url;
 	
 	optional<addr_t> pool_target;
@@ -11,5 +13,7 @@ struct pooling_info_t {
 	ulong partial_diff;
 	
 	uint plot_count;
+	
+	bool is_plot_nft;
 	
 }

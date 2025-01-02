@@ -1,9 +1,9 @@
 {
 	"__type": "mmx.contract.Executable",
 	"name": "contract_02",
-	"binary": "mmx1davfr6uds7hr3g7vzd4qqvzzduatkpautsdvm5s452xqjsgcwdfsrq2daz",
+	"binary": "mmx1xeux3zlku0w275e7u0llq9yfj6mh97hn4ytueevmwv9e9f9mtudq6gsstv",
 	"init_args": [],
 	"depends": {
-		"counter": "mmx1euuy4wtcvd50nat7q2gdcr78g37j6g3r6g7yjk3z9twr2fz45lqq7p0f4z"
+		"counter": "mmx1886vtx08rt5pd0n6rgp6zagucfr2z70fkhg5erqthftkfmpllm0qvf7xs5"
 	}
 }

@@ -81,7 +81,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	if(ksize < 8 || ksize > 32) {
 		throw std::logic_error("invalid ksize");
 	}
-	if(xbits > ksize) {
+	if(xbits < 0 || xbits > ksize) {
 		throw std::logic_error("invalid xbits");
 	}
 	const auto X_set = std::set<uint32_t>(X_values.begin(), X_values.end());
@@ -135,6 +135,15 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	}
 //	std::cout << "Table 1 took " << (vnx::get_time_millis() - t1_begin) << " ms" << std::endl;
 
+	// sort function for proof ordering (enforce unique proofs)
+	const auto sort_func =
+		[&M_tmp](const std::pair<uint32_t, uint32_t>& L, const std::pair<uint32_t, uint32_t>& R) -> bool {
+			if(L.first == R.first) {
+				return M_tmp[L.second] < M_tmp[R.second];
+			}
+			return L < R;
+		};
+
 	for(int t = 2; t <= N_TABLE; ++t)
 	{
 //		const auto time_begin = vnx::get_time_millis();
@@ -142,7 +151,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		std::vector<std::array<uint32_t, N_META>> M_next;
 		std::vector<std::pair<uint32_t, uint32_t>> matches;
 
-		std::sort(entries.begin(), entries.end());
+		std::sort(entries.begin(), entries.end(), sort_func);
 
 //		std::cout << "Table " << t << " sort took " << (vnx::get_time_millis() - time_begin) << " ms" << std::endl;
 
@@ -201,7 +210,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 //		std::cout << "Table " << t << " took " << (vnx::get_time_millis() - time_begin) << " ms, " << entries.size() << " entries" << std::endl;
 	}
 
-	std::sort(entries.begin(), entries.end());
+	std::sort(entries.begin(), entries.end(), sort_func);
 
 	std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>> out;
 	for(const auto& entry : entries)

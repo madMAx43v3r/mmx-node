@@ -9,8 +9,8 @@ const fee_rates = [
 	922337203685477581,		// 0.05
 ];
 
+var tokens;
 var state = [];
-var tokens = [];
 var volume = [0, 0];
 var users = {};
 
@@ -20,8 +20,7 @@ var users = {};
 
 function init(token, currency)
 {
-	push(tokens, bech32(token));
-	push(tokens, bech32(currency));
+	tokens = [bech32(token), bech32(currency)];
 	
 	for(const fee_rate of fee_rates) {
 		var out = {};
@@ -56,9 +55,7 @@ function _get_earned_fees(user) const
 function get_earned_fees(address) const public
 {
 	const user = users[bech32(address)];
-	if(user == null) {
-		fail("no such user", 2);
-	}
+	assert(user);
 	return _get_earned_fees(user);
 }
 
@@ -81,17 +78,15 @@ function _payout(user)
 function payout() public
 {
 	const user = users[this.user];
-	if(user == null) {
-		fail("no such user", 2);
-	}
+	assert(user);
 	return _payout(user);
 }
 
 function _add_liquid(i, pool_idx, amount)
 {
-	if(pool_idx >= size(state)) {
-		fail("invalid pool_idx", 8);
-	}
+	assert(i < 2);
+	assert(pool_idx < size(state));
+	
 	const entry = state[pool_idx];
 	
 	var user = users[this.user];
@@ -104,9 +99,7 @@ function _add_liquid(i, pool_idx, amount)
 		users[this.user] = user;
 	} else {
 		if(user.balance[0] > 0 || user.balance[1] > 0) {
-			if(pool_idx != user.pool_idx) {
-				fail("pool_idx mismatch", 9);
-			}
+			assert(pool_idx == user.pool_idx, "pool_idx mismatch");
 			// need to payout now, to avoid fee stealing
 			_payout(user);
 		}
@@ -125,14 +118,16 @@ function _add_liquid(i, pool_idx, amount)
 
 function add_liquid(i, pool_idx) public payable
 {
-	if(this.deposit.currency != tokens[i]) {
-		fail("currency mismatch", 1);
-	}
+	assert(i < 2);
+	assert(this.deposit.currency == tokens[i]);
+	
 	_add_liquid(i, pool_idx, this.deposit.amount);
 }
 
 function _rem_liquid(user, i, amount, do_send = true)
 {
+	assert(i < 2);
+	
 	const k = (i + 1) % 2;
 	const entry = state[user.pool_idx];
 	const balance = entry.balance;
@@ -174,30 +169,27 @@ function _rem_liquid(user, i, amount, do_send = true)
 
 function rem_liquid(i, amount, dry_run = false) public
 {
-	if(amount == 0) {
-		fail("amount == 0");
-	}
+	assert(i < 2);
+	
+	amount = uint(amount);
+	assert(amount);
+	
 	const user = users[this.user];
-	if(user == null) {
-		fail("no such user", 2);
-	}
+	assert(user);
+	
 	if(!dry_run) {
-		if(this.height < user.unlock_height) {
-			fail("liquidity still locked", 3);
-		}
+		assert(this.height >= user.unlock_height, "liquidity still locked", 3);
 	}
-	if(amount > user.balance[i]) {
-		fail("amount > user balance", 4);
-	}
+	assert(amount <= user.balance[i], "amount > user balance", 4);
+	
 	return _rem_liquid(user, i, amount, !dry_run);
 }
 
 function rem_all_liquid(dry_run = false) public
 {
 	const user = users[this.user];
-	if(user == null) {
-		fail("no such user", 2);
-	}
+	assert(user);
+	
 	_payout(user);
 	
 	const out = [0, 0];
@@ -215,16 +207,12 @@ function rem_all_liquid(dry_run = false) public
 
 function switch_pool(pool_idx) public
 {
-	if(pool_idx >= size(state)) {
-		fail("invalid pool_idx", 8);
-	}
+	assert(pool_idx < size(state));
+	
 	const user = users[this.user];
-	if(user == null) {
-		fail("no such user", 2);
-	}
-	if(this.height < user.unlock_height) {
-		fail("liquidity still locked", 3);
-	}
+	assert(user);
+	assert(this.height >= user.unlock_height, "liquidity still locked", 3);
+	
 	_payout(user);
 	
 	const new_amount = [0, 0];
@@ -257,12 +245,10 @@ function get_total_balance() public const
 
 function trade(i, address, min_trade, num_iter) public payable
 {
-	if(this.deposit.currency != tokens[i]) {
-		fail("currency mismatch", 1);
-	}
-	if(num_iter < 1) {
-		fail("invalid num_iter");
-	}
+	assert(i < 2);
+	assert(num_iter > 0);
+	assert(this.deposit.currency == tokens[i]);
+	
 	const k = (i + 1) % 2;
 	const amount = this.deposit.amount;
 	const chunk_size = (amount + num_iter - 1) / num_iter;
@@ -297,7 +283,7 @@ function trade(i, address, min_trade, num_iter) public payable
 				}
 			}
 		}
-		if(entry != null) {
+		if(entry) {
 			total_actual_amount += actual_amount_i;
 			
 			out[0] += trade_amount_i;
@@ -313,17 +299,13 @@ function trade(i, address, min_trade, num_iter) public payable
 		}
 	}
 	
-	if(amount_left > 0) {
-		fail("incomplete trade");
+	assert(amount_left == 0);
+	
+	if(min_trade) {
+		assert(total_actual_amount >= uint(min_trade), "minimum trade amount not reached", 7);
 	}
-	if(min_trade != null) {
-		if(total_actual_amount < min_trade) {
-			fail("minimum trade amount not reached", 7);
-		}
-	}
-	if(total_actual_amount == 0) {
-		fail("empty trade", 7);
-	}
+	assert(total_actual_amount > 0, "empty trade", 7);
+	
 	send(bech32(address), total_actual_amount, tokens[k], "mmx_swap_trade");
 	
 	return out;

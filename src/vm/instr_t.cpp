@@ -71,6 +71,7 @@ const struct global_init_t {
 		OPCODE_INFO(OP_FAIL, 2);
 		OPCODE_INFO(OP_RCALL, 4);
 		OPCODE_INFO(OP_CREAD, 3);
+		OPCODE_INFO(OP_BALANCE, 2);
 	}
 } global_init;
 
@@ -279,7 +280,11 @@ std::string to_string(const instr_t& instr)
 {
 	const auto info = get_opcode_info(instr.code);
 	std::stringstream ss;
-	ss << info.name << std::uppercase << std::hex << "\t";
+	ss << info.name;
+	if(instr.flags & OPFLAG_BITWISE) {
+		ss << "(B)";
+	}
+	ss << std::uppercase << std::hex << "\t";
 	for(uint32_t i = 0; i < info.nargs; ++i) {
 		ss << " ";
 		bool ref = false;

@@ -119,6 +119,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_all_farmer_keys::static_create_type_co
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Wallet_get_all_farmer_keys& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

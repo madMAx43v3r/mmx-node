@@ -5,6 +5,7 @@
 #include <mmx/Node_get_history.hxx>
 #include <mmx/Node_get_history_return.hxx>
 #include <mmx/addr_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -14,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_history::VNX_TYPE_HASH(0x8b3db05c6e91011dull);
-const vnx::Hash64 Node_get_history::VNX_CODE_HASH(0x21fbdfa18ac8226ull);
+const vnx::Hash64 Node_get_history::VNX_CODE_HASH(0xc53b4b83f465b5aaull);
 
 vnx::Hash64 Node_get_history::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,18 +49,14 @@ void Node_get_history::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_history;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, addresses);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, since);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, until);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, limit);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, filter);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_history::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_history\"";
 	_out << ", \"addresses\": "; vnx::write(_out, addresses);
-	_out << ", \"since\": "; vnx::write(_out, since);
-	_out << ", \"until\": "; vnx::write(_out, until);
-	_out << ", \"limit\": "; vnx::write(_out, limit);
+	_out << ", \"filter\": "; vnx::write(_out, filter);
 	_out << "}";
 }
 
@@ -73,9 +70,7 @@ vnx::Object Node_get_history::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_history";
 	_object["addresses"] = addresses;
-	_object["since"] = since;
-	_object["until"] = until;
-	_object["limit"] = limit;
+	_object["filter"] = filter;
 	return _object;
 }
 
@@ -83,12 +78,8 @@ void Node_get_history::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "addresses") {
 			_entry.second.to(addresses);
-		} else if(_entry.first == "limit") {
-			_entry.second.to(limit);
-		} else if(_entry.first == "since") {
-			_entry.second.to(since);
-		} else if(_entry.first == "until") {
-			_entry.second.to(until);
+		} else if(_entry.first == "filter") {
+			_entry.second.to(filter);
 		}
 	}
 }
@@ -97,14 +88,8 @@ vnx::Variant Node_get_history::get_field(const std::string& _name) const {
 	if(_name == "addresses") {
 		return vnx::Variant(addresses);
 	}
-	if(_name == "since") {
-		return vnx::Variant(since);
-	}
-	if(_name == "until") {
-		return vnx::Variant(until);
-	}
-	if(_name == "limit") {
-		return vnx::Variant(limit);
+	if(_name == "filter") {
+		return vnx::Variant(filter);
 	}
 	return vnx::Variant();
 }
@@ -112,12 +97,8 @@ vnx::Variant Node_get_history::get_field(const std::string& _name) const {
 void Node_get_history::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "addresses") {
 		_value.to(addresses);
-	} else if(_name == "since") {
-		_value.to(since);
-	} else if(_name == "until") {
-		_value.to(until);
-	} else if(_name == "limit") {
-		_value.to(limit);
+	} else if(_name == "filter") {
+		_value.to(filter);
 	}
 }
 
@@ -145,15 +126,17 @@ std::shared_ptr<vnx::TypeCode> Node_get_history::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_history";
 	type_code->type_hash = vnx::Hash64(0x8b3db05c6e91011dull);
-	type_code->code_hash = vnx::Hash64(0x21fbdfa18ac8226ull);
+	type_code->code_hash = vnx::Hash64(0xc53b4b83f465b5aaull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
 	type_code->native_size = sizeof(::mmx::Node_get_history);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_history>(); };
+	type_code->depends.resize(1);
+	type_code->depends[0] = ::mmx::query_filter_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_history_return::static_get_type_code();
-	type_code->fields.resize(4);
+	type_code->fields.resize(2);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -162,23 +145,9 @@ std::shared_ptr<vnx::TypeCode> Node_get_history::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.data_size = 4;
-		field.name = "since";
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[2];
-		field.data_size = 4;
-		field.name = "until";
-		field.value = vnx::to_string(-1);
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[3];
-		field.data_size = 4;
-		field.name = "limit";
-		field.value = vnx::to_string(-1);
-		field.code = {7};
+		field.is_extended = true;
+		field.name = "filter";
+		field.code = {19, 0};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
@@ -192,6 +161,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_history::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_history& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -221,21 +191,13 @@ void read(TypeInput& in, ::mmx::Node_get_history& value, const TypeCode* type_co
 			}
 		}
 	}
-	const auto* const _buf = in.read(type_code->total_field_size);
+	in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.since, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.until, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[3]) {
-			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
-		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.addresses, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.filter, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -254,11 +216,8 @@ void write(TypeOutput& out, const ::mmx::Node_get_history& value, const TypeCode
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(12);
-	vnx::write_value(_buf + 0, value.since);
-	vnx::write_value(_buf + 4, value.until);
-	vnx::write_value(_buf + 8, value.limit);
 	vnx::write(out, value.addresses, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.filter, type_code, type_code->fields[1].code.data());
 }
 
 void read(std::istream& in, ::mmx::Node_get_history& value) {

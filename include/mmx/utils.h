@@ -9,20 +9,24 @@
 #define INCLUDE_MMX_UTILS_H_
 
 #include <mmx/hash_t.hpp>
+#include <mmx/uint128.hpp>
 #include <mmx/fixed128.hpp>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 
+#include <vnx/Util.hpp>
 #include <vnx/Config.hpp>
 
 #include <uint128_t.h>
 #include <uint256_t.h>
 #include <cmath>
 
-static constexpr double UINT64_MAX_DOUBLE = 18446744073709549568.0;
-
 
 namespace mmx {
+
+bool is_json(const vnx::Variant& var);
+
+uint64_t get_num_bytes(const vnx::Variant& var);
 
 inline
 std::shared_ptr<const ChainParams> get_params()
@@ -38,12 +42,13 @@ std::shared_ptr<const ChainParams> get_params()
 	if(params->commit_delay >= params->challenge_interval - params->challenge_delay) {
 		throw std::logic_error("commit_delay >= challenge_interval - challenge_delay");
 	}
+	if(params->time_diff_constant % (2 * params->vdf_segment_size)) {
+		throw std::logic_error("time_diff_constant not multiple of 2x vdf_segment_size");
+	}
+	if(params->max_tx_cost > params->max_block_size / 5) {
+		throw std::logic_error("max_tx_cost > band size");
+	}
 	return params;
-}
-
-inline
-double to_value(const uint64_t amount, const int decimals) {
-	return amount * pow(10, -decimals);
 }
 
 inline
@@ -52,51 +57,47 @@ double to_value(const uint128_t& amount, const int decimals) {
 }
 
 inline
-double to_value(const uint64_t amount, std::shared_ptr<const ChainParams> params) {
+double to_value(const uint128_t& amount, std::shared_ptr<const ChainParams> params) {
 	return to_value(amount, params->decimals);
 }
 
 inline
-double to_value_128(uint128_t amount, const int decimals)
+uint128 to_amount(const double value, const int decimals)
 {
-	int i = 0;
-	for(; amount.upper() && i < decimals; ++i) {
-		amount /= 10;
+	if(decimals < 0 || decimals > 18) {
+		throw std::runtime_error("invalid decimals: " + std::to_string(decimals));
 	}
-	if(amount.upper()) {
-		return std::numeric_limits<double>::quiet_NaN();
+	if(value == std::numeric_limits<double>::quiet_NaN()) {
+		throw std::runtime_error("invalid value: NaN");
 	}
-	return double(amount.lower()) * pow(10, i - decimals);
-}
+	if(value < 0) {
+		throw std::runtime_error("negative value: " + std::to_string(value));
+	}
+	auto shift = uint128_1;
+	for(int i = 0; i < decimals; ++i) {
+		shift *= 10;
+	}
+	const double div_64 = pow(2, 64);
+	const uint64_t value_128 = value / div_64;
+	const uint64_t value_64  = fmod(value, div_64);
 
-inline
-uint64_t to_amount(const double value, const int decimals)
-{
-	const auto amount = value * pow(10, decimals);
-	if(amount < 0) {
-		throw std::runtime_error("negative amount: " + std::to_string(value));
-	}
-	if(amount > UINT64_MAX_DOUBLE) {
-		throw std::runtime_error("amount overflow: " + std::to_string(value));
-	}
-	if(amount == std::numeric_limits<double>::quiet_NaN()) {
-		throw std::runtime_error("invalid amount: " + std::to_string(value));
-	}
-	return amount;
-}
-
-inline
-uint64_t to_amount(const fixed128& value, const int decimals)
-{
-	const auto amount = value.to_amount(decimals);
-	if(amount.upper()) {
+	const uint256_t amount =
+			uint256_t((uint128_t(value_128) << 64) + value_64) * shift
+			+ uint64_t(fmod(value, 1) * pow(10, decimals) + 0.5);
+	if(amount >> 128) {
 		throw std::runtime_error("amount overflow: " + amount.str(10));
 	}
 	return amount;
 }
 
 inline
-uint64_t to_amount(const double value, std::shared_ptr<const ChainParams> params) {
+uint128 to_amount(const fixed128& value, const int decimals)
+{
+	return value.to_amount(decimals);
+}
+
+inline
+uint128 to_amount(const double value, std::shared_ptr<const ChainParams> params) {
 	return to_amount(value, params->decimals);
 }
 
@@ -115,49 +116,84 @@ bool check_plot_filter(
 }
 
 inline
+bool check_space_fork(std::shared_ptr<const ChainParams> params, const hash_t& challenge, const hash_t& proof_hash)
+{
+	const hash_t infuse_hash(std::string("proof_infusion_check") + challenge + proof_hash);
+
+	return infuse_hash.to_uint256() % params->challenge_interval == 0;
+}
+
+inline
+hash_t calc_next_challenge(
+		std::shared_ptr<const ChainParams> params, const hash_t& challenge,
+		const uint32_t vdf_count, const hash_t& proof_hash, bool& is_space_fork)
+{
+	hash_t out = challenge;
+	for(uint32_t i = 0; i < vdf_count; ++i) {
+		out = hash_t(std::string("next_challenge") + out);
+	}
+	is_space_fork = check_space_fork(params, out, proof_hash);
+
+	if(is_space_fork) {
+		out = hash_t(std::string("challenge_infusion") + out + proof_hash);
+	}
+	return out;
+}
+
+inline
 hash_t get_plot_challenge(const hash_t& challenge, const hash_t& plot_id)
 {
 	return hash_t(std::string("plot_challenge") + plot_id + challenge);
 }
 
 inline
-uint64_t to_effective_space(const uint64_t num_bytes)
+uint128_t to_effective_space(const uint128_t num_bytes)
 {
-	return (2467 * uint128_t(num_bytes)) / 1000;
+	return (24 * num_bytes) / 10;
 }
 
 inline
-uint64_t calc_total_netspace_ideal(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
+uint128_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
 {
-	return ((uint256_t(space_diff) * params->space_diff_constant) << params->score_bits) / params->score_target;
+	// the win chance of a k32 at diff 1 is: 0.6979321856
+	// don't ask why times two, it works
+	const auto ideal = uint128_t(space_diff) * params->space_diff_constant * params->proofs_per_height * 2;
+	return to_effective_space(ideal);
 }
 
 inline
-uint64_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const uint64_t space_diff)
-{
-	return to_effective_space(calc_total_netspace_ideal(params, space_diff));
-}
-
-inline
-uint256_t calc_proof_score(	std::shared_ptr<const ChainParams> params,
+bool check_proof_threshold(std::shared_ptr<const ChainParams> params,
 							const uint8_t ksize, const hash_t& quality, const uint64_t space_diff)
 {
-	uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->space_diff_constant);
-	divider *= (2 * ksize) + 1;
-	return (quality.to_uint256() / divider) >> (ksize - 1);
+	if(space_diff <= 0) {
+		return false;
+	}
+	const auto threshold =
+			((uint256_1 << 255) / (uint128_t(space_diff) * params->space_diff_constant)) * ((2 * ksize) + 1);
+
+	return (quality.to_uint256() >> (ksize - 1)) < threshold;
 }
 
 inline
-uint256_t calc_virtual_score(	std::shared_ptr<const ChainParams> params,
-								const hash_t& challenge, const hash_t& plot_id,
-								const uint64_t balance, const uint64_t space_diff)
+uint16_t get_proof_score(const hash_t& proof_hash)
 {
-	if(balance == 0) {
-		throw std::logic_error("zero balance (virtual plot)");
+	return proof_hash.bytes[0];
+}
+
+inline
+uint64_t get_block_iters(std::shared_ptr<const ChainParams> params, const uint64_t time_diff)
+{
+	return (time_diff / params->time_diff_divider) * params->time_diff_constant;
+}
+
+inline
+hash_t calc_proof_hash(const hash_t& challenge, const std::vector<uint32_t>& proof_xs)
+{
+	auto tmp = proof_xs;
+	for(auto& x : tmp) {
+		x = vnx::to_little_endian(x);
 	}
-	const hash_t quality(std::string("virtual_score") + plot_id + challenge);
-	const uint256_t divider = (uint256_1 << (256 - params->score_bits)) / (uint128_t(space_diff) * params->space_diff_constant);
-	return (quality.to_uint256() / divider) / (uint128_t(balance) * params->virtual_space_constant);
+	return hash_t(challenge + hash_t(tmp.data(), tmp.size() * 4));
 }
 
 inline
@@ -168,22 +204,36 @@ uint64_t calc_project_reward(std::shared_ptr<const ChainParams> params, const ui
 }
 
 inline
-uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t tx_fees)
+uint64_t calc_min_reward_deduction(std::shared_ptr<const ChainParams> params, const uint64_t txfee_buffer)
 {
-	const uint64_t fee_deduction = calc_project_reward(params, tx_fees);
-
-	return reward + (tx_fees > fee_deduction ? tx_fees - fee_deduction : 0);
+	const uint64_t divider = 8640;
+	const uint64_t min_deduction = 1000;
+	return std::min(std::max(txfee_buffer / divider, min_deduction), txfee_buffer);
 }
 
 inline
-uint64_t calc_next_base_reward(std::shared_ptr<const ChainParams> params, const uint64_t base_reward, const int8_t vote)
+uint64_t calc_final_block_reward(std::shared_ptr<const ChainParams> params, const uint64_t reward, const uint64_t tx_fees)
 {
-	const auto step_size = std::max<int64_t>(base_reward / params->reward_adjust_div, 1);
+	const auto fee_burn = tx_fees / 2;
+	const auto fee_deduction = calc_project_reward(params, tx_fees);
+	return reward + (tx_fees - std::max(fee_burn, fee_deduction));
+}
+
+inline
+uint64_t calc_new_base_reward(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
+{
+	const auto& base_reward = prev->base_reward;
+	const auto& vote_sum = prev->reward_vote_sum;
+
+	if(prev->reward_vote_count < params->reward_adjust_interval / 2) {
+		return base_reward;
+	}
+	const auto step_size = std::max<int64_t>(base_reward / params->reward_adjust_div, params->reward_adjust_tick);
 
 	int64_t reward = base_reward;
-	if(vote > 0) {
+	if(vote_sum > 0) {
 		reward += step_size;
-	} else if(vote < 0) {
+	} else if(vote_sum < 0) {
 		reward -= step_size;
 	}
 	return std::max<int64_t>(std::min<int64_t>(reward, 4200000000000ll), 0);
@@ -196,21 +246,26 @@ uint64_t get_effective_plot_size(const int ksize)
 }
 
 inline
-uint64_t get_virtual_plot_size(std::shared_ptr<const ChainParams> params, const uint64_t balance)
+uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
-	return to_effective_space(uint128_t(balance) * params->virtual_space_constant);
-}
-
-inline
-uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, const uint64_t prev_diff, const uint32_t proof_score)
-{
-	int64_t delta = prev_diff * (int64_t(params->score_target) - proof_score);
-	delta /= params->score_target;
-	delta >>= params->max_diff_adjust;
-	if(delta == 0) {
-		delta = 1;
+	const uint64_t diff = prev->space_diff;
+	if(diff >> 48) {
+		return diff - (diff / 1024);		// clamp to 48 bits (should never happen)
 	}
-	return std::max<int64_t>(int64_t(prev_diff) + delta, 1);
+	if(prev->space_fork_len == 0) {
+		return prev->space_diff;			// should only happen at genesis
+	}
+	const uint32_t expected_count = prev->space_fork_len * params->proofs_per_height;
+
+	const uint64_t new_diff = (uint128_t(diff) * prev->space_fork_proofs) / expected_count;
+
+	int64_t delta = new_diff - diff;
+	delta /= std::max((16 * params->challenge_interval) / prev->space_fork_len, 16u);
+
+	if(delta == 0) {
+		delta = (prev->space_fork_proofs > expected_count ? 1 : -1);
+	}
+	return std::max<int64_t>(diff + delta, 1);
 }
 
 inline
@@ -221,25 +276,27 @@ uint64_t calc_new_netspace_ratio(std::shared_ptr<const ChainParams> params, cons
 }
 
 inline
-uint64_t calc_new_average_txfee(std::shared_ptr<const ChainParams> params, const uint64_t prev_value, const uint64_t total_fees)
+uint64_t calc_new_txfee_buffer(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev)
 {
-	return (prev_value * ((uint64_t(1) << params->avg_txfee_adjust) - 1) + total_fees) >> params->avg_txfee_adjust;
+	return (prev->txfee_buffer - calc_min_reward_deduction(params, prev->txfee_buffer)) + prev->tx_fees;
 }
 
 inline
-uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> diff_block,
-							std::shared_ptr<const BlockHeader> block)
+uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params,
+							std::shared_ptr<const BlockHeader> block, std::shared_ptr<const BlockHeader> prev)
 {
-	uint256_t weight = 0;
-	if(block->proof) {
-		weight += params->score_threshold + (params->score_threshold - block->proof->score);
-		weight *= diff_block->space_diff;
-		weight *= diff_block->time_diff;
+	if(block->proof.empty()) {
+		return 0;
 	}
-	if(weight.upper()) {
-		throw std::logic_error("block weight overflow");
-	}
-	return weight;
+	const auto num_iters = (block->vdf_iters - prev->vdf_iters) / block->vdf_count;
+	const auto time_diff = num_iters / params->time_diff_constant;
+	return uint128_t(time_diff) * block->proof[0]->difficulty * params->proofs_per_height;
+}
+
+inline
+uint64_t get_vdf_speed(std::shared_ptr<const ChainParams> params, const uint64_t time_diff)
+{
+	return (uint128_t(time_diff) * params->time_diff_constant * 1000) / params->time_diff_divider / params->block_interval_ms;
 }
 
 inline
@@ -274,16 +331,6 @@ uint64_t fee_to_cost(const uint64_t fee, const uint32_t fee_ratio)
 		throw error_t("cost value overflow");
 	}
 	return cost;
-}
-
-template<typename error_t>
-void safe_acc(uint64_t& lhs, const uint64_t& rhs)
-{
-	const auto tmp = uint128_t(lhs) + rhs;
-	if(tmp.upper()) {
-		throw error_t("accumulate overflow");
-	}
-	lhs = tmp.lower();
 }
 
 template<typename T, typename S>

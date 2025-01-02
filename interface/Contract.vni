@@ -9,13 +9,11 @@ class Contract {
 	
 	hash_t calc_hash(bool full_hash) const;
 	
-	ulong num_bytes(bool total = true) const;
+	ulong num_bytes() const;
 	
 	ulong calc_cost(ChainParams* params) const;
 	
 	optional<addr_t> get_owner() const;
-	
-	bool is_locked(uint height) const;
 	
 	void validate(Solution* solution, hash_t txid) const;
 	

@@ -1,29 +1,27 @@
-Mainnet
-- Pooling protocol
-- Multisig
-- Test remote calls again
-- unsafe_add() / unsafe_sub() / unsafe_mul()
+After Mainnet
 - Website
 - Linux packages
-- Double check msg hashes again
-- New project wallet
-- Check remaining in-source TODOs
-- Test mainnet-rc changes
 - Harvester latency graphs
-- Choose reward_adjust_div
 - GUI settings tabs
 - GUI option to increase wallet address count
 - Native Linux GUI
 - GUI add peer feature
 - Swap warning for one-sided pool
-- VDF trust system (order queue by trust)
 - Increase min_sync_peers to 5 after launch
-- Node + Wallet get_balances() limit
-- mmx_test framework
-- Native pooling support (needed to avoid TX fees for claim)
-- Keep total TX fee deduction balance and spread over future blocks
 - 1000 commas for balances
-- Timestamp delta adjustment (limited to +- 1 sec per block)
-- VDF reward vote based (most votes every diff block)
-- Remove proofs in /wapi/headers
-- Require one valid VDF before reaching sync
+- Explorer search by block hash
+- WebGUI password local storage
+- unsafe_add() / unsafe_sub() / unsafe_mul()
+- Multi-fork on-disk sync
+
+Mainnet
+- Multisig wallet support
+- Genesis rewards (fix T8)
+- Unit tests for all smart contracts
+- Whitepaper
+- CUDA plotter open-source
+- min_ksize = 29
+- New project wallet
+- Test new block reward voting scheme
+
+Mainnet-RC

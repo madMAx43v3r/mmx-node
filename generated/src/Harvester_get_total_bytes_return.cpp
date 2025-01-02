@@ -137,6 +137,7 @@ std::shared_ptr<vnx::TypeCode> Harvester_get_total_bytes_return::static_create_t
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Harvester_get_total_bytes_return& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

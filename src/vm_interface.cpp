@@ -8,6 +8,7 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 #include <mmx/uint128.hpp>
+#include <mmx/helpers.h>
 
 #include <vnx/vnx.h>
 
@@ -24,16 +25,7 @@ const contract::method_t* find_method(std::shared_ptr<const contract::Binary> bi
 	return nullptr;
 }
 
-void set_balance(std::shared_ptr<vm::Engine> engine, const std::map<addr_t, uint128>& balance)
-{
-	const auto addr = vm::MEM_EXTERN + vm::EXTERN_BALANCE;
-	engine->assign(addr, std::make_unique<vm::map_t>());
-	for(const auto& entry : balance) {
-		engine->write_key(addr, to_binary(entry.first), std::make_unique<vm::uint_t>(entry.second));
-	}
-}
-
-void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint64_t amount)
+void set_deposit(std::shared_ptr<vm::Engine> engine, const addr_t& currency, const uint128& amount)
 {
 	const auto addr = vm::MEM_EXTERN + vm::EXTERN_DEPOSIT;
 	engine->assign(addr, std::make_unique<vm::array_t>());
@@ -229,6 +221,9 @@ public:
 	}
 
 	void list_begin(size_t size) override {
+		if(stack.size() >= vm::MAX_COPY_RECURSION) {
+			throw std::logic_error("assign recursion overflow");
+		}
 		const auto addr = engine->alloc();
 		engine->assign(addr, std::make_unique<vm::array_t>(size));
 		stack.emplace_back(addr);
@@ -243,6 +238,9 @@ public:
 	}
 
 	void map_begin(size_t size) override {
+		if(stack.size() >= vm::MAX_COPY_RECURSION) {
+			throw std::logic_error("assign recursion overflow");
+		}
 		const auto addr = engine->alloc();
 		engine->assign(addr, std::make_unique<vm::map_t>());
 		stack.emplace_back(addr);
@@ -323,7 +321,7 @@ vnx::Variant convert(std::shared_ptr<vm::Engine> engine, const vm::var_t* var)
 			case vm::TYPE_ARRAY: {
 				const auto array = (const vm::array_t*)var;
 				std::vector<vnx::Variant> tmp;
-				for(uint64_t i = 0; i < array->size; ++i) {
+				for(uint32_t i = 0; i < array->size; ++i) {
 					tmp.push_back(convert(engine, engine->read_entry(array->address, i)));
 				}
 				return vnx::Variant(tmp);
@@ -376,12 +374,12 @@ void set_args(std::shared_ptr<vm::Engine> engine, const std::vector<vnx::Variant
 	}
 }
 
-void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method, const bool read_only)
+void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& method, const bool commit)
 {
 	engine->begin(method.entry_point);
 	engine->run();
 
-	if(!method.is_const && !read_only) {
+	if(!method.is_const && commit) {
 		engine->commit();
 	}
 	engine->check_gas();
@@ -390,7 +388,7 @@ void execute(std::shared_ptr<vm::Engine> engine, const contract::method_t& metho
 void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, const vnx::optional<std::string>& method)
 {
 	{
-		size_t i = 0;
+		uint32_t i = 0;
 		out << "constants:" << std::endl;
 		for(const auto& var : mmx::vm::read_constants(bin)) {
 			out << "  [0x" << vnx::to_hex_string(i++) << "] " << mmx::vm::to_string(var.get()) << std::endl;
@@ -400,29 +398,29 @@ void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, c
 	for(const auto& entry : bin->fields) {
 		out << "  [0x" << vnx::to_hex_string(entry.second) << "] " << entry.first << std::endl;
 	}
-	std::map<size_t, mmx::contract::method_t> method_table;
+	std::map<uint32_t, mmx::contract::method_t> method_table;
 	for(const auto& entry : bin->methods) {
 		method_table[entry.second.entry_point] = entry.second;
 	}
 	std::vector<mmx::vm::instr_t> code;
 	const auto length = mmx::vm::deserialize(code, bin->binary.data(), bin->binary.size());
-	size_t i = 0;
+
+	uint32_t i = 0;
 	if(method) {
-		auto iter = bin->methods.find(*method);
-		if(iter == bin->methods.end()) {
+		if(auto tmp = bin->find_method(*method)) {
+			i = tmp->entry_point;
+		} else {
 			out << "No such method: " << *method << std::endl;
 			return;
 		}
-		i = iter->second.entry_point;
 	}
 	out << "code:" << std::endl;
 
 	for(; i < code.size(); ++i) {
-		auto iter = method_table.find(i);
-		if(iter != method_table.end()) {
-			out << iter->second.name << " (";
+		if(auto entry = find_value(method_table, i)) {
+			out << entry->name << " (";
 			int k = 0;
-			for(const auto& arg : iter->second.args) {
+			for(const auto& arg : entry->args) {
 				if(k++) {
 					out << ", ";
 				}
@@ -430,7 +428,8 @@ void dump_code(std::ostream& out, std::shared_ptr<const contract::Binary> bin, c
 			}
 			out << ")" << std::endl;
 		}
-		out << "  [0x" << vnx::to_hex_string(i) << "] " << to_string(code[i]) << std::endl;
+		const auto line = bin->find_line(i);
+		out << "  [0x" << vnx::to_hex_string(i) << ", L" << (line ? *line : -1) << "] " << to_string(code[i]) << std::endl;
 
 		if(method && code[i].code == mmx::vm::OP_RET) {
 			break;

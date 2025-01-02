@@ -11,6 +11,7 @@
 #include <mmx/ProofResponse.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/VDF_Point.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>

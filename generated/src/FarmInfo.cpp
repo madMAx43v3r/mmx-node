@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 FarmInfo::VNX_TYPE_HASH(0xa2701372b9137f0eull);
-const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0xc7a28ee2b06133dull);
+const vnx::Hash64 FarmInfo::VNX_CODE_HASH(0xd67b28eb2cb51c62ull);
 
 vnx::Hash64 FarmInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -59,6 +59,7 @@ void FarmInfo::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, total_balance);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, harvester);
 	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, harvester_id);
+	_visitor.type_field(_type_code->fields[10], 10); vnx::accept(_visitor, reward_addr);
 	_visitor.type_end(*_type_code);
 }
 
@@ -74,6 +75,7 @@ void FarmInfo::write(std::ostream& _out) const {
 	_out << ", \"total_balance\": "; vnx::write(_out, total_balance);
 	_out << ", \"harvester\": "; vnx::write(_out, harvester);
 	_out << ", \"harvester_id\": "; vnx::write(_out, harvester_id);
+	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
 	_out << "}";
 }
 
@@ -96,6 +98,7 @@ vnx::Object FarmInfo::to_object() const {
 	_object["total_balance"] = total_balance;
 	_object["harvester"] = harvester;
 	_object["harvester_id"] = harvester_id;
+	_object["reward_addr"] = reward_addr;
 	return _object;
 }
 
@@ -115,6 +118,8 @@ void FarmInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(pool_info);
 		} else if(_entry.first == "pool_stats") {
 			_entry.second.to(pool_stats);
+		} else if(_entry.first == "reward_addr") {
+			_entry.second.to(reward_addr);
 		} else if(_entry.first == "total_balance") {
 			_entry.second.to(total_balance);
 		} else if(_entry.first == "total_bytes") {
@@ -156,6 +161,9 @@ vnx::Variant FarmInfo::get_field(const std::string& _name) const {
 	if(_name == "harvester_id") {
 		return vnx::Variant(harvester_id);
 	}
+	if(_name == "reward_addr") {
+		return vnx::Variant(reward_addr);
+	}
 	return vnx::Variant();
 }
 
@@ -180,6 +188,8 @@ void FarmInfo::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(harvester);
 	} else if(_name == "harvester_id") {
 		_value.to(harvester_id);
+	} else if(_name == "reward_addr") {
+		_value.to(reward_addr);
 	}
 }
 
@@ -207,7 +217,7 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.FarmInfo";
 	type_code->type_hash = vnx::Hash64(0xa2701372b9137f0eull);
-	type_code->code_hash = vnx::Hash64(0xc7a28ee2b06133dull);
+	type_code->code_hash = vnx::Hash64(0xd67b28eb2cb51c62ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::FarmInfo);
@@ -215,7 +225,7 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 	type_code->depends.resize(2);
 	type_code->depends[0] = ::mmx::pooling_info_t::static_get_type_code();
 	type_code->depends[1] = ::mmx::pooling_stats_t::static_get_type_code();
-	type_code->fields.resize(10);
+	type_code->fields.resize(11);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -276,6 +286,12 @@ std::shared_ptr<vnx::TypeCode> FarmInfo::static_create_type_code() {
 		field.name = "harvester_id";
 		field.code = {33, 11, 32, 1};
 	}
+	{
+		auto& field = type_code->fields[10];
+		field.is_extended = true;
+		field.name = "reward_addr";
+		field.code = {33, 11, 32, 1};
+	}
 	type_code->build();
 	return type_code;
 }
@@ -293,6 +309,7 @@ std::shared_ptr<vnx::Value> FarmInfo::vnx_call_switch(std::shared_ptr<const vnx:
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -343,6 +360,7 @@ void read(TypeInput& in, ::mmx::FarmInfo& value, const TypeCode* type_code, cons
 			case 4: vnx::read(in, value.pool_stats, type_code, _field->code.data()); break;
 			case 8: vnx::read(in, value.harvester, type_code, _field->code.data()); break;
 			case 9: vnx::read(in, value.harvester_id, type_code, _field->code.data()); break;
+			case 10: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -372,6 +390,7 @@ void write(TypeOutput& out, const ::mmx::FarmInfo& value, const TypeCode* type_c
 	vnx::write(out, value.pool_stats, type_code, type_code->fields[4].code.data());
 	vnx::write(out, value.harvester, type_code, type_code->fields[8].code.data());
 	vnx::write(out, value.harvester_id, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.reward_addr, type_code, type_code->fields[10].code.data());
 }
 
 void read(std::istream& in, ::mmx::FarmInfo& value) {

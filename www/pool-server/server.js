@@ -6,11 +6,12 @@ const axios = require("axios");
 const dbs = require('./schema.js');
 const utils = require('./utils.js');
 const config = require('./config.js');
+const { createHash } = require('crypto');
 
 var db = null;
 var app = express();
 
-var sync_height = false;
+var vdf_height = false;
 var sync_time = null;
 
 app.use(express.json());
@@ -28,9 +29,67 @@ function max_age_cache(max_age = 60) {
 }
 
 
+app.get('/pool/info', max_age_cache(60), async (req, res) =>
+{
+    res.json({
+        name: config.pool_name,
+        description: config.pool_description,
+        fee: config.pool_fee,
+        logo_path: config.logo_path,
+        protocol_version: 1,
+        pool_target: config.pool_target,
+        min_difficulty: config.min_difficulty,
+    });
+});
+
+app.get('/pool/stats', max_age_cache(60), async (req, res, next) =>
+{
+    try {
+        const pool = await dbs.Pool.findOne({id: "this"});
+        if(!pool) {
+            throw new Error('Not initialized yet');
+        }
+        res.json({
+            estimated_space: utils.calc_eff_space(pool.points_rate),
+            partial_rate: pool.partial_rate,
+            partial_errors: pool.partial_errors,
+            farmers: pool.farmers,
+            last_update: pool.last_update,
+            last_payout: pool.last_payout,
+        });
+    } catch(e) {
+        next(e);
+    }
+});
+
+app.get('/account/info', max_age_cache(60), async (req, res, next) =>
+{
+    const id = req.query.id;
+    try {
+        const account = await dbs.Account.findOne({address: id});
+        if(!account) {
+            throw new Error('Account not found');
+        }
+        const blocks_found = await dbs.Block.countDocuments({account: id, valid: true});
+        res.json({
+            balance: account.balance,
+            total_paid: account.total_paid,
+            difficulty: account.difficulty,
+            pool_share: account.pool_share,
+            partial_rate: account.partial_rate,
+            blocks_found: blocks_found,
+            estimated_space: utils.calc_eff_space(account.points_rate),
+        });
+    } catch(e) {
+        next(e);
+    }
+});
+
 app.get('/difficulty', max_age_cache(30), async (req, res) =>
 {
-    res.json({difficulty: 1});
+    const account = await dbs.Account.findOne({address: req.query.id});
+
+    res.json({difficulty: account ? account.difficulty : config.default_difficulty});
 });
 
 app.post('/partial', no_cache, async (req, res, next) =>
@@ -45,13 +104,14 @@ app.post('/partial', no_cache, async (req, res, next) =>
         let is_valid = true;
         let response_time = null;
 
-        if(sync_height) {
-            response_time = (config.challenge_delay - (partial.height - sync_height)) * config.block_interval + (now - sync_time);
+        if(vdf_height) {
+            const delta = vdf_height - partial.vdf_height;
+            response_time = delta * config.block_interval + (now - sync_time);
 
-            if(response_time > config.max_response_time) {
+            if(delta >= 0) {
                 is_valid = false;
                 out.error_code = 'PARTIAL_TOO_LATE';
-                out.error_message = 'Partial received too late: ' + response_time / 1e3 + ' sec';
+                out.error_message = 'Partial received ' + response_time / 1e3 + ' sec too late';
             }
         } else {
             is_valid = false;
@@ -60,10 +120,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
         }
         out.response_time = response_time;
 
-        console.log('/partial', 'height', partial.height, 'diff', partial.difficulty,
-            'response', response_time / 1e3, 'time', now, 'account', partial.account, 'hash', partial.hash);
-
-        if(partial.height < 0 || partial.height > 4294967295
+        if(partial.vdf_height < 0 || partial.vdf_height > 4294967295
             || partial.lookup_time_ms < 0 || partial.lookup_time_ms > 4294967295)
         {
             out.error_code = 'INVALID_PARTIAL';
@@ -77,9 +134,15 @@ app.post('/partial', no_cache, async (req, res, next) =>
             res.json(out);
             return;
         }
-        if(partial.proof.__type == 'mmx.ProofOfSpaceNFT') {
-            const ksize = partial.proof.ksize;
-            const proof_xs = partial.proof.proof_xs;
+        const proof = partial.proof;
+        const partial_diff = proof.difficulty;
+        
+        console.log('/partial', 'height', partial.vdf_height, 'diff', partial_diff,
+            'response', response_time / 1e3, 'time', now, 'account', partial.account);
+
+        if(proof.__type == 'mmx.ProofOfSpaceNFT') {
+            const ksize = proof.ksize;
+            const proof_xs = proof.proof_xs;
             if(ksize < 0 || ksize > 255) {
                 out.error_code = 'INVALID_PROOF';
                 out.error_message = 'Invalid proof ksize';
@@ -101,13 +164,28 @@ app.post('/partial', no_cache, async (req, res, next) =>
                 }
             }
         }
-        if(partial.difficulty < 1 || partial.difficulty > 4503599627370495) {
+
+        if(partial_diff < 1 || partial_diff > 4503599627370495) {
             out.error_code = 'INVALID_DIFFICULTY';
             out.error_message = 'Invalid numeric value for difficulty';
             res.json(out);
             return;
         }
-        if(await dbs.Partial.exists({hash: partial.hash})) {
+        var msg = proof.plot_id + ':' + proof.challenge;
+
+        switch(proof.__type) {
+            case 'mmx.ProofOfSpaceNFT':
+                msg += ':' + proof.proof_xs.join(',');
+                break;
+            default:
+                out.error_code = 'INVALID_PROOF';
+                out.error_message = 'Invalid proof type: ' + proof.__type;
+                res.json(out);
+                return;
+        }
+        const hash = createHash('sha256').update(msg).digest('hex');
+
+        if(await dbs.Partial.exists({hash: hash})) {
             out.error_code = 'DUPLICATE_PARTIAL';
             out.error_message = 'Duplicate partial';
             res.json(out);
@@ -115,23 +193,23 @@ app.post('/partial', no_cache, async (req, res, next) =>
         }
         let difficulty = config.default_difficulty;
 
-        const account = await dbs.Account.findOne({address: partial.account}, {difficulty: 1});
+        const account = await dbs.Account.findOne({address: partial.account});
         if(account) {
-            difficulty = Math.round(account.difficulty);
+            difficulty = account.difficulty;
         }
-        if(partial.difficulty < difficulty) {
+        if(partial_diff < difficulty) {
             is_valid = false;
             out.error_code = 'PARTIAL_NOT_GOOD_ENOUGH';
-            out.error_message = 'Partial difficulty too low: ' + partial.difficulty + ' < ' + difficulty;
+            out.error_message = 'Partial difficulty too low: ' + partial_diff + ' < ' + difficulty;
         }
 
         const entry = new dbs.Partial({
-            hash: partial.hash,
-            height: partial.height,
+            hash: hash,
+            height: partial.vdf_height,
             account: partial.account,
             contract: partial.contract,
             harvester: partial.harvester,
-            difficulty: partial.difficulty,
+            difficulty: partial_diff,
             lookup_time: partial.lookup_time_ms,
             response_time: response_time,
             time: now,
@@ -139,7 +217,7 @@ app.post('/partial', no_cache, async (req, res, next) =>
 
         if(is_valid) {
             entry.data = partial;
-            entry.points = difficulty;      // need to use current difficulty to avoid cheating
+            entry.points = Math.floor(difficulty);      // need to use current difficulty to avoid cheating
         } else {
             entry.valid = false;
             entry.pending = false;
@@ -164,31 +242,31 @@ app.use((err, req, res, next) => {
 });
 
 
-async function update_height()
+async function query_height()
 {
     try {
         const now = Date.now();
-        const value = await utils.get_synced_height();
+        const value = await utils.get_synced_vdf_height();
         if(value) {
-            if(!sync_height) {
-                console.log("Node synced at height " + value);
+            if(vdf_height == null) {
+                console.log("Node synced at VDF height " + value);
             }
-            if(!sync_height || value > sync_height) {
-                console.log("New peak at", value, "time", now, "delta", now - sync_time);
+            if(vdf_height == null || value > vdf_height) {
+                console.log("New VDF peak at", value, "time", now, "delta", now - sync_time);
                 sync_time = now;
-                sync_height = value;
+                vdf_height = value;
             }
         } else {
-            if(sync_height) {
+            if(vdf_height) {
                 console.error("Node lost sync");
             }
-            sync_height = null;
+            vdf_height = null;
         }
     } catch(e) {
-        if(sync_height != null) {
+        if(vdf_height) {
             console.error("Failed to get current height:", e.message);
         }
-        sync_height = null;
+        vdf_height = null;
     }
 }
 
@@ -198,7 +276,7 @@ async function main()
 
     http.createServer(app).listen(config.server_port);
 
-    setInterval(update_height, 500);
+    setInterval(query_height, 500);
 
     console.log("Listening on port " + config.server_port);
 }

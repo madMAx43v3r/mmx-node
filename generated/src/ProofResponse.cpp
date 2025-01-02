@@ -3,7 +3,6 @@
 
 #include <mmx/package.hxx>
 #include <mmx/ProofResponse.hxx>
-#include <mmx/Challenge.hxx>
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/signature_t.hpp>
@@ -17,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofResponse::VNX_TYPE_HASH(0x816e898b36befae0ull);
-const vnx::Hash64 ProofResponse::VNX_CODE_HASH(0xb3d8660a78e2d157ull);
+const vnx::Hash64 ProofResponse::VNX_CODE_HASH(0xa92d883d47260f22ull);
 
 vnx::Hash64 ProofResponse::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -51,7 +50,7 @@ void ProofResponse::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_ProofResponse;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, hash);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, request);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, vdf_height);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, proof);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, farmer_sig);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, content_hash);
@@ -64,7 +63,7 @@ void ProofResponse::accept(vnx::Visitor& _visitor) const {
 void ProofResponse::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.ProofResponse\"";
 	_out << ", \"hash\": "; vnx::write(_out, hash);
-	_out << ", \"request\": "; vnx::write(_out, request);
+	_out << ", \"vdf_height\": "; vnx::write(_out, vdf_height);
 	_out << ", \"proof\": "; vnx::write(_out, proof);
 	_out << ", \"farmer_sig\": "; vnx::write(_out, farmer_sig);
 	_out << ", \"content_hash\": "; vnx::write(_out, content_hash);
@@ -84,7 +83,7 @@ vnx::Object ProofResponse::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.ProofResponse";
 	_object["hash"] = hash;
-	_object["request"] = request;
+	_object["vdf_height"] = vdf_height;
 	_object["proof"] = proof;
 	_object["farmer_sig"] = farmer_sig;
 	_object["content_hash"] = content_hash;
@@ -110,8 +109,8 @@ void ProofResponse::from_object(const vnx::Object& _object) {
 			_entry.second.to(lookup_time_ms);
 		} else if(_entry.first == "proof") {
 			_entry.second.to(proof);
-		} else if(_entry.first == "request") {
-			_entry.second.to(request);
+		} else if(_entry.first == "vdf_height") {
+			_entry.second.to(vdf_height);
 		}
 	}
 }
@@ -120,8 +119,8 @@ vnx::Variant ProofResponse::get_field(const std::string& _name) const {
 	if(_name == "hash") {
 		return vnx::Variant(hash);
 	}
-	if(_name == "request") {
-		return vnx::Variant(request);
+	if(_name == "vdf_height") {
+		return vnx::Variant(vdf_height);
 	}
 	if(_name == "proof") {
 		return vnx::Variant(proof);
@@ -147,8 +146,8 @@ vnx::Variant ProofResponse::get_field(const std::string& _name) const {
 void ProofResponse::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "hash") {
 		_value.to(hash);
-	} else if(_name == "request") {
-		_value.to(request);
+	} else if(_name == "vdf_height") {
+		_value.to(vdf_height);
 	} else if(_name == "proof") {
 		_value.to(proof);
 	} else if(_name == "farmer_sig") {
@@ -188,7 +187,7 @@ std::shared_ptr<vnx::TypeCode> ProofResponse::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofResponse";
 	type_code->type_hash = vnx::Hash64(0x816e898b36befae0ull);
-	type_code->code_hash = vnx::Hash64(0xb3d8660a78e2d157ull);
+	type_code->code_hash = vnx::Hash64(0xa92d883d47260f22ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofResponse);
@@ -202,9 +201,9 @@ std::shared_ptr<vnx::TypeCode> ProofResponse::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[1];
-		field.is_extended = true;
-		field.name = "request";
-		field.code = {16};
+		field.data_size = 4;
+		field.name = "vdf_height";
+		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[2];
@@ -259,6 +258,7 @@ std::shared_ptr<vnx::Value> ProofResponse::vnx_call_switch(std::shared_ptr<const
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -290,6 +290,9 @@ void read(TypeInput& in, ::mmx::ProofResponse& value, const TypeCode* type_code,
 	}
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
+		if(const auto* const _field = type_code->field_map[1]) {
+			vnx::read_value(_buf + _field->offset, value.vdf_height, _field->code.data());
+		}
 		if(const auto* const _field = type_code->field_map[7]) {
 			vnx::read_value(_buf + _field->offset, value.lookup_time_ms, _field->code.data());
 		}
@@ -297,7 +300,6 @@ void read(TypeInput& in, ::mmx::ProofResponse& value, const TypeCode* type_code,
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.hash, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.request, type_code, _field->code.data()); break;
 			case 2: vnx::read(in, value.proof, type_code, _field->code.data()); break;
 			case 3: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
@@ -321,10 +323,10 @@ void write(TypeOutput& out, const ::mmx::ProofResponse& value, const TypeCode* t
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(8);
-	vnx::write_value(_buf + 0, value.lookup_time_ms);
+	auto* const _buf = out.write(12);
+	vnx::write_value(_buf + 0, value.vdf_height);
+	vnx::write_value(_buf + 4, value.lookup_time_ms);
 	vnx::write(out, value.hash, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.request, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.proof, type_code, type_code->fields[2].code.data());
 	vnx::write(out, value.farmer_sig, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.content_hash, type_code, type_code->fields[4].code.data());

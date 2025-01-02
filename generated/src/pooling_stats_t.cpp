@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 pooling_stats_t::VNX_TYPE_HASH(0xb2441a254359df11ull);
-const vnx::Hash64 pooling_stats_t::VNX_CODE_HASH(0x7a7a16d5a8e52289ull);
+const vnx::Hash64 pooling_stats_t::VNX_CODE_HASH(0xd172855ac604d22bull);
 
 vnx::Hash64 pooling_stats_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -51,7 +51,8 @@ void pooling_stats_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, failed_points);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, total_partials);
 	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, total_response_time);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, error_count);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, last_partial);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, error_count);
 	_visitor.type_end(*_type_code);
 }
 
@@ -63,6 +64,7 @@ void pooling_stats_t::write(std::ostream& _out) const {
 	_out << ", \"failed_points\": "; vnx::write(_out, failed_points);
 	_out << ", \"total_partials\": "; vnx::write(_out, total_partials);
 	_out << ", \"total_response_time\": "; vnx::write(_out, total_response_time);
+	_out << ", \"last_partial\": "; vnx::write(_out, last_partial);
 	_out << ", \"error_count\": "; vnx::write(_out, error_count);
 	_out << "}";
 }
@@ -82,6 +84,7 @@ vnx::Object pooling_stats_t::to_object() const {
 	_object["failed_points"] = failed_points;
 	_object["total_partials"] = total_partials;
 	_object["total_response_time"] = total_response_time;
+	_object["last_partial"] = last_partial;
 	_object["error_count"] = error_count;
 	return _object;
 }
@@ -92,6 +95,8 @@ void pooling_stats_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(error_count);
 		} else if(_entry.first == "failed_points") {
 			_entry.second.to(failed_points);
+		} else if(_entry.first == "last_partial") {
+			_entry.second.to(last_partial);
 		} else if(_entry.first == "partial_diff") {
 			_entry.second.to(partial_diff);
 		} else if(_entry.first == "server_url") {
@@ -125,6 +130,9 @@ vnx::Variant pooling_stats_t::get_field(const std::string& _name) const {
 	if(_name == "total_response_time") {
 		return vnx::Variant(total_response_time);
 	}
+	if(_name == "last_partial") {
+		return vnx::Variant(last_partial);
+	}
 	if(_name == "error_count") {
 		return vnx::Variant(error_count);
 	}
@@ -144,6 +152,8 @@ void pooling_stats_t::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(total_partials);
 	} else if(_name == "total_response_time") {
 		_value.to(total_response_time);
+	} else if(_name == "last_partial") {
+		_value.to(last_partial);
 	} else if(_name == "error_count") {
 		_value.to(error_count);
 	}
@@ -173,13 +183,13 @@ std::shared_ptr<vnx::TypeCode> pooling_stats_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.pooling_stats_t";
 	type_code->type_hash = vnx::Hash64(0xb2441a254359df11ull);
-	type_code->code_hash = vnx::Hash64(0x7a7a16d5a8e52289ull);
+	type_code->code_hash = vnx::Hash64(0xd172855ac604d22bull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::pooling_stats_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<pooling_stats_t>>(); };
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::pooling_error_e::static_get_type_code();
-	type_code->fields.resize(7);
+	type_code->fields.resize(8);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -218,6 +228,12 @@ std::shared_ptr<vnx::TypeCode> pooling_stats_t::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[6];
+		field.data_size = 8;
+		field.name = "last_partial";
+		field.code = {8};
+	}
+	{
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "error_count";
 		field.code = {13, 4, 19, 0, 3};
@@ -233,6 +249,7 @@ std::shared_ptr<vnx::TypeCode> pooling_stats_t::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::pooling_stats_t& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -279,11 +296,14 @@ void read(TypeInput& in, ::mmx::pooling_stats_t& value, const TypeCode* type_cod
 		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.total_response_time, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[6]) {
+			vnx::read_value(_buf + _field->offset, value.last_partial, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 0: vnx::read(in, value.server_url, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.error_count, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.error_count, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -302,14 +322,15 @@ void write(TypeOutput& out, const ::mmx::pooling_stats_t& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(36);
+	auto* const _buf = out.write(44);
 	vnx::write_value(_buf + 0, value.partial_diff);
 	vnx::write_value(_buf + 8, value.valid_points);
 	vnx::write_value(_buf + 16, value.failed_points);
 	vnx::write_value(_buf + 24, value.total_partials);
 	vnx::write_value(_buf + 28, value.total_response_time);
+	vnx::write_value(_buf + 36, value.last_partial);
 	vnx::write(out, value.server_url, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.error_count, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.error_count, type_code, type_code->fields[7].code.data());
 }
 
 void read(std::istream& in, ::mmx::pooling_stats_t& value) {

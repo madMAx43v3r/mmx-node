@@ -2,23 +2,25 @@ package mmx;
 
 class ProofOfTime {
 	
-	hash_t hash;
-	
 	uint version;
 	
-	uint height;
+	hash_t hash;
 	
-	ulong start;		// [iters]
+	uint vdf_height;
 	
-	hash_t input[2];
+	ulong start;						// [iters]
 	
-	optional<hash_t> infuse[2];
+	ulong num_iters;
 	
-	vector<time_segment_t> segments;
+	uint segment_size;
 	
-	vector<hash_t> reward_segments;
+	hash_t input;
 	
-	optional<addr_t> reward_addr;
+	hash_t prev;						// infused block hash
+	
+	addr_t reward_addr;
+	
+	vector<hash_t> segments;
 	
 	pubkey_t timelord_key;
 	
@@ -27,15 +29,15 @@ class ProofOfTime {
 	hash_t content_hash;
 	
 	
-	bool is_valid(ChainParams* params) const;
+	bool is_valid() const;
 	
-	pair<hash_t, hash_t> calc_hash() const;
+	hash_t calc_hash() const;
 	
-	hash_t get_output(uint chain) const;			// final segment output
+	hash_t calc_content_hash() const;
 	
-	ulong get_num_iters() const;					// relative (sum of segment iters)
+	hash_t get_output() const;				// final segment output
 	
-	ulong get_vdf_iters() const;					// absolute output iters
+	ulong get_vdf_iters() const;
 	
 	void validate() const;
 	

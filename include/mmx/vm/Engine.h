@@ -14,6 +14,7 @@
 #include <mmx/vm/varptr_t.hpp>
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm/Storage.h>
+#include <mmx/vm/StorageProxy.h>
 
 #include <set>
 #include <map>
@@ -25,8 +26,6 @@
 
 namespace mmx {
 namespace vm {
-
-class StorageProxy;
 
 static constexpr uint64_t INSTR_COST = 20;
 static constexpr uint64_t INSTR_CALL_COST = 30;
@@ -40,7 +39,7 @@ static constexpr uint64_t WRITE_COST = 50;
 static constexpr uint64_t WRITE_32_BYTE_COST = 30;
 static constexpr uint64_t STOR_READ_COST = 2000;
 static constexpr uint64_t STOR_WRITE_COST = 2000;
-static constexpr uint64_t STOR_READ_BYTE_COST = 2;
+static constexpr uint64_t STOR_READ_32_BYTE_COST = 50;
 static constexpr uint64_t STOR_WRITE_BYTE_COST = 50;
 
 static constexpr uint64_t CONV_STRING_UINT_CHAR_COST = 200;
@@ -54,8 +53,8 @@ static constexpr uint64_t CONV_BECH32_STRING_COST = 1000;
 static constexpr uint64_t SHA256_BLOCK_COST = 2000;
 static constexpr uint64_t ECDSA_VERIFY_COST = 20000;
 
-static constexpr uint64_t MAX_KEY_BYTES = 1024;
-static constexpr uint64_t MAX_VALUE_BYTES = 64 * 1024;
+static constexpr uint64_t MAX_KEY_BYTES = 4096;
+static constexpr uint64_t MAX_VALUE_BYTES = 1024 * 1024;
 static constexpr uint64_t MAX_CALL_RECURSION = 1000;
 static constexpr uint64_t MAX_ERASE_RECURSION = 100;
 static constexpr uint64_t MAX_COPY_RECURSION = 100;
@@ -65,9 +64,10 @@ enum externvar_e : uint32_t {
 	EXTERN_HEIGHT,
 	EXTERN_TXID,
 	EXTERN_USER,
-	EXTERN_BALANCE,
-	EXTERN_DEPOSIT,		// [currency, amount]
+	EXTERN_BALANCE,		// obsolete
+	EXTERN_DEPOSIT,
 	EXTERN_ADDRESS,
+	EXTERN_NETWORK,		// network identifier
 
 };
 
@@ -101,11 +101,17 @@ public:
 	const addr_t contract;
 
 	bool is_debug = false;
+	bool do_profile = false;
+	bool do_trace = false;
+
+	std::map<std::string, uint32_t> cost_map;		// key => count
 
 	std::function<void(uint32_t level, const std::string& msg)> log_func;
 	std::function<void(const std::string& name, const uint64_t data)> event_func;
 	std::function<void(const std::string& name, const std::string& method, const uint32_t nargs)> remote_call;
 	std::function<void(const addr_t& address, const std::string& field, const uint64_t dst)> read_contract;
+
+	const std::shared_ptr<StorageProxy> storage;
 
 	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
 
@@ -168,8 +174,10 @@ public:
 	void mint(const uint64_t address, const uint64_t amount, const uint64_t memo);
 	void rcall(const uint64_t name, const uint64_t method, const uint64_t stack_ptr, const uint64_t nargs);
 	void cread(const uint64_t dst, const uint64_t address, const uint64_t field);
+	void read_balance(const uint64_t dst, const uint64_t currency);
 
 	frame_t& get_frame();
+	uint64_t get_stack_ptr();
 	uint64_t deref(const uint64_t src);
 	uint64_t alloc();
 
@@ -190,6 +198,8 @@ public:
 	vnx::optional<std::string> parse_memo(const uint64_t addr);
 
 	std::map<uint64_t, const var_t*> find_entries(const uint64_t dst) const;
+
+	uint128_t& get_balance(const uint64_t currency_addr);
 
 	void dump_memory(const uint64_t begin = 0, const uint64_t end = -1);
 
@@ -213,14 +223,20 @@ private:
 	uint64_t deref_addr(uint32_t src, const bool flag);
 	uint64_t deref_value(uint32_t src, const bool flag);
 
+	bool is_true(const uint64_t src);
+	bool is_true(const var_t& var);
+
 private:
 	bool have_init = false;
-	std::shared_ptr<StorageProxy> storage;
 	std::map<uint64_t, std::unique_ptr<var_t>> memory;
 	std::map<std::pair<uint64_t, uint64_t>, std::unique_ptr<var_t>> entries;
 	std::map<const var_t*, uint64_t, varptr_less_t> key_map;
+	std::map<addr_t, uint128_t> balance_map;
 
 	size_t erase_call_depth = 0;
+
+	bool first_alloc = true;
+	uint64_t new_heap_base = -1;	// start of newly allocated heap for this run
 
 };
 

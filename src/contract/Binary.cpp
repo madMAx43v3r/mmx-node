@@ -22,6 +22,9 @@ bool Binary::is_valid() const
 		if(method.is_payable && method.is_const) {
 			return false;
 		}
+		if(method.is_init && (method.is_const || method.is_public || method.is_payable)) {
+			return false;
+		}
 	}
 	return Super::is_valid();
 }
@@ -40,7 +43,6 @@ hash_t Binary::calc_hash(const vnx::bool_t& full_hash) const
 	write_field(out, "constant", 	constant);
 	write_field(out, "binary", 		binary);
 	write_field(out, "line_info", 	line_info);
-	write_field(out, "source_info",	source_info);
 	write_field(out, "source", 		source);
 	write_field(out, "compiler", 	compiler);
 	write_field(out, "build_flags", build_flags);
@@ -49,10 +51,9 @@ hash_t Binary::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t Binary::num_bytes(const vnx::bool_t& total) const
+uint64_t Binary::num_bytes() const
 {
-	uint64_t sum = (total ? Super::num_bytes() : 0)
-			+ fields.size() * 4 + line_info.size() * 8 + source_info.size() * 8;
+	uint64_t sum = Super::num_bytes() + fields.size() * 4 + line_info.size() * 8;
 
 	for(const auto& entry : fields) {
 		sum += entry.first.size();
@@ -60,16 +61,8 @@ uint64_t Binary::num_bytes(const vnx::bool_t& total) const
 	for(const auto& entry : methods) {
 		sum += entry.first.size() + entry.second.num_bytes();
 	}
-	for(const auto& entry : source_info) {
-		sum += entry.second.first.size();
-	}
 	sum += name.size() + constant.size() + binary.size() + source.size() + compiler.size();
 	return sum;
-}
-
-uint64_t Binary::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
 }
 
 vnx::optional<uint32_t> Binary::find_field(const std::string& name) const
@@ -86,6 +79,15 @@ vnx::optional<method_t> Binary::find_method(const std::string& name) const
 	auto iter = methods.find(name);
 	if(iter != methods.end()) {
 		return iter->second;
+	}
+	return nullptr;
+}
+
+vnx::optional<uint32_t> Binary::find_line(const uint32_t& address) const
+{
+	auto iter = line_info.upper_bound(address);
+	if(iter != line_info.begin()) {
+		return (--iter)->second;
 	}
 	return nullptr;
 }

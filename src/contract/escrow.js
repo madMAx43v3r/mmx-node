@@ -1,12 +1,12 @@
 
 var source;
-var beneficiary;
+var target;
 var agent;
 
-function init(source_, beneficiary_, agent_)
+function init(source_, agent_, target_)
 {
 	source = bech32(source_);
-	beneficiary = bech32(beneficiary_);
+	target = bech32(target_);
 	agent = bech32(agent_);
 }
 
@@ -14,16 +14,14 @@ function deposit() public {}
 
 function unlock(currency) public
 {
-	if(this.user != agent) {
-		fail("user != agent");
-	}
-	send(beneficiary, this.balance[currency], currency, "mmx_escrow_unlock");
+	assert(this.user == agent, "invalid user");
+	
+	send(target, balance(currency), currency, "mmx_escrow_unlock");
 }
 
 function revoke(currency) public
 {
-	if(this.user != agent) {
-		fail("user != agent");
-	}
-	send(source, this.balance[currency], currency, "mmx_escrow_revoke");
+	assert(this.user == agent, "invalid user");
+	
+	send(source, balance(currency), currency, "mmx_escrow_revoke");
 }

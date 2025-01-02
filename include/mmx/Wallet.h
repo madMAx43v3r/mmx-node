@@ -29,15 +29,15 @@ protected:
 	void main() override;
 
 	std::shared_ptr<const Transaction> send(
-			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+			const uint32_t& index, const uint128& amount, const addr_t& dst_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> send_many(
-			const uint32_t& index, const std::vector<std::pair<addr_t, uint64_t>>& amounts,
+			const uint32_t& index, const std::vector<std::pair<addr_t, uint128>>& amounts,
 			const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> send_from(
-			const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr, const addr_t& src_addr,
+			const uint32_t& index, const uint128& amount, const addr_t& dst_addr, const addr_t& src_addr,
 			const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> deploy(
@@ -49,17 +49,17 @@ protected:
 
 	std::shared_ptr<const Transaction> deposit(
 			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
-			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const override;
+			const uint128& amount, const addr_t& currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> make_offer(
-			const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const addr_t& bid_currency,
-			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
+			const uint32_t& index, const uint32_t& owner, const uint128& bid_amount, const addr_t& bid_currency,
+			const uint128& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> offer_trade(
-			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint128& amount, const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> accept_offer(
-			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> offer_withdraw(
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
@@ -68,17 +68,23 @@ protected:
 			const uint32_t& index, const addr_t& address, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_trade(
-			const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
-			const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const uint128& amount, const addr_t& currency,
+			const vnx::optional<uint128>& min_trade, const int32_t& num_iter, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_add_liquid(
-			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const std::array<uint128, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> swap_rem_liquid(
-			const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const override;
+			const uint32_t& index, const addr_t& address, const std::array<uint128, 2>& amount, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> plotnft_exec(
+			const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args, const spend_options_t& options) const override;
+
+	std::shared_ptr<const Transaction> plotnft_create(
+			const uint32_t& index, const std::string& name, const vnx::optional<uint32_t>& owner, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> complete(
-			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const;
+			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const override;
 
 	std::shared_ptr<const Transaction> sign_off(
 			const uint32_t& index, std::shared_ptr<const Transaction> tx, const spend_options_t& options) const override;
@@ -99,16 +105,15 @@ protected:
 
 	void update_cache(const uint32_t& index) const override;
 
-	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
+	std::vector<txin_t> gather_inputs_for(	const uint32_t& index, const uint128& amount,
 											const addr_t& currency, const spend_options_t& options) const override;
 
-	std::vector<tx_entry_t> get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit,
-										const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const override;
+	std::vector<tx_entry_t> get_history(const uint32_t& index, const query_filter_t& filter) const override;
 
 	std::vector<tx_entry_t> get_history_memo(
-			const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<addr_t>& currency) const override;
+			const uint32_t& index, const std::string& memo, const query_filter_t& filter) const override;
 
-	std::vector<tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit, const uint32_t& offset) const override;
+	std::vector<tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit) const override;
 
 	balance_t get_balance(const uint32_t& index, const addr_t& currency) const override;
 
@@ -120,12 +125,10 @@ protected:
 	std::map<addr_t, balance_t> get_contract_balances(const addr_t& address) const override;
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts(
-			const uint32_t& index, const vnx::optional<std::string>& type_name) const override;
+			const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<hash_t>& type_hash) const override;
 
 	std::map<addr_t, std::shared_ptr<const Contract>> get_contracts_owned(
-			const uint32_t& index, const vnx::optional<std::string>& type_name) const override;
-
-	std::vector<virtual_plot_info_t> get_virtual_plots(const uint32_t& index) const override;
+			const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<hash_t>& type_hash) const override;
 
 	std::vector<offer_data_t> get_offers(const uint32_t& index, const vnx::bool_t& state) const override;
 
@@ -134,6 +137,8 @@ protected:
 	addr_t get_address(const uint32_t& index, const uint32_t& offset) const override;
 
 	std::vector<addr_t> get_all_addresses(const int32_t& index) const override;
+
+	int32_t find_wallet_by_addr(const addr_t& address) const override;
 
 	std::pair<skey_t, pubkey_t> get_farmer_keys(const uint32_t& index) const override;
 
@@ -181,6 +186,8 @@ protected:
 
 private:
 	std::shared_ptr<ECDSA_Wallet> get_wallet(const uint32_t& index) const;
+
+	addr_t get_plotnft_owner(const addr_t& address) const;
 
 private:
 	std::shared_ptr<NodeClient> node;

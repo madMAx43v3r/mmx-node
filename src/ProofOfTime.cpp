@@ -11,21 +11,17 @@
 
 namespace mmx {
 
-bool ProofOfTime::is_valid(std::shared_ptr<const ChainParams> params) const
+bool ProofOfTime::is_valid() const
 {
-	if(!params) {
-		throw std::logic_error("!params");
-	}
-	const auto all_hash = calc_hash();
 	return version == 0
-		&& segments.size() >= params->min_vdf_segments
-		&& segments.size() <= params->max_vdf_segments
-		&& (reward_addr || reward_segments.empty())
-		&& (!reward_addr || reward_segments.size() == segments.size())
-		&& all_hash.first == hash && all_hash.second == content_hash;
+		&& vdf_height
+		&& num_iters
+		&& segments.size()
+		&& hash == calc_hash()
+		&& content_hash == calc_content_hash();
 }
 
-std::pair<hash_t, hash_t> ProofOfTime::calc_hash() const
+hash_t ProofOfTime::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
@@ -34,50 +30,36 @@ std::pair<hash_t, hash_t> ProofOfTime::calc_hash() const
 	buffer.reserve(64 * 1024);
 
 	write_bytes(out, get_type_hash());
-	write_field(out, "version", version);
-	write_field(out, "height", 	height);
-	write_field(out, "start", 	start);
-	write_field(out, "input", 	input);
-	write_field(out, "infuse", 	infuse);
-	write_field(out, "segments",		segments);
-	write_field(out, "reward_segments",	reward_segments);
-	write_field(out, "reward_addr", 	reward_addr);
-	write_field(out, "timelord_key", 	timelord_key);
+	write_field(out, "version", 	version);
+	write_field(out, "vdf_height", 	vdf_height);
+	write_field(out, "start", 		start);
+	write_field(out, "num_iters", 	num_iters);
+	write_field(out, "segment_size", segment_size);
+	write_field(out, "input", 		input);
+	write_field(out, "prev", 		prev);
+	write_field(out, "reward_addr", reward_addr);
+	write_field(out, "segments", 	segments);
 	out.flush();
 
-	std::pair<hash_t, hash_t> res;
-	res.first = hash_t(buffer);
-
-	write_field(out, "timelord_sig", timelord_sig);
-	out.flush();
-	res.second = hash_t(buffer);
-	return res;
+	return hash_t(buffer);
 }
 
-hash_t ProofOfTime::get_output(const uint32_t& chain) const
+hash_t ProofOfTime::calc_content_hash() const
 {
-	if(chain > 1) {
-		throw std::logic_error("invalid chain");
-	}
-	hash_t res;
-	if(!segments.empty()) {
-		res = segments.back().output[chain];
-	}
-	return res;
+	return hash_t(hash + timelord_key + timelord_sig);
 }
 
-uint64_t ProofOfTime::get_num_iters() const
+hash_t ProofOfTime::get_output() const
 {
-	uint64_t sum = 0;
-	for(const auto& seg : segments) {
-		sum += seg.num_iters;
+	if(segments.empty()) {
+		return hash_t();
 	}
-	return sum;
+	return segments.back();
 }
 
 uint64_t ProofOfTime::get_vdf_iters() const
 {
-	return start + get_num_iters();
+	return start + num_iters;
 }
 
 void ProofOfTime::validate() const

@@ -9,8 +9,10 @@
 #include <mmx/FarmInfo.hxx>
 #include <mmx/Partial.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ValidatorVote.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/Hash64.hpp>
 #include <vnx/Module.h>
 #include <vnx/TopicPtr.hpp>
@@ -75,6 +77,7 @@ protected:
 	virtual std::vector<::mmx::pubkey_t> get_farmer_keys() const = 0;
 	virtual std::shared_ptr<const ::mmx::FarmInfo> get_farm_info() const = 0;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> sign_block(std::shared_ptr<const ::mmx::BlockHeader> block) const = 0;
+	virtual ::mmx::signature_t sign_vote(std::shared_ptr<const ::mmx::ValidatorVote> vote) const = 0;
 	virtual void handle(std::shared_ptr<const ::mmx::FarmInfo> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::ProofResponse> _value) {}
 	virtual void handle(std::shared_ptr<const ::mmx::Partial> _value) {}

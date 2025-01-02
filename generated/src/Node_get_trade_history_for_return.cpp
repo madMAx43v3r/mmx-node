@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_trade_history_for_return::VNX_TYPE_HASH(0xd61154789cdb246bull);
-const vnx::Hash64 Node_get_trade_history_for_return::VNX_CODE_HASH(0x6573c98f5f3ebbb2ull);
+const vnx::Hash64 Node_get_trade_history_for_return::VNX_CODE_HASH(0x9b5ee5e05738a9b7ull);
 
 vnx::Hash64 Node_get_trade_history_for_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history_for_return::static_create_
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_trade_history_for.return";
 	type_code->type_hash = vnx::Hash64(0xd61154789cdb246bull);
-	type_code->code_hash = vnx::Hash64(0x6573c98f5f3ebbb2ull);
+	type_code->code_hash = vnx::Hash64(0x9b5ee5e05738a9b7ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -140,6 +140,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_trade_history_for_return::static_create_
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_trade_history_for_return& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

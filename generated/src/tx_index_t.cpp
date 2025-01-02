@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 tx_index_t::VNX_TYPE_HASH(0xc326e232ee2ebb41ull);
-const vnx::Hash64 tx_index_t::VNX_CODE_HASH(0x66110881631bba2full);
+const vnx::Hash64 tx_index_t::VNX_CODE_HASH(0xcc0b998144214be3ull);
 
 vnx::Hash64 tx_index_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -47,7 +47,8 @@ void tx_index_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, height);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, static_cost);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, contract_read_cost);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, file_offset);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, time_stamp);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, file_offset);
 	_visitor.type_end(*_type_code);
 }
 
@@ -56,6 +57,7 @@ void tx_index_t::write(std::ostream& _out) const {
 	_out << "\"height\": "; vnx::write(_out, height);
 	_out << ", \"static_cost\": "; vnx::write(_out, static_cost);
 	_out << ", \"contract_read_cost\": "; vnx::write(_out, contract_read_cost);
+	_out << ", \"time_stamp\": "; vnx::write(_out, time_stamp);
 	_out << ", \"file_offset\": "; vnx::write(_out, file_offset);
 	_out << "}";
 }
@@ -72,6 +74,7 @@ vnx::Object tx_index_t::to_object() const {
 	_object["height"] = height;
 	_object["static_cost"] = static_cost;
 	_object["contract_read_cost"] = contract_read_cost;
+	_object["time_stamp"] = time_stamp;
 	_object["file_offset"] = file_offset;
 	return _object;
 }
@@ -86,6 +89,8 @@ void tx_index_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(height);
 		} else if(_entry.first == "static_cost") {
 			_entry.second.to(static_cost);
+		} else if(_entry.first == "time_stamp") {
+			_entry.second.to(time_stamp);
 		}
 	}
 }
@@ -100,6 +105,9 @@ vnx::Variant tx_index_t::get_field(const std::string& _name) const {
 	if(_name == "contract_read_cost") {
 		return vnx::Variant(contract_read_cost);
 	}
+	if(_name == "time_stamp") {
+		return vnx::Variant(time_stamp);
+	}
 	if(_name == "file_offset") {
 		return vnx::Variant(file_offset);
 	}
@@ -113,6 +121,8 @@ void tx_index_t::set_field(const std::string& _name, const vnx::Variant& _value)
 		_value.to(static_cost);
 	} else if(_name == "contract_read_cost") {
 		_value.to(contract_read_cost);
+	} else if(_name == "time_stamp") {
+		_value.to(time_stamp);
 	} else if(_name == "file_offset") {
 		_value.to(file_offset);
 	}
@@ -142,11 +152,11 @@ std::shared_ptr<vnx::TypeCode> tx_index_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.tx_index_t";
 	type_code->type_hash = vnx::Hash64(0xc326e232ee2ebb41ull);
-	type_code->code_hash = vnx::Hash64(0x66110881631bba2full);
+	type_code->code_hash = vnx::Hash64(0xcc0b998144214be3ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::tx_index_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<tx_index_t>>(); };
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -168,6 +178,12 @@ std::shared_ptr<vnx::TypeCode> tx_index_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[3];
 		field.data_size = 8;
+		field.name = "time_stamp";
+		field.code = {8};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.data_size = 8;
 		field.name = "file_offset";
 		field.code = {8};
 	}
@@ -182,6 +198,7 @@ std::shared_ptr<vnx::TypeCode> tx_index_t::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::tx_index_t& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -223,6 +240,9 @@ void read(TypeInput& in, ::mmx::tx_index_t& value, const TypeCode* type_code, co
 			vnx::read_value(_buf + _field->offset, value.contract_read_cost, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[3]) {
+			vnx::read_value(_buf + _field->offset, value.time_stamp, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[4]) {
 			vnx::read_value(_buf + _field->offset, value.file_offset, _field->code.data());
 		}
 	}
@@ -246,11 +266,12 @@ void write(TypeOutput& out, const ::mmx::tx_index_t& value, const TypeCode* type
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(20);
+	auto* const _buf = out.write(28);
 	vnx::write_value(_buf + 0, value.height);
 	vnx::write_value(_buf + 4, value.static_cost);
 	vnx::write_value(_buf + 8, value.contract_read_cost);
-	vnx::write_value(_buf + 12, value.file_offset);
+	vnx::write_value(_buf + 12, value.time_stamp);
+	vnx::write_value(_buf + 20, value.file_offset);
 }
 
 void read(std::istream& in, ::mmx::tx_index_t& value) {

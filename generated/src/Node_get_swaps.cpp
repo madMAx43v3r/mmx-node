@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_swaps::VNX_TYPE_HASH(0x219bbb3e5dcd19eaull);
-const vnx::Hash64 Node_get_swaps::VNX_CODE_HASH(0xa5c05dc8f762e46aull);
+const vnx::Hash64 Node_get_swaps::VNX_CODE_HASH(0x7e2b02fa5105020full);
 
 vnx::Hash64 Node_get_swaps::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -50,6 +50,7 @@ void Node_get_swaps::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, since);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, token);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, currency);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, limit);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,6 +59,7 @@ void Node_get_swaps::write(std::ostream& _out) const {
 	_out << ", \"since\": "; vnx::write(_out, since);
 	_out << ", \"token\": "; vnx::write(_out, token);
 	_out << ", \"currency\": "; vnx::write(_out, currency);
+	_out << ", \"limit\": "; vnx::write(_out, limit);
 	_out << "}";
 }
 
@@ -73,6 +75,7 @@ vnx::Object Node_get_swaps::to_object() const {
 	_object["since"] = since;
 	_object["token"] = token;
 	_object["currency"] = currency;
+	_object["limit"] = limit;
 	return _object;
 }
 
@@ -80,6 +83,8 @@ void Node_get_swaps::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "currency") {
 			_entry.second.to(currency);
+		} else if(_entry.first == "limit") {
+			_entry.second.to(limit);
 		} else if(_entry.first == "since") {
 			_entry.second.to(since);
 		} else if(_entry.first == "token") {
@@ -98,6 +103,9 @@ vnx::Variant Node_get_swaps::get_field(const std::string& _name) const {
 	if(_name == "currency") {
 		return vnx::Variant(currency);
 	}
+	if(_name == "limit") {
+		return vnx::Variant(limit);
+	}
 	return vnx::Variant();
 }
 
@@ -108,6 +116,8 @@ void Node_get_swaps::set_field(const std::string& _name, const vnx::Variant& _va
 		_value.to(token);
 	} else if(_name == "currency") {
 		_value.to(currency);
+	} else if(_name == "limit") {
+		_value.to(limit);
 	}
 }
 
@@ -135,7 +145,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swaps::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_swaps";
 	type_code->type_hash = vnx::Hash64(0x219bbb3e5dcd19eaull);
-	type_code->code_hash = vnx::Hash64(0xa5c05dc8f762e46aull);
+	type_code->code_hash = vnx::Hash64(0x7e2b02fa5105020full);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -143,7 +153,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swaps::static_create_type_code() {
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Node_get_swaps>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Node_get_swaps_return::static_get_type_code();
-	type_code->fields.resize(3);
+	type_code->fields.resize(4);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -162,6 +172,13 @@ std::shared_ptr<vnx::TypeCode> Node_get_swaps::static_create_type_code() {
 		field.name = "currency";
 		field.code = {33, 11, 32, 1};
 	}
+	{
+		auto& field = type_code->fields[3];
+		field.data_size = 4;
+		field.name = "limit";
+		field.value = vnx::to_string(100);
+		field.code = {7};
+	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
 	type_code->build();
 	return type_code;
@@ -174,6 +191,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_swaps::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_swaps& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -208,6 +226,9 @@ void read(TypeInput& in, ::mmx::Node_get_swaps& value, const TypeCode* type_code
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.since, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[3]) {
+			vnx::read_value(_buf + _field->offset, value.limit, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -231,8 +252,9 @@ void write(TypeOutput& out, const ::mmx::Node_get_swaps& value, const TypeCode* 
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(4);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.since);
+	vnx::write_value(_buf + 4, value.limit);
 	vnx::write(out, value.token, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.currency, type_code, type_code->fields[2].code.data());
 }

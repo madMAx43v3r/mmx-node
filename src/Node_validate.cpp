@@ -8,7 +8,6 @@
 #include <mmx/Node.h>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/Binary.hxx>
@@ -85,7 +84,7 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 		mutate_set.insert(op->address == addr_t() ? tx->id : op->address);
 	}
 	{
-		auto list = std::vector<addr_t>(mutate_set.begin(), mutate_set.end());
+		std::vector<addr_t> list(mutate_set.begin(), mutate_set.end());
 		while(!list.empty()) {
 			std::vector<addr_t> more;
 			for(const auto& address : list) {
@@ -104,10 +103,6 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 	for(const auto& address : mutate_set) {
 		context->setup_wait(tx->id, address);
 		context->mutate_map[address].push_back(tx->id);
-
-		if(!context->storage->has_balances(address)) {
-			context->storage->set_balances(address, get_balances(address));
-		}
 	}
 	if(!mutate_set.empty()) {
 		context->signal_map.emplace(tx->id, std::make_shared<waitcond_t>());
@@ -116,8 +111,29 @@ void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::sh
 
 std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const Block> block) const
 {
-	// Note: hash, tx_hash, tx_count, tx_cost, tx_fees and proof already verified
-	// Note: Block::is_valid() and validate() already called during pre_validate_blocks()
+	/*
+	 * The following fields have already been verified in `Node::verify_proof()` or see note:
+	 * - vdf_height
+	 * - vdf_count				(Node::find_vdf_points() + Node::verify_proof())
+	 * - vdf_iters
+	 * - vdf_output				(Node::find_vdf_points())
+	 * - vdf_reward_addr		(Node::find_vdf_points())
+	 * - proof
+	 * - proof_hash
+	 * - challenge
+	 * - is_space_fork
+	 * - time_diff
+	 * - space_diff
+	 * - proof_score_sum
+	 * - proof_score_count
+	 * - weight
+	 * - total_weight
+	 */
+
+	if(!block->is_valid()) {
+		throw std::logic_error("static validation failed");
+	}
+	block->validate();
 
 	const auto prev = find_prev_header(block);
 	if(!prev) {
@@ -132,6 +148,12 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->height != prev->height + 1) {
 		throw std::logic_error("invalid height");
 	}
+	if(block->time_stamp - prev->time_stamp > block->vdf_count * params->block_interval_ms * 2) {
+		throw std::logic_error("time stamp delta too high");
+	}
+	if(block->time_stamp - prev->time_stamp < block->vdf_count * params->block_interval_ms / 10) {
+		throw std::logic_error("time stamp delta too low");
+	}
 	if(block->time_diff == 0 || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}
@@ -141,79 +163,96 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->total_cost > params->max_block_cost) {
 		throw std::logic_error("block cost too high: " + std::to_string(block->total_cost));
 	}
-	if(block->farmer_sig) {
-		// Note: farmer_sig already verified together with proof
-		validate_diff_adjust(block->time_diff, prev->time_diff);
+	const auto txfee_buffer = calc_new_txfee_buffer(params, prev);
+	if(block->txfee_buffer != txfee_buffer) {
+		throw std::logic_error("invalid txfee_buffer: " + std::to_string(block->txfee_buffer) + " != " + std::to_string(txfee_buffer));
+	}
+	if(block->reward_vote > 1 || block->reward_vote < -1) {
+		throw std::logic_error("invalid reward_vote: " + std::to_string(block->reward_vote));
+	}
+	vnx::optional<addr_t> reward_contract;
 
-		const auto netspace_ratio = calc_new_netspace_ratio(
-				params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
-		if(block->netspace_ratio != netspace_ratio) {
-			throw std::logic_error("invalid netspace_ratio: " + std::to_string(block->netspace_ratio) + " != " + std::to_string(netspace_ratio));
+	if(block->reward_addr) {
+		if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof[0])) {
+			reward_contract = proof->contract;
 		}
-		const auto average_txfee = calc_new_average_txfee(params, prev->average_txfee, block->tx_fees);
-		if(block->average_txfee != average_txfee) {
-			throw std::logic_error("invalid average_txfee: " + std::to_string(block->average_txfee) + " != " + std::to_string(average_txfee));
+	}
+	if(block->reward_contract != reward_contract) {
+		throw std::logic_error("invalid reward_contract");
+	}
+	if(reward_contract) {
+		addr_t target;
+		try {
+			target = get_plot_nft_target(*reward_contract, block->reward_account);
+		} catch(const std::exception& ex) {
+			throw std::logic_error("reward_addr resolution failed with: " + std::string(ex.what()));
 		}
-		const auto next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
-		if(block->next_base_reward != next_base_reward) {
-			throw std::logic_error("invalid next_base_reward: " + std::to_string(block->next_base_reward) + " != " + std::to_string(next_base_reward));
+		if(!block->reward_addr || (*block->reward_addr) != target) {
+			throw std::logic_error("invalid reward_addr for reward_contract: expected " + target.to_string());
 		}
-		if(block->reward_vote > 1 || block->reward_vote < -1) {
-			throw std::logic_error("invalid reward_vote: " + std::to_string(block->reward_vote));
+	}
+
+	if(block->height % params->vdf_reward_interval == 0)
+	{
+		const auto address = get_vdf_reward_winner(block);
+		if(block->vdf_reward_payout != address) {
+			throw std::logic_error("invalid vdf_reward_payout");
 		}
 	} else {
-		if(block->time_diff != prev->time_diff) {
-			throw std::logic_error("invalid time_diff adjust");
-		}
-		if(block->netspace_ratio != prev->netspace_ratio) {
-			throw std::logic_error("invalid netspace_ratio adjust");
-		}
-		if(block->average_txfee != prev->average_txfee) {
-			throw std::logic_error("invalid average_txfee adjust");
-		}
-		if(block->next_base_reward != prev->next_base_reward) {
-			throw std::logic_error("invalid next_base_reward adjust");
-		}
-		if(block->reward_vote) {
-			throw std::logic_error("invalid reward_vote");
+		if(block->vdf_reward_payout) {
+			throw std::logic_error("invalid vdf_reward_payout (must be null)");
 		}
 	}
-	if(block->reward_addr) {
-		if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
-			if(*block->reward_addr != proof->contract) {
-				throw std::logic_error("invalid reward_addr for NFT proof");
-			}
+
+	if(block->height % params->reward_adjust_interval == 0)
+	{
+		const auto base_reward = calc_new_base_reward(params, prev);
+		if(block->base_reward != base_reward) {
+			throw std::logic_error("invalid base_reward: " + std::to_string(block->base_reward) + " != " + std::to_string(base_reward));
 		}
-		if(auto proof = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-			if(auto plot = get_contract_as<contract::VirtualPlot>(proof->plot_id)) {
-				if(plot->reward_address) {
-					if(*block->reward_addr != *plot->reward_address) {
-						throw std::logic_error("invalid reward_addr for stake proof");
-					}
-				}
-			}
+		if(block->reward_vote_sum != block->reward_vote) {
+			throw std::logic_error("invalid reward_vote_sum");
+		}
+		if(block->reward_vote_count != (block->reward_vote ? 1 : 0)) {
+			throw std::logic_error("invalid reward_vote_count");
+		}
+	} else {
+		if(block->base_reward != prev->base_reward) {
+			throw std::logic_error("invalid base_reward");
+		}
+		if(block->reward_vote_sum != prev->reward_vote_sum + block->reward_vote) {
+			throw std::logic_error("invalid reward_vote_sum");
+		}
+		if(block->reward_vote_count != prev->reward_vote_count + (block->reward_vote ? 1 : 0)) {
+			throw std::logic_error("invalid reward_vote_count");
 		}
 	}
-	const auto proof_score = block->proof ? block->proof->score : params->score_threshold;
-	if(block->space_diff != calc_new_space_diff(params, prev->space_diff, proof_score)) {
-		throw std::logic_error("invalid space_diff adjust");
-	}
-	const auto diff_block = get_diff_header(block);
-	const auto weight = calc_block_weight(params, diff_block, block);
-	const auto total_weight = prev->total_weight + block->weight;
-	if(block->weight != weight) {
-		throw std::logic_error("invalid block weight: " + block->weight.str(10) + " != " + weight.str(10));
-	}
-	if(block->total_weight != total_weight) {
-		throw std::logic_error("invalid total weight: " + block->total_weight.str(10) + " != " + total_weight.str(10));
-	}
+
 	if(block->height < params->transaction_activation && block->tx_count) {
 		throw std::logic_error("transactions not activated yet");
+	}
+	if(block->project_addr != prev->project_addr) {
+		throw std::logic_error("invalid project_addr");
+	}
+
+	{
+		std::set<std::pair<addr_t, addr_t>> keys;
+		for(const auto& tx : block->tx_list) {
+			if(tx->sender) {
+				keys.emplace(*tx->sender, addr_t());
+			}
+			for(const auto& in : tx->inputs) {
+				keys.emplace(in.address, in.contract);
+			}
+		}
+		prefetch_balances(keys);
 	}
 
 	auto context = new_exec_context(block->height);
 	{
 		std::unordered_set<addr_t> tx_set;
+		tx_set.reserve(block->tx_count);
+
 		balance_cache_t balance_cache(&balance_table);
 
 		std::shared_ptr<const Transaction> prev;
@@ -318,7 +357,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 		const auto amount = calc_block_reward(block, block->tx_fees);
 		if(block->reward_amount != amount) {
 			throw std::logic_error("invalid reward_amount: "
-					+ std::to_string(block->reward_amount) + " > " + std::to_string(amount));
+					+ std::to_string(block->reward_amount) + " != " + std::to_string(amount));
 		}
 	} else {
 		if(block->reward_amount) {
@@ -333,7 +372,14 @@ exec_result_t Node::validate(std::shared_ptr<const Transaction> tx) const
 	if(tx->exec_result) {
 		throw std::logic_error("exec_result not null");
 	}
-	auto context = new_exec_context(get_height() + 1);
+	const auto height = get_height() + 1;
+
+	if(height < params->transaction_activation) {
+		throw std::logic_error("transactions not live yet");
+	}
+	auto context = new_exec_context(height);
+	context->do_profile = exec_profile;
+	context->do_trace = exec_trace;
 	prepare_context(context, tx);
 
 	const auto result = validate(tx, context);
@@ -351,13 +397,15 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::vector<txout_t>& exec_outputs,
 					std::map<std::pair<addr_t, addr_t>, uint128>& exec_spend_map,
 					std::shared_ptr<vm::StorageCache> storage_cache,
-					uint64_t& tx_cost, exec_error_t& error, const bool is_public) const
+					uint64_t& tx_cost, exec_error_t& error, const bool is_init) const
 {
 	auto executable = std::dynamic_pointer_cast<const contract::Executable>(contract);
 	if(!executable) {
 		throw std::logic_error("not an executable: " + address.to_string());
 	}
 	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false);
+	engine->do_profile = context->do_profile;
+	engine->do_trace = context->do_trace;
 	{
 		const auto avail_gas = fee_to_cost<mmx::static_failure>(tx->max_fee_amount, tx->fee_ratio);
 		engine->gas_limit = std::min(avail_gas - std::min(tx_cost, avail_gas), params->max_tx_cost);
@@ -371,6 +419,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::var_t());
 	}
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
+	engine->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 
 	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
 		{
@@ -386,13 +435,24 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 
 	std::exception_ptr failed_ex;
 	try {
-		execute(tx, context, executable, exec_outputs, exec_spend_map, storage_cache, engine, op->method, error, is_public);
+		execute(tx, context, executable, exec_outputs, exec_spend_map, storage_cache, engine, op->method, error, is_init);
 	} catch(...) {
 		failed_ex = std::current_exception();
 	}
 	// decouple gas checking from consensus by clamping cost to limit
 	tx_cost += std::min(engine->gas_used, engine->gas_limit);
 
+	if(engine->do_profile) {
+		std::ofstream out("profile_" + executable->binary.to_string() + "_" + op->method + "_" + std::to_string(vnx::get_time_micros()) + ".json");
+		out << vnx::to_pretty_string(engine->cost_map);
+	}
+	if(engine->do_trace) {
+		std::ofstream out("trace_" + executable->binary.to_string() + "_" + op->method + "_" + std::to_string(vnx::get_time_micros()) + ".json");
+		for(const auto& t : engine->storage->trace) {
+			out << t.type << "\taddr = 0x" << vnx::to_hex_string(t.addr)
+					<< "\tkey = 0x" << vnx::to_hex_string(t.key) << "\tvalue = " << to_string(t.value) << std::endl;
+		}
+	}
 	if(failed_ex) {
 		std::rethrow_exception(failed_ex);
 	}
@@ -406,7 +466,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
-					exec_error_t& error, const bool is_public) const
+					exec_error_t& error, const bool is_init) const
 {
 	{
 		auto iter = context->mutate_map.find(engine->contract);
@@ -426,13 +486,18 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(!method) {
 		throw std::logic_error("no such method: " + method_name);
 	}
-	if(is_public && !method->is_public) {
-		throw std::logic_error("method is not public: " + method_name);
+	if(is_init) {
+		if(!method->is_init) {
+			throw std::logic_error("not a constructor: " + method_name);
+		}
+	} else {
+		if(!method->is_public) {
+			throw std::logic_error("method is not public: " + method_name);
+		}
 	}
 	vm::load(engine, binary);
 
 	std::map<addr_t, std::shared_ptr<const Contract>> contract_cache;
-
 	contract_cache[tx->id] = tx->deploy;
 
 	engine->remote_call = [this, tx, context, executable, storage_cache, &engine, &contract_cache, &exec_outputs, &exec_spend_map, &error]
@@ -454,16 +519,17 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		const auto child = std::make_shared<vm::Engine>(address, storage_cache, false);
 		child->gas_limit = engine->gas_limit - std::min(engine->gas_used, engine->gas_limit);
 
-		const auto stack_ptr = engine->get_frame().stack_ptr;
+		const auto stack_ptr = engine->get_stack_ptr();
 		for(uint32_t i = 0; i < nargs; ++i) {
-			vm::copy(child, engine, vm::MEM_STACK + 1 + i, vm::MEM_STACK + stack_ptr + 1 + i);
+			vm::copy(child, engine, vm::MEM_STACK + 1 + i, stack_ptr + 1 + i);
 		}
 		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(engine->contract));
 		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
+		child->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 
-		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, true);
+		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, false);
 
-		vm::copy(engine, child, vm::MEM_STACK + stack_ptr, vm::MEM_STACK);
+		vm::copy(engine, child, stack_ptr, vm::MEM_STACK);
 
 		engine->gas_used += child->gas_used;
 		engine->check_gas();
@@ -486,22 +552,16 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(context->height));
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::to_binary(tx->id));
 
-	vm::set_balance(engine, storage_cache->get_balances(engine->contract));
-
 	try {
-		vm::execute(engine, *method);
+		vm::execute(engine, *method, true);
 	} catch(...) {
 		error.code = engine->error_code;
 		error.address = engine->error_addr;
 
-		if(error.address < engine->code.size() && !binary->line_info.empty()) {
-			auto iter = binary->line_info.upper_bound(error.address);
-			if(iter != binary->line_info.begin()) {
-				iter--;
-				error.line = iter->second;
-			}
+		if(auto line = binary->find_line(error.address)) {
+			error.line = *line;
 		}
-		if(debug_exec_fails) {
+		if(exec_debug) {
 			engine->dump_memory();
 		}
 		throw;
@@ -641,7 +701,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				auto exec = operation::Execute::create();
 				exec->method = executable->init_method;
 				exec->args = executable->init_args;
-				execute(tx, context, exec, executable, tx->id, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, false);
+				execute(tx, context, exec, executable, tx->id, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, true);
 			}
 		}
 		error.operation = 0;
@@ -671,15 +731,15 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(auto exec = std::dynamic_pointer_cast<const operation::Execute>(op))
 			{
 				const auto solution = tx->get_solution(op->solution);
-				execute(tx, context, exec, contract, address, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, true);
+				execute(tx, context, exec, contract, address, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, false);
 			}
 			error.operation++;
 		}
 		error.operation = -1;
 
 		// create exec inputs
-		for(auto& entry : exec_spend_map) {
-			auto& amount_left = entry.second;
+		for(const auto& entry : exec_spend_map) {
+			auto amount_left = entry.second;
 			{
 				// use deposit amounts first
 				auto& deposit = deposit_map[entry.first];
@@ -687,43 +747,38 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 				deposit -= amount;
 				amount_left -= amount;
 			}
-			while(amount_left > 0) {
+			if(amount_left) {
 				txin_t in;
 				in.address = entry.first.first;
 				in.contract = entry.first.second;
-				in.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
+				in.amount = amount_left;
 				exec_inputs.push_back(in);
-				amount_left -= in.amount;
 			}
 		}
 
 		// create deposit outputs
-		for(auto& entry : deposit_map) {
-			auto& amount_left = entry.second;
-			while(amount_left > 0) {
+		for(const auto& entry : deposit_map) {
+			if(const auto& amount = entry.second) {
 				txout_t out;
 				out.address = entry.first.first;
 				out.contract = entry.first.second;
-				out.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
+				out.amount = amount;
 				exec_outputs.push_back(out);
-				amount_left -= out.amount;
 			}
 		}
 
 		// check for left-over amounts
-		for(auto& entry : amounts) {
+		for(const auto& entry : amounts) {
 			if(entry.second) {
 				if(!tx->deploy) {
-					throw std::logic_error("left-over amount without deploy");
+					throw std::logic_error("implicit deposit without deploy");
 				}
-				auto& amount_left = entry.second;
-				while(amount_left > 0) {
+				if(const auto& amount = entry.second) {
 					txout_t out;
 					out.address = tx->id;
 					out.contract = entry.first;
-					out.amount = (amount_left >> 64) ? uint64_t(-1) : amount_left.lower();
+					out.amount = amount;
 					exec_outputs.push_back(out);
-					amount_left -= out.amount;
 				}
 			}
 		}
@@ -815,7 +870,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			for(size_t i = 0; i < exec_inputs.size(); ++i) {
 				const auto& lhs = exec_inputs[i];
 				const auto& rhs = result->inputs[i];
-				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.flags != rhs.flags) {
+				if(lhs.contract != rhs.contract || lhs.address != rhs.address || lhs.amount != rhs.amount || lhs.memo != rhs.memo || lhs.flags != rhs.flags) {
 					throw std::logic_error("execution input mismatch at index " + std::to_string(i));
 				}
 			}
@@ -875,7 +930,7 @@ void Node::validate_diff_adjust(const uint64_t& block, const uint64_t& prev) con
 	if(block > prev && block - prev > max_update) {
 		throw std::logic_error("invalid difficulty adjustment upwards");
 	}
-	if(block < prev && prev - block > max_update) {
+	if(prev > block && prev - block > max_update) {
 		throw std::logic_error("invalid difficulty adjustment downwards");
 	}
 }

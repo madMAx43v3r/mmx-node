@@ -2,13 +2,15 @@ package mmx;
 
 struct txio_entry_t extends txio_t {
 	
-	hash_t txid;
+	hash_t txid;			// block hash in case type == REWARD
 	
-	uint height;
+	uint height;			// -1 = pending
+	
+	long time_stamp;		// UNIX [ms]
 	
 	tx_type_e type;
 	
 	
-	static txio_entry_t create_ex(hash_t txid, uint height, tx_type_e type, txio_t txio);
+	static txio_entry_t create_ex(hash_t txid, uint height, long time_stamp, tx_type_e type, txio_t txio);
 	
 }

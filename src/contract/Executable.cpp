@@ -17,6 +17,11 @@ namespace contract {
 
 bool Executable::is_valid() const
 {
+	for(const auto& arg : init_args) {
+		if(!is_json(arg)) {
+			return false;
+		}
+	}
 	return Super::is_valid() && binary != addr_t();
 }
 
@@ -50,13 +55,12 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 	return hash_t(buffer);
 }
 
-uint64_t Executable::num_bytes(const vnx::bool_t& total) const
+uint64_t Executable::num_bytes() const
 {
-	uint64_t sum = (total ? Super::num_bytes() : 0)
-			+ 32 + init_method.size() + depends.size() * 32;
+	uint64_t sum = Super::num_bytes() + 32 + init_method.size() + depends.size() * 32;
 
 	for(const auto& arg : init_args) {
-		sum += arg.size();
+		sum += get_num_bytes(arg);
 	}
 	for(const auto& entry : depends) {
 		sum += entry.first.size();
@@ -64,14 +68,17 @@ uint64_t Executable::num_bytes(const vnx::bool_t& total) const
 	return sum;
 }
 
-uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
-{
-	return Super::calc_cost(params) + num_bytes(false) * params->min_txfee_byte;
-}
-
 vnx::Variant Executable::read_field(const std::string& name) const
 {
 	return Super::read_field(name);
+}
+
+vnx::Variant Executable::get_arg(const uint32_t& index) const
+{
+	if(index < init_args.size()) {
+		return init_args[index];
+	}
+	return vnx::Variant();
 }
 
 

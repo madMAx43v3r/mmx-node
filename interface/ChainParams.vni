@@ -6,35 +6,35 @@ class ChainParams {
 	int  decimals = 6;
 	uint min_ksize = 26;
 	uint max_ksize = 32;
-	uint plot_filter = 8;					// log2
+	uint plot_filter = 8;					// log2 (physical only)
 	
 	uint commit_delay = 18;					// for writing to disk (should be less than challenge_interval - challenge_delay)
 	uint infuse_delay = 6;					// for primary VDF infusion
 	uint challenge_delay = 9;				// blocks until new challange is active
 	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
-	uint avg_txfee_adjust = 13;				// per block (1/2^x)
+	uint max_vdf_count = 100;				// chain will halt if no proof is found within this time
 	
-	uint min_vdf_segments = 320;
-	uint num_vdf_segments = 760;
-	uint max_vdf_segments = 1024;
-
-	uint score_bits = 16;
-	uint score_target = 16384;				// defines how many proofs are found per block (must be less than score_threshold)
-	uint score_threshold = 65536;			// should be <= 2^score_bits
+	uint proofs_per_height = 3;
+	uint max_validators = 11;
 	
+	ulong min_reward = 200000;
+	ulong vdf_reward = 500000;				// per vdf_reward_interval
+	uint  vdf_reward_interval = 50;
+	uint  vdf_segment_size = 50000;
+	
+	uint reward_adjust_div = 100;			// relative adjustment per reward_adjust_interval
+	uint reward_adjust_tick = 10000;		// minimum absolute adjustment
+	uint reward_adjust_interval = 8640;		// [blocks]
 	uint target_mmx_gold_price = 2000;		// [MMX / ounce]
 	
-	ulong vdf_reward = 2000;				// per block
-	ulong min_reward = 200000;
-	ulong reward_adjust_div = 1000000;		// relative adjustment per block
-	
-	ulong time_diff_constant = 1000;
+	ulong time_diff_divider = 1000;			// fixed-point precision
+	ulong time_diff_constant = 1000000;
 	ulong space_diff_constant = 100000000;
-	ulong virtual_space_constant = 500;
 	
-	ulong initial_time_diff = 50000;		// [iters/sec]
+	ulong initial_time_diff = 50;
 	ulong initial_space_diff = 10;
+	ulong initial_time_stamp = 0;			// genesis time stamp [ms]
 	
 	ulong min_txfee = 100;					// per tx
 	ulong min_txfee_io = 100;				// per input / output
@@ -52,7 +52,7 @@ class ChainParams {
 	
 	vector<uint> min_fee_ratio;				// for dynamic block size
 	
-	double block_time = 10;					// [sec]
+	long block_interval_ms = 10000;			// [ms]
 	
 	string network;
 	
@@ -62,12 +62,17 @@ class ChainParams {
 	addr_t offer_binary;
 	addr_t token_binary;
 	addr_t plot_nft_binary;
+	addr_t escrow_binary;
+	addr_t time_lock_binary;
+	addr_t relay_binary;
 	
-	addr_t project_addr;
 	ulong fixed_project_reward = 50000;
 	uint_fraction_t project_ratio;
 	
 	uint reward_activation = 50000;
 	uint transaction_activation = 100000;
+	
+	
+	double get_block_time() const;			// [sec]
 	
 }

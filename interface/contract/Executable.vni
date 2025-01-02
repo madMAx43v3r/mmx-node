@@ -20,10 +20,10 @@ class Executable extends TokenBase {
 	
 	hash_t calc_hash(bool full_hash) const;
 	
-	ulong num_bytes(bool total = true) const;
-	
-	ulong calc_cost(mmx.ChainParams* params) const;
+	ulong num_bytes() const;
 	
 	vnx.Variant read_field(string name) const;
+	
+	vnx.Variant get_arg(uint index) const;
 	
 }

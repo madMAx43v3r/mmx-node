@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofOfSpaceNFT::VNX_TYPE_HASH(0x22a4d97166711bd9ull);
-const vnx::Hash64 ProofOfSpaceNFT::VNX_CODE_HASH(0xf461413eb6b1fd42ull);
+const vnx::Hash64 ProofOfSpaceNFT::VNX_CODE_HASH(0x66efabbcbb12ab5dull);
 
 vnx::Hash64 ProofOfSpaceNFT::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,11 +49,13 @@ void ProofOfSpaceNFT::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, score);
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, plot_id);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, farmer_key);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, ksize);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, seed);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, proof_xs);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, contract);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, challenge);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, difficulty);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, farmer_key);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, ksize);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, seed);
+	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, proof_xs);
+	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, contract);
 	_visitor.type_end(*_type_code);
 }
 
@@ -61,6 +63,8 @@ void ProofOfSpaceNFT::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.ProofOfSpaceNFT\"";
 	_out << ", \"score\": "; vnx::write(_out, score);
 	_out << ", \"plot_id\": "; vnx::write(_out, plot_id);
+	_out << ", \"challenge\": "; vnx::write(_out, challenge);
+	_out << ", \"difficulty\": "; vnx::write(_out, difficulty);
 	_out << ", \"farmer_key\": "; vnx::write(_out, farmer_key);
 	_out << ", \"ksize\": "; vnx::write(_out, ksize);
 	_out << ", \"seed\": "; vnx::write(_out, seed);
@@ -80,6 +84,8 @@ vnx::Object ProofOfSpaceNFT::to_object() const {
 	_object["__type"] = "mmx.ProofOfSpaceNFT";
 	_object["score"] = score;
 	_object["plot_id"] = plot_id;
+	_object["challenge"] = challenge;
+	_object["difficulty"] = difficulty;
 	_object["farmer_key"] = farmer_key;
 	_object["ksize"] = ksize;
 	_object["seed"] = seed;
@@ -90,8 +96,12 @@ vnx::Object ProofOfSpaceNFT::to_object() const {
 
 void ProofOfSpaceNFT::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "contract") {
+		if(_entry.first == "challenge") {
+			_entry.second.to(challenge);
+		} else if(_entry.first == "contract") {
 			_entry.second.to(contract);
+		} else if(_entry.first == "difficulty") {
+			_entry.second.to(difficulty);
 		} else if(_entry.first == "farmer_key") {
 			_entry.second.to(farmer_key);
 		} else if(_entry.first == "ksize") {
@@ -114,6 +124,12 @@ vnx::Variant ProofOfSpaceNFT::get_field(const std::string& _name) const {
 	}
 	if(_name == "plot_id") {
 		return vnx::Variant(plot_id);
+	}
+	if(_name == "challenge") {
+		return vnx::Variant(challenge);
+	}
+	if(_name == "difficulty") {
+		return vnx::Variant(difficulty);
 	}
 	if(_name == "farmer_key") {
 		return vnx::Variant(farmer_key);
@@ -138,6 +154,10 @@ void ProofOfSpaceNFT::set_field(const std::string& _name, const vnx::Variant& _v
 		_value.to(score);
 	} else if(_name == "plot_id") {
 		_value.to(plot_id);
+	} else if(_name == "challenge") {
+		_value.to(challenge);
+	} else if(_name == "difficulty") {
+		_value.to(difficulty);
 	} else if(_name == "farmer_key") {
 		_value.to(farmer_key);
 	} else if(_name == "ksize") {
@@ -175,19 +195,19 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpaceNFT::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofOfSpaceNFT";
 	type_code->type_hash = vnx::Hash64(0x22a4d97166711bd9ull);
-	type_code->code_hash = vnx::Hash64(0xf461413eb6b1fd42ull);
+	type_code->code_hash = vnx::Hash64(0x66efabbcbb12ab5dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ProofOfSpaceNFT);
 	type_code->parents.resize(1);
 	type_code->parents[0] = ::mmx::ProofOfSpace::static_get_type_code();
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<ProofOfSpaceNFT>(); };
-	type_code->fields.resize(7);
+	type_code->fields.resize(9);
 	{
 		auto& field = type_code->fields[0];
-		field.data_size = 4;
+		field.data_size = 2;
 		field.name = "score";
-		field.code = {3};
+		field.code = {2};
 	}
 	{
 		auto& field = type_code->fields[1];
@@ -198,29 +218,41 @@ std::shared_ptr<vnx::TypeCode> ProofOfSpaceNFT::static_create_type_code() {
 	{
 		auto& field = type_code->fields[2];
 		field.is_extended = true;
+		field.name = "challenge";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[3];
+		field.data_size = 8;
+		field.name = "difficulty";
+		field.code = {4};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.is_extended = true;
 		field.name = "farmer_key";
 		field.code = {11, 33, 1};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[5];
 		field.data_size = 1;
 		field.name = "ksize";
 		field.code = {1};
 	}
 	{
-		auto& field = type_code->fields[4];
+		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "seed";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[7];
 		field.is_extended = true;
 		field.name = "proof_xs";
 		field.code = {12, 3};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[8];
 		field.is_extended = true;
 		field.name = "contract";
 		field.code = {11, 32, 1};
@@ -242,6 +274,7 @@ std::shared_ptr<vnx::Value> ProofOfSpaceNFT::vnx_call_switch(std::shared_ptr<con
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::ProofOfSpaceNFT& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -277,16 +310,20 @@ void read(TypeInput& in, ::mmx::ProofOfSpaceNFT& value, const TypeCode* type_cod
 			vnx::read_value(_buf + _field->offset, value.score, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[3]) {
+			vnx::read_value(_buf + _field->offset, value.difficulty, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[5]) {
 			vnx::read_value(_buf + _field->offset, value.ksize, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.plot_id, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.seed, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.proof_xs, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.contract, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.challenge, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.farmer_key, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.seed, type_code, _field->code.data()); break;
+			case 7: vnx::read(in, value.proof_xs, type_code, _field->code.data()); break;
+			case 8: vnx::read(in, value.contract, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -305,14 +342,16 @@ void write(TypeOutput& out, const ::mmx::ProofOfSpaceNFT& value, const TypeCode*
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(5);
+	auto* const _buf = out.write(11);
 	vnx::write_value(_buf + 0, value.score);
-	vnx::write_value(_buf + 4, value.ksize);
+	vnx::write_value(_buf + 2, value.difficulty);
+	vnx::write_value(_buf + 10, value.ksize);
 	vnx::write(out, value.plot_id, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.farmer_key, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.seed, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.proof_xs, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.contract, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.challenge, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.farmer_key, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.seed, type_code, type_code->fields[6].code.data());
+	vnx::write(out, value.proof_xs, type_code, type_code->fields[7].code.data());
+	vnx::write(out, value.contract, type_code, type_code->fields[8].code.data());
 }
 
 void read(std::istream& in, ::mmx::ProofOfSpaceNFT& value) {

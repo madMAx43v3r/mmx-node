@@ -5,7 +5,7 @@
 #define INCLUDE_mmx_Wallet_get_history_memo_HXX_
 
 #include <mmx/package.hxx>
-#include <mmx/addr_t.hpp>
+#include <mmx/query_filter_t.hxx>
 #include <vnx/Value.h>
 
 
@@ -16,8 +16,7 @@ public:
 	
 	uint32_t index = 0;
 	std::string memo;
-	int32_t limit = -1;
-	vnx::optional<::mmx::addr_t> currency;
+	::mmx::query_filter_t filter;
 	
 	typedef ::vnx::Value Super;
 	
@@ -61,12 +60,11 @@ public:
 
 template<typename T>
 void Wallet_get_history_memo::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Wallet_get_history_memo>(4);
+	_visitor.template type_begin<Wallet_get_history_memo>(3);
 	_visitor.type_field("index", 0); _visitor.accept(index);
 	_visitor.type_field("memo", 1); _visitor.accept(memo);
-	_visitor.type_field("limit", 2); _visitor.accept(limit);
-	_visitor.type_field("currency", 3); _visitor.accept(currency);
-	_visitor.template type_end<Wallet_get_history_memo>(4);
+	_visitor.type_field("filter", 2); _visitor.accept(filter);
+	_visitor.template type_end<Wallet_get_history_memo>(3);
 }
 
 

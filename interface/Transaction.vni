@@ -43,9 +43,9 @@ class Transaction extends TransactionBase {
 	
 	void finalize();
 	
-	void add_input(addr_t currency, addr_t address, ulong amount);
+	void add_input(addr_t currency, addr_t address, uint128 amount);
 	
-	void add_output(addr_t currency, addr_t address, ulong amount, optional<string> memo);
+	void add_output(addr_t currency, addr_t address, uint128 amount, optional<string> memo);
 	
 	void merge_sign(Transaction* tx);
 	
@@ -61,8 +61,6 @@ class Transaction extends TransactionBase {
 	
 	Solution* get_solution(uint index) const;
 	
-	txout_t get_output(uint index) const;
-	
 	vector<txin_t> get_inputs() const;
 	
 	vector<txout_t> get_outputs() const;
@@ -73,6 +71,6 @@ class Transaction extends TransactionBase {
 	
 	vector<uchar> hash_serialize(bool full_hash = false) const;
 	
-	tx_index_t get_tx_index(ChainParams* params, uint height, long file_offset) const;
+	tx_index_t get_tx_index(ChainParams* params, BlockHeader* block, long file_offset) const;
 	
 }

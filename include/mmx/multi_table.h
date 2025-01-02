@@ -191,18 +191,17 @@ public:
 	uint_multi_table() : multi_table<K, V, I>() {}
 	uint_multi_table(const std::string& file_path) : multi_table<K, V, I>(file_path) {}
 protected:
-	// TODO: use a to_big_endian() function
 	void read(std::shared_ptr<const db_val_t> entry, std::pair<K, I>& key) const override {
 		if(entry->size != sizeof(K) + sizeof(I)) {
 			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + multi_table<K, V, I>::get_path() + ")");
 		}
-		key.first = vnx::flip_bytes(*((const K*)entry->data));
-		key.second = vnx::flip_bytes(*((const I*)(entry->data + sizeof(K))));
+		key.first = vnx::from_big_endian(*((const K*)entry->data));
+		key.second = vnx::from_big_endian(*((const I*)(entry->data + sizeof(K))));
 	}
 	std::shared_ptr<db_val_t> write(const std::pair<K, I>& key) const override {
 		auto out = std::make_shared<mmx::db_val_t>(sizeof(K) + sizeof(I));
-		vnx::write_value(out->data, vnx::flip_bytes(key.first));
-		vnx::write_value(out->data + sizeof(K), vnx::flip_bytes(key.second));
+		vnx::write_value(out->data, vnx::to_big_endian(key.first));
+		vnx::write_value(out->data + sizeof(K), vnx::to_big_endian(key.second));
 		return out;
 	}
 };
@@ -218,12 +217,12 @@ protected:
 			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + multi_table<K, V, I>::get_path() + ")");
 		}
 		::memcpy(key.first.data(), entry->data, key.first.size());
-		key.second = vnx::flip_bytes(*((const I*)(entry->data + key.first.size())));
+		key.second = vnx::from_big_endian(*((const I*)(entry->data + key.first.size())));
 	}
 	std::shared_ptr<db_val_t> write(const std::pair<K, I>& key) const override {
 		auto out = std::make_shared<mmx::db_val_t>(key.first.size() + sizeof(I));
 		::memcpy(out->data, key.first.data(), key.first.size());
-		vnx::write_value(out->data + key.first.size(), vnx::flip_bytes(key.second));
+		vnx::write_value(out->data + key.first.size(), vnx::to_big_endian(key.second));
 		return out;
 	}
 };
@@ -240,15 +239,15 @@ protected:
 		}
 		auto* src = entry->data;
 		::memcpy(key.first.first.data(), src, key.first.first.size()); src += key.first.first.size();
-		key.first.second = vnx::flip_bytes(*((const H*)src)); src += sizeof(H);
-		key.second = vnx::flip_bytes(*((const I*)src));
+		key.first.second = vnx::from_big_endian(*((const H*)src)); src += sizeof(H);
+		key.second = vnx::from_big_endian(*((const I*)src));
 	}
 	std::shared_ptr<db_val_t> write(const std::pair<std::pair<K, H>, I>& key) const override {
 		auto out = std::make_shared<mmx::db_val_t>(key.first.first.size() + sizeof(H) + sizeof(I));
 		auto* dst = out->data;
 		::memcpy(dst, key.first.first.data(), key.first.first.size()); dst += key.first.first.size();
-		vnx::write_value(dst, vnx::flip_bytes(key.first.second)); dst += sizeof(H);
-		vnx::write_value(dst, vnx::flip_bytes(key.second));
+		vnx::write_value(dst, vnx::to_big_endian(key.first.second)); dst += sizeof(H);
+		vnx::write_value(dst, vnx::to_big_endian(key.second));
 		return out;
 	}
 };

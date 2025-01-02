@@ -20,6 +20,7 @@ Note: Objects are maps with string keys.
 - Integer overflows / underflows will fail execution (except for `unsafe_*(...)`)
 - Reading un-initialized variables will fail execution (instead of returning `undefined`)
 - Reading non-existent map values will return `null` (instead of `undefined`)
+- Out of bounds array access will return `null` by default (instead of `undefined`)
 - `==` comparison is strict (ie. same as `===` in JS)
 - `+` only supports integer addition (need to use `concat()` for strings)
 - `$` is not supported in variable / function names
@@ -73,6 +74,7 @@ Note: Objects are maps with string keys.
 	- `txid`: The transaction ID (Type: 32-bytes or `null`)
 	- `height`: The block height at which the code is executed (Type: 256-bit unsigned int)
 	- `balance`: Map of contract balances (Type: Map[32-bytes] = 256-bit unsigned int)
+		- Returns `0` in case of missing balance entry (instead of `null`).
 	- `address`: Contract address (Type: 32-bytes)
 	- `user`: A user address can be specified when executing a contract function,
 		which is verified via a signature before executution, same as `msg.sender` in EVM.
@@ -96,17 +98,18 @@ Note: Objects are maps with string keys.
 - `-`: Subtraction (integers only)
 - `>>`: Right shift (integers only)
 - `<<`: Left shift (integers only)
-- `<`: Less than (integers only)
-- `>`: Greater than (integers only)
-- `<=`: Less than or equal (integers only)
-- `>=`: Greater than or equal (integers only)
+- `<`: Less than (fails if not same type)
+- `>`: Greater than (fails if not same type)
+- `<=`: Less than or equal (fails if not same type)
+- `>=`: Greater than or equal (fails if not same type)
 - `!=`: Not equal (any types)
 - `==`: Equals (any types, strict, no implicit conversions)
 - `&`: Bitwise AND (integers only)
-- `&&`: Logical AND (boolean only)
+- `&&`: Logical AND
 - `^`: Bitwise XOR (integers only)
+- `^^`: Logical XOR
 - `|`: Bitwise OR (integers only)
-- `||`: Logical OR (boolean only)
+- `||`: Logical OR
 - `=`: Right to left assignment
 - `+=`: Inplace addition (integers only)
 - `-=`: Inplace subtraction (integers only)
@@ -137,13 +140,15 @@ Note: Objects are maps with string keys.
 	- 6 = Binary
 	- 7 = Array
 	- 8 = Map
-- `concat(a, b)`: Returns concatenation of two (binary) strings (like `a + b` in JS)
+- `concat(a, b, [...])`: Returns concatenation of two or more (binary) strings (like `a + b + ...` in JS)
 - `memcpy(src, count, [offset])`
 	- Returns a sub-string of `src` with length `count` starting at `offset`
 	- `offset` defaults to `0`
 	- `src` must be a string or binary string
 	- Out of bounds access will fail execution
 - `fail(message, [code])`: Fails execution with string `message` and optional integer `code`
+- `assert(condition, [message], [code])`: Fails execution if `condition` does not evaluate `true`
+	- If `message` is not specified, it will print source code instead.
 - `bech32(addr)`: Parses a bech32 address string and returns 32 bytes.
 	- Returns 32 zero bytes if no argument given, which corresponds to the zero address.
 - `binary(v)`: Converts to a binary
@@ -162,15 +167,22 @@ Note: Objects are maps with string keys.
 	- Binary strings are parsed in big endian: `[00, FF]` => `0x00FF` / `255`
 - `uint_le(v)`: Same as `uint()` except binary strings are parsed in little endian.
 - `uint_hex(v)`: Same as `uint()` except strings are parsed in hex, even without `0x` prefix.
-- `to_string(v)`: Converts to a string
+- `string(v)`: Converts to a string
 	- Integers are converted to decimal
 	- String inputs are returned as-is
 	- Binary strings are converted as-is (like memcpy())
-- `to_string_hex(v)`: Same as `to_string()` except:
+- `string_hex(v)`: Same as `string()` except:
 	- Converts integers and binary strings to a hex string, without `0x` prefix.
-- `to_string_bech32(v)`: Same as `to_string()` except:
+- `string_bech32(v)`: Same as `string()` except:
 	- Converts binary string to a bech32 address string `mmx1...` (fails if not 32 bytes)
 	- Converts `null` to zero address string `mmx1qqqq...`
+- `is_uint(v)`: Returns `true` if argument is of type integer
+- `is_string(v)`: Returns `true` if argument is of type string
+- `is_binary(v)`: Returns `true` if argument is of type binary
+- `is_array(v)`: Returns `true` if argument is of type array
+- `is_map(v)`: Returns `true` if argument is of type map
+- `balance([currency])`: Returns current balance for given currency (for the contract)
+	- `currency` defaults to MMX if not specified (32-byte binary)
 - `send(address, amount, [currency], [memo])`: Transfer funds from contract to an address
 	- `address` is destination address as 32-byte binary
 	- `amount` is integer amount, fails if larger than 64-bit
@@ -186,7 +198,7 @@ Note: Objects are maps with string keys.
 	- Does nothing if `amount` is zero
 	- Returns `null` (ie. nothing)
 	- This is the only way to mint tokens on MMX blockchain
-- `sha256(msg)`: Computes SHA-2 256-bit hash for given input message (binary string)
+- `sha256(msg)`: Computes SHA-2 256-bit hash for given input message (binary or string)
 	- Returns hash as 32 bytes
 - `ecdsa_verify(msg, pubkey, signature)`: Verifies a ECDSA signature
 	- Returns `true` if valid, otherwise `false`
@@ -206,6 +218,7 @@ Note: Objects are maps with string keys.
 - `event(name, data)`: For debugging / testing only
 	- Logs an event with string `name` and arbitrary `data`
 - `__nop()`: Injects an `OP_NOP` instruction (for debugging)
+- `__copy(dst, src)`: Same as `dst = src` but bypasses compiler const check on `dst` for debugging.
 
 ## Fixed-point Arithmetic
 
@@ -237,6 +250,36 @@ In order to pass binary strings, encode it as a hex string (`0x...`) and then de
 In order to pass integers greater than 64-bits you can encode them as a decimal or hex string (`0x...`)
 and then decode via `uint(...)`. Hex encoding is recommended, since decimal decoding is expensive.
 
+## Implicit Type Conversion
+
+By default MMX script does *not* perform any implicit type conversion except in the following cases:
+- `if(cond)`: `cond` is casted to `bool`, same as `if(bool(cond))`
+- `while(cond)`: `cond` is casted to `bool`, same as `while(bool(cond))`
+- `for(...; cond; ...)`: `cond` is casted to `bool`, same as `for(...; bool(cond); ...)`
+- `!cond`: `cond` is casted to `bool`, same as `!bool(cond)`
+- `A && B`: `A` and `B` are casted to `bool`, same as `bool(A) && bool(B)`
+- `A || B`: `A` and `B` are casted to `bool`, same as `bool(A) || bool(B)`
+- `A ^^ B`: `A` and `B` are casted to `bool`, same as `bool(A) || bool(B)`
+
+For example the following is valid code:
+```
+if(null) {}
+while(1) {}
+for(; 1;) {}
+!null
+!""
+1 && 2
+null || "yes"
+```
+
+However, the following code is invalid:
+```
+null < 1
+null + 1
+"1" > 0
+"1" + 1
+```
+
 ## Examples
 
 ### Contract Storage
@@ -254,14 +297,21 @@ function get() const public {
 
 ### Constructor
 
-Any private function can be a constructor. When deploying a contract you have to specify which function to use. \
+Any `static` private function can be a constructor. When deploying a contract you have to specify which function to use. \
 The default is to use `init()`:
 ```
 var foo;
+var spec;
 function init(bar) {
 	foo = bar;
 }
+function init_v(bar, v) static {
+	foo = bar;
+	spec = v;
+}
 ```
+Note: `init()` is always marked as `static`.\
+Note: Global variables are initialized to `null` before constructor is executed.
 
 ### Deposit
 

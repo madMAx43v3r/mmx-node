@@ -99,7 +99,7 @@ std::shared_ptr<ECDSA_Wallet> Wallet::get_wallet(const uint32_t& index) const
 }
 
 std::shared_ptr<const Transaction>
-Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_addr,
+Wallet::send(	const uint32_t& index, const uint128& amount, const addr_t& dst_addr,
 				const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
@@ -132,7 +132,7 @@ Wallet::send(	const uint32_t& index, const uint64_t& amount, const addr_t& dst_a
 }
 
 std::shared_ptr<const Transaction>
-Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, uint64_t>>& amounts,
+Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, uint128>>& amounts,
 					const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
@@ -167,7 +167,7 @@ Wallet::send_many(	const uint32_t& index, const std::vector<std::pair<addr_t, ui
 }
 
 std::shared_ptr<const Transaction>
-Wallet::send_from(	const uint32_t& index, const uint64_t& amount,
+Wallet::send_from(	const uint32_t& index, const uint128& amount,
 					const addr_t& dst_addr, const addr_t& src_addr,
 					const addr_t& currency, const spend_options_t& options) const
 {
@@ -277,7 +277,7 @@ std::shared_ptr<const Transaction> Wallet::execute(
 
 std::shared_ptr<const Transaction> Wallet::deposit(
 			const uint32_t& index, const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args,
-			const uint64_t& amount, const addr_t& currency, const spend_options_t& options) const
+			const uint128& amount, const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -311,11 +311,15 @@ std::shared_ptr<const Transaction> Wallet::deposit(
 }
 
 std::shared_ptr<const Transaction> Wallet::make_offer(
-			const uint32_t& index, const uint32_t& owner, const uint64_t& bid_amount, const addr_t& bid_currency,
-			const uint64_t& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const
+			const uint32_t& index, const uint32_t& owner, const uint128& bid_amount, const addr_t& bid_currency,
+			const uint128& ask_amount, const addr_t& ask_currency, const spend_options_t& options) const
 {
 	if(bid_amount == 0 || ask_amount == 0) {
 		throw std::logic_error("amount cannot be zero");
+	}
+	const auto inv_price = (uint256_t(bid_amount) << 64) / ask_amount;
+	if(inv_price >> 128) {
+		throw std::logic_error("price out of range");
 	}
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -328,14 +332,14 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 	offer->init_args.emplace_back(owner_addr.to_string());
 	offer->init_args.emplace_back(bid_currency.to_string());
 	offer->init_args.emplace_back(ask_currency.to_string());
-	offer->init_args.emplace_back("0x" + ((uint128_t(bid_amount) << 64) / ask_amount).str(16));
+	offer->init_args.emplace_back(uint128(inv_price).to_hex_string());
 	offer->init_args.emplace_back();
 
 	auto tx = Transaction::create();
 	tx->note = tx_note_e::OFFER;
 	tx->deploy = offer;
 
-	std::vector<std::pair<addr_t, uint64_t>> deposit;
+	std::vector<std::pair<addr_t, uint128>> deposit;
 	deposit.emplace_back(bid_currency, bid_amount);
 
 	wallet->complete(tx, options, deposit);
@@ -356,13 +360,15 @@ std::shared_ptr<const Transaction> Wallet::make_offer(
 }
 
 std::shared_ptr<const Transaction> Wallet::offer_trade(
-			const uint32_t& index, const addr_t& address, const uint64_t& amount, const uint32_t& dst_addr, const spend_options_t& options) const
+			const uint32_t& index, const addr_t& address, const uint128& amount,
+			const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	const auto offer = node->get_offer(address);
 
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
+	args.emplace_back(price.to_hex_string());
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;
@@ -370,14 +376,15 @@ std::shared_ptr<const Transaction> Wallet::offer_trade(
 }
 
 std::shared_ptr<const Transaction> Wallet::accept_offer(
-			const uint32_t& index, const addr_t& address, const uint32_t& dst_addr, const spend_options_t& options) const
+			const uint32_t& index, const addr_t& address,
+			const uint32_t& dst_addr, const uint128& price, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	const auto offer = node->get_offer(address);
 
 	std::vector<vnx::Variant> args;
 	args.emplace_back(wallet->get_address(dst_addr).to_string());
-	args.emplace_back(offer.bid_balance);
+	args.emplace_back(price.to_hex_string());
 
 	auto options_ = options;
 	options_.note = tx_note_e::TRADE;
@@ -405,8 +412,8 @@ std::shared_ptr<const Transaction> Wallet::offer_withdraw(
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_trade(
-		const uint32_t& index, const addr_t& address, const uint64_t& amount, const addr_t& currency,
-		const vnx::optional<uint64_t>& min_trade, const int32_t& num_iter, const spend_options_t& options) const
+		const uint32_t& index, const addr_t& address, const uint128& amount, const addr_t& currency,
+		const vnx::optional<uint128>& min_trade, const int32_t& num_iter, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	const auto info = node->get_swap_info(address);
@@ -422,7 +429,7 @@ std::shared_ptr<const Transaction> Wallet::swap_trade(
 	std::vector<vnx::Variant> args;
 	args.emplace_back(token);
 	args.emplace_back(wallet->get_address(0).to_string());
-	args.emplace_back(min_trade);
+	args.emplace_back(min_trade ? min_trade->to_var_arg() : vnx::Variant());
 	args.emplace_back(num_iter);
 
 	auto options_ = options;
@@ -431,7 +438,7 @@ std::shared_ptr<const Transaction> Wallet::swap_trade(
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
-		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const
+		const uint32_t& index, const addr_t& address, const std::array<uint128, 2>& amount, const uint32_t& pool_idx, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -469,7 +476,7 @@ std::shared_ptr<const Transaction> Wallet::swap_add_liquid(
 }
 
 std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
-		const uint32_t& index, const addr_t& address, const std::array<uint64_t, 2>& amount, const spend_options_t& options) const
+		const uint32_t& index, const addr_t& address, const std::array<uint128, 2>& amount, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -488,7 +495,7 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 			auto op = operation::Execute::create();
 			op->address = address;
 			op->method = "rem_liquid";
-			op->args = {vnx::Variant(i), vnx::Variant(amount[i]), vnx::Variant(false)};
+			op->args = {vnx::Variant(i), amount[i].to_var_arg(), vnx::Variant(false)};
 			op->user = wallet->get_address(0);
 			tx->execute.push_back(op);
 		}
@@ -507,6 +514,28 @@ std::shared_ptr<const Transaction> Wallet::swap_rem_liquid(
 		wallet->update_from(tx);
 	}
 	return tx;
+}
+
+std::shared_ptr<const Transaction> Wallet::plotnft_exec(
+		const addr_t& address, const std::string& method, const std::vector<vnx::Variant>& args, const spend_options_t& options_) const
+{
+	const auto owner = get_plotnft_owner(address);
+	const auto index = find_wallet_by_addr(owner);
+	auto options = options_;
+	options.user = owner;
+	return execute(index, address, method, args, nullptr, options);
+}
+
+std::shared_ptr<const Transaction> Wallet::plotnft_create(
+			const uint32_t& index, const std::string& name, const vnx::optional<uint32_t>& owner, const spend_options_t& options) const
+{
+	const auto wallet = get_wallet(index);
+
+	auto nft = contract::Executable::create();
+	nft->name = name;
+	nft->binary = params->plot_nft_binary;
+	nft->init_args.emplace_back(wallet->get_address(owner ? *owner : 0).to_string());
+	return deploy(index, nft, options);
 }
 
 std::shared_ptr<const Transaction> Wallet::complete(
@@ -561,7 +590,7 @@ void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> 
 	wallet->update_from(tx);
 	{
 		tx_log_entry_t entry;
-		entry.time = vnx::get_time_millis();
+		entry.time = vnx::get_wall_time_millis();
 		entry.tx = tx;
 		tx_log.insert(wallet->get_address(0), entry);
 		tx_log.commit();
@@ -611,14 +640,14 @@ void Wallet::update_cache(const uint32_t& index) const
 	{
 		const auto height = node->get_height();
 		const auto addresses = wallet->get_all_addresses();
-		const auto balances = node->get_all_balances(addresses);
+		const auto balances = node->get_all_balances(addresses, token_whitelist);
 		const auto contracts = node->get_contracts_owned_by(addresses);
 		const auto liquidity = node->get_swap_liquidity_by(addresses);
 		const auto history = wallet->pending_tx.empty() ? std::vector<hash_t>() :
 				node->get_tx_ids_since(wallet->height - std::min(params->commit_delay, wallet->height));
 
 		wallet->external_balance_map.clear();
-		for(const auto& entry : node->get_total_balances(contracts)) {
+		for(const auto& entry : node->get_total_balances(contracts, token_whitelist)) {
 			wallet->external_balance_map[entry.first] += entry.second;
 		}
 		for(const auto& entry: liquidity) {
@@ -631,7 +660,7 @@ void Wallet::update_cache(const uint32_t& index) const
 	}
 }
 
-std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint64_t& amount,
+std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint128& amount,
 												const addr_t& currency, const spend_options_t& options) const
 {
 	const auto wallet = get_wallet(index);
@@ -643,49 +672,45 @@ std::vector<txin_t> Wallet::gather_inputs_for(	const uint32_t& index, const uint
 	return tx->inputs;
 }
 
-std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const uint32_t& since, const uint32_t& until, const int32_t& limit,
-											const vnx::optional<tx_type_e>& type, const vnx::optional<addr_t>& currency) const
+std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const query_filter_t& filter_) const
 {
 	const auto wallet = get_wallet(index);
 
+	auto filter = filter_;
+	if(filter.white_list) {
+		filter.currency = token_whitelist;
+	}
 	std::vector<tx_entry_t> result;
-	for(const auto& entry : node->get_history(wallet->get_all_addresses(), since, until, (type || currency ? -1 : limit))) {
-		if((!type || entry.type == *type) && (!currency || entry.contract == *currency)) {
-			auto tmp = entry;
-			tmp.is_validated = token_whitelist.count(entry.contract);
-			result.push_back(tmp);
-		}
+	for(auto& entry : node->get_history(wallet->get_all_addresses(), filter)) {
+		entry.is_validated = filter.white_list || token_whitelist.count(entry.contract);
+		result.push_back(entry);
 	}
 	return result;
 }
 
 std::vector<tx_entry_t> Wallet::get_history_memo(
-		const uint32_t& index, const std::string& memo, const int32_t& limit, const vnx::optional<addr_t>& currency) const
+		const uint32_t& index, const std::string& memo, const query_filter_t& filter_) const
 {
 	const auto wallet = get_wallet(index);
 
+	auto filter = filter_;
+	if(filter.white_list) {
+		filter.currency = token_whitelist;
+	}
 	std::vector<tx_entry_t> result;
-	for(const auto& entry : node->get_history_memo(wallet->get_all_addresses(), memo, limit)) {
-		if(!currency || entry.contract == *currency) {
-			auto tmp = entry;
-			tmp.is_validated = token_whitelist.count(entry.contract);
-			result.push_back(tmp);
-		}
+	for(auto& entry : node->get_history_memo(wallet->get_all_addresses(), memo, filter)) {
+		entry.is_validated = filter.white_list || token_whitelist.count(entry.contract);
+		result.push_back(entry);
 	}
 	return result;
 }
 
-std::vector<tx_log_entry_t> Wallet::get_tx_log(const uint32_t& index, const int32_t& limit_, const uint32_t& offset) const
+std::vector<tx_log_entry_t> Wallet::get_tx_log(const uint32_t& index, const int32_t& limit) const
 {
 	const auto wallet = get_wallet(index);
-	const size_t limit = limit_ >= 0 ? limit_ : uint32_t(-1);
 
 	std::vector<tx_log_entry_t> res;
-	tx_log.find_last(wallet->get_address(0), res, limit + offset);
-
-	if(res.size() > limit) {
-		res.resize(limit);
-	}
+	tx_log.find_last(wallet->get_address(0), res, limit);
 	return res;
 }
 
@@ -745,29 +770,25 @@ std::map<addr_t, balance_t> Wallet::get_balances(
 std::map<addr_t, balance_t> Wallet::get_total_balances(const std::vector<addr_t>& addresses) const
 {
 	std::map<addr_t, balance_t> amounts;
-	for(const auto& entry : node->get_total_balances(addresses)) {
+	for(const auto& entry : node->get_total_balances(addresses, token_whitelist)) {
 		auto& balance = amounts[entry.first];
 		balance.total = entry.second;
 		balance.spendable = balance.total;
-		balance.is_validated = token_whitelist.count(entry.first);
+		balance.is_validated = true;
 	}
 	return amounts;
 }
 
 std::map<addr_t, balance_t> Wallet::get_contract_balances(const addr_t& address) const
 {
-	auto amounts = node->get_contract_balances(address);
-	for(auto& entry : amounts) {
-		entry.second.is_validated = token_whitelist.count(entry.first);
-	}
-	return amounts;
+	return node->get_contract_balances(address, token_whitelist);
 }
 
 std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(
-		const uint32_t& index, const vnx::optional<std::string>& type_name) const
+		const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<hash_t>& type_hash) const
 {
 	const auto wallet = get_wallet(index);
-	const auto addresses = node->get_contracts_by(wallet->get_all_addresses());
+	const auto addresses = node->get_contracts_by(wallet->get_all_addresses(), type_hash);
 	const auto contracts = node->get_contracts(addresses);
 
 	std::map<addr_t, std::shared_ptr<const Contract>> result;
@@ -782,10 +803,10 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts(
 }
 
 std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(
-		const uint32_t& index, const vnx::optional<std::string>& type_name) const
+		const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<hash_t>& type_hash) const
 {
 	const auto wallet = get_wallet(index);
-	const auto addresses = node->get_contracts_owned_by(wallet->get_all_addresses());
+	const auto addresses = node->get_contracts_owned_by(wallet->get_all_addresses(), type_hash);
 	const auto contracts = node->get_contracts(addresses);
 
 	std::map<addr_t, std::shared_ptr<const Contract>> result;
@@ -797,12 +818,6 @@ std::map<addr_t, std::shared_ptr<const Contract>> Wallet::get_contracts_owned(
 		}
 	}
 	return result;
-}
-
-std::vector<virtual_plot_info_t> Wallet::get_virtual_plots(const uint32_t& index) const
-{
-	const auto wallet = get_wallet(index);
-	return node->get_virtual_plots_owned_by(wallet->get_all_addresses());
 }
 
 std::vector<offer_data_t> Wallet::get_offers(const uint32_t& index, const vnx::bool_t& state) const
@@ -836,6 +851,18 @@ std::vector<addr_t> Wallet::get_all_addresses(const int32_t& index) const
 		}
 	}
 	return list;
+}
+
+int32_t Wallet::find_wallet_by_addr(const addr_t& address) const
+{
+	for(size_t i = 0; i < wallets.size(); ++i) {
+		if(auto wallet = wallets[i]) {
+			if(wallet->find_address(address) >= 0) {
+				return i;
+			}
+		}
+	}
+	throw std::logic_error("wallet for address not found: " + address.to_string());
 }
 
 std::pair<skey_t, pubkey_t> Wallet::get_farmer_keys(const uint32_t& index) const
@@ -1062,7 +1089,16 @@ void Wallet::remove_account(const uint32_t& index, const uint32_t& account)
 
 std::set<addr_t> Wallet::get_token_list() const
 {
-	return token_whitelist;
+	const std::vector<addr_t> addresses(token_whitelist.begin(), token_whitelist.end());
+	const auto list = node->get_contracts(addresses);
+
+	std::set<addr_t> out {addr_t()};
+	for(size_t i = 0; i < list.size(); ++i) {
+		if(std::dynamic_pointer_cast<const contract::TokenBase>(list[i])) {
+			out.insert(addresses[i]);
+		}
+	}
+	return out;
 }
 
 void Wallet::add_token(const addr_t& address)
@@ -1120,6 +1156,14 @@ std::vector<std::string> Wallet::get_mnemonic_wordlist(const std::string& lang) 
 		return mnemonic::wordlist_en;
 	}
 	throw std::logic_error("unknown language");
+}
+
+addr_t Wallet::get_plotnft_owner(const addr_t& address) const
+{
+	if(auto info = node->get_plot_nft_info(address)) {
+		return info->owner;
+	}
+	throw std::logic_error("not a plot NFT: " + address.to_string());
 }
 
 void Wallet::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> request, const std::string& sub_path,

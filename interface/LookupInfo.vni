@@ -6,7 +6,7 @@ class LookupInfo {
 	
 	string name;
 	
-	uint height;
+	uint vdf_height;
 	
 	uint num_passed;
 	uint num_total;

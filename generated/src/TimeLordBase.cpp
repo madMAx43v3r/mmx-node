@@ -5,7 +5,6 @@
 #include <mmx/TimeLordBase.hxx>
 #include <vnx/NoSuchMethod.hxx>
 #include <mmx/IntervalRequest.hxx>
-#include <mmx/TimeInfusion.hxx>
 #include <mmx/TimeLord_stop_vdf.hxx>
 #include <mmx/TimeLord_stop_vdf_return.hxx>
 #include <mmx/addr_t.hpp>
@@ -37,20 +36,17 @@ namespace mmx {
 
 
 const vnx::Hash64 TimeLordBase::VNX_TYPE_HASH(0x311081636f6570efull);
-const vnx::Hash64 TimeLordBase::VNX_CODE_HASH(0x6be95b4d9acdb944ull);
+const vnx::Hash64 TimeLordBase::VNX_CODE_HASH(0xeaba05bc99f7eb7full);
 
 TimeLordBase::TimeLordBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
 {
-	vnx::read_config(vnx_name + ".input_infuse", input_infuse);
 	vnx::read_config(vnx_name + ".input_request", input_request);
 	vnx::read_config(vnx_name + ".output_proofs", output_proofs);
 	vnx::read_config(vnx_name + ".max_history", max_history);
-	vnx::read_config(vnx_name + ".restart_holdoff", restart_holdoff);
 	vnx::read_config(vnx_name + ".node_server", node_server);
 	vnx::read_config(vnx_name + ".wallet_server", wallet_server);
 	vnx::read_config(vnx_name + ".storage_path", storage_path);
-	vnx::read_config(vnx_name + ".enable_reward", enable_reward);
 	vnx::read_config(vnx_name + ".reward_addr", reward_addr);
 }
 
@@ -69,30 +65,24 @@ const vnx::TypeCode* TimeLordBase::get_type_code() const {
 void TimeLordBase::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_TimeLordBase;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, input_infuse);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, input_request);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, output_proofs);
-	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, max_history);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, restart_holdoff);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, node_server);
-	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, wallet_server);
-	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, storage_path);
-	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, enable_reward);
-	_visitor.type_field(_type_code->fields[9], 9); vnx::accept(_visitor, reward_addr);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, input_request);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, output_proofs);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, max_history);
+	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, node_server);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, wallet_server);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, storage_path);
+	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, reward_addr);
 	_visitor.type_end(*_type_code);
 }
 
 void TimeLordBase::write(std::ostream& _out) const {
 	_out << "{";
-	_out << "\"input_infuse\": "; vnx::write(_out, input_infuse);
-	_out << ", \"input_request\": "; vnx::write(_out, input_request);
+	_out << "\"input_request\": "; vnx::write(_out, input_request);
 	_out << ", \"output_proofs\": "; vnx::write(_out, output_proofs);
 	_out << ", \"max_history\": "; vnx::write(_out, max_history);
-	_out << ", \"restart_holdoff\": "; vnx::write(_out, restart_holdoff);
 	_out << ", \"node_server\": "; vnx::write(_out, node_server);
 	_out << ", \"wallet_server\": "; vnx::write(_out, wallet_server);
 	_out << ", \"storage_path\": "; vnx::write(_out, storage_path);
-	_out << ", \"enable_reward\": "; vnx::write(_out, enable_reward);
 	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
 	_out << "}";
 }
@@ -106,26 +96,19 @@ void TimeLordBase::read(std::istream& _in) {
 vnx::Object TimeLordBase::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.TimeLord";
-	_object["input_infuse"] = input_infuse;
 	_object["input_request"] = input_request;
 	_object["output_proofs"] = output_proofs;
 	_object["max_history"] = max_history;
-	_object["restart_holdoff"] = restart_holdoff;
 	_object["node_server"] = node_server;
 	_object["wallet_server"] = wallet_server;
 	_object["storage_path"] = storage_path;
-	_object["enable_reward"] = enable_reward;
 	_object["reward_addr"] = reward_addr;
 	return _object;
 }
 
 void TimeLordBase::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
-		if(_entry.first == "enable_reward") {
-			_entry.second.to(enable_reward);
-		} else if(_entry.first == "input_infuse") {
-			_entry.second.to(input_infuse);
-		} else if(_entry.first == "input_request") {
+		if(_entry.first == "input_request") {
 			_entry.second.to(input_request);
 		} else if(_entry.first == "max_history") {
 			_entry.second.to(max_history);
@@ -133,8 +116,6 @@ void TimeLordBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(node_server);
 		} else if(_entry.first == "output_proofs") {
 			_entry.second.to(output_proofs);
-		} else if(_entry.first == "restart_holdoff") {
-			_entry.second.to(restart_holdoff);
 		} else if(_entry.first == "reward_addr") {
 			_entry.second.to(reward_addr);
 		} else if(_entry.first == "storage_path") {
@@ -146,9 +127,6 @@ void TimeLordBase::from_object(const vnx::Object& _object) {
 }
 
 vnx::Variant TimeLordBase::get_field(const std::string& _name) const {
-	if(_name == "input_infuse") {
-		return vnx::Variant(input_infuse);
-	}
 	if(_name == "input_request") {
 		return vnx::Variant(input_request);
 	}
@@ -157,9 +135,6 @@ vnx::Variant TimeLordBase::get_field(const std::string& _name) const {
 	}
 	if(_name == "max_history") {
 		return vnx::Variant(max_history);
-	}
-	if(_name == "restart_holdoff") {
-		return vnx::Variant(restart_holdoff);
 	}
 	if(_name == "node_server") {
 		return vnx::Variant(node_server);
@@ -170,9 +145,6 @@ vnx::Variant TimeLordBase::get_field(const std::string& _name) const {
 	if(_name == "storage_path") {
 		return vnx::Variant(storage_path);
 	}
-	if(_name == "enable_reward") {
-		return vnx::Variant(enable_reward);
-	}
 	if(_name == "reward_addr") {
 		return vnx::Variant(reward_addr);
 	}
@@ -180,24 +152,18 @@ vnx::Variant TimeLordBase::get_field(const std::string& _name) const {
 }
 
 void TimeLordBase::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "input_infuse") {
-		_value.to(input_infuse);
-	} else if(_name == "input_request") {
+	if(_name == "input_request") {
 		_value.to(input_request);
 	} else if(_name == "output_proofs") {
 		_value.to(output_proofs);
 	} else if(_name == "max_history") {
 		_value.to(max_history);
-	} else if(_name == "restart_holdoff") {
-		_value.to(restart_holdoff);
 	} else if(_name == "node_server") {
 		_value.to(node_server);
 	} else if(_name == "wallet_server") {
 		_value.to(wallet_server);
 	} else if(_name == "storage_path") {
 		_value.to(storage_path);
-	} else if(_name == "enable_reward") {
-		_value.to(enable_reward);
 	} else if(_name == "reward_addr") {
 		_value.to(reward_addr);
 	}
@@ -227,7 +193,7 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.TimeLord";
 	type_code->type_hash = vnx::Hash64(0x311081636f6570efull);
-	type_code->code_hash = vnx::Hash64(0x6be95b4d9acdb944ull);
+	type_code->code_hash = vnx::Hash64(0xeaba05bc99f7eb7full);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::TimeLordBase);
 	type_code->methods.resize(10);
@@ -241,70 +207,50 @@ std::shared_ptr<vnx::TypeCode> TimeLordBase::static_create_type_code() {
 	type_code->methods[7] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
 	type_code->methods[8] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
 	type_code->methods[9] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->fields.resize(10);
+	type_code->fields.resize(7);
 	{
 		auto& field = type_code->fields[0];
-		field.is_extended = true;
-		field.name = "input_infuse";
-		field.value = vnx::to_string("timelord.infuse");
-		field.code = {12, 5};
-	}
-	{
-		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "input_request";
 		field.value = vnx::to_string("timelord.requests");
 		field.code = {12, 5};
 	}
 	{
-		auto& field = type_code->fields[2];
+		auto& field = type_code->fields[1];
 		field.is_extended = true;
 		field.name = "output_proofs";
 		field.value = vnx::to_string("timelord.proof");
 		field.code = {12, 5};
 	}
 	{
-		auto& field = type_code->fields[3];
+		auto& field = type_code->fields[2];
 		field.data_size = 4;
 		field.name = "max_history";
-		field.value = vnx::to_string(65536);
+		field.value = vnx::to_string(1000000);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[4];
-		field.data_size = 4;
-		field.name = "restart_holdoff";
-		field.value = vnx::to_string(60000);
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[5];
+		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "node_server";
 		field.value = vnx::to_string("Node");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[6];
+		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "wallet_server";
 		field.value = vnx::to_string("Wallet");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[7];
+		auto& field = type_code->fields[5];
 		field.is_extended = true;
 		field.name = "storage_path";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[8];
-		field.data_size = 1;
-		field.name = "enable_reward";
-		field.code = {31};
-	}
-	{
-		auto& field = type_code->fields[9];
+		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "reward_addr";
 		field.code = {33, 11, 32, 1};
@@ -319,9 +265,6 @@ void TimeLordBase::vnx_handle_switch(std::shared_ptr<const vnx::Value> _value) {
 		switch(_type_code->type_hash) {
 			case 0xa4e39be061f13d71ull:
 				handle(std::static_pointer_cast<const ::mmx::IntervalRequest>(_value));
-				return;
-			case 0x7c38bc7150b0d98bull:
-				handle(std::static_pointer_cast<const ::mmx::TimeInfusion>(_value));
 				return;
 			default:
 				_type_code = _type_code->super;
@@ -405,6 +348,7 @@ std::shared_ptr<vnx::Value> TimeLordBase::vnx_call_switch(std::shared_ptr<const 
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -436,25 +380,18 @@ void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, 
 	}
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
-		if(const auto* const _field = type_code->field_map[3]) {
+		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.max_history, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[4]) {
-			vnx::read_value(_buf + _field->offset, value.restart_holdoff, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[8]) {
-			vnx::read_value(_buf + _field->offset, value.enable_reward, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
-			case 0: vnx::read(in, value.input_infuse, type_code, _field->code.data()); break;
-			case 1: vnx::read(in, value.input_request, type_code, _field->code.data()); break;
-			case 2: vnx::read(in, value.output_proofs, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
-			case 6: vnx::read(in, value.wallet_server, type_code, _field->code.data()); break;
-			case 7: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
-			case 9: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
+			case 0: vnx::read(in, value.input_request, type_code, _field->code.data()); break;
+			case 1: vnx::read(in, value.output_proofs, type_code, _field->code.data()); break;
+			case 3: vnx::read(in, value.node_server, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.wallet_server, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
+			case 6: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -473,17 +410,14 @@ void write(TypeOutput& out, const ::mmx::TimeLordBase& value, const TypeCode* ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(9);
+	auto* const _buf = out.write(4);
 	vnx::write_value(_buf + 0, value.max_history);
-	vnx::write_value(_buf + 4, value.restart_holdoff);
-	vnx::write_value(_buf + 8, value.enable_reward);
-	vnx::write(out, value.input_infuse, type_code, type_code->fields[0].code.data());
-	vnx::write(out, value.input_request, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.output_proofs, type_code, type_code->fields[2].code.data());
-	vnx::write(out, value.node_server, type_code, type_code->fields[5].code.data());
-	vnx::write(out, value.wallet_server, type_code, type_code->fields[6].code.data());
-	vnx::write(out, value.storage_path, type_code, type_code->fields[7].code.data());
-	vnx::write(out, value.reward_addr, type_code, type_code->fields[9].code.data());
+	vnx::write(out, value.input_request, type_code, type_code->fields[0].code.data());
+	vnx::write(out, value.output_proofs, type_code, type_code->fields[1].code.data());
+	vnx::write(out, value.node_server, type_code, type_code->fields[3].code.data());
+	vnx::write(out, value.wallet_server, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.storage_path, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.reward_addr, type_code, type_code->fields[6].code.data());
 }
 
 void read(std::istream& in, ::mmx::TimeLordBase& value) {

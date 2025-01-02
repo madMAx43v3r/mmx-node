@@ -3,6 +3,7 @@
 
 #include <mmx/package.hxx>
 #include <mmx/Transaction.hxx>
+#include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/Operation.hxx>
@@ -25,7 +26,7 @@ namespace mmx {
 const uint32_t Transaction::MAX_SOLUTIONS;
 
 const vnx::Hash64 Transaction::VNX_TYPE_HASH(0xce0462acdceaa5bcull);
-const vnx::Hash64 Transaction::VNX_CODE_HASH(0x8e4b410f47fa16dull);
+const vnx::Hash64 Transaction::VNX_CODE_HASH(0x6b823c733d9eab23ull);
 
 vnx::Hash64 Transaction::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -286,7 +287,7 @@ std::shared_ptr<vnx::TypeCode> Transaction::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Transaction";
 	type_code->type_hash = vnx::Hash64(0xce0462acdceaa5bcull);
-	type_code->code_hash = vnx::Hash64(0x8e4b410f47fa16dull);
+	type_code->code_hash = vnx::Hash64(0x6b823c733d9eab23ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::Transaction);
@@ -420,6 +421,7 @@ std::shared_ptr<vnx::Value> Transaction::vnx_call_switch(std::shared_ptr<const v
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Transaction& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

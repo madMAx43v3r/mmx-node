@@ -6,6 +6,7 @@
 #include <mmx/Wallet_offer_trade_return.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/spend_options_t.hxx>
+#include <mmx/uint128.hpp>
 #include <vnx/Value.h>
 
 #include <vnx/vnx.h>
@@ -15,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_offer_trade::VNX_TYPE_HASH(0x557a94a5a4887bf2ull);
-const vnx::Hash64 Wallet_offer_trade::VNX_CODE_HASH(0x6f9ea09d3459d780ull);
+const vnx::Hash64 Wallet_offer_trade::VNX_CODE_HASH(0x6ac0af69904bcd76ull);
 
 vnx::Hash64 Wallet_offer_trade::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -52,7 +53,8 @@ void Wallet_offer_trade::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, address);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, amount);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, dst_addr);
-	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, options);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, price);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, options);
 	_visitor.type_end(*_type_code);
 }
 
@@ -62,6 +64,7 @@ void Wallet_offer_trade::write(std::ostream& _out) const {
 	_out << ", \"address\": "; vnx::write(_out, address);
 	_out << ", \"amount\": "; vnx::write(_out, amount);
 	_out << ", \"dst_addr\": "; vnx::write(_out, dst_addr);
+	_out << ", \"price\": "; vnx::write(_out, price);
 	_out << ", \"options\": "; vnx::write(_out, options);
 	_out << "}";
 }
@@ -79,6 +82,7 @@ vnx::Object Wallet_offer_trade::to_object() const {
 	_object["address"] = address;
 	_object["amount"] = amount;
 	_object["dst_addr"] = dst_addr;
+	_object["price"] = price;
 	_object["options"] = options;
 	return _object;
 }
@@ -95,6 +99,8 @@ void Wallet_offer_trade::from_object(const vnx::Object& _object) {
 			_entry.second.to(index);
 		} else if(_entry.first == "options") {
 			_entry.second.to(options);
+		} else if(_entry.first == "price") {
+			_entry.second.to(price);
 		}
 	}
 }
@@ -112,6 +118,9 @@ vnx::Variant Wallet_offer_trade::get_field(const std::string& _name) const {
 	if(_name == "dst_addr") {
 		return vnx::Variant(dst_addr);
 	}
+	if(_name == "price") {
+		return vnx::Variant(price);
+	}
 	if(_name == "options") {
 		return vnx::Variant(options);
 	}
@@ -127,6 +136,8 @@ void Wallet_offer_trade::set_field(const std::string& _name, const vnx::Variant&
 		_value.to(amount);
 	} else if(_name == "dst_addr") {
 		_value.to(dst_addr);
+	} else if(_name == "price") {
+		_value.to(price);
 	} else if(_name == "options") {
 		_value.to(options);
 	}
@@ -156,7 +167,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_offer_trade::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.offer_trade";
 	type_code->type_hash = vnx::Hash64(0x557a94a5a4887bf2ull);
-	type_code->code_hash = vnx::Hash64(0x6f9ea09d3459d780ull);
+	type_code->code_hash = vnx::Hash64(0x6ac0af69904bcd76ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -166,7 +177,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_offer_trade::static_create_type_code() {
 	type_code->depends[0] = ::mmx::spend_options_t::static_get_type_code();
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_offer_trade_return::static_get_type_code();
-	type_code->fields.resize(5);
+	type_code->fields.resize(6);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -181,9 +192,9 @@ std::shared_ptr<vnx::TypeCode> Wallet_offer_trade::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[2];
-		field.data_size = 8;
+		field.is_extended = true;
 		field.name = "amount";
-		field.code = {4};
+		field.code = {11, 16, 1};
 	}
 	{
 		auto& field = type_code->fields[3];
@@ -193,6 +204,12 @@ std::shared_ptr<vnx::TypeCode> Wallet_offer_trade::static_create_type_code() {
 	}
 	{
 		auto& field = type_code->fields[4];
+		field.is_extended = true;
+		field.name = "price";
+		field.code = {11, 16, 1};
+	}
+	{
+		auto& field = type_code->fields[5];
 		field.is_extended = true;
 		field.name = "options";
 		field.code = {19, 0};
@@ -209,6 +226,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_offer_trade::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Wallet_offer_trade& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -243,9 +261,6 @@ void read(TypeInput& in, ::mmx::Wallet_offer_trade& value, const TypeCode* type_
 		if(const auto* const _field = type_code->field_map[0]) {
 			vnx::read_value(_buf + _field->offset, value.index, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.amount, _field->code.data());
-		}
 		if(const auto* const _field = type_code->field_map[3]) {
 			vnx::read_value(_buf + _field->offset, value.dst_addr, _field->code.data());
 		}
@@ -253,7 +268,9 @@ void read(TypeInput& in, ::mmx::Wallet_offer_trade& value, const TypeCode* type_
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
 			case 1: vnx::read(in, value.address, type_code, _field->code.data()); break;
-			case 4: vnx::read(in, value.options, type_code, _field->code.data()); break;
+			case 2: vnx::read(in, value.amount, type_code, _field->code.data()); break;
+			case 4: vnx::read(in, value.price, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.options, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -272,12 +289,13 @@ void write(TypeOutput& out, const ::mmx::Wallet_offer_trade& value, const TypeCo
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(16);
+	auto* const _buf = out.write(8);
 	vnx::write_value(_buf + 0, value.index);
-	vnx::write_value(_buf + 4, value.amount);
-	vnx::write_value(_buf + 12, value.dst_addr);
+	vnx::write_value(_buf + 4, value.dst_addr);
 	vnx::write(out, value.address, type_code, type_code->fields[1].code.data());
-	vnx::write(out, value.options, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.amount, type_code, type_code->fields[2].code.data());
+	vnx::write(out, value.price, type_code, type_code->fields[4].code.data());
+	vnx::write(out, value.options, type_code, type_code->fields[5].code.data());
 }
 
 void read(std::istream& in, ::mmx::Wallet_offer_trade& value) {

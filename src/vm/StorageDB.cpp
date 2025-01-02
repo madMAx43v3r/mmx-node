@@ -8,12 +8,11 @@
 #include <mmx/vm/StorageDB.h>
 
 #include <vnx/Output.hpp>
+#include <vnx/Util.hpp>
 
 
 namespace mmx {
 namespace vm {
-
-// TODO: use to_big_endian() function instead of flip_bytes()
 
 constexpr int HASH_KEY_SIZE = 20;
 
@@ -21,7 +20,7 @@ std::shared_ptr<db_val_t> get_key(const addr_t& contract, uint64_t dst)
 {
 	auto out = std::make_shared<db_val_t>(HASH_KEY_SIZE + 8);
 	::memcpy(out->data, contract.data(), HASH_KEY_SIZE);
-	dst = vnx::flip_bytes(dst);
+	dst = vnx::to_big_endian(dst);
 	::memcpy(out->data + HASH_KEY_SIZE, &dst, 8);
 	return out;
 }
@@ -34,7 +33,7 @@ std::tuple<addr_t, uint64_t> read_key(std::shared_ptr<const db_val_t> key)
 	std::tuple<addr_t, uint64_t> out;
 	::memcpy(std::get<0>(out).data(), key->data, HASH_KEY_SIZE);
 	::memcpy(&std::get<1>(out), key->data + HASH_KEY_SIZE, 8);
-	std::get<1>(out) = vnx::flip_bytes(std::get<1>(out));
+	std::get<1>(out) = vnx::from_big_endian(std::get<1>(out));
 	return out;
 }
 
@@ -42,9 +41,9 @@ std::shared_ptr<db_val_t> write_entry_key(const addr_t& contract, uint64_t dst, 
 {
 	auto out = std::make_shared<db_val_t>(HASH_KEY_SIZE + 16);
 	::memcpy(out->data, contract.data(), HASH_KEY_SIZE);
-	dst = vnx::flip_bytes(dst);
+	dst = vnx::to_big_endian(dst);
 	::memcpy(out->data + HASH_KEY_SIZE, &dst, 8);
-	key = vnx::flip_bytes(key);
+	key = vnx::to_big_endian(key);
 	::memcpy(out->data + HASH_KEY_SIZE + 8, &key, 8);
 	return out;
 }
@@ -58,8 +57,8 @@ std::tuple<addr_t, uint64_t, uint64_t> read_entry_key(std::shared_ptr<const db_v
 	::memcpy(std::get<0>(out).data(), key->data, HASH_KEY_SIZE);
 	::memcpy(&std::get<1>(out), key->data + HASH_KEY_SIZE, 8);
 	::memcpy(&std::get<2>(out), key->data + HASH_KEY_SIZE + 8, 8);
-	std::get<1>(out) = vnx::flip_bytes(std::get<1>(out));
-	std::get<2>(out) = vnx::flip_bytes(std::get<2>(out));
+	std::get<1>(out) = vnx::from_big_endian(std::get<1>(out));
+	std::get<2>(out) = vnx::from_big_endian(std::get<2>(out));
 	return out;
 }
 
@@ -212,6 +211,21 @@ std::vector<varptr_t> StorageDB::read_array(
 		out.push_back(entry.second);
 	}
 	return out;
+}
+
+void StorageDB::set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount)
+{
+	if(write_balance) {
+		write_balance(contract, currency, amount);
+	}
+}
+
+std::unique_ptr<uint128> StorageDB::get_balance(const addr_t& contract, const addr_t& currency)
+{
+	if(read_balance) {
+		return read_balance(contract, currency);
+	}
+	return nullptr;
 }
 
 

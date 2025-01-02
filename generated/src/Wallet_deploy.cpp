@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_deploy::VNX_TYPE_HASH(0xcd71b07853d17497ull);
-const vnx::Hash64 Wallet_deploy::VNX_CODE_HASH(0xded9978269e5fa63ull);
+const vnx::Hash64 Wallet_deploy::VNX_CODE_HASH(0x1be27370027fbb2bull);
 
 vnx::Hash64 Wallet_deploy::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -136,7 +136,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_deploy::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.deploy";
 	type_code->type_hash = vnx::Hash64(0xcd71b07853d17497ull);
-	type_code->code_hash = vnx::Hash64(0xded9978269e5fa63ull);
+	type_code->code_hash = vnx::Hash64(0x1be27370027fbb2bull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -177,6 +177,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_deploy::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Wallet_deploy& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

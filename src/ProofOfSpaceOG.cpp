@@ -7,13 +7,14 @@
 
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
 
 vnx::bool_t ProofOfSpaceOG::is_valid() const
 {
-	return Super::is_valid() && ksize > 0 && proof_xs.size() <= 1024;
+	return Super::is_valid() && ksize > 0 && proof_xs.size() <= 256;
 }
 
 mmx::hash_t ProofOfSpaceOG::calc_hash() const
@@ -27,6 +28,8 @@ mmx::hash_t ProofOfSpaceOG::calc_hash() const
 	write_bytes(out, get_type_hash());
 	write_field(out, "score", 		score);
 	write_field(out, "plot_id", 	plot_id);
+	write_field(out, "challenge", 	challenge);
+	write_field(out, "difficulty",	difficulty);
 	write_field(out, "farmer_key", 	farmer_key);
 	write_field(out, "ksize", 		ksize);
 	write_field(out, "seed", 		seed);
@@ -34,6 +37,11 @@ mmx::hash_t ProofOfSpaceOG::calc_hash() const
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+mmx::hash_t ProofOfSpaceOG::calc_proof_hash() const
+{
+	return mmx::calc_proof_hash(challenge, proof_xs);
 }
 
 void ProofOfSpaceOG::validate() const

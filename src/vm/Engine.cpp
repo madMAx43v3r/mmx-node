@@ -17,6 +17,8 @@
 namespace mmx {
 namespace vm {
 
+static const uint64_t MEM_HEAP_NEXT_ALLOC = MEM_HEAP + GLOBAL_NEXT_ALLOC;
+
 Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only)
 	:	contract(contract),
 		storage(std::make_shared<StorageProxy>(this, backend, read_only))
@@ -26,7 +28,6 @@ Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool re
 Engine::~Engine()
 {
 	key_map.clear();
-	storage = nullptr;
 }
 
 void Engine::addref(const uint64_t dst)
@@ -61,7 +62,7 @@ var_t* Engine::assign(const uint64_t dst, std::unique_ptr<var_t> value)
 			break;
 	}
 	auto& var = memory[dst];
-	if(!var && dst >= MEM_STATIC) {
+	if(!var && dst >= MEM_STATIC && dst < new_heap_base) {
 		var = storage->read(contract, dst);
 	}
 	return assign(var, std::move(value));
@@ -154,7 +155,7 @@ var_t* Engine::write(const uint64_t dst, const var_t& src)
 		throw std::logic_error("already initialized");
 	}
 	auto& var = memory[dst];
-	if(!var && dst >= MEM_STATIC) {
+	if(!var && dst >= MEM_STATIC && dst < new_heap_base) {
 		var = storage->read(contract, dst);
 	}
 	return write(var, &dst, src);
@@ -340,12 +341,12 @@ var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const var_t& 
 	if(have_init && dst < MEM_EXTERN) {
 		throw std::logic_error("already initialized");
 	}
-	auto& var = entries[std::make_pair(dst, key)];
+	auto& container = read_fail(dst);
 
-	if(!var && dst >= MEM_STATIC && (read_fail(dst).flags & FLAG_STORED)) {
-		var = storage->read(contract, dst, key);
+	if(container.flags & FLAG_CONST) {
+		throw std::logic_error("read-only memory at " + to_hex(dst));
 	}
-	return write(var, nullptr, src);
+	return write(entries[std::make_pair(dst, key)], nullptr, src);
 }
 
 var_t* Engine::write_entry(const uint64_t dst, const uint64_t key, const varptr_t& var)
@@ -566,15 +567,21 @@ var_t& Engine::read_key_fail(const uint64_t src, const uint64_t key)
 
 uint64_t Engine::alloc()
 {
-	auto offset = read<uint_t>(MEM_HEAP + GLOBAL_NEXT_ALLOC, TYPE_UINT);
+	auto offset = read<uint_t>(MEM_HEAP_NEXT_ALLOC, TYPE_UINT);
 	if(!offset) {
-		offset = (uint_t*)assign(MEM_HEAP + GLOBAL_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START));
+		new_heap_base = MEM_HEAP;
+		offset = (uint_t*)assign(MEM_HEAP_NEXT_ALLOC, std::make_unique<uint_t>(MEM_HEAP + GLOBAL_DYNAMIC_START));
 		offset->pin();
 	}
 	if(offset->value >= uint64_t(-1)) {
 		throw std::runtime_error("out of memory");
 	}
 	offset->flags |= FLAG_DIRTY;
+
+	if(first_alloc) {
+		first_alloc = false;
+		new_heap_base = offset->value;
+	}
 	return offset->value++;
 }
 
@@ -819,10 +826,13 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 //	const uint8_t sflags_1 = (sflags >> 8);
 
 	const auto& svar = read_fail(src);
+	if(dflags_0 == CONVTYPE_BOOL) {
+		write(dst, var_t(is_true(svar)));
+		return;
+	}
 	switch(svar.type) {
 		case TYPE_NIL:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
 				case CONVTYPE_ADDRESS: write(dst, vm::to_binary(addr_t())); break;
 				default: throw std::logic_error("invalid conversion: NIL to " + to_hex(dflags));
@@ -830,14 +840,12 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			break;
 		case TYPE_TRUE:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(TYPE_TRUE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t(1)); break;
 				default: throw std::logic_error("invalid conversion: TRUE to " + to_hex(dflags));
 			}
 			break;
 		case TYPE_FALSE:
 			switch(dflags_0) {
-				case CONVTYPE_BOOL: write(dst, var_t(TYPE_FALSE)); break;
 				case CONVTYPE_UINT: write(dst, uint_t()); break;
 				default: throw std::logic_error("invalid conversion: FALSE to " + to_hex(dflags));
 			}
@@ -845,9 +853,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		case TYPE_UINT: {
 			const auto& value = ((const uint_t&)svar).value;
 			switch(dflags_0) {
-				case CONVTYPE_BOOL:
-					write(dst, var_t(value != uint256_0));
-					break;
 				case CONVTYPE_UINT:
 					write(dst, svar);
 					break;
@@ -901,9 +906,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		case TYPE_STRING: {
 			const auto& sstr = (const binary_t&)svar;
 			switch(dflags_0) {
-				case CONVTYPE_BOOL:
-					write(dst, var_t(bool(sstr.size)));
-					break;
 				case CONVTYPE_UINT: {
 					auto value = sstr.to_string();
 					const auto prefix_2 = value.substr(0, 2);
@@ -995,9 +997,6 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
 			switch(dflags_0) {
-				case CONVTYPE_BOOL:
-					write(dst, var_t(bool(sbin.size)));
-					break;
 				case CONVTYPE_UINT: {
 					if(sbin.size != 32) {
 						throw std::runtime_error("invalid conversion: BINARY to UINT: size != 32");
@@ -1054,13 +1053,7 @@ void Engine::conv(const uint64_t dst, const uint64_t src, const uint64_t dflags,
 			break;
 		}
 		default:
-			switch(dflags_0) {
-				case CONVTYPE_BOOL:
-					write(dst, var_t(TYPE_TRUE));
-					break;
-				default:
-					throw std::logic_error("invalid conversion: " + to_hex(uint32_t(svar.type)) + " to " + to_hex(dflags));
-			}
+			throw std::logic_error("invalid conversion: " + to_hex(uint32_t(svar.type)) + " to " + to_hex(dflags));
 	}
 }
 
@@ -1106,17 +1099,17 @@ void Engine::send(const uint64_t address, const uint64_t amount, const uint64_t 
 	if(value == 0) {
 		return;
 	}
-	if(value >> 64) {
-		throw std::runtime_error("send(): amount too large: " + value.str());
+	if(value >> 128) {
+		throw std::runtime_error("send(): amount too large: 0x" + value.str(16));
 	}
 	if(currency == 0) {
 		throw std::runtime_error("send(): currency == null");
 	}
-	auto balance = read_key<uint_t>(MEM_EXTERN + EXTERN_BALANCE, currency, TYPE_UINT);
-	if(!balance || balance->value < value) {
+	auto& balance = get_balance(currency);
+	if(balance < value) {
 		throw std::runtime_error("send(): insufficient funds");
 	}
-	balance->value -= value;
+	balance -= value;
 
 	txout_t out;
 	out.contract = read_fail<binary_t>(currency, TYPE_BINARY).to_addr();
@@ -1132,8 +1125,8 @@ void Engine::mint(const uint64_t address, const uint64_t amount, const uint64_t 
 	if(value == 0) {
 		return;
 	}
-	if(value >> 64) {
-		throw std::runtime_error("mint(): amount too large: " + value.str());
+	if(value >> 80) {
+		throw std::runtime_error("mint(): amount too large: 0x" + value.str(16));
 	}
 	txout_t out;
 	out.contract = contract;
@@ -1163,8 +1156,8 @@ void Engine::rcall(const uint64_t name, const uint64_t method, const uint64_t st
 	frame.stack_ptr += stack_ptr;
 	call_stack.push_back(frame);
 
-	remote_call(	read_fail<binary_t>(name, TYPE_STRING).to_string(),
-			read_fail<binary_t>(method, TYPE_STRING).to_string(), nargs);
+	remote_call(read_fail<binary_t>(name, TYPE_STRING).to_string(),
+				read_fail<binary_t>(method, TYPE_STRING).to_string(), nargs);
 	ret();
 }
 
@@ -1176,6 +1169,47 @@ void Engine::cread(const uint64_t dst, const uint64_t address, const uint64_t fi
 	read_contract(
 			read_fail<binary_t>(address, TYPE_BINARY).to_addr(),
 			read_fail<binary_t>(field, TYPE_STRING).to_string(), dst);
+}
+
+uint128_t& Engine::get_balance(const uint64_t currency_addr)
+{
+	const auto currency = read_fail<binary_t>(currency_addr, TYPE_BINARY).to_addr();
+	{
+		auto iter = balance_map.find(currency);
+		if(iter != balance_map.end()) {
+			return iter->second;
+		}
+	}
+	gas_used += WRITE_COST;
+
+	const auto value = storage->get_balance(contract, currency);
+	return balance_map[currency] = (value ? *value : uint128_0);
+}
+
+void Engine::read_balance(const uint64_t dst, const uint64_t currency)
+{
+	write(dst, uint_t(get_balance(currency)));
+}
+
+bool Engine::is_true(const uint64_t src)
+{
+	return is_true(read_fail(src));
+}
+
+bool Engine::is_true(const var_t& var)
+{
+	switch(var.type) {
+		case TYPE_NIL:
+		case TYPE_FALSE:
+			return false;
+		case TYPE_UINT:
+			return ((const uint_t&)var).value;
+		case TYPE_STRING:
+		case TYPE_BINARY:
+			return ((const binary_t&)var).size;
+		default:
+			return true;
+	}
 }
 
 void Engine::jump(const uint64_t instr_ptr)
@@ -1212,6 +1246,11 @@ Engine::frame_t& Engine::get_frame()
 		throw std::logic_error("empty call stack");
 	}
 	return call_stack.back();
+}
+
+uint64_t Engine::get_stack_ptr()
+{
+	return MEM_STACK + get_frame().stack_ptr;
 }
 
 uint64_t Engine::deref(const uint64_t src)
@@ -1269,20 +1308,17 @@ void Engine::exec(const instr_t& instr)
 		return;
 	}
 	case OP_JUMPI:
-	case OP_JUMPN: {
-		const auto cond = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
-		const auto& var = read_fail(cond);
-		switch(var.type) {
-			case TYPE_TRUE:
-			case TYPE_FALSE: break;
-			default: throw invalid_type(var);
-		}
-		if((instr.code == OP_JUMPI) == (var.type == TYPE_TRUE)) {
+		if(is_true(deref_addr(instr.b, instr.flags & OPFLAG_REF_B))) {
 			jump(deref_value(instr.a, instr.flags & OPFLAG_REF_A));
 			return;
 		}
 		break;
-	}
+	case OP_JUMPN:
+		if(!is_true(deref_addr(instr.b, instr.flags & OPFLAG_REF_B))) {
+			jump(deref_value(instr.a, instr.flags & OPFLAG_REF_A));
+			return;
+		}
+		break;
 	case OP_CALL:
 		if(instr.flags & OPFLAG_REF_B) {
 			throw std::logic_error("OPFLAG_REF_B not supported");
@@ -1381,14 +1417,24 @@ void Engine::exec(const instr_t& instr)
 		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto src = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto& var = read_fail(src);
-		switch(var.type) {
-			case TYPE_TRUE: write(dst, var_t(TYPE_FALSE)); break;
-			case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
-			case TYPE_UINT:
-				write(dst, uint_t(~((const uint_t&)var).value));
-				break;
-			default:
-				throw invalid_type(var);
+		if(instr.flags & OPFLAG_BITWISE) {
+			switch(var.type) {
+				case TYPE_UINT:
+					write(dst, uint_t(~((const uint_t&)var).value));
+					break;
+				case TYPE_BINARY: {
+					auto out = binary_t::alloc((const binary_t&)var);
+					for(uint32_t i = 0; i < out->size; ++i) {
+						(*out)[i] = ~(*out)[i];
+					}
+					assign(dst, std::move(out));
+					break;
+				}
+				default:
+					throw invalid_type(var);
+			}
+		} else {
+			write(dst, var_t(!is_true(var)));
 		}
 		break;
 	}
@@ -1398,30 +1444,32 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		switch(L.type) {
-			case TYPE_TRUE:
-				switch(R.type) {
-					case TYPE_TRUE: write(dst, var_t(TYPE_FALSE)); break;
-					case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_FALSE:
-				switch(R.type) {
-					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
-					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_UINT:
-				if(R.type == TYPE_UINT) {
+		if(instr.flags & OPFLAG_BITWISE) {
+			if(L.type != R.type) {
+				throw std::runtime_error("type mismatch (bitwise XOR)");
+			}
+			switch(L.type) {
+				case TYPE_UINT:
 					write(dst, uint_t(((const uint_t&)L).value ^ ((const uint_t&)R).value));
-				} else {
-					throw std::runtime_error("type mismatch");
+					break;
+				case TYPE_BINARY: {
+					const auto& lbin = (const binary_t&)L;
+					const auto& rbin = (const binary_t&)R;
+					if(lbin.size != rbin.size) {
+						throw std::runtime_error("binary length mismatch (bitwise XOR)");
+					}
+					auto out = binary_t::alloc(lbin.size, TYPE_BINARY);
+					for(uint32_t i = 0; i < out->size; ++i) {
+						(*out)[i] = lbin[i] ^ rbin[i];
+					}
+					assign(dst, std::move(out));
+					break;
 				}
-				break;
-			default:
-				throw invalid_type(L);
+				default:
+					throw invalid_type(L);
+			}
+		} else {
+			write(dst, var_t(is_true(L) ^ is_true(R)));
 		}
 		break;
 	}
@@ -1431,30 +1479,32 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		switch(L.type) {
-			case TYPE_TRUE:
-				switch(R.type) {
-					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
-					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_FALSE:
-				switch(R.type) {
-					case TYPE_TRUE:
-					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_UINT:
-				if(R.type == TYPE_UINT) {
+		if(instr.flags & OPFLAG_BITWISE) {
+			if(L.type != R.type) {
+				throw std::runtime_error("type mismatch (bitwise AND)");
+			}
+			switch(L.type) {
+				case TYPE_UINT:
 					write(dst, uint_t(((const uint_t&)L).value & ((const uint_t&)R).value));
-				} else {
-					throw std::runtime_error("type mismatch");
+					break;
+				case TYPE_BINARY: {
+					const auto& lbin = (const binary_t&)L;
+					const auto& rbin = (const binary_t&)R;
+					if(lbin.size != rbin.size) {
+						throw std::runtime_error("binary length mismatch (bitwise AND)");
+					}
+					auto out = binary_t::alloc(lbin.size, TYPE_BINARY);
+					for(uint32_t i = 0; i < out->size; ++i) {
+						(*out)[i] = lbin[i] & rbin[i];
+					}
+					assign(dst, std::move(out));
+					break;
 				}
-				break;
-			default:
-				throw invalid_type(L);
+				default:
+					throw invalid_type(L);
+			}
+		} else {
+			write(dst, var_t(is_true(L) && is_true(R)));
 		}
 		break;
 	}
@@ -1464,30 +1514,32 @@ void Engine::exec(const instr_t& instr)
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
 		const auto& L = read_fail(lhs);
 		const auto& R = read_fail(rhs);
-		switch(L.type) {
-			case TYPE_TRUE:
-				switch(R.type) {
-					case TYPE_TRUE:
-					case TYPE_FALSE: write(dst, var_t(TYPE_TRUE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_FALSE:
-				switch(R.type) {
-					case TYPE_TRUE: write(dst, var_t(TYPE_TRUE)); break;
-					case TYPE_FALSE: write(dst, var_t(TYPE_FALSE)); break;
-					default: throw std::runtime_error("type mismatch");
-				}
-				break;
-			case TYPE_UINT:
-				if(R.type == TYPE_UINT) {
+		if(instr.flags & OPFLAG_BITWISE) {
+			if(L.type != R.type) {
+				throw std::runtime_error("type mismatch (bitwise OR)");
+			}
+			switch(L.type) {
+				case TYPE_UINT:
 					write(dst, uint_t(((const uint_t&)L).value | ((const uint_t&)R).value));
-				} else {
-					throw std::runtime_error("type mismatch");
+					break;
+				case TYPE_BINARY: {
+					const auto& lbin = (const binary_t&)L;
+					const auto& rbin = (const binary_t&)R;
+					if(lbin.size != rbin.size) {
+						throw std::runtime_error("binary length mismatch (bitwise OR)");
+					}
+					auto out = binary_t::alloc(lbin.size, TYPE_BINARY);
+					for(uint32_t i = 0; i < out->size; ++i) {
+						(*out)[i] = lbin[i] | rbin[i];
+					}
+					assign(dst, std::move(out));
+					break;
 				}
-				break;
-			default:
-				throw invalid_type(L);
+				default:
+					throw invalid_type(L);
+			}
+		} else {
+			write(dst, var_t(is_true(L) || is_true(R)));
 		}
 		break;
 	}
@@ -1534,7 +1586,17 @@ void Engine::exec(const instr_t& instr)
 		const auto dst = deref_addr(instr.a, instr.flags & OPFLAG_REF_A);
 		const auto lhs = deref_addr(instr.b, instr.flags & OPFLAG_REF_B);
 		const auto rhs = deref_addr(instr.c, instr.flags & OPFLAG_REF_C);
-		const auto cmp = compare(read_fail(lhs), read_fail(rhs));
+		const auto& L = read_fail(lhs);
+		const auto& R = read_fail(rhs);
+		switch(instr.code) {
+			case OP_CMP_EQ:
+			case OP_CMP_NEQ: break;
+			default:
+				if(L.type != R.type) {
+					throw std::logic_error("compare type mismatch: " + std::to_string(int(L.type)) + " != " + std::to_string(int(R.type)));
+				}
+		}
+		const auto cmp = compare(L, R);
 		bool res = false;
 		switch(instr.code) {
 			case OP_CMP_EQ: res = (cmp == 0); break;
@@ -1642,8 +1704,8 @@ void Engine::exec(const instr_t& instr)
 		break;
 	case OP_FAIL:
 		error_code = deref_value(instr.b, instr.flags & OPFLAG_REF_B);
-		throw std::runtime_error("failed with: "
-				+ to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
+		throw std::runtime_error(
+				to_string_value(read(deref_addr(instr.a, instr.flags & OPFLAG_REF_A))));
 	case OP_RCALL:
 		rcall(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
@@ -1655,8 +1717,12 @@ void Engine::exec(const instr_t& instr)
 				deref_addr(instr.b, instr.flags & OPFLAG_REF_B),
 				deref_addr(instr.c, instr.flags & OPFLAG_REF_C));
 		break;
+	case OP_BALANCE:
+		read_balance(	deref_addr(instr.a, instr.flags & OPFLAG_REF_A),
+						deref_addr(instr.b, instr.flags & OPFLAG_REF_B));
+		break;
 	default:
-		throw std::logic_error("invalid op_code: 0x" + vnx::to_hex_string(uint32_t(instr.code)));
+		throw std::logic_error("invalid op_code: " + to_hex(uint32_t(instr.code)));
 	}
 	get_frame().instr_ptr++;
 }
@@ -1711,6 +1777,7 @@ std::map<uint64_t, const var_t*> Engine::find_entries(const uint64_t dst) const
 
 void Engine::dump_memory(const uint64_t begin, const uint64_t end)
 {
+	std::cout << "-------------------------------------------" << std::endl;
 	for(auto iter = memory.lower_bound(begin); iter != memory.lower_bound(end); ++iter) {
 		std::cout << "[" << to_hex(iter->first) << "] " << to_string(iter->second.get());
 		if(auto var = iter->second.get()) {

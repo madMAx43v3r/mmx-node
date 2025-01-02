@@ -7,6 +7,7 @@
 
 #include <mmx/operation/Execute.hxx>
 #include <mmx/write_bytes.h>
+#include <mmx/utils.h>
 
 
 namespace mmx {
@@ -14,6 +15,11 @@ namespace operation {
 
 vnx::bool_t Execute::is_valid() const
 {
+	for(const auto& arg : args) {
+		if(!is_json(arg)) {
+			return false;
+		}
+	}
 	return Super::is_valid() && !method.empty();
 }
 
@@ -42,9 +48,17 @@ uint64_t Execute::calc_cost(std::shared_ptr<const ChainParams> params) const
 {
 	uint64_t payload = method.size();
 	for(const auto& arg : args) {
-		payload += arg.size();
+		payload += get_num_bytes(arg);
 	}
 	return Super::calc_cost(params) + payload * params->min_txfee_byte;
+}
+
+vnx::Variant Execute::get_arg(const uint32_t& index) const
+{
+	if(index < args.size()) {
+		return args[index];
+	}
+	return vnx::Variant();
 }
 
 

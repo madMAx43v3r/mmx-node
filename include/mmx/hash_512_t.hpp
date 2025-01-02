@@ -25,12 +25,6 @@ public:
 
 	explicit hash_512_t(const std::vector<uint8_t>& data);
 
-	template<size_t N>
-	explicit hash_512_t(const std::array<uint8_t, N>& data);
-
-	template<size_t N>
-	explicit hash_512_t(const bytes_t<N>& data);
-
 	explicit hash_512_t(const void* data, const size_t num_bytes);
 
 	static hash_512_t ones();
@@ -55,18 +49,6 @@ hash_512_t::hash_512_t(const std::string& data)
 
 inline
 hash_512_t::hash_512_t(const std::vector<uint8_t>& data)
-	:	hash_512_t(data.data(), data.size())
-{
-}
-
-template<size_t N>
-hash_512_t::hash_512_t(const std::array<uint8_t, N>& data)
-	:	hash_512_t(data.data(), data.size())
-{
-}
-
-template<size_t N>
-hash_512_t::hash_512_t(const bytes_t<N>& data)
 	:	hash_512_t(data.data(), data.size())
 {
 }
@@ -137,15 +119,5 @@ void accept(vnx::Visitor& visitor, const mmx::hash_512_t& value) {
 }
 
 } // vnx
-
-
-namespace std {
-	template<>
-	struct hash<typename mmx::hash_512_t> {
-		size_t operator()(const mmx::hash_512_t& x) const {
-			return std::hash<mmx::hash_512_t::super_t>{}(x);
-		}
-	};
-} // std
 
 #endif /* INCLUDE_MMX_HASH_512_T_HPP_ */

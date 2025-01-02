@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_transaction::VNX_TYPE_HASH(0x9c76ca142292750full);
-const vnx::Hash64 Node_get_transaction::VNX_CODE_HASH(0x69a50e4f02b559dfull);
+const vnx::Hash64 Node_get_transaction::VNX_CODE_HASH(0xf4e68de74cf1ce0dull);
 
 vnx::Hash64 Node_get_transaction::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,14 +48,14 @@ void Node_get_transaction::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_Node_get_transaction;
 	_visitor.type_begin(*_type_code);
 	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, id);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, include_pending);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, pending);
 	_visitor.type_end(*_type_code);
 }
 
 void Node_get_transaction::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.Node.get_transaction\"";
 	_out << ", \"id\": "; vnx::write(_out, id);
-	_out << ", \"include_pending\": "; vnx::write(_out, include_pending);
+	_out << ", \"pending\": "; vnx::write(_out, pending);
 	_out << "}";
 }
 
@@ -69,7 +69,7 @@ vnx::Object Node_get_transaction::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.Node.get_transaction";
 	_object["id"] = id;
-	_object["include_pending"] = include_pending;
+	_object["pending"] = pending;
 	return _object;
 }
 
@@ -77,8 +77,8 @@ void Node_get_transaction::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "id") {
 			_entry.second.to(id);
-		} else if(_entry.first == "include_pending") {
-			_entry.second.to(include_pending);
+		} else if(_entry.first == "pending") {
+			_entry.second.to(pending);
 		}
 	}
 }
@@ -87,8 +87,8 @@ vnx::Variant Node_get_transaction::get_field(const std::string& _name) const {
 	if(_name == "id") {
 		return vnx::Variant(id);
 	}
-	if(_name == "include_pending") {
-		return vnx::Variant(include_pending);
+	if(_name == "pending") {
+		return vnx::Variant(pending);
 	}
 	return vnx::Variant();
 }
@@ -96,8 +96,8 @@ vnx::Variant Node_get_transaction::get_field(const std::string& _name) const {
 void Node_get_transaction::set_field(const std::string& _name, const vnx::Variant& _value) {
 	if(_name == "id") {
 		_value.to(id);
-	} else if(_name == "include_pending") {
-		_value.to(include_pending);
+	} else if(_name == "pending") {
+		_value.to(pending);
 	}
 }
 
@@ -125,7 +125,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_transaction::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_transaction";
 	type_code->type_hash = vnx::Hash64(0x9c76ca142292750full);
-	type_code->code_hash = vnx::Hash64(0x69a50e4f02b559dfull);
+	type_code->code_hash = vnx::Hash64(0xf4e68de74cf1ce0dull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -143,7 +143,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_transaction::static_create_type_code() {
 	{
 		auto& field = type_code->fields[1];
 		field.data_size = 1;
-		field.name = "include_pending";
+		field.name = "pending";
 		field.code = {31};
 	}
 	type_code->permission = "mmx.permission_e.PUBLIC";
@@ -158,6 +158,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_transaction::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_transaction& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -190,7 +191,7 @@ void read(TypeInput& in, ::mmx::Node_get_transaction& value, const TypeCode* typ
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.include_pending, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.pending, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
@@ -215,7 +216,7 @@ void write(TypeOutput& out, const ::mmx::Node_get_transaction& value, const Type
 		type_code = type_code->depends[code[1]];
 	}
 	auto* const _buf = out.write(1);
-	vnx::write_value(_buf + 0, value.include_pending);
+	vnx::write_value(_buf + 0, value.pending);
 	vnx::write(out, value.id, type_code, type_code->fields[0].code.data());
 }
 

@@ -8,10 +8,10 @@ const config = require('./config.js');
 var db = null;
 var first_sync = null;
 
-async function verify(partial, sync_height)
+async function verify(partial, vdf_height)
 {
     try {
-        if(sync_height > partial.height + config.partial_expiry)
+        if(vdf_height > partial.height + config.partial_expiry)
         {
             if(partial.height < first_sync) {
                 partial.error_code = 'POOL_LOST_SYNC';
@@ -25,7 +25,7 @@ async function verify(partial, sync_height)
             partial.pending = false;
             await partial.save();
 
-            console.log("Partial", partial.hash, "expired at height", sync_height, 'due to', partial.error_code, '(' + partial.error_message + ')');
+            console.log("Partial", partial.hash, "expired at height", vdf_height, 'due to', partial.error_code, '(' + partial.error_message + ')');
             return;
         }
 
@@ -60,7 +60,8 @@ async function verify(partial, sync_height)
             let account = await dbs.Account.findOne({address: partial.account});
             if(!account) {
                 account = new dbs.Account({
-                    address: partial.account
+                    address: partial.account,
+                    difficulty: config.default_difficulty,
                 });
                 await account.save();
 
@@ -76,10 +77,10 @@ var verify_lock = false;
 
 async function verify_all()
 {
-    let sync_height = null;
+    let vdf_height = null;
     try {
-        sync_height = await utils.get_synced_height();
-        if(!sync_height) {
+        vdf_height = await utils.get_synced_vdf_height();
+        if(!vdf_height) {
             console.log('Waiting for node sync ...');
             return;
         }
@@ -88,7 +89,7 @@ async function verify_all()
         return;
     }
     if(!first_sync) {
-        first_sync = sync_height;
+        first_sync = vdf_height;
     }
 
     if(verify_lock) {
@@ -96,18 +97,18 @@ async function verify_all()
     }
     verify_lock = true;
     try {
-        const list = dbs.Partial.find({pending: true, height: {$lte: sync_height}});
+        const list = dbs.Partial.find({pending: true, height: {$lte: vdf_height}});
 
         let res = [];
         let total = 0;
         for await(const partial of list) {
-            res.push(verify(partial, sync_height));
+            res.push(verify(partial, vdf_height));
             total++;
         }
         await Promise.all(res);
 
         if(total) {
-            console.log("Verified", total, "partials at height", sync_height);
+            console.log("Verified", total, "partials at height", vdf_height);
         }
     } catch(e) {
 		console.log("verify_all() failed:", e.message);

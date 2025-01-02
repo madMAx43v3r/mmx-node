@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Wallet_get_history_memo_return::VNX_TYPE_HASH(0x6da659ffb94e55d7ull);
-const vnx::Hash64 Wallet_get_history_memo_return::VNX_CODE_HASH(0x7f4ca4fa8479d6fdull);
+const vnx::Hash64 Wallet_get_history_memo_return::VNX_CODE_HASH(0x3139e214c22129e4ull);
 
 vnx::Hash64 Wallet_get_history_memo_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_history_memo_return::static_create_typ
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Wallet.get_history_memo.return";
 	type_code->type_hash = vnx::Hash64(0x6da659ffb94e55d7ull);
-	type_code->code_hash = vnx::Hash64(0x7f4ca4fa8479d6fdull);
+	type_code->code_hash = vnx::Hash64(0x3139e214c22129e4ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;
@@ -140,6 +140,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_history_memo_return::static_create_typ
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Wallet_get_history_memo_return& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

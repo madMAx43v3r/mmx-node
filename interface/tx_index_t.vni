@@ -6,6 +6,7 @@ struct tx_index_t {
 	uint static_cost;
 	uint contract_read_cost;
 	
+	long time_stamp;			// UNIX [ms]
 	long file_offset;
 	
 }

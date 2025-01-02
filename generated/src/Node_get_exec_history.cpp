@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 Node_get_exec_history::VNX_TYPE_HASH(0xf17c2f67bedb9df6ull);
-const vnx::Hash64 Node_get_exec_history::VNX_CODE_HASH(0x6dfbe2d6c62973f6ull);
+const vnx::Hash64 Node_get_exec_history::VNX_CODE_HASH(0xa0daf9cb8db71849ull);
 
 vnx::Hash64 Node_get_exec_history::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -135,7 +135,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_exec_history::static_create_type_code() 
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node.get_exec_history";
 	type_code->type_hash = vnx::Hash64(0xf17c2f67bedb9df6ull);
-	type_code->code_hash = vnx::Hash64(0x6dfbe2d6c62973f6ull);
+	type_code->code_hash = vnx::Hash64(0xa0daf9cb8db71849ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_method = true;
@@ -154,7 +154,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_exec_history::static_create_type_code() 
 		auto& field = type_code->fields[1];
 		field.data_size = 4;
 		field.name = "limit";
-		field.value = vnx::to_string(-1);
+		field.value = vnx::to_string(100);
 		field.code = {7};
 	}
 	{
@@ -175,6 +175,7 @@ std::shared_ptr<vnx::TypeCode> Node_get_exec_history::static_create_type_code() 
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::Node_get_exec_history& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

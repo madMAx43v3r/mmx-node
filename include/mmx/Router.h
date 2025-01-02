@@ -72,6 +72,8 @@ protected:
 
 	void handle(std::shared_ptr<const VDF_Point> value) override;
 
+	void handle(std::shared_ptr<const ValidatorVote> value) override;
+
 private:
 	struct send_item_t {
 		bool reliable = false;
@@ -155,6 +157,8 @@ private:
 
 	void on_block(uint64_t client, std::shared_ptr<const Block> block);
 
+	void on_vote(uint64_t client, std::shared_ptr<const ValidatorVote> value);
+
 	void on_proof(uint64_t client, std::shared_ptr<const ProofResponse> response);
 
 	void on_transaction(uint64_t client, std::shared_ptr<const Transaction> tx);
@@ -185,7 +189,7 @@ private:
 
 	void on_return(uint64_t client, std::shared_ptr<const Return> msg);
 
-	void on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg);
+	void on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg) override;
 
 	void on_pause(uint64_t client) override;
 
@@ -216,6 +220,7 @@ private:
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
 	std::map<std::string, uint64_t> connect_tasks;
+	std::map<uint32_t, std::shared_ptr<const ProofOfTime>> vdf_history;		// [vdf_height => proof]
 
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
@@ -223,14 +228,14 @@ private:
 
 	struct hash_info_t {
 		bool did_relay = false;
-		bool did_reward = false;
 	};
 
 	std::queue<hash_t> hash_queue;
 	std::unordered_map<hash_t, hash_info_t> hash_info;
 
-	std::unordered_map<pubkey_t, uint32_t> farmer_credits;
-	std::unordered_map<pubkey_t, uint32_t> timelord_credits;
+	std::map<uint32_t, std::set<pubkey_t>> farmer_credit;
+	std::map<pubkey_t, uint32_t> timelord_credit;
+	std::set<pubkey_t> our_timelords;
 
 	double tx_upload_credits = 0;
 	double tx_upload_bandwidth = 0;
@@ -251,11 +256,13 @@ private:
 	mutable std::default_random_engine rand_engine;
 
 	uint32_t next_request_id = 0;
+	uint32_t verified_vdf_height = 0;
 	uint32_t verified_peak_height = 0;
 	int64_t last_query_ms = 0;
 
 	size_t tx_counter = 0;
 	size_t vdf_counter = 0;
+	size_t vote_counter = 0;
 	size_t block_counter = 0;
 	size_t proof_counter = 0;
 	size_t upload_counter = 0;

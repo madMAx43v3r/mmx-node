@@ -15,7 +15,7 @@ namespace mmx {
 
 
 const vnx::Hash64 VDF_Point::VNX_TYPE_HASH(0x1671551501b6c956ull);
-const vnx::Hash64 VDF_Point::VNX_CODE_HASH(0x7a1dd173986ff6b3ull);
+const vnx::Hash64 VDF_Point::VNX_CODE_HASH(0x5031dd26ac22d68eull);
 
 vnx::Hash64 VDF_Point::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -48,12 +48,12 @@ void VDF_Point::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code, co
 void VDF_Point::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_VDF_Point;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, height);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, vdf_start);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, vdf_iters);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, vdf_height);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, start);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, num_iters);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, input);
 	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, output);
-	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, infused);
+	_visitor.type_field(_type_code->fields[5], 5); vnx::accept(_visitor, prev);
 	_visitor.type_field(_type_code->fields[6], 6); vnx::accept(_visitor, reward_addr);
 	_visitor.type_field(_type_code->fields[7], 7); vnx::accept(_visitor, content_hash);
 	_visitor.type_field(_type_code->fields[8], 8); vnx::accept(_visitor, recv_time);
@@ -63,12 +63,12 @@ void VDF_Point::accept(vnx::Visitor& _visitor) const {
 
 void VDF_Point::write(std::ostream& _out) const {
 	_out << "{\"__type\": \"mmx.VDF_Point\"";
-	_out << ", \"height\": "; vnx::write(_out, height);
-	_out << ", \"vdf_start\": "; vnx::write(_out, vdf_start);
-	_out << ", \"vdf_iters\": "; vnx::write(_out, vdf_iters);
+	_out << ", \"vdf_height\": "; vnx::write(_out, vdf_height);
+	_out << ", \"start\": "; vnx::write(_out, start);
+	_out << ", \"num_iters\": "; vnx::write(_out, num_iters);
 	_out << ", \"input\": "; vnx::write(_out, input);
 	_out << ", \"output\": "; vnx::write(_out, output);
-	_out << ", \"infused\": "; vnx::write(_out, infused);
+	_out << ", \"prev\": "; vnx::write(_out, prev);
 	_out << ", \"reward_addr\": "; vnx::write(_out, reward_addr);
 	_out << ", \"content_hash\": "; vnx::write(_out, content_hash);
 	_out << ", \"recv_time\": "; vnx::write(_out, recv_time);
@@ -85,12 +85,12 @@ void VDF_Point::read(std::istream& _in) {
 vnx::Object VDF_Point::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.VDF_Point";
-	_object["height"] = height;
-	_object["vdf_start"] = vdf_start;
-	_object["vdf_iters"] = vdf_iters;
+	_object["vdf_height"] = vdf_height;
+	_object["start"] = start;
+	_object["num_iters"] = num_iters;
 	_object["input"] = input;
 	_object["output"] = output;
-	_object["infused"] = infused;
+	_object["prev"] = prev;
 	_object["reward_addr"] = reward_addr;
 	_object["content_hash"] = content_hash;
 	_object["recv_time"] = recv_time;
@@ -102,37 +102,37 @@ void VDF_Point::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "content_hash") {
 			_entry.second.to(content_hash);
-		} else if(_entry.first == "height") {
-			_entry.second.to(height);
-		} else if(_entry.first == "infused") {
-			_entry.second.to(infused);
 		} else if(_entry.first == "input") {
 			_entry.second.to(input);
+		} else if(_entry.first == "num_iters") {
+			_entry.second.to(num_iters);
 		} else if(_entry.first == "output") {
 			_entry.second.to(output);
+		} else if(_entry.first == "prev") {
+			_entry.second.to(prev);
 		} else if(_entry.first == "proof") {
 			_entry.second.to(proof);
 		} else if(_entry.first == "recv_time") {
 			_entry.second.to(recv_time);
 		} else if(_entry.first == "reward_addr") {
 			_entry.second.to(reward_addr);
-		} else if(_entry.first == "vdf_iters") {
-			_entry.second.to(vdf_iters);
-		} else if(_entry.first == "vdf_start") {
-			_entry.second.to(vdf_start);
+		} else if(_entry.first == "start") {
+			_entry.second.to(start);
+		} else if(_entry.first == "vdf_height") {
+			_entry.second.to(vdf_height);
 		}
 	}
 }
 
 vnx::Variant VDF_Point::get_field(const std::string& _name) const {
-	if(_name == "height") {
-		return vnx::Variant(height);
+	if(_name == "vdf_height") {
+		return vnx::Variant(vdf_height);
 	}
-	if(_name == "vdf_start") {
-		return vnx::Variant(vdf_start);
+	if(_name == "start") {
+		return vnx::Variant(start);
 	}
-	if(_name == "vdf_iters") {
-		return vnx::Variant(vdf_iters);
+	if(_name == "num_iters") {
+		return vnx::Variant(num_iters);
 	}
 	if(_name == "input") {
 		return vnx::Variant(input);
@@ -140,8 +140,8 @@ vnx::Variant VDF_Point::get_field(const std::string& _name) const {
 	if(_name == "output") {
 		return vnx::Variant(output);
 	}
-	if(_name == "infused") {
-		return vnx::Variant(infused);
+	if(_name == "prev") {
+		return vnx::Variant(prev);
 	}
 	if(_name == "reward_addr") {
 		return vnx::Variant(reward_addr);
@@ -159,18 +159,18 @@ vnx::Variant VDF_Point::get_field(const std::string& _name) const {
 }
 
 void VDF_Point::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "height") {
-		_value.to(height);
-	} else if(_name == "vdf_start") {
-		_value.to(vdf_start);
-	} else if(_name == "vdf_iters") {
-		_value.to(vdf_iters);
+	if(_name == "vdf_height") {
+		_value.to(vdf_height);
+	} else if(_name == "start") {
+		_value.to(start);
+	} else if(_name == "num_iters") {
+		_value.to(num_iters);
 	} else if(_name == "input") {
 		_value.to(input);
 	} else if(_name == "output") {
 		_value.to(output);
-	} else if(_name == "infused") {
-		_value.to(infused);
+	} else if(_name == "prev") {
+		_value.to(prev);
 	} else if(_name == "reward_addr") {
 		_value.to(reward_addr);
 	} else if(_name == "content_hash") {
@@ -206,7 +206,7 @@ std::shared_ptr<vnx::TypeCode> VDF_Point::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.VDF_Point";
 	type_code->type_hash = vnx::Hash64(0x1671551501b6c956ull);
-	type_code->code_hash = vnx::Hash64(0x7a1dd173986ff6b3ull);
+	type_code->code_hash = vnx::Hash64(0x5031dd26ac22d68eull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::VDF_Point);
@@ -215,44 +215,44 @@ std::shared_ptr<vnx::TypeCode> VDF_Point::static_create_type_code() {
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
-		field.name = "height";
+		field.name = "vdf_height";
 		field.code = {3};
 	}
 	{
 		auto& field = type_code->fields[1];
 		field.data_size = 8;
-		field.name = "vdf_start";
+		field.name = "start";
 		field.code = {4};
 	}
 	{
 		auto& field = type_code->fields[2];
 		field.data_size = 8;
-		field.name = "vdf_iters";
+		field.name = "num_iters";
 		field.code = {4};
 	}
 	{
 		auto& field = type_code->fields[3];
 		field.is_extended = true;
 		field.name = "input";
-		field.code = {11, 2, 11, 32, 1};
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[4];
 		field.is_extended = true;
 		field.name = "output";
-		field.code = {11, 2, 11, 32, 1};
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[5];
 		field.is_extended = true;
-		field.name = "infused";
-		field.code = {33, 11, 32, 1};
+		field.name = "prev";
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[6];
 		field.is_extended = true;
 		field.name = "reward_addr";
-		field.code = {33, 11, 32, 1};
+		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[7];
@@ -289,6 +289,7 @@ std::shared_ptr<vnx::Value> VDF_Point::vnx_call_switch(std::shared_ptr<const vnx
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::VDF_Point& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:
@@ -321,13 +322,13 @@ void read(TypeInput& in, ::mmx::VDF_Point& value, const TypeCode* type_code, con
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.height, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.vdf_height, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[1]) {
-			vnx::read_value(_buf + _field->offset, value.vdf_start, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.start, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[2]) {
-			vnx::read_value(_buf + _field->offset, value.vdf_iters, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.num_iters, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[8]) {
 			vnx::read_value(_buf + _field->offset, value.recv_time, _field->code.data());
@@ -337,7 +338,7 @@ void read(TypeInput& in, ::mmx::VDF_Point& value, const TypeCode* type_code, con
 		switch(_field->native_index) {
 			case 3: vnx::read(in, value.input, type_code, _field->code.data()); break;
 			case 4: vnx::read(in, value.output, type_code, _field->code.data()); break;
-			case 5: vnx::read(in, value.infused, type_code, _field->code.data()); break;
+			case 5: vnx::read(in, value.prev, type_code, _field->code.data()); break;
 			case 6: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
 			case 7: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
 			case 9: vnx::read(in, value.proof, type_code, _field->code.data()); break;
@@ -360,13 +361,13 @@ void write(TypeOutput& out, const ::mmx::VDF_Point& value, const TypeCode* type_
 		type_code = type_code->depends[code[1]];
 	}
 	auto* const _buf = out.write(28);
-	vnx::write_value(_buf + 0, value.height);
-	vnx::write_value(_buf + 4, value.vdf_start);
-	vnx::write_value(_buf + 12, value.vdf_iters);
+	vnx::write_value(_buf + 0, value.vdf_height);
+	vnx::write_value(_buf + 4, value.start);
+	vnx::write_value(_buf + 12, value.num_iters);
 	vnx::write_value(_buf + 20, value.recv_time);
 	vnx::write(out, value.input, type_code, type_code->fields[3].code.data());
 	vnx::write(out, value.output, type_code, type_code->fields[4].code.data());
-	vnx::write(out, value.infused, type_code, type_code->fields[5].code.data());
+	vnx::write(out, value.prev, type_code, type_code->fields[5].code.data());
 	vnx::write(out, value.reward_addr, type_code, type_code->fields[6].code.data());
 	vnx::write(out, value.content_hash, type_code, type_code->fields[7].code.data());
 	vnx::write(out, value.proof, type_code, type_code->fields[9].code.data());

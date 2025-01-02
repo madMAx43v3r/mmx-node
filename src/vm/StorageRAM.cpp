@@ -91,20 +91,6 @@ void StorageRAM::clear()
 	balance_map.clear();
 }
 
-bool StorageRAM::has_balances(const addr_t& contract) const
-{
-	std::lock_guard lock(mutex);
-
-	return balance_map.count(contract);
-}
-
-void StorageRAM::set_balances(const addr_t& contract, const std::map<addr_t, uint128>& values)
-{
-	std::lock_guard lock(mutex);
-
-	balance_map[contract] = values;
-}
-
 void StorageRAM::set_balance(const addr_t& contract, const addr_t& currency, const uint128& amount)
 {
 	std::lock_guard lock(mutex);
@@ -112,7 +98,7 @@ void StorageRAM::set_balance(const addr_t& contract, const addr_t& currency, con
 	balance_map[contract][currency] = amount;
 }
 
-std::unique_ptr<uint128> StorageRAM::get_balance(const addr_t& contract, const addr_t& currency) const
+std::unique_ptr<uint128> StorageRAM::get_balance(const addr_t& contract, const addr_t& currency)
 {
 	std::lock_guard lock(mutex);
 
@@ -125,17 +111,6 @@ std::unique_ptr<uint128> StorageRAM::get_balance(const addr_t& contract, const a
 		}
 	}
 	return nullptr;
-}
-
-std::map<addr_t, uint128> StorageRAM::get_balances(const addr_t& contract) const
-{
-	std::lock_guard lock(mutex);
-
-	auto iter = balance_map.find(contract);
-	if(iter != balance_map.end()) {
-		return iter->second;
-	}
-	return std::map<addr_t, uint128>();
 }
 
 void StorageRAM::dump_memory(std::ostream& out) const

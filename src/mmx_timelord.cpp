@@ -64,7 +64,6 @@ int main(int argc, char** argv)
 	{
 		vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
 		module->storage_path = mmx_network + module->storage_path;
-		proxy->import_list.push_back(module->input_infuse);
 		proxy->import_list.push_back(module->input_request);
 		proxy->export_list.push_back(module->output_proofs);
 		module.start_detached();

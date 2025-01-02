@@ -5,7 +5,6 @@
 #define INCLUDE_mmx_contract_Data_HXX_
 
 #include <mmx/contract/package.hxx>
-#include <mmx/ChainParams.hxx>
 #include <mmx/Contract.hxx>
 #include <mmx/addr_t.hpp>
 #include <mmx/hash_t.hpp>
@@ -33,9 +32,9 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
+	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0) const override;
-	virtual uint64_t num_bytes(const vnx::bool_t& total = true) const override;
-	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
+	virtual uint64_t num_bytes() const override;
 	
 	static std::shared_ptr<Data> create();
 	std::shared_ptr<vnx::Value> clone() const override;

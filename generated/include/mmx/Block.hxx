@@ -72,35 +72,49 @@ protected:
 
 template<typename T>
 void Block::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<Block>(27);
+	_visitor.template type_begin<Block>(41);
 	_visitor.type_field("version", 0); _visitor.accept(version);
-	_visitor.type_field("hash", 1); _visitor.accept(hash);
-	_visitor.type_field("prev", 2); _visitor.accept(prev);
-	_visitor.type_field("height", 3); _visitor.accept(height);
-	_visitor.type_field("nonce", 4); _visitor.accept(nonce);
-	_visitor.type_field("time_diff", 5); _visitor.accept(time_diff);
-	_visitor.type_field("space_diff", 6); _visitor.accept(space_diff);
-	_visitor.type_field("weight", 7); _visitor.accept(weight);
-	_visitor.type_field("total_weight", 8); _visitor.accept(total_weight);
-	_visitor.type_field("netspace_ratio", 9); _visitor.accept(netspace_ratio);
-	_visitor.type_field("average_txfee", 10); _visitor.accept(average_txfee);
-	_visitor.type_field("vdf_iters", 11); _visitor.accept(vdf_iters);
-	_visitor.type_field("vdf_output", 12); _visitor.accept(vdf_output);
-	_visitor.type_field("vdf_reward_addr", 13); _visitor.accept(vdf_reward_addr);
-	_visitor.type_field("proof", 14); _visitor.accept(proof);
-	_visitor.type_field("reward_amount", 15); _visitor.accept(reward_amount);
-	_visitor.type_field("reward_addr", 16); _visitor.accept(reward_addr);
-	_visitor.type_field("reward_vote", 17); _visitor.accept(reward_vote);
-	_visitor.type_field("next_base_reward", 18); _visitor.accept(next_base_reward);
-	_visitor.type_field("static_cost", 19); _visitor.accept(static_cost);
-	_visitor.type_field("total_cost", 20); _visitor.accept(total_cost);
-	_visitor.type_field("tx_count", 21); _visitor.accept(tx_count);
-	_visitor.type_field("tx_fees", 22); _visitor.accept(tx_fees);
-	_visitor.type_field("tx_hash", 23); _visitor.accept(tx_hash);
-	_visitor.type_field("farmer_sig", 24); _visitor.accept(farmer_sig);
-	_visitor.type_field("content_hash", 25); _visitor.accept(content_hash);
-	_visitor.type_field("tx_list", 26); _visitor.accept(tx_list);
-	_visitor.template type_end<Block>(27);
+	_visitor.type_field("support_flags", 1); _visitor.accept(support_flags);
+	_visitor.type_field("hash", 2); _visitor.accept(hash);
+	_visitor.type_field("prev", 3); _visitor.accept(prev);
+	_visitor.type_field("height", 4); _visitor.accept(height);
+	_visitor.type_field("vdf_height", 5); _visitor.accept(vdf_height);
+	_visitor.type_field("nonce", 6); _visitor.accept(nonce);
+	_visitor.type_field("time_stamp", 7); _visitor.accept(time_stamp);
+	_visitor.type_field("time_diff", 8); _visitor.accept(time_diff);
+	_visitor.type_field("space_diff", 9); _visitor.accept(space_diff);
+	_visitor.type_field("weight", 10); _visitor.accept(weight);
+	_visitor.type_field("total_weight", 11); _visitor.accept(total_weight);
+	_visitor.type_field("vdf_count", 12); _visitor.accept(vdf_count);
+	_visitor.type_field("vdf_iters", 13); _visitor.accept(vdf_iters);
+	_visitor.type_field("vdf_output", 14); _visitor.accept(vdf_output);
+	_visitor.type_field("vdf_reward_addr", 15); _visitor.accept(vdf_reward_addr);
+	_visitor.type_field("vdf_reward_payout", 16); _visitor.accept(vdf_reward_payout);
+	_visitor.type_field("proof", 17); _visitor.accept(proof);
+	_visitor.type_field("proof_hash", 18); _visitor.accept(proof_hash);
+	_visitor.type_field("challenge", 19); _visitor.accept(challenge);
+	_visitor.type_field("is_space_fork", 20); _visitor.accept(is_space_fork);
+	_visitor.type_field("space_fork_len", 21); _visitor.accept(space_fork_len);
+	_visitor.type_field("space_fork_proofs", 22); _visitor.accept(space_fork_proofs);
+	_visitor.type_field("reward_amount", 23); _visitor.accept(reward_amount);
+	_visitor.type_field("reward_addr", 24); _visitor.accept(reward_addr);
+	_visitor.type_field("reward_contract", 25); _visitor.accept(reward_contract);
+	_visitor.type_field("reward_account", 26); _visitor.accept(reward_account);
+	_visitor.type_field("reward_vote", 27); _visitor.accept(reward_vote);
+	_visitor.type_field("reward_vote_sum", 28); _visitor.accept(reward_vote_sum);
+	_visitor.type_field("reward_vote_count", 29); _visitor.accept(reward_vote_count);
+	_visitor.type_field("base_reward", 30); _visitor.accept(base_reward);
+	_visitor.type_field("project_addr", 31); _visitor.accept(project_addr);
+	_visitor.type_field("static_cost", 32); _visitor.accept(static_cost);
+	_visitor.type_field("total_cost", 33); _visitor.accept(total_cost);
+	_visitor.type_field("tx_count", 34); _visitor.accept(tx_count);
+	_visitor.type_field("tx_fees", 35); _visitor.accept(tx_fees);
+	_visitor.type_field("txfee_buffer", 36); _visitor.accept(txfee_buffer);
+	_visitor.type_field("tx_hash", 37); _visitor.accept(tx_hash);
+	_visitor.type_field("farmer_sig", 38); _visitor.accept(farmer_sig);
+	_visitor.type_field("content_hash", 39); _visitor.accept(content_hash);
+	_visitor.type_field("tx_list", 40); _visitor.accept(tx_list);
+	_visitor.template type_end<Block>(41);
 }
 
 

@@ -1,0 +1,1 @@
+assert(false, "msg", 1337);

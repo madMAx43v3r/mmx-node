@@ -111,7 +111,6 @@ add_library(mmx_iface SHARED
 	src/Transaction.cpp
 	src/Operation.cpp
 	src/Contract.cpp
-	src/Challenge.cpp
 	src/Solution.cpp
 	src/ProofOfTime.cpp
 	src/ProofOfSpace.cpp
@@ -158,6 +157,9 @@ add_library(mmx_iface SHARED
 	src/account_info_t.cpp
 	src/VDF_Point.cpp
 	src/Partial.cpp
+	src/ChainParams.cpp
+	src/utils.cpp
+	src/ValidatorVote.cpp
 )
 
 add_library(mmx_vm SHARED

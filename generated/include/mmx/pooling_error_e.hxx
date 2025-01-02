@@ -13,6 +13,7 @@ namespace mmx {
 struct MMX_EXPORT pooling_error_e {
 	
 	enum enum_t : uint32_t {
+		CHALLENGE_NOT_CONFIRMED = 1645788267l,
 		CHALLENGE_NOT_FOUND = 471927302l,
 		CHALLENGE_REVERTED = 1760085717l,
 		DUPLICATE_PARTIAL = 271202490l,

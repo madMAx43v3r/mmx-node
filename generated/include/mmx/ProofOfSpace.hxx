@@ -15,8 +15,10 @@ namespace mmx {
 class MMX_EXPORT ProofOfSpace : public ::vnx::Value {
 public:
 	
-	uint32_t score = 0;
+	uint16_t score = 0;
 	::mmx::hash_t plot_id;
+	::mmx::hash_t challenge;
+	uint64_t difficulty = 0;
 	::mmx::pubkey_t farmer_key;
 	
 	typedef ::vnx::Value Super;
@@ -34,6 +36,7 @@ public:
 	
 	virtual vnx::bool_t is_valid() const;
 	virtual ::mmx::hash_t calc_hash() const;
+	virtual ::mmx::hash_t calc_proof_hash() const;
 	virtual void validate() const;
 	
 	static std::shared_ptr<ProofOfSpace> create();
@@ -68,11 +71,13 @@ protected:
 
 template<typename T>
 void ProofOfSpace::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<ProofOfSpace>(3);
+	_visitor.template type_begin<ProofOfSpace>(5);
 	_visitor.type_field("score", 0); _visitor.accept(score);
 	_visitor.type_field("plot_id", 1); _visitor.accept(plot_id);
-	_visitor.type_field("farmer_key", 2); _visitor.accept(farmer_key);
-	_visitor.template type_end<ProofOfSpace>(3);
+	_visitor.type_field("challenge", 2); _visitor.accept(challenge);
+	_visitor.type_field("difficulty", 3); _visitor.accept(difficulty);
+	_visitor.type_field("farmer_key", 4); _visitor.accept(farmer_key);
+	_visitor.template type_end<ProofOfSpace>(5);
 }
 
 

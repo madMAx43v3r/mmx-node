@@ -4,16 +4,22 @@ struct offer_data_t {
 	
 	uint height;
 	
+	uint last_update;			// height
+	
+	long time_stamp;			// UNIX [ms]
+	
 	addr_t owner;
 	addr_t address;
+	
+	optional<addr_t> partner;
 	
 	addr_t bid_currency;
 	addr_t ask_currency;
 	
-	ulong bid_balance;
-	ulong ask_balance;
+	uint128 bid_balance;
+	uint128 ask_balance;
 	
-	ulong ask_amount;			// ask amount needed to fully trade offer
+	uint128 ask_amount;			// ask amount needed to fully trade offer
 	
 	uint128 inv_price;			// 64-bit fractional [bid / ask]
 	
@@ -24,8 +30,10 @@ struct offer_data_t {
 	
 	bool is_open() const;
 	
-	ulong get_bid_amount(ulong ask_amount) const;
+	double get_price() const;	// [ask / bid]
 	
-	ulong get_ask_amount(ulong bid_amount) const;
+	uint128 get_bid_amount(uint128 ask_amount) const;
+	
+	uint128 get_ask_amount(uint128 bid_amount) const;
 	
 }

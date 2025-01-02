@@ -7,15 +7,15 @@
 
 #include <mmx/Node.h>
 #include <mmx/FarmerClient.hxx>
-#include <mmx/TimeInfusion.hxx>
+#include <mmx/Challenge.hxx>
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
+#include <mmx/helpers.h>
 
 #include <vnx/vnx.h>
 #include <random>
@@ -25,87 +25,165 @@ namespace mmx {
 
 void Node::verify_vdfs()
 {
-	for(auto iter = pending_vdfs.begin(); iter != pending_vdfs.end();) {
-		const auto& proof = iter->second;
-		if(!vdf_verify_pending.count(proof->height)) {
-			add_task([this, proof]() {
-				handle(proof);
-			});
-			iter = pending_vdfs.erase(iter);
-		} else {
-			iter++;
+	if(vdf_queue.empty() || vdf_verify_pending.size() >= vdf_verify_max_pending) {
+		return;
+	}
+	const auto time_now = vnx::get_wall_time_millis();
+	const auto vdf_timeout = 10 * params->block_interval_ms;
+	const auto root = get_root();
+
+	struct vdf_fork_t {
+		uint32_t height = 0;
+		int64_t trust = 0;
+		int64_t recv_time = 0;
+		std::shared_ptr<const ProofOfTime> proof;
+	};
+	std::vector<std::shared_ptr<vdf_fork_t>> try_now;
+	std::vector<std::pair<std::shared_ptr<const ProofOfTime>, int64_t>> try_again;
+
+	std::unordered_map<hash_t, uint32_t> height_map;	// based on verified proofs and VDFs only
+	for(const auto& entry : fork_index) {
+		const auto& fork = entry.second;
+		if(fork->is_all_proof_verified) {
+			height_map[fork->block->vdf_output] = fork->block->vdf_height;
 		}
 	}
+	height_map[root->vdf_output] = root->vdf_height;
+
+	for(const auto& entry : vdf_index) {
+		const auto& point = entry.second;
+		if(auto height = find_value(height_map, point->input)) {
+			height_map[point->output] = (*height) + 1;
+		}
+	}
+
+	for(const auto& entry : vdf_queue)
+	{
+		const auto& proof = entry.first;
+		if(proof->start < root->vdf_iters) {
+			continue;		// too old
+		}
+		if(time_now - entry.second > vdf_timeout) {
+			continue;		// timeout
+		}
+		if(find_vdf_point(proof->input, proof->get_output())) {
+			continue;		// already verified
+		}
+		if(!get_header(proof->prev) || !height_map.count(proof->input)) {
+			try_again.emplace_back(proof, entry.second);	// wait for previous block / VDF
+			continue;
+		}
+		auto out = std::make_shared<vdf_fork_t>();
+		out->height = find_value(height_map, proof->input, 0);
+		out->trust = find_value(timelord_trust, proof->timelord_key, 0);
+		out->recv_time = entry.second;
+		out->proof = proof;
+		try_now.emplace_back(out);
+	}
+
+	std::sort(try_now.begin(), try_now.end(),
+		[]( const std::shared_ptr<vdf_fork_t>& L, const std::shared_ptr<vdf_fork_t>& R) -> bool {
+			return std::make_pair(L->height, L->trust) > std::make_pair(R->height, R->trust);
+		});
+
+	for(const auto& fork : try_now)
+	{
+		const auto& proof = fork->proof;
+		if(vdf_verify_pending.count(proof->hash)) {
+			continue;		// duplicate
+		}
+		if(vdf_verify_pending.size() >= vdf_verify_max_pending) {
+			try_again.emplace_back(proof, fork->recv_time);
+			continue;
+		}
+		try {
+			verify_vdf(proof, fork->recv_time);
+		} catch(const std::exception& ex) {
+			log(WARN) << "VDF static verification for height " << proof->vdf_height << " failed with: " << ex.what();
+		}
+	}
+	vdf_queue = std::move(try_again);
+}
+
+void Node::verify_votes()
+{
+	const auto time_now = vnx::get_wall_time_millis();
+	const auto vote_timeout = 3 * params->block_interval_ms;
+
+	std::vector<std::pair<std::shared_ptr<const ValidatorVote>, int64_t>> try_again;
+
+	for(const auto& entry : vote_queue) {
+		if(time_now - entry.second > vote_timeout) {
+			continue;		// timeout
+		}
+		const auto& vote = entry.first;
+		// Note: is_valid() already checked in handle()
+		try {
+			if(auto fork = find_fork(vote->hash)) {
+				if(fork->is_proof_verified) {
+					auto iter = fork->validators.find(vote->farmer_key);
+					if(iter != fork->validators.end()) {
+						if(!iter->second) {
+							iter->second = true;
+							fork->votes++;
+							publish(vote, output_verified_votes);
+
+							const auto delay_ms = entry.second - fork->recv_time;
+							log(DEBUG) << "Received vote for block at height " << fork->block->height
+									<< ", total is now " << fork->votes << ", delay " << delay_ms / 1e3 << " sec";
+						}
+						continue;
+					} else {
+						throw std::logic_error("farmer is not a validator for this block");
+					}
+				}
+			}
+			try_again.emplace_back(vote, entry.second);
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "Got invalid vote for block " << vote->hash << ": " << ex.what();
+		}
+	}
+	vote_queue = std::move(try_again);
 }
 
 void Node::verify_proofs()
 {
-	std::vector<std::shared_ptr<const ProofResponse>> try_again;
+	const auto time_now = vnx::get_wall_time_millis();
+	const auto proof_timeout = 10 * params->block_interval_ms;
 
-	for(const auto& response : pending_proofs) {
+	std::vector<std::pair<std::shared_ptr<const ProofResponse>, int64_t>> try_again;
+
+	for(const auto& entry : proof_queue) {
+		if(time_now - entry.second > proof_timeout) {
+			continue;		// timeout
+		}
+		const auto& response = entry.first;
 		try {
 			if(!verify(response)) {
-				try_again.push_back(response);
+				try_again.emplace_back(response, entry.second);
 			}
 		} catch(const std::exception& ex) {
-			log(WARN) << "Got invalid proof for height " << (response->request ? response->request->height : 0) << ": " << ex.what();
-		} catch(...) {
-			// ignore
+			log(WARN) << "Got invalid proof for VDF height " << response->vdf_height << ": " << ex.what();
 		}
 	}
-	pending_proofs = std::move(try_again);
-}
-
-void Node::pre_validate_blocks()
-{
-	for(const auto& fork : pending_forks) {
-		threads->add_task([this, fork]() {
-			const auto& block = fork->block;
-			try {
-				if(!block->is_valid()) {
-					throw std::logic_error("invalid block");
-				}
-				// need to verify farmer_sig before adding to fork tree
-				block->validate();
-			}
-			catch(const std::exception& ex) {
-				fork->is_invalid = true;
-				log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
-			}
-			catch(...) {
-				fork->is_invalid = true;
-			}
-		});
-	}
-	threads->sync();
-
-	const auto list = std::move(pending_forks);
-	pending_forks.clear();
-
-	for(const auto& fork : list) {
-		if(!fork->is_invalid) {
-			add_fork(fork);
-		}
-	}
+	proof_queue = std::move(try_again);
 }
 
 void Node::verify_block_proofs()
 {
 	std::mutex mutex;
 	const auto root = get_root();
-	for(const auto& entry : fork_index) {
+
+	for(const auto& entry : fork_index)
+	{
 		const auto& fork = entry.second;
 		if(fork->is_proof_verified) {
 			continue;
 		}
 		const auto& block = fork->block;
 		if(!fork->prev.lock()) {
-			if(auto prev = find_fork(block->prev)) {
-				fork->prev = prev;
-			}
-		}
-		if(!fork->diff_block) {
-			fork->diff_block = find_diff_header(block);
+			fork->prev = find_fork(block->prev);
 		}
 		if(auto prev = fork->prev.lock()) {
 			if(prev->is_invalid) {
@@ -115,74 +193,40 @@ void Node::verify_block_proofs()
 		} else if(block->prev == root->hash) {
 			fork->is_connected = true;
 		}
-		const auto prev = find_prev_header(block);
-		if(!prev || fork->is_invalid || !fork->diff_block || !fork->is_connected) {
+		if(fork->is_invalid || !fork->is_connected) {
 			continue;
 		}
-		if(auto point = find_vdf_point(block->height, prev->vdf_iters, block->vdf_iters, prev->vdf_output, block->vdf_output)) {
-			fork->vdf_point = point;
-			fork->is_vdf_verified = true;
+		if(!fork->is_vdf_verified) {
+			const auto vdf_points = find_vdf_points(block);
+			if(vdf_points.size()) {
+				fork->vdf_points = vdf_points;
+				fork->is_vdf_verified = true;
+			}
 		}
-		if(fork->is_vdf_verified || !is_synced) {
+		// we don't verify VDFs here if still syncing
+		// instead it's done later when needed (competing forks)
+		if(fork->is_vdf_verified || !is_synced)
+		{
 			threads->add_task([this, fork, &mutex]() {
 				const auto& block = fork->block;
 				try {
-					hash_t challenge;
-					if(find_challenge(block, challenge))
-					{
-						verify_proof(fork, challenge);
+					verify_proof(fork);
 
-						if(auto proof = block->proof) {
-							std::lock_guard<std::mutex> lock(mutex);
-							add_proof(block->height, challenge, proof, vnx::Hash64());
-						}
+					if(auto proof = block->proof[0]) {
+						std::lock_guard<std::mutex> lock(mutex);
+						add_proof(proof, block->vdf_height, vnx::Hash64());
+					}
+					for(auto key : get_validators(block)) {
+						fork->validators[key] = false;
 					}
 				} catch(const std::exception& ex) {
 					fork->is_invalid = true;
 					log(WARN) << "Proof verification failed for a block at height " << block->height << ": " << ex.what();
-				} catch(...) {
-					fork->is_invalid = true;
 				}
 			});
 		}
 	}
 	threads->sync();
-}
-
-void Node::add_dummy_block(std::shared_ptr<const BlockHeader> prev)
-{
-	if(auto vdf_point = find_next_vdf_point(prev))
-	{
-		const auto diff_block = get_diff_header(prev, 1);
-
-		auto block = Block::create();
-		block->version = 0;
-		block->prev = prev->hash;
-		block->height = prev->height + 1;
-		block->time_diff = prev->time_diff;
-		block->space_diff = calc_new_space_diff(params, prev->space_diff, params->score_threshold);
-		block->vdf_iters = vdf_point->vdf_iters;
-		block->vdf_output = vdf_point->output;
-		block->weight = calc_block_weight(params, diff_block, block);
-		block->total_weight = prev->total_weight + block->weight;
-		block->netspace_ratio = prev->netspace_ratio;
-		block->average_txfee = prev->average_txfee;
-		block->next_base_reward = prev->next_base_reward;
-		block->finalize();
-		add_block(block);
-	}
-}
-
-void Node::add_dummy_blocks(const uint32_t& height)
-{
-	const auto root = get_root();
-	if(height == root->height + 1) {
-		add_dummy_block(root);
-	}
-	const auto range = fork_index.equal_range(height - 1);
-	for(auto iter = range.first; iter != range.second; ++iter) {
-		add_dummy_block(iter->second->block);
-	}
 }
 
 void Node::update()
@@ -192,13 +236,11 @@ void Node::update()
 	const auto time_begin = vnx::get_wall_time_millis();
 	update_pending = false;
 
-	verify_vdfs();
-
 	verify_proofs();
 
-	pre_validate_blocks();
-
 	verify_block_proofs();
+
+	verify_votes();		// after block proofs
 
 	const auto prev_peak = get_peak();
 	std::shared_ptr<const BlockHeader> forked_at;
@@ -224,33 +266,26 @@ void Node::update()
 		break;
 	}
 
+	verify_vdfs();	// after peak update
+
 	const auto peak = get_peak();
 	if(!peak) {
 		log(WARN) << "Have no peak!";
 		return;
 	}
+	const auto fork = find_fork(peak->hash);
 	{
 		// commit to disk
 		const auto fork_line = get_fork_line();
-		const auto commit_delay = is_synced || sync_retry ? params->commit_delay : max_fork_length;
 
-		size_t num_empty = 0;
-		for(const auto& fork : fork_line) {
-			if(!fork->block->farmer_sig) {
-				num_empty++;
-			}
-		}
-		if(num_empty < fork_line.size() / 2)
+		for(size_t i = 0; i + params->commit_delay < fork_line.size(); ++i)
 		{
-			for(size_t i = 0; i + commit_delay < fork_line.size(); ++i)
-			{
-				const auto& fork = fork_line[i];
-				const auto& block = fork->block;
-				if(!fork->is_vdf_verified) {
-					break;	// wait for VDF verify
-				}
-				commit(block);
+			const auto& fork = fork_line[i];
+			const auto& block = fork->block;
+			if(!fork->is_vdf_verified) {
+				break;	// wait for VDF verify
 			}
+			commit(block);
 		}
 	}
 	const auto root = get_root();
@@ -259,13 +294,11 @@ void Node::update()
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
-		if(auto fork = find_fork(peak->hash))
-		{
-			const auto proof = fork->block->proof;
+		if(fork) {
 			std::stringstream msg;
-			msg << u8"\U0001F4BE New peak at height " << peak->height << " with score ";
-			if(proof) {
-				msg << proof->score;
+			msg << u8"\U0001F4BE New peak at height " << peak->height << " / " << peak->vdf_height << " with score ";
+			if(peak->proof.size()) {
+				msg << peak->proof[0]->score;
 			} else {
 				msg << "N/A";
 			}
@@ -273,8 +306,8 @@ void Node::update()
 				if(forked_at) {
 					msg << ", forked at " << forked_at->height;
 				}
-				if(auto vdf_point = fork->vdf_point) {
-					msg << ", delay " << (fork->recv_time - vdf_point->recv_time) / 1000 / 1e3 << " sec";
+				if(fork->vdf_points.size()) {
+					msg << ", delay " << (fork->recv_time - fork->vdf_points.back()->recv_time) / 1e3 << " sec";
 				}
 			} else {
 				msg << ", " << sync_pending.size() << " pending";
@@ -283,20 +316,26 @@ void Node::update()
 				}
 			}
 			msg << ", took " << elapsed << " sec";
-			log(proof || forked_at || !is_synced ? INFO : DEBUG) << msg.str();
+			log(INFO) << msg.str();
+		}
+		if(forked_at) {
+			const auto depth = peak->height - forked_at->height;
+			if(depth > 1) {
+				log(WARN) << "Forked " << depth << " blocks deep at height " << peak->height;
+			}
 		}
 		stuck_timer->reset();
 	}
 
-	if(!is_synced && sync_peak && sync_pending.empty() && !vdf_threads->get_num_pending_total())
+	if(!is_synced && sync_peak && sync_pending.empty())
 	{
 		if(sync_retry < num_sync_retries) {
-			if(now_ms - sync_finish_ms > params->block_time * 500) {
-				log(INFO) << "Reached sync peak at height " << *sync_peak - 1;
-				sync_pos = *sync_peak;
+			if(now_ms - sync_finish_ms > params->block_interval_ms / 2) {
+				sync_pos = *sync_peak - 1;
 				sync_peak = nullptr;
 				sync_finish_ms = now_ms;
 				sync_retry++;
+				log(INFO) << "Reached sync peak at height " << sync_pos;
 			}
 		} else {
 			is_synced = true;
@@ -308,104 +347,105 @@ void Node::update()
 		update_timer->reset();
 		return;
 	}
+
 	{
-		// publish time infusions for VDF 0
-		auto infuse = TimeInfusion::create();
-		infuse->chain = 0;
+		const auto vdf_points = find_next_vdf_points(peak);
+		const auto vdf_output = vdf_points.empty() ? peak->vdf_output : vdf_points.back()->output;
+
+		const auto vdf_advance = std::min<uint32_t>(
+				vdf_points.size() + params->infuse_delay, params->max_vdf_count);
+
+		// request next VDF proofs
 		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i <= params->infuse_delay; ++i)
+		for(uint32_t i = 0; i <= vdf_advance; ++i)
 		{
-			if(auto prev = find_prev_header(peak, params->infuse_delay - i))
-			{
-				infuse->values[vdf_iters] = prev->hash;
+			uint64_t num_iters = 0;
+			const auto infuse = get_infusion(peak, i, num_iters);
+
+			auto req = IntervalRequest::create();
+			req->vdf_height = peak->vdf_height + i + 1;
+			req->start = vdf_iters;
+			req->end = vdf_iters + num_iters;
+			req->infuse = infuse;
+
+			if(i == vdf_points.size()) {
+				req->input = vdf_output;	// for start or restart
 			}
-			auto diff_block = get_diff_header(peak, i + 1);
-			vdf_iters += diff_block->time_diff * params->time_diff_constant;
+			publish(req, output_interval_request);
+
+			vdf_iters += num_iters;
 		}
-		publish(infuse, output_timelord_infuse);
-	}
-	{
-		// publish next time infusion for VDF 1
-		uint32_t height = peak->height;
-		height -= (height % params->challenge_interval);
-		if(auto prev = find_prev_header(peak, peak->height - height))
+
+		const auto challenge_advance = std::min<uint32_t>(
+				vdf_points.size() + params->challenge_delay - 1, params->max_vdf_count);
+
+		// publish challenges
+		for(uint32_t i = 1; i <= challenge_advance; ++i)
 		{
-			if(prev->height >= params->challenge_interval)
-			{
-				if(auto diff_block = find_prev_header(prev, params->challenge_interval))
-				{
-					auto infuse = TimeInfusion::create();
-					infuse->chain = 1;
-					const auto vdf_iters = prev->vdf_iters + diff_block->time_diff * params->time_diff_constant * params->infuse_delay;
-					infuse->values[vdf_iters] = prev->hash;
-					publish(infuse, output_timelord_infuse);
+			uint64_t space_diff = 0;
+			const auto challenge = get_challenge(peak, i, space_diff);
+
+			auto value = Challenge::create();
+			value->vdf_height = peak->vdf_height + i;
+			value->challenge = challenge;
+			value->difficulty = space_diff;
+
+			publish(value, output_challenges);
+		}
+	}
+
+	// vote for new peak
+	if(fork && peak->height && voted_blocks.count(peak->prev) == 0)
+	{
+		// make sure peak is from best proof seen
+		const auto proof = find_best_proof(peak->proof[0]->challenge);
+		if(proof && peak->proof_hash == proof->hash)
+		{
+			for(const auto& entry : fork->validators) {
+				auto iter = farmer_keys.find(entry.first);
+				if(iter != farmer_keys.end()) {
+					auto vote = ValidatorVote::create();
+					vote->hash = peak->hash;
+					vote->farmer_key = iter->first;
+					try {
+						FarmerClient farmer(iter->second);
+						vote->farmer_sig = farmer.sign_vote(vote);
+						vote->content_hash = vote->calc_content_hash();
+						publish(vote, output_votes);
+						publish(vote, output_verified_votes);
+						log(INFO) << "Voted for block at height " << peak->height << ": " << vote->hash;
+					}
+					catch(const std::exception& ex) {
+						log(WARN) << "Failed to sign vote for height " << peak->height << ": " << ex.what();
+					}
+					voted_blocks[peak->prev] = vote->hash;
 				}
 			}
 		}
 	}
-	{
-		// request next VDF proofs
-		auto vdf_iters = peak->vdf_iters;
-		for(uint32_t i = 0; i < params->infuse_delay; ++i)
-		{
-			auto request = IntervalRequest::create();
-			request->begin = vdf_iters;
-			if(i == 0) {
-				request->has_start = true;
-				request->start_values = peak->vdf_output;
-			}
-			auto diff_block = get_diff_header(peak, i + 1);
-			vdf_iters += diff_block->time_diff * params->time_diff_constant;
-			request->end = vdf_iters;
-			request->height = peak->height + i + 1;
-			request->num_segments = params->num_vdf_segments;
-			publish(request, output_interval_request);
-		}
-	}
 
-	// try to make a block
-	for(uint32_t depth = 0; depth <= 1u && depth <= peak->height; ++depth)
-	{
-		const auto height = peak->height - depth;
-		// find best peak at this height
-		std::shared_ptr<const BlockHeader> prev;
-		if(height < root->height) {
-			break;
-		} else if(depth == 0) {
-			prev = peak;
-		} else if(height == root->height) {
-			prev = root;
-		} else if(auto fork = find_best_fork(height)) {
-			prev = fork->block;
-		}
-		hash_t challenge;
-		if(find_challenge(prev, challenge, 1))
-		{
-			const auto proof_list = find_proof(challenge);
+	// try to replace current peak
+	// in case another farmer made a block when they shouldn't
+	if(peak->height) {
+		const auto challenge = peak->proof[0]->challenge;
 
-			// Note: proof_list already limited to max_blocks_per_height
-			for(size_t proof_index = 0; proof_index < proof_list.size(); ++proof_index)
+		if(auto proof = find_best_proof(challenge))
+		{
+			if(vnx::get_pipe(proof->farmer_mac))
 			{
-				const auto& proof = proof_list[proof_index];
-				// check if it's our proof and farmer is still alive
-				if(vnx::get_pipe(proof.farmer_mac))
+				if(!created_blocks.count(proof->hash))
 				{
-					const auto key = std::make_pair(prev->height + 1, proof.hash);
-					if(!created_blocks.count(key))
+					if(auto prev = find_prev_header(peak))
 					{
-						if(auto vdf_point = find_next_vdf_point(prev)) {
+						const auto vdf_points = find_next_vdf_points(prev);
+						if(vdf_points.size()) {
 							try {
-								// make a full block only if (we extend peak or replace a dummy peak or replace a weaker peak) and (we got best score)
-								const bool is_better = (depth == 1 && (!peak->proof || !peak->tx_count || proof.proof->score < peak->proof->score));
-								const bool full_block = (depth == 0 || is_better) && proof_index == 0;
-								if(auto block = make_block(prev, vdf_point, proof, full_block)) {
-									created_blocks[key] = block->hash;
+								if(auto block = make_block(prev, vdf_points, challenge)) {
 									add_block(block);
 								}
 							} catch(const std::exception& ex) {
-								log(WARN) << "Failed to create block at height " << key.first << ": " << ex.what();
+								log(WARN) << "Failed to create block at height " << peak->height << ": " << ex.what();
 							}
-							// revert back to peak
 							fork_to(peak->hash);
 						}
 					}
@@ -414,19 +454,32 @@ void Node::update()
 		}
 	}
 
-	// publish challenges
-	for(uint32_t i = 0; i <= params->challenge_delay; ++i)
+	// try to extend peak
 	{
-		if(auto vdf_block = find_prev_header(peak, params->challenge_delay - i))
+		const auto vdf_points = find_next_vdf_points(peak);
+		if(vdf_points.size())
 		{
-			auto value = Challenge::create();
-			value->height = peak->height + i;
-			value->challenge = vdf_block->vdf_output[1];
-			const auto diff_block = get_diff_header(peak, i);
-			value->space_diff = diff_block->space_diff;
-			value->diff_block_hash = diff_block->hash;
-			value->max_delay = 1 + i;
-			publish(value, output_challenges);
+			hash_t challenge;
+			uint64_t space_diff = 0;
+			if(find_challenge(peak, vdf_points.size(), challenge, space_diff))
+			{
+				if(auto proof = find_best_proof(challenge))
+				{
+					if(vnx::get_pipe(proof->farmer_mac))
+					{
+						if(!created_blocks.count(proof->hash)) {
+							try {
+								if(auto block = make_block(peak, vdf_points, challenge)) {
+									add_block(block);
+								}
+							} catch(const std::exception& ex) {
+								log(WARN) << "Failed to create block at height " << peak->height + 1 << ": " << ex.what();
+							}
+							fork_to(peak->hash);
+						}
+					}
+				}
+			}
 		}
 	}
 }
@@ -440,6 +493,9 @@ void Node::on_sync_done(const uint32_t height)
 
 bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
 {
+	if(entry.is_skipped) {
+		throw std::logic_error("tx_pool_update(): entry is_skipped");
+	}
 	if(const auto& tx = entry.tx) {
 		if(tx->sender) {
 			const auto& sender = *tx->sender;
@@ -462,6 +518,17 @@ bool Node::tx_pool_update(const tx_pool_t& entry, const bool force_add)
 			if(iter != tx_pool.end()) {
 				iter->second = entry;
 			} else {
+				std::lock_guard<std::mutex> lock(mutex);
+
+				for(const auto& in : tx->get_inputs()) {
+					tx_pool_index.emplace(std::make_pair(in.address, tx->id), tx);
+				}
+				for(const auto& out : tx->get_outputs()) {
+					tx_pool_index.emplace(std::make_pair(out.address, tx->id), tx);
+					if(out.memo) {
+						tx_pool_index.emplace(std::make_pair(hash_t(out.address + (*out.memo)), tx->id), tx);
+					}
+				}
 				tx_pool[tx->id] = entry;
 			}
 			return true;
@@ -481,6 +548,17 @@ void Node::tx_pool_erase(const hash_t& txid)
 					if((iter2->second -= iter->second.fee) == 0) {
 						tx_pool_fees.erase(iter2);
 					}
+				}
+			}
+			std::lock_guard<std::mutex> lock(mutex);
+
+			for(const auto& in : tx->get_inputs()) {
+				tx_pool_index.erase(std::make_pair(in.address, tx->id));
+			}
+			for(const auto& out : tx->get_outputs()) {
+				tx_pool_index.erase(std::make_pair(out.address, tx->id));
+				if(out.memo) {
+					tx_pool_index.erase(std::make_pair(hash_t(out.address + (*out.memo)), tx->id));
 				}
 			}
 		}
@@ -510,7 +588,7 @@ void Node::purge_tx_pool()
 	uint64_t total_pool_size = 0;
 	std::unordered_map<addr_t, std::pair<uint64_t, uint64_t>> sender_map;	// [sender => [balance, total fee]]
 
-	const uint64_t max_pool_size = uint64_t(tx_pool_limit) * params->max_block_size;
+	const uint64_t max_pool_size = uint64_t(max_tx_pool) * params->max_block_size;
 
 	// purge transactions from pool if overflowing
 	for(const auto& entry : all_tx) {
@@ -558,6 +636,8 @@ void Node::validate_new()
 	// select non-overlapping set
 	std::vector<tx_pool_t> tx_list;
 	std::unordered_set<hash_t> tx_set;
+	tx_list.reserve(max_tx_queue);
+	tx_set.reserve(max_tx_queue);
 	for(const auto& entry : tx_queue) {
 		if(const auto& tx = entry.second) {
 			if(tx_set.insert(tx->id).second) {
@@ -568,18 +648,23 @@ void Node::validate_new()
 			}
 		}
 	}
-
 	auto context = new_exec_context(peak->height + 1);
 
 	// prepare synchronization
 	for(const auto& entry : tx_list) {
 		prepare_context(context, entry.tx);
 	}
+	const auto deadline_ms = vnx::get_wall_time_millis() + validate_interval_ms;
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
-		threads->add_task([this, &entry, context]() {
+		threads->add_task([this, &entry, context, deadline_ms]() {
+			if(vnx::get_wall_time_millis() > deadline_ms) {
+				entry.is_skipped = true;
+				return;
+			}
 			entry.is_valid = false;
+
 			auto& tx = entry.tx;
 			if(tx->exec_result) {
 				auto tmp = vnx::clone(tx);
@@ -607,26 +692,30 @@ void Node::validate_new()
 
 	// update tx pool
 	for(const auto& entry : tx_list) {
-		const auto& tx = entry.tx;
-		if(entry.is_valid) {
-			if(tx_pool_update(entry)) {
-				publish(tx, output_verified_transactions);
+		if(!entry.is_skipped) {
+			const auto& tx = entry.tx;
+			if(entry.is_valid) {
+				if(tx_pool_update(entry)) {
+					publish(tx, output_verified_transactions);
+				}
 			}
+			tx_queue.erase(tx->content_hash);
 		}
-		tx_queue.erase(tx->content_hash);
 	}
 }
 
-std::vector<Node::tx_pool_t> Node::validate_for_block()
+std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 {
 	const auto peak = get_peak();
-	if(!peak) {
-		return {};
-	}
+	const auto context = new_exec_context(peak->height + 1);
+
 	std::vector<tx_pool_t> all_tx;
 	all_tx.reserve(tx_pool.size());
 	for(const auto& entry : tx_pool) {
-		all_tx.push_back(entry.second);
+		const auto& pool = entry.second;
+		if(check_tx_inclusion(pool.tx->id, context->height)) {
+			all_tx.push_back(pool);
+		}
 	}
 
 	// sort transactions by fee ratio
@@ -635,18 +724,14 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 			return lhs.tx->fee_ratio > rhs.tx->fee_ratio;
 		});
 
-	auto context = new_exec_context(peak->height + 1);
-
 	std::vector<tx_pool_t> tx_list;
 	uint64_t total_verify_cost = 0;
 
 	// select transactions to verify
 	for(const auto& entry : all_tx) {
-		if(check_tx_inclusion(entry.tx->id, context->height)) {
-			if(total_verify_cost + entry.cost <= params->max_block_cost) {
-				tx_list.push_back(entry);
-				total_verify_cost += entry.cost;
-			}
+		if(total_verify_cost + entry.cost <= params->max_block_cost) {
+			tx_list.push_back(entry);
+			total_verify_cost += entry.cost;
 		}
 	}
 
@@ -657,8 +742,13 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
-		threads->add_task([this, &entry, context]() {
+		threads->add_task([this, &entry, context, deadline_ms]() {
+			if(vnx::get_wall_time_millis() > deadline_ms) {
+				entry.is_skipped = true;
+				return;
+			}
 			entry.is_valid = false;
+
 			auto& tx = entry.tx;
 			if(tx->exec_result) {
 				auto tmp = vnx::clone(tx);
@@ -689,6 +779,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	}
 	threads->sync();
 
+	uint32_t num_skipped = 0;
 	uint64_t total_cost = 0;
 	uint64_t static_cost = 0;
 	std::vector<tx_pool_t> result;
@@ -697,6 +788,10 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	// select final set of transactions
 	for(auto& entry : tx_list)
 	{
+		if(entry.is_skipped) {
+			num_skipped++;
+			continue;
+		}
 		if(!entry.is_valid) {
 			tx_pool_erase(entry.tx->id);
 			continue;
@@ -735,6 +830,9 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 		static_cost += tx->static_cost;
 		result.push_back(entry);
 	}
+	if(num_skipped) {
+		log(WARN) << "Skipped " << num_skipped << " transactions due to block creation deadline";
+	}
 
 	const uint32_t N = params->min_fee_ratio.size();
 	if(N == 0) {
@@ -767,8 +865,16 @@ std::vector<Node::tx_pool_t> Node::validate_for_block()
 	return out;
 }
 
-std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader> prev, std::shared_ptr<const VDF_Point> vdf_point, const proof_data_t& proof, const bool full_block)
+std::shared_ptr<const Block> Node::make_block(
+		std::shared_ptr<const BlockHeader> prev, std::vector<std::shared_ptr<const VDF_Point>> vdf_points, const hash_t& challenge)
 {
+	if(vdf_points.empty()) {
+		return nullptr;
+	}
+	const auto proof = proof_map[challenge];
+	if(proof.empty()) {
+		return nullptr;
+	}
 	const auto time_begin = vnx::get_wall_time_millis();
 
 	// reset state to previous block
@@ -778,80 +884,106 @@ std::shared_ptr<const Block> Node::make_block(std::shared_ptr<const BlockHeader>
 	block->prev = prev->hash;
 	block->height = prev->height + 1;
 	block->time_diff = prev->time_diff;
-	block->space_diff = prev->space_diff;
-	block->vdf_iters = vdf_point->vdf_iters;
-	block->vdf_output = vdf_point->output;
-	block->proof = proof.proof;
-	block->netspace_ratio = calc_new_netspace_ratio(
-			params, prev->netspace_ratio, bool(std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)));
-	block->vdf_reward_addr = vdf_point->reward_addr;
+	block->vdf_count = vdf_points.size();
+	block->vdf_height = prev->vdf_height + block->vdf_count;
+	block->reward_vote = reward_vote;
+	block->project_addr = prev->project_addr;
+	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
 
-	if(auto stake = std::dynamic_pointer_cast<const ProofOfStake>(block->proof)) {
-		if(auto plot = get_contract_as<contract::VirtualPlot>(stake->plot_id)) {
-			block->reward_addr = plot->reward_address;
+	block->vdf_iters = prev->vdf_iters;
+	for(auto point : vdf_points) {
+		block->vdf_iters += point->num_iters;
+		block->vdf_output = point->output;
+		block->vdf_reward_addr.push_back(point->reward_addr);
+	}
+
+	for(const auto& entry : proof) {
+		block->proof.push_back(entry.proof);
+	}
+	block->proof_hash = proof[0].hash;
+
+	block->challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, block->proof_hash, block->is_space_fork);
+
+	if(block->height % params->vdf_reward_interval == 0) {
+		block->vdf_reward_payout = get_vdf_reward_winner(block);
+	}
+
+	if(auto nft = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof[0])) {
+		block->reward_contract = nft->contract;
+	}
+
+	if(auto contract = block->reward_contract) {
+		const addr_t any = hash_t::random();
+		const auto address = get_plot_nft_target(*contract, any);
+		if(address != any) {
+			block->reward_addr = address;
 		}
-	} else if(auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(block->proof)) {
-		block->reward_addr = nft_proof->contract;
+	}
+
+	if(auto ref = find_prev_header(prev, 100))
+	{
+		// set new time diff
+		const auto delta_ms = prev->time_stamp - ref->time_stamp;
+		const auto delta_blocks = prev->height - ref->height;
+		const auto factor = double(params->block_interval_ms * delta_blocks) / delta_ms;
+
+		const auto delay = params->commit_delay + params->infuse_delay;
+		const auto begin = find_prev_header(ref, delay, true);
+		const auto end =   find_prev_header(prev, delay, true);
+
+		if(begin && end) {
+			const auto avg_diff = (begin->time_diff + end->time_diff) / 2;
+			block->time_diff = std::max<int64_t>(avg_diff * factor + 0.5, params->time_diff_divider);
+		}
+
+		// limit time diff update
+		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
+		if(prev->time_diff > max_update) {
+			block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
+		}
+		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
+	}
+	{
+		// set time stamp
+		auto delta_ms = time_begin - prev->time_stamp;
+		delta_ms = std::min(delta_ms, block->vdf_count * params->block_interval_ms * 2);
+		delta_ms = std::max(delta_ms, block->vdf_count * params->block_interval_ms / 10);
+		block->time_stamp = prev->time_stamp + delta_ms;
 	}
 
 	uint64_t total_fees = 0;
-	if(full_block && block->height >= params->transaction_activation)
+	if(block->height >= params->transaction_activation)
 	{
-		const auto tx_list = validate_for_block();
+		const auto deadline = vnx::get_wall_time_millis() + params->block_interval_ms / 2;
+		const auto tx_list = validate_for_block(deadline);
 		// select transactions
 		for(const auto& entry : tx_list) {
 			block->tx_list.push_back(entry.tx);
 			total_fees += entry.fee;
 		}
 	}
-	block->average_txfee = calc_new_average_txfee(params, prev->average_txfee, total_fees);
 
-	const auto prev_fork = find_fork(prev->hash);
-
-	// set new time difficulty
-	if(auto fork = find_prev_fork(prev_fork, params->infuse_delay))
-	{
-		if(auto point = fork->vdf_point) {
-			const int64_t time_delta = (vdf_point->recv_time - point->recv_time) / (params->infuse_delay + 1);
-			if(time_delta > 0) {
-				const double gain = 0.1;
-				if(auto diff_block = fork->diff_block) {
-					double new_diff = params->block_time * diff_block->time_diff / (time_delta * 1e-6);
-					new_diff = prev->time_diff * (1 - gain) + new_diff * gain;
-					block->time_diff = std::max<int64_t>(new_diff + 0.5, 1);
-				}
-			}
-		}
-	}
-	{
-		// limit time diff update
-		const auto max_update = std::max<uint64_t>(prev->time_diff >> params->max_diff_adjust, 1);
-		block->time_diff = std::min(block->time_diff, prev->time_diff + max_update);
-		block->time_diff = std::max(block->time_diff, prev->time_diff - max_update);
-	}
-	block->space_diff = calc_new_space_diff(params, prev->space_diff, block->proof->score);
-	{
-		const auto diff_block = get_diff_header(prev, 1);
-		block->weight = calc_block_weight(params, diff_block, block);
-		block->total_weight = prev->total_weight + block->weight;
-	}
+	block->weight = calc_block_weight(params, block, prev);
+	block->total_weight = prev->total_weight + block->weight;
 	block->reward_amount = calc_block_reward(block, total_fees);
-	block->next_base_reward = calc_next_base_reward(params, prev->next_base_reward, prev->reward_vote);
-	block->reward_vote = reward_vote;
+	block->set_space_diff(params, prev);
+	block->set_base_reward(params, prev);
 	block->finalize();
 
-	FarmerClient farmer(proof.farmer_mac);
-	const auto result = farmer.sign_block(block);
+	FarmerClient farmer(proof[0].farmer_mac);
 
+	const auto result = farmer.sign_block(block);
 	if(!result) {
-		throw std::logic_error("farmer refused to sign block");
+		log(WARN) << "Farmer refused to sign block at height " << block->height;
+		return nullptr;
 	}
 	block->BlockHeader::operator=(*result);
 
+	created_blocks[block->proof_hash] = block->hash;
+
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
-	log(INFO) << u8"\U0001F911 Created block at height " << block->height << " with: ntx = "
-			<< (full_block ? std::to_string(block->tx_list.size()) : "dummy")
-			<< ", score = " << block->proof->score << ", reward = " << to_value(block->reward_amount, params) << " MMX"
+	log(INFO) << u8"\U0001F911 Created block at height " << block->height << " with: ntx = " << block->tx_count
+			<< ", score = " << block->proof[0]->score << ", reward = " << to_value(block->reward_amount, params) << " MMX"
 			<< ", fees = " << to_value(total_fees, params) << " MMX" << ", took " << elapsed << " sec";
 	return block;
 }

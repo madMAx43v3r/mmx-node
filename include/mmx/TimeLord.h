@@ -25,22 +25,17 @@ protected:
 
 	void main() override;
 
-	void handle(std::shared_ptr<const TimeInfusion> value) override;
-
 	void handle(std::shared_ptr<const IntervalRequest> value) override;
 
 	void stop_vdf() override;
 
 private:
 	struct vdf_point_t {
+		hash_t output;
 		uint64_t num_iters = 0;
-		std::array<hash_t, 2> output;
-		hash_t reward_output;
 	};
 
 	void update();
-
-	void clear_history();
 
 	void start_vdf(vdf_point_t begin);
 
@@ -51,21 +46,20 @@ private:
 	void print_info();
 
 private:
+	std::mutex mutex;
 	std::thread vdf_thread;
-	std::recursive_mutex mutex;
 
+	bool is_reset = false;
 	bool is_running = false;
-	int64_t last_restart = 0;
-	uint64_t checkpoint_iters = 1000;
+	uint64_t segment_iters = 1000;
 	uint64_t avg_iters_per_sec = 0;
 
-	std::map<uint64_t, hash_t> infuse[2];
-	std::map<uint64_t, hash_t> infuse_history[2];
-	std::map<uint64_t, vdf_point_t> history;
+	std::map<uint64_t, hash_t> history;
+	std::map<uint64_t, hash_t> infuse;
 
-	std::map<std::pair<uint64_t, uint64_t>, uint32_t> pending;		// [[end, start] => height]
+	std::map<uint64_t, std::shared_ptr<const IntervalRequest>> pending;		// [end => request]
 
-	std::shared_ptr<vdf_point_t> latest_point;
+	std::shared_ptr<vdf_point_t> peak;
 
 	skey_t timelord_sk;
 	pubkey_t timelord_key;

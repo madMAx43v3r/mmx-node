@@ -133,7 +133,7 @@ template<size_t N>
 template<typename T>
 T bytes_t<N>::to_uint(const bool big_endian) const
 {
-	T out = 0;
+	T out = T();
 	for(size_t i = 0; i < N; ++i) {
 		out <<= 8;
 		if(big_endian) {
@@ -151,9 +151,9 @@ bytes_t<N>& bytes_t<N>::from_uint(T value, const bool big_endian)
 {
 	for(size_t i = 0; i < N; ++i) {
 		if(big_endian) {
-			bytes[N - i - 1] = value & 0xFF;
+			bytes[N - i - 1] = value;
 		} else {
-			bytes[i] = value & 0xFF;
+			bytes[i] = value;
 		}
 		value >>= 8;
 	}
@@ -186,15 +186,20 @@ bool operator<(const bytes_t<N>& lhs, const bytes_t<N>& rhs) {
 }
 
 template<size_t N>
+bool operator>(const bytes_t<N>& lhs, const bytes_t<N>& rhs) {
+	return ::memcmp(lhs.data(), rhs.data(), N) > 0;
+}
+
+template<size_t N>
 std::ostream& operator<<(std::ostream& out, const bytes_t<N>& bytes) {
 	return out << bytes.to_string();
 }
 
 template<size_t N, size_t M>
-std::vector<uint8_t> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
-	std::vector<uint8_t> res;
-	res.insert(res.end(), lhs.bytes.begin(), lhs.bytes.end());
-	res.insert(res.end(), rhs.bytes.begin(), rhs.bytes.end());
+bytes_t<N + M> operator+(const bytes_t<N>& lhs, const bytes_t<M>& rhs) {
+	bytes_t<N + M> res;
+	::memcpy(res.data(), lhs.data(), N);
+	::memcpy(res.data() + N, rhs.data(), M);
 	return res;
 }
 
@@ -249,7 +254,7 @@ void read(vnx::TypeInput& in, mmx::bytes_t<N>& value, const vnx::TypeCode* type_
 		case CODE_ALT_UINT64: {
 			uint64_t tmp = 0;
 			vnx::read(in, tmp, type_code, code);
-			::memcpy(value.data(), &tmp, std::min(N, sizeof(tmp)));
+			value.from_uint(tmp);
 			break;
 		}
 		case CODE_DYNAMIC:
@@ -295,17 +300,5 @@ void accept(vnx::Visitor& visitor, const mmx::bytes_t<N>& value) {
 }
 
 } // vnx
-
-
-namespace std {
-	template<size_t N>
-	struct hash<typename mmx::bytes_t<N>> {
-		size_t operator()(const mmx::bytes_t<N>& x) const {
-			size_t res = 0;
-			::memcpy(&res, x.bytes.data(), std::min(N, sizeof(size_t)));
-			return res;
-		}
-	};
-} // std
 
 #endif /* INCLUDE_MMX_BYTES_T_HPP_ */

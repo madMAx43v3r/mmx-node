@@ -97,7 +97,6 @@ private:
 	std::list<std::pair<std::shared_ptr<const ProofResponse>, uint64_t>> proof_history;
 
 	bool is_synced = false;
-	int64_t time_offset = 0;		// [sec]
 	uint32_t curr_height = 0;
 	uint32_t synced_since = 0;
 	uint64_t log_counter = 0;

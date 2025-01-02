@@ -44,9 +44,11 @@ CMakeUserPresets.json
 /NETWORK
 /DB_VERSION
 /testnet*
+/mainnet*
 /tmp
 /coverage.info
 /.idea
 /_deps
 /*.dat
 /www/web-gui/public/GIT_COMMIT_HASH.json
+/test/vm/AFL/outputs/*

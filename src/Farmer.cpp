@@ -7,7 +7,6 @@
 
 #include <mmx/Farmer.h>
 #include <mmx/Transaction.hxx>
-#include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/WebRender.h>
 #include <mmx/utils.h>
 
@@ -78,14 +77,16 @@ uint64_t Farmer::get_partial_diff(const addr_t& plot_nft) const
 			return stats.partial_diff;
 		}
 	}
-	return 1;
+	return 0;
 }
 
 std::map<addr_t, uint64_t> Farmer::get_partial_diffs(const std::vector<addr_t>& plot_nfts) const
 {
 	std::map<addr_t, uint64_t> out;
 	for(const auto& addr : plot_nfts) {
-		out[addr] = get_partial_diff(addr);
+		if(auto diff = get_partial_diff(addr)) {
+			out[addr] = diff;
+		}
 	}
 	return out;
 }
@@ -130,6 +131,7 @@ std::shared_ptr<const FarmInfo> Farmer::get_farm_info() const
 		entry.second.partial_diff = get_partial_diff(entry.first);
 	}
 	info->pool_stats = nft_stats;
+	info->reward_addr = reward_addr;
 	return info;
 }
 
@@ -191,7 +193,14 @@ void Farmer::update_difficulty()
 
 void Farmer::query_difficulty(const addr_t& contract, const std::string& url)
 {
-	http_async->get_json(url + "/difficulty", {},
+	if(url.empty()) {
+		return;
+	}
+	vnx::addons::http_request_options_t opt;
+	if(reward_addr) {
+		opt.query["id"] = reward_addr->to_string();
+	}
+	http_async->get_json(url + "/difficulty", opt,
 		[this, url, contract](const vnx::Variant& value) {
 			const auto res = value.to_object();
 			if(auto field = res["difficulty"]) {
@@ -224,12 +233,13 @@ void Farmer::handle(std::shared_ptr<const FarmInfo> value)
 		}
 	}
 	for(const auto& entry : value->pool_info) {
-		if(!nft_stats.count(entry.first)) {
-			const auto& info = entry.second;
-			if(auto url = info.server_url) {
-				if(url->size()) {
+		const auto& info = entry.second;
+		if(auto url = info.server_url) {
+			if(url->size()) {
+				auto& stats = nft_stats[info.contract];
+				if(stats.server_url != (*url)) {
+					stats.server_url = *url;
 					query_difficulty(info.contract, *url);
-					nft_stats[info.contract].server_url = *url;
 				}
 			}
 		}
@@ -245,7 +255,7 @@ void Farmer::handle(std::shared_ptr<const ProofResponse> value) try
 
 	auto out = vnx::clone(value);
 	out->farmer_sig = signature_t::sign(farmer_sk, value->hash);
-	out->content_hash = out->calc_hash(true);
+	out->content_hash = out->calc_content_hash();
 	publish(out, output_proofs);
 }
 catch(const std::exception& ex) {
@@ -273,6 +283,7 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 	http_async->post_json(out->pool_url + "/partial", payload, {},
 		[this, out](std::shared_ptr<const vnx::addons::HttpResponse> response) {
 			auto& stats = nft_stats[out->contract];
+			stats.last_partial = vnx::get_wall_time_seconds();
 			bool is_valid = false;
 			bool have_error = false;
 			if(response->is_json()) {
@@ -283,7 +294,7 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 					if(is_valid) {
 						const auto points = res["points"].to<int64_t>();
 						const auto response_ms = res["response_time"].to<int64_t>();
-						stats.valid_points += (points > 0 ? points : out->difficulty);
+						stats.valid_points += (points > 0 ? points : out->proof->difficulty);
 						stats.total_partials++;
 						stats.total_response_time += response_ms;
 						log(INFO) << "Partial accepted: points = " << points
@@ -307,12 +318,12 @@ void Farmer::handle(std::shared_ptr<const Partial> value) try
 					stats.error_count[pooling_error_e::SERVER_ERROR]++;
 					log(WARN) << "Partial failed due to: unknown error [" << out->harvester << "] (" << out->pool_url << ")";
 				}
-				stats.failed_points += out->difficulty;
+				stats.failed_points += out->proof->difficulty;
 			}
 		},
 		[this, out](const std::exception& ex) {
 			auto& stats = nft_stats[out->contract];
-			stats.failed_points += out->difficulty;
+			stats.failed_points += out->proof->difficulty;
 			stats.error_count[pooling_error_e::SERVER_ERROR]++;
 			log(WARN) << "Failed to send partial to " << out->pool_url << " due to: " << ex.what();
 		});
@@ -338,21 +349,34 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 	if(!block) {
 		throw std::logic_error("!block");
 	}
-	if(!block->proof) {
+	if(block->proof.empty()) {
 		throw std::logic_error("!proof");
 	}
-	const auto farmer_sk = get_skey(block->proof->farmer_key);
+	const auto farmer_sk = get_skey(block->get_farmer_key());
 
 	auto out = vnx::clone(block);
 	out->nonce = vnx::rand64();
 
-	if(!out->reward_addr || std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof)) {
+	if(!out->reward_addr) {
 		out->reward_addr = reward_addr;
 	}
-	out->hash = out->calc_hash().first;
+	if(out->reward_contract) {
+		out->reward_account = reward_addr;
+	}
+	out->hash = out->calc_hash();
 	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
-	out->content_hash = out->calc_hash().second;
+	out->content_hash = out->calc_content_hash();
 	return out;
+}
+
+signature_t Farmer::sign_vote(std::shared_ptr<const ValidatorVote> vote) const
+{
+	if(!vote) {
+		throw std::logic_error("!vote");
+	}
+	const auto farmer_sk = get_skey(vote->farmer_key);
+	const hash_t msg("MMX/validator/vote/" + vote->hash + vote->farmer_key);
+	return signature_t::sign(farmer_sk, msg);
 }
 
 

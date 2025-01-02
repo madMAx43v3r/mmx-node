@@ -1,0 +1,1 @@
+binary_hex("FF") ^ binary_hex("FF00");

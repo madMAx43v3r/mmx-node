@@ -2,29 +2,23 @@ package mmx;
 
 module TimeLord {
 	
-	vnx.TopicPtr input_infuse = "timelord.infuse";
 	vnx.TopicPtr input_request = "timelord.requests";
 	
 	vnx.TopicPtr output_proofs = "timelord.proof";
 	
 	
-	uint max_history = 65536;
-	
-	uint restart_holdoff = 60000;					// [ms]
+	uint max_history = 1000000;
 	
 	string node_server = "Node";
 	string wallet_server = "Wallet";
 	
 	string storage_path;
 	
-	bool enable_reward;
-	
 	optional<addr_t> reward_addr;					// default = first address of first wallet
 	
 	
 	void stop_vdf();
 	
-	void handle(TimeInfusion sample);
 	void handle(IntervalRequest sample);
 	
 }

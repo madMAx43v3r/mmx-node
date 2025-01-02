@@ -20,7 +20,6 @@ struct MMX_EXPORT plot_nft_info_t : vnx::struct_t {
 	vnx::bool_t is_locked = 0;
 	vnx::optional<::mmx::addr_t> target;
 	vnx::optional<uint32_t> unlock_height;
-	vnx::optional<uint32_t> unlock_delay;
 	vnx::optional<std::string> server_url;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
@@ -63,16 +62,15 @@ struct MMX_EXPORT plot_nft_info_t : vnx::struct_t {
 
 template<typename T>
 void plot_nft_info_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<plot_nft_info_t>(8);
+	_visitor.template type_begin<plot_nft_info_t>(7);
 	_visitor.type_field("name", 0); _visitor.accept(name);
 	_visitor.type_field("owner", 1); _visitor.accept(owner);
 	_visitor.type_field("address", 2); _visitor.accept(address);
 	_visitor.type_field("is_locked", 3); _visitor.accept(is_locked);
 	_visitor.type_field("target", 4); _visitor.accept(target);
 	_visitor.type_field("unlock_height", 5); _visitor.accept(unlock_height);
-	_visitor.type_field("unlock_delay", 6); _visitor.accept(unlock_delay);
-	_visitor.type_field("server_url", 7); _visitor.accept(server_url);
-	_visitor.template type_end<plot_nft_info_t>(8);
+	_visitor.type_field("server_url", 6); _visitor.accept(server_url);
+	_visitor.template type_end<plot_nft_info_t>(7);
 }
 
 

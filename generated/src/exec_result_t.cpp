@@ -16,7 +16,7 @@ namespace mmx {
 
 
 const vnx::Hash64 exec_result_t::VNX_TYPE_HASH(0x18fe02e2374b039eull);
-const vnx::Hash64 exec_result_t::VNX_CODE_HASH(0xb0c7d55232dd03cull);
+const vnx::Hash64 exec_result_t::VNX_CODE_HASH(0xa116d6139487cc21ull);
 
 vnx::Hash64 exec_result_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -167,7 +167,7 @@ std::shared_ptr<vnx::TypeCode> exec_result_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.exec_result_t";
 	type_code->type_hash = vnx::Hash64(0x18fe02e2374b039eull);
-	type_code->code_hash = vnx::Hash64(0xb0c7d55232dd03cull);
+	type_code->code_hash = vnx::Hash64(0xa116d6139487cc21ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::exec_result_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<exec_result_t>>(); };
@@ -223,6 +223,7 @@ std::shared_ptr<vnx::TypeCode> exec_result_t::static_create_type_code() {
 namespace vnx {
 
 void read(TypeInput& in, ::mmx::exec_result_t& value, const TypeCode* type_code, const uint16_t* code) {
+	TypeInput::recursion_t tag(in);
 	if(code) {
 		switch(code[0]) {
 			case CODE_OBJECT:

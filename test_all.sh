@@ -19,3 +19,6 @@ echo "Unit tests [vm_storage_tests]"
 ./build/test/vm_storage_tests
 
 ./test/vm/engine_tests.sh
+
+./test/vm/contract_tests.sh
+

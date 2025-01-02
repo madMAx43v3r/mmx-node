@@ -33,6 +33,8 @@ module Farmer {
 	
 	BlockHeader* sign_block(BlockHeader* block) const;
 	
+	signature_t sign_vote(ValidatorVote* vote) const;
+	
 	
 	void handle(FarmInfo sample);
 	void handle(ProofResponse sample);

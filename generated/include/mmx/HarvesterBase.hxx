@@ -36,6 +36,7 @@ public:
 	int32_t nft_query_interval = 60;
 	uint32_t num_threads = 32;
 	uint32_t max_recursion = 4;
+	uint32_t max_proofs = 4;
 	vnx::bool_t recursive_search = true;
 	vnx::bool_t farm_virtual_plots = true;
 	
@@ -92,7 +93,7 @@ protected:
 
 template<typename T>
 void HarvesterBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<HarvesterBase>(19);
+	_visitor.template type_begin<HarvesterBase>(20);
 	_visitor.type_field("input_challenges", 0); _visitor.accept(input_challenges);
 	_visitor.type_field("output_info", 1); _visitor.accept(output_info);
 	_visitor.type_field("output_proofs", 2); _visitor.accept(output_proofs);
@@ -110,9 +111,10 @@ void HarvesterBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("nft_query_interval", 14); _visitor.accept(nft_query_interval);
 	_visitor.type_field("num_threads", 15); _visitor.accept(num_threads);
 	_visitor.type_field("max_recursion", 16); _visitor.accept(max_recursion);
-	_visitor.type_field("recursive_search", 17); _visitor.accept(recursive_search);
-	_visitor.type_field("farm_virtual_plots", 18); _visitor.accept(farm_virtual_plots);
-	_visitor.template type_end<HarvesterBase>(19);
+	_visitor.type_field("max_proofs", 17); _visitor.accept(max_proofs);
+	_visitor.type_field("recursive_search", 18); _visitor.accept(recursive_search);
+	_visitor.type_field("farm_virtual_plots", 19); _visitor.accept(farm_virtual_plots);
+	_visitor.template type_end<HarvesterBase>(20);
 }
 
 

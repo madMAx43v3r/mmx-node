@@ -63,6 +63,7 @@ static constexpr auto kw_function = LEXY_KEYWORD("function", kw_id);
 static constexpr auto kw_namespace = LEXY_KEYWORD("package", kw_id);
 static constexpr auto kw_continue = LEXY_KEYWORD("continue", kw_id);
 static constexpr auto kw_break = LEXY_KEYWORD("break", kw_id);
+static constexpr auto kw_interface = LEXY_KEYWORD("interface", kw_id);
 
 struct comment {
 	static constexpr auto name = "mmx.lang.comment";
@@ -78,7 +79,7 @@ struct reserved {
 			kw_if, kw_do, kw_in, kw_of, kw_for, kw_else, kw_while, kw_var, kw_let,
 			kw_null, kw_true, kw_false, kw_const, kw_public, kw_payable, kw_return,
 			kw_function, kw_namespace, kw_this, kw_export, kw_static, kw_continue,
-			kw_break);
+			kw_break, kw_interface);
 };
 
 struct expected_identifier {
@@ -182,9 +183,10 @@ struct operator_ex : lexy::token_production {
 	static constexpr auto rule = dsl::literal_set(
 			dsl::lit_c<'.'>, dsl::lit_c<'+'>, dsl::lit_c<'-'>, dsl::lit_c<'*'>, dsl::lit_c<'/'>, dsl::lit_c<'!'>, dsl::lit_c<'='>,
 			dsl::lit_c<'>'>, dsl::lit_c<'<'>, dsl::lit_c<'&'>, dsl::lit_c<'|'>, dsl::lit_c<'^'>, dsl::lit_c<'~'>, dsl::lit_c<'%'>,
-			LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="), LEXY_LIT("&&"), LEXY_LIT("||"),
+			LEXY_LIT(">="), LEXY_LIT("<="), LEXY_LIT("=="), LEXY_LIT("!="), LEXY_LIT("^^"), LEXY_LIT("&&"), LEXY_LIT("||"),
 			LEXY_LIT("++"), LEXY_LIT("--"), LEXY_LIT(">>"), LEXY_LIT("<<"), LEXY_LIT("+="), LEXY_LIT("-="),
-			LEXY_LIT("*="), LEXY_LIT("/="), LEXY_LIT(">>="), LEXY_LIT("<<="), kw_return);
+			LEXY_LIT("*="), LEXY_LIT("/="), LEXY_LIT("^="), LEXY_LIT("&="), LEXY_LIT("|="),
+			LEXY_LIT("^^="), LEXY_LIT("&&="), LEXY_LIT("||="), LEXY_LIT(">>="), LEXY_LIT("<<="), kw_return);
 };
 
 struct qualifier : lexy::token_production {
@@ -196,6 +198,11 @@ struct variable {
 	static constexpr auto name = "mmx.lang.variable";
 	static constexpr auto rule = dsl::p<qualifier> >>
 			dsl::p<restricted_identifier> + dsl::opt(dsl::equal_sign >> dsl::recurse<expression>);
+};
+
+struct interface {
+	static constexpr auto name = "mmx.lang.interface";
+	static constexpr auto rule = kw_interface >> dsl::p<restricted_identifier>;
 };
 
 struct array {
@@ -232,7 +239,7 @@ struct expression {
 
 struct statement {
 	static constexpr auto name = "mmx.lang.statement";
-	static constexpr auto rule = (dsl::p<variable> | kw_break | kw_continue | dsl::else_ >> dsl::p<expression>) + dsl::semicolon;
+	static constexpr auto rule = (dsl::p<variable> | dsl::p<interface> | kw_break | kw_continue | dsl::else_ >> dsl::p<expression>) + dsl::semicolon;
 };
 
 struct else_ex;
@@ -351,7 +358,9 @@ protected:
 		}
 		void add_variable(const variable_t& var) {
 			if(var.name.size()) {
-				var_map[var.name] = var_list.size();
+				if(!var_map.emplace(var.name, var_list.size()).second) {
+					throw std::logic_error("duplicate variable name: " + var.name);
+				}
 			}
 			var_list.push_back(var);
 		}
@@ -359,20 +368,26 @@ protected:
 
 	struct vref_t {
 		bool is_const = false;
+		bool is_interface = false;
 		uint32_t address = -1;
 		vnx::optional<uint32_t> key;
 		vnx::optional<function_t> func;
 		vnx::optional<std::string> name;
+		vnx::optional<std::string> method;
 
 		vref_t() = default;
 		vref_t(uint32_t address) : address(address) {}
 		vref_t(uint32_t address, std::string name) : address(address), name(name) {}
 		vref_t(uint32_t address, uint32_t key) : address(address), key(key) {}
+		vref_t(const std::string& name) : name(name) {}
 		vref_t(const function_t& func) : func(func), name(func.name) {}
 
 		void check_value() const {
 			if(func) {
 				throw std::logic_error("expected value not function");
+			}
+			if(is_interface) {
+				throw std::logic_error("expected value not interface");
 			}
 			if(address == uint32_t(-1) && name) {
 				throw std::logic_error("no such variable: " + (*name));
@@ -383,15 +398,15 @@ protected:
 		}
 	};
 
-	void parse(parse_tree_t& tree, const std::string& source);
+	void parse(parse_tree_t& tree);
 
 	vref_t recurse(const node_t& node);
 
 	vref_t recurse_expr(const node_t*& p_node, size_t& expr_len, const vref_t* lhs = nullptr, const int lhs_rank = -1);
 
-	vref_t copy(const vref_t& dst, const vref_t& src);
+	vref_t copy(const vref_t& dst, const vref_t& src, const bool validate = true);
 
-	uint32_t get(const vref_t& src);
+	uint32_t get(const vref_t& src, const uint32_t* dst = nullptr);
 
 	void push_scope();
 
@@ -419,9 +434,13 @@ protected:
 
 	void print_debug_info(const node_t& node) const;
 
-	void print_debug_code();
+	void handle_new_code();
+
+	uint32_t get_line_number(const node_t& node) const;
 
 	static std::vector<node_t> get_children(const node_t& node);
+
+	static std::string to_source(const node_t& node);
 
 	static std::string get_literal(const node_t& node);
 
@@ -430,7 +449,6 @@ protected:
 private:
 	int depth = 0;
 	int curr_pass = 0;
-	int curr_line = -1;
 	bool have_return = false;
 
 	uint8_t math_flags = 0;
@@ -446,6 +464,7 @@ private:
 	std::vector<std::string> name_space;
 
 	std::map<varptr_t, uint32_t> const_table;
+	std::set<std::string> interface_set;
 	std::map<std::string, function_t> function_map;
 	std::map<uint32_t, uint32_t> line_info;
 	std::map<uint32_t, std::string> linker_map;
@@ -453,6 +472,7 @@ private:
 	std::map<std::string, int> simple_code_map;
 	std::map<std::string, uint32_t> this_obj_map;
 
+	std::string source;
 	std::shared_ptr<contract::Binary> binary;
 
 	mutable std::stringstream debug_out;
@@ -495,7 +515,8 @@ Compiler::Compiler(const compile_flags_t& flags)
 	rank_map["=="] = rank++;
 	rank_map["&"] = rank;
 	rank_map["&&"] = rank++;
-	rank_map["^"] = rank++;
+	rank_map["^"] = rank;
+	rank_map["^^"] = rank++;
 	rank_map["|"] = rank;
 	rank_map["||"] = rank++;
 	rank_map["="] = rank;
@@ -503,6 +524,12 @@ Compiler::Compiler(const compile_flags_t& flags)
 	rank_map["-="] = rank;
 	rank_map["*="] = rank;
 	rank_map["/="] = rank;
+	rank_map["^="] = rank;
+	rank_map["&="] = rank;
+	rank_map["|="] = rank;
+	rank_map["^^="] = rank;
+	rank_map["&&="] = rank;
+	rank_map["||="] = rank;
 	rank_map[">>="] = rank;
 	rank_map["<<="] = rank++;
 	rank_map["break"] = rank;
@@ -520,6 +547,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	simple_code_map["|"] = OP_OR;
 	simple_code_map["||"] = OP_OR;
 	simple_code_map["^"] = OP_XOR;
+	simple_code_map["^^"] = OP_XOR;
 	simple_code_map[">"] = OP_CMP_GT;
 	simple_code_map["<"] = OP_CMP_LT;
 	simple_code_map[">="] = OP_CMP_GTE;
@@ -535,6 +563,7 @@ Compiler::Compiler(const compile_flags_t& flags)
 	this_obj_map["deposit"] = MEM_EXTERN + EXTERN_DEPOSIT;
 
 	function_map["__nop"].name = "__nop";
+	function_map["__copy"].name = "__copy";
 	function_map["size"].name = "size";
 	function_map["push"].name = "push";
 	function_map["pop"].name = "pop";
@@ -565,10 +594,17 @@ Compiler::Compiler(const compile_flags_t& flags)
 	function_map["uint_hex"].name = "uint_hex";
 	function_map["sha256"].name = "sha256";
 	function_map["ecdsa_verify"].name = "ecdsa_verify";
-	function_map["to_string"].name = "to_string";
-	function_map["to_string_hex"].name = "to_string_hex";
-	function_map["to_string_bech32"].name = "to_string_bech32";
+	function_map["string"].name = "string";
+	function_map["string_hex"].name = "string_hex";
+	function_map["string_bech32"].name = "string_bech32";
 	function_map["rcall"].name = "rcall";
+	function_map["balance"].name = "balance";
+	function_map["is_uint"].name = "is_uint";
+	function_map["is_string"].name = "is_string";
+	function_map["is_binary"].name = "is_binary";
+	function_map["is_array"].name = "is_array";
+	function_map["is_map"].name = "is_map";
+	function_map["assert"].name = "assert";
 
 	global.section = MEM_STATIC;
 
@@ -578,18 +614,20 @@ Compiler::Compiler(const compile_flags_t& flags)
 	}
 }
 
-std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& source)
+std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& source_)
 {
 	if(curr_pass) {
-		return nullptr;
+		throw std::logic_error("invalid state");
 	}
+	source = source_;
+
 	binary = std::make_shared<contract::Binary>();
 	binary->source = source;
 	binary->compiler = std::string("mmx") + "-" + version;
 	binary->build_flags = flags;
 
 	parse_tree_t tree;
-	parse(tree, source);
+	parse(tree);
 
 	debug() << std::endl;
 	dump_parse_tree(tree.root(), debug());
@@ -604,7 +642,6 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		recurse(tree.root());
 
 		curr_pass++;
-		curr_line = -1;
 		frame.clear();
 
 		debug() << std::endl << "Second pass ..." << std::endl;
@@ -625,8 +662,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 	}
 	catch(const std::exception& ex) {
 		if(curr_node) {
-			const auto loc = lexy::get_input_location(lexy::string_input<lexy::utf8_encoding>(source), curr_node->position());
-			throw std::logic_error(std::string("error at line ") + std::to_string(loc.line_nr()) + ": " + ex.what());
+			throw std::logic_error(std::string("error at line ") + std::to_string(get_line_number(*curr_node)) + ": " + ex.what());
 		} else {
 			throw std::logic_error(std::string("error: ") +  + ex.what());
 		}
@@ -650,6 +686,7 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 			contract::method_t method;
 			method.name = func.name;
 			method.entry_point = func.address;
+			method.is_init = func.is_init;
 			method.is_const = func.is_const;
 			method.is_public = func.is_public;
 			method.is_payable = func.is_payable;
@@ -660,14 +697,21 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		}
 	}
 	binary->binary = vm::serialize(code);
-	binary->line_info = line_info;
-
+	{
+		uint32_t prev = 0;
+		for(const auto& entry : line_info) {
+			if(entry.second != prev) {
+				binary->line_info.insert(entry);
+				prev = entry.second;
+			}
+		}
+	}
 	debug() << std::endl;
 	dump_code(debug(), binary);
 	return binary;
 }
 
-void Compiler::parse(parse_tree_t& tree, const std::string& source)
+void Compiler::parse(parse_tree_t& tree)
 {
 	const auto result = lexy::parse_as_tree<lang::source>(
 			tree, lexy::string_input<lexy::utf8_encoding>(source), lexy_ext::report_error);
@@ -687,6 +731,36 @@ std::vector<Compiler::node_t> Compiler::get_children(const node_t& node)
 		}
 	}
 	return list;
+}
+
+uint32_t Compiler::get_line_number(const node_t& node) const
+{
+	const auto loc = lexy::get_input_location(
+			lexy::string_input<lexy::utf8_encoding>(source), node.position());
+	return loc.line_nr();
+}
+
+std::string Compiler::to_source(const node_t& node)
+{
+    std::string source;
+    if(node.kind().is_token()) {
+        const auto token = node.lexeme();
+        source.append(token.begin(), token.end());
+    } else {
+        for(const auto& child : node.children()) {
+            source += to_source(child);
+        }
+    }
+    std::string out;
+    for(auto c : source) {
+        switch(c) {
+			case '\r': break;
+			case '\n': out += "\\n"; break;
+            case '\t': out += "\\t"; break;
+            default: out += c; break;
+        }
+    }
+    return out;
 }
 
 std::string Compiler::get_literal(const node_t& node)
@@ -811,9 +885,16 @@ void Compiler::print_debug_info(const node_t& node) const
 	debug() << std::endl;
 }
 
-void Compiler::print_debug_code()
+void Compiler::handle_new_code()
 {
+	vnx::optional<uint32_t> line;
+	if(curr_node) {
+		line = get_line_number(*curr_node);
+	}
 	for(auto i = code_offset; i < code.size(); ++i) {
+		if(line) {
+			line_info[i] = *line;
+		}
 		debug(true) << to_string(code[i]) << std::endl;
 	}
 	code_offset = code.size();
@@ -821,7 +902,7 @@ void Compiler::print_debug_code()
 
 Compiler::vref_t Compiler::recurse(const node_t& node)
 {
-	print_debug_code();
+	handle_new_code();
 	print_debug_info(node);
 
 	vref_t out;
@@ -1034,18 +1115,26 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		}
 		debug() << " (0x" << std::hex << var.address << std::dec << ")" << std::endl;
 
-		if(scope.var_map.count(var.name)) {
-			throw std::logic_error("duplicate variable name: " + var.name);
+		if(is_expression) {
+			copy(var.address, recurse(list.back()));
+		} else if(!is_constant) {
+			copy(var.address, 0);
 		}
 		scope.add_variable(var);
 
-		if(is_expression) {
-			copy(var.address, recurse(list.back()));
-		}
-		if(!is_constant && !is_expression) {
-			copy(var.address, 0);
-		}
 		out.address = var.address;
+	}
+	else if(name == lang::interface::name)
+	{
+		if(list.size() != 2) {
+			throw std::logic_error("invalid interface declaration");
+		}
+		const auto qualifier = get_literal(list[0]);
+		const auto name = get_literal(list[1]);
+		debug(true) << qualifier << " " << name << std::endl;
+		if(!interface_set.emplace(name).second) {
+			throw std::logic_error("duplicate interface declaration");
+		}
 	}
 	else if(name == lang::if_ex::name)
 	{
@@ -1192,7 +1281,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 		throw std::logic_error("invalid statement: " + name);
 	}
 
-	print_debug_code();
+	handle_new_code();
 	depth--;
 
 	return out;
@@ -1237,6 +1326,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 		else if(auto func = find_function(name)) {
 			out.func = *func;
 			out.address = func->address;
+		}
+		else if(interface_set.count(name)) {
+			out.is_interface = true;
 		}
 		out.name = name;
 	}
@@ -1297,8 +1389,17 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				case OP_MUL:
 				case OP_DIV:
 				case OP_MOD:
-					op_flags |= math_flags; break;
-				default: break;
+					op_flags |= math_flags;
+					break;
+				case OP_XOR:
+				case OP_AND:
+				case OP_OR:
+					if(op == "^" || op == "&" || op == "|" || op == "^=" || op == "&=" || op == "|=") {
+						op_flags |= OPFLAG_BITWISE;
+					}
+					break;
+				default:
+					break;
 			}
 			auto rhs = get(recurse_expr(p_node, expr_len, nullptr, rank));
 
@@ -1319,10 +1420,12 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 										switch(op_code) {
 											case OP_DIV:
 												op_code = OP_SHR;
+												op_flags = 0;
 												rhs = count;
 												break;
 											case OP_MOD:
 												op_code = OP_AND;
+												op_flags = OPFLAG_BITWISE;
 												rhs = get_const_address((uint256_1 << count) - 1);
 												break;
 											default:
@@ -1383,7 +1486,11 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			}
 			const auto key = *rhs.name;
 
-			if(lhs->name && *lhs->name == "this" && !lhs->key) {
+			if(lhs->is_interface && !lhs->method) {
+				out = *lhs;
+				out.method = key;
+			}
+			else if(lhs->name && *lhs->name == "this" && !lhs->key) {
 				auto iter = this_obj_map.find(key);
 				if(iter == this_obj_map.end()) {
 					throw std::logic_error("no such variable: this." + key);
@@ -1416,7 +1523,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			}
 			const auto rhs = recurse_expr(p_node, expr_len, nullptr, rank);
 			out.address = stack.new_addr();
-			code.emplace_back(OP_NOT, 0, out.address, get(rhs));
+			code.emplace_back(OP_NOT, op == "~" ? OPFLAG_BITWISE : 0, out.address, get(rhs));
 		}
 		else if(op == "++" || op == "--") {
 			if(lhs) {
@@ -1467,22 +1574,16 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 	}
 	else if(name == lang::sub_expr::name)
 	{
-		if(lhs) {
-			if(!lhs->func) {
-				if(lhs->name) {
-					throw std::logic_error("not a function: " + *lhs->name);
-				}
-				throw std::logic_error("expected function name");
+		std::vector<node_t> args;
+		for(const auto& node : list) {
+			const std::string name(node.kind().name());
+			if(name == lang::expression::name) {
+				args.push_back(node);
 			}
+		}
+		if(lhs && lhs->func) {
 			const auto& name = lhs->func->name;
 
-			std::vector<node_t> args;
-			for(const auto& node : list) {
-				const std::string name(node.kind().name());
-				if(name == lang::expression::name) {
-					args.push_back(node);
-				}
-			}
 			if(name == "__nop") {
 				if(args.size()) {
 					throw std::logic_error("expected 0 arguments for __nop()");
@@ -1538,6 +1639,13 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					lhs = out.address;
 				}
 			}
+			else if(name == "__copy") {
+				if(args.size() != 2) {
+					throw std::logic_error("expected 2 arguments for __copy(dst, src)");
+				}
+				copy(recurse(args[0]), recurse(args[1]), false);
+				out.address = 0;
+			}
 			else if(name == "clone") {
 				if(args.size() != 1) {
 					throw std::logic_error("expected 1 argument for clone()");
@@ -1573,6 +1681,46 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = stack.new_addr();
 				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
 			}
+			else if(name == "is_uint") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_uint()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_UINT)));
+			}
+			else if(name == "is_string") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_string()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_STRING)));
+			}
+			else if(name == "is_binary") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_binary()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_BINARY)));
+			}
+			else if(name == "is_array") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_array()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_ARRAY)));
+			}
+			else if(name == "is_map") {
+				if(args.size() != 1) {
+					throw std::logic_error("expected 1 argument for is_map()");
+				}
+				out.address = stack.new_addr();
+				code.emplace_back(OP_TYPE, OPFLAG_REF_B, out.address, get(recurse(args[0])));
+				code.emplace_back(OP_CMP_EQ, 0, out.address, out.address, get_const_address(int(TYPE_MAP)));
+			}
 			else if(name == "concat") {
 				if(args.size() < 2) {
 					throw std::logic_error("expected 2 or more arguments for concat()");
@@ -1606,7 +1754,8 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 					throw std::logic_error("expected 1 or 2 arguments for fail(message, [code])");
 				}
 				code.emplace_back(OP_FAIL, args.size() > 1 ? OPFLAG_REF_B : 0,
-						get(recurse(args[0])), args.size() > 1 ? get(recurse(args[1])) : 0);
+						get(recurse(args[0])),
+						args.size() > 1 ? get(recurse(args[1])) : 0);
 				out.address = 0;
 			}
 			else if(name == "log") {
@@ -1707,23 +1856,23 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				out.address = stack.new_addr();
 				code.emplace_back(OP_VERIFY, 0, out.address, get(recurse(args[0])), get(recurse(args[1])), get(recurse(args[2])));
 			}
-			else if(name == "to_string") {
+			else if(name == "string") {
 				if(args.size() != 1) {
-					throw std::logic_error("expected 1 argument for to_string()");
+					throw std::logic_error("expected 1 argument for string()");
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING, CONVTYPE_DEFAULT);
 			}
-			else if(name == "to_string_hex") {
+			else if(name == "string_hex") {
 				if(args.size() != 1) {
-					throw std::logic_error("expected 1 argument for to_string_hex()");
+					throw std::logic_error("expected 1 argument for string_hex()");
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING | (CONVTYPE_BASE_16 << 8), CONVTYPE_DEFAULT);
 			}
-			else if(name == "to_string_bech32") {
+			else if(name == "string_bech32") {
 				if(args.size() != 1) {
-					throw std::logic_error("expected 1 argument for to_string_bech32()");
+					throw std::logic_error("expected 1 argument for string_bech32()");
 				}
 				out.address = stack.new_addr();
 				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_STRING | (CONVTYPE_ADDRESS << 8), CONVTYPE_DEFAULT);
@@ -1741,17 +1890,41 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				if(args.size() < 2) {
 					throw std::logic_error("expected at least two arguments for rcall(contract, method, ...)");
 				}
+				const auto contract = get(recurse(args[0]));
+				const auto method = get(recurse(args[1]));
+
 				std::vector<vref_t> fargs;
 				for(size_t i = 2; i < args.size(); ++i) {
-					fargs.push_back(recurse(args[i]));
+					fargs.push_back(recurse(args[i]));	// collect arguments first
 				}
 				const auto offset = stack.new_addr();
 				for(size_t i = 0; i < fargs.size(); ++i) {
 					copy(offset + 1 + i, fargs[i]);
 				}
-				code.emplace_back(OP_COPY, 0, offset, 0);
-				code.emplace_back(OP_RCALL, 0, get(recurse(args[0])), get(recurse(args[1])), offset - MEM_STACK, args.size() - 2);
+				code.emplace_back(OP_RCALL, 0, contract, method, offset - MEM_STACK, args.size() - 2);
 				out.address = offset;
+			}
+			else if(name == "balance") {
+				if(args.size() > 1) {
+					throw std::logic_error("expected at most one argument for balance([currency])");
+				}
+				const auto currency = args.size() > 0 ? get(recurse(args[0])) : get_const_address(addr_t());
+				out.address = stack.new_addr();
+				code.emplace_back(OP_BALANCE, 0, out.address, currency);
+			}
+			else if(name == "assert") {
+				if(args.size() < 1 || args.size() > 3) {
+					throw std::logic_error("expected 1-3 arguments for assert(condition, [message], [code])");
+				}
+				code.emplace_back(OP_JUMPI, 0, code.size() + 2, get(recurse(args[0])));
+				if(args.size() == 1) {
+					code.emplace_back(OP_FAIL, 0, get_const_address("assert(" + to_source(args[0]) + ")"));
+				} else {
+					code.emplace_back(OP_FAIL, args.size() > 2 ? OPFLAG_REF_B : 0,
+							get(recurse(args[1])),
+							args.size() > 2 ? get(recurse(args[2])) : 0);
+				}
+				out.address = 0;
 			}
 			else {
 				if(curr_function && curr_function->is_const && lhs->func->root && !lhs->func->is_const) {
@@ -1763,7 +1936,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 				std::vector<vref_t> fargs;
 				for(size_t i = 0; i < args.size(); ++i) {
-					fargs.push_back(recurse(args[i]));
+					fargs.push_back(recurse(args[i]));	// collect arguments first
 				}
 				const auto offset = stack.new_addr();
 				for(size_t i = 0; i < fargs.size(); ++i) {
@@ -1777,6 +1950,33 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				code.emplace_back(OP_CALL, 0, -1, offset - MEM_STACK);
 				out.address = offset;
 			}
+		}
+		else if(lhs && lhs->is_interface) {
+			if(!lhs->name) {
+				throw std::logic_error("missing interface name");
+			}
+			if(!lhs->method) {
+				throw std::logic_error("missing method name");
+			}
+			const auto contract = get_const_address(*lhs->name);
+			const auto method = get_const_address(*lhs->method);
+
+			std::vector<vref_t> fargs;
+			for(size_t i = 0; i < args.size(); ++i) {
+				fargs.push_back(recurse(args[i]));	// collect arguments first
+			}
+			const auto offset = stack.new_addr();
+			for(size_t i = 0; i < fargs.size(); ++i) {
+				copy(offset + 1 + i, fargs[i]);
+			}
+			code.emplace_back(OP_RCALL, 0, contract, method, offset - MEM_STACK, args.size());
+			out.address = offset;
+		}
+		else if(lhs) {
+			if(lhs->name) {
+				throw std::logic_error("not a function: " + *lhs->name);
+			}
+			throw std::logic_error("expected function name");
 		}
 		else {
 			if(list.size() != 3) {
@@ -1831,7 +2031,7 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 		throw std::logic_error("invalid expression");
 	}
 
-	print_debug_code();
+	handle_new_code();
 	depth--;
 
 	return recurse_expr(p_node, expr_len, &out, lhs_rank);
@@ -1851,12 +2051,14 @@ void Compiler::pop_scope()
 	frame.pop_back();
 }
 
-Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
+Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src, const bool validate)
 {
+	// this function does not allocate anything new on the stack
+	// so it's safe to use for preparing function call arguments
 	src.check_value();
 	dst.check_value();
 
-	if(!dst.is_mutable()) {
+	if(validate && !dst.is_mutable()) {
 		throw std::logic_error("copy(): dst is const");
 	}
 	if(src.key && dst.key) {
@@ -1864,23 +2066,30 @@ Compiler::vref_t Compiler::copy(const vref_t& dst, const vref_t& src)
 	} else if(!src.key && dst.key) {
 		code.emplace_back(OP_SET, OPFLAG_REF_A, dst.address, *dst.key, src.address);
 	} else if(src.key && !dst.key) {
-		code.emplace_back(OP_GET, OPFLAG_REF_B, dst.address, src.address, *src.key);
+		get(src, &dst.address);
 	} else if(dst.address != src.address) {
 		code.emplace_back(OP_COPY, 0, dst.address, src.address);
 	}
 	return dst;
 }
 
-uint32_t Compiler::get(const vref_t& src)
+uint32_t Compiler::get(const vref_t& src, const uint32_t* dst)
 {
 	src.check_value();
+
 	if(src.key) {
-		const auto tmp_addr = frame.back().new_addr();
-		code.emplace_back(OP_GET, OPFLAG_REF_B, tmp_addr, src.address, *src.key);
-		return tmp_addr;
-	} else {
-		return src.address;
+		const auto dst_addr = (dst ? *dst : frame.back().new_addr());
+		if(src.address == MEM_EXTERN + EXTERN_BALANCE) {
+			code.emplace_back(OP_BALANCE, 0, dst_addr, *src.key);
+		} else {
+			code.emplace_back(OP_GET, OPFLAG_REF_B, dst_addr, src.address, *src.key);
+		}
+		return dst_addr;
 	}
+	if(dst) {
+		return copy(*dst, src).address;
+	}
+	return src.address;
 }
 
 const Compiler::variable_t* Compiler::find_variable(const std::string& name) const
@@ -1977,6 +2186,9 @@ std::shared_ptr<const contract::Binary> compile_files(const std::vector<std::str
 	std::stringstream buffer;
 	for(const auto& src : file_names) {
 		std::ifstream stream(src);
+		if(!stream.good()) {
+			throw std::runtime_error("failed to read file: " + src);
+		}
 		buffer << stream.rdbuf();
 	}
 	return vm::compile(buffer.str(), flags);
