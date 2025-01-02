@@ -47,7 +47,7 @@ void Node::add_proof(std::shared_ptr<const ProofOfSpace> proof, const uint32_t v
 		});
 }
 
-bool Node::verify(std::shared_ptr<const ProofResponse> value)
+bool Node::verify(std::shared_ptr<const ProofResponse> value) const
 {
 	if(!value->is_valid()) {
 		throw std::logic_error("invalid response");
@@ -63,8 +63,6 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value)
 		return false;
 	}
 	verify_proof(value->proof, challenge, space_diff);
-
-	add_proof(value->proof, value->vdf_height, value->farmer_addr);
 
 	publish(value, output_verified_proof);
 	return true;

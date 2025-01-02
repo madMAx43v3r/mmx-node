@@ -70,7 +70,7 @@ void Node::verify_vdfs()
 			continue;		// already verified
 		}
 		if(!get_header(proof->prev) || !height_map.count(proof->input)) {
-			try_again.emplace_back(proof, entry.second);	// wait for previous block / VDF
+			try_again.push_back(entry);	// wait for previous block / VDF
 			continue;
 		}
 		auto out = std::make_shared<vdf_fork_t>();
@@ -138,7 +138,7 @@ void Node::verify_votes()
 					}
 				}
 			}
-			try_again.emplace_back(vote, entry.second);
+			try_again.push_back(entry);
 		}
 		catch(const std::exception& ex) {
 			log(DEBUG) << "Got invalid vote for block " << vote->hash << ": " << ex.what();
@@ -152,21 +152,31 @@ void Node::verify_proofs()
 	const auto time_now = vnx::get_wall_time_millis();
 	const auto proof_timeout = 10 * params->block_interval_ms;
 
+	std::mutex mutex;
 	std::vector<std::pair<std::shared_ptr<const ProofResponse>, int64_t>> try_again;
 
 	for(const auto& entry : proof_queue) {
 		if(time_now - entry.second > proof_timeout) {
 			continue;		// timeout
 		}
-		const auto& response = entry.first;
-		try {
-			if(!verify(response)) {
-				try_again.emplace_back(response, entry.second);
+		threads->add_task([this, entry, &mutex, &try_again]() {
+			const auto& res = entry.first;
+			try {
+				const auto valid = verify(res);
+
+				std::lock_guard<std::mutex> lock(mutex);
+				if(valid) {
+					add_proof(res->proof, res->vdf_height, res->farmer_addr);
+				} else {
+					try_again.push_back(entry);
+				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "Got invalid proof for VDF height " << res->vdf_height << ": " << ex.what();
 			}
-		} catch(const std::exception& ex) {
-			log(WARN) << "Got invalid proof for VDF height " << response->vdf_height << ": " << ex.what();
-		}
+		});
 	}
+	threads->sync();
+
 	proof_queue = std::move(try_again);
 }
 
