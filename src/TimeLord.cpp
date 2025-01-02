@@ -110,6 +110,7 @@ void TimeLord::stop_vdf()
 		vdf_thread.join();
 	}
 	peak = nullptr;
+	peak_iters = 0;
 	history.clear();
 	infuse.clear();
 }
@@ -182,8 +183,12 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> req)
 		}
 	}
 
-	pending[end] = req;
-
+	if(is_reset) {
+		peak_iters = 0;
+	}
+	if(req->end > peak_iters) {
+		pending[end] = req;
+	}
 	if(peak && peak->num_iters >= end) {
 		add_task(std::bind(&TimeLord::update, this));
 	}
@@ -227,6 +232,7 @@ void TimeLord::update()
 					proof->segments.push_back(iter->second);
 				}
 				out.push_back(proof);
+				peak_iters = req->end;
 			}
 			iter = pending.erase(iter);
 		} else {
