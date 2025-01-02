@@ -1812,7 +1812,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				wallet->get_all_addresses(index,
 					[this, request_id, limit](const std::vector<addr_t>& list) {
 						std::vector<std::string> res;
-						for(uint32_t i = 0; i < limit; ++i) {
+						for(size_t i = 0; i < list.size() && i < limit; ++i) {
 							res.push_back(list[i].to_string());
 						}
 						respond(request_id, vnx::Variant(res));
