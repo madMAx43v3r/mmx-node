@@ -290,7 +290,7 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params,
 	}
 	const auto num_iters = (block->vdf_iters - prev->vdf_iters) / block->vdf_count;
 	const auto time_diff = num_iters / params->time_diff_constant;
-	return uint128_t(time_diff) * block->proof[0]->difficulty;
+	return uint128_t(time_diff) * block->proof[0]->difficulty * params->proofs_per_height;
 }
 
 inline
