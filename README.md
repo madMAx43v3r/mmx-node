@@ -115,6 +115,7 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
   - Proof challenges are now deterministic, apart from random infusions every 256 blocks on average
   - If a proof's hash passes a filter, it will change future challenges and update difficutly
   - Timelord rewards are now paid out every 50 blocks in bulk to fastest TL
+  - There are no more dummy blocks (blocks without proof)
 - VDF segment count is now dynamic, depending on TL speed:
   - This means VDF verify time wont increase unless the GPU is at it's compute limit
   - Previously VDF verify time would increase even if the GPU is not maxed out, due to fixed parallel work
@@ -123,7 +124,7 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
   - Yields accurate netspace estimation
   - Supports extra security (see below)
 - Recent blocks are further secured via a new voting scheme:
-  - Up to 21 farmers who found a lesser proof (didn't make a block) recently can act as a validator
+  - Up to 31 farmers who found a lesser proof (didn't make a block) recently can act as a validator
   - These validators vote on the first block received per height
   - Only blocks made with the best known proof are voted for
   - This prevents reverting recent blocks via double signing in most cases
