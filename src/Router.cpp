@@ -321,6 +321,9 @@ void Router::handle(std::shared_ptr<const Transaction> tx)
 
 void Router::handle(std::shared_ptr<const ProofOfTime> value)
 {
+	if(!is_synced) {
+		return;
+	}
 	if(vnx_sample && vnx_sample->topic == input_vdfs)
 	{
 		if(our_timelords.insert(value->timelord_key).second) {
