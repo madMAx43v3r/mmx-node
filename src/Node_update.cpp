@@ -41,7 +41,7 @@ void Node::verify_vdfs()
 	std::vector<std::shared_ptr<vdf_fork_t>> try_now;
 	std::vector<std::pair<std::shared_ptr<const ProofOfTime>, int64_t>> try_again;
 
-	std::unordered_map<hash_t, uint32_t> height_map;	// based on verified proofs and VDFs only
+	std::unordered_map<hash_t, uint32_t> height_map;	// [output => vdf_height] based on verified proofs and VDFs only
 	for(const auto& entry : fork_index) {
 		const auto& fork = entry.second;
 		if(fork->is_all_proof_verified) {
