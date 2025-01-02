@@ -121,7 +121,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> req)
 	const auto start = req->start;
 	const auto end = req->end;
 
-	// clear obsolete requests + infusions
+	// clear obsolete requests + infusions in-between
 	infuse.erase( infuse.upper_bound(start),  infuse.lower_bound(end));
 	pending.erase(pending.upper_bound(start), pending.lower_bound(end));
 
