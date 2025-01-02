@@ -25,5 +25,3 @@ Mainnet
 - Test new block reward voting scheme
 
 Mainnet-RC
-- Check remaining in-source TODOs
-- GUI fixes for new stuff / removed VPs

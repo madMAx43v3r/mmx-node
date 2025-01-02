@@ -63,6 +63,7 @@ Vue.component('blocks-table', {
 		headers() {
 			return [
 				{ text: this.$t('explore_blocks.height'), value: 'height', width: "5%"},
+				{ text: "VDF", value: 'vdf_count' },
 				{ text: this.$t('explore_blocks.tx'), value: 'tx_count' },
 				{ text: this.$t('explore_blocks.k'), value: 'ksize' },
 				{ text: this.$t('explore_blocks.score'), value: 'score' },
@@ -92,13 +93,13 @@ Vue.component('blocks-table', {
 			<template v-slot:item.height="{ item }">
 				<router-link :to="'/explore/block/height/' + item.height">{{item.height}}</router-link>
 			</template>
-
-			<template v-slot:item.ksize="{ item }">
-				{{item.proof ? item.proof.ksize : null}}
+			
+			<template v-slot:item.vdf_count="{ item }">
+				+{{item.vdf_count}}
 			</template>
-
-			<template v-slot:item.score="{ item }">
-				{{item.proof ? item.proof.score : null}}
+			
+			<template v-slot:item.ksize="{ item }">
+				k{{item.ksize}}
 			</template>
 
 			<template v-slot:item.reward="{ item }">

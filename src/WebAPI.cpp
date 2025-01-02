@@ -643,10 +643,13 @@ public:
 			tmp["static_cost_ratio"] = double(value->static_cost) / context->params->max_block_size;
 			tmp["total_cost_ratio"] = double(value->total_cost) / context->params->max_block_cost;
 		}
-		tmp["time"] = value->time_stamp / 1e3;
 		if(value->proof.size()) {
-			tmp["farmer_key"] = value->proof[0]->farmer_key.to_string();
+			const auto& proof = value->proof[0];
+			tmp["score"] = proof->score;
+			tmp["ksize"] = proof->get_field("ksize");
+			tmp["farmer_key"] = proof->farmer_key.to_string();
 		}
+		tmp["time"] = value->time_stamp / 1e3;
 	}
 
 	void accept(std::shared_ptr<const BlockHeader> value) {

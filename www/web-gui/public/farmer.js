@@ -12,14 +12,18 @@ Vue.component('farmer-menu', {
 Vue.component('farmer-info', {
 	data() {
 		return {
-			data: null
+			info: null,
+			summary: null
 		}
 	},
 	methods: {
 		update() {
 			fetch('/wapi/farmer/info')
 				.then(response => response.json())
-				.then(data => this.data = data);
+				.then(data => this.info = data);
+			fetch('/wapi/farmer/blocks/summary')
+				.then(response => response.json())
+				.then(data => this.summary = data);
 		}
 	},
 	created() {
@@ -39,41 +43,41 @@ Vue.component('farmer-info', {
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
+										<div v-if="info">{{ (info.total_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										 {{ $t('farmer_info.physical_size') }}
+										{{ $t('farmer_info.physical_size') }}
 									</v-row>
 								</v-col>
 								
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_bytes_effective / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
+										<div v-if="info">{{ (info.total_bytes_effective / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										 Effective Size
+										Effective Size
 									</v-row>
 								</v-col>
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ (data.total_virtual_bytes / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
+										<div v-if="summary">{{ summary.num_blocks }}</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										{{ $t('farmer_info.virtual_size') }}
+										No. Blocks
 									</v-row>
 								</v-col>
 
 								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
 									<v-row align="center" justify="space-around">
-										<div v-if="data">{{ ((data.total_bytes_effective + data.total_virtual_bytes) / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
+										<div v-if="summary">{{ (summary.total_rewards_value).toFixed(3) }} MMX</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
-										{{ $t('farmer_info.total_farm_size') }}
+										Total Rewards
 									</v-row>
 								</v-col>
 
@@ -90,8 +94,8 @@ Vue.component('farmer-rewards', {
 	data() {
 		return {
 			data: null,
-			netspace: null,
-			farm_size: null
+			netspace: null,		// [GB]
+			farm_size: null,	// [GB]
 		}
 	},
 	methods: {
@@ -104,7 +108,7 @@ Vue.component('farmer-rewards', {
 				.then(data => this.netspace = data.total_space);
 			fetch('/wapi/farmer/info')
 				.then(response => response.json())
-				.then(data => this.farm_size = data.total_bytes_effective + data.total_virtual_bytes);
+				.then(data => this.farm_size = data.total_bytes_effective / 1e9);
 		}
 	},
 	computed: {
@@ -335,8 +339,8 @@ Vue.component('farmer-blocks', {
 			return [
 				{ text: this.$t('farmer_blocks.height'), value: 'height' },
 				{ text: "TX", value: 'tx_count' },
-				{ text: "K", value: 'proof.ksize' },
-				{ text: this.$t('farmer_blocks.score'), value: 'proof.score' },
+				{ text: "K", value: 'ksize' },
+				{ text: this.$t('farmer_blocks.score'), value: 'score' },
 				{ text: this.$t('farmer_blocks.reward'), value: 'reward' },
 				{ text: this.$t('farmer_blocks.tx_fees'), value: 'tx_fees' },
 				{ text: this.$t('farmer_blocks.time'), value: 'time' },
@@ -407,10 +411,10 @@ Vue.component('farmer-proofs', {
 	computed: {
 		headers() {
 			return [
-				{ text: this.$t('farmer_proofs.height'), value: 'height' },
+				{ text: this.$t('farmer_proofs.height'), value: 'vdf_height' },
 				{ text: this.$t('farmer_proofs.harvester'), value: 'harvester' },
 				{ text: this.$t('farmer_proofs.score'), value: 'proof.score' },
-				{ text: this.$t('farmer_proofs.sdiff'), value: 'space_diff' },
+				{ text: this.$t('farmer_proofs.sdiff'), value: 'proof.difficulty' },
 				{ text: this.$t('farmer_proofs.time'), value: 'lookup_time_ms' },
 				{ text: this.$t('farmer_proofs.plot_id'), value: 'proof.plot_id' },
 			]
