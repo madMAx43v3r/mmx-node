@@ -318,6 +318,12 @@ void Node::update()
 			msg << ", took " << elapsed << " sec";
 			log(INFO) << msg.str();
 		}
+		if(forked_at) {
+			const auto depth = peak->height - forked_at->height;
+			if(depth > 1) {
+				log(WARN) << "Forked " << depth << " blocks deep at height " << peak->height;
+			}
+		}
 		stuck_timer->reset();
 	}
 
