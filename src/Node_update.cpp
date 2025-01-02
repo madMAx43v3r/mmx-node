@@ -141,7 +141,7 @@ void Node::verify_votes()
 			try_again.emplace_back(vote, entry.second);
 		}
 		catch(const std::exception& ex) {
-			log(WARN) << "Got invalid vote for block " << vote->hash << ": " << ex.what();
+			log(DEBUG) << "Got invalid vote for block " << vote->hash << ": " << ex.what();
 		}
 	}
 	vote_queue = std::move(try_again);
