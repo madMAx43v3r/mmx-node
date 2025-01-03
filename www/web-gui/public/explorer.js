@@ -444,7 +444,7 @@ Vue.component('block-view', {
 									</tr>
 									<tr>
 										<td class="key-cell">Reward Vote Sum</td>
-										<td>{{data.reward_vote_sum}}</td>
+										<td>{{data.reward_vote_sum}} / {{data.reward_vote_count}} ({{(data.reward_vote_count / ((data.height % 8640) + 1) * 100).toFixed(1)}} %)</td>
 									</tr>
 									<tr>
 										<td class="key-cell">Base Reward</td>
