@@ -23,7 +23,6 @@ Mainnet
 - min_ksize = 29
 - New project wallet
 - Test new block reward voting scheme
-- Old netspace constant 2467
 - Maximum proof count, 10x avg
-
-Mainnet-RC
+- Remove VirtualPlot contract
+- Faster space diff adjust (4x)
