@@ -907,8 +907,8 @@ std::shared_ptr<const Block> Node::make_block(
 		block->vdf_reward_addr.push_back(point->reward_addr);
 	}
 
-	for(const auto& entry : proof) {
-		block->proof.push_back(entry.proof);
+	for(size_t i = 0; i < proof.size() && i < params->max_proof_count; ++i) {
+		block->proof.push_back(proof[i].proof);
 	}
 	block->proof_hash = proof[0].hash;
 
