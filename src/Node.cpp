@@ -15,6 +15,7 @@
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
+#include <mmx/helpers.h>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 #include <mmx/Router.h>
@@ -432,6 +433,10 @@ void Node::trigger_update()
 
 void Node::add_block(std::shared_ptr<const Block> block)
 {
+	const auto root = get_root();
+	if(block->height <= root->height) {
+		return;
+	}
 	try {
 		if(!block->is_valid()) {
 			throw std::logic_error("invalid block");
@@ -441,11 +446,6 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	}
 	catch(const std::exception& ex) {
 		log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
-		return;
-	}
-	// validate farmer_sig before purging to prevent spoofing attack
-	if(purged_blocks.count(block->prev)) {
-		purge_block(block);
 		return;
 	}
 	auto fork = std::make_shared<fork_t>();
@@ -458,14 +458,11 @@ void Node::add_block(std::shared_ptr<const Block> block)
 			// fetch missed previous
 			router->get_blocks_at(prev_height,
 				[this](const std::vector<std::shared_ptr<const Block>>& blocks) {
-					const auto root = get_root();
 					for(auto block : blocks) {
-						if(block->height > root->height) {
-							add_block(block);
-						}
+						add_block(block);
 					}
 				});
-			log(INFO) << "Fetched missing block at height " << prev_height << " (" << block->prev.to_string() << ")";
+			log(WARN) << "Fetched missing block at height " << prev_height << " (" << block->prev.to_string() << ")";
 		}
 		trigger_update();
 	}
@@ -473,15 +470,18 @@ void Node::add_block(std::shared_ptr<const Block> block)
 
 void Node::add_fork(std::shared_ptr<fork_t> fork)
 {
+	const auto root = get_root();
+	const auto block = fork->block;
+	if(block->height <= root->height) {
+		return;
+	}
 	if(!fork->recv_time) {
 		fork->recv_time = vnx::get_wall_time_millis();
 	}
-	if(auto block = fork->block) {
-		fork->proof_score_224 = block->proof_hash.to_uint<uint256_t>(true) >> 32;
+	fork->proof_score_224 = block->proof_hash.to_uint<uint256_t>(true) >> 32;
 
-		if(fork_tree.emplace(block->hash, fork).second) {
-			fork_index.emplace(block->height, fork);
-		}
+	if(fork_tree.emplace(block->hash, fork).second) {
+		fork_index.emplace(block->height, fork);
 	}
 }
 
@@ -897,37 +897,6 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	throw std::logic_error("disconnected fork");
 }
 
-void Node::purge_tree()
-{
-	const auto root = get_root();
-	const auto time_now = vnx::get_wall_time_millis();
-	const auto block_timeout = 10 * params->block_interval_ms;
-
-	for(auto iter = fork_index.begin(); iter != fork_index.end();)
-	{
-		const auto& fork = iter->second;
-		const auto& block = fork->block;
-		if(block->height <= root->height
-			|| purged_blocks.count(block->prev)
-			|| (is_synced && !fork->is_connected && time_now - fork->recv_time > block_timeout))
-		{
-			if(fork_tree.erase(block->hash)) {
-				purge_block(block);
-			}
-			iter = fork_index.erase(iter);
-		} else {
-			iter++;
-		}
-	}
-}
-
-void Node::purge_block(std::shared_ptr<const Block> block)
-{
-	if(purged_blocks.insert(block->hash).second) {
-		purged_blocks_log.emplace(block->height, block->hash);
-	}
-}
-
 void Node::update_farmer_ranking()
 {
 	std::sort(farmer_ranking.begin(), farmer_ranking.end(),
@@ -938,16 +907,14 @@ void Node::update_farmer_ranking()
 
 void Node::commit(std::shared_ptr<const Block> block)
 {
-	if(block->height) {
+	const auto height = block->height;
+	if(height) {
 		const auto root = get_root();
 		if(block->prev != root->hash) {
-			throw std::logic_error("cannot commit height " + std::to_string(block->height) + " after " + std::to_string(root->height));
+			throw std::logic_error("cannot commit height " + std::to_string(height) + " after " + std::to_string(root->height));
 		}
 	}
-	const auto height = block->height;
 	const auto fork = find_fork(block->hash);
-
-	history[height] = block->get_header();
 	{
 		const auto begin = challenge_map.begin();
 		const auto end = challenge_map.upper_bound(block->vdf_height);
@@ -956,10 +923,6 @@ void Node::commit(std::shared_ptr<const Block> block)
 		}
 		challenge_map.erase(begin, end);
 	}
-	while(history.size() > max_history) {
-		history.erase(history.begin());
-	}
-	fork_tree.erase(block->hash);
 	{
 		const auto begin = vdf_index.begin();
 		const auto end = vdf_index.upper_bound(block->vdf_iters);
@@ -968,18 +931,58 @@ void Node::commit(std::shared_ptr<const Block> block)
 		}
 		vdf_index.erase(begin, end);
 	}
-	purge_tree();
+	fork_tree.erase(block->hash);
 
-	while(purged_blocks_log.size() > 10000) {
-		const auto iter = purged_blocks_log.begin();
-		purged_blocks.erase(iter->second);
-		purged_blocks_log.erase(iter);
+	const auto range = fork_index.equal_range(height);
+	for(auto iter = range.first; iter != range.second; ++iter)
+	{
+		const auto& fork = iter->second;
+		if(fork_tree.erase(fork->block->hash))
+		{
+			const auto& block = fork->block;
+			auto alt = find_value(alt_roots, block->prev, nullptr);
+			if(alt) {
+				// existing fork
+				alt_roots.erase(block->prev);
+			}
+			else if(root && block->prev == root->hash) {
+				// new alternate fork
+				const auto path = storage_path + "forks/";
+				vnx::Directory(path).create();
+				alt = std::make_shared<alt_root_t>();
+				alt->file = std::make_shared<vnx::File>(path + std::to_string(height) + "_" + block->hash.to_string());
+				alt->file->open("wb+");
+				log(WARN) << "New alternate fork at height " << height << ", block " << block->hash;
+			}
+			if(alt) {
+				auto& out = alt->file->out;
+				vnx::write(out, block);
+				const auto end = out.get_output_pos();
+				vnx::write(out, nullptr);	// temporary end
+				alt->file->flush();
+				alt->file->seek_to(end);
+				alt->block = block;
+				alt_roots[block->hash] = alt;
+			}
+		}
+	}
+	fork_index.erase(height);
+
+	root = block;	// update root at end
+
+	history[block->hash] = block->get_header();
+	history_log.emplace(height, block->hash);
+
+	// purge history
+	for(auto iter = history_log.begin(); iter != history_log.end() && iter->first + max_history < height;) {
+		history.erase(iter->second);
+		iter = history_log.erase(iter);
 	}
 
 	if(is_synced) {
 		std::string ksize = "N/A";
 		std::string score = "N/A";
-		if(block->height) {
+		if(height) {
 			if(auto proof = std::dynamic_pointer_cast<const ProofOfSpaceOG>(block->proof[0])) {
 				ksize = std::to_string(proof->ksize);
 				score = std::to_string(proof->score);
@@ -1336,10 +1339,10 @@ void Node::revert(const uint32_t height)
 
 std::shared_ptr<const BlockHeader> Node::get_root() const
 {
-	if(history.empty()) {
+	if(!root) {
 		throw std::logic_error("have no root");
 	}
-	return (--history.end())->second;
+	return root;
 }
 
 std::shared_ptr<const BlockHeader> Node::get_peak() const

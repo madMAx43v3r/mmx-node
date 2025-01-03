@@ -383,10 +383,6 @@ private:
 
 	void commit(std::shared_ptr<const Block> block);
 
-	void purge_tree();
-
-	void purge_block(std::shared_ptr<const Block> block);
-
 	void update_farmer_ranking();
 
 	void add_proof(std::shared_ptr<const ProofOfSpace> proof, const uint32_t vdf_height, const vnx::Hash64 farmer_mac);
@@ -505,20 +501,26 @@ private:
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 	std::unordered_map<addr_t, uint64_t> tx_pool_fees;								// [address => total pending fees]
+	std::map<std::pair<hash_t, hash_t>, std::shared_ptr<const Transaction>> tx_pool_index;		// [[key, txid] => tx]
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
-	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
-	std::map<std::pair<hash_t, hash_t>, std::shared_ptr<const Transaction>> tx_pool_index;		// [[key, txid] => tx]
+	std::unordered_map<hash_t, std::shared_ptr<const BlockHeader>> history;			// cache [hash => block header]
+	std::multimap<uint32_t, hash_t> history_log;									// [height => hash]
 
 	std::multimap<hash_t, std::shared_ptr<const VDF_Point>> vdf_tree;				// [output => proof]
 	std::multimap<uint64_t, std::shared_ptr<const VDF_Point>> vdf_index;			// [iters => proof]
+
+	struct alt_root_t {
+		std::shared_ptr<vnx::File> file;
+		std::shared_ptr<const BlockHeader> block;
+	};
+	std::shared_ptr<const BlockHeader> root;										// root for currently heaviest fork (block_chain.dat)
+	std::unordered_map<hash_t, std::shared_ptr<alt_root_t>> alt_roots;				// alternate roots (for *currently* weaker forks)
 
 	std::multimap<uint32_t, hash_t> challenge_map;									// [vdf height => challenge]
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => sorted proofs]
 	std::unordered_map<hash_t, hash_t> created_blocks;								// [proof hash => block hash]
 	std::unordered_map<hash_t, hash_t> voted_blocks;								// [prev => block hash]
-	std::unordered_set<hash_t> purged_blocks;
-	std::multimap<uint32_t, hash_t> purged_blocks_log;
 	std::map<pubkey_t, vnx::Hash64> farmer_keys;									// [key => farmer_mac] our farmer keys
 
 	bool is_synced = false;
