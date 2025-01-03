@@ -340,9 +340,10 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 		broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
 
 		vdf_history[value->vdf_height] = value;
-		timelord_credit[value->timelord_key] = 1;
 		vdf_counter++;
 	}
+	timelord_credit[value->timelord_key] = 1;
+
 	verified_vdf_height = std::max(verified_vdf_height, value->vdf_height);
 }
 
