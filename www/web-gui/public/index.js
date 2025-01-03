@@ -391,12 +391,12 @@ const Farmer = {
 }
 const FarmerBlocks = {
 	template: `
-		<farmer-blocks limit="200"></farmer-blocks>
+		<farmer-blocks limit="50"></farmer-blocks>
 	`
 }
 const FarmerProofs = {
 	template: `
-		<farmer-proofs limit="200"></farmer-proofs>
+		<farmer-proofs limit="50"></farmer-proofs>
 	`
 }
 const FarmerPlots = {
