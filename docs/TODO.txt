@@ -23,6 +23,4 @@ Mainnet
 - min_ksize = 29
 - New project wallet
 - Test new block reward voting scheme
-- Maximum proof count, 10x avg
 - Remove VirtualPlot contract
-- Faster space diff adjust (4x)
