@@ -8,9 +8,9 @@ Vue.component('node-settings', {
 			timelord: null,
 			open_port: null,
 			opencl_device: null,
-			opencl_platform: null,
 			opencl_device_list: null,
-			opencl_platform_list: null,
+			opencl_device_list_name: null, // NOTE: List of OpenCL devices from Node.cpp (names)
+			opencl_device_list_index: null, // NOTE: List of OpenCL devices from Node.cpp (relative index)
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
 			harv_num_threads: null,
@@ -30,29 +30,24 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
-					this.opencl_platform = data["opencl.platform"] != null ? data["opencl.platform"] : "";
-					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] : 0;
-					this.opencl_device_list = [{name: "None", value: -1}];
+					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] : -1; // NOTE: Current List selection (not relative, value index in WebGUI list), temporary 'hijack' for session, not value written to config .json (to support refresh of WebGUI browser)
+					this.opencl_device_list_name = [];
+					this.opencl_device_list_index = [];
+					this.opencl_device_list = [{name: "None", value: -1}]; // NOTE: WebGUI list of OpenCL devices, with added -1/None
 					{
-						let list = data["opencl.device_list"];
-						if(list) {
+						let listn = data["Node.device_list_name"];
+						if(listn) {
 							let i = 0;
-							for(const name of list) {
+							for(const name of listn) {
+								this.opencl_device_list_name.push(name);
 								this.opencl_device_list.push({name: name, value: i++});
 							}
-						} else {
-							this.opencl_device_list.push({name: "First device found", value: 0});
 						}
-					}
-					this.opencl_platform_list = [];
-					{
-						let list = data["opencl.platform_list"];
-						if(list) {
-							for(const name of list) {
-								this.opencl_platform_list.push({name: name, value: name});
+						let listi = data["Node.device_list_index"];
+						if(listi) {
+							for(const index of listi) {
+								this.opencl_device_list_index.push(index);
 							}
-						} else {
-							this.opencl_platform_list.push({name: "First platform found", value: ""});
 						}
 					}
 					this.farmer_reward_addr = data["Farmer.reward_addr"];
@@ -63,14 +58,15 @@ Vue.component('node-settings', {
 					this.plot_dirs = data["Harvester.plot_dirs"];
 				});
 		},
-		set_config(key, value, restart) {
+		set_config(key, value, file, restart) { // NOTE: Added boolean option to write or not to config file (.json)
 			var req = {};
 			req.key = key;
 			req.value = value;
+			req.file = file;
 			fetch('/wapi/config/set', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						this.result = {key: req.key, value: req.value, restart};
+						this.result = {key: req.key, value: req.value, file: req.file, restart};
 					} else {
 						response.text().then(data => {
 							this.error = data;
@@ -149,57 +145,55 @@ Vue.component('node-settings', {
 	watch: {
 		timelord(value, prev) {
 			if(prev != null) {
-				this.set_config("timelord", value, true);
+				this.set_config("timelord", value, true, true);
 			}
 		},
 		open_port(value, prev) {
 			if(prev != null) {
-				this.set_config("Router.open_port", value, true);
-			}
-		},
-		opencl_platform(value, prev) {
-			if(prev != null) {
-				this.set_config("opencl.platform", value, true);
+				this.set_config("Router.open_port", value, true, true);
 			}
 		},
 		opencl_device(value, prev) {
 			if(prev != null) {
-				this.set_config("Node.opencl_device", value, true);
+				this.set_config("opencl.platform", "", true, true); // NOTE: Config change made, force any existing platform name config to ""
+				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_index[value] : -1, true, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
+				this.set_config("Node.opencl_device", value, false, true); // NOTE: 'Hijack' value temporary for device selection WebGUI (without config file write), browser reload
+				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_name[value] : "", true, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
 			}
 		},
 		farmer_reward_addr(value, prev) {
 			if(prev != "null") {
-				this.set_config("Farmer.reward_addr", value.length ? value : null, true);
+				this.set_config("Farmer.reward_addr", value.length ? value : null, true, true);
 			}
 		},
 		timelord_reward_addr(value, prev) {
 			if(prev != "null") {
-				this.set_config("TimeLord.reward_addr", value.length ? value : null, true);
+				this.set_config("TimeLord.reward_addr", value.length ? value : null, true, true);
 			}
 		},
 		enable_timelord_reward(value, prev) {
 			if(prev != null) {
-				this.set_config("TimeLord.enable_reward", value, true);
+				this.set_config("TimeLord.enable_reward", value, true, true);
 			}
 		},
 		verify_timelord_reward(value, prev) {
 			if(prev != null) {
-				this.set_config("Node.verify_vdf_rewards", value, true);
+				this.set_config("Node.verify_vdf_rewards", value, true, true);
 			}
 		},
 		harv_num_threads(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.num_threads", value, true);
+				this.set_config("Harvester.num_threads", value, true, true);
 			}
 		},
 		recursive_search(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.recursive_search", value ? true : false, true);
+				this.set_config("Harvester.recursive_search", value ? true : false, true, true);
 			}
 		},
 		reload_interval(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.reload_interval", value, true);
+				this.set_config("Harvester.reload_interval", value, true, true);
 			}
 		},
 		result(value) {
@@ -259,14 +253,6 @@ Vue.component('node-settings', {
 						:label="$t('node_settings.open_port')"
 						class="my-0"
 					></v-checkbox>
-					
-					<v-select
-						v-model="opencl_platform"
-						label="OpenCL Platform"
-						:items="opencl_platform_list"
-						item-text="name"
-						item-value="value"
-					></v-select>
 
 					<v-select
 						v-model="opencl_device"
@@ -276,6 +262,16 @@ Vue.component('node-settings', {
 						item-value="value"
 					></v-select>
 
+				</v-card-text>
+			</v-card>
+
+			<!-- -------------------------------------------------------------------------------------------------- -->
+			<!-- NOTE: Suggestion to create a separate split/card/header for reward addresses (they are important)  -->
+			<!-- TODO: If going to stay, rework 'Reward' text to label text from settings                           -->
+			<!-- -------------------------------------------------------------------------------------------------- -->
+			<v-card class="my-2">
+				<v-card-title>{{ "Reward" }}</v-card-title>
+				<v-card-text>
 					<v-text-field
 						:label="$t('node_settings.farmer_reward_address')"
 						:placeholder="$t('common.reward_address_placeholder')"

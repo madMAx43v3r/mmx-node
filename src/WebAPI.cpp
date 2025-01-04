@@ -1138,37 +1138,41 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		std::lock_guard lock(g_config_mutex);
 		const auto iter_key = args.field.find("key");
 		const auto iter_value = args.field.find("value");
-		if(iter_key != args.field.end() && iter_value != args.field.end())
+		const auto iter_file = args.field.find("file"); // NOTE: Boolean option to write or not to config file (.json)
+		if(iter_key != args.field.end() && iter_value != args.field.end() && iter_file != args.field.end())
 		{
 			const auto key = iter_key->second.to_string_value();
 			const auto value = iter_value->second;
 			vnx::set_config(key, value);
 
-			std::string file;
-			vnx::optional<std::string> field;
-			{
-				const auto pos = key.find('.');
-				if(pos == std::string::npos) {
-					file = key;
-				} else {
-					file = key.substr(0, pos) + ".json";
-					field = key.substr(pos + 1);
+			const auto file = iter_file->second.is_bool() ? iter_file->second : true;
+			if(file) {
+				std::string file;
+				vnx::optional<std::string> field;
+				{
+					const auto pos = key.find('.');
+					if(pos == std::string::npos) {
+						file = key;
+					} else {
+						file = key.substr(0, pos) + ".json";
+						field = key.substr(pos + 1);
+					}
 				}
-			}
-			if(field) {
-				const auto path = config_path + file;
-				auto object = vnx::read_config_file(path);
-				object[*field] = value;
-				vnx::write_config_file(path, object);
-				log(INFO) << "Updated '" << *field << "'" << ": " << value << " (in " << path << ")";
-			} else {
-				const auto path = config_path + file;
-				std::ofstream(path) << value << std::endl;
-				log(INFO) << "Updated " << path << ": " << value;
+				if(field) {
+					const auto path = config_path + file;
+					auto object = vnx::read_config_file(path);
+					object[*field] = value;
+					vnx::write_config_file(path, object);
+					log(INFO) << "Updated '" << *field << "'" << ": " << value << " (in " << path << ")";
+				} else {
+					const auto path = config_path + file;
+					std::ofstream(path) << value << std::endl;
+					log(INFO) << "Updated " << path << ": " << value;
+				}
 			}
 			respond_status(request_id, 200);
 		} else {
-			respond_status(request_id, 400, "POST config/set {key,value}");
+			respond_status(request_id, 400, "POST config/set {key,value,file}");
 		}
 	}
 	else if(sub_path == "/exit" || sub_path == "/node/exit") {
