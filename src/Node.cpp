@@ -126,6 +126,7 @@ void Node::main()
 	add_async_client(http);
 
 	vnx::Directory(storage_path).create();
+	vnx::Directory(storage_path + "forks").create();
 	vnx::Directory(database_path).create();
 
 	const auto time_begin = vnx::get_wall_time_millis();
@@ -298,22 +299,58 @@ void Node::main()
 				log(INFO) << "Replayed height " << peak->height << " from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 			}
 		} else {
-			// load history and fork tree
-			for(int64_t i = max_history; i >= 0; --i) {
-				if(i <= height) {
-					const auto index = height - i;
-					if(i < params->commit_delay && index > 0) {
-						if(auto block = get_block_at(index)) {
+			root = get_header_at(height - std::min(params->commit_delay, height));
+			if(!root) {
+				throw std::logic_error("failed to load root");
+			}
+
+			// fetch fork line
+			for(uint32_t i = root->height + 1; i <= height; ++i) {
+				if(auto block = get_block_at(i)) {
+					auto fork = std::make_shared<fork_t>();
+					fork->block = block;
+					fork->is_vdf_verified = true;
+					add_fork(fork);
+				}
+			}
+
+			// load alternate forks
+			for(auto file : vnx::Directory(storage_path + "forks").files()) {
+				try {
+					file->open("wb+");
+					int64_t end = 0;
+					uint32_t depth = 0;
+					std::shared_ptr<const Block> peak;
+					while(auto block = std::dynamic_pointer_cast<const Block>(vnx::read(file->in))) {
+						if(block->height > height) {
+							break;
+						}
+						if(block->height == root->height) {
+							auto alt = std::make_shared<alt_root_t>();
+							alt->file = file;
+							alt->block = block;
+							alt_roots[block->hash] = alt;
+						} else if(block->height > root->height) {
 							auto fork = std::make_shared<fork_t>();
 							fork->block = block;
 							fork->is_vdf_verified = true;
 							add_fork(fork);
 						}
-					} else {
-						if(auto header = get_header_at(index)) {
-							history[header->height] = header;
-						}
+						end = file->get_input_pos();
+						peak = block;
+						depth++;
 					}
+					file->seek_to(end);
+
+					if(peak && peak >= root->height) {
+						log(INFO) << "Loaded alternate fork at height " << peak->height << " with depth " << depth;
+					} else {
+						file->remove();
+						log(WARN) << "Deleted obsolete fork: " << file->get_path();
+					}
+				}
+				catch(const std::exception& ex) {
+					log(WARN) << "Failed to load alternate fork: " << ex.what() << " (" << file->get_path() << ")";
 				}
 			}
 		}
@@ -717,77 +754,42 @@ std::shared_ptr<const BlockHeader> Node::fork_to(const hash_t& state)
 	throw std::logic_error("cannot fork to " + state.to_string());
 }
 
-std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_head)
+std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 {
 	const auto root = get_root();
 	const auto prev_state = state_hash;
-	const auto fork_line = get_fork_line(fork_head);
+	const auto fork_line = get_fork_line(peak);
 
 	bool did_fork = false;
 	std::shared_ptr<const BlockHeader> forked_at;
 
-	if(state_hash == root->hash) {
-		forked_at = root;
+	const auto alt = find_value(alt_roots, fork_line[0]->block->prev, nullptr);
+	if(alt) {
+		// TODO
 	} else {
-		// bring state back in line
-		auto peak = find_fork(state_hash);
-		while(peak) {
-			bool found = false;
-			for(const auto& fork : fork_line) {
-				if(fork->block->hash == peak->block->hash) {
-					found = true;
-					forked_at = fork->block;
-					break;
-				}
-			}
-			if(found) {
+		forked_at = root;
+		const auto old_fork = get_fork_line();
+		for(size_t i = 0; i < fork_line.size() && i < old_fork.size(); ++i) {
+			if(fork_line[i] != old_fork[i]) {
+				did_fork = true;
 				break;
 			}
-			did_fork = true;
-
-			// add removed tx back to pool
-			for(const auto& tx : peak->block->tx_list) {
-				tx_pool_t entry;
-				auto copy = vnx::clone(tx);
-				copy->reset(params);
-				entry.tx = copy;
-				entry.fee = tx->exec_result->total_fee;
-				entry.cost = tx->exec_result->total_cost;
-				entry.is_valid = true;
-				tx_pool_update(entry, true);
-			}
-			if(peak->block->prev == root->hash) {
-				forked_at = root;
-				break;
-			}
-			peak = peak->prev.lock();
+			forked_at = old_fork[i]->block;
 		}
-	}
-	if(forked_at) {
 		if(did_fork) {
 			revert(forked_at->height + 1);
 		}
-	} else {
-		throw std::logic_error("cannot fork to block at height " + std::to_string(fork_head->block->height));
 	}
 
 	// check for competing forks
 	for(const auto& fork : fork_line)
 	{
-		uint32_t count = 0;
-		const auto range = fork_index.equal_range(fork->block->height);
-		for(auto iter = range.first; iter != range.second; ++iter) {
-			const auto& other = iter->second;
-			if(other->is_connected && other->block->hash != fork->block->hash && other->block->prev != fork->block->prev) {
-				count++;
-			}
-		}
-		if(count) {
+		if(fork_index.count(fork->block->height) > 1) {
 			fork->ahead_count = 0;
 		} else if(auto prev = fork->prev.lock()) {
 			fork->ahead_count = prev->ahead_count + 1;
 		} else {
-			fork->ahead_count = params->commit_delay;
+			fork->ahead_count = 0;
 		}
 	}
 
@@ -804,7 +806,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 				fork->context = validate(block);
 
 				if(!fork->is_vdf_verified) {
-					if(fork->ahead_count < params->commit_delay) {
+					if(fork->ahead_count > 0) {
 						check_vdf(fork);
 					} else {
 						fork->is_vdf_verified = true;
@@ -830,22 +832,18 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> fork_he
 	return did_fork ? forked_at : nullptr;
 }
 
-std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t at_height) const
+std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 {
 	const auto root = get_root();
-	if(at_height <= root->height) {
-		return nullptr;
-	}
+
 	std::shared_ptr<fork_t> best;
-	const auto begin = fork_index.upper_bound(root->height);
-	const auto end = fork_index.upper_bound(at_height);
-	for(auto iter = begin; iter != end; ++iter)
+	for(auto iter = fork_index.upper_bound(root->height); iter != fork_index.end(); ++iter)
 	{
 		const auto& fork = iter->second;
 		const auto& block = fork->block;
 		const auto  prev = fork->prev.lock();
 
-		if(block->prev == root->hash) {
+		if(block->prev == root->hash || alt_roots.count(block->prev)) {
 			fork->total_votes = fork->votes;
 			fork->proof_score_sum = fork->proof_score_224;
 			fork->is_all_proof_verified = fork->is_proof_verified;
@@ -878,17 +876,17 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork(const uint32_t at_height) con
 	return best;
 }
 
-std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<fork_t> fork_head) const
+std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<fork_t> peak) const
 {
 	const auto root = get_root();
 	std::vector<std::shared_ptr<fork_t>> line;
-	auto fork = fork_head ? fork_head : find_fork(state_hash);
+	auto fork = peak ? peak : find_fork(state_hash);
 	if(!fork) {
 		return {};
 	}
-	while(fork && fork->block->height > root->height) {
+	while(fork) {
 		line.push_back(fork);
-		if(fork->block->prev == root->hash) {
+		if(fork->block->prev == root->hash || alt_roots.count(fork->block->prev)) {
 			std::reverse(line.begin(), line.end());
 			return line;
 		}
@@ -937,33 +935,32 @@ void Node::commit(std::shared_ptr<const Block> block)
 	for(auto iter = range.first; iter != range.second; ++iter)
 	{
 		const auto& fork = iter->second;
-		if(fork_tree.erase(fork->block->hash))
-		{
-			const auto& block = fork->block;
-			auto alt = find_value(alt_roots, block->prev, nullptr);
-			if(alt) {
-				// existing fork
-				alt_roots.erase(block->prev);
-			}
-			else if(root && block->prev == root->hash) {
-				// new alternate fork
-				const auto path = storage_path + "forks/";
-				vnx::Directory(path).create();
-				alt = std::make_shared<alt_root_t>();
-				alt->file = std::make_shared<vnx::File>(path + std::to_string(height) + "_" + block->hash.to_string());
-				alt->file->open("wb+");
-				log(WARN) << "New alternate fork at height " << height << ", block " << block->hash;
-			}
-			if(alt) {
-				auto& out = alt->file->out;
-				vnx::write(out, block);
-				const auto end = out.get_output_pos();
-				vnx::write(out, nullptr);	// temporary end
-				alt->file->flush();
-				alt->file->seek_to(end);
-				alt->block = block;
-				alt_roots[block->hash] = alt;
-			}
+		const auto& block = fork->block;
+		if(!fork_tree.erase(block->hash)) {
+			continue;
+		}
+		auto alt = find_value(alt_roots, block->prev, nullptr);
+		if(alt) {
+			// existing fork
+			alt_roots.erase(block->prev);
+		}
+		else if(root && block->prev == root->hash) {
+			// new alternate fork
+			alt = std::make_shared<alt_root_t>();
+			alt->file = std::make_shared<vnx::File>(
+					storage_path + "forks/" + std::to_string(height) + "_" + block->hash.to_string());
+			alt->file->open("wb+");
+			log(WARN) << "New alternate fork at height " << height << ", block " << block->hash;
+		}
+		if(alt) {
+			auto& out = alt->file->out;
+			vnx::write(out, block);
+			const auto end = out.get_output_pos();
+			vnx::write(out, nullptr);	// temporary end
+			alt->file->seek_to(end);
+			alt->file->flush();
+			alt->block = block;
+			alt_roots[block->hash] = alt;
 		}
 	}
 	fork_index.erase(height);
@@ -1290,6 +1287,19 @@ void Node::revert(const uint32_t height)
 
 	for(auto block = peak; block && block->height >= height; block = find_prev_header(block))
 	{
+		// add removed tx back to pool
+		if(auto full = std::dynamic_pointer_cast<const Block>(block)) {
+			for(const auto& tx : full->tx_list) {
+				tx_pool_t entry;
+				auto copy = vnx::clone(tx);
+				copy->reset(params);
+				entry.tx = copy;
+				entry.fee = tx->exec_result->total_fee;
+				entry.cost = tx->exec_result->total_cost;
+				entry.is_valid = true;
+				tx_pool_update(entry, true);
+			}
+		}
 		// revert farmer_ranking
 		if(block->height) {
 			const auto& farmer_key = block->get_farmer_key();
