@@ -81,7 +81,7 @@ void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof)
 	hash_buf.upload(queue, hash, false);
 	num_iters_buf.upload(queue, num_iters, false);
 
-	const uint32_t max_iters = 10000;
+	const uint32_t max_iters = 2500;
 
 	kernel->set("hash", hash_buf);
 	kernel->set("num_iters", num_iters_buf);
