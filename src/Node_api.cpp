@@ -199,7 +199,7 @@ std::shared_ptr<const BlockHeader> Node::get_block_at_ex(const uint32_t& height,
 	}
 	block_index_t entry;
 	if(block_index.find(height, entry)) {
-		vnx::File file(block_chain->get_path());
+		vnx::File file(blocks->get_path());
 		file.open("rb");
 		file.seek_to(entry.file_offset);
 		return read_block(file, full_block);
@@ -356,7 +356,7 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 	}
 	tx_index_t entry;
 	if(tx_index.find(id, entry)) {
-		vnx::File file(block_chain->get_path());
+		vnx::File file(blocks->get_path());
 		file.open("rb");
 		file.seek_to(entry.file_offset);
 		const auto value = vnx::read(file.in);

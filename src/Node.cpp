@@ -7,6 +7,7 @@
 
 #include <mmx/Node.h>
 #include <mmx/Challenge.hxx>
+#include <mmx/ForkHeader.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/contract/Binary.hxx>
@@ -198,11 +199,11 @@ void Node::main()
 					<< farmer_ranking.size() << " farmers, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	}
-	block_chain = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
+	blocks = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
 
-	if(block_chain->exists() && (replay_height || db_replay))
+	if(blocks->exists() && (replay_height || db_replay))
 	{
-		block_chain->open("rb+");
+		blocks->open("rb+");
 
 		bool is_replay = true;
 		uint32_t height = -1;
@@ -210,8 +211,8 @@ void Node::main()
 		// set block_chain position past last readable and valid block
 		while(block_index.find_last(height, entry)) {
 			try {
-				block_chain->seek_to(entry.file_offset);
-				const auto block = std::dynamic_pointer_cast<const Block>(read_block(*block_chain, true));
+				blocks->seek_to(entry.file_offset);
+				const auto block = std::dynamic_pointer_cast<const Block>(read_block(*blocks, true));
 				if(!block) {
 					throw std::runtime_error("not a block");
 				}
@@ -237,14 +238,16 @@ void Node::main()
 			log(INFO) << "Creating DB (this may take a while) ...";
 			int64_t last_time = vnx::get_wall_time_millis();
 			int64_t block_offset = 0;
-			std::vector<int64_t> tx_offsets;
 			std::list<std::shared_ptr<const Block>> history;
 
-			block_chain->seek_begin();
+			blocks->seek_begin();
 			try {
-				while(auto header = read_block(*block_chain, true, &block_offset, &tx_offsets))
-				{
-					if(auto block = std::dynamic_pointer_cast<const Block>(header))
+				while(true) {
+					block_offset = blocks->get_input_pos();
+
+					// TODO: bit-field file for main chain
+
+					if(auto block = std::dynamic_pointer_cast<const Block>(read_block(*blocks, true)))
 					{
 						if(!block->is_valid()) {
 							throw std::runtime_error("invalid block " + std::to_string(block->height));
@@ -258,11 +261,6 @@ void Node::main()
 								throw;
 							}
 						}
-						for(size_t i = 0; i < tx_offsets.size(); ++i) {
-							const auto& tx = block->tx_list[i];
-							tx_index.insert(tx->id, tx->get_tx_index(params, block, tx_offsets[i]));
-						}
-						block_index.insert(block->height, block->get_block_index(block_offset));
 
 						if(block->height) {
 							auto fork = std::make_shared<fork_t>();
@@ -270,7 +268,7 @@ void Node::main()
 							fork->is_vdf_verified = true;
 							add_fork(fork);
 						}
-						apply(block, result, true);
+						apply(block, result);
 
 						history.push_back(block);
 						if(history.size() > params->commit_delay || block->height == 0) {
@@ -293,7 +291,7 @@ void Node::main()
 				}
 			} catch(const std::exception& ex) {
 				log(WARN) << "DB replay stopped due to error: " << ex.what();
-				block_chain->seek_to(block_offset);
+				blocks->seek_to(block_offset);
 			}
 			if(auto peak = get_peak()) {
 				log(INFO) << "Replayed height " << peak->height << " from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
@@ -354,14 +352,14 @@ void Node::main()
 				}
 			}
 		}
-		const auto offset = block_chain->get_input_pos();
-		block_chain->seek_to(offset);
-		vnx::write(block_chain->out, nullptr);	// temporary end of block_chain.dat
-		block_chain->seek_to(offset);
-		block_chain->flush();
+		const auto offset = blocks->get_input_pos();
+		blocks->seek_to(offset);
+		vnx::write(blocks->out, nullptr);	// temporary end of block_chain.dat
+		blocks->seek_to(offset);
+		blocks->flush();
 	} else {
-		block_chain->open("wb");
-		block_chain->open("rb+");
+		blocks->open("wb");
+		blocks->open("rb+");
 	}
 	is_synced = !do_sync;
 
@@ -444,8 +442,8 @@ void Node::main()
 
 	Super::main();
 
-	vnx::write(block_chain->out, nullptr);
-	block_chain->close();
+	vnx::write(blocks->out, nullptr);
+	blocks->close();
 
 	threads->close();
 	api_threads->close();
@@ -756,25 +754,66 @@ std::shared_ptr<const BlockHeader> Node::fork_to(const hash_t& state)
 
 std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 {
-	const auto root = get_root();
-	const auto prev_state = state_hash;
 	const auto fork_line = get_fork_line(peak);
 
 	bool did_fork = false;
 	std::shared_ptr<const BlockHeader> forked_at;
 
-	const auto alt = find_value(alt_roots, fork_line[0]->block->prev, nullptr);
+	const auto root_hash = fork_line[0]->block->prev;
+	const auto alt = find_value(alt_roots, root_hash, nullptr);
 	if(alt) {
-		// TODO
+		did_fork = true;
+		log(WARN) << "Performing deep fork ...";
+		const auto time_begin = vnx::get_wall_time_millis();
+		try {
+			forked_at = alt;
+			std::vector<hash_t> list;
+			while(forked_at) {
+				hash_t hash;
+				if(height_map.find(forked_at->height, hash) && hash == forked_at->hash) {
+					break;
+				}
+				list.push_back(forked_at->hash);
+				forked_at = find_prev_header(forked_at);
+			}
+			if(!forked_at) {
+				throw std::logic_error("cannot find fork point");
+			}
+			log(WARN) << "Reverting to height " << forked_at->height << " ...";
+
+			revert(forked_at->height + 1);
+
+			for(const auto& hash : list) {
+				if(auto block = get_block(hash)) {
+					try {
+						apply(block, validate(block));
+					}
+					catch(const std::exception& ex) {
+						log(WARN) << "Block validation failed for height " << block->height << " with: " << ex.what();
+						throw std::logic_error("validation failed");
+					}
+				} else {
+					throw std::logic_error("failed to read block");
+				}
+			}
+			root = alt;
+			log(INFO) << "Deep fork to new root at height " << root->height << " took "
+					<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+		}
+		catch(const std::exception& ex) {
+			log(WARN) << "Failed to apply alternate fork: " << ex.what();
+			alt_roots.erase(root_hash);
+			throw;
+		}
 	} else {
 		forked_at = root;
-		const auto old_fork = get_fork_line();
-		for(size_t i = 0; i < fork_line.size() && i < old_fork.size(); ++i) {
-			if(fork_line[i] != old_fork[i]) {
+		const auto old_line = get_fork_line();
+		for(size_t i = 0; i < fork_line.size() && i < old_line.size(); ++i) {
+			if(fork_line[i] != old_line[i]) {
 				did_fork = true;
 				break;
 			}
-			forked_at = old_fork[i]->block;
+			forked_at = old_line[i]->block;
 		}
 		if(did_fork) {
 			revert(forked_at->height + 1);
@@ -792,6 +831,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 			fork->ahead_count = 0;
 		}
 	}
+	const auto prev_state = state_hash;
 
 	// verify and apply
 	for(const auto& fork : fork_line)
@@ -818,7 +858,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 				log(WARN) << "Block validation failed for height " << block->height << " with: " << ex.what();
 				fork->is_invalid = true;
 				fork_to(prev_state);
-				throw std::runtime_error("validation failed");
+				throw std::logic_error("validation failed");
 			}
 			if(is_synced) {
 				for(auto point : fork->vdf_points) {
@@ -929,6 +969,15 @@ void Node::commit(std::shared_ptr<const Block> block)
 		}
 		vdf_index.erase(begin, end);
 	}
+
+	for(auto iter = fork_index.rbegin(); iter != fork_index.rend(); ++iter)
+	{
+		const auto& fork = iter->second;
+		if(auto prev = fork->prev.lock()) {
+			prev->fork_length = std::max(prev->fork_length, fork->fork_length + 1);
+		}
+	}
+	alt_roots.clear();
 	fork_tree.erase(block->hash);
 
 	const auto range = fork_index.equal_range(height);
@@ -936,31 +985,11 @@ void Node::commit(std::shared_ptr<const Block> block)
 	{
 		const auto& fork = iter->second;
 		const auto& block = fork->block;
-		if(!fork_tree.erase(block->hash)) {
-			continue;
-		}
-		auto alt = find_value(alt_roots, block->prev, nullptr);
-		if(alt) {
-			// existing fork
-			alt_roots.erase(block->prev);
-		}
-		else if(root && block->prev == root->hash) {
-			// new alternate fork
-			alt = std::make_shared<alt_root_t>();
-			alt->file = std::make_shared<vnx::File>(
-					storage_path + "forks/" + std::to_string(height) + "_" + block->hash.to_string());
-			alt->file->open("wb+");
-			log(WARN) << "New alternate fork at height " << height << ", block " << block->hash;
-		}
-		if(alt) {
-			auto& out = alt->file->out;
-			vnx::write(out, block);
-			const auto end = out.get_output_pos();
-			vnx::write(out, nullptr);	// temporary end
-			alt->file->seek_to(end);
-			alt->file->flush();
-			alt->block = block;
-			alt_roots[block->hash] = alt;
+		if(fork_tree.erase(block->hash)) {
+			if(fork->is_proof_verified && fork->fork_length > 0) {
+				write_block(block, false);
+				alt_roots[block->hash] = block;
+			}
 		}
 	}
 	fork_index.erase(height);
@@ -1013,15 +1042,12 @@ size_t Node::prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) 
 }
 
 void Node::apply(	std::shared_ptr<const Block> block,
-					std::shared_ptr<const execution_context_t> context, bool is_replay)
+					std::shared_ptr<const execution_context_t> context)
 {
 	if(block->prev != state_hash) {
-		throw std::logic_error("apply(): block->prev != state_hash");
+		throw std::logic_error("apply(): prev != state_hash");
 	}
 	try {
-		if(!is_replay) {
-			write_block(block);
-		}
 		uint32_t counter = 0;
 		std::vector<hash_t> tx_ids;
 		std::unordered_set<hash_t> tx_set;
@@ -1121,6 +1147,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				throw std::logic_error("storage == nullptr");
 			}
 		}
+
 		if(block->height) {
 			farmed_block_info_t info;
 			info.height = block->height;
@@ -1143,7 +1170,29 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			}
 			update_farmer_ranking();
 		}
-		hash_index.insert(block->hash, block->height);
+
+		block_index_t index;
+		if(block_index.find(block->hash, index))
+		{
+			vnx::File file(blocks->get_path());
+			file.open("rb+");
+			file.seek_to(index.file_offset);
+
+			std::vector<int64_t> tx_offsets;
+			if(!read_block(file, true, &tx_offsets)) {
+				throw std::logic_error("failed to read block");
+			}
+			if(tx_offsets.size() != block->tx_count) {
+				throw std::logic_error("tx count mismatch");
+			}
+			for(uint32_t i = 0; i < block->tx_count; ++i) {
+				const auto& tx = block->tx_list[i];
+				tx_index.insert(tx->id, tx->get_tx_index(params, block, tx_offsets[i]));
+			}
+		} else {
+			write_block(block);
+		}
+		height_map.insert(block->height, block->hash);
 
 		state_hash = block->hash;
 		contract_cache.clear();
@@ -1287,19 +1336,6 @@ void Node::revert(const uint32_t height)
 
 	for(auto block = peak; block && block->height >= height; block = find_prev_header(block))
 	{
-		// add removed tx back to pool
-		if(auto full = std::dynamic_pointer_cast<const Block>(block)) {
-			for(const auto& tx : full->tx_list) {
-				tx_pool_t entry;
-				auto copy = vnx::clone(tx);
-				copy->reset(params);
-				entry.tx = copy;
-				entry.fee = tx->exec_result->total_fee;
-				entry.cost = tx->exec_result->total_cost;
-				entry.is_valid = true;
-				tx_pool_update(entry, true);
-			}
-		}
 		// revert farmer_ranking
 		if(block->height) {
 			const auto& farmer_key = block->get_farmer_key();
@@ -1312,38 +1348,33 @@ void Node::revert(const uint32_t height)
 				}
 			}
 		}
-		// store reverted blocks on-disk for evidence
-		if(is_synced && block->height < peak->height)
-		{
-			const auto file_name = storage_path + "blocks/"
-					+ std::to_string(block->height) + "_" + block->hash.to_string() + ".dat";
-			try {
-				vnx::write_to_file(file_name, block);
-			} catch(const std::exception& ex) {
-				log(WARN) << "Failed to write block: " << ex.what() << " (" << file_name << ")";
+		// add removed tx back to pool
+		if(is_synced) {
+			if(auto full = std::dynamic_pointer_cast<const Block>(block)) {
+				for(const auto& tx : full->tx_list) {
+					tx_pool_t entry;
+					auto copy = vnx::clone(tx);
+					copy->reset(params);
+					entry.tx = copy;
+					entry.fee = tx->exec_result->total_fee;
+					entry.cost = tx->exec_result->total_cost;
+					entry.is_valid = true;
+					tx_pool_update(entry, true);
+				}
 			}
 		}
 	}
 	update_farmer_ranking();
 
-	if(block_chain) {
-		block_index_t entry;
-		if(block_index.find(height, entry)) {
-			block_chain->seek_to(entry.file_offset);
-		}
-	}
 	db->revert(height);
 	contract_cache.clear();
 
-	block_index_t entry;
-	if(block_index.find_last(entry)) {
-		state_hash = entry.hash;
-	} else {
+	if(!height || !height_map.find(height - 1, state_hash)) {
 		state_hash = hash_t();
 	}
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	if(elapsed > 1) {
-		log(WARN) << "Reverting to height " << int64_t(height) - 1 << " took " << elapsed << " sec";
+		log(WARN) << "Reverting to height " << int32_t(height) - 1 << " took " << elapsed << " sec";
 	}
 }
 
@@ -1711,14 +1742,10 @@ vnx::optional<addr_t> Node::get_vdf_reward_winner(std::shared_ptr<const BlockHea
 }
 
 std::shared_ptr<const BlockHeader> Node::read_block(
-		vnx::File& file, bool full_block, int64_t* block_offset, std::vector<int64_t>* tx_offsets) const
+		vnx::File& file, bool full_block, std::vector<int64_t>* tx_offsets) const
 {
 	// THREAD SAFE (for concurrent reads)
 	auto& in = file.in;
-	const auto offset = in.get_input_pos();
-	if(block_offset) {
-		*block_offset = offset;
-	}
 	if(tx_offsets) {
 		tx_offsets->clear();
 	}
@@ -1749,20 +1776,21 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 	} catch(const std::exception& ex) {
 		log(WARN) << "Failed to read block: " << ex.what();
 	}
-	file.seek_to(offset);
 	return nullptr;
 }
 
-void Node::write_block(std::shared_ptr<const Block> block)
+void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 {
-	auto& out = block_chain->out;
+	auto& out = blocks->out;
 	const auto offset = out.get_output_pos();
 
 	vnx::write(out, block->get_header());
 
 	std::vector<std::pair<hash_t, tx_index_t>> tx_list;
 	for(const auto& tx : block->tx_list) {
-		tx_list.emplace_back(tx->id, tx->get_tx_index(params, block, out.get_output_pos()));
+		if(is_main) {
+			tx_list.emplace_back(tx->id, tx->get_tx_index(params, block, out.get_output_pos()));
+		}
 		vnx::write(out, tx);
 	}
 	for(const auto& entry : tx_list) {
@@ -1771,10 +1799,10 @@ void Node::write_block(std::shared_ptr<const Block> block)
 	vnx::write(out, nullptr);	// end of block
 	const auto end = out.get_output_pos();
 	vnx::write(out, nullptr);	// temporary end of block_chain.dat
-	block_chain->flush();
-	block_chain->seek_to(end);
+	blocks->flush();
+	blocks->seek_to(end);
 
-	block_index.insert(block->height, block->get_block_index(offset));
+	block_index.insert(block->hash, block->get_block_index(offset));
 }
 
 

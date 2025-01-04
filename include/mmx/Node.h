@@ -269,6 +269,7 @@ private:
 		uint32_t votes = 0;						// validator votes
 		uint32_t total_votes = 0;
 		uint32_t ahead_count = 0;				// how many blocks ahead of any competing fork
+		uint32_t fork_length = 0;
 		uint256_t proof_score_224 = 0;			// high (256-32) bits of proof hash
 		uint256_t proof_score_sum = 0;
 		std::weak_ptr<fork_t> prev;
@@ -412,7 +413,7 @@ private:
 	size_t prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) const;
 
 	void apply(	std::shared_ptr<const Block> block,
-				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
+				std::shared_ptr<const execution_context_t> context);
 
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const Transaction> tx,
@@ -463,10 +464,11 @@ private:
 
 	vnx::optional<addr_t> get_vdf_reward_winner(std::shared_ptr<const BlockHeader> block) const;
 
-	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
-			int64_t* block_offset = nullptr, std::vector<int64_t>* tx_offsets = nullptr) const;
+	std::shared_ptr<const BlockHeader> read_block(
+			vnx::File& file, bool full_block = true,
+			std::vector<int64_t>* tx_offsets = nullptr) const;
 
-	void write_block(std::shared_ptr<const Block> block);
+	void write_block(std::shared_ptr<const Block> block, const bool is_main = true);
 
 	template<typename T>
 	std::shared_ptr<const T> get_contract_as(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
@@ -510,12 +512,8 @@ private:
 	std::multimap<hash_t, std::shared_ptr<const VDF_Point>> vdf_tree;				// [output => proof]
 	std::multimap<uint64_t, std::shared_ptr<const VDF_Point>> vdf_index;			// [iters => proof]
 
-	struct alt_root_t {
-		std::shared_ptr<vnx::File> file;
-		std::shared_ptr<const BlockHeader> block;
-	};
-	std::shared_ptr<const BlockHeader> root;										// root for currently heaviest fork (block_chain.dat)
-	std::unordered_map<hash_t, std::shared_ptr<alt_root_t>> alt_roots;				// alternate roots (for *currently* weaker forks)
+	std::shared_ptr<const BlockHeader> root;										// root for heaviest chain
+	std::unordered_map<hash_t, std::shared_ptr<const BlockHeader>> alt_roots;		// alternate roots (for *currently* weaker forks)
 
 	std::multimap<uint32_t, hash_t> challenge_map;									// [vdf height => challenge]
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => sorted proofs]
@@ -528,13 +526,15 @@ private:
 	uint32_t min_pool_fee_ratio = 0;
 	uint64_t mmx_address_count = 0;
 
-	std::shared_ptr<vnx::File> block_chain;
+	// TODO: file with list of main chain block offsets
+	std::shared_ptr<vnx::File> blocks;
 	std::shared_ptr<vm::StorageDB> storage;
 
-	hash_table<hash_t, uint32_t> hash_index;									// [block hash => height]
-	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
-	uint_table<uint32_t, block_index_t> block_index;							// [height => index]
+	hash_table<hash_t, block_index_t> block_index;								// [hash => index] (no revert)
+
+	uint_table<uint32_t, hash_t> height_map;									// [height => hash]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
+	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
 	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;			// [farmer key => info]
 
 	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;					// sorted by count DSC [farmer key => num blocks]
