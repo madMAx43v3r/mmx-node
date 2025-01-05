@@ -457,9 +457,11 @@ void Node::start_sync(const vnx::bool_t& force)
 void Node::revert_sync(const uint32_t& height)
 {
 	if(!root || height <= root->height) {
+		log(WARN) << "Reverting to height " << height << " ...";
 		revert(height);
 	}
 	reset();
+	start_sync(true);
 }
 
 void Node::sync_more()
@@ -568,6 +570,8 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 	const auto alt = find_value(alt_roots, root_hash, nullptr);
 	if(alt) {
 		did_fork = true;
+		alt_roots.erase(root_hash);
+
 		log(WARN) << "Performing deep fork ...";
 		const auto time_begin = vnx::get_wall_time_millis();
 		try {
@@ -601,12 +605,14 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 					throw std::logic_error("failed to read block");
 				}
 			}
+			alt_roots[root->hash] = root;
+			root = alt;
+
 			log(INFO) << "Deep fork to new root at height " << root->height << " took "
 					<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "Failed to apply alternate fork: " << ex.what();
-			alt_roots.erase(root_hash);
 			throw;
 		}
 	} else {
