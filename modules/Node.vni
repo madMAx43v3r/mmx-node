@@ -43,7 +43,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint num_db_threads = 8;
 	uint num_api_threads = 8;
 	uint num_vdf_threads = 8;				// VDF checks + verify
-	uint vdf_check_divider = 100;			// how many VDFs to check in case of competing forks
+	uint vdf_check_threshold = 4;			// when to check VDF during sync
 	uint vdf_verify_max_pending = 2;		// how many VDFs to verify in parallel when synced
 	
 	int opencl_device = 0;					// device to use for VDF verification (-1 to disable)

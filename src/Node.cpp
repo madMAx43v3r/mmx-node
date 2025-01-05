@@ -186,7 +186,6 @@ void Node::main()
 					<< farmer_ranking.size() << " farmers, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	}
-	is_synced = !do_sync;
 
 	if(vdf_slave_mode) {
 		subscribe(input_vdf_points, max_queue_ms);
@@ -201,8 +200,8 @@ void Node::main()
 	subscribe(input_harvester_proof, max_queue_ms);
 	subscribe(output_votes, max_queue_ms);
 
+	set_timer_millis(60 * 1000, std::bind(&Node::print_stats, this));
 	set_timer_millis(30 * 1000, std::bind(&Node::purge_tx_pool, this));
-	set_timer_millis(300 * 1000, std::bind(&Node::print_stats, this));
 	set_timer_millis(3600 * 1000, std::bind(&Node::update_control, this));
 	set_timer_millis(validate_interval_ms, std::bind(&Node::validate_new, this));
 
@@ -214,6 +213,11 @@ void Node::main()
 	router->storage_path = storage_path;
 	router.start();
 
+	if(do_sync) {
+		start_sync(true);
+	} else {
+		is_synced = true;
+	}
 	update();
 
 	Super::main();
@@ -358,7 +362,9 @@ void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::boo
 
 void Node::handle(std::shared_ptr<const Block> block)
 {
-	add_block(block);
+	if(is_synced || sync_peak) {
+		add_block(block);
+	}
 }
 
 void Node::handle(std::shared_ptr<const Transaction> tx)
@@ -440,6 +446,17 @@ void Node::on_stuck_timeout()
 	start_sync(false);
 }
 
+void Node::sync_status()
+{
+	if(is_synced) {
+		sync_status_timer->stop();
+	}
+	const auto vdf_checks = vdf_threads->get_num_pending_total();
+	if(vdf_checks) {
+		log(INFO) << vdf_checks << " VDF checks pending ...";
+	}
+}
+
 void Node::start_sync(const vnx::bool_t& force)
 {
 	if((!is_synced || !do_sync) && !force) {
@@ -453,16 +470,22 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_peak = nullptr;
 	sync_retry = 0;
 
+	if(sync_status_timer) {
+		sync_status_timer->stop();
+	}
+	sync_status_timer = set_timer_millis(10 * 1000, std::bind(&Node::sync_status, this));
+
 	timelord->stop_vdf(
 		[this]() {
 			log(INFO) << "Stopped TimeLord";
 		});
+
 	sync_more();
 }
 
 void Node::revert_sync(const uint32_t& height)
 {
-	if(!root || height <= root->height) {
+	if(height <= get_root()->height) {
 		log(WARN) << "Reverting to height " << height << " ...";
 		revert(height);
 		reset();
@@ -475,14 +498,16 @@ void Node::sync_more()
 	if(is_synced) {
 		return;
 	}
+	const auto root = get_root();
+
 	if(!sync_pos) {
-		sync_pos = get_root()->height + 1;
+		sync_pos = root->height + 1;
 		log(INFO) << "Starting sync at height " << sync_pos;
 	}
 	if(vdf_threads->get_num_pending()) {
-		return;		// wait for VDF checks
+		return;		// wait for pending VDF checks (all threads busy)
 	}
-	if(get_height() + max_sync_ahead < sync_pos) {
+	if(sync_pos - root->height > params->commit_delay + max_sync_ahead) {
 		return;		// limit blocks in memory during sync
 	}
 	const size_t max_pending = sync_retry ? 2 : std::max(std::min<int>(max_sync_pending, max_sync_jobs), 4);
@@ -567,6 +592,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(const hash_t& state)
 
 std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 {
+	const auto prev_state = state_hash;
 	const auto fork_line = get_fork_line(peak);
 
 	bool did_fork = false;
@@ -636,19 +662,6 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 		}
 	}
 
-	// check for competing forks
-	for(const auto& fork : fork_line)
-	{
-		if(fork_index.count(fork->block->height) > 1) {
-			fork->ahead_count = 0;
-		} else if(auto prev = fork->prev.lock()) {
-			fork->ahead_count = prev->ahead_count + 1;
-		} else {
-			fork->ahead_count = params->commit_delay;
-		}
-	}
-	const auto prev_state = state_hash;
-
 	// verify and apply
 	for(const auto& fork : fork_line)
 	{
@@ -662,9 +675,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 				fork->context = validate(block);
 
 				if(!fork->is_vdf_verified) {
-					if(fork->ahead_count < params->commit_delay &&
-						(block->vdf_count > vdf_check_divider || vnx::rand64() % (vdf_check_divider / block->vdf_count) == 0))
-					{
+					if(block->vdf_count >= vdf_check_threshold) {
 						check_vdf(fork);
 					} else {
 						fork->is_vdf_verified = true;
@@ -737,6 +748,9 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<fork_t> peak) const
 {
 	const auto root = get_root();
+	if(!peak && state_hash == root->hash) {
+		return {};
+	}
 	std::vector<std::shared_ptr<fork_t>> line;
 	auto fork = peak ? peak : find_fork(state_hash);
 	while(fork) {

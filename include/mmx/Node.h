@@ -214,6 +214,8 @@ protected:
 
 	void on_stuck_timeout();
 
+	void sync_status();
+
 	void start_sync(const vnx::bool_t& force) override;
 
 	void revert_sync(const uint32_t& height) override;
@@ -268,7 +270,6 @@ private:
 		int64_t recv_time = 0;					// [ms]
 		uint32_t votes = 0;						// validator votes
 		uint32_t total_votes = 0;
-		uint32_t ahead_count = 0;				// how many blocks ahead of any competing fork
 		uint32_t fork_length = 0;
 		uint256_t proof_score_224 = 0;			// high (256-32) bits of proof hash
 		uint256_t proof_score_sum = 0;
@@ -564,6 +565,7 @@ private:
 	std::shared_ptr<vnx::ThreadPool> api_threads;			// executed under shared db_mutex lock
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
+	std::shared_ptr<vnx::Timer> sync_status_timer;
 
 	mutable std::mutex mutex;								// network + contract_cache + tx_pool_index
 	mutable std::shared_ptr<const NetworkInfo> network;

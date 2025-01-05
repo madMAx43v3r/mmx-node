@@ -323,9 +323,6 @@ void Node::update()
 				}
 			} else {
 				msg << ", " << sync_pending.size() << " pending";
-				if(auto count = vdf_threads->get_num_pending_total()) {
-					msg << ", " << count << " vdf checks";
-				}
 			}
 			msg << ", took " << elapsed << " sec";
 			log(INFO) << msg.str();
