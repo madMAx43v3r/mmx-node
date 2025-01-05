@@ -737,9 +737,6 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	const auto root = get_root();
 	std::vector<std::shared_ptr<fork_t>> line;
 	auto fork = peak ? peak : find_fork(state_hash);
-	if(!fork) {
-		return {};
-	}
 	while(fork) {
 		line.push_back(fork);
 		if(fork->block->prev == root->hash || alt_roots.count(fork->block->prev)) {
