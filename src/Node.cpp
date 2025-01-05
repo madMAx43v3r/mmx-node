@@ -459,8 +459,8 @@ void Node::revert_sync(const uint32_t& height)
 	if(!root || height <= root->height) {
 		log(WARN) << "Reverting to height " << height << " ...";
 		revert(height);
+		reset();
 	}
-	reset();
 	start_sync(true);
 }
 
@@ -1190,6 +1190,13 @@ void Node::revert(const uint32_t height)
 
 void Node::reset()
 {
+	root = nullptr;
+	alt_roots.clear();
+	fork_tree.clear();
+	fork_index.clear();
+	history.clear();
+	history_log.clear();
+
 	uint32_t height = 0;
 	if(height_map.find_last(height, state_hash))
 	{
@@ -1199,11 +1206,6 @@ void Node::reset()
 		if(!root) {
 			throw std::logic_error("failed to load root block");
 		}
-		alt_roots.clear();
-		fork_tree.clear();
-		fork_index.clear();
-		history.clear();
-		history_log.clear();
 
 		// load fork tree
 		std::vector<hash_t> list;
