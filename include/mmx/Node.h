@@ -485,6 +485,7 @@ private:
 private:
 	hash_t state_hash;
 	std::shared_ptr<DataBase> db;
+	std::shared_ptr<DataBase> db_blocks;
 
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> txio_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]

@@ -156,9 +156,15 @@ void Node::main()
 		db->sync();
 		db->recover();
 	}
-	block_index.open(database_path + "block_index_new");	// TODO: rename back
-	height_index.open(database_path + "height_index");
+	{
+		db_blocks = std::make_shared<DataBase>(2);
 
+		db_blocks->open_async(block_index, database_path + "block_index_new");	// TODO: rename back
+		db_blocks->open_async(height_index, database_path + "height_index");
+
+		db_blocks->sync();
+		db_blocks->recover();
+	}
 	storage = std::make_shared<vm::StorageDB>(database_path, db);
 
 	storage->read_balance = [this](const addr_t& address, const addr_t& currency) -> std::unique_ptr<uint128> {
@@ -1158,14 +1164,13 @@ void Node::revert(const uint32_t height)
 		}
 	}
 
-	contract_cache.clear();
-
 	db->revert(height);
 
 	uint32_t peak = 0;
 	if(!height_map.find_last(peak, state_hash)) {
 		state_hash = hash_t();
 	}
+	contract_cache.clear();
 
 	if(is_deep || farmer_ranking.empty())
 	{
@@ -1196,11 +1201,19 @@ void Node::reset()
 	fork_index.clear();
 	history.clear();
 	history_log.clear();
+	contract_cache.clear();
 
 	uint32_t height = 0;
 	if(height_map.find_last(height, state_hash))
 	{
 		blocks->open("rb+");
+
+		// check consistency
+		while(!get_block_at(height) && height) {
+			log(WARN) << "Missing block at height " << height << " (likely DB corruption)";
+			revert(height--);
+		}
+
 		// get root
 		root = get_header_at(height - std::min(params->commit_delay, height));
 		if(!root) {
@@ -1243,8 +1256,7 @@ void Node::reset()
 	else {
 		blocks->open("wb");
 		blocks->open("rb+");
-		block_index.revert(0);
-		height_index.revert(0);
+		db_blocks->revert(0);
 		init_chain();
 	}
 }
@@ -1693,9 +1705,7 @@ void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 	block_index.insert(block->hash, block->get_block_index(offset));
 	height_index.insert(block->height, block->hash);
 
-	const auto version = block_index.current_version() + 1;
-	block_index.commit(version);
-	height_index.commit(version);
+	db_blocks->commit(db_blocks->version() + 1);
 }
 
 

@@ -255,6 +255,8 @@ public:
 
 	void revert(const uint32_t new_version);
 
+	uint32_t version() const;
+
 	uint32_t min_version() const;
 
 	uint32_t recover();
