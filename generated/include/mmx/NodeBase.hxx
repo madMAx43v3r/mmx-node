@@ -82,7 +82,7 @@ public:
 	uint32_t num_db_threads = 8;
 	uint32_t num_api_threads = 8;
 	uint32_t num_vdf_threads = 8;
-	uint32_t vdf_check_divider = 100;
+	uint32_t vdf_check_threshold = 4;
 	uint32_t vdf_verify_max_pending = 2;
 	int32_t opencl_device = 0;
 	std::string opencl_device_name;
@@ -263,7 +263,7 @@ void NodeBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("num_db_threads", 31); _visitor.accept(num_db_threads);
 	_visitor.type_field("num_api_threads", 32); _visitor.accept(num_api_threads);
 	_visitor.type_field("num_vdf_threads", 33); _visitor.accept(num_vdf_threads);
-	_visitor.type_field("vdf_check_divider", 34); _visitor.accept(vdf_check_divider);
+	_visitor.type_field("vdf_check_threshold", 34); _visitor.accept(vdf_check_threshold);
 	_visitor.type_field("vdf_verify_max_pending", 35); _visitor.accept(vdf_verify_max_pending);
 	_visitor.type_field("opencl_device", 36); _visitor.accept(opencl_device);
 	_visitor.type_field("opencl_device_name", 37); _visitor.accept(opencl_device_name);

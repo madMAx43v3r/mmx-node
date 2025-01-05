@@ -222,7 +222,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x1da62169ae21259aull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0x5fa2c551922de2full);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -261,7 +261,7 @@ NodeBase::NodeBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".num_db_threads", num_db_threads);
 	vnx::read_config(vnx_name + ".num_api_threads", num_api_threads);
 	vnx::read_config(vnx_name + ".num_vdf_threads", num_vdf_threads);
-	vnx::read_config(vnx_name + ".vdf_check_divider", vdf_check_divider);
+	vnx::read_config(vnx_name + ".vdf_check_threshold", vdf_check_threshold);
 	vnx::read_config(vnx_name + ".vdf_verify_max_pending", vdf_verify_max_pending);
 	vnx::read_config(vnx_name + ".opencl_device", opencl_device);
 	vnx::read_config(vnx_name + ".opencl_device_name", opencl_device_name);
@@ -328,7 +328,7 @@ void NodeBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, num_db_threads);
 	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, num_api_threads);
 	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, num_vdf_threads);
-	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, vdf_check_divider);
+	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, vdf_check_threshold);
 	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, vdf_verify_max_pending);
 	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, opencl_device);
 	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, opencl_device_name);
@@ -383,7 +383,7 @@ void NodeBase::write(std::ostream& _out) const {
 	_out << ", \"num_db_threads\": "; vnx::write(_out, num_db_threads);
 	_out << ", \"num_api_threads\": "; vnx::write(_out, num_api_threads);
 	_out << ", \"num_vdf_threads\": "; vnx::write(_out, num_vdf_threads);
-	_out << ", \"vdf_check_divider\": "; vnx::write(_out, vdf_check_divider);
+	_out << ", \"vdf_check_threshold\": "; vnx::write(_out, vdf_check_threshold);
 	_out << ", \"vdf_verify_max_pending\": "; vnx::write(_out, vdf_verify_max_pending);
 	_out << ", \"opencl_device\": "; vnx::write(_out, opencl_device);
 	_out << ", \"opencl_device_name\": "; vnx::write(_out, opencl_device_name);
@@ -445,7 +445,7 @@ vnx::Object NodeBase::to_object() const {
 	_object["num_db_threads"] = num_db_threads;
 	_object["num_api_threads"] = num_api_threads;
 	_object["num_vdf_threads"] = num_vdf_threads;
-	_object["vdf_check_divider"] = vdf_check_divider;
+	_object["vdf_check_threshold"] = vdf_check_threshold;
 	_object["vdf_verify_max_pending"] = vdf_verify_max_pending;
 	_object["opencl_device"] = opencl_device;
 	_object["opencl_device_name"] = opencl_device_name;
@@ -560,8 +560,8 @@ void NodeBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(update_interval_ms);
 		} else if(_entry.first == "validate_interval_ms") {
 			_entry.second.to(validate_interval_ms);
-		} else if(_entry.first == "vdf_check_divider") {
-			_entry.second.to(vdf_check_divider);
+		} else if(_entry.first == "vdf_check_threshold") {
+			_entry.second.to(vdf_check_threshold);
 		} else if(_entry.first == "vdf_slave_mode") {
 			_entry.second.to(vdf_slave_mode);
 		} else if(_entry.first == "vdf_verify_max_pending") {
@@ -673,8 +673,8 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	if(_name == "num_vdf_threads") {
 		return vnx::Variant(num_vdf_threads);
 	}
-	if(_name == "vdf_check_divider") {
-		return vnx::Variant(vdf_check_divider);
+	if(_name == "vdf_check_threshold") {
+		return vnx::Variant(vdf_check_threshold);
 	}
 	if(_name == "vdf_verify_max_pending") {
 		return vnx::Variant(vdf_verify_max_pending);
@@ -793,8 +793,8 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(num_api_threads);
 	} else if(_name == "num_vdf_threads") {
 		_value.to(num_vdf_threads);
-	} else if(_name == "vdf_check_divider") {
-		_value.to(vdf_check_divider);
+	} else if(_name == "vdf_check_threshold") {
+		_value.to(vdf_check_threshold);
 	} else if(_name == "vdf_verify_max_pending") {
 		_value.to(vdf_verify_max_pending);
 	} else if(_name == "opencl_device") {
@@ -852,7 +852,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0x1da62169ae21259aull);
+	type_code->code_hash = vnx::Hash64(0x5fa2c551922de2full);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
 	type_code->methods.resize(87);
@@ -1185,8 +1185,8 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[34];
 		field.data_size = 4;
-		field.name = "vdf_check_divider";
-		field.value = vnx::to_string(100);
+		field.name = "vdf_check_threshold";
+		field.value = vnx::to_string(4);
 		field.code = {3};
 	}
 	{
@@ -1948,7 +1948,7 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			vnx::read_value(_buf + _field->offset, value.num_vdf_threads, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[34]) {
-			vnx::read_value(_buf + _field->offset, value.vdf_check_divider, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.vdf_check_threshold, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[35]) {
 			vnx::read_value(_buf + _field->offset, value.vdf_verify_max_pending, _field->code.data());
@@ -2037,7 +2037,7 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write_value(_buf + 48, value.num_db_threads);
 	vnx::write_value(_buf + 52, value.num_api_threads);
 	vnx::write_value(_buf + 56, value.num_vdf_threads);
-	vnx::write_value(_buf + 60, value.vdf_check_divider);
+	vnx::write_value(_buf + 60, value.vdf_check_threshold);
 	vnx::write_value(_buf + 64, value.vdf_verify_max_pending);
 	vnx::write_value(_buf + 68, value.opencl_device);
 	vnx::write_value(_buf + 72, value.do_sync);
