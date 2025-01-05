@@ -53,53 +53,53 @@ void Node::main()
 
 		const auto platforms = automy::basic_opencl::get_platforms();
 
-		struct device { // NOTE: Element for each OpenCL device found
-			std::string device_name;
-			int device_index;
-			std::string platform_name;
-			cl_platform_id platform_id;
+		struct device_t { // NOTE: Element for each OpenCL device found
+			int index = 0;
+			std::string name;
+			std::string platform;
 			cl_device_id device_id;
+			cl_platform_id platform_id;
 		};
-		std::vector<device> list;
+		std::vector<device_t> list;
 		int listsel = -1; // NOTE: Selection index for GPU entry in list, if found (-1/None if not)
 
 		for(const auto idp : platforms) { // NOTE: Find all OpenCL devices, insert in list
 			const auto devices = automy::basic_opencl::get_devices(idp, CL_DEVICE_TYPE_GPU);
 			for(const auto idd : devices) {
 				int device_index = 0;
-				for(size_t i = 0; i < list.size(); ++i) {
-					if( automy::basic_opencl::get_device_name(idd) == list[i].device_name ) device_index++;
+				const auto name = automy::basic_opencl::get_device_name(idd);
+				for(const auto& device : list) {
+					if(device.name == name) {
+						device_index++;
+					}
 				}
-				list.push_back({automy::basic_opencl::get_device_name(idd), device_index, automy::basic_opencl::get_platform_name(idp), idp, idd});
-				log(INFO) << "Found OpenCL GPU device '" << list[list.size() - 1].device_name << "' [" << list[list.size() - 1].device_index << "] (" << list[list.size() - 1].platform_name << ")";
+				list.push_back({device_index, automy::basic_opencl::get_device_name(idd), automy::basic_opencl::get_platform_name(idp), idd, idp});
+				log(INFO) << "Found OpenCL GPU device '" << list.back().name << "' [" << list.back().index << "] (" << list.back().platform << ")";
 			}
 		}
 
-		std::vector<std::string> device_list_name;
-		std::vector<int> device_list_index;
-		for(size_t i = 0; i < list.size(); ++i) {
-			device_list_name.push_back(list[i].device_name);
-			device_list_index.push_back(list[i].device_index);
+		std::vector<std::pair<std::string, int>> device_list;
+		for(const auto& device : list) {
+			device_list.push_back(std::make_pair(device.name, device.index));
 		}
-		vnx::write_config("Node.device_list_name", device_list_name);
-		vnx::write_config("Node.device_list_index", device_list_index);
+		vnx::write_config("Node.opencl_device_list", device_list);
 
 		if(opencl_device >= 0) { // NOTE: If configured to use OpenCL devices (not -1/None)
 			if(list.size()) { // NOTE: Only if OpenCL devices was found
 				if(!opencl_device_name.empty()) { // NOTE: New config method (not legacy), relative index
 					for(size_t i = 0; i < list.size() && listsel < 0; ++i) {
-						if(opencl_device_name == list[i].device_name && opencl_device == list[i].device_index) {
+						if(opencl_device_name == list[i].name && opencl_device == list[i].index) {
 							listsel = i;
 						}
 					}
 				}
 				else { // NOTE: No device_name, hybrid behaviour (new/legacy configs), still opencl_device >= 0
 					if(platform_name.empty()) { // NOTE: Set empty platform_name to first platform, it exists (temporary, not config file)
-						platform_name = list[0].platform_name;
+						platform_name = list[0].platform;
 					}
 					int devidx = -1;
 					for(size_t i = 0; i < list.size() && listsel < 0; ++i) { // NOTE: Search devices on 1x named platform, see if opencl_device index exists
-						if(platform_name == list[i].platform_name) {
+						if(platform_name == list[i].platform) {
 							devidx++;
 						}
 						if(devidx >= opencl_device) {
@@ -114,7 +114,7 @@ void Node::main()
 					for(uint32_t i = 0; i < vdf_verify_max_pending; ++i) {
 						opencl_vdf.push_back(std::make_shared<OCL_VDF>(opencl_context, list[listsel].device_id));
 					}
-					log(INFO) << "Using OpenCL GPU device '" << list[listsel].device_name << "' [" << list[listsel].device_index << "] (" << list[listsel].platform_name << ")";
+					log(INFO) << "Using OpenCL GPU device '" << list[listsel].name << "' [" << list[listsel].index << "] (" << list[listsel].platform << ")";
 				}
 				else { // NOTE: No OpenCL in list found, fail/fallback to -1/None
 					log(WARN) << "No such OpenCL GPU device '" << opencl_device_name << "' [" << opencl_device << "]";
@@ -128,7 +128,7 @@ void Node::main()
 			log(INFO) << "No OpenCL device used (disabled)";
 		}
 
-		vnx::write_config("Node.opencl_device", listsel); // NOTE: 'Hijack' Node.opencl_device temporary to communicate 'OpenCL Device' selection WebGUI
+		vnx::write_config("Node.opencl_device_select", listsel); // NOTE: Communicate 'OpenCL Device' selection WebGUI, temporary config (RAM only)
 	}
 	catch(const std::exception& ex) {
 		log(WARN) << "Failed to create OpenCL GPU context: " << ex.what();

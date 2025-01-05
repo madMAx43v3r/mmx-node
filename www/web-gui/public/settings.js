@@ -7,10 +7,9 @@ Vue.component('node-settings', {
 			loading: true,
 			timelord: null,
 			open_port: null,
+			opencl_device_list_relidx: null, // NOTE: List of OpenCL devices from Node.cpp (pair with name and relative index)
 			opencl_device: null,
 			opencl_device_list: null,
-			opencl_device_list_name: null, // NOTE: List of OpenCL devices from Node.cpp (names)
-			opencl_device_list_index: null, // NOTE: List of OpenCL devices from Node.cpp (relative index)
 			farmer_reward_addr: "null",
 			timelord_reward_addr: "null",
 			harv_num_threads: null,
@@ -30,23 +29,16 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
-					this.opencl_device = data["Node.opencl_device"] != null ? data["Node.opencl_device"] : -1; // NOTE: Current List selection (not relative, value index in WebGUI list), temporary 'hijack' for session, not value written to config .json (to support refresh of WebGUI browser)
-					this.opencl_device_list_name = [];
-					this.opencl_device_list_index = [];
+					this.opencl_device = data["Node.opencl_device_select"] != null ? data["Node.opencl_device_select"] : -1; // NOTE: Current List selection (not relative, value index in WebGUI list), from temporary config (RAM only) value, not value written to config .json (to support refresh of WebGUI browser)
+					this.opencl_device_list_relidx = [];
 					this.opencl_device_list = [{name: "None", value: -1}]; // NOTE: WebGUI list of OpenCL devices, with added -1/None
 					{
-						let listn = data["Node.device_list_name"];
-						if(listn) {
+						let list = data["Node.opencl_device_list"]; // NOTE: List of devices from Node.cpp (pair with name and relative index)
+						if(list) {
 							let i = 0;
-							for(const name of listn) {
-								this.opencl_device_list_name.push(name);
-								this.opencl_device_list.push({name: name, value: i++});
-							}
-						}
-						let listi = data["Node.device_list_index"];
-						if(listi) {
-							for(const index of listi) {
-								this.opencl_device_list_index.push(index);
+							for(const device of list) {
+								this.opencl_device_list_relidx.push({name: device[0], index: device[1]});
+								this.opencl_device_list.push({name: device[0], value: i++});
 							}
 						}
 					}
@@ -155,10 +147,10 @@ Vue.component('node-settings', {
 		},
 		opencl_device(value, prev) {
 			if(prev != null) {
-				this.set_config("opencl.platform", "", true, true); // NOTE: Config change made, force any existing platform name config to ""
-				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_index[value] : -1, true, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
-				this.set_config("Node.opencl_device", value, false, true); // NOTE: 'Hijack' value temporary for device selection WebGUI (without config file write), browser reload
-				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_name[value] : "", true, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
+				this.set_config("Node.opencl_device_select", value, false, true); // NOTE: Temporary current device selection WebGUI (no config file write), survive browser reload
+				this.set_config("opencl.platform", null, true, true); // NOTE: Config change made, force any existing platform name config to ""
+				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_relidx[value]["index"] : -1, true, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
+				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_relidx[value]["name"] : null, true, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
 			}
 		},
 		farmer_reward_addr(value, prev) {
