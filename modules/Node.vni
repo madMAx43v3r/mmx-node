@@ -37,7 +37,7 @@ module Node implements vnx.addons.HttpComponent {
 	uint max_sync_jobs = 64;				// number of parallel requests
 	uint max_sync_ahead = 1000;				// how many blocks to fetch ahead at most
 	uint num_sync_retries = 3;				// how often to retry when reaching a peak
-	uint replay_height = -1;				// to limit reloading from disk and force resync
+	uint revert_height = -1;				// to revert DB on start
 	
 	uint num_threads = 24;
 	uint num_db_threads = 8;
@@ -49,7 +49,6 @@ module Node implements vnx.addons.HttpComponent {
 	string opencl_device_name;				// when specified, opencl_device is a relative index
 	
 	bool do_sync = true;
-	bool db_replay = false;
 	bool show_warnings = false;
 	bool vdf_slave_mode = false;
 	bool exec_debug = false;					// dump memory on exec fail

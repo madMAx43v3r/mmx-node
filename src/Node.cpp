@@ -127,7 +127,6 @@ void Node::main()
 	add_async_client(http);
 
 	vnx::Directory(storage_path).create();
-	vnx::Directory(storage_path + "forks").create();
 	vnx::Directory(database_path).create();
 
 	const auto time_begin = vnx::get_wall_time_millis();
@@ -150,14 +149,16 @@ void Node::main()
 
 		db->open_async(tx_log, database_path + "tx_log");
 		db->open_async(tx_index, database_path + "tx_index");
-		db->open_async(hash_index, database_path + "hash_index");
-		db->open_async(block_index, database_path + "block_index");
+		db->open_async(height_map, database_path + "height_map");
 		db->open_async(balance_table, database_path + "balance_table");
 		db->open_async(farmer_block_map, database_path + "farmer_block_map");
 		db->open_async(total_supply_map, database_path + "total_supply_map");
 
 		db->sync();
 	}
+	block_index.open(database_path + "block_index_new");	// TODO: rename back
+	height_index.open(database_path + "height_index");
+
 	storage = std::make_shared<vm::StorageDB>(database_path, db);
 
 	storage->read_balance = [this](const addr_t& address, const addr_t& currency) -> std::unique_ptr<uint128> {
@@ -168,249 +169,18 @@ void Node::main()
 		return nullptr;
 	};
 
-	if(db_replay) {
-		replay_height = 0;
-	}
+	blocks = std::make_shared<vnx::File>(database_path + "blocks.dat");
 	{
-		const auto height = std::min(db->min_version(), replay_height);
+		const auto height = std::min(db->min_version(), revert_height);
 		revert(height);
+		reset();
 
-		uint64_t balance_count = 0;
-		balance_table.scan([this, &balance_count](const std::pair<addr_t, addr_t>& key, const uint128& value) -> bool {
-			if(value >= 1000000 && key.second == addr_t()) {
-				mmx_address_count++;
-			}
-			balance_count++;
-			return true;
-		});
-		{
-			std::map<pubkey_t, uint32_t> farmer_block_count;
-			farmer_block_map.scan([&farmer_block_count](const pubkey_t& key, const farmed_block_info_t& info) -> bool {
-				farmer_block_count[key]++;
-				return true;
-			});
-			for(const auto& entry : farmer_block_count) {
-				farmer_ranking.push_back(entry);
-			}
-			update_farmer_ranking();
-		}
 		if(height) {
-			log(INFO) << "Loaded DB at height " << (height - 1) << ", " << balance_count << " balances, " << mmx_address_count << " addresses, "
+			log(INFO) << "Loaded DB at height " << (height - 1) << ", " << mmx_address_count << " addresses, "
 					<< farmer_ranking.size() << " farmers, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
 	}
-	blocks = std::make_shared<vnx::File>(storage_path + "block_chain.dat");
-
-	if(blocks->exists() && (replay_height || db_replay))
-	{
-		blocks->open("rb+");
-
-		bool is_replay = true;
-		uint32_t height = -1;
-		block_index_t entry;
-		// set block_chain position past last readable and valid block
-		while(block_index.find_last(height, entry)) {
-			try {
-				blocks->seek_to(entry.file_offset);
-				const auto block = std::dynamic_pointer_cast<const Block>(read_block(*blocks, true));
-				if(!block) {
-					throw std::runtime_error("not a block");
-				}
-				if(!block->is_valid()) {
-					throw std::runtime_error("invalid block");
-				}
-				if(block->height != height) {
-					throw std::runtime_error("invalid block height");
-				}
-				if(block->hash != state_hash) {
-					throw std::runtime_error("invalid block hash");
-				}
-				is_replay = false;
-				break;
-			}
-			catch(const std::exception& ex) {
-				log(WARN) << "Validating on-disk peak " << height << " failed with: " << ex.what();
-			}
-			revert(height);
-		}
-
-		if(is_replay) {
-			log(INFO) << "Creating DB (this may take a while) ...";
-			int64_t last_time = vnx::get_wall_time_millis();
-			int64_t block_offset = 0;
-			std::list<std::shared_ptr<const Block>> history;
-
-			blocks->seek_begin();
-			try {
-				while(true) {
-					block_offset = blocks->get_input_pos();
-
-					// TODO: bit-field file for main chain
-
-					if(auto block = std::dynamic_pointer_cast<const Block>(read_block(*blocks, true)))
-					{
-						if(!block->is_valid()) {
-							throw std::runtime_error("invalid block " + std::to_string(block->height));
-						}
-						std::shared_ptr<execution_context_t> result;
-						if(block->height) {
-							try {
-								result = validate(block);
-							} catch(std::exception& ex) {
-								log(ERROR) << "Block validation at height " << block->height << " failed with: " << ex.what();
-								throw;
-							}
-						}
-
-						if(block->height) {
-							auto fork = std::make_shared<fork_t>();
-							fork->block = block;
-							fork->is_vdf_verified = true;
-							add_fork(fork);
-						}
-						apply(block, result);
-
-						history.push_back(block);
-						if(history.size() > params->commit_delay || block->height == 0) {
-							commit(history.front());
-							history.pop_front();
-						}
-						{
-							const auto now = vnx::get_wall_time_millis();
-							if(now - last_time >= 5000) {
-								log(INFO) << "DB replay at height " << block->height << " ...";
-								last_time = now;
-							}
-						}
-						vnx_process(false);
-					}
-					if(!vnx::do_run()) {
-						log(WARN) << "DB replay aborted";
-						return;
-					}
-				}
-			} catch(const std::exception& ex) {
-				log(WARN) << "DB replay stopped due to error: " << ex.what();
-				blocks->seek_to(block_offset);
-			}
-			if(auto peak = get_peak()) {
-				log(INFO) << "Replayed height " << peak->height << " from disk, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
-			}
-		} else {
-			root = get_header_at(height - std::min(params->commit_delay, height));
-			if(!root) {
-				throw std::logic_error("failed to load root");
-			}
-
-			// fetch fork line
-			for(uint32_t i = root->height + 1; i <= height; ++i) {
-				if(auto block = get_block_at(i)) {
-					auto fork = std::make_shared<fork_t>();
-					fork->block = block;
-					fork->is_vdf_verified = true;
-					add_fork(fork);
-				}
-			}
-
-			// load alternate forks
-			for(auto file : vnx::Directory(storage_path + "forks").files()) {
-				try {
-					file->open("wb+");
-					int64_t end = 0;
-					uint32_t depth = 0;
-					std::shared_ptr<const Block> peak;
-					while(auto block = std::dynamic_pointer_cast<const Block>(vnx::read(file->in))) {
-						if(block->height > height) {
-							break;
-						}
-						if(block->height == root->height) {
-							auto alt = std::make_shared<alt_root_t>();
-							alt->file = file;
-							alt->block = block;
-							alt_roots[block->hash] = alt;
-						} else if(block->height > root->height) {
-							auto fork = std::make_shared<fork_t>();
-							fork->block = block;
-							fork->is_vdf_verified = true;
-							add_fork(fork);
-						}
-						end = file->get_input_pos();
-						peak = block;
-						depth++;
-					}
-					file->seek_to(end);
-
-					if(peak && peak >= root->height) {
-						log(INFO) << "Loaded alternate fork at height " << peak->height << " with depth " << depth;
-					} else {
-						file->remove();
-						log(WARN) << "Deleted obsolete fork: " << file->get_path();
-					}
-				}
-				catch(const std::exception& ex) {
-					log(WARN) << "Failed to load alternate fork: " << ex.what() << " (" << file->get_path() << ")";
-				}
-			}
-		}
-		const auto offset = blocks->get_input_pos();
-		blocks->seek_to(offset);
-		vnx::write(blocks->out, nullptr);	// temporary end of block_chain.dat
-		blocks->seek_to(offset);
-		blocks->flush();
-	} else {
-		blocks->open("wb");
-		blocks->open("rb+");
-	}
 	is_synced = !do_sync;
-
-	if(state_hash == hash_t())
-	{
-		auto block = Block::create();
-		block->nonce = params->port;
-		block->time_stamp = params->initial_time_stamp;
-		block->time_diff = params->initial_time_diff * params->time_diff_divider;
-		block->space_diff = params->initial_space_diff;
-		block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
-		block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_token_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_nft_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_nft_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_template_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_escrow_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_time_lock_binary.dat"));
-		block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_relay_binary.dat"));
-
-		if(auto tx = vnx::read_from_file<Transaction>("data/tx_project_relay.dat")) {
-			auto exec = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy);
-			if(!tx->is_valid(params) || !tx->sender || tx->expires != 0xFFFFFFFF || !exec || exec->binary != params->relay_binary) {
-				throw std::logic_error("invalid tx_project_relay");
-			}
-			block->project_addr = tx->id;
-		} else {
-			throw std::logic_error("failed to load tx_project_relay");
-		}
-		// TODO: testnet rewards
-
-		for(auto tx : block->tx_list) {
-			if(!tx) {
-				throw std::logic_error("failed to load genesis transaction");
-			}
-			if(tx->network != params->network) {
-				throw std::logic_error("invalid genesis transaction");
-			}
-		}
-		block->finalize();
-		block->content_hash = block->calc_content_hash();
-
-		if(!block->is_valid()) {
-			throw std::logic_error("invalid genesis block");
-		}
-		apply(block, nullptr);
-		commit(block);
-	}
 
 	if(vdf_slave_mode) {
 		subscribe(input_vdf_points, max_queue_ms);
@@ -442,9 +212,7 @@ void Node::main()
 
 	Super::main();
 
-	vnx::write(blocks->out, nullptr);
 	blocks->close();
-
 	threads->close();
 	api_threads->close();
 	vdf_threads->close();
@@ -456,6 +224,57 @@ void Node::main()
 	OCL_VDF::release();
 	automy::basic_opencl::release_context(opencl_context);
 #endif
+}
+
+void Node::init_chain()
+{
+	auto block = Block::create();
+	block->nonce = params->port;
+	block->time_stamp = params->initial_time_stamp;
+	block->time_diff = params->initial_time_diff * params->time_diff_divider;
+	block->space_diff = params->initial_space_diff;
+	block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
+	block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_token_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_nft_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_nft_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_template_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_escrow_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_time_lock_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_relay_binary.dat"));
+
+	if(auto tx = vnx::read_from_file<Transaction>("data/tx_project_relay.dat")) {
+		auto exec = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy);
+		if(!tx->is_valid(params) || !tx->sender || tx->expires != 0xFFFFFFFF || !exec || exec->binary != params->relay_binary) {
+			throw std::logic_error("invalid tx_project_relay");
+		}
+		block->project_addr = tx->id;
+	} else {
+		throw std::logic_error("failed to load tx_project_relay");
+	}
+	// TODO: testnet rewards
+
+	for(auto tx : block->tx_list) {
+		if(!tx) {
+			throw std::logic_error("failed to load genesis transaction");
+		}
+		if(tx->network != params->network) {
+			throw std::logic_error("invalid genesis transaction");
+		}
+	}
+	block->finalize();
+	block->content_hash = block->calc_content_hash();
+
+	if(!block->is_valid()) {
+		throw std::logic_error("invalid genesis block");
+	}
+	apply(block, nullptr);
+	commit(block);
+
+	log(INFO) << "Initialized chain with hash " << block->hash;
 }
 
 void Node::trigger_update()
@@ -627,7 +446,6 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_pos = 0;
 	sync_peak = nullptr;
 	sync_retry = 0;
-	purged_blocks.clear();
 
 	timelord->stop_vdf(
 		[this]() {
@@ -638,12 +456,10 @@ void Node::start_sync(const vnx::bool_t& force)
 
 void Node::revert_sync(const uint32_t& height)
 {
-	add_task([this, height]() {
-		do_restart = true;
-		log(WARN) << "Reverting to height " << height << " ...";
-		vnx::write_config(vnx_name + ".replay_height", height);
-		vnx_stop();
-	});
+	if(!root || height <= root->height) {
+		revert(height);
+	}
+	reset();
 }
 
 void Node::sync_more()
@@ -785,7 +601,6 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 					throw std::logic_error("failed to read block");
 				}
 			}
-			root = alt;
 			log(INFO) << "Deep fork to new root at height " << root->height << " took "
 					<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 		}
@@ -966,6 +781,7 @@ void Node::commit(std::shared_ptr<const Block> block)
 			prev->fork_length = std::max(prev->fork_length, fork->fork_length + 1);
 		}
 	}
+	const auto old_roots = std::move(alt_roots);
 	alt_roots.clear();
 	fork_tree.erase(block->hash);
 
@@ -974,8 +790,8 @@ void Node::commit(std::shared_ptr<const Block> block)
 	{
 		const auto& fork = iter->second;
 		const auto& block = fork->block;
-		if(fork_tree.erase(block->hash)) {
-			if(fork->is_proof_verified && fork->fork_length > 0) {
+		if(fork_tree.erase(block->hash) && fork->is_proof_verified) {
+			if(fork->fork_length > 0 || old_roots.count(block->prev)) {
 				write_block(block, false);
 				alt_roots[block->hash] = block;
 			}
@@ -1160,31 +976,12 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			update_farmer_ranking();
 		}
 
-		block_index_t index;
-		if(block_index.find(block->hash, index))
-		{
-			vnx::File file(blocks->get_path());
-			file.open("rb+");
-			file.seek_to(index.file_offset);
+		write_block(block);
 
-			std::vector<int64_t> tx_offsets;
-			if(!read_block(file, true, &tx_offsets)) {
-				throw std::logic_error("failed to read block");
-			}
-			if(tx_offsets.size() != block->tx_count) {
-				throw std::logic_error("tx count mismatch");
-			}
-			for(uint32_t i = 0; i < block->tx_count; ++i) {
-				const auto& tx = block->tx_list[i];
-				tx_index.insert(tx->id, tx->get_tx_index(params, block, tx_offsets[i]));
-			}
-		} else {
-			write_block(block);
-		}
 		height_map.insert(block->height, block->hash);
+		contract_cache.clear();
 
 		state_hash = block->hash;
-		contract_cache.clear();
 
 		db->commit(block->height + 1);
 	}
@@ -1321,9 +1118,10 @@ void Node::apply(	std::shared_ptr<const Block> block,
 void Node::revert(const uint32_t height)
 {
 	const auto time_begin = vnx::get_wall_time_millis();
-	const auto peak = get_peak();
 
-	for(auto block = peak; block && block->height >= height; block = find_prev_header(block))
+	const bool is_deep = !root || height <= root->height;
+
+	for(auto block = get_peak(); !is_deep && block && block->height >= height; block = find_prev_header(block))
 	{
 		// revert farmer_ranking
 		if(block->height) {
@@ -1353,17 +1151,93 @@ void Node::revert(const uint32_t height)
 			}
 		}
 	}
-	update_farmer_ranking();
 
-	db->revert(height);
 	contract_cache.clear();
 
-	if(!height || !height_map.find(height - 1, state_hash)) {
+	db->revert(height);
+
+	uint32_t peak = 0;
+	if(!height_map.find_last(peak, state_hash)) {
 		state_hash = hash_t();
 	}
+
+	if(is_deep || farmer_ranking.empty())
+	{
+		// reset farmer ranking
+		std::map<pubkey_t, uint32_t> farmer_block_count;
+		farmer_block_map.scan([&farmer_block_count](const pubkey_t& key, const farmed_block_info_t& info) -> bool {
+			farmer_block_count[key]++;
+			return true;
+		});
+		farmer_ranking.clear();
+		for(const auto& entry : farmer_block_count) {
+			farmer_ranking.push_back(entry);
+		}
+	}
+	update_farmer_ranking();
+
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
 	if(elapsed > 1) {
-		log(WARN) << "Reverting to height " << int32_t(height) - 1 << " took " << elapsed << " sec";
+		log(WARN) << "Reverting to height " << peak << " took " << elapsed << " sec";
+	}
+}
+
+void Node::reset()
+{
+	uint32_t height = 0;
+	if(height_map.find_last(height, state_hash))
+	{
+		blocks->open("rb+");
+		// get root
+		root = get_header_at(height - std::min(params->commit_delay, height));
+		if(!root) {
+			throw std::logic_error("failed to load root block");
+		}
+		alt_roots.clear();
+		fork_tree.clear();
+		fork_index.clear();
+		history.clear();
+		history_log.clear();
+
+		// load fork tree
+		std::vector<hash_t> list;
+		height_index.find_range(root->height, -1, list);
+		for(const auto& hash : list) {
+			if(auto block = get_block(hash)) {
+				if(block->height == root->height) {
+					if(block->hash != root->hash) {
+						alt_roots[hash] = block;
+					}
+				} else {
+					auto fork = std::make_shared<fork_t>();
+					fork->block = block;
+					fork->is_vdf_verified = true;
+					add_fork(fork);
+				}
+			}
+		}
+
+		// load history
+		for(auto block = root; block && history.size() < max_history; block = find_prev_header(block)) {
+			history[block->hash] = block;
+			history_log.emplace(block->height, block->hash);
+		}
+
+		// update address count
+		mmx_address_count = 0;
+		balance_table.scan([this](const std::pair<addr_t, addr_t>& key, const uint128& value) -> bool {
+			if(value >= 1000000 && key.second == addr_t()) {
+				mmx_address_count++;
+			}
+			return true;
+		});
+	}
+	else {
+		blocks->open("wb");
+		blocks->open("rb+");
+		block_index.revert(0);
+		height_index.revert(0);
+		init_chain();
 	}
 }
 
@@ -1770,6 +1644,26 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 
 void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 {
+	block_index_t index;
+	if(block_index.find(block->hash, index)) {
+		if(is_main) {
+			blocks->seek_to(index.file_offset);
+
+			std::vector<int64_t> tx_offsets;
+			if(!read_block(*blocks, true, &tx_offsets)) {
+				throw std::logic_error("failed to read block");
+			}
+			if(tx_offsets.size() != block->tx_count) {
+				throw std::logic_error("tx count mismatch");
+			}
+			for(uint32_t i = 0; i < block->tx_count; ++i) {
+				const auto& tx = block->tx_list[i];
+				tx_index.insert(tx->id, tx->get_tx_index(params, block, tx_offsets[i]));
+			}
+		}
+		return;
+	}
+	blocks->seek_end();
 	auto& out = blocks->out;
 	const auto offset = out.get_output_pos();
 
@@ -1786,12 +1680,14 @@ void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 		tx_index.insert(entry.first, entry.second);
 	}
 	vnx::write(out, nullptr);	// end of block
-	const auto end = out.get_output_pos();
-	vnx::write(out, nullptr);	// temporary end of block_chain.dat
 	blocks->flush();
-	blocks->seek_to(end);
 
 	block_index.insert(block->hash, block->get_block_index(offset));
+	height_index.insert(block->height, block->hash);
+
+	const auto version = block_index.current_version() + 1;
+	block_index.commit(version);
+	height_index.commit(version);
 }
 
 

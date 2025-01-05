@@ -300,6 +300,7 @@ private:
 	};
 
 	void update();
+	void init_chain();
 	void trigger_update();
 	void update_control();
 
@@ -421,6 +422,8 @@ private:
 
 	void revert(const uint32_t height);
 
+	void reset();
+
 	std::shared_ptr<const BlockHeader> get_root() const;
 
 	std::shared_ptr<const BlockHeader> get_peak() const;
@@ -526,11 +529,11 @@ private:
 	uint32_t min_pool_fee_ratio = 0;
 	uint64_t mmx_address_count = 0;
 
-	// TODO: file with list of main chain block offsets
 	std::shared_ptr<vnx::File> blocks;
 	std::shared_ptr<vm::StorageDB> storage;
 
 	hash_table<hash_t, block_index_t> block_index;								// [hash => index] (no revert)
+	uint_multi_table<uint32_t, hash_t> height_index;							// [height => hash] (no revert)
 
 	uint_table<uint32_t, hash_t> height_map;									// [height => hash]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
@@ -561,7 +564,7 @@ private:
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
 
-	mutable std::mutex mutex;								// contract_cache + tx_pool_index
+	mutable std::mutex mutex;								// network + contract_cache + tx_pool_index
 	mutable std::shared_ptr<const NetworkInfo> network;
 	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_cache;
 
