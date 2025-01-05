@@ -488,17 +488,6 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	add_fork(fork);
 
 	if(is_synced) {
-		const auto prev_height = block->height - 1;
-		if(!fork_tree.count(block->prev) && prev_height > 0) {
-			// fetch missed previous
-			router->get_blocks_at(prev_height,
-				[this](const std::vector<std::shared_ptr<const Block>>& blocks) {
-					for(auto block : blocks) {
-						add_block(block);
-					}
-				});
-			log(WARN) << "Fetched missing block at height " << prev_height << " (" << block->prev.to_string() << ")";
-		}
 		trigger_update();
 	}
 }
