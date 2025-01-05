@@ -662,7 +662,9 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 				fork->context = validate(block);
 
 				if(!fork->is_vdf_verified) {
-					if(fork->ahead_count < params->commit_delay && vnx::rand64() % vdf_check_divider == 0) {
+					if(fork->ahead_count < params->commit_delay &&
+						(block->vdf_count > vdf_check_divider || vnx::rand64() % (vdf_check_divider / block->vdf_count) == 0))
+					{
 						check_vdf(fork);
 					} else {
 						fork->is_vdf_verified = true;
