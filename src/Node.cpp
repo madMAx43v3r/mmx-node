@@ -7,7 +7,6 @@
 
 #include <mmx/Node.h>
 #include <mmx/Challenge.hxx>
-#include <mmx/ForkHeader.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/contract/Binary.hxx>
@@ -155,6 +154,7 @@ void Node::main()
 		db->open_async(total_supply_map, database_path + "total_supply_map");
 
 		db->sync();
+		db->recover();
 	}
 	block_index.open(database_path + "block_index_new");	// TODO: rename back
 	height_index.open(database_path + "height_index");
@@ -632,7 +632,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 		} else if(auto prev = fork->prev.lock()) {
 			fork->ahead_count = prev->ahead_count + 1;
 		} else {
-			fork->ahead_count = 0;
+			fork->ahead_count = params->commit_delay;
 		}
 	}
 	const auto prev_state = state_hash;
@@ -650,7 +650,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 				fork->context = validate(block);
 
 				if(!fork->is_vdf_verified) {
-					if(fork->ahead_count > 0) {
+					if(fork->ahead_count < params->commit_delay && vnx::rand64() % vdf_check_divider == 0) {
 						check_vdf(fork);
 					} else {
 						fork->is_vdf_verified = true;

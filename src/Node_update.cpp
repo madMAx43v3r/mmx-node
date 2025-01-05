@@ -151,26 +151,28 @@ void Node::verify_proofs()
 {
 	const auto time_now = vnx::get_wall_time_millis();
 	const auto proof_timeout = 10 * params->block_interval_ms;
+	const auto vdf_height = get_vdf_height();
 
 	std::mutex mutex;
 	std::vector<std::pair<std::shared_ptr<const ProofResponse>, int64_t>> try_again;
 
 	for(const auto& entry : proof_queue) {
+		const auto& res = entry.first;
 		if(time_now - entry.second > proof_timeout) {
 			continue;		// timeout
 		}
-		threads->add_task([this, entry, &mutex, &try_again]() {
-			const auto& res = entry.first;
+		if(res->vdf_height >= vdf_height + params->challenge_delay) {
+			try_again.push_back(entry);		// wait for challenge to confirm
+			continue;
+		}
+		threads->add_task([this, res, &mutex, &try_again]() {
 			try {
-				const auto valid = verify(res);
-
+				verify(res);
 				std::lock_guard<std::mutex> lock(mutex);
-				if(valid) {
-					add_proof(res->proof, res->vdf_height, res->farmer_addr);
-				} else {
-					try_again.push_back(entry);
-				}
-			} catch(const std::exception& ex) {
+				add_proof(res->proof, res->vdf_height, res->farmer_addr);
+				log(DEBUG) << "Got proof for VDF height " << res->vdf_height << " with score " << res->proof->score;
+			}
+			catch(const std::exception& ex) {
 				log(WARN) << "Got invalid proof for VDF height " << res->vdf_height << ": " << ex.what();
 			}
 		});

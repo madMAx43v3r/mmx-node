@@ -389,7 +389,7 @@ private:
 
 	void add_proof(std::shared_ptr<const ProofOfSpace> proof, const uint32_t vdf_height, const vnx::Hash64 farmer_mac);
 
-	bool verify(std::shared_ptr<const ProofResponse> value) const;
+	void verify(std::shared_ptr<const ProofResponse> value) const;
 
 	void verify_proof(std::shared_ptr<fork_t> fork) const;
 
