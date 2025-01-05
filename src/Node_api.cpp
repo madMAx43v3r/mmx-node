@@ -14,6 +14,7 @@
 #include <mmx/tx_entry_t.hpp>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
+#include <mmx/helpers.h>
 
 #include <mmx/Node_get_block.hxx>
 #include <mmx/Node_get_block_at.hxx>
@@ -595,10 +596,7 @@ std::shared_ptr<const Contract> Node::get_contract_ex(const addr_t& address, uin
 	std::shared_ptr<const Contract> contract;
 	{
 		std::lock_guard<std::mutex> lock(mutex);
-		auto iter = contract_cache.find(address);
-		if(iter != contract_cache.end()) {
-			contract = iter->second;
-		}
+		contract = find_value(contract_cache, address, nullptr);
 	}
 	if(!contract) {
 		contract_map.find(address, contract);
