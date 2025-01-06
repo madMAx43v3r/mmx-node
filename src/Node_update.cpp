@@ -190,9 +190,6 @@ void Node::verify_block_proofs()
 	for(const auto& entry : fork_index)
 	{
 		const auto& fork = entry.second;
-		if(fork->is_proof_verified) {
-			continue;
-		}
 		const auto& block = fork->block;
 		if(!fork->prev.lock()) {
 			fork->prev = find_fork(block->prev);
@@ -205,7 +202,7 @@ void Node::verify_block_proofs()
 		} else if(block->prev == root->hash) {
 			fork->is_connected = true;
 		}
-		if(fork->is_invalid || !fork->is_connected) {
+		if(!fork->is_connected || fork->is_invalid || fork->is_proof_verified) {
 			continue;
 		}
 		if(!fork->is_vdf_verified) {
@@ -270,7 +267,8 @@ void Node::update()
 		// verify and apply new fork
 		try {
 			forked_at = fork_to(best_fork);
-		} catch(const std::exception& ex) {
+		}
+		catch(const std::exception& ex) {
 			best_fork->is_invalid = true;
 			log(WARN) << "Forking to height " << best_fork->block->height << " failed with: " << ex.what();
 			continue;	// try again
@@ -327,8 +325,8 @@ void Node::update()
 			msg << ", took " << elapsed << " sec";
 			log(INFO) << msg.str();
 		}
-		if(forked_at) {
-			const auto depth = peak->height - forked_at->height;
+		if(forked_at && prev_peak) {
+			const auto depth = prev_peak->height - forked_at->height;
 			if(depth > 1) {
 				log(WARN) << "Forked " << depth << " blocks deep at height " << peak->height;
 			}

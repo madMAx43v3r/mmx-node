@@ -331,6 +331,7 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(!fork->recv_time) {
 		fork->recv_time = vnx::get_wall_time_millis();
 	}
+	fork->prev = find_fork(block->prev);
 	fork->proof_score_224 = block->proof_hash.to_uint<uint256_t>(true) >> 32;
 
 	if(fork_tree.emplace(block->hash, fork).second) {
