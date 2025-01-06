@@ -634,6 +634,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 				throw std::logic_error("cannot find fork point");
 			}
 			std::reverse(list.begin(), list.end());
+
 			log(WARN) << "Reverting to height " << forked_at->height << " ...";
 
 			revert(forked_at->height + 1);
@@ -672,6 +673,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 				hash = block->prev;
 			}
 			std::reverse(blocks.begin(), blocks.end());
+
 			for(auto block : blocks) {
 				apply(block, validate(block));
 			}
