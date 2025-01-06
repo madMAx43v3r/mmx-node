@@ -607,6 +607,9 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 	const auto prev_state = state_hash;
 	const auto fork_line = get_fork_line(peak);
 
+	if(fork_line.empty()) {
+		return nullptr;
+	}
 	bool did_fork = false;
 	std::shared_ptr<const BlockHeader> forked_at;
 
@@ -614,8 +617,6 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 	const auto alt = find_value(alt_roots, root_hash, nullptr);
 	if(alt) {
 		did_fork = true;
-		alt_roots.erase(root_hash);
-
 		log(WARN) << "Performing deep fork ...";
 		const auto time_begin = vnx::get_wall_time_millis();
 		try {
@@ -632,6 +633,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 			if(!forked_at) {
 				throw std::logic_error("cannot find fork point");
 			}
+			std::reverse(list.begin(), list.end());
 			log(WARN) << "Reverting to height " << forked_at->height << " ...";
 
 			revert(forked_at->height + 1);
@@ -649,6 +651,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 					throw std::logic_error("failed to read block");
 				}
 			}
+			alt_roots.erase(root_hash);
 			alt_roots[root->hash] = root;
 			root = alt;
 
@@ -657,6 +660,32 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "Failed to apply alternate fork: " << ex.what();
+
+			// restore old peak
+			std::vector<std::shared_ptr<const Block>> blocks;
+			hash_t hash = prev_state;
+			while(auto block = get_block(hash)) {
+				blocks.push_back(block);
+				if(block->prev == state_hash) {
+					break;
+				}
+				hash = block->prev;
+			}
+			std::reverse(blocks.begin(), blocks.end());
+			for(auto block : blocks) {
+				apply(block, validate(block));
+			}
+			reset();
+
+			// don't try this fork again
+			for(auto fork : fork_line) {
+				if(auto new_fork = find_fork(fork->block->hash)) {
+					new_fork->is_invalid = true;
+				}
+			}
+			if(auto peak = get_peak()) {
+				log(INFO) << "Restored old peak at height " << peak->height;
+			}
 			throw;
 		}
 	} else {
