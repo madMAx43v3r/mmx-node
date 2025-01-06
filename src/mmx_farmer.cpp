@@ -49,17 +49,21 @@ int main(int argc, char** argv)
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("harvester", with_harvester);
 
-	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+	auto node = vnx::Endpoint::from_url(node_url);
+	if(auto tcp = std::dynamic_pointer_cast<const vnx::TcpEndpoint>(node)) {
+		if(!tcp->port || tcp->port == vnx::TcpEndpoint::default_port) {
+			auto tmp = vnx::clone(tcp);
+			tmp->port = 11330;
+			node = tmp;
+		}
+	}
+	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", node);
 	proxy->forward_list = {"Node", "Router"};
 
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
 		module->use_authentication = true;
 		module->default_access = "USER";
-		module.start_detached();
-	}
-	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
 		module.start_detached();
 	}
 	{
@@ -72,6 +76,10 @@ int main(int argc, char** argv)
 		module->storage_path = mmx_home + module->storage_path;
 		module->database_path = mmx_network + module->database_path;
 		module.start_detached();
+		{
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
+			module.start_detached();
+		}
 	} else {
 		proxy->forward_list.push_back("Wallet");
 	}
