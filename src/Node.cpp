@@ -181,10 +181,8 @@ void Node::main()
 		revert(height);
 		reset();
 
-		if(height) {
-			log(INFO) << "Loaded DB at height " << (height - 1) << ", " << mmx_address_count << " addresses, "
-					<< farmer_ranking.size() << " farmers, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
-		}
+		log(INFO) << "Loaded DB at height " << get_height() << ", " << mmx_address_count << " addresses, "
+				<< farmer_ranking.size() << " farmers, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
 	}
 
 	if(vdf_slave_mode) {
