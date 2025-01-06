@@ -526,7 +526,7 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;		// wait for pending VDF checks (all threads busy)
 	}
-	if(sync_pos - root->height > params->commit_delay + max_sync_ahead) {
+	if(sync_pos > root->height && sync_pos - root->height > params->commit_delay + max_sync_ahead) {
 		return;		// limit blocks in memory during sync
 	}
 	const size_t max_pending = sync_retry ? 2 : std::max(std::min<int>(max_sync_pending, max_sync_jobs), 4);
