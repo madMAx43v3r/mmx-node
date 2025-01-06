@@ -60,7 +60,7 @@ void Node::verify(std::shared_ptr<const ProofResponse> value) const
 	hash_t challenge;
 	uint64_t space_diff = 0;
 	if(!find_challenge(value->vdf_height, challenge, space_diff)) {
-		throw std::logic_error("failed to get challenge");
+		throw std::logic_error("cannot find challenge");
 	}
 	verify_proof(value->proof, challenge, space_diff);
 
