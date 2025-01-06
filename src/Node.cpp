@@ -208,6 +208,17 @@ void Node::main()
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
 	stuck_timer = set_timer_millis(sync_loss_delay * 1000, std::bind(&Node::on_stuck_timeout, this));
 
+	if(run_tests) {
+		is_synced = true;
+		try {
+			test_all();
+		} catch(const std::exception& ex) {
+			log(WARN) << "Test failed with: " << ex.what();
+			return;
+		}
+		is_synced = false;
+	}
+
 	vnx::Handle<mmx::Router> router = new mmx::Router("Router");
 	router->node_server = vnx_name;
 	router->storage_path = storage_path;

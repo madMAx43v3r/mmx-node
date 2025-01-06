@@ -50,11 +50,12 @@ module Node implements vnx.addons.HttpComponent {
 	string opencl_device_name;				// when specified, opencl_device is a relative index
 	
 	bool do_sync = true;
-	bool show_warnings = false;
-	bool vdf_slave_mode = false;
-	bool exec_debug = false;					// dump memory on exec fail
-	bool exec_profile = false;					// write execution profiles
-	bool exec_trace = false;					// write execution traces
+	bool show_warnings;
+	bool vdf_slave_mode;
+	bool run_tests;
+	bool exec_debug;						// dump memory on exec fail
+	bool exec_profile;						// write execution profiles
+	bool exec_trace;						// write execution traces
 	
 	string storage_path;
 	string database_path = "db/";

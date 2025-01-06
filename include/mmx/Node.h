@@ -483,6 +483,12 @@ private:
 
 	void async_api_call(std::shared_ptr<const vnx::Value> method, const vnx::request_id_t& request_id);
 
+	void test_all();
+
+	std::shared_ptr<Block> create_test_block(std::shared_ptr<const BlockHeader> prev);
+
+	std::shared_ptr<fork_t> create_test_fork(std::shared_ptr<const BlockHeader> prev);
+
 private:
 	hash_t state_hash;
 	std::shared_ptr<DataBase> db;

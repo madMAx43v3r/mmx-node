@@ -977,15 +977,15 @@ std::shared_ptr<const Block> Node::make_block(
 	block->set_base_reward(params, prev);
 	block->finalize();
 
-	FarmerClient farmer(proof[0].farmer_mac);
-
-	const auto result = farmer.sign_block(block);
-	if(!result) {
-		log(WARN) << "Farmer refused to sign block at height " << block->height;
-		return nullptr;
+	if(auto farmer_mac = proof[0].farmer_mac)
+	{
+		const auto result = FarmerClient(farmer_mac).sign_block(block);
+		if(!result) {
+			log(WARN) << "Farmer refused to sign block at height " << block->height;
+			return nullptr;
+		}
+		block->BlockHeader::operator=(*result);
 	}
-	block->BlockHeader::operator=(*result);
-
 	created_blocks[block->proof_hash] = block->hash;
 
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
