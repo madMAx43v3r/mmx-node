@@ -16,7 +16,7 @@
 static bool is_expired(const std::string& file_path, const int64_t max_age_sec = 3600 * 24)
 {
 	vnx::File file(file_path);
-	return !file.exists() || file.last_write_time() + max_age_sec < vnx::get_wall_time_seconds();
+	return !file.exists() || file.last_write_time() + max_age_sec < mmx::get_time_sec();
 }
 
 

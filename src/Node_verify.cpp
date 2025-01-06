@@ -402,7 +402,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 			engine = opencl_vdf.back();
 			opencl_vdf.pop_back();
 		}
-		const auto begin = vnx::get_wall_time_millis();
+		const auto begin = get_time_ms();
 
 		if(engine) {
 			engine->compute(proof);
@@ -410,7 +410,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 		} else {
 			verify_vdf_cpu(proof);
 		}
-		const auto took_ms = vnx::get_wall_time_millis() - begin;
+		const auto took_ms = get_time_ms() - begin;
 
 		auto point = VDF_Point::create();
 		point->vdf_height = proof->vdf_height;
@@ -473,7 +473,7 @@ void Node::check_vdf_task(
 	static bool have_sha_ni = sha256_ni_available();
 
 	// MAY NOT ACCESS OR MODIFY ANY NON-CONSTNAT NODE DATA
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 	const auto& block = fork->block;
 
 	auto point = prev->vdf_output;
@@ -495,7 +495,7 @@ void Node::check_vdf_task(
 		vdf_iters += num_iters;
 	}
 	const bool is_valid = (point == block->vdf_output);
-	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+	const auto elapsed = (get_time_ms() - time_begin) / 1e3;
 
 	if(is_valid) {
 		log(INFO) << "VDF check for height " << block->height << " passed, took " << elapsed << " sec";

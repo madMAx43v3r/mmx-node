@@ -28,7 +28,7 @@ void Node::verify_vdfs()
 	if(vdf_queue.empty() || vdf_verify_pending.size() >= vdf_verify_max_pending) {
 		return;
 	}
-	const auto time_now = vnx::get_wall_time_millis();
+	const auto time_now = get_time_ms();
 	const auto vdf_timeout = 10 * params->block_interval_ms;
 	const auto root = get_root();
 
@@ -107,7 +107,7 @@ void Node::verify_vdfs()
 
 void Node::verify_votes()
 {
-	const auto time_now = vnx::get_wall_time_millis();
+	const auto time_now = get_time_ms();
 	const auto vote_timeout = 3 * params->block_interval_ms;
 
 	std::vector<std::pair<std::shared_ptr<const ValidatorVote>, int64_t>> try_again;
@@ -149,7 +149,7 @@ void Node::verify_votes()
 
 void Node::verify_proofs()
 {
-	const auto time_now = vnx::get_wall_time_millis();
+	const auto time_now = get_time_ms();
 	const auto proof_timeout = 10 * params->block_interval_ms;
 	const auto vdf_height = get_vdf_height();
 
@@ -242,7 +242,7 @@ void Node::update()
 {
 	std::unique_lock lock(db_mutex);
 
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 	update_pending = false;
 
 	verify_proofs();
@@ -299,7 +299,7 @@ void Node::update()
 		}
 	}
 	const auto root = get_root();
-	const auto now_ms = vnx::get_wall_time_millis();
+	const auto now_ms = get_time_ms();
 	const auto elapsed = (now_ms - time_begin) / 1e3;
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
@@ -575,7 +575,7 @@ void Node::tx_pool_erase(const hash_t& txid)
 
 void Node::purge_tx_pool()
 {
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 
 	std::vector<tx_pool_t> all_tx;
 	all_tx.reserve(tx_pool.size());
@@ -628,7 +628,7 @@ void Node::purge_tx_pool()
 	if(total_pool_size || num_purged) {
 		log(INFO) << uint64_t((total_pool_size * 10000) / max_pool_size) / 100. << " % mem pool, "
 				<< min_pool_fee_ratio / 1024. << " min fee ratio, " << num_purged << " purged, took "
-				<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+				<< (get_time_ms() - time_begin) / 1e3 << " sec";
 	}
 }
 
@@ -661,12 +661,12 @@ void Node::validate_new()
 	for(const auto& entry : tx_list) {
 		prepare_context(context, entry.tx);
 	}
-	const auto deadline_ms = vnx::get_wall_time_millis() + validate_interval_ms;
+	const auto deadline_ms = get_time_ms() + validate_interval_ms;
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
 		threads->add_task([this, &entry, context, deadline_ms]() {
-			if(vnx::get_wall_time_millis() > deadline_ms) {
+			if(get_time_ms() > deadline_ms) {
 				entry.is_skipped = true;
 				return;
 			}
@@ -750,7 +750,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
 		threads->add_task([this, &entry, context, deadline_ms]() {
-			if(vnx::get_wall_time_millis() > deadline_ms) {
+			if(get_time_ms() > deadline_ms) {
 				entry.is_skipped = true;
 				return;
 			}
@@ -882,7 +882,7 @@ std::shared_ptr<const Block> Node::make_block(
 	if(proof.empty()) {
 		return nullptr;
 	}
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 
 	// reset state to previous block
 	fork_to(prev->hash);
@@ -961,7 +961,7 @@ std::shared_ptr<const Block> Node::make_block(
 	uint64_t total_fees = 0;
 	if(block->height >= params->transaction_activation)
 	{
-		const auto deadline = vnx::get_wall_time_millis() + params->block_interval_ms / 2;
+		const auto deadline = get_time_ms() + params->block_interval_ms / 2;
 		const auto tx_list = validate_for_block(deadline);
 		// select transactions
 		for(const auto& entry : tx_list) {
@@ -988,7 +988,7 @@ std::shared_ptr<const Block> Node::make_block(
 	}
 	created_blocks[block->proof_hash] = block->hash;
 
-	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+	const auto elapsed = (get_time_ms() - time_begin) / 1e3;
 	log(INFO) << u8"\U0001F911 Created block at height " << block->height << " with: ntx = " << block->tx_count
 			<< ", score = " << block->proof[0]->score << ", reward = " << to_value(block->reward_amount, params) << " MMX"
 			<< ", fees = " << to_value(total_fees, params) << " MMX" << ", took " << elapsed << " sec";

@@ -297,13 +297,13 @@ void TimeLord::vdf_loop(vdf_point_t point)
 				point.output = hash_t(point.output + (reward_addr ? *reward_addr : addr_t()));
 			}
 		}
-		const auto time_begin = vnx::get_wall_time_micros();
+		const auto time_begin = get_time_us();
 
 		point.output = compute(point.output, segment_iters);
 		point.num_iters += segment_iters;
 
 		// update estimated speed
-		const auto time_end = vnx::get_wall_time_micros();
+		const auto time_end = get_time_us();
 		if(time_end > time_begin) {
 			const auto speed = (segment_iters * 1000000) / (time_end - time_begin);
 			avg_iters_per_sec = (avg_iters_per_sec * 1023 + speed) / 1024;

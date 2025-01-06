@@ -49,7 +49,7 @@ namespace mmx {
 
 Router::Router(const std::string& _vnx_name)
 	:	RouterBase(_vnx_name),
-		rand_engine(vnx::get_time_micros())
+		rand_engine(get_time_us())
 {
 	params = get_params();
 	port = params->port;
@@ -218,7 +218,7 @@ std::vector<std::string> Router::get_connected_peers() const
 
 std::shared_ptr<const PeerInfo> Router::get_peer_info() const
 {
-	const auto now_ms = vnx::get_wall_time_millis();
+	const auto now_ms = get_time_ms();
 
 	auto info = PeerInfo::create();
 	for(const auto& entry : peer_map) {
@@ -260,7 +260,7 @@ void Router::get_blocks_at_async(const uint32_t& height, const vnx::request_id_t
 {
 	auto job = std::make_shared<sync_job_t>();
 	job->height = height;
-	job->start_time_ms = vnx::get_wall_time_millis();
+	job->start_time_ms = get_time_ms();
 	sync_jobs[request_id] = job;
 	((Router*)this)->process();
 }
@@ -271,7 +271,7 @@ void Router::fetch_block_async(const hash_t& hash, const vnx::optional<std::stri
 	job->hash = hash;
 	job->from_peer = address;
 	job->callback = std::bind(&Router::fetch_block_async_return, this, request_id, std::placeholders::_1);
-	job->start_time_ms = vnx::get_wall_time_millis();
+	job->start_time_ms = get_time_ms();
 	fetch_jobs[request_id] = job;
 	((Router*)this)->process();
 }
@@ -282,7 +282,7 @@ void Router::fetch_block_at_async(const uint32_t& height, const std::string& add
 	job->height = height;
 	job->from_peer = address;
 	job->callback = std::bind(&Router::fetch_block_at_async_return, this, request_id, std::placeholders::_1);
-	job->start_time_ms = vnx::get_wall_time_millis();
+	job->start_time_ms = get_time_ms();
 	fetch_jobs[request_id] = job;
 	((Router*)this)->process();
 }
@@ -411,7 +411,7 @@ uint32_t Router::send_request(uint64_t client, std::shared_ptr<const vnx::Value>
 
 void Router::update()
 {
-	const auto now_ms = vnx::get_wall_time_millis();
+	const auto now_ms = get_time_ms();
 
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
@@ -501,7 +501,7 @@ void Router::update()
 
 bool Router::process(std::shared_ptr<const Return> ret)
 {
-	const auto now_ms = vnx::get_wall_time_millis();
+	const auto now_ms = get_time_ms();
 
 	bool did_consume = false;
 	for(auto& entry : sync_jobs)
@@ -783,7 +783,7 @@ void Router::connect_to(const std::string& address)
 
 void Router::connect()
 {
-	const auto now_ms = vnx::get_wall_time_millis();
+	const auto now_ms = get_time_ms();
 	const auto now_sec = now_ms / 1000;
 
 	// connect to fixed peers
@@ -876,7 +876,7 @@ void Router::connect()
 
 void Router::query()
 {
-	const auto now_ms = vnx::get_wall_time_millis();
+	const auto now_ms = get_time_ms();
 	{
 		auto req = Request::create();
 		req->id = next_request_id++;
@@ -1071,7 +1071,7 @@ void Router::on_vdf_point(uint64_t client, std::shared_ptr<const VDF_Point> valu
 			if(value->is_valid()) {
 				if(receive_msg_hash(value->content_hash, client)) {
 					auto copy = vnx::clone(value);
-					copy->recv_time = vnx::get_wall_time_millis();
+					copy->recv_time = get_time_ms();
 					publish(copy, output_vdf_points);
 				}
 			}
@@ -1107,7 +1107,7 @@ void Router::on_recv_note(uint64_t client, std::shared_ptr<const ReceiveNote> no
 void Router::recv_notify(const hash_t& msg_hash)
 {
 	auto note = ReceiveNote::create();
-	note->time = vnx::get_wall_time_micros();
+	note->time = get_time_us();
 	note->hash = msg_hash;
 	for(const auto& entry : peer_map) {
 		send_to(entry.second, note, true);
@@ -1116,7 +1116,7 @@ void Router::recv_notify(const hash_t& msg_hash)
 
 void Router::send()
 {
-	const auto now = vnx::get_wall_time_micros();
+	const auto now = get_time_us();
 	tx_upload_credits += tx_upload_bandwidth * send_interval_ms / 1000;
 	tx_upload_credits = std::min(tx_upload_credits, tx_upload_bandwidth);
 
@@ -1141,7 +1141,7 @@ void Router::send_to(	std::vector<std::shared_ptr<peer_t>> peers, std::shared_pt
 {
 	std::shuffle(peers.begin(), peers.end(), rand_engine);
 
-	const auto now = vnx::get_wall_time_micros();
+	const auto now = get_time_us();
 	const auto interval = (relay_target_ms * 1000) / (1 + peers.size());
 	for(size_t i = 0; i < peers.size(); ++i) {
 		send_item_t item;
@@ -1464,7 +1464,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 			if(auto value = std::dynamic_pointer_cast<const Node_get_synced_height_return>(result)) {
 				if(auto peer = find_peer(client)) {
 					if(last_query_ms) {
-						peer->ping_ms = vnx::get_wall_time_millis() - last_query_ms;
+						peer->ping_ms = get_time_ms() - last_query_ms;
 					}
 					if(auto height = value->_ret_0) {
 						if(!peer->is_synced) {
@@ -1510,7 +1510,7 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 void Router::on_msg(uint64_t client, std::shared_ptr<const vnx::Value> msg)
 {
 	if(auto peer = find_peer(client)) {
-		peer->last_receive_ms = vnx::get_wall_time_millis();
+		peer->last_receive_ms = get_time_ms();
 	}
 	switch(msg->get_type_hash())
 	{
@@ -1590,7 +1590,7 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	peer->client = client;
 	peer->address = address;
 	peer->info.type = node_type_e::FULL_NODE;	// assume full node
-	peer->connected_since_ms = vnx::get_wall_time_millis();
+	peer->connected_since_ms = get_time_ms();
 	{
 		const auto it = connect_tasks.find(address);
 		if(it != connect_tasks.end() && it->second == client) {
@@ -1643,7 +1643,7 @@ void Router::on_disconnect(uint64_t client, const std::string& address)
 		}
 		peer_map.erase(client);
 		synced_peers.erase(client);
-		peer_retry_map[address] = vnx::get_wall_time_seconds() + peer_retry_interval * 60;
+		peer_retry_map[address] = get_time_sec() + peer_retry_interval * 60;
 	});
 }
 

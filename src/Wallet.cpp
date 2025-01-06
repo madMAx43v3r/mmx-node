@@ -590,7 +590,7 @@ void Wallet::send_off(const uint32_t& index, std::shared_ptr<const Transaction> 
 	wallet->update_from(tx);
 	{
 		tx_log_entry_t entry;
-		entry.time = vnx::get_wall_time_millis();
+		entry.time = get_time_ms();
 		entry.tx = tx;
 		tx_log.insert(wallet->get_address(0), entry);
 		tx_log.commit();
@@ -634,7 +634,7 @@ void Wallet::reset_cache(const uint32_t& index)
 void Wallet::update_cache(const uint32_t& index) const
 {
 	const auto wallet = get_wallet(index);
-	const auto now = vnx::get_wall_time_millis();
+	const auto now = get_time_ms();
 
 	if(now - wallet->last_update > cache_timeout_ms)
 	{

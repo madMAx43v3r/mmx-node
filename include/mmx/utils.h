@@ -15,6 +15,7 @@
 #include <mmx/ChainParams.hxx>
 
 #include <vnx/Util.hpp>
+#include <vnx/TimeUtil.h>
 #include <vnx/Config.hpp>
 
 #include <uint128_t.h>
@@ -311,6 +312,18 @@ std::string get_finger_print(const hash_t& seed_value, const vnx::optional<std::
 		hash = hash_t(hash + seed_value + pass_hash);
 	}
 	return std::to_string(hash.to_uint<uint32_t>());
+}
+
+inline int64_t get_time_sec() {
+	return vnx::get_wall_time_seconds();
+}
+
+inline int64_t get_time_ms() {
+	return vnx::get_wall_time_millis();
+}
+
+inline int64_t get_time_us() {
+	return vnx::get_wall_time_micros();
 }
 
 template<typename error_t>

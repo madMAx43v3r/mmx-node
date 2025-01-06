@@ -443,11 +443,11 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	tx_cost += std::min(engine->gas_used, engine->gas_limit);
 
 	if(engine->do_profile) {
-		std::ofstream out("profile_" + executable->binary.to_string() + "_" + op->method + "_" + std::to_string(vnx::get_time_micros()) + ".json");
+		std::ofstream out("profile_" + executable->binary.to_string() + "_" + op->method + "_" + std::to_string(get_time_us()) + ".json");
 		out << vnx::to_pretty_string(engine->cost_map);
 	}
 	if(engine->do_trace) {
-		std::ofstream out("trace_" + executable->binary.to_string() + "_" + op->method + "_" + std::to_string(vnx::get_time_micros()) + ".json");
+		std::ofstream out("trace_" + executable->binary.to_string() + "_" + op->method + "_" + std::to_string(get_time_us()) + ".json");
 		for(const auto& t : engine->storage->trace) {
 			out << t.type << "\taddr = 0x" << vnx::to_hex_string(t.addr)
 					<< "\tkey = 0x" << vnx::to_hex_string(t.key) << "\tvalue = " << to_string(t.value) << std::endl;

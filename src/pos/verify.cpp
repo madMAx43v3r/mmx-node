@@ -108,7 +108,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	std::vector<std::pair<uint32_t, uint32_t>> entries;
 	std::vector<std::vector<std::pair<uint32_t, uint32_t>>> LR_tmp(N_TABLE + 1);
 
-//	const auto t1_begin = vnx::get_time_millis();
+//	const auto t1_begin = get_time_ms();
 
 	if(X_out) {
 		X_tmp.reserve(num_entries_1);
@@ -133,7 +133,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		g_threads->sync(jobs);
 		jobs.clear();
 	}
-//	std::cout << "Table 1 took " << (vnx::get_time_millis() - t1_begin) << " ms" << std::endl;
+//	std::cout << "Table 1 took " << (get_time_ms() - t1_begin) << " ms" << std::endl;
 
 	// sort function for proof ordering (enforce unique proofs)
 	const auto sort_func =
@@ -146,14 +146,14 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 	for(int t = 2; t <= N_TABLE; ++t)
 	{
-//		const auto time_begin = vnx::get_time_millis();
+//		const auto time_begin = get_time_ms();
 
 		std::vector<std::array<uint32_t, N_META>> M_next;
 		std::vector<std::pair<uint32_t, uint32_t>> matches;
 
 		std::sort(entries.begin(), entries.end(), sort_func);
 
-//		std::cout << "Table " << t << " sort took " << (vnx::get_time_millis() - time_begin) << " ms" << std::endl;
+//		std::cout << "Table " << t << " sort took " << (get_time_ms() - time_begin) << " ms" << std::endl;
 
 		for(size_t x = 0; x < entries.size(); ++x)
 		{
@@ -207,7 +207,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		M_tmp = std::move(M_next);
 		entries = std::move(matches);
 
-//		std::cout << "Table " << t << " took " << (vnx::get_time_millis() - time_begin) << " ms, " << entries.size() << " entries" << std::endl;
+//		std::cout << "Table " << t << " took " << (get_time_ms() - time_begin) << " ms, " << entries.size() << " entries" << std::endl;
 	}
 
 	std::sort(entries.begin(), entries.end(), sort_func);

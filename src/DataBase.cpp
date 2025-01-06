@@ -6,6 +6,7 @@
  */
 
 #include <mmx/DataBase.h>
+#include <mmx/utils.h>
 
 #include <vnx/vnx.h>
 
@@ -114,7 +115,7 @@ const Table::options_t Table::default_options;
 Table::Table(const std::string& root_path, const options_t& options)
 	:	options(options), root_path(root_path), mem_index(key_compare_t(this)), mem_block(mem_compare_t(this))
 {
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 	vnx::Directory root(root_path);
 	root.create();
 
@@ -218,7 +219,7 @@ Table::Table(const std::string& root_path, const options_t& options)
 		}
 		debug_log << "Loaded " << mem_index.size() << " / " << mem_block.size() << " entries from write_log.dat" << std::endl;
 	}
-	debug_log << "Loaded table at version " << curr_version << ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec" << std::endl;
+	debug_log << "Loaded table at version " << curr_version << ", took " << (get_time_ms() - time_begin) / 1e3 << " sec" << std::endl;
 
 	revert(curr_version);
 
@@ -444,7 +445,7 @@ void Table::revert(const uint32_t new_version)
 			continue;
 		}
 		if(block->max_version >= new_version) {
-			const auto time_begin = vnx::get_wall_time_millis();
+			const auto time_begin = get_time_ms();
 
 			auto new_block = create_block(block->level, block->name + ".tmp");
 			new_block->min_version = block->min_version;
@@ -481,7 +482,7 @@ void Table::revert(const uint32_t new_version)
 			debug_log << "Rewrote " << block->name << " with max_version = " << new_block->max_version
 					<< ", " << new_block->index.size() << " / " << new_block->total_count << " entries"
 					<< ", from " << block->index.size() << " / " << block->total_count << " entries"
-					<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec" << std::endl;
+					<< ", took " << (get_time_ms() - time_begin) / 1e3 << " sec" << std::endl;
 			block = new_block;
 		}
 		iter++;
@@ -535,7 +536,7 @@ void Table::flush()
 		debug_log << "Force flushed at version " << curr_version << std::endl;
 		return;
 	}
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 
 	auto block = create_block(0, "flush.tmp");
 	block->index.reserve(mem_index.size());
@@ -573,7 +574,7 @@ void Table::flush()
 
 	debug_log << "Flushed " << block->name << " with " << block->index.size() << " / " << block->total_count
 			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version
-			<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec" << std::endl;
+			<< ", took " << (get_time_ms() - time_begin) / 1e3 << " sec" << std::endl;
 
 	check_rewrite();
 }
@@ -677,7 +678,7 @@ void Table::check_rewrite()
 	}
 	selected.pop_back();
 
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 
 	const auto block = rewrite(selected, level + 1);
 	rename(block, next_block_id++);
@@ -685,7 +686,7 @@ void Table::check_rewrite()
 	debug_log << "Wrote " << block->name << " at level " << block->level
 			<< " with " << block->index.size() << " / " << block->total_count
 			<< " entries, min_version = " << block->min_version << ", max_version = " << block->max_version
-			<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec" << std::endl;
+			<< ", took " << (get_time_ms() - time_begin) / 1e3 << " sec" << std::endl;
 
 	for(const auto& block : selected) {
 		block->file.remove();
