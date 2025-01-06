@@ -13,6 +13,7 @@
 #include <vnx/Proxy.h>
 #include <vnx/Server.h>
 #include <vnx/Terminal.h>
+#include <vnx/TcpEndpoint.hxx>
 
 
 int main(int argc, char** argv)

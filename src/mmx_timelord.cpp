@@ -13,6 +13,7 @@
 #include <vnx/Proxy.h>
 #include <vnx/Server.h>
 #include <vnx/Terminal.h>
+#include <vnx/TcpEndpoint.hxx>
 
 
 int main(int argc, char** argv)
@@ -48,7 +49,15 @@ int main(int argc, char** argv)
 	vnx::log_info() << "ARM-SHA2 support: " << (sha256_arm_available() ? "yes" : "no");
 #endif // __aarch64__
 
-	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
+	auto node = vnx::Endpoint::from_url(node_url);
+	if(auto tcp = std::dynamic_pointer_cast<const vnx::TcpEndpoint>(node)) {
+		if(!tcp->port || tcp->port == vnx::TcpEndpoint::default_port) {
+			auto tmp = vnx::clone(tcp);
+			tmp->port = 11330;
+			node = tmp;
+		}
+	}
+	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", node);
 	proxy->forward_list = {"Node", "Wallet"};
 
 	{
