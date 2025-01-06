@@ -485,9 +485,9 @@ private:
 
 	void test_all();
 
-	std::shared_ptr<Block> create_test_block(std::shared_ptr<const BlockHeader> prev);
+	std::shared_ptr<Block> create_test_block(std::shared_ptr<const BlockHeader> prev, const bool valid = true);
 
-	std::shared_ptr<fork_t> create_test_fork(std::shared_ptr<const BlockHeader> prev);
+	std::shared_ptr<fork_t> create_test_fork(std::shared_ptr<const BlockHeader> prev, const bool valid = true);
 
 private:
 	hash_t state_hash;
