@@ -1,5 +1,5 @@
 {
-	"num_sync_retries": 5,
+	"num_sync_retries": 3,
 	"sync_loss_delay": 300,
 	"max_sync_ahead": 10000,
 	"max_sync_jobs": 100,

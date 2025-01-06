@@ -128,7 +128,7 @@ void Node::main()
 	vnx::Directory(storage_path).create();
 	vnx::Directory(database_path).create();
 
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 	{
 		db = std::make_shared<DataBase>(num_db_threads);
 
@@ -182,7 +182,7 @@ void Node::main()
 		reset();
 
 		log(INFO) << "Loaded DB at height " << get_height() << ", " << mmx_address_count << " addresses, "
-				<< farmer_ranking.size() << " farmers, took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+				<< farmer_ranking.size() << " farmers, took " << (get_time_ms() - time_begin) / 1e3 << " sec";
 	}
 
 	if(vdf_slave_mode) {
@@ -347,7 +347,7 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 		return;
 	}
 	if(!fork->recv_time) {
-		fork->recv_time = vnx::get_wall_time_millis();
+		fork->recv_time = get_time_ms();
 	}
 	fork->prev = find_fork(block->prev);
 	fork->proof_score_224 = block->proof_hash.to_uint<uint256_t>(true) >> 32;
@@ -395,7 +395,7 @@ void Node::handle(std::shared_ptr<const Transaction> tx)
 
 void Node::handle(std::shared_ptr<const ProofOfTime> value)
 {
-	vdf_queue.emplace_back(value, vnx::get_wall_time_millis());
+	vdf_queue.emplace_back(value, get_time_ms());
 	trigger_update();
 }
 
@@ -418,7 +418,7 @@ void Node::handle(std::shared_ptr<const VDF_Point> value)
 
 void Node::handle(std::shared_ptr<const ProofResponse> value)
 {
-	proof_queue.emplace_back(value, vnx::get_wall_time_millis());
+	proof_queue.emplace_back(value, get_time_ms());
 }
 
 void Node::handle(std::shared_ptr<const ValidatorVote> value)
@@ -426,7 +426,7 @@ void Node::handle(std::shared_ptr<const ValidatorVote> value)
 	if(!value->is_valid()) {
 		return;
 	}
-	vote_queue.emplace_back(value, vnx::get_wall_time_millis());
+	vote_queue.emplace_back(value, get_time_ms());
 	verify_votes();
 }
 
@@ -526,7 +526,7 @@ void Node::sync_more()
 	if(vdf_threads->get_num_pending()) {
 		return;		// wait for pending VDF checks (all threads busy)
 	}
-	if(sync_pos - root->height > params->commit_delay + max_sync_ahead) {
+	if(sync_pos > root->height && sync_pos - root->height > params->commit_delay + max_sync_ahead) {
 		return;		// limit blocks in memory during sync
 	}
 	const size_t max_pending = sync_retry ? 2 : std::max(std::min<int>(max_sync_pending, max_sync_jobs), 4);
@@ -625,7 +625,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 	if(alt) {
 		did_fork = true;
 		log(WARN) << "Performing deep fork ...";
-		const auto time_begin = vnx::get_wall_time_millis();
+		const auto time_begin = get_time_ms();
 		try {
 			forked_at = alt;
 			std::vector<hash_t> list;
@@ -664,7 +664,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 			root = alt;
 
 			log(INFO) << "Deep fork to new root at height " << root->height << " took "
-					<< (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+					<< (get_time_ms() - time_begin) / 1e3 << " sec";
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "Failed to apply alternate fork: " << ex.what();
@@ -1199,7 +1199,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 
 void Node::revert(const uint32_t height)
 {
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 
 	const bool is_deep = !root || height <= root->height;
 
@@ -1257,7 +1257,7 @@ void Node::revert(const uint32_t height)
 	}
 	update_farmer_ranking();
 
-	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+	const auto elapsed = (get_time_ms() - time_begin) / 1e3;
 	if(elapsed > 1) {
 		log(WARN) << "Reverting to height " << peak << " took " << elapsed << " sec";
 	}
@@ -1292,7 +1292,7 @@ void Node::reset()
 
 		// load fork tree
 		std::vector<hash_t> list;
-		height_index.find_range(root->height, -1, list);
+		height_index.find_range(root->height, height + 1, list);
 		for(const auto& hash : list) {
 			if(auto block = get_block(hash)) {
 				if(block->height == root->height) {

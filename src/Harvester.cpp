@@ -72,7 +72,7 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 	out->vdf_height = request->vdf_height;
 	out->farmer_addr = farmer_addr;
 	out->harvester = my_name.substr(0, 1024);
-	out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin_ms;
+	out->lookup_time_ms = get_time_ms() - time_begin_ms;
 	out->hash = out->calc_hash();
 	out->content_hash = out->calc_content_hash();
 
@@ -85,7 +85,7 @@ void Harvester::send_response(	std::shared_ptr<const Challenge> request, std::sh
 
 void Harvester::check_queue()
 {
-	const auto now_ms = vnx::get_wall_time_millis();
+	const auto now_ms = get_time_ms();
 
 	for(auto iter = lookup_queue.begin(); iter != lookup_queue.end();)
 	{
@@ -133,10 +133,10 @@ std::vector<uint32_t> Harvester::fetch_full_proof(
 {
 	// Note: NEEDS TO BE THREAD SAFE
 	try {
-		const auto time_begin = vnx::get_wall_time_millis();
+		const auto time_begin = get_time_ms();
 		const auto data = prover->get_full_proof(challenge, index);
 		if(data.valid) {
-			const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
+			const auto elapsed = (get_time_ms() - time_begin) / 1e3;
 			log(elapsed > 20 ? WARN : DEBUG) << "[" << my_name << "] Fetching full proof took " << elapsed << " sec (" << prover->get_file_path() << ")";
 			return data.proof;
 		} else {
@@ -170,7 +170,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 	const auto job = std::make_shared<lookup_job_t>();
 	job->total_plots = id_map.size();
 	job->num_left = job->total_plots;
-	job->time_begin = vnx::get_wall_time_millis();
+	job->time_begin = get_time_ms();
 
 	for(const auto& entry : plot_nfts) {
 		const auto& info = entry.second;
@@ -199,7 +199,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		threads->add_task([this, plot_id, prover, value, job, recv_time_ms]()
 		{
 			const auto header = prover->get_header();
-			const auto time_begin = vnx::get_wall_time_millis();
+			const auto time_begin = get_time_ms();
 			const bool passed_filter = check_plot_filter(params, value->challenge, plot_id);
 
 			if(passed_filter) try
@@ -262,7 +262,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 							out->pool_url = pool_config->server_url;
 							out->proof = proof;
 							out->harvester = my_name;
-							out->lookup_time_ms = vnx::get_wall_time_millis() - time_begin;
+							out->lookup_time_ms = get_time_ms() - time_begin;
 
 							publish(out, output_partials);
 						}
@@ -301,7 +301,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				log(WARN) << "[" << my_name << "] Failed to process plot: " << ex.what() << " (" << prover->get_file_path() << ")";
 			}
 
-			const auto time_lookup = vnx::get_wall_time_millis() - time_begin;
+			const auto time_lookup = get_time_ms() - time_begin;
 			{
 				std::lock_guard<std::mutex> lock(job->mutex);
 				if(passed_filter) {
@@ -323,7 +323,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		while(job->num_left) {
 			job->signal.wait(lock);
 		}
-		const auto time_end = vnx::get_wall_time_millis();
+		const auto time_end = get_time_ms();
 		{
 			auto out = LookupInfo::create();
 			out->id = harvester_id;
@@ -444,7 +444,7 @@ void Harvester::find_plot_dirs(const std::set<std::string>& dirs, std::set<std::
 
 void Harvester::reload()
 {
-	const auto time_begin = vnx::get_wall_time_millis();
+	const auto time_begin = get_time_ms();
 
 	std::set<std::string> dir_set;
 	if(recursive_search) {
@@ -584,7 +584,7 @@ void Harvester::reload()
 	}
 	log(INFO) << "[" << my_name << "] Loaded " << plot_map.size() << " plots, "
 			<< total_bytes / pow(1000, 4) << " TB, " << total_bytes_effective / pow(1000, 4) << " TBe"
-			<< ", took " << (vnx::get_wall_time_millis() - time_begin) / 1e3 << " sec";
+			<< ", took " << (get_time_ms() - time_begin) / 1e3 << " sec";
 }
 
 void Harvester::add_plot_dir(const std::string& path)
@@ -624,6 +624,7 @@ void Harvester::rem_plot_dir(const std::string& path)
 void Harvester::update()
 {
 	try {
+		farmer->vnx_set_non_blocking(true);
 		farmer_addr = farmer->get_mac_addr();
 
 		std::vector<addr_t> list;
