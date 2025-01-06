@@ -32,7 +32,7 @@
 	"time_diff_constant": 1000000,
 	"space_diff_constant": 100000000000,
 	"vdf_reward": 500000,
-	"vdf_reward_interval": 50,
+	"vdf_reward_interval": 20,
 	"reward_adjust_div": 100,
 	"reward_adjust_interval": 8640,
 	"min_reward_adjust": 10000,
