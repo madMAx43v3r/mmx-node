@@ -1041,6 +1041,15 @@ void DataBase::revert(const uint32_t new_version)
 	threads.sync();
 }
 
+uint32_t DataBase::version() const
+{
+	std::lock_guard<std::mutex> lock(mutex);
+	if(tables.empty()) {
+		return 0;
+	}
+	return tables[0]->current_version();
+}
+
 uint32_t DataBase::min_version() const
 {
 	std::lock_guard<std::mutex> lock(mutex);

@@ -135,7 +135,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	block->validate();
 
-	const auto prev = find_prev_header(block);
+	const auto prev = find_prev(block);
 	if(!prev) {
 		throw std::logic_error("missing prev");
 	}

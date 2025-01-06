@@ -14,6 +14,7 @@
 #include <mmx/tx_entry_t.hpp>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
+#include <mmx/helpers.h>
 
 #include <mmx/Node_get_block.hxx>
 #include <mmx/Node_get_block_at.hxx>
@@ -172,13 +173,23 @@ std::shared_ptr<const Block> Node::get_block(const hash_t& hash) const
 
 std::shared_ptr<const BlockHeader> Node::get_block_ex(const hash_t& hash, bool full_block) const
 {
+	// THREAD SAFE (for concurrent reads)
 	auto iter = fork_tree.find(hash);
 	if(iter != fork_tree.end()) {
 		return iter->second->block;
 	}
-	uint32_t height = 0;
-	if(hash_index.find(hash, height)) {
-		return get_block_at_ex(height, full_block);
+	if(!full_block) {
+		auto iter = history.find(hash);
+		if(iter != history.end()) {
+			return iter->second;
+		}
+	}
+	block_index_t entry;
+	if(block_index.find(hash, entry)) {
+		vnx::File file(blocks->get_path());
+		file.open("rb");
+		file.seek_to(entry.file_offset);
+		return read_block(file, full_block);
 	}
 	return nullptr;
 }
@@ -190,19 +201,8 @@ std::shared_ptr<const Block> Node::get_block_at(const uint32_t& height) const
 
 std::shared_ptr<const BlockHeader> Node::get_block_at_ex(const uint32_t& height, bool full_block) const
 {
-	// THREAD SAFE (for concurrent reads)
-	if(!full_block) {
-		auto iter = history.find(height);
-		if(iter != history.end()) {
-			return iter->second;
-		}
-	}
-	block_index_t entry;
-	if(block_index.find(height, entry)) {
-		vnx::File file(block_chain->get_path());
-		file.open("rb");
-		file.seek_to(entry.file_offset);
-		return read_block(file, full_block);
+	if(auto hash = get_block_hash(height)) {
+		return get_block_ex(*hash, full_block);
 	}
 	return nullptr;
 }
@@ -219,17 +219,20 @@ std::shared_ptr<const BlockHeader> Node::get_header_at(const uint32_t& height) c
 
 vnx::optional<hash_t> Node::get_block_hash(const uint32_t& height) const
 {
-	if(auto hash = get_block_hash_ex(height))  {
-		return hash->first;
+	hash_t hash;
+	if(height_map.find(height, hash)) {
+		return hash;
 	}
 	return nullptr;
 }
 
 vnx::optional<std::pair<hash_t, hash_t>> Node::get_block_hash_ex(const uint32_t& height) const
 {
-	block_index_t entry;
-	if(block_index.find(height, entry)) {
-		return std::make_pair(entry.hash, entry.content_hash);
+	if(auto hash = get_block_hash(height)) {
+		block_index_t entry;
+		if(block_index.find(*hash, entry)) {
+			return std::make_pair(*hash, entry.content_hash);
+		}
 	}
 	return nullptr;
 }
@@ -356,7 +359,7 @@ std::shared_ptr<const Transaction> Node::get_transaction(const hash_t& id, const
 	}
 	tx_index_t entry;
 	if(tx_index.find(id, entry)) {
-		vnx::File file(block_chain->get_path());
+		vnx::File file(blocks->get_path());
 		file.open("rb");
 		file.seek_to(entry.file_offset);
 		const auto value = vnx::read(file.in);
@@ -593,10 +596,7 @@ std::shared_ptr<const Contract> Node::get_contract_ex(const addr_t& address, uin
 	std::shared_ptr<const Contract> contract;
 	{
 		std::lock_guard<std::mutex> lock(mutex);
-		auto iter = contract_cache.find(address);
-		if(iter != contract_cache.end()) {
-			contract = iter->second;
-		}
+		contract = find_value(contract_cache, address, nullptr);
 	}
 	if(!contract) {
 		contract_map.find(address, contract);

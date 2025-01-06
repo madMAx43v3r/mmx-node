@@ -151,26 +151,28 @@ void Node::verify_proofs()
 {
 	const auto time_now = vnx::get_wall_time_millis();
 	const auto proof_timeout = 10 * params->block_interval_ms;
+	const auto vdf_height = get_vdf_height();
 
 	std::mutex mutex;
 	std::vector<std::pair<std::shared_ptr<const ProofResponse>, int64_t>> try_again;
 
 	for(const auto& entry : proof_queue) {
+		const auto& res = entry.first;
 		if(time_now - entry.second > proof_timeout) {
 			continue;		// timeout
 		}
-		threads->add_task([this, entry, &mutex, &try_again]() {
-			const auto& res = entry.first;
+		if(res->vdf_height >= vdf_height + params->challenge_delay) {
+			try_again.push_back(entry);		// wait for challenge to confirm
+			continue;
+		}
+		threads->add_task([this, res, &mutex, &try_again]() {
 			try {
-				const auto valid = verify(res);
-
+				verify(res);
 				std::lock_guard<std::mutex> lock(mutex);
-				if(valid) {
-					add_proof(res->proof, res->vdf_height, res->farmer_addr);
-				} else {
-					try_again.push_back(entry);
-				}
-			} catch(const std::exception& ex) {
+				add_proof(res->proof, res->vdf_height, res->farmer_addr);
+				log(DEBUG) << "Got proof for VDF height " << res->vdf_height << " with score " << res->proof->score;
+			}
+			catch(const std::exception& ex) {
 				log(WARN) << "Got invalid proof for VDF height " << res->vdf_height << ": " << ex.what();
 			}
 		});
@@ -188,9 +190,6 @@ void Node::verify_block_proofs()
 	for(const auto& entry : fork_index)
 	{
 		const auto& fork = entry.second;
-		if(fork->is_proof_verified) {
-			continue;
-		}
 		const auto& block = fork->block;
 		if(!fork->prev.lock()) {
 			fork->prev = find_fork(block->prev);
@@ -203,7 +202,7 @@ void Node::verify_block_proofs()
 		} else if(block->prev == root->hash) {
 			fork->is_connected = true;
 		}
-		if(fork->is_invalid || !fork->is_connected) {
+		if(!fork->is_connected || fork->is_invalid || fork->is_proof_verified) {
 			continue;
 		}
 		if(!fork->is_vdf_verified) {
@@ -268,7 +267,8 @@ void Node::update()
 		// verify and apply new fork
 		try {
 			forked_at = fork_to(best_fork);
-		} catch(const std::exception& ex) {
+		}
+		catch(const std::exception& ex) {
 			best_fork->is_invalid = true;
 			log(WARN) << "Forking to height " << best_fork->block->height << " failed with: " << ex.what();
 			continue;	// try again
@@ -321,15 +321,12 @@ void Node::update()
 				}
 			} else {
 				msg << ", " << sync_pending.size() << " pending";
-				if(auto count = vdf_threads->get_num_pending_total()) {
-					msg << ", " << count << " vdf checks";
-				}
 			}
 			msg << ", took " << elapsed << " sec";
 			log(INFO) << msg.str();
 		}
-		if(forked_at) {
-			const auto depth = peak->height - forked_at->height;
+		if(forked_at && prev_peak) {
+			const auto depth = prev_peak->height - forked_at->height;
 			if(depth > 1) {
 				log(WARN) << "Forked " << depth << " blocks deep at height " << peak->height;
 			}
@@ -445,7 +442,7 @@ void Node::update()
 			{
 				if(!created_blocks.count(proof->hash))
 				{
-					if(auto prev = find_prev_header(peak))
+					if(auto prev = find_prev(peak))
 					{
 						const auto vdf_points = find_next_vdf_points(prev);
 						if(vdf_points.size()) {
@@ -930,7 +927,7 @@ std::shared_ptr<const Block> Node::make_block(
 		}
 	}
 
-	if(auto ref = find_prev_header(prev, 100))
+	if(auto ref = find_prev(prev, 100))
 	{
 		// set new time diff
 		const auto delta_ms = prev->time_stamp - ref->time_stamp;
@@ -938,8 +935,8 @@ std::shared_ptr<const Block> Node::make_block(
 		const auto factor = double(params->block_interval_ms * delta_blocks) / delta_ms;
 
 		const auto delay = params->commit_delay + params->infuse_delay;
-		const auto begin = find_prev_header(ref, delay, true);
-		const auto end =   find_prev_header(prev, delay, true);
+		const auto begin = find_prev(ref, delay, true);
+		const auto end =   find_prev(prev, delay, true);
 
 		if(begin && end) {
 			const auto avg_diff = (begin->time_diff + end->time_diff) / 2;
@@ -980,15 +977,15 @@ std::shared_ptr<const Block> Node::make_block(
 	block->set_base_reward(params, prev);
 	block->finalize();
 
-	FarmerClient farmer(proof[0].farmer_mac);
-
-	const auto result = farmer.sign_block(block);
-	if(!result) {
-		log(WARN) << "Farmer refused to sign block at height " << block->height;
-		return nullptr;
+	if(auto farmer_mac = proof[0].farmer_mac)
+	{
+		const auto result = FarmerClient(farmer_mac).sign_block(block);
+		if(!result) {
+			log(WARN) << "Farmer refused to sign block at height " << block->height;
+			return nullptr;
+		}
+		block->BlockHeader::operator=(*result);
 	}
-	block->BlockHeader::operator=(*result);
-
 	created_blocks[block->proof_hash] = block->hash;
 
 	const auto elapsed = (vnx::get_wall_time_millis() - time_begin) / 1e3;
