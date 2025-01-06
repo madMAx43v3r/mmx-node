@@ -212,10 +212,6 @@ protected:
 	std::tuple<pooling_error_e, std::string> verify_partial(
 			std::shared_ptr<const Partial> partial, const vnx::optional<addr_t>& pool_target) const override;
 
-	void on_stuck_timeout();
-
-	void sync_status();
-
 	void start_sync(const vnx::bool_t& force) override;
 
 	void revert_sync(const uint32_t& height) override;
@@ -262,7 +258,7 @@ private:
 
 	struct fork_t {
 		bool is_invalid = false;
-		bool is_verified = false;
+		bool is_validated = false;
 		bool is_connected = false;
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
@@ -323,6 +319,10 @@ private:
 	void validate_new();
 
 	void on_sync_done(const uint32_t height);
+
+	void on_stuck_timeout();
+
+	void sync_status();
 
 	std::vector<tx_pool_t> validate_for_block(const int64_t deadline_ms);
 
@@ -437,7 +437,7 @@ private:
 
 	std::shared_ptr<fork_t> find_prev_fork(std::shared_ptr<fork_t> fork, const size_t distance = 1) const;
 
-	std::shared_ptr<const BlockHeader> find_prev_header(
+	std::shared_ptr<const BlockHeader> find_prev(
 			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamped = false) const;
 
 	bool find_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& challenge, uint64_t& space_diff) const;

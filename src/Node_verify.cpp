@@ -70,7 +70,7 @@ void Node::verify(std::shared_ptr<const ProofResponse> value) const
 void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 {
 	const auto block = fork->block;
-	const auto prev = find_prev_header(block);
+	const auto prev = find_prev(block);
 	if(!prev) {
 		throw std::logic_error("cannot verify");
 	}
@@ -445,7 +445,7 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 void Node::check_vdf(std::shared_ptr<fork_t> fork)
 {
 	const auto& block = fork->block;
-	const auto prev = find_prev_header(block);
+	const auto prev = find_prev(block);
 	if(!prev) {
 		throw std::logic_error("cannot check VDF");
 	}

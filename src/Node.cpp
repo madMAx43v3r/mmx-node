@@ -615,7 +615,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 					break;
 				}
 				list.push_back(forked_at->hash);
-				forked_at = find_prev_header(forked_at);
+				forked_at = find_prev(forked_at);
 			}
 			if(!forked_at) {
 				throw std::logic_error("cannot find fork point");
@@ -670,7 +670,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 			// already verified and applied
 			continue;
 		}
-		if(!fork->is_verified) {
+		if(!fork->is_validated) {
 			try {
 				fork->context = validate(block);
 
@@ -681,7 +681,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 						fork->is_vdf_verified = true;
 					}
 				}
-				fork->is_verified = true;
+				fork->is_validated = true;
 			}
 			catch(const std::exception& ex) {
 				log(WARN) << "Block validation failed for height " << block->height << " with: " << ex.what();
@@ -1146,7 +1146,7 @@ void Node::revert(const uint32_t height)
 
 	const bool is_deep = !root || height <= root->height;
 
-	for(auto block = get_peak(); !is_deep && block && block->height >= height; block = find_prev_header(block))
+	for(auto block = get_peak(); !is_deep && block && block->height >= height; block = find_prev(block))
 	{
 		// revert farmer_ranking
 		if(block->height) {
@@ -1252,7 +1252,7 @@ void Node::reset()
 		}
 
 		// load history
-		for(auto block = root; block && history.size() < max_history; block = find_prev_header(block)) {
+		for(auto block = root; block && history.size() < max_history; block = find_prev(block)) {
 			history[block->hash] = block;
 			history_log.emplace(block->height, block->hash);
 		}
@@ -1304,7 +1304,7 @@ std::shared_ptr<Node::fork_t> Node::find_prev_fork(std::shared_ptr<fork_t> fork,
 	return fork;
 }
 
-std::shared_ptr<const BlockHeader> Node::find_prev_header(	std::shared_ptr<const BlockHeader> block,
+std::shared_ptr<const BlockHeader> Node::find_prev(	std::shared_ptr<const BlockHeader> block,
 															const size_t distance, bool clamped) const
 {
 	for(size_t i = 0; block && i < distance && (block->height || !clamped); ++i) {
@@ -1335,7 +1335,7 @@ bool Node::find_challenge(std::shared_ptr<const BlockHeader> block, const uint32
 	{
 		std::shared_ptr<const BlockHeader> iter = block;
 		for(uint32_t i = 0; i < target; ++i) {
-			if(auto block = find_prev_header(iter)) {
+			if(auto block = find_prev(iter)) {
 				chain.push_back(block);
 				iter = block;
 			} else if(iter->height) {
@@ -1386,7 +1386,7 @@ bool Node::find_challenge(const uint32_t vdf_height, hash_t& challenge, uint64_t
 		}
 	}
 	while(block && block->vdf_height > vdf_height) {
-		block = find_prev_header(block);
+		block = find_prev(block);
 	}
 	if(!block) {
 		return false;
@@ -1405,7 +1405,7 @@ hash_t Node::get_challenge(std::shared_ptr<const BlockHeader> block, const uint3
 
 uint64_t Node::get_time_diff(std::shared_ptr<const BlockHeader> infused) const
 {
-	if(auto prev = find_prev_header(infused, params->commit_delay, true)) {
+	if(auto prev = find_prev(infused, params->commit_delay, true)) {
 		return prev->time_diff;
 	}
 	throw std::logic_error("cannot get time difficulty");
@@ -1419,7 +1419,7 @@ bool Node::find_infusion(std::shared_ptr<const BlockHeader> block, const uint32_
 		const uint32_t target = block->vdf_height > delta ? block->vdf_height - delta : 0;
 
 		while(block && block->vdf_height > target) {
-			block = find_prev_header(block);
+			block = find_prev(block);
 		}
 	}
 	if(block) {
@@ -1468,7 +1468,7 @@ Node::find_vdf_point(const hash_t& input, const hash_t& output) const
 std::vector<std::shared_ptr<const VDF_Point>>
 Node::find_vdf_points(std::shared_ptr<const BlockHeader> block) const
 {
-	const auto prev = find_prev_header(block);
+	const auto prev = find_prev(block);
 	if(!prev) {
 		return {};
 	}
@@ -1561,7 +1561,7 @@ std::vector<std::shared_ptr<const VDF_Point>> Node::find_next_vdf_points(std::sh
 
 std::set<pubkey_t> Node::get_validators(std::shared_ptr<const BlockHeader> block) const
 {
-	block = find_prev_header(block, params->commit_delay);
+	block = find_prev(block, params->commit_delay);
 
 	std::set<pubkey_t> set;
 	for(uint32_t k = 0; block && k < max_history && set.size() < params->max_validators; ++k)
@@ -1569,7 +1569,7 @@ std::set<pubkey_t> Node::get_validators(std::shared_ptr<const BlockHeader> block
 		for(size_t i = 1; i < block->proof.size() && set.size() < params->max_validators; ++i) {
 			set.insert(block->proof[i]->farmer_key);
 		}
-		block = find_prev_header(block);
+		block = find_prev(block);
 	}
 	return set;
 }
@@ -1596,7 +1596,7 @@ uint64_t Node::calc_block_reward(std::shared_ptr<const BlockHeader> block, const
 	}
 	uint64_t base_reward = 0;
 	uint64_t reward_deduction = 0;
-	if(auto prev = find_prev_header(block)) {
+	if(auto prev = find_prev(block)) {
 		base_reward = prev->base_reward;
 		reward_deduction = calc_min_reward_deduction(params, prev->txfee_buffer);
 	}
@@ -1611,7 +1611,7 @@ vnx::optional<addr_t> Node::get_vdf_reward_winner(std::shared_ptr<const BlockHea
 {
 	std::map<addr_t, uint32_t> win_map;
 	for(uint32_t i = 0; i < params->vdf_reward_interval; ++i) {
-		if(auto prev = find_prev_header(block)) {
+		if(auto prev = find_prev(block)) {
 			for(const auto& addr : prev->vdf_reward_addr) {
 				win_map[addr]++;
 			}

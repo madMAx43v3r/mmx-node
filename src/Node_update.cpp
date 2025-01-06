@@ -444,7 +444,7 @@ void Node::update()
 			{
 				if(!created_blocks.count(proof->hash))
 				{
-					if(auto prev = find_prev_header(peak))
+					if(auto prev = find_prev(peak))
 					{
 						const auto vdf_points = find_next_vdf_points(prev);
 						if(vdf_points.size()) {
@@ -929,7 +929,7 @@ std::shared_ptr<const Block> Node::make_block(
 		}
 	}
 
-	if(auto ref = find_prev_header(prev, 100))
+	if(auto ref = find_prev(prev, 100))
 	{
 		// set new time diff
 		const auto delta_ms = prev->time_stamp - ref->time_stamp;
@@ -937,8 +937,8 @@ std::shared_ptr<const Block> Node::make_block(
 		const auto factor = double(params->block_interval_ms * delta_blocks) / delta_ms;
 
 		const auto delay = params->commit_delay + params->infuse_delay;
-		const auto begin = find_prev_header(ref, delay, true);
-		const auto end =   find_prev_header(prev, delay, true);
+		const auto begin = find_prev(ref, delay, true);
+		const auto end =   find_prev(prev, delay, true);
 
 		if(begin && end) {
 			const auto avg_diff = (begin->time_diff + end->time_diff) / 2;
