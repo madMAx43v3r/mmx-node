@@ -212,8 +212,6 @@ protected:
 	std::tuple<pooling_error_e, std::string> verify_partial(
 			std::shared_ptr<const Partial> partial, const vnx::optional<addr_t>& pool_target) const override;
 
-	void on_stuck_timeout();
-
 	void start_sync(const vnx::bool_t& force) override;
 
 	void revert_sync(const uint32_t& height) override;
@@ -260,7 +258,7 @@ private:
 
 	struct fork_t {
 		bool is_invalid = false;
-		bool is_verified = false;
+		bool is_validated = false;
 		bool is_connected = false;
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
@@ -268,7 +266,7 @@ private:
 		int64_t recv_time = 0;					// [ms]
 		uint32_t votes = 0;						// validator votes
 		uint32_t total_votes = 0;
-		uint32_t ahead_count = 0;				// how many blocks ahead of any competing fork
+		uint32_t fork_length = 0;
 		uint256_t proof_score_224 = 0;			// high (256-32) bits of proof hash
 		uint256_t proof_score_sum = 0;
 		std::weak_ptr<fork_t> prev;
@@ -299,6 +297,7 @@ private:
 	};
 
 	void update();
+	void init_chain();
 	void trigger_update();
 	void update_control();
 
@@ -320,6 +319,10 @@ private:
 	void validate_new();
 
 	void on_sync_done(const uint32_t height);
+
+	void on_stuck_timeout();
+
+	void sync_status();
 
 	std::vector<tx_pool_t> validate_for_block(const int64_t deadline_ms);
 
@@ -346,7 +349,7 @@ private:
 
 	std::shared_ptr<const BlockHeader> fork_to(std::shared_ptr<fork_t> fork_head);
 
-	std::shared_ptr<fork_t> find_best_fork(const uint32_t at_height = -1) const;
+	std::shared_ptr<fork_t> find_best_fork() const;
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
@@ -383,15 +386,11 @@ private:
 
 	void commit(std::shared_ptr<const Block> block);
 
-	void purge_tree();
-
-	void purge_block(std::shared_ptr<const Block> block);
-
 	void update_farmer_ranking();
 
 	void add_proof(std::shared_ptr<const ProofOfSpace> proof, const uint32_t vdf_height, const vnx::Hash64 farmer_mac);
 
-	bool verify(std::shared_ptr<const ProofResponse> value) const;
+	void verify(std::shared_ptr<const ProofResponse> value) const;
 
 	void verify_proof(std::shared_ptr<fork_t> fork) const;
 
@@ -416,13 +415,15 @@ private:
 	size_t prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) const;
 
 	void apply(	std::shared_ptr<const Block> block,
-				std::shared_ptr<const execution_context_t> context, bool is_replay = false);
+				std::shared_ptr<const execution_context_t> context);
 
 	void apply(	std::shared_ptr<const Block> block,
 				std::shared_ptr<const Transaction> tx,
 				uint32_t& counter);
 
 	void revert(const uint32_t height);
+
+	void reset();
 
 	std::shared_ptr<const BlockHeader> get_root() const;
 
@@ -436,7 +437,7 @@ private:
 
 	std::shared_ptr<fork_t> find_prev_fork(std::shared_ptr<fork_t> fork, const size_t distance = 1) const;
 
-	std::shared_ptr<const BlockHeader> find_prev_header(
+	std::shared_ptr<const BlockHeader> find_prev(
 			std::shared_ptr<const BlockHeader> block, const size_t distance = 1, bool clamped = false) const;
 
 	bool find_challenge(std::shared_ptr<const BlockHeader> block, const uint32_t offset, hash_t& challenge, uint64_t& space_diff) const;
@@ -467,10 +468,11 @@ private:
 
 	vnx::optional<addr_t> get_vdf_reward_winner(std::shared_ptr<const BlockHeader> block) const;
 
-	std::shared_ptr<const BlockHeader> read_block(vnx::File& file, bool full_block = true,
-			int64_t* block_offset = nullptr, std::vector<int64_t>* tx_offsets = nullptr) const;
+	std::shared_ptr<const BlockHeader> read_block(
+			vnx::File& file, bool full_block = true,
+			std::vector<int64_t>* tx_offsets = nullptr) const;
 
-	void write_block(std::shared_ptr<const Block> block);
+	void write_block(std::shared_ptr<const Block> block, const bool is_main = true);
 
 	template<typename T>
 	std::shared_ptr<const T> get_contract_as(const addr_t& address, uint64_t* read_cost = nullptr, const uint64_t gas_limit = 0) const;
@@ -481,9 +483,16 @@ private:
 
 	void async_api_call(std::shared_ptr<const vnx::Value> method, const vnx::request_id_t& request_id);
 
+	void test_all();
+
+	std::shared_ptr<Block> create_test_block(std::shared_ptr<const BlockHeader> prev, const bool valid = true);
+
+	std::shared_ptr<fork_t> create_test_fork(std::shared_ptr<const BlockHeader> prev, const bool valid = true);
+
 private:
 	hash_t state_hash;
 	std::shared_ptr<DataBase> db;
+	std::shared_ptr<DataBase> db_blocks;
 
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, txio_entry_t> txio_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
@@ -505,20 +514,22 @@ private:
 
 	std::unordered_map<hash_t, tx_pool_t> tx_pool;									// [txid => transaction] (non-executed only)
 	std::unordered_map<addr_t, uint64_t> tx_pool_fees;								// [address => total pending fees]
+	std::map<std::pair<hash_t, hash_t>, std::shared_ptr<const Transaction>> tx_pool_index;		// [[key, txid] => tx]
 	std::unordered_map<hash_t, std::shared_ptr<fork_t>> fork_tree;					// [block hash => fork] (pending only)
 	std::multimap<uint32_t, std::shared_ptr<fork_t>> fork_index;					// [height => fork] (pending only)
-	std::map<uint32_t, std::shared_ptr<const BlockHeader>> history;					// [height => block header] (finalized only)
-	std::map<std::pair<hash_t, hash_t>, std::shared_ptr<const Transaction>> tx_pool_index;		// [[key, txid] => tx]
+	std::unordered_map<hash_t, std::shared_ptr<const BlockHeader>> history;			// cache [hash => block header]
+	std::multimap<uint32_t, hash_t> history_log;									// [height => hash]
 
 	std::multimap<hash_t, std::shared_ptr<const VDF_Point>> vdf_tree;				// [output => proof]
 	std::multimap<uint64_t, std::shared_ptr<const VDF_Point>> vdf_index;			// [iters => proof]
+
+	std::shared_ptr<const BlockHeader> root;										// root for heaviest chain
+	std::unordered_map<hash_t, std::shared_ptr<const BlockHeader>> alt_roots;		// alternate roots (for *currently* weaker forks)
 
 	std::multimap<uint32_t, hash_t> challenge_map;									// [vdf height => challenge]
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => sorted proofs]
 	std::unordered_map<hash_t, hash_t> created_blocks;								// [proof hash => block hash]
 	std::unordered_map<hash_t, hash_t> voted_blocks;								// [prev => block hash]
-	std::unordered_set<hash_t> purged_blocks;
-	std::multimap<uint32_t, hash_t> purged_blocks_log;
 	std::map<pubkey_t, vnx::Hash64> farmer_keys;									// [key => farmer_mac] our farmer keys
 
 	bool is_synced = false;
@@ -526,13 +537,15 @@ private:
 	uint32_t min_pool_fee_ratio = 0;
 	uint64_t mmx_address_count = 0;
 
-	std::shared_ptr<vnx::File> block_chain;
+	std::shared_ptr<vnx::File> blocks;
 	std::shared_ptr<vm::StorageDB> storage;
 
-	hash_table<hash_t, uint32_t> hash_index;									// [block hash => height]
-	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
-	uint_table<uint32_t, block_index_t> block_index;							// [height => index]
+	hash_table<hash_t, block_index_t> block_index;								// [hash => index] (no revert)
+	uint_multi_table<uint32_t, hash_t> height_index;							// [height => hash] (no revert)
+
+	uint_table<uint32_t, hash_t> height_map;									// [height => hash]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
+	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
 	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;			// [farmer key => info]
 
 	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;					// sorted by count DSC [farmer key => num blocks]
@@ -558,8 +571,9 @@ private:
 	std::shared_ptr<vnx::ThreadPool> api_threads;			// executed under shared db_mutex lock
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
+	std::shared_ptr<vnx::Timer> sync_status_timer;
 
-	mutable std::mutex mutex;								// contract_cache + tx_pool_index
+	mutable std::mutex mutex;								// network + contract_cache + tx_pool_index
 	mutable std::shared_ptr<const NetworkInfo> network;
 	mutable std::unordered_map<addr_t, std::shared_ptr<const Contract>> contract_cache;
 

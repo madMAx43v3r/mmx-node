@@ -47,7 +47,7 @@ void Node::add_proof(std::shared_ptr<const ProofOfSpace> proof, const uint32_t v
 		});
 }
 
-bool Node::verify(std::shared_ptr<const ProofResponse> value) const
+void Node::verify(std::shared_ptr<const ProofResponse> value) const
 {
 	if(!value->is_valid()) {
 		throw std::logic_error("invalid response");
@@ -60,18 +60,17 @@ bool Node::verify(std::shared_ptr<const ProofResponse> value) const
 	hash_t challenge;
 	uint64_t space_diff = 0;
 	if(!find_challenge(value->vdf_height, challenge, space_diff)) {
-		return false;
+		throw std::logic_error("cannot find challenge");
 	}
 	verify_proof(value->proof, challenge, space_diff);
 
 	publish(value, output_verified_proof);
-	return true;
 }
 
 void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 {
 	const auto block = fork->block;
-	const auto prev = find_prev_header(block);
+	const auto prev = find_prev(block);
 	if(!prev) {
 		throw std::logic_error("cannot verify");
 	}
@@ -449,8 +448,13 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 
 void Node::check_vdf(std::shared_ptr<fork_t> fork)
 {
+	static bool have_sha_ni = sha256_ni_available();
+	if(!have_sha_ni) {
+		fork->is_vdf_verified = true;	// by-pass as it takes too long
+		return;
+	}
 	const auto& block = fork->block;
-	const auto prev = find_prev_header(block);
+	const auto prev = find_prev(block);
 	if(!prev) {
 		throw std::logic_error("cannot check VDF");
 	}

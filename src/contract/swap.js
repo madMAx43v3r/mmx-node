@@ -71,6 +71,7 @@ function _payout(user)
 			send(this.user, amount, tokens[i], "mmx_swap_payout");
 		}
 		user.last_fees_paid[i] = entry.fees_paid[i];
+		user.last_user_total[k] = entry.user_total[k];
 	}
 	return user_share;
 }

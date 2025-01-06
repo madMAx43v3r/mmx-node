@@ -329,6 +329,10 @@ public:
 		return db->root_path;
 	}
 
+	uint32_t current_version() const {
+		return db->current_version();
+	}
+
 protected:
 	struct stream_t {
 		vnx::Memory memory;

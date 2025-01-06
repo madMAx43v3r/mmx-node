@@ -193,6 +193,7 @@ add_library(mmx_modules SHARED
 	src/Node_verify.cpp
 	src/Node_validate.cpp
 	src/Node_control.cpp
+	src/Node_tests.cpp
 	src/Wallet.cpp
 	src/Farmer.cpp
 	src/Harvester.cpp

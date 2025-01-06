@@ -12,17 +12,20 @@ After Mainnet
 - Explorer search by block hash
 - WebGUI password local storage
 - unsafe_add() / unsafe_sub() / unsafe_mul()
-- Multi-fork on-disk sync
 
 Mainnet
 - Multisig wallet support
-- Genesis rewards (fix T8)
+- Genesis rewards (fix T8 + TL rewards)
 - Unit tests for all smart contracts
 - Whitepaper
 - CUDA plotter open-source
 - min_ksize = 29
 - New project wallet
 - Test new block reward voting scheme
-- Maximum proof count, 10x avg
-- Remove VirtualPlot contract
-- Faster space diff adjust (4x)
+- Remove VirtualPlot contract + ProofOfStake type
+- VDF reward interval 20
+- Set reward_activation + transaction_activation
+- Disable tx inputs only
+- /wapi/farmer/blocks
+- Unlocked wallet send still ask for passphrase
+- Check source TODOs
