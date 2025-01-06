@@ -1292,7 +1292,7 @@ void Node::reset()
 
 		// load fork tree
 		std::vector<hash_t> list;
-		height_index.find_range(root->height, -1, list);
+		height_index.find_range(root->height, height + 1, list);
 		for(const auto& hash : list) {
 			if(auto block = get_block(hash)) {
 				if(block->height == root->height) {
