@@ -1138,15 +1138,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		std::lock_guard lock(g_config_mutex);
 		const auto iter_key = args.field.find("key");
 		const auto iter_value = args.field.find("value");
-		const auto iter_file = args.field.find("file"); // NOTE: Boolean option to write or not to config file (.json)
-		if(iter_key != args.field.end() && iter_value != args.field.end() && iter_file != args.field.end())
+		const auto iter_tmp_only = args.field.find("tmp_only"); // NOTE: Optional boolean option to write or not to config file (.json), default 'false'
+		if(iter_key != args.field.end() && iter_value != args.field.end())
 		{
 			const auto key = iter_key->second.to_string_value();
 			const auto value = iter_value->second;
 			vnx::set_config(key, value);
 
-			const auto file = iter_file->second.is_bool() ? iter_file->second : true;
-			if(file) {
+			const bool tmp_only = iter_tmp_only != args.field.end() ? (iter_tmp_only->second.is_bool() ? iter_tmp_only->second : false) : false;
+			if(!tmp_only) {
 				std::string file;
 				vnx::optional<std::string> field;
 				{
@@ -1172,7 +1172,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			}
 			respond_status(request_id, 200);
 		} else {
-			respond_status(request_id, 400, "POST config/set {key,value,file}");
+			respond_status(request_id, 400, "POST config/set {key, value, [tmp_only]}");
 		}
 	}
 	else if(sub_path == "/exit" || sub_path == "/node/exit") {

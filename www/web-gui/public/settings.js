@@ -29,7 +29,7 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
-					this.opencl_device = data["Node.opencl_device_select"] != null ? data["Node.opencl_device_select"] : -1; // NOTE: Current List selection (not relative, value index in WebGUI list), from temporary config (RAM only) value, not value written to config .json (to support refresh of WebGUI browser)
+					this.opencl_device = data["Node.opencl_device_select"] ?? -1; // NOTE: Current List selection (not relative, value index in WebGUI list), from temporary config (RAM only) value, not value written to config .json (to support refresh of WebGUI browser)
 					this.opencl_device_list_relidx = [];
 					this.opencl_device_list = [{name: "None", value: -1}]; // NOTE: WebGUI list of OpenCL devices, with added -1/None
 					{
@@ -50,15 +50,15 @@ Vue.component('node-settings', {
 					this.plot_dirs = data["Harvester.plot_dirs"];
 				});
 		},
-		set_config(key, value, file, restart) { // NOTE: Added boolean option to write or not to config file (.json)
+		set_config(key, value, restart, tmp_only) { // NOTE: Added optional boolean option to write or not to config file (.json), default 'false'
 			var req = {};
 			req.key = key;
 			req.value = value;
-			req.file = file;
+			req.tmp_only = tmp_only ?? false;
 			fetch('/wapi/config/set', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						this.result = {key: req.key, value: req.value, file: req.file, restart};
+						this.result = {key: req.key, value: req.value, restart, tmp_only: req.tmp_only};
 					} else {
 						response.text().then(data => {
 							this.error = data;
@@ -137,55 +137,55 @@ Vue.component('node-settings', {
 	watch: {
 		timelord(value, prev) {
 			if(prev != null) {
-				this.set_config("timelord", value, true, true);
+				this.set_config("timelord", value, true);
 			}
 		},
 		open_port(value, prev) {
 			if(prev != null) {
-				this.set_config("Router.open_port", value, true, true);
+				this.set_config("Router.open_port", value, true);
 			}
 		},
 		opencl_device(value, prev) {
 			if(prev != null) {
-				this.set_config("Node.opencl_device_select", value, false, true); // NOTE: Temporary current device selection WebGUI (no config file write), survive browser reload
-				this.set_config("opencl.platform", null, true, true); // NOTE: Config change made, force any existing platform name config to ""
-				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_relidx[value]["index"] : -1, true, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
-				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_relidx[value]["name"] : null, true, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
+				this.set_config("Node.opencl_device_select", value, true, true); // NOTE: Temporary current device selection WebGUI (no config file write), survive browser reload
+				this.set_config("opencl.platform", null, true); // NOTE: Config change made, force any existing platform name config to ""
+				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_relidx[value]["index"] : -1, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
+				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_relidx[value]["name"] : null, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
 			}
 		},
 		farmer_reward_addr(value, prev) {
 			if(prev != "null") {
-				this.set_config("Farmer.reward_addr", value.length ? value : null, true, true);
+				this.set_config("Farmer.reward_addr", value.length ? value : null, true);
 			}
 		},
 		timelord_reward_addr(value, prev) {
 			if(prev != "null") {
-				this.set_config("TimeLord.reward_addr", value.length ? value : null, true, true);
+				this.set_config("TimeLord.reward_addr", value.length ? value : null, true);
 			}
 		},
 		enable_timelord_reward(value, prev) {
 			if(prev != null) {
-				this.set_config("TimeLord.enable_reward", value, true, true);
+				this.set_config("TimeLord.enable_reward", value, true);
 			}
 		},
 		verify_timelord_reward(value, prev) {
 			if(prev != null) {
-				this.set_config("Node.verify_vdf_rewards", value, true, true);
+				this.set_config("Node.verify_vdf_rewards", value, true);
 			}
 		},
 		harv_num_threads(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.num_threads", value, true, true);
+				this.set_config("Harvester.num_threads", value, true);
 			}
 		},
 		recursive_search(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.recursive_search", value ? true : false, true, true);
+				this.set_config("Harvester.recursive_search", value ? true : false, true);
 			}
 		},
 		reload_interval(value, prev) {
 			if(prev != null) {
-				this.set_config("Harvester.reload_interval", value, true, true);
+				this.set_config("Harvester.reload_interval", value, true);
 			}
 		},
 		result(value) {
