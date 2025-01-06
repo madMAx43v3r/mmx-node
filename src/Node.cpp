@@ -210,12 +210,21 @@ void Node::main()
 
 	if(run_tests) {
 		is_synced = true;
+		const auto state = state_hash;
+		const auto version = db_blocks->version();
+		bool failed = false;
 		try {
 			test_all();
 		} catch(const std::exception& ex) {
+			failed = true;
 			log(WARN) << "Test failed with: " << ex.what();
+		}
+		db_blocks->revert(version);
+		fork_to(state);
+		if(failed) {
 			return;
 		}
+		reset();
 		is_synced = false;
 	}
 

@@ -76,10 +76,47 @@ void Node::test_all()
 {
 	const auto old_peak = get_peak();
 	const auto old_root = get_root();
+	const auto version = db_blocks->version();
 
 	log(INFO) << "Running tests ...";
 	log(INFO) << "Root is at height " << old_root->height << " hash " << old_root->hash;
 	log(INFO) << "Peak is at height " << old_peak->height << " hash " << old_peak->hash;
+
+	// simple revert
+	{
+		const int length = 5;
+
+		std::shared_ptr<fork_t> start;
+
+		auto block = old_peak;
+		for(int i = 0; i < length; ++i) {
+			auto fork = create_test_fork(block);
+			if(!start) {
+				start = fork;
+			}
+			add_fork(fork);
+			block = fork->block;
+		}
+		log(INFO) << "Extended peak to height " << block->height << " hash " << block->hash;
+
+		update();
+
+		if(get_peak()->hash != block->hash) {
+			throw std::logic_error("extending chain failed");
+		}
+		start->is_invalid = true;
+
+		update();
+
+		if(get_peak()->hash != old_peak->hash) {
+			throw std::logic_error("revert failed");
+		}
+		log(INFO) << "(1/5) passed";
+	}
+
+	db_blocks->revert(version);
+	fork_to(old_peak->hash);
+	reset();
 
 	// normal forking
 	{
@@ -119,8 +156,12 @@ void Node::test_all()
 		if(get_peak()->hash != old_peak->hash) {
 			throw std::logic_error("failed to revert invalid fork");
 		}
-		log(INFO) << "(1/4) passed";
+		log(INFO) << "(2/5) passed";
 	}
+
+	db_blocks->revert(version);
+	fork_to(old_peak->hash);
+	reset();
 
 	// failed normal forking
 	{
@@ -155,8 +196,12 @@ void Node::test_all()
 		if(get_peak()->hash != old_peak->hash) {
 			throw std::logic_error("normal forking did not fail");
 		}
-		log(INFO) << "(2/4) passed";
+		log(INFO) << "(3/5) passed";
 	}
+
+	db_blocks->revert(version);
+	fork_to(old_peak->hash);
+	reset();
 
 	// deep forking
 	{
@@ -196,10 +241,64 @@ void Node::test_all()
 			log(INFO) << get_peak()->hash << " != " << old_peak->hash;
 			throw std::logic_error("deep forking failed");
 		}
-		log(INFO) << "(3/4) passed";
+		log(INFO) << "(4/5) passed";
 	}
 
+	db_blocks->revert(version);
+	fork_to(old_peak->hash);
+	reset();
+
 	// failed deep forking
+	{
+		const int length = 10;
+
+		auto block = root;
+		log(INFO) << "Starting new fork at height " << block->height << " hash " << block->hash;
+
+		std::shared_ptr<fork_t> peak;
+
+		for(int i = 0; i < length; ++i) {
+			auto fork = create_test_fork(block, false);
+			fork->is_validated = true;
+			add_fork(fork);
+			block = fork->block;
+			peak = fork;
+		}
+		log(INFO) << "Created new fork at peak height " << block->height << " hash " << block->hash;
+
+		block = get_peak();
+		for(int i = 0; i < length / 2; ++i) {
+			auto fork = create_test_fork(block);
+			add_fork(fork);
+			block = fork->block;
+		}
+		update();
+
+		auto new_peak = block;
+		log(INFO) << "Extended peak to height " << block->height << " hash " << block->hash;
+
+		bool did_fail = true;
+		try {
+			fork_to(peak);
+			did_fail = false;
+		} catch(const std::exception& ex) {
+			log(INFO) << "Failed as expected with: " << ex.what();
+		}
+		if(!did_fail) {
+			throw std::logic_error("expected deep fork to fail");
+		}
+		if(get_peak()->hash != new_peak->hash) {
+			throw std::logic_error("old peak was not restored");
+		}
+		log(INFO) << "(5/5) passed";
+	}
+
+	db_blocks->revert(version);
+	fork_to(old_peak->hash);
+	reset();
+
+	auto peak = get_peak();
+	log(INFO) << "Peak is at height " << peak->height << " hash " << peak->hash;
 }
 
 
