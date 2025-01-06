@@ -447,7 +447,7 @@ void Node::print_stats()
 		}
 	}
 	log(INFO) << fork_tree.size() << " blocks in memory, "
-			<< tx_pool.size() << " tx pool, " << tx_pool_fees.size() << " tx pool senders";
+			<< tx_pool.size() << " tx pool, " << tx_pool_fees.size() << " tx senders";
 }
 
 void Node::on_stuck_timeout()
