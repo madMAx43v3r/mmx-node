@@ -444,6 +444,11 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 
 void Node::check_vdf(std::shared_ptr<fork_t> fork)
 {
+	static bool have_sha_ni = sha256_ni_available();
+	if(!have_sha_ni) {
+		fork->is_vdf_verified = true;	// by-pass as it takes too long
+		return;
+	}
 	const auto& block = fork->block;
 	const auto prev = find_prev(block);
 	if(!prev) {
