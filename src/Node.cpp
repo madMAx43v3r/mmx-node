@@ -698,16 +698,23 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 			throw;
 		}
 	} else {
+		// normal in-memory fork
+		std::set<hash_t> main_set;
+		for(const auto& fork : get_fork_line()) {
+			main_set.insert(fork->block->hash);
+		}
+
 		forked_at = root;
-		const auto old_line = get_fork_line();
-		for(size_t i = 0; i < fork_line.size() && i < old_line.size(); ++i) {
-			if(fork_line[i] != old_line[i]) {
-				did_fork = true;
+		for(const auto& fork : fork_line) {
+			const auto& block = fork->block;
+			if(main_set.count(block->hash)) {
+				forked_at = block;
+			} else {
 				break;
 			}
-			forked_at = old_line[i]->block;
 		}
-		if(did_fork) {
+		if(forked_at->hash != state_hash) {
+			did_fork = true;
 			revert(forked_at->height + 1);
 		}
 	}
