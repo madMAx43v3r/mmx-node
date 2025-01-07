@@ -22,6 +22,8 @@ function init(token, currency)
 {
 	tokens = [bech32(token), bech32(currency)];
 	
+	assert(tokens[0] != tokens[1]);
+	
 	for(const fee_rate of fee_rates) {
 		var out = {};
 		out.balance = [0, 0];
