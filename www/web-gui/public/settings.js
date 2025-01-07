@@ -7,7 +7,7 @@ Vue.component('node-settings', {
 			loading: true,
 			timelord: null,
 			open_port: null,
-			opencl_device_list_relidx: null, // NOTE: List of OpenCL devices from Node.cpp (pair with name and relative index)
+			opencl_device_list_relidx: null,
 			opencl_device: null,
 			opencl_device_list: null,
 			farmer_reward_addr: "null",
@@ -29,11 +29,11 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
-					this.opencl_device = data["Node.opencl_device_select"] ?? -1; // NOTE: Current List selection (not relative, value index in WebGUI list), from temporary config (RAM only) value, not value written to config .json (to support refresh of WebGUI browser)
+					this.opencl_device = data["Node.opencl_device_select"] ?? -1;
 					this.opencl_device_list_relidx = [];
-					this.opencl_device_list = [{name: "None", value: -1}]; // NOTE: WebGUI list of OpenCL devices, with added -1/None
+					this.opencl_device_list = [{name: "None", value: -1}];
 					{
-						let list = data["Node.opencl_device_list"]; // NOTE: List of devices from Node.cpp (pair with name and relative index)
+						let list = data["Node.opencl_device_list"];
 						if(list) {
 							for(const [i, device] of list.entries()) {
 								this.opencl_device_list_relidx.push({name: device[0], index: device[1]});
@@ -49,7 +49,7 @@ Vue.component('node-settings', {
 					this.plot_dirs = data["Harvester.plot_dirs"];
 				});
 		},
-		set_config(key, value, restart, tmp_only = false) { // NOTE: Added optional boolean option to write or not to config file (.json), default 'false'
+		set_config(key, value, restart, tmp_only = false) {
 			var req = {};
 			req.key = key;
 			req.value = value;
@@ -146,10 +146,10 @@ Vue.component('node-settings', {
 		},
 		opencl_device(value, prev) {
 			if(prev != null) {
-				this.set_config("Node.opencl_device_select", value, true, true); // NOTE: Temporary current device selection WebGUI (no config file write), survive browser reload
-				this.set_config("opencl.platform", null, true); // NOTE: Config change made, force any existing platform name config to ""
-				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_relidx[value].index : -1, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
-				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_relidx[value].name : null, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
+				this.set_config("Node.opencl_device_select", value, true, true);
+				this.set_config("opencl.platform", null, true);
+				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_relidx[value].index : -1, true);
+				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_relidx[value].name : null, true);
 			}
 		},
 		farmer_reward_addr(value, prev) {
@@ -256,12 +256,8 @@ Vue.component('node-settings', {
 				</v-card-text>
 			</v-card>
 
-			<!-- -------------------------------------------------------------------------------------------------- -->
-			<!-- NOTE: Suggestion to create a separate split/card/header for reward addresses (they are important)  -->
-			<!-- TODO: If going to stay, rework 'Reward' text to label text from settings                           -->
-			<!-- -------------------------------------------------------------------------------------------------- -->
 			<v-card class="my-2">
-				<v-card-title>{{ "Reward" }}</v-card-title>
+				<v-card-title>{{ $t('node_settings.reward') }}</v-card-title>
 				<v-card-text>
 					<v-text-field
 						:label="$t('node_settings.farmer_reward_address')"

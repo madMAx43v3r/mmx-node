@@ -1144,7 +1144,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto value = iter_value->second;
 			vnx::set_config(key, value);
 
-			const bool tmp_only = args["tmp_only"]; // NOTE: Optional boolean option to write or not to config file (.json), default 'false'
+			const bool tmp_only = args["tmp_only"];
 			if(!tmp_only) {
 				std::string file;
 				vnx::optional<std::string> field;
