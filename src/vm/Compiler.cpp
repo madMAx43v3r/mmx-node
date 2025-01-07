@@ -10,6 +10,7 @@
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm/varptr_t.hpp>
 #include <mmx/vm_interface.h>
+#include <mmx/helpers.h>
 
 #include <lexy/dsl.hpp>
 #include <lexy/callback.hpp>
@@ -2183,15 +2184,11 @@ std::shared_ptr<const contract::Binary> compile(const std::string& source, const
 
 std::shared_ptr<const contract::Binary> compile_files(const std::vector<std::string>& file_names, const compile_flags_t& flags)
 {
-	std::stringstream buffer;
+	std::string buffer;
 	for(const auto& src : file_names) {
-		std::ifstream stream(src);
-		if(!stream.good()) {
-			throw std::runtime_error("failed to read file: " + src);
-		}
-		buffer << stream.rdbuf();
+		buffer += read_file(src);
 	}
-	return vm::compile(buffer.str(), flags);
+	return vm::compile(buffer, flags);
 }
 
 
