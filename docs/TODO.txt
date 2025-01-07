@@ -25,7 +25,4 @@ Mainnet
 - Test new block reward voting scheme
 - Remove VirtualPlot contract + ProofOfStake type
 - Set reward_activation + transaction_activation
-- Disable tx inputs only
-- /wapi/farmer/blocks
 - Check source TODOs
-- farmer_block_map include height in key <pubkey_t, height>
