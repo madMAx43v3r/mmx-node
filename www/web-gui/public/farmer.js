@@ -18,10 +18,10 @@ Vue.component('farmer-info', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmer/info')
+			fetch('/wapi/farm/info')
 				.then(response => response.json())
 				.then(data => this.info = data);
-			fetch('/wapi/farmer/blocks/summary')
+			fetch('/wapi/farm/blocks/summary')
 				.then(response => response.json())
 				.then(data => this.summary = data);
 		}
@@ -100,13 +100,13 @@ Vue.component('farmer-rewards', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmer/blocks/summary')
+			fetch('/wapi/farm/blocks/summary')
 				.then(response => response.json())
 				.then(data => this.data = data);
 			fetch('/wapi/node/info')
 				.then(response => response.json())
 				.then(data => this.netspace = data.total_space);
-			fetch('/wapi/farmer/info')
+			fetch('/wapi/farm/info')
 				.then(response => response.json())
 				.then(data => this.farm_size = data.total_bytes_effective / 1e9);
 		}
@@ -209,7 +209,7 @@ Vue.component('farmer-plots', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmer/info')
+			fetch('/wapi/farm/info')
 				.then(response => response.json())
 				.then(data => {
 					this.plot_count = [];
@@ -292,7 +292,7 @@ Vue.component('farmer-plot-dirs', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmer/info')
+			fetch('/wapi/farm/info')
 				.then(response => response.json())
 				.then(data => {
 					this.data = data.plot_dirs;
@@ -349,7 +349,7 @@ Vue.component('farmer-blocks', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmer/blocks?limit=' + this.limit)
+			fetch('/wapi/farm/blocks?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;
@@ -422,7 +422,7 @@ Vue.component('farmer-proofs', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farmer/proofs?limit=' + this.limit)
+			fetch('/wapi/farm/proofs?limit=' + this.limit)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;

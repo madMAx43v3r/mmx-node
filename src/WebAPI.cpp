@@ -1104,7 +1104,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			return;
 		}
 		if(		sub_path.substr(0, 8) == "/wallet/"
-			||	sub_path.substr(0, 8) == "/farmer/")
+			||	sub_path.substr(0, 8) == "/farm/")
 		{
 			throw vnx::permission_denied();
 		}
@@ -1598,44 +1598,54 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		const auto farmer_key = get_param<pubkey_t>(query, "id");
 		if(!farmer_key.is_zero()) {
 			auto since = get_param<uint32_t>(query, "since");
-			const auto limit = get_param<uint32_t>(query, "limit", 50);
 			if(is_public) {
-				if(limit > 100) {
-					throw std::logic_error("limit > 100");
-				}
 				const auto max_delta = 3153600u;
 				if(curr_height > max_delta) {
 					since = std::max(since, curr_height - max_delta);
 				}
 			}
 			node->get_farmed_block_summary({farmer_key}, since,
-				[this, request_id, farmer_key, since, limit](const farmed_block_summary_t& summary) {
-					node->get_farmed_blocks({farmer_key}, false, since, limit,
-						[this, request_id, farmer_key, summary](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
-							vnx::Object out;
-							out["farmer_key"] = farmer_key.to_string();
-							out["blocks"] = render_value(blocks, get_context());
-							out["block_count"] = summary.num_blocks;
-							out["total_reward"] = summary.total_rewards;
-							out["total_reward_value"] = to_value(summary.total_rewards, params->decimals);
-							{
-								std::vector<vnx::Object> rewards;
-								for(const auto& entry : summary.reward_map) {
-									vnx::Object tmp;
-									tmp["address"] = entry.first.to_string();
-									tmp["amount"] = entry.second;
-									tmp["value"] = to_value(entry.second, params->decimals);
-									rewards.push_back(tmp);
-								}
-								out["rewards"] = rewards;
-							}
-							respond(request_id, out);
-						},
-						std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+				[this, request_id, farmer_key](const farmed_block_summary_t& summary) {
+					vnx::Object out;
+					out["farmer_key"] = farmer_key.to_string();
+					out["block_count"] = summary.num_blocks;
+					out["total_reward"] = summary.total_rewards;
+					out["total_reward_value"] = to_value(summary.total_rewards, params->decimals);
+					{
+						std::vector<vnx::Object> rewards;
+						for(const auto& entry : summary.reward_map) {
+							vnx::Object tmp;
+							tmp["address"] = entry.first.to_string();
+							tmp["amount"] = entry.second;
+							tmp["value"] = to_value(entry.second, params->decimals);
+							rewards.push_back(tmp);
+						}
+						out["rewards"] = rewards;
+					}
+					respond(request_id, out);
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
 			respond_status(request_id, 400, "farmer?id|since");
+		}
+	}
+	else if(sub_path == "/farmer/blocks") {
+		const auto farmer_key = get_param<pubkey_t>(query, "id");
+		if(!farmer_key.is_zero()) {
+			const auto since = get_param<uint32_t>(query, "since");
+			const auto limit = get_param<uint32_t>(query, "limit", 50);
+			if(is_public) {
+				if(limit > 100) {
+					throw std::logic_error("limit > 100");
+				}
+			}
+			node->get_farmed_blocks({farmer_key}, false, since, limit,
+				[this, request_id, farmer_key](const std::vector<std::shared_ptr<const BlockHeader>>& blocks) {
+					respond(request_id, render_value(blocks, get_context()));
+				},
+				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 400, "farmer/blocks?id|since");
 		}
 	}
 	else if(sub_path == "/address/history") {
@@ -2324,7 +2334,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 400, "POST wallet/swap/rem_all_liquid {...}");
 		}
 	}
-	else if(sub_path == "/farmer/info") {
+	else if(sub_path == "/farm/info") {
 		farmer->get_farm_info(
 			[this, request_id](std::shared_ptr<const FarmInfo> info) {
 				vnx::Object out;
@@ -2335,7 +2345,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
-	else if(sub_path == "/farmer/blocks") {
+	else if(sub_path == "/farm/blocks") {
 		const auto iter_limit = query.find("limit");
 		const auto iter_since = query.find("since");
 		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
@@ -2350,7 +2360,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
-	else if(sub_path == "/farmer/blocks/summary") {
+	else if(sub_path == "/farm/blocks/summary") {
 		const auto iter_since = query.find("since");
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		farmer->get_farmer_keys(
@@ -2379,7 +2389,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			},
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
-	else if(sub_path == "/farmer/proofs") {
+	else if(sub_path == "/farm/proofs") {
 		const auto iter_limit = query.find("limit");
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		std::vector<vnx::Object> res;
@@ -2642,7 +2652,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	}
 	else {
 		std::vector<std::string> options = {
-			"config/get", "config/set", "farmer", "farmers", "chain/info",
+			"config/get", "config/set", "farmers", "farmer", "farmer/blocks", "chain/info",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address"
 			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/send_many", "wallet/send_off",
@@ -2650,7 +2660,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid", "wallet/accounts", "wallet/account",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",
-			"farmer/info", "farmer/blocks", "farmer/blocks/summary", "farmer/proofs",
+			"farm/info", "farm/blocks", "farm/blocks/summary", "farm/proofs",
 			"offers", "offer", "trade_history",
 			"contract/storage", "contract/storage/field", "contract/storage/entry",
 			"transaction/validate", "transaction/broadcast", "passphrase/validate"

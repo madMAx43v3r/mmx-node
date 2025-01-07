@@ -10,7 +10,7 @@
 
 #include <mmx/HarvesterBase.hxx>
 #include <mmx/FarmerClient.hxx>
-#include <mmx/NodeClient.hxx>
+#include <mmx/FarmerAsyncClient.hxx>
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/virtual_plot_info_t.hxx>
 #include <mmx/contract/VirtualPlot.hxx>
@@ -73,8 +73,8 @@ private:
 	uint64_t total_bytes_effective = 0;
 
 	vnx::Hash64 farmer_addr;
-	std::shared_ptr<NodeClient> node;
 	std::shared_ptr<FarmerClient> farmer;
+	std::shared_ptr<FarmerAsyncClient> farmer_async;
 	std::shared_ptr<NodeAsyncClient> node_async;
 	std::shared_ptr<vnx::ThreadPool> threads;
 	std::shared_ptr<const ChainParams> params;

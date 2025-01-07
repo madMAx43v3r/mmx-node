@@ -37,14 +37,16 @@ void Harvester::init()
 
 void Harvester::main()
 {
-	node = std::make_shared<NodeClient>(node_server);
 	farmer = std::make_shared<FarmerClient>(farmer_server);
+	farmer_async = std::make_shared<FarmerAsyncClient>(farmer_server);
+	farmer_async->vnx_set_non_blocking(true);
 	node_async = std::make_shared<NodeAsyncClient>(node_server);
 	node_async->vnx_set_non_blocking(true);
 
 	http = std::make_shared<vnx::addons::HttpInterface<Harvester>>(this, vnx_name);
 	add_async_client(http);
 	add_async_client(node_async);
+	add_async_client(farmer_async);
 
 	threads = std::make_shared<vnx::ThreadPool>(num_threads, num_threads);
 	lookup_timer = add_timer(std::bind(&Harvester::check_queue, this));
@@ -446,6 +448,11 @@ void Harvester::reload()
 {
 	const auto time_begin = get_time_ms();
 
+	std::set<pubkey_t> farmer_keys;
+	for(const auto& key : farmer->get_farmer_keys()) {
+		farmer_keys.insert(key);
+	}
+
 	std::set<std::string> dir_set;
 	if(recursive_search) {
 		find_plot_dirs(plot_dirs, dir_set, 0);
@@ -523,11 +530,6 @@ void Harvester::reload()
 	}
 	if(plots.size() && plot_map.size()) {
 		log(INFO) << "[" << my_name << "] Found " << plots.size() << " new plots";
-	}
-
-	std::set<pubkey_t> farmer_keys;
-	for(const auto& key : farmer->get_farmer_keys()) {
-		farmer_keys.insert(key);
 	}
 
 	// validate and add new plots
@@ -623,27 +625,30 @@ void Harvester::rem_plot_dir(const std::string& path)
 
 void Harvester::update()
 {
-	try {
-		farmer->vnx_set_non_blocking(true);
-		farmer_addr = farmer->get_mac_addr();
+	farmer_async->get_mac_addr(
+		[this](const vnx::Hash64& mac) {
+			farmer_addr = mac;
+		},
+		[this](const std::exception& ex) {
+			log(WARN) << "Failed to contact farmer: " << ex.what();
+		});
 
-		std::vector<addr_t> list;
-		for(const auto& entry : plot_nfts) {
-			if(entry.second.server_url) {
-				list.push_back(entry.first);
-			}
+	std::vector<addr_t> pool_nfts;
+	for(const auto& entry : plot_nfts) {
+		if(entry.second.server_url) {
+			pool_nfts.push_back(entry.first);
 		}
-		const auto new_diff = farmer->get_partial_diffs(list);
-		for(const auto& entry : new_diff) {
-			if(entry.second != partial_diff[entry.first]) {
-				log(INFO) << "New partial difficulty: " << entry.second << " (" << entry.first << ")";
+	}
+	farmer_async->get_partial_diffs(pool_nfts,
+		[this](const std::map<addr_t, uint64_t>& new_diff) {
+			for(const auto& entry : new_diff) {
+				if(entry.second != partial_diff[entry.first]) {
+					log(INFO) << "New partial difficulty: " << entry.second << " (" << entry.first << ")";
+				}
 			}
-		}
-		partial_diff = new_diff;
-	}
-	catch(const std::exception& ex) {
-		log(WARN) << "Failed to contact farmer: " << ex.what();
-	}
+			partial_diff = new_diff;
+		});
+
 	publish(get_farm_info(), output_info);
 }
 

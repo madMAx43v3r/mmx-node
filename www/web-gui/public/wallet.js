@@ -1312,7 +1312,6 @@ Vue.component('account-send-form', {
 			fee_ratio: 1024,
 			fee_amount: null,
 			confirmed: false,
-			is_locked: false,
 			result: null,
 			error: null,
 			passphrase_dialog: false
@@ -1323,9 +1322,6 @@ Vue.component('account-send-form', {
 			fetch('/wapi/wallet/accounts')
 				.then(response => response.json())
 				.then(data => this.accounts = data);
-			fetch('/api/wallet/is_locked?index=' + this.index)
-				.then(response => response.json())
-				.then(data => this.is_locked = data);
 			if(this.source) {
 				fetch('/wapi/address?id=' + this.source)
 					.then(response => response.json())
@@ -1336,8 +1332,11 @@ Vue.component('account-send-form', {
 					.then(data => this.balances = data.balances);
 			}
 		},
-		update_fee() {
-			if(this.is_locked || !this.is_valid()) {
+		async is_locked() {
+			return fetch('/api/wallet/is_locked?index=' + this.index).then(res => res.json());
+		},
+		async update_fee() {
+			if(await this.is_locked() || !this.is_valid()) {
 				this.fee_amount = "?";
 				return;
 			}
@@ -1366,8 +1365,8 @@ Vue.component('account-send-form', {
 			req.options.fee_ratio = this.fee_ratio;
 			return req;
 		},
-		submit() {
-			if(this.is_locked) {
+		async submit() {
+			if(await this.is_locked()) {
 				this.passphrase_dialog = true;
 			} else {
 				this.submit_ex(null);

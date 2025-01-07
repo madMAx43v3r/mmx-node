@@ -12,6 +12,7 @@ After Mainnet
 - Explorer search by block hash
 - WebGUI password local storage
 - unsafe_add() / unsafe_sub() / unsafe_mul()
+- WebAPI refactor param iterators (use get_param() + Variant::empty())
 
 Mainnet
 - Multisig wallet support
@@ -26,5 +27,5 @@ Mainnet
 - Set reward_activation + transaction_activation
 - Disable tx inputs only
 - /wapi/farmer/blocks
-- Unlocked wallet send still ask for passphrase
 - Check source TODOs
+- farmer_block_map include height in key <pubkey_t, height>
