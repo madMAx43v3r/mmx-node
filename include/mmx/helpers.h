@@ -10,6 +10,7 @@
 
 #include <map>
 #include <unordered_map>
+#include <iostream>
 
 #include <vnx/optional.h>
 
@@ -34,6 +35,18 @@ vnx::optional<typename T::mapped_type> find_value(const T& map, const typename T
 		return iter->second;
 	}
 	return nullptr;
+}
+
+inline
+std::string read_file(const std::string& path)
+{
+	std::stringstream buffer;
+	std::ifstream stream(path);
+	if(!stream.good()) {
+		throw std::runtime_error("failed to open file: " + path);
+	}
+	buffer << stream.rdbuf();
+	return buffer.str();
 }
 
 
