@@ -158,7 +158,7 @@ void Node::main()
 	{
 		db_blocks = std::make_shared<DataBase>(2);
 
-		db_blocks->open_async(block_index, database_path + "block_index_new");	// TODO: rename back
+		db_blocks->open_async(block_index, database_path + "block_index")
 		db_blocks->open_async(height_index, database_path + "height_index");
 
 		db_blocks->sync();
