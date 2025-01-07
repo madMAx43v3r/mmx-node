@@ -262,6 +262,47 @@ void Node::init_chain()
 	block->space_diff = params->initial_space_diff;
 	block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
 	block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
+
+	const std::vector<std::string> reward_folders = {
+		"testnet8", "testnet9", "testnet10", "testnet12"
+	};
+	uint64_t total_rewards = 0;
+	std::map<addr_t, uint64_t> reward_map;
+
+	for(auto folder : reward_folders) {
+		uint64_t sum = 0;
+		std::vector<std::pair<addr_t, uint64_t>> tmp;
+		vnx::from_string(read_file("data/" + folder + "/rewards.json"), tmp);
+		for(const auto& entry : tmp) {
+			const auto amount = entry.second * 500000;
+			sum += amount;
+			reward_map[entry.first] += amount;
+		}
+		log(INFO) << "Rewards for " << folder << ": " << uint64_t(to_value(sum, params->decimals)) << " MMX";
+		total_rewards += sum;
+	}
+	// TODO: TL rewards for mainnet-rc
+
+	log(INFO) << "Total testnet rewards: " << uint64_t(to_value(total_rewards, params->decimals)) << " MMX";
+	{
+		std::vector<std::pair<addr_t, uint64_t>> list(reward_map.begin(), reward_map.end());
+		std::sort(list.begin(), list.end(),
+			[](const std::pair<addr_t, uint64_t>& L, const std::pair<addr_t, uint64_t>& R) -> bool {
+				return L.second > R.second;
+			});
+		auto tx = Transaction::create();
+		for(const auto& entry : list) {
+			txout_t out;
+			out.address = entry.first;
+			out.amount = entry.second;
+			tx->outputs.push_back(out);
+		}
+		tx->nonce = params->port;
+		tx->finalize();
+		tx->content_hash = tx->calc_hash(true);
+		block->tx_list.push_back(tx);
+	}
+
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_token_binary.dat"));
@@ -281,7 +322,6 @@ void Node::init_chain()
 	} else {
 		throw std::logic_error("failed to load tx_project_relay");
 	}
-	// TODO: testnet rewards
 
 	for(auto tx : block->tx_list) {
 		if(!tx) {
