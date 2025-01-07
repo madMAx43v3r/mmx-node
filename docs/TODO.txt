@@ -21,4 +21,5 @@ Mainnet
 - Whitepaper
 - CUDA plotter open-source
 - New project wallet
+- Prepare project reward relay
 - Check source TODOs
