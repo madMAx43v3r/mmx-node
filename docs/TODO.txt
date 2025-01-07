@@ -20,9 +20,5 @@ Mainnet
 - Unit tests for all smart contracts
 - Whitepaper
 - CUDA plotter open-source
-- min_ksize = 29
 - New project wallet
-- Test new block reward voting scheme
-- Remove VirtualPlot contract + ProofOfStake type
-- Set reward_activation + transaction_activation
 - Check source TODOs
