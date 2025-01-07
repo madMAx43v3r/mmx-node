@@ -18,7 +18,6 @@
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/contract/WebData.hxx>
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/solution/MultiSig.hxx>
@@ -228,16 +227,6 @@ int main(int argc, char** argv)
 		}
 		{
 			auto tmp = mmx::contract::Executable::create();
-			tmp->depends.emplace(str, mmx::addr_t());
-			tmp->init_args.emplace_back(str);
-			tmp->init_method = str;
-			tmp->meta_data = str;
-			tmp->name = str;
-			tmp->symbol = str;
-			vnx::test::expect(tmp->num_bytes() > 6 * str.size(), true);
-		}
-		{
-			auto tmp = mmx::contract::VirtualPlot::create();
 			tmp->depends.emplace(str, mmx::addr_t());
 			tmp->init_args.emplace_back(str);
 			tmp->init_method = str;

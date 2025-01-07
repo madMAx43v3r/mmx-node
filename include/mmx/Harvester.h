@@ -13,7 +13,6 @@
 #include <mmx/FarmerAsyncClient.hxx>
 #include <mmx/NodeAsyncClient.hxx>
 #include <mmx/virtual_plot_info_t.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/pos/Prover.h>
 
 #include <vnx/ThreadPool.h>

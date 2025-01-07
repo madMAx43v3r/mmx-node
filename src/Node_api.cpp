@@ -8,9 +8,7 @@
 #include <mmx/Node.h>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/tx_entry_t.hpp>
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>

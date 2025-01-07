@@ -6,7 +6,6 @@
  */
 
 #include <mmx/Partial.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 
 #include <vnx/vnx.h>

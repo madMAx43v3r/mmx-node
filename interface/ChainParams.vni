@@ -58,7 +58,6 @@ class ChainParams {
 	string network;
 	
 	addr_t nft_binary;
-	addr_t plot_binary;
 	addr_t swap_binary;
 	addr_t offer_binary;
 	addr_t token_binary;

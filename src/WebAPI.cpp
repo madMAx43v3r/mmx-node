@@ -15,7 +15,6 @@
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/TokenBase.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/solution/PubKey.hxx>
@@ -23,7 +22,6 @@
 #include <mmx/permission_e.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/vm_interface.h>
 
 #include <mmx/accept_generic.hxx>
@@ -597,10 +595,6 @@ public:
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::MultiSig>(base)) {
 			set(render(value, context));
-//		} else if(auto value = std::dynamic_pointer_cast<const contract::VirtualPlot>(base)) {
-//			set(render(value, context));
-//		} else if(auto value = std::dynamic_pointer_cast<const contract::Executable>(base)) {
-//			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::TokenBase>(base)) {
 			set(render(value, context));
 		} else if(auto value = std::dynamic_pointer_cast<const contract::Binary>(base)) {
@@ -617,9 +611,6 @@ public:
 	void accept(std::shared_ptr<const ProofOfSpace> value) {
 		if(value) {
 			auto tmp = render(value, context).to_object();
-			if(std::dynamic_pointer_cast<const ProofOfStake>(value)) {
-				tmp["ksize"] = "VP";
-			}
 			if(context && context->hide_proof) {
 				tmp.erase("proof_xs");
 			}

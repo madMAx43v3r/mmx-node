@@ -11,7 +11,6 @@
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
@@ -263,7 +262,6 @@ void Node::init_chain()
 	block->space_diff = params->initial_space_diff;
 	block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
 	block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_token_binary.dat"));
@@ -1106,15 +1104,11 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				swap_index.insert(std::make_tuple(hash_t(token + currency), block->height, ticket), tx->id);
 			}
 			int owner_index = -1;
-
-			if(exec->binary == params->plot_binary
-				|| exec->binary == params->plot_nft_binary
+			if(exec->binary == params->plot_nft_binary
 				|| exec->binary == params->offer_binary
-				|| exec->binary == params->time_lock_binary)
-			{
+				|| exec->binary == params->time_lock_binary) {
 				owner_index = 0;
-			}
-			if(exec->binary == params->escrow_binary) {
+			} else if(exec->binary == params->escrow_binary) {
 				owner_index = 2;
 			}
 			if(owner_index >= 0) {
