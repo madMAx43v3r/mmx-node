@@ -1042,7 +1042,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			info.reward_addr = (block->reward_addr ? *block->reward_addr : addr_t());
 
 			const auto& farmer_key = block->get_farmer_key();
-			farmer_block_map.insert(farmer_key, info);
+			farmer_block_map.insert(std::make_pair(farmer_key, block->height), info);
 
 			bool found = false;
 			for(auto& entry : farmer_ranking) {
@@ -1246,8 +1246,8 @@ void Node::revert(const uint32_t height)
 	{
 		// reset farmer ranking
 		std::map<pubkey_t, uint32_t> farmer_block_count;
-		farmer_block_map.scan([&farmer_block_count](const pubkey_t& key, const farmed_block_info_t& info) -> bool {
-			farmer_block_count[key]++;
+		farmer_block_map.scan([&farmer_block_count](const std::pair<pubkey_t, uint32_t>& key, const farmed_block_info_t& info) -> bool {
+			farmer_block_count[key.first]++;
 			return true;
 		});
 		farmer_ranking.clear();

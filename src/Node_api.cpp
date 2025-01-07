@@ -1445,13 +1445,10 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 	std::vector<farmed_block_info_t> entries;
 	for(const auto& key : farmer_keys) {
 		std::vector<farmed_block_info_t> tmp;
-		farmer_block_map.find_last(key, tmp, size_t(limit));
-		for(const auto& entry : tmp) {
-			if(entry.height >= since) {
-				entries.push_back(entry);
-			}
-		}
+		farmer_block_map.find_last_range(std::make_pair(key, since), std::make_pair(key, -1), tmp, size_t(limit));
+		entries.insert(entries.end(), tmp.begin(), tmp.end());
 	}
+	// need to sort in case multiple keys
 	std::sort(entries.begin(), entries.end(), [](const farmed_block_info_t& L, const farmed_block_info_t& R) -> bool {
 		return L.height > R.height;
 	});
@@ -1474,14 +1471,12 @@ farmed_block_summary_t Node::get_farmed_block_summary(const std::vector<pubkey_t
 	farmed_block_summary_t out;
 	for(const auto& key : farmer_keys) {
 		std::vector<farmed_block_info_t> tmp;
-		farmer_block_map.find(key, tmp);
+		farmer_block_map.find_range(std::make_pair(key, since), std::make_pair(key, -1), tmp);
 		for(const auto& entry : tmp) {
-			if(entry.height >= since) {
-				out.num_blocks++;
-				out.last_height = std::max(entry.height, out.last_height);
-				out.total_rewards += entry.reward;
-				out.reward_map[entry.reward_addr] += entry.reward;
-			}
+			out.num_blocks++;
+			out.last_height = std::max(entry.height, out.last_height);
+			out.total_rewards += entry.reward;
+			out.reward_map[entry.reward_addr] += entry.reward;
 		}
 	}
 	return out;

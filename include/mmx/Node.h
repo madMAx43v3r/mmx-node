@@ -546,7 +546,7 @@ private:
 	uint_table<uint32_t, hash_t> height_map;									// [height => hash]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
 	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
-	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;			// [farmer key => info]
+	hash_uint_table<pubkey_t, uint32_t, farmed_block_info_t> farmer_block_map;	// [[farmer key, height] => info]
 
 	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;					// sorted by count DSC [farmer key => num blocks]
 
