@@ -278,12 +278,12 @@ void Node::init_chain()
 			sum += amount;
 			reward_map[entry.first] += amount;
 		}
-		log(INFO) << "Rewards for " << folder << ": " << uint64_t(to_value(sum, params->decimals)) << " MMX";
+		log(INFO) << "Rewards for " << folder << ": " << sum / 1000000 << " MMX";
 		total_rewards += sum;
 	}
 	// TODO: TL rewards for mainnet-rc
 
-	log(INFO) << "Total testnet rewards: " << uint64_t(to_value(total_rewards, params->decimals)) << " MMX";
+	log(INFO) << "Total testnet rewards: " << total_rewards / 1000000 << " MMX";
 	{
 		std::vector<std::pair<addr_t, uint64_t>> list(reward_map.begin(), reward_map.end());
 		std::sort(list.begin(), list.end(),
