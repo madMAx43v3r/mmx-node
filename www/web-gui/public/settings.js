@@ -35,10 +35,9 @@ Vue.component('node-settings', {
 					{
 						let list = data["Node.opencl_device_list"]; // NOTE: List of devices from Node.cpp (pair with name and relative index)
 						if(list) {
-							let i = 0;
-							for(const device of list) {
+							for(const [i, device] of list.entries()) {
 								this.opencl_device_list_relidx.push({name: device[0], index: device[1]});
-								this.opencl_device_list.push({name: device[0], value: i++});
+								this.opencl_device_list.push({name: device[0], value: i});
 							}
 						}
 					}
