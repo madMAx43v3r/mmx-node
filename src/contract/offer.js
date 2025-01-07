@@ -16,6 +16,9 @@ function init(owner_, bid_currency_, ask_currency_, inv_price_, partner_)
 	ask_currency = bech32(ask_currency_);
 	inv_price = uint(inv_price_);
 	
+	assert(inv_price > 0);
+	assert(bid_currency != ask_currency);
+	
 	if(partner_) {
 		partner = bech32(partner_);
 	}
