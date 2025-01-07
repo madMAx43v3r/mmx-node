@@ -1138,14 +1138,13 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		std::lock_guard lock(g_config_mutex);
 		const auto iter_key = args.field.find("key");
 		const auto iter_value = args.field.find("value");
-		const auto iter_tmp_only = args.field.find("tmp_only"); // NOTE: Optional boolean option to write or not to config file (.json), default 'false'
 		if(iter_key != args.field.end() && iter_value != args.field.end())
 		{
 			const auto key = iter_key->second.to_string_value();
 			const auto value = iter_value->second;
 			vnx::set_config(key, value);
 
-			const bool tmp_only = iter_tmp_only != args.field.end() ? (iter_tmp_only->second.is_bool() ? iter_tmp_only->second : false) : false;
+			const bool tmp_only = args["tmp_only"]; // NOTE: Optional boolean option to write or not to config file (.json), default 'false'
 			if(!tmp_only) {
 				std::string file;
 				vnx::optional<std::string> field;

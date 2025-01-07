@@ -50,15 +50,15 @@ Vue.component('node-settings', {
 					this.plot_dirs = data["Harvester.plot_dirs"];
 				});
 		},
-		set_config(key, value, restart, tmp_only) { // NOTE: Added optional boolean option to write or not to config file (.json), default 'false'
+		set_config(key, value, restart, tmp_only = false) { // NOTE: Added optional boolean option to write or not to config file (.json), default 'false'
 			var req = {};
 			req.key = key;
 			req.value = value;
-			req.tmp_only = tmp_only ?? false;
+			req.tmp_only = tmp_only;
 			fetch('/wapi/config/set', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
-						this.result = {key: req.key, value: req.value, restart, tmp_only: req.tmp_only};
+						this.result = {key: req.key, value: req.value, restart};
 					} else {
 						response.text().then(data => {
 							this.error = data;
@@ -149,8 +149,8 @@ Vue.component('node-settings', {
 			if(prev != null) {
 				this.set_config("Node.opencl_device_select", value, true, true); // NOTE: Temporary current device selection WebGUI (no config file write), survive browser reload
 				this.set_config("opencl.platform", null, true); // NOTE: Config change made, force any existing platform name config to ""
-				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_relidx[value]["index"] : -1, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
-				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_relidx[value]["name"] : null, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
+				this.set_config("Node.opencl_device", (value >= 0) ? this.opencl_device_list_relidx[value].index : -1, true); // NOTE: Write real relative index config value to .json file, for device, or -1/None
+				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_relidx[value].name : null, true); // NOTE: Device name last, visually shown 'restart needed to apply' (WebGUI), usually (threading)
 			}
 		},
 		farmer_reward_addr(value, prev) {
