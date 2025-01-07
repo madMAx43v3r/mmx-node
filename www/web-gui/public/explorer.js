@@ -738,16 +738,22 @@ Vue.component('farmer-view', {
 	data() {
 		return {
 			data: null,
+			blocks: [],
 			timer: null,
 			loaded: false
 		}
 	},
 	methods: {
 		update() {
-			fetch(WAPI_URL + '/farmer?limit=' + this.limit + "&id=" + this.farmer_key)
+			fetch(WAPI_URL + '/farmer?id=' + this.farmer_key)
 				.then(response => response.json())
 				.then(data => {
 					this.data = data;
+				});
+			fetch(WAPI_URL + '/farmer/blocks?id=' + this.farmer_key + '&limit=' + this.limit)
+				.then(response => response.json())
+				.then(data => {
+					this.blocks = data;
 					this.loaded = true;
 				});
 		}
@@ -798,7 +804,7 @@ Vue.component('farmer-view', {
 					</v-simple-table>
 				</v-card>
 			</template>
-			<blocks-table :data="data ? data.blocks : []" :loaded="loaded"></blocks-table>
+			<blocks-table :data="blocks" :loaded="loaded"></blocks-table>
 		</v-card-text>
 		</v-card>
 	`
