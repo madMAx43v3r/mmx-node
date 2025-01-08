@@ -1734,9 +1734,10 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 
 void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 {
-	block_index_t index;
-	if(block_index.find(block->hash, index)) {
-		if(is_main) {
+	try {
+		block_index_t index;
+		if(block_index.find(block->hash, index))
+		{
 			blocks->seek_to(index.file_offset);
 
 			std::vector<int64_t> tx_offsets;
@@ -1746,12 +1747,16 @@ void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 			if(tx_offsets.size() != block->tx_count) {
 				throw std::logic_error("tx count mismatch");
 			}
-			for(uint32_t i = 0; i < block->tx_count; ++i) {
-				const auto& tx = block->tx_list[i];
-				tx_index.insert(tx->id, tx->get_tx_index(params, block, tx_offsets[i]));
+			if(is_main) {
+				for(uint32_t i = 0; i < block->tx_count; ++i) {
+					const auto& tx = block->tx_list[i];
+					tx_index.insert(tx->id, tx->get_tx_index(params, block, tx_offsets[i]));
+				}
 			}
+			return;
 		}
-		return;
+	} catch(const std::exception& ex) {
+		log(WARN) << "Stored block at height " << block->height << " is corrupted: " << ex.what();
 	}
 	blocks->seek_end();
 	auto& out = blocks->out;
@@ -1773,8 +1778,13 @@ void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 	blocks->flush();
 
 	block_index.insert(block->hash, block->get_block_index(offset));
-	height_index.insert(block->height, block->hash);
-
+	{
+		std::vector<hash_t> list;
+		height_index.find(block->height, list);
+		if(std::find(list.begin(), list.end(), block->hash) == list.end()) {
+			height_index.insert(block->height, block->hash);
+		}
+	}
 	db_blocks->commit(db_blocks->version() + 1);
 }
 
