@@ -299,6 +299,7 @@ void Router::handle(std::shared_ptr<const Block> block)
 		broadcast(block, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
 		block_counter++;
 	}
+	// don't erase current height, to prevent lesser block erasing better proof credit
 	vdf_history.erase(vdf_history.begin(), vdf_history.upper_bound(verified_vdf_height));
 	farmer_credit.erase(farmer_credit.begin(), farmer_credit.upper_bound(verified_vdf_height));
 
@@ -339,7 +340,7 @@ void Router::handle(std::shared_ptr<const ProofOfTime> value)
 		}
 		broadcast(value, hash, {node_type_e::FULL_NODE, node_type_e::LIGHT_NODE}, is_ours);
 
-		vdf_history[value->vdf_height] = value;
+		vdf_history.emplace(value->vdf_height, value);
 		vdf_counter++;
 	}
 	timelord_credit[value->timelord_key] = 1;
@@ -1611,7 +1612,7 @@ void Router::on_connect(uint64_t client, const std::string& address)
 		send_request(peer, Router_get_peers::create());
 	}
 	for(const auto& entry : vdf_history) {
-		send_to(peer, entry.second);	// make sure peer has all needed VDFs for current and next block
+		send_to(peer, entry.second);	// make sure peer has all needed VDFs for next block
 	}
 	log(DEBUG) << "Connected to peer " << peer->address;
 }

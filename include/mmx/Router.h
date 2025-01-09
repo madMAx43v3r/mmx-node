@@ -219,7 +219,7 @@ private:
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
 	std::map<std::string, uint64_t> connect_tasks;
-	std::map<uint32_t, std::shared_ptr<const ProofOfTime>> vdf_history;		// [vdf_height => proof]
+	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> vdf_history;		// [vdf_height => proof]
 
 	std::set<uint64_t> synced_peers;
 	std::unordered_map<uint64_t, std::shared_ptr<peer_t>> peer_map;
