@@ -271,6 +271,7 @@ private:
 		uint256_t proof_score_sum = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
+		std::shared_ptr<const BlockHeader> root;
 		std::map<pubkey_t, bool> validators;
 		std::vector<std::shared_ptr<const VDF_Point>> vdf_points;
 		std::shared_ptr<const execution_context_t> context;
