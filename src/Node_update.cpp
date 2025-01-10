@@ -129,6 +129,10 @@ void Node::verify_votes()
 							publish(vote, output_verified_votes);
 
 							const auto delay_ms = entry.second - fork->recv_time;
+							if(fork->votes == params->max_validators / 2 + 1) {
+								log(INFO) << "\xF0\x9F\x97\xB3\xEF\xB8\x8F  Received majority vote for block at height " << fork->block->height
+										<< ", delay " << delay_ms / 1e3 << " sec";
+							}
 							log(DEBUG) << "Received vote for block at height " << fork->block->height
 									<< ", total is now " << fork->votes << ", delay " << delay_ms / 1e3 << " sec";
 						}
