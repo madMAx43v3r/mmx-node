@@ -817,9 +817,9 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 			const auto best_weight = best ? (is_synced ? best->root->total_weight : best->block->total_weight) : uint128_0;
 
 			const int cond_a = (!best || fork->total_votes > best->total_votes) ? 1 : (fork->total_votes == best->total_votes ? 0 : -1);
-			const int cond_b = (weight > best_weight) ? 1 : (weight == best_weight ? 0 : -1);
-			const int cond_c = (!best || block->height > best->block->height) ? 1 : (block->height == best->block->height ? 0 : -1);
-			const int cond_d = (!best || block->hash < best->block->hash) ? 1 : 0;
+			const int cond_b = (weight > best_weight)                           ? 1 : (weight == best_weight ? 0 : -1);
+			const int cond_c = (!best || block->height > best->block->height)   ? 1 : (block->height == best->block->height ? 0 : -1);
+			const int cond_d = (!best || block->hash < best->block->hash)       ? 1 : 0;
 
 			if(cond_a > 0
 				|| (cond_a == 0 && cond_b > 0)
