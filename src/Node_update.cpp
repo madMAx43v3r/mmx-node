@@ -409,13 +409,13 @@ void Node::update()
 		if(proof && peak->proof_hash == proof->hash)
 		{
 			for(const auto& entry : fork->validators) {
-				auto iter = farmer_keys.find(entry.first);
-				if(iter != farmer_keys.end()) {
+				const auto& farmer_key = entry.first;
+				if(auto farmer_mac = find_value(farmer_keys, farmer_key)) {
 					auto vote = ValidatorVote::create();
 					vote->hash = peak->hash;
-					vote->farmer_key = iter->first;
+					vote->farmer_key = farmer_key;
 					try {
-						FarmerClient farmer(iter->second);
+						FarmerClient farmer(*farmer_mac);
 						vote->farmer_sig = farmer.sign_vote(vote);
 						vote->content_hash = vote->calc_content_hash();
 						publish(vote, output_votes);
