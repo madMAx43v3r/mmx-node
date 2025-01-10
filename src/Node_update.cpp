@@ -317,6 +317,7 @@ void Node::update()
 				msg << "N/A";
 			}
 			if(is_synced) {
+				msg << ", " << fork->total_votes << " votes";
 				if(forked_at) {
 					msg << ", forked at " << forked_at->height;
 				}
