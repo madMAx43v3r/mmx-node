@@ -1135,31 +1135,34 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			const auto value = iter_value->second;
 			vnx::set_config(key, value);
 
-			std::string file;
-			vnx::optional<std::string> field;
-			{
-				const auto pos = key.find('.');
-				if(pos == std::string::npos) {
-					file = key;
-				} else {
-					file = key.substr(0, pos) + ".json";
-					field = key.substr(pos + 1);
+			const bool tmp_only = args["tmp_only"];
+			if(!tmp_only) {
+				std::string file;
+				vnx::optional<std::string> field;
+				{
+					const auto pos = key.find('.');
+					if(pos == std::string::npos) {
+						file = key;
+					} else {
+						file = key.substr(0, pos) + ".json";
+						field = key.substr(pos + 1);
+					}
 				}
-			}
-			if(field) {
-				const auto path = config_path + file;
-				auto object = vnx::read_config_file(path);
-				object[*field] = value;
-				vnx::write_config_file(path, object);
-				log(INFO) << "Updated '" << *field << "'" << ": " << value << " (in " << path << ")";
-			} else {
-				const auto path = config_path + file;
-				std::ofstream(path) << value << std::endl;
-				log(INFO) << "Updated " << path << ": " << value;
+				if(field) {
+					const auto path = config_path + file;
+					auto object = vnx::read_config_file(path);
+					object[*field] = value;
+					vnx::write_config_file(path, object);
+					log(INFO) << "Updated '" << *field << "'" << ": " << value << " (in " << path << ")";
+				} else {
+					const auto path = config_path + file;
+					std::ofstream(path) << value << std::endl;
+					log(INFO) << "Updated " << path << ": " << value;
+				}
 			}
 			respond_status(request_id, 200);
 		} else {
-			respond_status(request_id, 400, "POST config/set {key,value}");
+			respond_status(request_id, 400, "POST config/set {key, value, [tmp_only]}");
 		}
 	}
 	else if(sub_path == "/exit" || sub_path == "/node/exit") {

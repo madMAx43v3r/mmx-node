@@ -291,6 +291,8 @@ const enLocale = {
         "enable_timelord_reward": "Enable TimeLord Rewards (requires one more CPU core)",
         "verify_timelord_reward": "Verify TimeLord Rewards (disable to speed up VDF verify)",
         "open_port": "Open network port to allow incoming connections (UPnP)",
+
+        "reward": "Reward",
         "farmer_reward_address": "Farmer Reward Address",
         "timeLord_reward_address": "TimeLord Reward Address",
         "restart_needed": "(restart needed to apply)",
