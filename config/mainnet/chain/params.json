@@ -3,7 +3,7 @@
 	"network": "mainnet",
 	"plot_filter": 4,
 	"min_ksize": 29,
-	"infuse_delay": 3,
+	"infuse_delay": 1,
 	"challenge_delay": 6,
 	"challenge_interval": 256,
 	"commit_delay": 24,
