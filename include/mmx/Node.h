@@ -267,8 +267,6 @@ private:
 		uint32_t votes = 0;						// validator votes
 		uint32_t total_votes = 0;
 		uint32_t fork_length = 0;
-		uint256_t proof_score_224 = 0;			// high (256-32) bits of proof hash
-		uint256_t proof_score_sum = 0;
 		std::weak_ptr<fork_t> prev;
 		std::shared_ptr<const Block> block;
 		std::shared_ptr<const BlockHeader> root;

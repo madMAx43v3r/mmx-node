@@ -380,7 +380,6 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 		fork->recv_time = get_time_ms();
 	}
 	fork->prev = find_fork(block->prev);
-	fork->proof_score_224 = block->proof_hash.to_uint<uint256_t>(true) >> 32;
 
 	if(fork_tree.emplace(block->hash, fork).second) {
 		fork_index.emplace(block->height, fork);
@@ -802,13 +801,11 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 		if(block->prev == root->hash || alt_roots.count(block->prev)) {
 			fork->root = find_prev(block);
 			fork->total_votes = fork->votes;
-			fork->proof_score_sum = fork->proof_score_224;
 			fork->is_all_proof_verified = fork->is_proof_verified;
 		} else if(prev) {
 			fork->root = prev->root;
 			fork->is_invalid = prev->is_invalid || fork->is_invalid;
 			fork->total_votes = prev->total_votes + fork->votes;
-			fork->proof_score_sum = prev->proof_score_sum + fork->proof_score_224;
 			fork->is_all_proof_verified = prev->is_all_proof_verified && fork->is_proof_verified;
 		} else {
 			fork->is_all_proof_verified = false;
