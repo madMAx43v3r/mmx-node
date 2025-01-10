@@ -11,6 +11,7 @@ After Mainnet
 - 1000 commas for balances
 - Explorer search by block hash
 - WebGUI password local storage
+- WebGUI auto-reload on node restart
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 - WebAPI refactor param iterators (use get_param() + Variant::empty())
 
@@ -22,3 +23,8 @@ Mainnet
 - CUDA plotter open-source
 - New project wallet
 - Check source TODOs
+- Recursion limit for remote calls
+- Handle burned TX fees in total supply
+
+Mainnet-RC
+- Validators must be block winners, to avoid proof filtering
