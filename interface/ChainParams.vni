@@ -43,6 +43,7 @@ class ChainParams {
 	ulong min_txfee_memo = 50;				// per memo
 	ulong min_txfee_exec = 10000;			// per operation
 	ulong min_txfee_deploy = 100000;		// per contract
+	ulong min_txfee_depend = 50000;			// per dependency
 	ulong min_txfee_byte = 10;				// per byte of data
 	ulong min_txfee_read = 1000;			// per lookup
 	ulong min_txfee_read_kbyte = 1000;		// per 1000 bytes of data
@@ -50,6 +51,9 @@ class ChainParams {
 	ulong max_block_size = 10000000;		// max static size
 	ulong max_block_cost = 100000000;		// includes dynamic cost
 	ulong max_tx_cost = 1000000;
+	
+	uint max_rcall_depth = 3;				// max recursion for remote calls
+	uint max_rcall_width = 10;				// max total dependencies
 	
 	vector<uint> min_fee_ratio;				// for dynamic block size
 	

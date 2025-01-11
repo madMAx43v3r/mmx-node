@@ -22,6 +22,11 @@ bool Executable::is_valid() const
 			return false;
 		}
 	}
+	for(const auto& entry : depends) {
+		if(entry.first.size() > 64) {
+			return false;
+		}
+	}
 	return Super::is_valid() && binary != addr_t();
 }
 
@@ -53,6 +58,11 @@ hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
 	out.flush();
 
 	return hash_t(buffer);
+}
+
+uint64_t Executable::calc_cost(std::shared_ptr<const ChainParams> params) const
+{
+	return Super::calc_cost(params) + depends.size() * params->min_txfee_depend;
 }
 
 uint64_t Executable::num_bytes() const

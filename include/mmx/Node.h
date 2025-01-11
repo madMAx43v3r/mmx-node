@@ -461,6 +461,10 @@ private:
 
 	std::set<pubkey_t> get_validators(std::shared_ptr<const BlockHeader> block) const;
 
+	std::vector<addr_t> get_all_depends(std::shared_ptr<const contract::Executable> exec) const;
+
+	std::vector<addr_t> get_all_depends(const addr_t& address, const uint32_t depth) const;
+
 	vnx::optional<proof_data_t> find_best_proof(const hash_t& challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const;
@@ -497,7 +501,8 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> memo_log;			// [[hash(address | memo), height, counter] => address]
 
-	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [address, contract]
+	hash_table<addr_t, std::vector<addr_t>> contract_depends;					// [address => depends]
+	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [address => contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]

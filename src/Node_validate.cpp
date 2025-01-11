@@ -75,29 +75,24 @@ std::shared_ptr<Node::execution_context_t> Node::new_exec_context(const uint32_t
 
 void Node::prepare_context(std::shared_ptr<execution_context_t> context, std::shared_ptr<const Transaction> tx) const
 {
-	std::unordered_set<addr_t> mutate_set;
+	std::set<addr_t> mutate_set;
 	if(tx->deploy) {
 		mutate_set.insert(tx->id);
 	}
 	for(const auto& op : tx->get_operations()) {
 		mutate_set.insert(op->address == addr_t() ? tx->id : op->address);
 	}
+	for(const auto& address : std::vector<addr_t>(mutate_set.begin(), mutate_set.end()))
 	{
-		std::vector<addr_t> list(mutate_set.begin(), mutate_set.end());
-		while(!list.empty()) {
-			std::vector<addr_t> more;
-			for(const auto& address : list) {
-				const auto contract = (address == tx->id ? tx->deploy : get_contract(address));
-				if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(contract)) {
-					for(const auto& entry : exec->depends) {
-						if(mutate_set.insert(entry.second).second) {
-							more.push_back(entry.second);
-						}
-					}
-				}
+		std::vector<addr_t> depends;
+		if(address == tx->id) {
+			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy)) {
+				depends = get_all_depends(exec);
 			}
-			list = std::move(more);
+		} else {
+			depends = get_all_depends(address, 1);
 		}
+		mutate_set.insert(depends.begin(), depends.end());
 	}
 	for(const auto& address : mutate_set) {
 		context->setup_wait(tx->id, address);
@@ -686,18 +681,26 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		}
 		error.address = -1;
 
-		if(tx->deploy) {
+		if(tx->deploy)
+		{
 			if(!tx->deploy->is_valid()) {
 				error.code = error_code_e::INVALID_CONTRACT;
 				throw std::logic_error("invalid contract");
 			}
 
-			if(auto executable = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy))
+			if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy))
 			{
-				auto exec = operation::Execute::create();
-				exec->method = executable->init_method;
-				exec->args = executable->init_args;
-				execute(tx, context, exec, executable, tx->id, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, true);
+				// make sure all dependencies exist (prevent limit bypass)
+				for(const auto& entry : exec->depends) {
+					if(!tx_index.count(entry.second)) {
+						error.code = error_code_e::INVALID_CONTRACT;
+						throw std::logic_error("missing dependency: " + entry.first);
+					}
+				}
+				auto op = operation::Execute::create();
+				op->method = exec->init_method;
+				op->args = exec->init_args;
+				execute(tx, context, op, exec, tx->id, exec_outputs, exec_spend_map, storage_cache, tx_cost, error, true);
 			}
 		}
 		error.operation = 0;

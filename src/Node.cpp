@@ -167,6 +167,7 @@ void Node::main()
 
 		db->open_async(contract_map, database_path + "contract_map");
 		db->open_async(contract_log, database_path + "contract_log");
+		db->open_async(contract_depends, database_path + "contract_depends");
 		db->open_async(deploy_map, database_path + "deploy_map");
 		db->open_async(owner_map, database_path + "owner_map");
 		db->open_async(swap_index, database_path + "swap_index");
@@ -1185,6 +1186,15 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			if(owner_index >= 0) {
 				owner_map.insert(std::make_tuple(exec->get_arg(owner_index).to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
 			}
+			{
+				std::set<addr_t> depends;
+				for(const auto& entry : exec->depends) {
+					depends.insert(entry.second);
+				}
+				if(depends.size()) {
+					contract_depends.insert(tx->id, std::vector<addr_t>(depends.begin(), depends.end()));
+				}
+			}
 			contract_log.insert(std::make_tuple(exec->binary, block->height, ticket), tx->id);
 		}
 		if(tx->sender) {
@@ -1694,6 +1704,45 @@ std::set<pubkey_t> Node::get_validators(std::shared_ptr<const BlockHeader> block
 		block = find_prev(block);
 	}
 	return set;
+}
+
+std::vector<addr_t> Node::get_all_depends(std::shared_ptr<const contract::Executable> exec) const
+{
+	std::set<addr_t> out;
+	for(const auto& entry : exec->depends) {
+		out.insert(entry.second);
+	}
+	if(out.size() > params->max_rcall_width) {
+		throw std::logic_error("remote call width overflow");
+	}
+	for(const auto& address : std::vector<addr_t>(out.begin(), out.end())) {
+		const auto tmp = get_all_depends(address, 2);
+		out.insert(tmp.begin(), tmp.end());
+	}
+	if(out.size() > params->max_rcall_width) {
+		throw std::logic_error("remote call width overflow");
+	}
+	return std::vector<addr_t>(out.begin(), out.end());
+}
+
+std::vector<addr_t> Node::get_all_depends(const addr_t& address, const uint32_t depth) const
+{
+	std::set<addr_t> out;
+	std::vector<addr_t> list;
+	if(contract_depends.find(address, list)) {
+		for(const auto& address : list) {
+			const auto tmp = get_all_depends(address, depth + 1);
+			out.insert(tmp.begin(), tmp.end());
+		}
+		out.insert(list.begin(), list.end());
+	}
+	if(out.size() && depth > params->max_rcall_depth) {
+		throw std::logic_error("remote call depth overflow");
+	}
+	if(out.size() > params->max_rcall_width) {
+		throw std::logic_error("remote call width overflow");
+	}
+	return std::vector<addr_t>(out.begin(), out.end());
 }
 
 vnx::optional<Node::proof_data_t> Node::find_best_proof(const hash_t& challenge) const

@@ -644,6 +644,8 @@ void Node::validate_new()
 	if(!peak || !is_synced) {
 		return;
 	}
+	const auto deadline_ms = get_time_ms() + validate_interval_ms / 2;		// limit to 50% CPU
+
 	std::default_random_engine luck_gen(vnx::rand64());
 
 	// select non-overlapping set
@@ -664,13 +666,20 @@ void Node::validate_new()
 	auto context = new_exec_context(peak->height + 1);
 
 	// prepare synchronization
-	for(const auto& entry : tx_list) {
-		prepare_context(context, entry.tx);
+	for(auto& entry : tx_list) {
+		try {
+			entry.is_valid = true;
+			prepare_context(context, entry.tx);
+		} catch(...) {
+			entry.is_valid = false;
+		}
 	}
-	const auto deadline_ms = get_time_ms() + validate_interval_ms;
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
+		if(!entry.is_valid) {
+			continue;
+		}
 		threads->add_task([this, &entry, context, deadline_ms]() {
 			if(get_time_ms() > deadline_ms) {
 				entry.is_skipped = true;
@@ -746,12 +755,20 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 	}
 
 	// prepare synchronization
-	for(const auto& entry : tx_list) {
-		prepare_context(context, entry.tx);
+	for(auto& entry : tx_list) {
+		try {
+			entry.is_valid = true;
+			prepare_context(context, entry.tx);
+		} catch(...) {
+			entry.is_valid = false;
+		}
 	}
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
+		if(!entry.is_valid) {
+			continue;
+		}
 		threads->add_task([this, &entry, context, deadline_ms]() {
 			if(get_time_ms() > deadline_ms) {
 				entry.is_skipped = true;
@@ -881,7 +898,7 @@ std::shared_ptr<const Block> Node::make_block(
 	if(vdf_points.empty()) {
 		return nullptr;
 	}
-	const auto proof = proof_map[challenge];
+	const auto proof = find_value(proof_map, challenge, std::vector<proof_data_t>());
 	if(proof.empty()) {
 		return nullptr;
 	}
