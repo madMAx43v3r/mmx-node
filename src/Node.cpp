@@ -1688,8 +1688,8 @@ std::set<pubkey_t> Node::get_validators(std::shared_ptr<const BlockHeader> block
 	std::set<pubkey_t> set;
 	for(uint32_t k = 0; block && k < max_history && set.size() < params->max_validators; ++k)
 	{
-		if(block->height) {
-			set.insert(block->get_farmer_key());
+		if(block->proof.size()) {
+			set.insert(block->proof[0]->farmer_key);
 		}
 		block = find_prev(block);
 	}
