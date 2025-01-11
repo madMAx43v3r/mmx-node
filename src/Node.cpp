@@ -1355,9 +1355,21 @@ void Node::reset()
 		blocks->open("rb+");
 
 		// check consistency
-		while(!get_block_at(height) && height) {
-			log(WARN) << "Missing block at height " << height << " (likely DB corruption)";
-			revert(height--);
+		while(true) {
+			if(auto block = get_block_at(height)) {
+				if(block->is_valid() && block->height == height) {
+					break;
+				} else {
+					log(WARN) << "Corrupted block at height " << height << ", reverting ...";
+				}
+			} else {
+				log(WARN) << "Missing block at height " << height << ", reverting ...";
+			}
+			if(height) {
+				revert(height--);
+			} else {
+				break;
+			}
 		}
 
 		// get root
@@ -1818,7 +1830,7 @@ std::shared_ptr<const BlockHeader> Node::read_block(
 		tx_offsets->clear();
 	}
 	try {
-		if(auto header = std::dynamic_pointer_cast<BlockHeader>(vnx::read(in))) {
+		if(auto header = std::dynamic_pointer_cast<const BlockHeader>(vnx::read(in))) {
 			if(full_block) {
 				auto block = Block::create();
 				block->BlockHeader::operator=(*header);
@@ -1856,7 +1868,11 @@ void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 			blocks->seek_to(index.file_offset);
 
 			std::vector<int64_t> tx_offsets;
-			if(!read_block(*blocks, true, &tx_offsets)) {
+			if(auto block = read_block(*blocks, true, &tx_offsets)) {
+				if(!block->is_valid()) {
+					throw std::logic_error("invalid block");
+				}
+			} else {
 				throw std::logic_error("failed to read block");
 			}
 			if(tx_offsets.size() != block->tx_count) {

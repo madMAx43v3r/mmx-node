@@ -40,8 +40,9 @@ Roadmap
 | testnet9 | Dec 2022 | Finished. Incentivized testnet, height 25k-1220k. <sup>[2]</sup> |
 | testnet10 | Apr 2023 | Finished. Incentivized testnet, height 40k-3200k. <sup>[2]</sup> |
 | testnet11 | May 2024 | Finished. New plot format, compression resistant. |
-| testnet12 | June 2024 | Active. Incentivized testnet, height 25k-tbd. <sup>[2]</sup> |
-| mainnet | _tbd_ | Planned Q4 2024. |
+| testnet12 | June 2024 | Finished. Incentivized testnet, height 25k-1720k. <sup>[2]</sup> |
+| mainnet-rc | Jan 2024 | Active. Incentivized testnet, height 10k-tbd. <sup>[2]</sup> |
+| mainnet | _tbd_ | Planned Jan 17 2025. |
 
 _<sup>[1]</sup> Coins farmed on testnets are not worth anything, now or later._\
 _<sup>[2]</sup> A fixed reward of 0.5 MMX per block win on incentivized testnets will be given on mainnet genesis._
