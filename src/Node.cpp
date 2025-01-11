@@ -329,6 +329,7 @@ void Node::init_chain()
 			tx->outputs.push_back(out);
 		}
 		tx->nonce = params->port;
+		tx->network = params->network;
 		tx->finalize();
 		tx->content_hash = tx->calc_hash(true);
 		block->tx_list.push_back(tx);
