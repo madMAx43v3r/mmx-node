@@ -725,10 +725,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 	std::vector<tx_pool_t> all_tx;
 	all_tx.reserve(tx_pool.size());
 	for(const auto& entry : tx_pool) {
-		const auto& pool = entry.second;
-		if(check_tx_inclusion(pool.tx->id, context->height)) {
-			all_tx.push_back(pool);
-		}
+		all_tx.push_back(entry.second);
 	}
 
 	// sort transactions by fee ratio

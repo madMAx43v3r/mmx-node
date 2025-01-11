@@ -260,9 +260,6 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 			if(!tx) {
 				throw std::logic_error("null transaction");
 			}
-			if(!check_tx_inclusion(tx->id, context->height)) {
-				throw std::logic_error("invalid transaction inclusion");
-			}
 			if(!tx->sender) {
 				throw std::logic_error("transaction missing sender");
 			}
