@@ -24,6 +24,4 @@ Mainnet
 - New project wallet
 - Prepare project reward relay
 - Check source TODOs
-- Recursion limit for remote calls
-- TX odd / even constraint obsolete
-- Validators must be block winners, to avoid proof filtering
+- Test remote calls again
