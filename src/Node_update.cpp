@@ -127,9 +127,15 @@ void Node::verify_votes()
 							fork->votes++;
 							publish(vote, output_verified_votes);
 
-							const auto delay_ms = entry.second - fork->recv_time;
-							log(DEBUG) << "Received vote for block at height " << fork->block->height
-									<< ", total is now " << fork->votes << ", delay " << delay_ms / 1e3 << " sec";
+							if(is_synced) {
+								const auto delay_ms = entry.second - fork->recv_time;
+								if(fork->votes == params->max_validators / 2 + 1) {
+									log(INFO) << "\xF0\x9F\x97\xB3\xEF\xB8\x8F  Received majority vote for block at height " << fork->block->height
+											<< ", delay " << delay_ms / 1e3 << " sec";
+								}
+								log(DEBUG) << "Received vote for block at height " << fork->block->height
+										<< ", total is now " << fork->votes << ", delay " << delay_ms / 1e3 << " sec";
+							}
 						}
 						continue;
 					} else {
@@ -312,6 +318,7 @@ void Node::update()
 				msg << "N/A";
 			}
 			if(is_synced) {
+				msg << ", " << fork->total_votes << " votes";
 				if(forked_at) {
 					msg << ", forked at " << forked_at->height;
 				}
@@ -408,13 +415,13 @@ void Node::update()
 		if(proof && peak->proof_hash == proof->hash)
 		{
 			for(const auto& entry : fork->validators) {
-				auto iter = farmer_keys.find(entry.first);
-				if(iter != farmer_keys.end()) {
+				const auto& farmer_key = entry.first;
+				if(auto farmer_mac = find_value(farmer_keys, farmer_key)) {
 					auto vote = ValidatorVote::create();
 					vote->hash = peak->hash;
-					vote->farmer_key = iter->first;
+					vote->farmer_key = farmer_key;
 					try {
-						FarmerClient farmer(iter->second);
+						FarmerClient farmer(*farmer_mac);
 						vote->farmer_sig = farmer.sign_vote(vote);
 						vote->content_hash = vote->calc_content_hash();
 						publish(vote, output_votes);

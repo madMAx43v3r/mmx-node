@@ -418,7 +418,6 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 		fork->recv_time = get_time_ms();
 	}
 	fork->prev = find_fork(block->prev);
-	fork->proof_score_224 = block->proof_hash.to_uint<uint256_t>(true) >> 32;
 
 	if(fork_tree.emplace(block->hash, fork).second) {
 		fork_index.emplace(block->height, fork);
@@ -838,25 +837,27 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 		const auto  prev = fork->prev.lock();
 
 		if(block->prev == root->hash || alt_roots.count(block->prev)) {
+			fork->root = find_prev(block);
 			fork->total_votes = fork->votes;
-			fork->proof_score_sum = fork->proof_score_224;
 			fork->is_all_proof_verified = fork->is_proof_verified;
 		} else if(prev) {
+			fork->root = prev->root;
 			fork->is_invalid = prev->is_invalid || fork->is_invalid;
 			fork->total_votes = prev->total_votes + fork->votes;
-			fork->proof_score_sum = prev->proof_score_sum + fork->proof_score_224;
 			fork->is_all_proof_verified = prev->is_all_proof_verified && fork->is_proof_verified;
 		} else {
 			fork->is_all_proof_verified = false;
 		}
 
-		if(fork->is_all_proof_verified && !fork->is_invalid)
+		if(fork->is_all_proof_verified && fork->root && !fork->is_invalid)
 		{
-			const auto peak = best ? best->block : nullptr;
-			const int cond_a = (!peak || block->total_weight > peak->total_weight) ? 1 : (block->total_weight == peak->total_weight ? 0 : -1);
-			const int cond_b = (!best || fork->total_votes > best->total_votes) ? 1 : (fork->total_votes == best->total_votes ? 0 : -1);
-			const int cond_c = (!best || fork->proof_score_sum < best->proof_score_sum) ? 1 : (fork->proof_score_sum == best->proof_score_sum ? 0 : -1);
-			const int cond_d = (!peak || block->hash < peak->hash) ? 1 : 0;
+			const auto weight = is_synced ? fork->root->total_weight : block->total_weight;
+			const auto best_weight = best ? (is_synced ? best->root->total_weight : best->block->total_weight) : uint128_0;
+
+			const int cond_a = (!best || fork->total_votes > best->total_votes) ? 1 : (fork->total_votes == best->total_votes ? 0 : -1);
+			const int cond_b = (weight > best_weight)                           ? 1 : (weight == best_weight ? 0 : -1);
+			const int cond_c = (!best || block->height > best->block->height)   ? 1 : (block->height == best->block->height ? 0 : -1);
+			const int cond_d = (!best || block->hash < best->block->hash)       ? 1 : 0;
 
 			if(cond_a > 0
 				|| (cond_a == 0 && cond_b > 0)

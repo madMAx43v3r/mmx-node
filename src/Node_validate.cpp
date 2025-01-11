@@ -153,7 +153,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_stamp - prev->time_stamp < block->vdf_count * params->block_interval_ms / 10) {
 		throw std::logic_error("time stamp delta too low");
 	}
-	if(block->time_diff == 0 || block->space_diff == 0) {
+	if(block->time_diff < params->time_diff_divider || block->space_diff == 0) {
 		throw std::logic_error("invalid difficulty");
 	}
 	if(block->static_cost > params->max_block_size) {
