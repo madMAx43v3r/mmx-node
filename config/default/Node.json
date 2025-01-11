@@ -3,7 +3,7 @@
 	"sync_loss_delay": 300,
 	"max_sync_ahead": 10000,
 	"max_sync_jobs": 100,
-	"max_history": 100,
+	"max_history": 200,
 	"validate_interval_ms": 500,
 	"tx_pool_limit": 50
 }
