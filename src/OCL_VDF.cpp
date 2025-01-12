@@ -117,9 +117,9 @@ OCL_VDF::OCL_VDF(cl_context context, cl_device_id device) {
 	throw std::logic_error("did not compile with OpenCL support");
 }
 
-void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
+void OCL_VDF::compute(std::shared_ptr<const ProofOfTime> proof) {}
 
-void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof, const uint32_t chain) {}
+void OCL_VDF::verify(std::shared_ptr<const ProofOfTime> proof) {}
 
 void OCL_VDF::release() {}
 
