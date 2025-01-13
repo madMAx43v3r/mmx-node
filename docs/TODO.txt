@@ -22,4 +22,4 @@ Mainnet
 - New project wallet
 - Create project reward relay
 - Check source TODOs
-- Test remote calls again
+- Update timestamp before launch
