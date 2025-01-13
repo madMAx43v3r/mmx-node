@@ -255,7 +255,7 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::sha
 	const uint64_t new_diff = (uint128_t(diff) * prev->space_fork_proofs) / expected_count;
 
 	int64_t delta = new_diff - diff;
-	delta /= std::max((4 * params->challenge_interval) / prev->space_fork_len, 1u);
+	delta /= std::max((16 * params->challenge_interval) / prev->space_fork_len, 1u);
 
 	if(delta == 0) {
 		delta = (prev->space_fork_proofs > expected_count ? 1 : -1);
