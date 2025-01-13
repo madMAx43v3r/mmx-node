@@ -49,6 +49,9 @@ int main(int argc, char** argv)
 		throw std::logic_error("missing wallet: " + key_path);
 	}
 	const auto params = mmx::get_params();
+	if(params->network.empty()) {
+		throw std::logic_error("no network configured");
+	}
 
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 	proxy->forward_list = {"Node"};
