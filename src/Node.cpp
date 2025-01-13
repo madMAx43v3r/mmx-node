@@ -295,24 +295,29 @@ void Node::init_chain()
 	block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
 
 	const std::vector<std::string> reward_folders = {
-		"testnet8", "testnet9", "testnet10", "testnet12"
+		"testnet8", "testnet9", "testnet10", "testnet12", "mainnet-rc"
 	};
 	uint64_t total_rewards = 0;
 	std::map<addr_t, uint64_t> reward_map;
 
 	for(auto folder : reward_folders) {
+		std::map<std::string, uint64_t> files = {{"rewards.json", params->min_reward}};
+		if(folder == "mainnet-rc") {
+			files.emplace("timelord_rewards.json", params->vdf_reward / params->vdf_reward_interval);
+		}
 		uint64_t sum = 0;
-		std::vector<std::pair<addr_t, uint64_t>> tmp;
-		vnx::from_string(read_file("data/" + folder + "/rewards.json"), tmp);
-		for(const auto& entry : tmp) {
-			const auto amount = entry.second * 500000;
-			sum += amount;
-			reward_map[entry.first] += amount;
+		for(auto file : files) {
+			std::vector<std::pair<addr_t, uint64_t>> tmp;
+			vnx::from_string(read_file("data/" + folder + "/" + file.first), tmp);
+			for(const auto& entry : tmp) {
+				const auto amount = entry.second * file.second;
+				sum += amount;
+				reward_map[entry.first] += amount;
+			}
 		}
 		log(INFO) << "Rewards for " << folder << ": " << sum / 1000000 << " MMX";
 		total_rewards += sum;
 	}
-	// TODO: TL rewards for mainnet-rc
 
 	log(INFO) << "Total testnet rewards: " << total_rewards / 1000000 << " MMX";
 	{
