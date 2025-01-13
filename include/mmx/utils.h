@@ -49,6 +49,9 @@ std::shared_ptr<const ChainParams> get_params()
 	if(params->max_tx_cost > params->max_block_size / 5) {
 		throw std::logic_error("max_tx_cost > band size");
 	}
+	if(params->network.empty()) {
+		throw std::logic_error("no network configured");
+	}
 	return params;
 }
 
