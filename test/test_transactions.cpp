@@ -8,6 +8,10 @@
 #include <mmx/ECDSA_Wallet.h>
 #include <mmx/NodeClient.hxx>
 #include <mmx/KeyFile.hxx>
+#include <mmx/contract/MultiSig.hxx>
+#include <mmx/contract/Executable.hxx>
+#include <mmx/operation/Execute.hxx>
+#include <mmx/solution/MultiSig.hxx>
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
@@ -19,9 +23,10 @@ void expect_fail(NodeClient& node, std::shared_ptr<Transaction> tx)
 {
 	try {
 		node.add_transaction(tx, true);
-		std::cout << "Didn't fail!" << std::endl;
-		exit(-1);
-	} catch(...) {}
+	} catch(...) {
+		return;
+	}
+	throw std::logic_error("expected fail");
 }
 
 
@@ -155,6 +160,39 @@ int main(int argc, char** argv)
 		std::cout << tx->to_string() << std::endl;
 		expect_fail(node, tx);
 	}
+	{
+		auto tx = Transaction::create();
+		tx->sender = wallet.get_address(0);
+		auto exec = mmx::contract::Executable::create();
+		exec->binary = params->plot_nft_binary;
+		exec->init_args.emplace_back(tx->sender->to_string());
+		tx->deploy = exec;
+		auto op = mmx::operation::Execute::create();
+		op->method = "transfer";
+		op->user = wallet.get_address(0);
+		op->args.emplace_back(wallet.get_address(1).to_string());
+		tx->execute.push_back(op);
+		tx->max_fee_amount = -1;
+		wallet.sign_off(tx);
+
+		std::cout << tx->to_string() << std::endl;
+		node.add_transaction(tx, true);
+	}
+	{
+		auto tx = Transaction::create();
+		tx->sender = wallet.get_address(0);
+		auto multi = contract::MultiSig::create();
+		multi->num_required = 3;
+		for(int i = 0; i < 3; ++i) {
+			multi->owners.insert(wallet.get_address(i));
+		}
+		tx->deploy = multi;
+		tx->max_fee_amount = -1;
+		wallet.sign_off(tx);
+
+		std::cout << tx->to_string() << std::endl;
+		node.add_transaction(tx, true);
+	}
 
 	vnx::close();
 
@@ -162,5 +200,11 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+
+
+
+
+
+
 
 
