@@ -20,7 +20,7 @@ static double get_price(const mmx::uint128& inv_price)
 static mmx::uint128 get_bid_amount(const mmx::uint128& ask_amount, const mmx::uint128& inv_price)
 {
 	const auto bid_amount = (uint256_t(ask_amount) * inv_price) >> 64;
-	if(bid_amount.upper() || bid_amount.lower().upper()) {
+	if(bid_amount.upper()) {
 		throw std::logic_error("get_bid_amount(): bid amount overflow");
 	}
 	return bid_amount;
@@ -29,7 +29,7 @@ static mmx::uint128 get_bid_amount(const mmx::uint128& ask_amount, const mmx::ui
 static mmx::uint128 get_ask_amount(const mmx::uint128& bid_amount, const mmx::uint128& inv_price)
 {
 	const auto ask_amount = ((uint256_t(bid_amount) << 64) + inv_price - 1) / inv_price;
-	if(ask_amount.upper() || ask_amount.lower().upper()) {
+	if(ask_amount.upper()) {
 		throw std::logic_error("get_ask_amount(): ask amount overflow");
 	}
 	return ask_amount;

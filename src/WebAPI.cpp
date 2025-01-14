@@ -66,6 +66,13 @@ public:
 		return nullptr;
 	}
 
+	const currency_t* get_currency(const addr_t& address) const {
+		if(auto out = find_currency(address)) {
+			return out;
+		}
+		throw std::logic_error("invalid currency");
+	}
+
 	void add_contract(const addr_t& address, std::shared_ptr<const Contract> contract)
 	{
 		if(auto token = std::dynamic_pointer_cast<const contract::TokenBase>(contract)) {
@@ -2052,7 +2059,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 400, "POST wallet/execute {...}");
 		}
 	}
-	else if(sub_path == "/wallet/offer") {
+	else if(sub_path == "/wallet/make_offer") {
 		require<mmx::permission_e>(vnx_session, mmx::permission_e::SPENDING);
 		if(have_args) {
 			const auto bid_currency = args["bid_currency"].to<addr_t>();
@@ -2060,18 +2067,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			get_context({bid_currency, ask_currency}, request_id,
 				[this, request_id, args, bid_currency, ask_currency](std::shared_ptr<RenderContext> context) {
 					try {
-						uint128 bid_amount = 0;
-						uint128 ask_amount = 0;
-						if(auto currency = context->find_currency(bid_currency)) {
-							bid_amount = to_amount(args["bid"].to<fixed128>(), currency->decimals);
-						} else {
-							throw std::logic_error("invalid bid currency");
-						}
-						if(auto currency = context->find_currency(ask_currency)) {
-							ask_amount = to_amount(args["ask"].to<fixed128>(), currency->decimals);
-						} else {
-							throw std::logic_error("invalid ask currency");
-						}
+						const auto bid = context->get_currency(bid_currency);
+						const auto ask = context->get_currency(ask_currency);
+
+						const auto price = args["price"].to<fixed128>();
+						const auto bid_value = args["bid"].to<fixed128>();
+
+						const auto bid_amount = to_amount(bid_value, bid->decimals);
+						const auto ask_amount = to_amount(bid_value.to_value() / price.to_value(), ask->decimals);
+
 						const auto index = args["index"].to<uint32_t>();
 						const auto options = args["options"].to<spend_options_t>();
 						wallet->make_offer(index, 0, bid_amount, bid_currency, ask_amount, ask_currency, options,
@@ -2084,7 +2088,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					}
 				});
 		} else {
-			respond_status(request_id, 400, "POST wallet/offer {...}");
+			respond_status(request_id, 400, "POST wallet/make_offer {...}");
 		}
 	}
 	else if(sub_path == "/wallet/cancel_offer") {
@@ -2650,7 +2654,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract",
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address"
 			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/send_many", "wallet/send_off",
-			"wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
+			"wallet/make_offer", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid", "wallet/accounts", "wallet/account",
 			"swap/list", "swap/info", "swap/user_info", "swap/trade_estimate",

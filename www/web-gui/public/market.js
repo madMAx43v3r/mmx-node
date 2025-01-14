@@ -524,7 +524,6 @@ Vue.component('market-offers', {
 								<th>{{ $t('market_offers.they_offer') }}</th>
 								<th>{{ $t('market_offers.they_ask') }}</th>
 								<th>{{ $t('market_offers.price') }}</th>
-								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.time') }}</th>
 								<th></th>
 								<th></th>
@@ -552,7 +551,6 @@ Vue.component('market-offers', {
 										</router-link>
 									</template>
 								</td>
-								<td><b>{{ parseFloat( (item.display_price).toPrecision(3) ) }}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
 								<td><b>{{ parseFloat( (1 / item.display_price).toPrecision(3) ) }}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 								<td><router-link :to="'/explore/address/' + item.address">TX</router-link></td>
@@ -637,7 +635,6 @@ Vue.component('market-history', {
 								<th>{{ $t('market_offers.they_offer') }}</th>
 								<th>{{ $t('market_offers.they_ask') }}</th>
 								<th>{{ $t('market_offers.price') }}</th>
-								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.time') }}</th>
 								<th></th>
 								<th></th>
@@ -665,7 +662,6 @@ Vue.component('market-history', {
 										</router-link>
 									</template>
 								</td>
-								<td><b>{{parseFloat((item.display_price).toPrecision(3))}}</b>&nbsp; {{item.ask_symbol}} / {{item.bid_symbol}}</td>
 								<td><b>{{parseFloat((1 / item.display_price).toPrecision(3))}}</b>&nbsp; {{item.bid_symbol}} / {{item.ask_symbol}}</td>
 								<td>{{new Date(item.time * 1000).toLocaleString()}}</td>
 								<td><router-link :to="'/explore/address/' + item.address">Offer</router-link></td>

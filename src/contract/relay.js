@@ -16,7 +16,7 @@ function claim_all(currency) public
 	} else {
 		currency = bech32(currency);
 	}
-	send(this.user, balance(currency), currency);
+	send(owner, balance(currency), currency);
 }
 
 function transfer(new_owner) public

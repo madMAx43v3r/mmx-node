@@ -26,6 +26,14 @@ function validate_amount(value) {
 	return "invalid amount";
 }
 
+function to_string_hex(number) {
+    let hex = BigInt(number).toString(16);
+    if(hex.length % 2) {
+        hex = '0' + hex; // Ensure even length
+    }
+    return '0x' + hex;
+}
+
 function get_tx_type_color(type, dark = false) {
 	if(type == "REWARD") return dark ? "lime--text" : "lime--text text--darken-2";
 	if(type == "RECEIVE" || type == "REWARD" || type == "VDF_REWARD") return "green--text";

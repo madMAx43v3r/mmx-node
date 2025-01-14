@@ -22,4 +22,3 @@ Mainnet
 - New project wallet
 - Create project reward relay
 - Update timestamp before launch
-- Offer price update GUI

@@ -22,6 +22,7 @@ function init(owner_, bid_currency_, ask_currency_, inv_price_, partner_)
 	if(partner_) {
 		partner = bech32(partner_);
 	}
+	last_update = this.height;
 }
 
 function check_owner()
@@ -66,10 +67,11 @@ function set_price(new_price) public
 {
 	check_owner();
 	
-	if(last_update != null) {
-		assert(this.height - last_update >= UPDATE_INTERVAL, "update too soon", 7);
-	}
+	assert(this.height - last_update >= UPDATE_INTERVAL, "update too soon", 7);
+	
 	new_price = uint(new_price);
+	
+	assert(new_price > 0);
 	
 	if(new_price != inv_price) {
 		inv_price = new_price;
