@@ -524,7 +524,6 @@ Vue.component('market-offers', {
 								<th>{{ $t('market_offers.they_offer') }}</th>
 								<th>{{ $t('market_offers.they_ask') }}</th>
 								<th>{{ $t('market_offers.price') }}</th>
-								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.time') }}</th>
 								<th></th>
 								<th></th>
@@ -635,7 +634,6 @@ Vue.component('market-history', {
 							<tr>
 								<th>{{ $t('market_offers.they_offer') }}</th>
 								<th>{{ $t('market_offers.they_ask') }}</th>
-								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.price') }}</th>
 								<th>{{ $t('market_offers.time') }}</th>
 								<th></th>
