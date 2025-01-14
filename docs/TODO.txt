@@ -22,3 +22,4 @@ Mainnet
 - New project wallet
 - Create project reward relay
 - Update timestamp before launch
+- Run test_all.sh again
