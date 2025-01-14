@@ -113,7 +113,7 @@ void Node::main()
 					opencl_context = automy::basic_opencl::create_context(device.platform_id, {device.device_id});
 
 					// TODO: optimize vdf_verify_max_pending according to GPU size
-					for(uint32_t i = 0; i < vdf_verify_max_pending; ++i) {
+					for(uint32_t i = 0; i < max_vdf_verify_pending; ++i) {
 						opencl_vdf.push_back(std::make_shared<OCL_VDF>(opencl_context, device.device_id));
 					}
 					log(INFO) << "Using OpenCL GPU device '" << device.name << "' [" << device.index << "] (" << device.platform << ")";
@@ -129,7 +129,6 @@ void Node::main()
 		else {
 			log(INFO) << "No OpenCL device used (disabled)";
 		}
-
 		vnx::write_config("Node.opencl_device_select", listsel);
 	}
 	catch(const std::exception& ex) {
@@ -137,14 +136,14 @@ void Node::main()
 	}
 #endif
 
-	if(opencl_vdf.empty()) {
-		vdf_verify_max_pending = 1;
-	} else {
+	if(opencl_vdf.size()) {
 		opencl_vdf_enable = true;
+	} else {
+		max_vdf_verify_pending = 1;
 	}
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
 	api_threads = std::make_shared<vnx::ThreadPool>(num_api_threads);
-	vdf_threads = std::make_shared<vnx::ThreadPool>(std::max(num_vdf_threads, vdf_verify_max_pending));
+	vdf_threads = std::make_shared<vnx::ThreadPool>(max_vdf_verify_pending);
 	fetch_threads = std::make_shared<vnx::ThreadPool>(2);
 
 	router = std::make_shared<RouterAsyncClient>(router_name);
@@ -504,6 +503,7 @@ void Node::handle(std::shared_ptr<const ValidatorVote> value)
 		return;
 	}
 	vote_queue.emplace_back(value, get_time_ms());
+	// verify immediately to speed up relay
 	verify_votes();
 }
 
@@ -542,17 +542,6 @@ void Node::on_stuck_timeout()
 	start_sync(false);
 }
 
-void Node::sync_status()
-{
-	if(is_synced) {
-		sync_status_timer->stop();
-	}
-	const auto vdf_checks = vdf_threads->get_num_pending_total();
-	if(vdf_checks) {
-		log(INFO) << vdf_checks << " VDF checks pending ...";
-	}
-}
-
 void Node::start_sync(const vnx::bool_t& force)
 {
 	if((!is_synced || !do_sync) && !force) {
@@ -565,11 +554,6 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_pos = 0;
 	sync_peak = nullptr;
 	sync_retry = 0;
-
-	if(sync_status_timer) {
-		sync_status_timer->stop();
-	}
-	sync_status_timer = set_timer_millis(10 * 1000, std::bind(&Node::sync_status, this));
 
 	timelord->stop_vdf(
 		[this]() {
@@ -599,9 +583,6 @@ void Node::sync_more()
 	if(!sync_pos) {
 		sync_pos = root->height + 1;
 		log(INFO) << "Starting sync at height " << sync_pos;
-	}
-	if(vdf_threads->get_num_pending()) {
-		return;		// wait for pending VDF checks (all threads busy)
 	}
 	if(sync_pos > root->height && sync_pos - root->height > params->commit_delay + max_sync_ahead) {
 		return;		// limit blocks in memory during sync
@@ -807,14 +788,6 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 		if(!fork->is_validated) {
 			try {
 				fork->context = validate(block);
-
-				if(!fork->is_vdf_verified) {
-					if(block->vdf_count >= vdf_check_threshold) {
-						check_vdf(fork);
-					} else {
-						fork->is_vdf_verified = true;
-					}
-				}
 				fork->is_validated = true;
 			}
 			catch(const std::exception& ex) {
