@@ -305,7 +305,7 @@ void Node::update()
 		}
 		const auto vdf_delta = peak->vdf_height - root->vdf_height;
 
-		fork_weight = (total_proofs * 100) / (vdf_delta * params->proofs_per_height);
+		fork_weight = (total_proofs * 100) / (vdf_delta * params->avg_proof_count);
 
 		// make sure not to commit "weak" forks
 		// prevent extension attack without valid VDF during sync
