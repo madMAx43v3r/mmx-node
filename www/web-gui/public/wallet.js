@@ -1820,7 +1820,9 @@ Vue.component('account-offers', {
 			dialog_cancel: false,
 			dialog_deposit: false,
 			dialog_withdraw: false,
+			dialog_update: false,
 			deposit_amount: null,
+			new_price: null,
 			fee_amount: null,
 			request: null,
 			request_url: null,
@@ -1899,6 +1901,22 @@ Vue.component('account-offers', {
 			this.deposit_amount = null;
 			this.dialog_deposit = true;
 		},
+		update_price(item) {
+			const args = {options: {
+				user: item.owner
+			}};
+			args.index = this.index;
+			args.address = item.address;
+			args.method = "set_price";
+			args.args = [1];
+			this.request = args;
+			this.request_url = '/wapi/wallet/execute';
+			this.update_fee();
+
+			this.dialog_item = item;
+			this.new_price = null;
+			this.dialog_update = true;
+		},
 		submit() {
 			const url = this.request_url;
 			const item = this.dialog_item;
@@ -1926,6 +1944,7 @@ Vue.component('account-offers', {
 			this.dialog_cancel = false;
 			this.dialog_withdraw = false;
 			this.dialog_deposit = false;
+			this.dialog_update = false;
 			this.request = null;
 			this.request_url = null;
 			this.deposit_amount = null;
@@ -1941,6 +1960,13 @@ Vue.component('account-offers', {
 		deposit_amount(value) {
 			if(this.request) {
 				this.request.amount = value;
+				this.update_fee();
+			}
+		},
+		new_price(value) {
+			if(this.request) {
+				const new_price = value * Math.pow(2, 64) * Math.pow(10, this.dialog_item.bid_decimals - this.dialog_item.ask_decimals);
+				this.request.args = [to_string_hex(new_price)];
 				this.update_fee();
 			}
 		},
@@ -1978,7 +2004,6 @@ Vue.component('account-offers', {
 					<th colspan="2">{{ $t('account_offers.offering') }}</th>
 					<th colspan="2">{{ $t('account_offers.received') }}</th>
 					<th colspan="2">{{ $t('account_offers.price') }}</th>
-					<th colspan="2">{{ $t('account_offers.price') }}</th>
 					<th></th>
 					<th></th>
 				</tr>
@@ -1989,19 +2014,18 @@ Vue.component('account-offers', {
 					<td>{{item.bid_symbol}}</td>
 					<td class="collapsing"><b>{{item.ask_balance_value}}</b></td>
 					<td>{{item.ask_symbol}}</td>
-					<td class="collapsing"><b>{{parseFloat(item.display_price.toPrecision(6))}}</b></td>
-					<td>{{item.ask_symbol}} / {{item.bid_symbol}}</td>
 					<td class="collapsing"><b>{{parseFloat((1/item.display_price).toPrecision(6))}}</b></td>
 					<td>{{item.bid_symbol}} / {{item.ask_symbol}}</td>
 					<td><router-link :to="'/explore/address/' + item.address">TX</router-link></td>
 					<td>
-						<template v-if="item.bid_balance && !canceled.has(item.address)">
+						<template v-if="item.bid_balance > 0 && !canceled.has(item.address)">
 							<v-btn outlined text small color="red darken-1" @click="cancel(item)">{{ $t('account_offers.revoke') }}</v-btn>
 						</template>
-						<template v-if="item.ask_balance && !withdrawn.has(item.address)">
+						<template v-if="item.ask_balance > 0 && !withdrawn.has(item.address)">
 							<v-btn outlined text small @click="withdraw(item)">Withdraw</v-btn>
 						</template>
 						<v-btn outlined text small color="green darken-1" @click="deposit(item)">{{ $t('account_offers.deposit') }}</v-btn>
+						<v-btn outlined text small color="blue darken-1" @click="update_price(item)">Update</v-btn>
 					</td>
 				</tr>
 				</tbody>
@@ -2086,6 +2110,37 @@ Vue.component('account-offers', {
 					<v-card-actions class="justify-end">
 						<v-btn @click="submit()" color="primary" :disabled="!(deposit_amount > 0)">{{ $t('common.deposit') }}</v-btn>
 						<v-btn @click="dialog_deposit = false">{{ $t('common.cancel') }}</v-btn>
+					</v-card-actions>
+				</v-card>
+			</template>
+		</v-dialog>
+
+		<v-dialog v-model="dialog_update" max-width="1000">
+			<template v-slot:default="dialog">
+				<v-card>
+					<v-toolbar color="primary"></v-toolbar>
+					<v-card-title>Update {{dialog_item.address}}</v-card-title>
+					<v-card-text class="pb-0">
+						<v-text-field class="text-align-right"
+							v-model="new_price"
+							label="New Price"
+							:suffix="dialog_item.bid_symbol + ' / ' + dialog_item.ask_symbol">
+						</v-text-field>
+						<v-row justify="end">
+							<v-col cols="3">
+								<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
+							</v-col>
+							<v-col cols="3">
+								<v-text-field class="text-align-right"
+									label="TX Fee"
+									v-model.number="fee_amount" suffix="MMX" disabled>
+								</v-text-field>
+							</v-col>
+						</v-row>
+					</v-card-text>
+					<v-card-actions class="justify-end">
+						<v-btn @click="submit()" color="primary" :disabled="!(new_price > 0)">Update</v-btn>
+						<v-btn @click="dialog_update = false">{{ $t('common.cancel') }}</v-btn>
 					</v-card-actions>
 				</v-card>
 			</template>
