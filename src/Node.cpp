@@ -114,7 +114,7 @@ void Node::main()
 					opencl_context = automy::basic_opencl::create_context(device.platform_id, {device.device_id});
 
 					// TODO: optimize vdf_verify_max_pending according to GPU size
-					for(uint32_t i = 0; i < vdf_verify_max_pending; ++i) {
+					for(uint32_t i = 0; i < max_vdf_verify_pending; ++i) {
 						opencl_vdf.push_back(std::make_shared<OCL_VDF>(opencl_context, device.device_id));
 					}
 					log(INFO) << "Using OpenCL GPU device '" << device.name << "' [" << device.index << "] (" << device.platform << ")";
@@ -130,7 +130,6 @@ void Node::main()
 		else {
 			log(INFO) << "No OpenCL device used (disabled)";
 		}
-
 		vnx::write_config("Node.opencl_device_select", listsel);
 	}
 	catch(const std::exception& ex) {
@@ -138,14 +137,14 @@ void Node::main()
 	}
 #endif
 
-	if(opencl_vdf.empty()) {
-		vdf_verify_max_pending = 1;
-	} else {
+	if(opencl_vdf.size()) {
 		opencl_vdf_enable = true;
+	} else {
+		max_vdf_verify_pending = 1;
 	}
 	threads = std::make_shared<vnx::ThreadPool>(num_threads);
 	api_threads = std::make_shared<vnx::ThreadPool>(num_api_threads);
-	vdf_threads = std::make_shared<vnx::ThreadPool>(std::max(num_vdf_threads, vdf_verify_max_pending));
+	vdf_threads = std::make_shared<vnx::ThreadPool>(max_vdf_verify_pending);
 	fetch_threads = std::make_shared<vnx::ThreadPool>(2);
 
 	router = std::make_shared<RouterAsyncClient>(router_name);
@@ -459,6 +458,7 @@ void Node::handle(std::shared_ptr<const ValidatorVote> value)
 		return;
 	}
 	vote_queue.emplace_back(value, get_time_ms());
+	// verify immediately to speed up relay
 	verify_votes();
 }
 

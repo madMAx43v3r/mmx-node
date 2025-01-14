@@ -25,7 +25,7 @@ namespace mmx {
 
 void Node::verify_vdfs()
 {
-	if(vdf_queue.empty() || vdf_verify_pending.size() >= vdf_verify_max_pending) {
+	if(vdf_queue.empty() || vdf_verify_pending.size() >= max_vdf_verify_pending) {
 		return;
 	}
 	const auto time_now = get_time_ms();
@@ -92,7 +92,7 @@ void Node::verify_vdfs()
 		if(vdf_verify_pending.count(proof->hash)) {
 			continue;		// duplicate
 		}
-		if(vdf_verify_pending.size() >= vdf_verify_max_pending) {
+		if(vdf_verify_pending.size() >= max_vdf_verify_pending) {
 			try_again.emplace_back(proof, fork->recv_time);
 			continue;
 		}
