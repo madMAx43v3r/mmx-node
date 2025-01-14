@@ -497,17 +497,6 @@ void Node::on_stuck_timeout()
 	start_sync(false);
 }
 
-void Node::sync_status()
-{
-	if(is_synced) {
-		sync_status_timer->stop();
-	}
-	const auto vdf_checks = vdf_threads->get_num_pending_total();
-	if(vdf_checks) {
-		log(INFO) << vdf_checks << " VDF checks pending ...";
-	}
-}
-
 void Node::start_sync(const vnx::bool_t& force)
 {
 	if((!is_synced || !do_sync) && !force) {
@@ -520,11 +509,6 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_pos = 0;
 	sync_peak = nullptr;
 	sync_retry = 0;
-
-	if(sync_status_timer) {
-		sync_status_timer->stop();
-	}
-	sync_status_timer = set_timer_millis(10 * 1000, std::bind(&Node::sync_status, this));
 
 	timelord->stop_vdf(
 		[this]() {
@@ -554,9 +538,6 @@ void Node::sync_more()
 	if(!sync_pos) {
 		sync_pos = root->height + 1;
 		log(INFO) << "Starting sync at height " << sync_pos;
-	}
-	if(vdf_threads->get_num_pending()) {
-		return;		// wait for pending VDF checks (all threads busy)
 	}
 	if(sync_pos > root->height && sync_pos - root->height > params->commit_delay + max_sync_ahead) {
 		return;		// limit blocks in memory during sync

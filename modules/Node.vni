@@ -42,7 +42,6 @@ module Node implements vnx.addons.HttpComponent {
 	uint num_threads = 24;
 	uint num_db_threads = 8;
 	uint num_api_threads = 8;
-	uint num_vdf_threads = 8;				// VDF checks + verify
 	
 	uint commit_threshold = 80;				// percentage of proofs required
 	uint vdf_verify_max_pending = 2;		// how many VDFs to verify in parallel when synced

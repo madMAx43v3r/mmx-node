@@ -321,8 +321,6 @@ private:
 
 	void on_stuck_timeout();
 
-	void sync_status();
-
 	std::vector<tx_pool_t> validate_for_block(const int64_t deadline_ms);
 
 	std::shared_ptr<const Block> make_block(
@@ -405,11 +403,6 @@ private:
 	void verify_vdf_success(std::shared_ptr<const VDF_Point> point, const int64_t took_ms);
 
 	void verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64_t recv_time) noexcept;
-
-	void check_vdf(std::shared_ptr<fork_t> fork);
-
-	void check_vdf_task(std::shared_ptr<fork_t> fork,
-			std::shared_ptr<const BlockHeader> prev, const std::vector<std::tuple<uint64_t, hash_t, addr_t>>& list) noexcept;
 
 	size_t prefetch_balances(const std::set<std::pair<addr_t, addr_t>>& keys) const;
 
@@ -570,7 +563,6 @@ private:
 	std::shared_ptr<vnx::ThreadPool> api_threads;			// executed under shared db_mutex lock
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
-	std::shared_ptr<vnx::Timer> sync_status_timer;
 
 	mutable std::mutex mutex;								// network + contract_cache + tx_pool_index
 	mutable std::shared_ptr<const NetworkInfo> network;
