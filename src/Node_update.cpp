@@ -216,11 +216,14 @@ void Node::verify_block_proofs()
 			if(vdf_points.size()) {
 				fork->vdf_points = vdf_points;
 				fork->is_vdf_verified = true;
+			} else if(!is_synced) {
+				// we don't verify VDFs during sync
+				// the voting system will revert any invalid extension after one block
+				// just need to make sure not to commit too far with low proof counts
+				fork->is_vdf_verified = true;
 			}
 		}
-		// we don't verify VDFs here if still syncing
-		// instead it's done later when needed (competing forks)
-		if(fork->is_vdf_verified || !is_synced)
+		if(fork->is_vdf_verified)
 		{
 			threads->add_task([this, fork, &mutex]() {
 				const auto& block = fork->block;
@@ -289,19 +292,34 @@ void Node::update()
 		log(WARN) << "Have no peak!";
 		return;
 	}
+	uint32_t fork_weight = 0;
 	const auto fork = find_fork(peak->hash);
+
+	if(root && peak->height > root->height)
 	{
 		// commit to disk
-		const auto fork_line = get_fork_line();
+		const auto fork_line = get_fork_line(fork);
 
-		for(size_t i = 0; i + params->commit_delay < fork_line.size(); ++i)
+		uint64_t total_proofs = 0;
+		for(const auto& fork : fork_line) {
+			total_proofs += fork->block->proof.size();
+		}
+		const auto vdf_delta = peak->vdf_height - root->vdf_height;
+
+		fork_weight = (total_proofs * 100) / (vdf_delta * params->proofs_per_height);
+
+		// make sure not to commit "weak" forks
+		// prevent extension attack without valid VDF during sync
+		if(fork_weight >= commit_threshold)
 		{
-			const auto& fork = fork_line[i];
-			const auto& block = fork->block;
-			if(!fork->is_vdf_verified) {
-				break;	// wait for VDF verify
+			for(const auto& fork : fork_line) {
+				const auto& block = fork->block;
+				if(block->height + params->commit_delay <= peak->height) {
+					commit(block);
+				} else {
+					break;
+				}
 			}
-			commit(block);
 		}
 	}
 	const auto root = get_root();
@@ -318,8 +336,9 @@ void Node::update()
 			} else {
 				msg << "N/A";
 			}
+			msg << ", weight " << fork_weight;
 			if(is_synced) {
-				msg << ", " << fork->total_votes << " votes";
+				msg << ", vote " << fork->total_votes;
 				if(forked_at) {
 					msg << ", forked at " << forked_at->height;
 				}

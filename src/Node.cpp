@@ -762,14 +762,6 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 		if(!fork->is_validated) {
 			try {
 				fork->context = validate(block);
-
-				if(!fork->is_vdf_verified) {
-					if(block->vdf_count >= vdf_check_threshold) {
-						check_vdf(fork);
-					} else {
-						fork->is_vdf_verified = true;
-					}
-				}
 				fork->is_validated = true;
 			}
 			catch(const std::exception& ex) {
