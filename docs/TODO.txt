@@ -18,8 +18,6 @@ After Mainnet
 
 Mainnet
 - Genesis rewards (mainnet-rc)
-- Unit tests for all smart contracts
 - New project wallet
 - Create project reward relay
 - Update timestamp before launch
-- Run test_all.sh again
