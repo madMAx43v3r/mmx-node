@@ -22,14 +22,18 @@ const user = "mmx1e7yktu9vpeyq7hx39cmagzfp2um3kddwjf4tlt8j3kmktwc7fk6qmyc6ns";
 offer.trade(user, string(price), {__test: 1, assert_fail: true});
 offer.trade(user, string(price), {__test: 1, assert_fail: true, deposit: [1000, MMX]});
 offer.trade(user, string(price), {__test: 1, assert_fail: true, deposit: [1000000000000000, USD]});
+offer.trade(user, "0x000000000", {__test: 1, assert_fail: true, deposit: [1000000, USD]});
 
 offer.trade(user, string(price), {__test: 1, deposit: [1000000, USD]});
 
 assert(__test.get_balance(user, MMX) = 500000);
 
 price = (1 << 64);
-offer.set_price(string(price), {__test: 1, user: owner});
 offer.set_price(string(price), {__test: 1, user: owner, assert_fail: true});
+
+__test.inc_height(1080);
+
+offer.set_price(string(price), {__test: 1, user: owner});
 
 offer.trade(user, string(price), {__test: 1, deposit: [1000000, USD]});
 
