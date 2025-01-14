@@ -1589,14 +1589,12 @@ Vue.component('account-offer-form', {
 		return {
 			tokens: [],
 			balances: [],
+			price: null,
 			bid_amount: null,
-			ask_amount: null,
 			ask_symbol: null,
 			bid_symbol: null,
 			bid_currency: null,
 			ask_currency: null,
-			price: null,
-			inv_price: null,
 			fee_ratio: 1024,
 			fee_amount: null,
 			confirmed: false,
@@ -1618,7 +1616,7 @@ Vue.component('account-offer-form', {
 			if(this.is_valid()) {
 				const req = this.create_request();
 				req.options.auto_send = false;
-				fetch('/wapi/wallet/offer', {body: JSON.stringify(req), method: "post"})
+				fetch('/wapi/wallet/make_offer', {body: JSON.stringify(req), method: "post"})
 					.then(response => {
 						if(response.ok) {
 							response.json().then(tx => this.fee_amount = tx.exec_result.total_fee_value);
@@ -1630,20 +1628,11 @@ Vue.component('account-offer-form', {
 				this.fee_amount = null;
 			}
 		},
-		update_price() {
-			if(this.bid_amount && this.ask_amount) {
-				this.price = parseFloat((this.ask_amount / this.bid_amount).toPrecision(6));
-				this.inv_price = parseFloat((this.bid_amount / this.ask_amount).toPrecision(6));
-			} else {
-				this.price = null;
-				this.inv_price = null;
-			}
-		},
 		create_request() {
 			const req = {options: {}};
 			req.index = this.index;
 			req.bid = this.bid_amount;
-			req.ask = this.ask_amount;
+			req.price = this.price;
 			req.bid_currency = this.bid_currency.contract;
 			req.ask_currency = this.ask_currency.currency;
 			req.options.fee_ratio = this.fee_ratio;
@@ -1651,7 +1640,7 @@ Vue.component('account-offer-form', {
 		},
 		submit() {
 			this.confirmed = false;
-			fetch('/wapi/wallet/offer', {body: JSON.stringify(this.create_request()), method: "post"})
+			fetch('/wapi/wallet/make_offer', {body: JSON.stringify(this.create_request()), method: "post"})
 				.then(response => {
 					if(response.ok) {
 						response.json().then(data => this.result = data);
@@ -1663,7 +1652,7 @@ Vue.component('account-offer-form', {
 		is_valid() {
 			return this.bid_currency && this.ask_currency
 				&& validate_address(this.bid_currency.contract) && validate_address(this.ask_currency.currency)
-				&& validate_amount(this.bid_amount) == true && validate_amount(this.ask_amount) == true;
+				&& validate_amount(this.bid_amount) == true && this.price > 0;
 		}
 	},
 	created() {
@@ -1674,13 +1663,11 @@ Vue.component('account-offer-form', {
 		clearInterval(this.timer);
 	},
 	watch: {
-		ask_amount() {
+		price() {
 			this.confirmed = false;
-			this.update_price();
 		},
 		bid_amount() {
 			this.confirmed = false;
-			this.update_price();
 		},
 		ask_currency() {
 			this.confirmed = false;
@@ -1713,7 +1700,7 @@ Vue.component('account-offer-form', {
 			<v-card class="my-2">
 				<v-card-text>
 					<v-row>
-						<v-col cols="3" class="pb-0">
+						<v-col cols="4" class="pb-0">
 							<v-text-field class="text-align-right"
 								:label="$t('account_offer_form.offer_amount')"
 								placeholder="1.23"
@@ -1735,12 +1722,11 @@ Vue.component('account-offer-form', {
 						</v-col>
 					</v-row>
 					<v-row>
-						<v-col cols="3" class="py-0">
+						<v-col cols="4" class="py-0">
 							<v-text-field class="text-align-right"
-								:label="$t('account_offer_form.receive_amount')"
-								placeholder="1.23"
-								v-model="ask_amount"
-								:rules="[validate_amount]"
+								:label="$t('account_offers.price')"
+								v-model="price"
+								:suffix="ask_currency && bid_currency ? bid_currency.symbol + ' / ' + ask_currency.symbol : null"
 							></v-text-field>
 						</v-col>
 						<v-col class="py-0">
@@ -1754,24 +1740,6 @@ Vue.component('account-offer-form', {
 									<template v-if="item.currency != MMX_ADDR"> - [{{item.currency}}]</template>
 								</template>
 							</v-select>
-						</v-col>
-					</v-row>
-					<v-row justify="end">
-						<v-col cols="3" class="py-0">
-							<v-text-field class="text-align-right"
-								:label="$t('account_offers.price')"
-								v-model="price"
-								:suffix="ask_currency && bid_currency ? ask_currency.symbol + ' / ' + bid_currency.symbol : null"
-								readonly
-							></v-text-field>
-						</v-col>
-						<v-col cols="3" class="py-0">
-							<v-text-field class="text-align-right"
-								:label="$t('account_offers.price')"
-								v-model="inv_price"
-								:suffix="ask_currency && bid_currency ? bid_currency.symbol + ' / ' + ask_currency.symbol : null"
-								readonly
-							></v-text-field>
 						</v-col>
 					</v-row>
 					<v-row justify="end">
@@ -2121,12 +2089,14 @@ Vue.component('account-offers', {
 					<v-toolbar color="primary"></v-toolbar>
 					<v-card-title>Update {{dialog_item.address}}</v-card-title>
 					<v-card-text class="pb-0">
-						<v-text-field class="text-align-right"
-							v-model="new_price"
-							label="New Price"
-							:suffix="dialog_item.bid_symbol + ' / ' + dialog_item.ask_symbol">
-						</v-text-field>
 						<v-row justify="end">
+							<v-col cols="4">
+								<v-text-field class="text-align-right"
+									v-model="new_price"
+									label="New Price"
+									:suffix="dialog_item.bid_symbol + ' / ' + dialog_item.ask_symbol">
+								</v-text-field>
+							</v-col>
 							<v-col cols="3">
 								<tx-fee-select @update-value="value => update_fee_ratio(value)"></tx-fee-select>
 							</v-col>
