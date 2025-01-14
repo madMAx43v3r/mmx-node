@@ -147,7 +147,19 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
 - Added block timestamps
 - Smart Contract unit test framework
 
+### Mainnet
 
+- Transactions are no longer limited to odd or even blocks
+- Validators are now previous block winners, starting at 24 blocks prior
+- Increased validator count to 33
+- Committing blocks is paused when proofs found is less than 80% expected
+- VDF checks during sync are obsolete
+- Added maximum proof limit of 20 per block
+- Faster difficulty adjustment
+- Changed VDF reward payout interval to 20 blocks (with each being 0.2 MMX)
+- Changed VDF block infusion delay to 1
+- Added remote call recursion limit of 3
+- Added maximum contract dependencies of 5
 
 
 
