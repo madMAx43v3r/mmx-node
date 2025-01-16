@@ -421,8 +421,8 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(block->height <= root->height) {
 		return;
 	}
-	if(!fork->recv_time) {
-		fork->recv_time = get_time_ms();
+	if(!fork->recv_time_ms) {
+		fork->recv_time_ms = get_time_ms();
 	}
 	fork->prev = find_fork(block->prev);
 

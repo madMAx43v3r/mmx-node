@@ -263,7 +263,7 @@ private:
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
 		bool is_all_proof_verified = false;
-		int64_t recv_time = 0;					// [ms]
+		int64_t recv_time_ms = 0;					// [ms]
 		uint32_t votes = 0;						// validator votes
 		uint32_t total_votes = 0;
 		uint32_t fork_length = 0;

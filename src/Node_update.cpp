@@ -128,7 +128,7 @@ void Node::verify_votes()
 							publish(vote, output_verified_votes);
 
 							if(is_synced) {
-								const auto delay_ms = entry.second - fork->recv_time;
+								const auto delay_ms = entry.second - fork->recv_time_ms;
 								if(fork->votes == params->max_validators / 2 + 1) {
 									log(INFO) << "\xF0\x9F\x97\xB3\xEF\xB8\x8F  Received majority vote for block at height " << fork->block->height
 											<< ", delay " << delay_ms / 1e3 << " sec";
@@ -343,7 +343,7 @@ void Node::update()
 					msg << ", forked at " << forked_at->height;
 				}
 				if(fork->vdf_points.size()) {
-					msg << ", delay " << (fork->recv_time - fork->vdf_points.back()->recv_time) / 1e3 << " sec";
+					msg << ", delay " << (fork->recv_time_ms - fork->vdf_points.back()->recv_time) / 1e3 << " sec";
 				}
 			} else {
 				msg << ", " << sync_pending.size() << " pending";
