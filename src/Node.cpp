@@ -13,6 +13,7 @@
 #include <mmx/contract/Executable.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
+#include <mmx/FarmerClient.hxx>
 #include <mmx/utils.h>
 #include <mmx/helpers.h>
 #include <mmx/vm/Engine.h>
@@ -884,6 +885,36 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 		fork = fork->prev.lock();
 	}
 	throw std::logic_error("disconnected fork");
+}
+
+void Node::vote_for_block(std::shared_ptr<fork_t> fork)
+{
+	const auto& block = fork->block;
+	for(const auto& entry : fork->validators)
+	{
+		const auto& farmer_key = entry.first;
+		if(auto farmer_mac = find_value(farmer_keys, farmer_key)) {
+			auto vote = ValidatorVote::create();
+			vote->hash = block->hash;
+			vote->farmer_key = farmer_key;
+			try {
+				FarmerClient farmer(*farmer_mac);
+				vote->farmer_sig = farmer.sign_vote(vote);
+				vote->content_hash = vote->calc_content_hash();
+				publish(vote, output_votes);
+				publish(vote, output_verified_votes);
+
+				if(voted_blocks.count(block->prev)) {
+					log(INFO) << "Voted again for block at height " << block->height << ": " << vote->hash;
+				} else {
+					log(INFO) << "Voted for block at height " << block->height << ": " << vote->hash;
+				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "Failed to sign vote for height " << block->height << ": " << ex.what();
+			}
+			voted_blocks[block->prev] = std::make_pair(vote->hash, get_time_ms());
+		}
+	}
 }
 
 void Node::update_farmer_ranking()

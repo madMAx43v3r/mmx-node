@@ -350,6 +350,8 @@ private:
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
 
+	void vote_for_block(std::shared_ptr<fork_t> fork);
+
 	std::shared_ptr<execution_context_t> validate(std::shared_ptr<const Block> block) const;
 
 	std::shared_ptr<execution_context_t> new_exec_context(const uint32_t height) const;
@@ -526,7 +528,7 @@ private:
 	std::multimap<uint32_t, hash_t> challenge_map;									// [vdf height => challenge]
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => sorted proofs]
 	std::unordered_map<hash_t, hash_t> created_blocks;								// [proof hash => block hash]
-	std::unordered_map<hash_t, hash_t> voted_blocks;								// [prev => block hash]
+	std::unordered_map<hash_t, std::pair<hash_t, int64_t>> voted_blocks;			// [prev => [block hash, time ms]]
 	std::map<pubkey_t, vnx::Hash64> farmer_keys;									// [key => farmer_mac] our farmer keys
 
 	bool is_synced = false;

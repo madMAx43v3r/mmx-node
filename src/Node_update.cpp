@@ -293,12 +293,11 @@ void Node::update()
 	}
 	uint32_t fork_weight = 0;
 	const auto fork = find_fork(peak->hash);
+	const auto fork_line = get_fork_line(fork);
 
+	// commit to disk
 	if(root && peak->height > root->height)
 	{
-		// commit to disk
-		const auto fork_line = get_fork_line(fork);
-
 		uint64_t total_proofs = 0;
 		for(const auto& fork : fork_line) {
 			total_proofs += fork->block->proof.size();
@@ -433,26 +432,21 @@ void Node::update()
 	{
 		// make sure peak is from best proof seen
 		const auto proof = find_best_proof(peak->proof[0]->challenge);
-		if(proof && peak->proof_hash == proof->hash)
-		{
-			for(const auto& entry : fork->validators) {
-				const auto& farmer_key = entry.first;
-				if(auto farmer_mac = find_value(farmer_keys, farmer_key)) {
-					auto vote = ValidatorVote::create();
-					vote->hash = peak->hash;
-					vote->farmer_key = farmer_key;
-					try {
-						FarmerClient farmer(*farmer_mac);
-						vote->farmer_sig = farmer.sign_vote(vote);
-						vote->content_hash = vote->calc_content_hash();
-						publish(vote, output_votes);
-						publish(vote, output_verified_votes);
-						log(INFO) << "Voted for block at height " << peak->height << ": " << vote->hash;
-					}
-					catch(const std::exception& ex) {
-						log(WARN) << "Failed to sign vote for height " << peak->height << ": " << ex.what();
-					}
-					voted_blocks[peak->prev] = vote->hash;
+		if(proof && peak->proof_hash == proof->hash) {
+			vote_for_block(fork);
+		}
+	}
+
+	// check for orphaned votes
+	for(const auto& fork : fork_line) {
+		const auto& block = fork->block;
+		if(auto vote = find_value(voted_blocks, block->prev)) {
+			if(vote->first != block->hash) {
+				// our voted for block was orphaned
+				// vote again for new block if more than one block interval has elapsed
+				// this prevents vote fragmentation in case of double signing
+				if(now_ms - vote->second > params->block_interval_ms) {
+					vote_for_block(fork);
 				}
 			}
 		}
