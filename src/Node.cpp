@@ -834,20 +834,33 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 
 		if(fork->is_all_proof_verified && fork->root && !fork->is_invalid)
 		{
-			const auto weight = is_synced ? fork->root->total_weight : block->total_weight;
-			const auto best_weight = best ? (is_synced ? best->root->total_weight : best->block->total_weight) : uint128_0;
-
-			const int cond_a = (!best || fork->total_votes > best->total_votes) ? 1 : (fork->total_votes == best->total_votes ? 0 : -1);
-			const int cond_b = (weight > best_weight)                           ? 1 : (weight == best_weight ? 0 : -1);
-			const int cond_c = (!best || block->height > best->block->height)   ? 1 : (block->height == best->block->height ? 0 : -1);
-			const int cond_d = (!best || block->hash < best->block->hash)       ? 1 : 0;
-
-			if(cond_a > 0
-				|| (cond_a == 0 && cond_b > 0)
-				|| (cond_a == 0 && cond_b == 0 && cond_c > 0)
-				|| (cond_a == 0 && cond_b == 0 && cond_c == 0 && cond_d > 0))
-			{
+			if(!best) {
 				best = fork;
+			} else {
+				const auto is_deep_fork = fork->root->total_weight >  best->root->total_weight;
+				const auto is_same_root = fork->root->total_weight >= best->root->total_weight;
+				const auto cond_weight =  block->total_weight >= best->block->total_weight;
+				const auto cond_height =  block->height > best->block->height   ? 1 : (block->height == best->block->height ? 0 : -1);
+				const auto cond_votes =   fork->total_votes > best->total_votes ? 1 : (fork->total_votes == best->total_votes ? 0 : -1);
+
+				if(cond_weight && is_deep_fork) {
+					best = fork;	// higher peak and root weight (long range attack recovery)
+				} else if(cond_weight || is_same_root) {
+					// heavier peak or equal root
+					if(cond_votes > 0) {
+						best = fork;	// more total votes
+					} else if(cond_votes == 0) {
+						// same total votes
+						if(cond_height > 0) {
+							best = fork;	// longer chain (new block without votes)
+						} else if(cond_height == 0) {
+							// same peak height
+							if(block->hash < best->block->hash) {
+								best = fork;	// race condition (multiple blocks at same time, votes will make better proof win)
+							}
+						}
+					}
+				}
 			}
 		}
 	}
