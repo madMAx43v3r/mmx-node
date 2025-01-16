@@ -120,6 +120,11 @@ void Node::verify_votes()
 		try {
 			if(auto fork = find_fork(vote->hash)) {
 				if(fork->is_proof_verified) {
+					const auto& block = fork->block;
+					const auto best_proof = find_best_proof(block->proof[0]->challenge);
+					if(!best_proof || block->proof_hash != best_proof->hash) {
+						throw std::logic_error("block has weaker proof");
+					}
 					auto iter = fork->validators.find(vote->farmer_key);
 					if(iter != fork->validators.end()) {
 						if(!iter->second) {
