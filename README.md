@@ -41,8 +41,8 @@ Roadmap
 | testnet10 | Apr 2023 | Finished. Incentivized testnet, height 40k-3200k. <sup>[2]</sup> |
 | testnet11 | May 2024 | Finished. New plot format, compression resistant. |
 | testnet12 | June 2024 | Finished. Incentivized testnet, height 25k-1720k. <sup>[2]</sup> |
-| mainnet-rc | Jan 2024 | Active. Incentivized testnet, height 10k-tbd. <sup>[2]</sup> |
-| mainnet | _tbd_ | Planned Jan 17 2025. |
+| mainnet-rc | Jan 2024 | Finished. Incentivized testnet, height 10k-110k. <sup>[2]</sup> |
+| mainnet | 17th Jan 2024 | Live |
 
 _<sup>[1]</sup> Coins farmed on testnets are not worth anything, now or later._\
 _<sup>[2]</sup> A fixed reward of 0.5 MMX per block win on incentivized testnets will be given on mainnet genesis._
@@ -67,46 +67,19 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
 
 ## Release Notes
 
-### Testnet9
+### Mainnet
 
-- New `Swap` contract, to trade via liquidity pools (similar to _UniSwap_, anyone can provide liquidity and earn fees)
-- Improved `Offer` contract: partial trades and extending offers are now possible
-- Re-designed `Virtual Plots`: withdrawal is now possible with a 10% fee (no lock duration, fee is burned), also there is no more expiration
-- Network traffic is now compressed via `deflate` level 1
-- Second best farmer will now create an empty block (just to get the reward), in case the first farmer fails or is too slow
-
-### Testnet10
-
-- Decentralized Timelord rewards (fixed 0.0025 MMX per block, paid by TX fees when possible (but never more than 1/8))
-- New AMM Swap with multi-fee tier system (you can chose between 4 fee levels for your liquidity)
-- Account activation TX fee (0.01 MMX when transferring to a new address with zero balance)
-- Increased min block reward to 0.5 MMX
-- Full transition to smart contracts with compiled JS like code
-- Harvester improvements for compressed plots (graceful degradation)
-- New dev fee system, based only on TX fees, with a fixed amount plus 1% (but never more than 1/4 of TX fees)
-- Plot filter has been decreased to 256 now, as it is planned for mainnet
-- Many improvements to the code base
-
-### Testnet11
-
-- New plot format:
-  - k29 to k32 max
-  - 9 tables
-  - very low compression only
-  - CPU farming only
-  - SSD and HDD plot types
-  - Old format no longer valid
-- Transaction output memo support
-- Block reward voting support
-- Swap algorithm improved
-- Swap fee levels changed to: 0.05%, 0.25%, 1% and 5%
-- Using zstd compression for network traffic
-- NFT plot support (testing only)
-
-### Testnet12
-
-- Fixed Virtual Plots, they now win blocks at the expected rate. On TN11 it was ~20 times less.
-- Fixed block reward formula, average tx fee is subtracted from minimum reward again.
+- Transactions are no longer limited to odd or even blocks
+- Validators are now previous block winners, starting at 24 blocks prior
+- Increased validator count to 33
+- Committing blocks is paused when proofs found is less than 80% expected
+- VDF checks during sync are obsolete
+- Added maximum proof limit of 20 per block
+- Faster difficulty adjustment
+- Changed VDF reward payout interval to 20 blocks (with each being 0.2 MMX)
+- Changed VDF block infusion delay to 1
+- Added remote call recursion limit of 3
+- Added maximum contract dependencies of 5
 
 ### Mainnet-RC
 
@@ -147,23 +120,24 @@ The login password is auto-generated at first launch, located in `mmx-node/PASSW
 - Added block timestamps
 - Smart Contract unit test framework
 
-### Mainnet
+### Testnet12
 
-- Transactions are no longer limited to odd or even blocks
-- Validators are now previous block winners, starting at 24 blocks prior
-- Increased validator count to 33
-- Committing blocks is paused when proofs found is less than 80% expected
-- VDF checks during sync are obsolete
-- Added maximum proof limit of 20 per block
-- Faster difficulty adjustment
-- Changed VDF reward payout interval to 20 blocks (with each being 0.2 MMX)
-- Changed VDF block infusion delay to 1
-- Added remote call recursion limit of 3
-- Added maximum contract dependencies of 5
+- Fixed Virtual Plots, they now win blocks at the expected rate. On TN11 it was ~20 times less.
+- Fixed block reward formula, average tx fee is subtracted from minimum reward again.
 
+### Testnet11
 
-
-
-
-
+- New plot format:
+  - k29 to k32 max
+  - 9 tables
+  - very low compression only
+  - CPU farming only
+  - SSD and HDD plot types
+  - Old format no longer valid
+- Transaction output memo support
+- Block reward voting support
+- Swap algorithm improved
+- Swap fee levels changed to: 0.05%, 0.25%, 1% and 5%
+- Using zstd compression for network traffic
+- NFT plot support (testing only)
 
