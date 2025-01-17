@@ -22,7 +22,8 @@ std::shared_ptr<Block> Node::create_test_block(std::shared_ptr<const BlockHeader
 	proof->ksize = 32;
 	proof->score = 256;
 	proof->farmer_key = farmer_key;
-	proof->challenge = get_challenge(prev, 1, proof->difficulty);
+	proof->challenge = hash_t::random();
+	get_challenge(prev, 1, proof->difficulty);
 	proof->proof_xs.resize(256);
 	std::generate(proof->proof_xs.begin(), proof->proof_xs.end(),
 		[]() { return vnx::rand64(); });
@@ -31,13 +32,17 @@ std::shared_ptr<Block> Node::create_test_block(std::shared_ptr<const BlockHeader
 	proof_data.hash = proof->calc_proof_hash();
 	proof_data.proof = proof;
 
-	proof_map[proof->challenge] = {proof_data};
+	auto& proofs = proof_map[proof->challenge];
+	proofs.clear();
+	for(uint32_t i = 0; i < params->max_proof_count; ++i) {
+		proofs.push_back(proof_data);
+	}
 
 	auto point = VDF_Point::create();
 	point->vdf_height = prev->vdf_height + 1;
 	point->start = prev->vdf_iters;
 	point->input = prev->vdf_output;
-	point->output = proof->challenge;
+	point->output = hash_t::random();
 	point->prev = get_infusion(prev, 0, point->num_iters);
 	point->content_hash = point->calc_hash();
 
@@ -255,14 +260,14 @@ void Node::test_all()
 		auto block = root;
 		log(INFO) << "Starting new fork at height " << block->height << " hash " << block->hash;
 
-		std::shared_ptr<fork_t> peak;
+		std::shared_ptr<fork_t> trap;
 
 		for(int i = 0; i < length; ++i) {
 			auto fork = create_test_fork(block, false);
 			fork->is_validated = true;
 			add_fork(fork);
 			block = fork->block;
-			peak = fork;
+			trap = fork;
 		}
 		log(INFO) << "Created new fork at peak height " << block->height << " hash " << block->hash;
 
@@ -277,9 +282,11 @@ void Node::test_all()
 		auto new_peak = block;
 		log(INFO) << "Extended peak to height " << block->height << " hash " << block->hash;
 
+		trap->is_validated = false;
+
 		bool did_fail = true;
 		try {
-			fork_to(peak);
+			fork_to(trap);
 			did_fail = false;
 		} catch(const std::exception& ex) {
 			log(INFO) << "Failed as expected with: " << ex.what();

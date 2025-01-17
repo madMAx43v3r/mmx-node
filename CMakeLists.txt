@@ -114,7 +114,6 @@ add_library(mmx_iface SHARED
 	src/Solution.cpp
 	src/ProofOfTime.cpp
 	src/ProofOfSpace.cpp
-	src/ProofOfStake.cpp
 	src/ProofOfSpaceOG.cpp
 	src/ProofOfSpaceNFT.cpp
 	src/ProofResponse.cpp
@@ -135,7 +134,6 @@ add_library(mmx_iface SHARED
 	src/contract/PubKey.cpp
 	src/contract/MultiSig.cpp
 	src/contract/TokenBase.cpp
-	src/contract/VirtualPlot.cpp
 	src/contract/Binary.cpp
 	src/contract/Executable.cpp
 	src/contract/method_t.cpp

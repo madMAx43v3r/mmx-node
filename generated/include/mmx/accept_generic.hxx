@@ -197,7 +197,6 @@
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/ReceiveNote.hxx>
@@ -2081,8 +2080,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfSpace> value
 			vnx::accept_generic(visitor, tmp);
 		} else if(auto tmp = std::dynamic_pointer_cast<const ::mmx::ProofOfSpaceOG>(value)) {
 			vnx::accept_generic(visitor, tmp);
-		} else if(auto tmp = std::dynamic_pointer_cast<const ::mmx::ProofOfStake>(value)) {
-			vnx::accept_generic(visitor, tmp);
 		} else {
 			value->accept_generic(visitor);
 		}
@@ -2102,15 +2099,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfSpaceNFT> va
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfSpaceOG> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfStake> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

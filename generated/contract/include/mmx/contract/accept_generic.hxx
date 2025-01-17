@@ -10,7 +10,6 @@
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/TokenBase.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/contract/WebData.hxx>
 
 
@@ -37,11 +36,7 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::Data> val
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::Executable> value) {
 	if(value) {
-		if(auto tmp = std::dynamic_pointer_cast<const ::mmx::contract::VirtualPlot>(value)) {
-			vnx::accept_generic(visitor, tmp);
-		} else {
-			value->accept_generic(visitor);
-		}
+		value->accept_generic(visitor);
 	} else {
 		visitor.accept(nullptr);
 	}
@@ -70,20 +65,9 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::TokenBase
 	if(value) {
 		if(auto tmp = std::dynamic_pointer_cast<const ::mmx::contract::Executable>(value)) {
 			vnx::accept_generic(visitor, tmp);
-		} else if(auto tmp = std::dynamic_pointer_cast<const ::mmx::contract::VirtualPlot>(value)) {
-			vnx::accept_generic(visitor, tmp);
 		} else {
 			value->accept_generic(visitor);
 		}
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::VirtualPlot> value) {
-	if(value) {
-		value->accept_generic(visitor);
 	} else {
 		visitor.accept(nullptr);
 	}

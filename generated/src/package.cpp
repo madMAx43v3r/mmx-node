@@ -197,7 +197,6 @@
 #include <mmx/ProofOfSpace.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
-#include <mmx/ProofOfStake.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
 #include <mmx/ReceiveNote.hxx>
@@ -2729,18 +2728,6 @@ void type<::mmx::ProofOfSpaceOG>::create_dynamic_code(std::vector<uint16_t>& cod
 }
 
 void type<::mmx::ProofOfSpaceOG>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfSpaceOG& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
-const TypeCode* type<::mmx::ProofOfStake>::get_type_code() {
-	return mmx::vnx_native_type_code_ProofOfStake;
-}
-
-void type<::mmx::ProofOfStake>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::ProofOfStake());
-}
-
-void type<::mmx::ProofOfStake>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfStake& value, bool special) {
 	code.push_back(CODE_OBJECT);
 }
 
@@ -5444,7 +5431,6 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::ProofOfSpace::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfSpaceNFT::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfSpaceOG::static_create_type_code());
-	vnx::register_type_code(::mmx::ProofOfStake::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofResponse::static_create_type_code());
 	vnx::register_type_code(::mmx::ReceiveNote::static_create_type_code());
@@ -5851,7 +5837,6 @@ const vnx::TypeCode* const vnx_native_type_code_PlotHeader = vnx::get_type_code(
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace = vnx::get_type_code(vnx::Hash64(0x9269760ad5fd0058ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceNFT = vnx::get_type_code(vnx::Hash64(0x22a4d97166711bd9ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceOG = vnx::get_type_code(vnx::Hash64(0x6def5518efc37b4ull));
-const vnx::TypeCode* const vnx_native_type_code_ProofOfStake = vnx::get_type_code(vnx::Hash64(0xf5f1629c4ada2ccfull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime = vnx::get_type_code(vnx::Hash64(0xa84a63942b8e5c6aull));
 const vnx::TypeCode* const vnx_native_type_code_ProofResponse = vnx::get_type_code(vnx::Hash64(0x816e898b36befae0ull));
 const vnx::TypeCode* const vnx_native_type_code_ReceiveNote = vnx::get_type_code(vnx::Hash64(0x30439468cf29fa4bull));

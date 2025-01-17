@@ -174,7 +174,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> req)
 						log(INFO) << "Another Timelord was faster, restarting ...";
 					}
 				} else {
-					log(WARN) << "Our VDF forked from the network, restarting ...";
+					log(INFO) << "Our VDF forked from the network, restarting ...";
 				}
 			}
 			if(!peak || is_fork || begin.num_iters > peak->num_iters) {

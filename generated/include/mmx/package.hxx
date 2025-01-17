@@ -220,7 +220,6 @@ class PlotHeader;
 class ProofOfSpace;
 class ProofOfSpaceNFT;
 class ProofOfSpaceOG;
-class ProofOfStake;
 class ProofOfTime;
 class ProofResponse;
 class ReceiveNote;
@@ -628,7 +627,6 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PlotHeader; //
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpace; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceNFT; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceOG; ///< \private
-MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfStake; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ReceiveNote; ///< \private
@@ -1033,7 +1031,6 @@ void read(TypeInput& in, ::mmx::PlotHeader& value, const TypeCode* type_code, co
 void read(TypeInput& in, ::mmx::ProofOfSpace& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfSpaceNFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfSpaceOG& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::ProofOfStake& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfTime& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1441,7 +1438,6 @@ void write(TypeOutput& out, const ::mmx::PlotHeader& value, const TypeCode* type
 void write(TypeOutput& out, const ::mmx::ProofOfSpace& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfSpaceNFT& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfSpaceOG& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::ProofOfStake& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfTime& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1849,7 +1845,6 @@ void read(std::istream& in, ::mmx::PlotHeader& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpace& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpaceNFT& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpaceOG& value); ///< \private
-void read(std::istream& in, ::mmx::ProofOfStake& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfTime& value); ///< \private
 void read(std::istream& in, ::mmx::ProofResponse& value); ///< \private
 void read(std::istream& in, ::mmx::ReceiveNote& value); ///< \private
@@ -2257,7 +2252,6 @@ void write(std::ostream& out, const ::mmx::PlotHeader& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfSpace& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfSpaceNFT& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfSpaceOG& value); ///< \private
-void write(std::ostream& out, const ::mmx::ProofOfStake& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfTime& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofResponse& value); ///< \private
 void write(std::ostream& out, const ::mmx::ReceiveNote& value); ///< \private
@@ -2665,7 +2659,6 @@ void accept(Visitor& visitor, const ::mmx::PlotHeader& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfSpace& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfSpaceNFT& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfSpaceOG& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::ProofOfStake& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfTime& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofResponse& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ReceiveNote& value); ///< \private
@@ -3263,8 +3256,6 @@ template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfSpaceNFT> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfSpaceOG> value); ///< \private
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfStake> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfTime> value); ///< \private
 template<typename V>
@@ -8079,29 +8070,6 @@ struct type<::mmx::ProofOfSpaceOG> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfSpaceOG& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::ProofOfStake> {
-	void read(TypeInput& in, ::mmx::ProofOfStake& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::ProofOfStake& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::ProofOfStake& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::ProofOfStake& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::ProofOfStake& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofOfStake& value, bool special = false);
 };
 
 /// \private

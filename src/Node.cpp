@@ -11,9 +11,9 @@
 #include <mmx/ProofOfSpaceNFT.hxx>
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/Executable.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
+#include <mmx/FarmerClient.hxx>
 #include <mmx/utils.h>
 #include <mmx/helpers.h>
 #include <mmx/vm/Engine.h>
@@ -167,6 +167,7 @@ void Node::main()
 
 		db->open_async(contract_map, database_path + "contract_map");
 		db->open_async(contract_log, database_path + "contract_log");
+		db->open_async(contract_depends, database_path + "contract_depends");
 		db->open_async(deploy_map, database_path + "deploy_map");
 		db->open_async(owner_map, database_path + "owner_map");
 		db->open_async(swap_index, database_path + "swap_index");
@@ -188,7 +189,7 @@ void Node::main()
 	{
 		db_blocks = std::make_shared<DataBase>(2);
 
-		db_blocks->open_async(block_index, database_path + "block_index_new");	// TODO: rename back
+		db_blocks->open_async(block_index, database_path + "block_index");
 		db_blocks->open_async(height_index, database_path + "height_index");
 
 		db_blocks->sync();
@@ -292,7 +293,53 @@ void Node::init_chain()
 	block->space_diff = params->initial_space_diff;
 	block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
 	block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_binary.dat"));
+
+	const std::vector<std::string> reward_folders = {
+		"testnet8", "testnet9", "testnet10", "testnet12", "mainnet-rc"
+	};
+	uint64_t total_rewards = 0;
+	std::map<addr_t, uint64_t> reward_map;
+
+	for(auto folder : reward_folders) {
+		std::map<std::string, uint64_t> files = {{"rewards.json", params->min_reward}};
+		if(folder == "mainnet-rc") {
+			files.emplace("timelord_rewards.json", params->vdf_reward / params->vdf_reward_interval);
+		}
+		uint64_t sum = 0;
+		for(auto file : files) {
+			std::vector<std::pair<addr_t, uint64_t>> tmp;
+			vnx::from_string(read_file("data/" + folder + "/" + file.first), tmp);
+			for(const auto& entry : tmp) {
+				const auto amount = entry.second * file.second;
+				sum += amount;
+				reward_map[entry.first] += amount;
+			}
+		}
+		log(INFO) << "Rewards for " << folder << ": " << sum / 1000000 << " MMX";
+		total_rewards += sum;
+	}
+
+	log(INFO) << "Total testnet rewards: " << total_rewards / 1000000 << " MMX";
+	{
+		std::vector<std::pair<addr_t, uint64_t>> list(reward_map.begin(), reward_map.end());
+		std::sort(list.begin(), list.end(),
+			[](const std::pair<addr_t, uint64_t>& L, const std::pair<addr_t, uint64_t>& R) -> bool {
+				return L.second > R.second;
+			});
+		auto tx = Transaction::create();
+		for(const auto& entry : list) {
+			txout_t out;
+			out.address = entry.first;
+			out.amount = entry.second;
+			tx->outputs.push_back(out);
+		}
+		tx->nonce = params->port;
+		tx->network = params->network;
+		tx->finalize();
+		tx->content_hash = tx->calc_hash(true);
+		block->tx_list.push_back(tx);
+	}
+
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_token_binary.dat"));
@@ -312,7 +359,6 @@ void Node::init_chain()
 	} else {
 		throw std::logic_error("failed to load tx_project_relay");
 	}
-	// TODO: testnet rewards
 
 	for(auto tx : block->tx_list) {
 		if(!tx) {
@@ -375,8 +421,8 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 	if(block->height <= root->height) {
 		return;
 	}
-	if(!fork->recv_time) {
-		fork->recv_time = get_time_ms();
+	if(!fork->recv_time_ms) {
+		fork->recv_time_ms = get_time_ms();
 	}
 	fork->prev = find_fork(block->prev);
 
@@ -558,9 +604,23 @@ void Node::sync_more()
 	}
 }
 
-void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& blocks)
+void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& result)
 {
 	sync_pending.erase(height);
+
+	// filter out blocks too far into the future
+	// prevent extension attack with invalid VDFs during sync
+	const auto max_time_stamp = get_time_ms() + max_future_sync * params->block_interval_ms;
+
+	std::vector<std::shared_ptr<const Block>> blocks;
+	for(auto block : result) {
+		if(block->time_stamp < max_time_stamp) {
+			blocks.push_back(block);
+		} else {
+			log(WARN) << "Block at height " << block->height
+					<< " is too far in the future: " << vnx::get_date_string(false, block->time_stamp);
+		}
+	}
 
 	uint64_t total_size = 0;
 	for(auto block : blocks) {
@@ -789,20 +849,33 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 
 		if(fork->is_all_proof_verified && fork->root && !fork->is_invalid)
 		{
-			const auto weight = is_synced ? fork->root->total_weight : block->total_weight;
-			const auto best_weight = best ? (is_synced ? best->root->total_weight : best->block->total_weight) : uint128_0;
-
-			const int cond_a = (!best || fork->total_votes > best->total_votes) ? 1 : (fork->total_votes == best->total_votes ? 0 : -1);
-			const int cond_b = (weight > best_weight)                           ? 1 : (weight == best_weight ? 0 : -1);
-			const int cond_c = (!best || block->height > best->block->height)   ? 1 : (block->height == best->block->height ? 0 : -1);
-			const int cond_d = (!best || block->hash < best->block->hash)       ? 1 : 0;
-
-			if(cond_a > 0
-				|| (cond_a == 0 && cond_b > 0)
-				|| (cond_a == 0 && cond_b == 0 && cond_c > 0)
-				|| (cond_a == 0 && cond_b == 0 && cond_c == 0 && cond_d > 0))
-			{
+			if(!best) {
 				best = fork;
+			} else {
+				const auto is_deep_fork = fork->root->total_weight >  best->root->total_weight;
+				const auto is_same_root = fork->root->total_weight >= best->root->total_weight;
+				const auto cond_weight =  block->total_weight >= best->block->total_weight;
+				const auto cond_height =  block->height > best->block->height   ? 1 : (block->height == best->block->height ? 0 : -1);
+				const auto cond_votes =   fork->total_votes > best->total_votes ? 1 : (fork->total_votes == best->total_votes ? 0 : -1);
+
+				if(cond_weight && is_deep_fork) {
+					best = fork;	// higher peak and root weight (long range attack recovery)
+				} else if(cond_weight || is_same_root) {
+					// heavier peak or equal root
+					if(cond_votes > 0) {
+						best = fork;	// more total votes
+					} else if(cond_votes == 0) {
+						// same total votes
+						if(cond_height > 0) {
+							best = fork;	// longer chain (new block without votes)
+						} else if(cond_height == 0) {
+							// same peak height
+							if(block->hash < best->block->hash) {
+								best = fork;	// race condition (multiple blocks at same time, votes will make better proof win)
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -826,6 +899,36 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 		fork = fork->prev.lock();
 	}
 	throw std::logic_error("disconnected fork");
+}
+
+void Node::vote_for_block(std::shared_ptr<fork_t> fork)
+{
+	const auto& block = fork->block;
+	for(const auto& entry : fork->validators)
+	{
+		const auto& farmer_key = entry.first;
+		if(auto farmer_mac = find_value(farmer_keys, farmer_key)) {
+			auto vote = ValidatorVote::create();
+			vote->hash = block->hash;
+			vote->farmer_key = farmer_key;
+			try {
+				FarmerClient farmer(*farmer_mac);
+				vote->farmer_sig = farmer.sign_vote(vote);
+				vote->content_hash = vote->calc_content_hash();
+				publish(vote, output_votes);
+				publish(vote, output_verified_votes);
+
+				if(voted_blocks.count(block->prev)) {
+					log(INFO) << "Voted again for block at height " << block->height << ": " << vote->hash;
+				} else {
+					log(INFO) << "Voted for block at height " << block->height << ": " << vote->hash;
+				}
+			} catch(const std::exception& ex) {
+				log(WARN) << "Failed to sign vote for height " << block->height << ": " << ex.what();
+			}
+			voted_blocks[block->prev] = std::make_pair(vote->hash, get_time_ms());
+		}
+	}
 }
 
 void Node::update_farmer_ranking()
@@ -1049,7 +1152,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			info.reward_addr = (block->reward_addr ? *block->reward_addr : addr_t());
 
 			const auto& farmer_key = block->get_farmer_key();
-			farmer_block_map.insert(farmer_key, info);
+			farmer_block_map.insert(std::make_pair(farmer_key, block->height), info);
 
 			bool found = false;
 			for(auto& entry : farmer_ranking) {
@@ -1113,19 +1216,24 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				swap_index.insert(std::make_tuple(hash_t(token + currency), block->height, ticket), tx->id);
 			}
 			int owner_index = -1;
-
-			if(exec->binary == params->plot_binary
-				|| exec->binary == params->plot_nft_binary
+			if(exec->binary == params->plot_nft_binary
 				|| exec->binary == params->offer_binary
-				|| exec->binary == params->time_lock_binary)
-			{
+				|| exec->binary == params->time_lock_binary) {
 				owner_index = 0;
-			}
-			if(exec->binary == params->escrow_binary) {
+			} else if(exec->binary == params->escrow_binary) {
 				owner_index = 2;
 			}
 			if(owner_index >= 0) {
 				owner_map.insert(std::make_tuple(exec->get_arg(owner_index).to<addr_t>(), block->height, ticket), std::make_pair(tx->id, type_hash));
+			}
+			{
+				std::set<addr_t> depends;
+				for(const auto& entry : exec->depends) {
+					depends.insert(entry.second);
+				}
+				if(depends.size()) {
+					contract_depends.insert(tx->id, std::vector<addr_t>(depends.begin(), depends.end()));
+				}
 			}
 			contract_log.insert(std::make_tuple(exec->binary, block->height, ticket), tx->id);
 		}
@@ -1253,8 +1361,8 @@ void Node::revert(const uint32_t height)
 	{
 		// reset farmer ranking
 		std::map<pubkey_t, uint32_t> farmer_block_count;
-		farmer_block_map.scan([&farmer_block_count](const pubkey_t& key, const farmed_block_info_t& info) -> bool {
-			farmer_block_count[key]++;
+		farmer_block_map.scan([&farmer_block_count](const std::pair<pubkey_t, uint32_t>& key, const farmed_block_info_t& info) -> bool {
+			farmer_block_count[key.first]++;
 			return true;
 		});
 		farmer_ranking.clear();
@@ -1642,12 +1750,51 @@ std::set<pubkey_t> Node::get_validators(std::shared_ptr<const BlockHeader> block
 	std::set<pubkey_t> set;
 	for(uint32_t k = 0; block && k < max_history && set.size() < params->max_validators; ++k)
 	{
-		for(size_t i = 1; i < block->proof.size() && set.size() < params->max_validators; ++i) {
-			set.insert(block->proof[i]->farmer_key);
+		if(block->proof.size()) {
+			set.insert(block->proof[0]->farmer_key);
 		}
 		block = find_prev(block);
 	}
 	return set;
+}
+
+std::vector<addr_t> Node::get_all_depends(std::shared_ptr<const contract::Executable> exec) const
+{
+	std::set<addr_t> out;
+	for(const auto& entry : exec->depends) {
+		out.insert(entry.second);
+	}
+	if(out.size() > params->max_rcall_width) {
+		throw std::logic_error("remote call width overflow");
+	}
+	for(const auto& address : std::vector<addr_t>(out.begin(), out.end())) {
+		const auto tmp = get_all_depends(address, 2);
+		out.insert(tmp.begin(), tmp.end());
+	}
+	if(out.size() > params->max_rcall_width) {
+		throw std::logic_error("remote call width overflow");
+	}
+	return std::vector<addr_t>(out.begin(), out.end());
+}
+
+std::vector<addr_t> Node::get_all_depends(const addr_t& address, const uint32_t depth) const
+{
+	std::set<addr_t> out;
+	std::vector<addr_t> list;
+	if(contract_depends.find(address, list)) {
+		for(const auto& address : list) {
+			const auto tmp = get_all_depends(address, depth + 1);
+			out.insert(tmp.begin(), tmp.end());
+		}
+		out.insert(list.begin(), list.end());
+	}
+	if(out.size() && depth > params->max_rcall_depth) {
+		throw std::logic_error("remote call depth overflow");
+	}
+	if(out.size() > params->max_rcall_width) {
+		throw std::logic_error("remote call width overflow");
+	}
+	return std::vector<addr_t>(out.begin(), out.end());
 }
 
 vnx::optional<Node::proof_data_t> Node::find_best_proof(const hash_t& challenge) const

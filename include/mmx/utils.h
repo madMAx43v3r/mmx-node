@@ -103,12 +103,6 @@ uint128 to_amount(const double value, std::shared_ptr<const ChainParams> params)
 }
 
 inline
-bool check_tx_inclusion(const hash_t& txid, const uint32_t height)
-{
-	return uint32_t(txid.bytes[31] & 0x1) == (height & 0x1);
-}
-
-inline
 bool check_plot_filter(
 		std::shared_ptr<const ChainParams> params, const hash_t& challenge, const hash_t& plot_id)
 {
@@ -158,7 +152,7 @@ uint128_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const u
 {
 	// the win chance of a k32 at diff 1 is: 0.6979321856
 	// don't ask why times two, it works
-	const auto ideal = uint128_t(space_diff) * params->space_diff_constant * params->proofs_per_height * 2;
+	const auto ideal = uint128_t(space_diff) * params->space_diff_constant * params->avg_proof_count * 2;
 	return to_effective_space(ideal);
 }
 
@@ -256,12 +250,12 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::sha
 	if(prev->space_fork_len == 0) {
 		return prev->space_diff;			// should only happen at genesis
 	}
-	const uint32_t expected_count = prev->space_fork_len * params->proofs_per_height;
+	const uint32_t expected_count = prev->space_fork_len * params->avg_proof_count;
 
 	const uint64_t new_diff = (uint128_t(diff) * prev->space_fork_proofs) / expected_count;
 
 	int64_t delta = new_diff - diff;
-	delta /= std::max((16 * params->challenge_interval) / prev->space_fork_len, 16u);
+	delta /= std::max((16 * params->challenge_interval) / prev->space_fork_len, 1u);
 
 	if(delta == 0) {
 		delta = (prev->space_fork_proofs > expected_count ? 1 : -1);
@@ -291,7 +285,7 @@ uint128_t calc_block_weight(std::shared_ptr<const ChainParams> params,
 	}
 	const auto num_iters = (block->vdf_iters - prev->vdf_iters) / block->vdf_count;
 	const auto time_diff = num_iters / params->time_diff_constant;
-	return uint128_t(time_diff) * block->proof[0]->difficulty * params->proofs_per_height;
+	return uint128_t(time_diff) * block->proof[0]->difficulty * params->avg_proof_count;
 }
 
 inline

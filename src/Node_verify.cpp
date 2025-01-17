@@ -74,14 +74,19 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	if(!prev) {
 		throw std::logic_error("cannot verify");
 	}
-	if(block->proof.empty()) {
-		throw std::logic_error("missing proof");
-	}
 	if(block->vdf_count > params->max_vdf_count) {
 		throw std::logic_error("invalid vdf_count");
 	}
 	if(block->vdf_height != prev->vdf_height + block->vdf_count) {
 		throw std::logic_error("invalid vdf_height");
+	}
+	const auto proof_count = block->proof.size();
+
+	if(proof_count == 0) {
+		throw std::logic_error("missing proof");
+	}
+	if(proof_count > params->max_proof_count) {
+		throw std::logic_error("too many proofs");
 	}
 	{
 		hash_t prev;
@@ -124,7 +129,6 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	if(block->is_space_fork != is_space_fork) {
 		throw std::logic_error("invalid is_space_fork");
 	}
-	const auto proof_count = block->proof.size();
 
 	if(is_space_fork) {
 		const auto space_diff = calc_new_space_diff(params, prev);

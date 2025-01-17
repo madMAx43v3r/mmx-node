@@ -29,6 +29,7 @@ hash_t MultiSig::calc_hash(const vnx::bool_t& full_hash) const
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
+	write_field(out, "num_required", num_required);
 	write_field(out, "owners", owners);
 	out.flush();
 

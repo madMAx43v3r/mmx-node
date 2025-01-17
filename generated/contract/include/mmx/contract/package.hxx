@@ -30,7 +30,6 @@ class Executable;
 class MultiSig;
 class PubKey;
 class TokenBase;
-class VirtualPlot;
 class WebData;
 struct method_t;
 
@@ -40,7 +39,6 @@ MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Execu
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_MultiSig; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_PubKey; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TokenBase; ///< \private
-MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_VirtualPlot; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_WebData; ///< \private
 MMX_CONTRACT_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_method_t; ///< \private
 
@@ -56,7 +54,6 @@ void read(TypeInput& in, ::mmx::contract::Executable& value, const TypeCode* typ
 void read(TypeInput& in, ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::TokenBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void read(TypeInput& in, ::mmx::contract::VirtualPlot& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::WebData& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::contract::method_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
@@ -66,7 +63,6 @@ void write(TypeOutput& out, const ::mmx::contract::Executable& value, const Type
 void write(TypeOutput& out, const ::mmx::contract::MultiSig& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::PubKey& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::TokenBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
-void write(TypeOutput& out, const ::mmx::contract::VirtualPlot& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::WebData& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::contract::method_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 
@@ -76,7 +72,6 @@ void read(std::istream& in, ::mmx::contract::Executable& value); ///< \private
 void read(std::istream& in, ::mmx::contract::MultiSig& value); ///< \private
 void read(std::istream& in, ::mmx::contract::PubKey& value); ///< \private
 void read(std::istream& in, ::mmx::contract::TokenBase& value); ///< \private
-void read(std::istream& in, ::mmx::contract::VirtualPlot& value); ///< \private
 void read(std::istream& in, ::mmx::contract::WebData& value); ///< \private
 void read(std::istream& in, ::mmx::contract::method_t& value); ///< \private
 
@@ -86,7 +81,6 @@ void write(std::ostream& out, const ::mmx::contract::Executable& value); ///< \p
 void write(std::ostream& out, const ::mmx::contract::MultiSig& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::PubKey& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::TokenBase& value); ///< \private
-void write(std::ostream& out, const ::mmx::contract::VirtualPlot& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::WebData& value); ///< \private
 void write(std::ostream& out, const ::mmx::contract::method_t& value); ///< \private
 
@@ -96,7 +90,6 @@ void accept(Visitor& visitor, const ::mmx::contract::Executable& value); ///< \p
 void accept(Visitor& visitor, const ::mmx::contract::MultiSig& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::PubKey& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::TokenBase& value); ///< \private
-void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::WebData& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::contract::method_t& value); ///< \private
 
@@ -112,8 +105,6 @@ template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::PubKey> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::TokenBase> value); ///< \private
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::VirtualPlot> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::contract::WebData> value); ///< \private
 
@@ -253,29 +244,6 @@ struct type<::mmx::contract::TokenBase> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::TokenBase& value, bool special = false);
-};
-
-/// \private
-template<>
-struct type<::mmx::contract::VirtualPlot> {
-	void read(TypeInput& in, ::mmx::contract::VirtualPlot& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::read(in, value, type_code, code);
-	}
-	void write(TypeOutput& out, const ::mmx::contract::VirtualPlot& value, const TypeCode* type_code, const uint16_t* code) {
-		vnx::write(out, value, type_code, code);
-	}
-	void read(std::istream& in, ::mmx::contract::VirtualPlot& value) {
-		vnx::read(in, value);
-	}
-	void write(std::ostream& out, const ::mmx::contract::VirtualPlot& value) {
-		vnx::write(out, value);
-	}
-	void accept(Visitor& visitor, const ::mmx::contract::VirtualPlot& value) {
-		vnx::accept(visitor, value);
-	}
-	const TypeCode* get_type_code();
-	void create_dynamic_code(std::vector<uint16_t>& code);
-	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot& value, bool special = false);
 };
 
 /// \private

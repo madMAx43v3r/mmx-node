@@ -11,7 +11,6 @@
 #include <mmx/IntervalRequest.hxx>
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfSpaceNFT.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/operation/Execute.hxx>
 #include <mmx/operation/Deposit.hxx>
 #include <mmx/utils.h>
@@ -121,6 +120,11 @@ void Node::verify_votes()
 		try {
 			if(auto fork = find_fork(vote->hash)) {
 				if(fork->is_proof_verified) {
+					const auto& block = fork->block;
+					const auto best_proof = find_best_proof(block->proof[0]->challenge);
+					if(!best_proof || block->proof_hash != best_proof->hash) {
+						throw std::logic_error("block has weaker proof");
+					}
 					auto iter = fork->validators.find(vote->farmer_key);
 					if(iter != fork->validators.end()) {
 						if(!iter->second) {
@@ -129,7 +133,7 @@ void Node::verify_votes()
 							publish(vote, output_verified_votes);
 
 							if(is_synced) {
-								const auto delay_ms = entry.second - fork->recv_time;
+								const auto delay_ms = entry.second - fork->recv_time_ms;
 								if(fork->votes == params->max_validators / 2 + 1) {
 									log(INFO) << "\xF0\x9F\x97\xB3\xEF\xB8\x8F  Received majority vote for block at height " << fork->block->height
 											<< ", delay " << delay_ms / 1e3 << " sec";
@@ -295,9 +299,9 @@ void Node::update()
 	uint32_t fork_weight = 0;
 	const auto fork = find_fork(peak->hash);
 
+	// commit to disk
 	if(root && peak->height > root->height)
 	{
-		// commit to disk
 		const auto fork_line = get_fork_line(fork);
 
 		uint64_t total_proofs = 0;
@@ -306,25 +310,28 @@ void Node::update()
 		}
 		const auto vdf_delta = peak->vdf_height - root->vdf_height;
 
-		fork_weight = (total_proofs * 100) / (vdf_delta * params->proofs_per_height);
+		fork_weight = (total_proofs * 100) / (vdf_delta * params->avg_proof_count);
 
 		// make sure not to commit "weak" forks
 		// prevent extension attack without valid VDF during sync
-		if(fork_weight >= commit_threshold || fork_line.size() > max_sync_ahead / 2)
-		{
-			for(const auto& fork : fork_line) {
-				const auto& block = fork->block;
-				if(block->height + params->commit_delay <= peak->height) {
-					commit(block);
-				} else {
-					break;
-				}
+		const auto commit_delay = fork_weight >= commit_threshold ? params->commit_delay : 3 * max_future_sync;
+
+		for(const auto& fork : fork_line) {
+			const auto& block = fork->block;
+			if(block->height + commit_delay <= peak->height
+				&& !sync_pending.count(block->height)
+				&& (is_synced || block->height < sync_pos))
+			{
+				commit(block);
+			} else {
+				break;
 			}
 		}
 	}
 	const auto root = get_root();
 	const auto now_ms = get_time_ms();
 	const auto elapsed = (now_ms - time_begin) / 1e3;
+	const auto fork_line = get_fork_line(fork);
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
@@ -343,7 +350,7 @@ void Node::update()
 					msg << ", forked at " << forked_at->height;
 				}
 				if(fork->vdf_points.size()) {
-					msg << ", delay " << (fork->recv_time - fork->vdf_points.back()->recv_time) / 1e3 << " sec";
+					msg << ", delay " << (fork->recv_time_ms - fork->vdf_points.back()->recv_time) / 1e3 << " sec";
 				}
 			} else {
 				msg << ", " << sync_pending.size() << " pending";
@@ -432,26 +439,21 @@ void Node::update()
 	{
 		// make sure peak is from best proof seen
 		const auto proof = find_best_proof(peak->proof[0]->challenge);
-		if(proof && peak->proof_hash == proof->hash)
-		{
-			for(const auto& entry : fork->validators) {
-				const auto& farmer_key = entry.first;
-				if(auto farmer_mac = find_value(farmer_keys, farmer_key)) {
-					auto vote = ValidatorVote::create();
-					vote->hash = peak->hash;
-					vote->farmer_key = farmer_key;
-					try {
-						FarmerClient farmer(*farmer_mac);
-						vote->farmer_sig = farmer.sign_vote(vote);
-						vote->content_hash = vote->calc_content_hash();
-						publish(vote, output_votes);
-						publish(vote, output_verified_votes);
-						log(INFO) << "Voted for block at height " << peak->height << ": " << vote->hash;
-					}
-					catch(const std::exception& ex) {
-						log(WARN) << "Failed to sign vote for height " << peak->height << ": " << ex.what();
-					}
-					voted_blocks[peak->prev] = vote->hash;
+		if(proof && peak->proof_hash == proof->hash) {
+			vote_for_block(fork);
+		}
+	}
+
+	// check for orphaned votes
+	for(const auto& fork : fork_line) {
+		const auto& block = fork->block;
+		if(auto vote = find_value(voted_blocks, block->prev)) {
+			if(vote->first != block->hash) {
+				// our voted for block was orphaned
+				// vote again for new block if more than one block interval has elapsed
+				// this prevents vote fragmentation in case of double signing
+				if(now_ms - vote->second > params->block_interval_ms) {
+					vote_for_block(fork);
 				}
 			}
 		}
@@ -664,6 +666,8 @@ void Node::validate_new()
 	if(!peak || !is_synced) {
 		return;
 	}
+	const auto deadline_ms = get_time_ms() + validate_interval_ms / 2;		// limit to 50% CPU
+
 	std::default_random_engine luck_gen(vnx::rand64());
 
 	// select non-overlapping set
@@ -684,13 +688,20 @@ void Node::validate_new()
 	auto context = new_exec_context(peak->height + 1);
 
 	// prepare synchronization
-	for(const auto& entry : tx_list) {
-		prepare_context(context, entry.tx);
+	for(auto& entry : tx_list) {
+		try {
+			entry.is_valid = true;
+			prepare_context(context, entry.tx);
+		} catch(...) {
+			entry.is_valid = false;
+		}
 	}
-	const auto deadline_ms = get_time_ms() + validate_interval_ms;
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
+		if(!entry.is_valid) {
+			continue;
+		}
 		threads->add_task([this, &entry, context, deadline_ms]() {
 			if(get_time_ms() > deadline_ms) {
 				entry.is_skipped = true;
@@ -745,10 +756,7 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 	std::vector<tx_pool_t> all_tx;
 	all_tx.reserve(tx_pool.size());
 	for(const auto& entry : tx_pool) {
-		const auto& pool = entry.second;
-		if(check_tx_inclusion(pool.tx->id, context->height)) {
-			all_tx.push_back(pool);
-		}
+		all_tx.push_back(entry.second);
 	}
 
 	// sort transactions by fee ratio
@@ -769,12 +777,20 @@ std::vector<Node::tx_pool_t> Node::validate_for_block(const int64_t deadline_ms)
 	}
 
 	// prepare synchronization
-	for(const auto& entry : tx_list) {
-		prepare_context(context, entry.tx);
+	for(auto& entry : tx_list) {
+		try {
+			entry.is_valid = true;
+			prepare_context(context, entry.tx);
+		} catch(...) {
+			entry.is_valid = false;
+		}
 	}
 
 	// verify transactions in parallel
 	for(auto& entry : tx_list) {
+		if(!entry.is_valid) {
+			continue;
+		}
 		threads->add_task([this, &entry, context, deadline_ms]() {
 			if(get_time_ms() > deadline_ms) {
 				entry.is_skipped = true;
@@ -904,7 +920,7 @@ std::shared_ptr<const Block> Node::make_block(
 	if(vdf_points.empty()) {
 		return nullptr;
 	}
-	const auto proof = proof_map[challenge];
+	const auto proof = find_value(proof_map, challenge, std::vector<proof_data_t>());
 	if(proof.empty()) {
 		return nullptr;
 	}
@@ -930,8 +946,8 @@ std::shared_ptr<const Block> Node::make_block(
 		block->vdf_reward_addr.push_back(point->reward_addr);
 	}
 
-	for(const auto& entry : proof) {
-		block->proof.push_back(entry.proof);
+	for(size_t i = 0; i < proof.size() && i < params->max_proof_count; ++i) {
+		block->proof.push_back(proof[i].proof);
 	}
 	block->proof_hash = proof[0].hash;
 
@@ -980,7 +996,7 @@ std::shared_ptr<const Block> Node::make_block(
 		// set time stamp
 		auto delta_ms = time_begin - prev->time_stamp;
 		delta_ms = std::min(delta_ms, block->vdf_count * params->block_interval_ms * 2);
-		delta_ms = std::max(delta_ms, block->vdf_count * params->block_interval_ms / 10);
+		delta_ms = std::max(delta_ms, block->vdf_count * params->block_interval_ms / 2);
 		block->time_stamp = prev->time_stamp + delta_ms;
 	}
 

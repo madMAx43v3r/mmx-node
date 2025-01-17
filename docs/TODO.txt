@@ -2,6 +2,7 @@ After Mainnet
 - Website
 - Linux packages
 - Harvester latency graphs
+- Multisig wallet support
 - GUI settings tabs
 - GUI option to increase wallet address count
 - Native Linux GUI
@@ -16,7 +17,7 @@ After Mainnet
 - WebAPI refactor param iterators (use get_param() + Variant::empty())
 
 Mainnet
-- Multisig wallet support
-- Genesis rewards (fix T8 + TL rewards)
-- Unit tests for all smart contracts
+- Genesis rewards (mainnet-rc)
 - New project wallet
+- Create project reward relay
+- Update timestamp before launch

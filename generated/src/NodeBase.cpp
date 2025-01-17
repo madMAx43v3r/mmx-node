@@ -222,7 +222,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NodeBase::VNX_TYPE_HASH(0x289d7651582d76a3ull);
-const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xb19d37d8ede352c6ull);
+const vnx::Hash64 NodeBase::VNX_CODE_HASH(0xb9af9b3159658e8bull);
 
 NodeBase::NodeBase(const std::string& _vnx_name)
 	:	Module::Module(_vnx_name)
@@ -261,6 +261,7 @@ NodeBase::NodeBase(const std::string& _vnx_name)
 	vnx::read_config(vnx_name + ".num_db_threads", num_db_threads);
 	vnx::read_config(vnx_name + ".num_api_threads", num_api_threads);
 	vnx::read_config(vnx_name + ".commit_threshold", commit_threshold);
+	vnx::read_config(vnx_name + ".max_future_sync", max_future_sync);
 	vnx::read_config(vnx_name + ".max_vdf_verify_pending", max_vdf_verify_pending);
 	vnx::read_config(vnx_name + ".opencl_device", opencl_device);
 	vnx::read_config(vnx_name + ".opencl_device_name", opencl_device_name);
@@ -328,22 +329,23 @@ void NodeBase::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, num_db_threads);
 	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, num_api_threads);
 	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, commit_threshold);
-	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, max_vdf_verify_pending);
-	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, opencl_device);
-	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, opencl_device_name);
-	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, do_sync);
-	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, show_warnings);
-	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, vdf_slave_mode);
-	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, run_tests);
-	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, exec_debug);
-	_visitor.type_field(_type_code->fields[42], 42); vnx::accept(_visitor, exec_profile);
-	_visitor.type_field(_type_code->fields[43], 43); vnx::accept(_visitor, exec_trace);
-	_visitor.type_field(_type_code->fields[44], 44); vnx::accept(_visitor, storage_path);
-	_visitor.type_field(_type_code->fields[45], 45); vnx::accept(_visitor, database_path);
-	_visitor.type_field(_type_code->fields[46], 46); vnx::accept(_visitor, router_name);
-	_visitor.type_field(_type_code->fields[47], 47); vnx::accept(_visitor, timelord_name);
-	_visitor.type_field(_type_code->fields[48], 48); vnx::accept(_visitor, mmx_usd_swap_addr);
-	_visitor.type_field(_type_code->fields[49], 49); vnx::accept(_visitor, metalsdev_api_key);
+	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, max_future_sync);
+	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, max_vdf_verify_pending);
+	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, opencl_device);
+	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, opencl_device_name);
+	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, do_sync);
+	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, show_warnings);
+	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, vdf_slave_mode);
+	_visitor.type_field(_type_code->fields[41], 41); vnx::accept(_visitor, run_tests);
+	_visitor.type_field(_type_code->fields[42], 42); vnx::accept(_visitor, exec_debug);
+	_visitor.type_field(_type_code->fields[43], 43); vnx::accept(_visitor, exec_profile);
+	_visitor.type_field(_type_code->fields[44], 44); vnx::accept(_visitor, exec_trace);
+	_visitor.type_field(_type_code->fields[45], 45); vnx::accept(_visitor, storage_path);
+	_visitor.type_field(_type_code->fields[46], 46); vnx::accept(_visitor, database_path);
+	_visitor.type_field(_type_code->fields[47], 47); vnx::accept(_visitor, router_name);
+	_visitor.type_field(_type_code->fields[48], 48); vnx::accept(_visitor, timelord_name);
+	_visitor.type_field(_type_code->fields[49], 49); vnx::accept(_visitor, mmx_usd_swap_addr);
+	_visitor.type_field(_type_code->fields[50], 50); vnx::accept(_visitor, metalsdev_api_key);
 	_visitor.type_end(*_type_code);
 }
 
@@ -383,6 +385,7 @@ void NodeBase::write(std::ostream& _out) const {
 	_out << ", \"num_db_threads\": "; vnx::write(_out, num_db_threads);
 	_out << ", \"num_api_threads\": "; vnx::write(_out, num_api_threads);
 	_out << ", \"commit_threshold\": "; vnx::write(_out, commit_threshold);
+	_out << ", \"max_future_sync\": "; vnx::write(_out, max_future_sync);
 	_out << ", \"max_vdf_verify_pending\": "; vnx::write(_out, max_vdf_verify_pending);
 	_out << ", \"opencl_device\": "; vnx::write(_out, opencl_device);
 	_out << ", \"opencl_device_name\": "; vnx::write(_out, opencl_device_name);
@@ -445,6 +448,7 @@ vnx::Object NodeBase::to_object() const {
 	_object["num_db_threads"] = num_db_threads;
 	_object["num_api_threads"] = num_api_threads;
 	_object["commit_threshold"] = commit_threshold;
+	_object["max_future_sync"] = max_future_sync;
 	_object["max_vdf_verify_pending"] = max_vdf_verify_pending;
 	_object["opencl_device"] = opencl_device;
 	_object["opencl_device_name"] = opencl_device_name;
@@ -494,6 +498,8 @@ void NodeBase::from_object(const vnx::Object& _object) {
 			_entry.second.to(input_vdfs);
 		} else if(_entry.first == "input_votes") {
 			_entry.second.to(input_votes);
+		} else if(_entry.first == "max_future_sync") {
+			_entry.second.to(max_future_sync);
 		} else if(_entry.first == "max_history") {
 			_entry.second.to(max_history);
 		} else if(_entry.first == "max_queue_ms") {
@@ -673,6 +679,9 @@ vnx::Variant NodeBase::get_field(const std::string& _name) const {
 	if(_name == "commit_threshold") {
 		return vnx::Variant(commit_threshold);
 	}
+	if(_name == "max_future_sync") {
+		return vnx::Variant(max_future_sync);
+	}
 	if(_name == "max_vdf_verify_pending") {
 		return vnx::Variant(max_vdf_verify_pending);
 	}
@@ -793,6 +802,8 @@ void NodeBase::set_field(const std::string& _name, const vnx::Variant& _value) {
 		_value.to(num_api_threads);
 	} else if(_name == "commit_threshold") {
 		_value.to(commit_threshold);
+	} else if(_name == "max_future_sync") {
+		_value.to(max_future_sync);
 	} else if(_name == "max_vdf_verify_pending") {
 		_value.to(max_vdf_verify_pending);
 	} else if(_name == "opencl_device") {
@@ -852,7 +863,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Node";
 	type_code->type_hash = vnx::Hash64(0x289d7651582d76a3ull);
-	type_code->code_hash = vnx::Hash64(0xb19d37d8ede352c6ull);
+	type_code->code_hash = vnx::Hash64(0xb9af9b3159658e8bull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::NodeBase);
 	type_code->methods.resize(87);
@@ -943,7 +954,7 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	type_code->methods[84] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
 	type_code->methods[85] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
 	type_code->methods[86] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
-	type_code->fields.resize(50);
+	type_code->fields.resize(51);
 	{
 		auto& field = type_code->fields[0];
 		field.is_extended = true;
@@ -1185,101 +1196,108 @@ std::shared_ptr<vnx::TypeCode> NodeBase::static_create_type_code() {
 	{
 		auto& field = type_code->fields[34];
 		field.data_size = 4;
+		field.name = "max_future_sync";
+		field.value = vnx::to_string(100);
+		field.code = {3};
+	}
+	{
+		auto& field = type_code->fields[35];
+		field.data_size = 4;
 		field.name = "max_vdf_verify_pending";
 		field.value = vnx::to_string(2);
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[35];
+		auto& field = type_code->fields[36];
 		field.data_size = 4;
 		field.name = "opencl_device";
 		field.value = vnx::to_string(0);
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[36];
+		auto& field = type_code->fields[37];
 		field.is_extended = true;
 		field.name = "opencl_device_name";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[37];
+		auto& field = type_code->fields[38];
 		field.data_size = 1;
 		field.name = "do_sync";
 		field.value = vnx::to_string(true);
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[38];
+		auto& field = type_code->fields[39];
 		field.data_size = 1;
 		field.name = "show_warnings";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[39];
+		auto& field = type_code->fields[40];
 		field.data_size = 1;
 		field.name = "vdf_slave_mode";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[40];
+		auto& field = type_code->fields[41];
 		field.data_size = 1;
 		field.name = "run_tests";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[41];
+		auto& field = type_code->fields[42];
 		field.data_size = 1;
 		field.name = "exec_debug";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[42];
+		auto& field = type_code->fields[43];
 		field.data_size = 1;
 		field.name = "exec_profile";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[43];
+		auto& field = type_code->fields[44];
 		field.data_size = 1;
 		field.name = "exec_trace";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[44];
+		auto& field = type_code->fields[45];
 		field.is_extended = true;
 		field.name = "storage_path";
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[45];
+		auto& field = type_code->fields[46];
 		field.is_extended = true;
 		field.name = "database_path";
 		field.value = vnx::to_string("db/");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[46];
+		auto& field = type_code->fields[47];
 		field.is_extended = true;
 		field.name = "router_name";
 		field.value = vnx::to_string("Router");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[47];
+		auto& field = type_code->fields[48];
 		field.is_extended = true;
 		field.name = "timelord_name";
 		field.value = vnx::to_string("TimeLord");
 		field.code = {32};
 	}
 	{
-		auto& field = type_code->fields[48];
+		auto& field = type_code->fields[49];
 		field.is_extended = true;
 		field.name = "mmx_usd_swap_addr";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[49];
+		auto& field = type_code->fields[50];
 		field.is_extended = true;
 		field.name = "metalsdev_api_key";
 		field.code = {32};
@@ -1942,30 +1960,33 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			vnx::read_value(_buf + _field->offset, value.commit_threshold, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[34]) {
-			vnx::read_value(_buf + _field->offset, value.max_vdf_verify_pending, _field->code.data());
+			vnx::read_value(_buf + _field->offset, value.max_future_sync, _field->code.data());
 		}
 		if(const auto* const _field = type_code->field_map[35]) {
+			vnx::read_value(_buf + _field->offset, value.max_vdf_verify_pending, _field->code.data());
+		}
+		if(const auto* const _field = type_code->field_map[36]) {
 			vnx::read_value(_buf + _field->offset, value.opencl_device, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[37]) {
+		if(const auto* const _field = type_code->field_map[38]) {
 			vnx::read_value(_buf + _field->offset, value.do_sync, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[38]) {
+		if(const auto* const _field = type_code->field_map[39]) {
 			vnx::read_value(_buf + _field->offset, value.show_warnings, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[39]) {
+		if(const auto* const _field = type_code->field_map[40]) {
 			vnx::read_value(_buf + _field->offset, value.vdf_slave_mode, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[40]) {
+		if(const auto* const _field = type_code->field_map[41]) {
 			vnx::read_value(_buf + _field->offset, value.run_tests, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[41]) {
+		if(const auto* const _field = type_code->field_map[42]) {
 			vnx::read_value(_buf + _field->offset, value.exec_debug, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[42]) {
+		if(const auto* const _field = type_code->field_map[43]) {
 			vnx::read_value(_buf + _field->offset, value.exec_profile, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[43]) {
+		if(const auto* const _field = type_code->field_map[44]) {
 			vnx::read_value(_buf + _field->offset, value.exec_trace, _field->code.data());
 		}
 	}
@@ -1990,13 +2011,13 @@ void read(TypeInput& in, ::mmx::NodeBase& value, const TypeCode* type_code, cons
 			case 16: vnx::read(in, value.output_challenges, type_code, _field->code.data()); break;
 			case 17: vnx::read(in, value.output_vdf_points, type_code, _field->code.data()); break;
 			case 18: vnx::read(in, value.output_votes, type_code, _field->code.data()); break;
-			case 36: vnx::read(in, value.opencl_device_name, type_code, _field->code.data()); break;
-			case 44: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
-			case 45: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
-			case 46: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
-			case 47: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
-			case 48: vnx::read(in, value.mmx_usd_swap_addr, type_code, _field->code.data()); break;
-			case 49: vnx::read(in, value.metalsdev_api_key, type_code, _field->code.data()); break;
+			case 37: vnx::read(in, value.opencl_device_name, type_code, _field->code.data()); break;
+			case 45: vnx::read(in, value.storage_path, type_code, _field->code.data()); break;
+			case 46: vnx::read(in, value.database_path, type_code, _field->code.data()); break;
+			case 47: vnx::read(in, value.router_name, type_code, _field->code.data()); break;
+			case 48: vnx::read(in, value.timelord_name, type_code, _field->code.data()); break;
+			case 49: vnx::read(in, value.mmx_usd_swap_addr, type_code, _field->code.data()); break;
+			case 50: vnx::read(in, value.metalsdev_api_key, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -2015,7 +2036,7 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(75);
+	auto* const _buf = out.write(79);
 	vnx::write_value(_buf + 0, value.max_queue_ms);
 	vnx::write_value(_buf + 4, value.update_interval_ms);
 	vnx::write_value(_buf + 8, value.validate_interval_ms);
@@ -2031,15 +2052,16 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write_value(_buf + 48, value.num_db_threads);
 	vnx::write_value(_buf + 52, value.num_api_threads);
 	vnx::write_value(_buf + 56, value.commit_threshold);
-	vnx::write_value(_buf + 60, value.max_vdf_verify_pending);
-	vnx::write_value(_buf + 64, value.opencl_device);
-	vnx::write_value(_buf + 68, value.do_sync);
-	vnx::write_value(_buf + 69, value.show_warnings);
-	vnx::write_value(_buf + 70, value.vdf_slave_mode);
-	vnx::write_value(_buf + 71, value.run_tests);
-	vnx::write_value(_buf + 72, value.exec_debug);
-	vnx::write_value(_buf + 73, value.exec_profile);
-	vnx::write_value(_buf + 74, value.exec_trace);
+	vnx::write_value(_buf + 60, value.max_future_sync);
+	vnx::write_value(_buf + 64, value.max_vdf_verify_pending);
+	vnx::write_value(_buf + 68, value.opencl_device);
+	vnx::write_value(_buf + 72, value.do_sync);
+	vnx::write_value(_buf + 73, value.show_warnings);
+	vnx::write_value(_buf + 74, value.vdf_slave_mode);
+	vnx::write_value(_buf + 75, value.run_tests);
+	vnx::write_value(_buf + 76, value.exec_debug);
+	vnx::write_value(_buf + 77, value.exec_profile);
+	vnx::write_value(_buf + 78, value.exec_trace);
 	vnx::write(out, value.input_vdfs, type_code, type_code->fields[0].code.data());
 	vnx::write(out, value.input_votes, type_code, type_code->fields[1].code.data());
 	vnx::write(out, value.input_proof, type_code, type_code->fields[2].code.data());
@@ -2059,13 +2081,13 @@ void write(TypeOutput& out, const ::mmx::NodeBase& value, const TypeCode* type_c
 	vnx::write(out, value.output_challenges, type_code, type_code->fields[16].code.data());
 	vnx::write(out, value.output_vdf_points, type_code, type_code->fields[17].code.data());
 	vnx::write(out, value.output_votes, type_code, type_code->fields[18].code.data());
-	vnx::write(out, value.opencl_device_name, type_code, type_code->fields[36].code.data());
-	vnx::write(out, value.storage_path, type_code, type_code->fields[44].code.data());
-	vnx::write(out, value.database_path, type_code, type_code->fields[45].code.data());
-	vnx::write(out, value.router_name, type_code, type_code->fields[46].code.data());
-	vnx::write(out, value.timelord_name, type_code, type_code->fields[47].code.data());
-	vnx::write(out, value.mmx_usd_swap_addr, type_code, type_code->fields[48].code.data());
-	vnx::write(out, value.metalsdev_api_key, type_code, type_code->fields[49].code.data());
+	vnx::write(out, value.opencl_device_name, type_code, type_code->fields[37].code.data());
+	vnx::write(out, value.storage_path, type_code, type_code->fields[45].code.data());
+	vnx::write(out, value.database_path, type_code, type_code->fields[46].code.data());
+	vnx::write(out, value.router_name, type_code, type_code->fields[47].code.data());
+	vnx::write(out, value.timelord_name, type_code, type_code->fields[48].code.data());
+	vnx::write(out, value.mmx_usd_swap_addr, type_code, type_code->fields[49].code.data());
+	vnx::write(out, value.metalsdev_api_key, type_code, type_code->fields[50].code.data());
 }
 
 void read(std::istream& in, ::mmx::NodeBase& value) {

@@ -7,7 +7,6 @@
 #include <mmx/contract/MultiSig.hxx>
 #include <mmx/contract/PubKey.hxx>
 #include <mmx/contract/TokenBase.hxx>
-#include <mmx/contract/VirtualPlot.hxx>
 #include <mmx/contract/WebData.hxx>
 #include <mmx/contract/method_t.hxx>
 
@@ -90,18 +89,6 @@ void type<::mmx::contract::TokenBase>::create_dynamic_code(std::vector<uint16_t>
 	code.push_back(CODE_OBJECT);
 }
 
-const TypeCode* type<::mmx::contract::VirtualPlot>::get_type_code() {
-	return mmx::contract::vnx_native_type_code_VirtualPlot;
-}
-
-void type<::mmx::contract::VirtualPlot>::create_dynamic_code(std::vector<uint16_t>& code) {
-	create_dynamic_code(code, ::mmx::contract::VirtualPlot());
-}
-
-void type<::mmx::contract::VirtualPlot>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::contract::VirtualPlot& value, bool special) {
-	code.push_back(CODE_OBJECT);
-}
-
 const TypeCode* type<::mmx::contract::WebData>::get_type_code() {
 	return mmx::contract::vnx_native_type_code_WebData;
 }
@@ -141,7 +128,6 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::contract::MultiSig::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::PubKey::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::TokenBase::static_create_type_code());
-	vnx::register_type_code(::mmx::contract::VirtualPlot::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::WebData::static_create_type_code());
 	vnx::register_type_code(::mmx::contract::method_t::static_create_type_code());
 }
@@ -158,7 +144,6 @@ const vnx::TypeCode* const vnx_native_type_code_Executable = vnx::get_type_code(
 const vnx::TypeCode* const vnx_native_type_code_MultiSig = vnx::get_type_code(vnx::Hash64(0x7d674c5f7297dedull));
 const vnx::TypeCode* const vnx_native_type_code_PubKey = vnx::get_type_code(vnx::Hash64(0x9b3cd508d7f41423ull));
 const vnx::TypeCode* const vnx_native_type_code_TokenBase = vnx::get_type_code(vnx::Hash64(0x5aeed4c96d232b5eull));
-const vnx::TypeCode* const vnx_native_type_code_VirtualPlot = vnx::get_type_code(vnx::Hash64(0xab02561c615511e8ull));
 const vnx::TypeCode* const vnx_native_type_code_WebData = vnx::get_type_code(vnx::Hash64(0xf7c226b211c088c4ull));
 const vnx::TypeCode* const vnx_native_type_code_method_t = vnx::get_type_code(vnx::Hash64(0x1f62512698176a39ull));
 

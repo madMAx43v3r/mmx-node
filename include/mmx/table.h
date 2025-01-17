@@ -439,6 +439,31 @@ protected:
 	}
 };
 
+template<typename K, typename H, typename V>
+class hash_uint_table : public table<std::pair<K, H>, V> {
+public:
+	hash_uint_table() : table<std::pair<K, H>, V>() {}
+	hash_uint_table(const std::string& file_path) : table<std::pair<K, H>, V>(file_path) {}
+protected:
+	void read(std::shared_ptr<const db_val_t> entry, std::pair<K, H>& key) const override {
+		auto& hash = key.first;
+		if(entry->size != hash.size() + sizeof(H)) {
+			throw std::logic_error("key size mismatch: " + std::to_string(entry->size) + " (" + table<std::pair<K, H>, V>::get_path() + ")");
+		}
+		auto* src = entry->data;
+		::memcpy(hash.data(), src, hash.size()); src += hash.size();
+		key.second = vnx::from_big_endian(*((const H*)src)); src += sizeof(H);
+	}
+	std::shared_ptr<db_val_t> write(const std::pair<K, H>& key) const override {
+		const auto& hash = key.first;
+		auto out = std::make_shared<mmx::db_val_t>(hash.size() + sizeof(H));
+		auto* dst = out->data;
+		::memcpy(dst, hash.data(), hash.size()); dst += hash.size();
+		vnx::write_value(dst, vnx::to_big_endian(key.second)); dst += sizeof(H);
+		return out;
+	}
+};
+
 template<typename K, typename H, typename I, typename V>
 class hash_uint_uint_table : public table<std::tuple<K, H, I>, V> {
 public:

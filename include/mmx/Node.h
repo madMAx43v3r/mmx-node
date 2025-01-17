@@ -263,7 +263,7 @@ private:
 		bool is_vdf_verified = false;
 		bool is_proof_verified = false;
 		bool is_all_proof_verified = false;
-		int64_t recv_time = 0;					// [ms]
+		int64_t recv_time_ms = 0;					// [ms]
 		uint32_t votes = 0;						// validator votes
 		uint32_t total_votes = 0;
 		uint32_t fork_length = 0;
@@ -349,6 +349,8 @@ private:
 	std::shared_ptr<fork_t> find_best_fork() const;
 
 	std::vector<std::shared_ptr<fork_t>> get_fork_line(std::shared_ptr<fork_t> fork_head = nullptr) const;
+
+	void vote_for_block(std::shared_ptr<fork_t> fork);
 
 	std::shared_ptr<execution_context_t> validate(std::shared_ptr<const Block> block) const;
 
@@ -454,6 +456,10 @@ private:
 
 	std::set<pubkey_t> get_validators(std::shared_ptr<const BlockHeader> block) const;
 
+	std::vector<addr_t> get_all_depends(std::shared_ptr<const contract::Executable> exec) const;
+
+	std::vector<addr_t> get_all_depends(const addr_t& address, const uint32_t depth) const;
+
 	vnx::optional<proof_data_t> find_best_proof(const hash_t& challenge) const;
 
 	uint64_t calc_block_reward(std::shared_ptr<const BlockHeader> block, const uint64_t total_fees) const;
@@ -490,7 +496,8 @@ private:
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, exec_entry_t> exec_log;	// [[address, height, counter] => entry]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> memo_log;			// [[hash(address | memo), height, counter] => address]
 
-	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [address, contract]
+	hash_table<addr_t, std::vector<addr_t>> contract_depends;					// [address => depends]
+	hash_table<addr_t, std::shared_ptr<const Contract>> contract_map;			// [address => contract]
 	hash_uint_uint_table<hash_t, uint32_t, uint32_t, addr_t> contract_log;		// [[type hash, height, counter] => contract]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> deploy_map;	// [[sender, height, counter] => [contract, type]]
 	hash_uint_uint_table<addr_t, uint32_t, uint32_t, std::pair<addr_t, hash_t>> owner_map;	// [[owner, height, counter] => [contract, type]]
@@ -521,7 +528,7 @@ private:
 	std::multimap<uint32_t, hash_t> challenge_map;									// [vdf height => challenge]
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => sorted proofs]
 	std::unordered_map<hash_t, hash_t> created_blocks;								// [proof hash => block hash]
-	std::unordered_map<hash_t, hash_t> voted_blocks;								// [prev => block hash]
+	std::unordered_map<hash_t, std::pair<hash_t, int64_t>> voted_blocks;			// [prev => [block hash, time ms]]
 	std::map<pubkey_t, vnx::Hash64> farmer_keys;									// [key => farmer_mac] our farmer keys
 
 	bool is_synced = false;
@@ -538,7 +545,7 @@ private:
 	uint_table<uint32_t, hash_t> height_map;									// [height => hash]
 	uint_table<uint32_t, std::vector<hash_t>> tx_log;							// [height => txids]
 	hash_table<hash_t, tx_index_t> tx_index;									// [txid => index]
-	hash_multi_table<pubkey_t, farmed_block_info_t> farmer_block_map;			// [farmer key => info]
+	hash_uint_table<pubkey_t, uint32_t, farmed_block_info_t> farmer_block_map;	// [[farmer key, height] => info]
 
 	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;					// sorted by count DSC [farmer key => num blocks]
 
