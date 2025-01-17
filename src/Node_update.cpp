@@ -313,18 +313,17 @@ void Node::update()
 
 		// make sure not to commit "weak" forks
 		// prevent extension attack without valid VDF during sync
-		if(fork_weight >= commit_threshold || fork_line.size() > 2 * max_future_sync)
-		{
-			for(const auto& fork : fork_line) {
-				const auto& block = fork->block;
-				if(block->height + params->commit_delay <= peak->height
-					&& !sync_pending.count(block->height)
-					&& (is_synced || block->height < sync_pos))
-				{
-					commit(block);
-				} else {
-					break;
-				}
+		const auto commit_delay = fork_weight >= commit_threshold ? params->commit_delay : 3 * max_future_sync;
+
+		for(const auto& fork : fork_line) {
+			const auto& block = fork->block;
+			if(block->height + commit_delay <= peak->height
+				&& !sync_pending.count(block->height)
+				&& (is_synced || block->height < sync_pos))
+			{
+				commit(block);
+			} else {
+				break;
 			}
 		}
 	}
