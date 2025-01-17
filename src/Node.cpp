@@ -294,51 +294,18 @@ void Node::init_chain()
 	block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
 	block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
 
-	const std::vector<std::string> reward_folders = {
-		"testnet8", "testnet9", "testnet10", "testnet12", "mainnet-rc"
-	};
+	std::shared_ptr<const Transaction> tx_rewards;
+	vnx::from_string(read_file("data/tx_testnet_rewards.json"), tx_rewards);
+	if(!tx_rewards) {
+		throw std::logic_error("failed to read testnet rewards");
+	}
+	block->tx_list.push_back(tx_rewards);
+
 	uint64_t total_rewards = 0;
-	std::map<addr_t, uint64_t> reward_map;
-
-	for(auto folder : reward_folders) {
-		std::map<std::string, uint64_t> files = {{"rewards.json", params->min_reward}};
-		if(folder == "mainnet-rc") {
-			files.emplace("timelord_rewards.json", params->vdf_reward / params->vdf_reward_interval);
-		}
-		uint64_t sum = 0;
-		for(auto file : files) {
-			std::vector<std::pair<addr_t, uint64_t>> tmp;
-			vnx::from_string(read_file("data/" + folder + "/" + file.first), tmp);
-			for(const auto& entry : tmp) {
-				const auto amount = entry.second * file.second;
-				sum += amount;
-				reward_map[entry.first] += amount;
-			}
-		}
-		log(INFO) << "Rewards for " << folder << ": " << sum / 1000000 << " MMX";
-		total_rewards += sum;
+	for(const auto& out : tx_rewards->outputs) {
+		total_rewards += out.amount;
 	}
-
 	log(INFO) << "Total testnet rewards: " << total_rewards / 1000000 << " MMX";
-	{
-		std::vector<std::pair<addr_t, uint64_t>> list(reward_map.begin(), reward_map.end());
-		std::sort(list.begin(), list.end(),
-			[](const std::pair<addr_t, uint64_t>& L, const std::pair<addr_t, uint64_t>& R) -> bool {
-				return L.second > R.second;
-			});
-		auto tx = Transaction::create();
-		for(const auto& entry : list) {
-			txout_t out;
-			out.address = entry.first;
-			out.amount = entry.second;
-			tx->outputs.push_back(out);
-		}
-		tx->nonce = params->port;
-		tx->network = params->network;
-		tx->finalize();
-		tx->content_hash = tx->calc_hash(true);
-		block->tx_list.push_back(tx);
-	}
 
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
 	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
