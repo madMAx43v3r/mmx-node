@@ -995,7 +995,7 @@ std::shared_ptr<const Block> Node::make_block(
 		// set time stamp
 		auto delta_ms = time_begin - prev->time_stamp;
 		delta_ms = std::min(delta_ms, block->vdf_count * params->block_interval_ms * 2);
-		delta_ms = std::max(delta_ms, block->vdf_count * params->block_interval_ms / 10);
+		delta_ms = std::max(delta_ms, block->vdf_count * params->block_interval_ms / 2);
 		block->time_stamp = prev->time_stamp + delta_ms;
 	}
 

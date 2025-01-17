@@ -145,7 +145,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->time_stamp - prev->time_stamp > block->vdf_count * params->block_interval_ms * 2) {
 		throw std::logic_error("time stamp delta too high");
 	}
-	if(block->time_stamp - prev->time_stamp < block->vdf_count * params->block_interval_ms / 10) {
+	if(block->time_stamp - prev->time_stamp < block->vdf_count * params->block_interval_ms / 2) {
 		throw std::logic_error("time stamp delta too low");
 	}
 	if(block->time_diff < params->time_diff_divider || block->space_diff == 0) {
