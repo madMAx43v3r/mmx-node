@@ -15,9 +15,3 @@ After Mainnet
 - WebGUI auto-reload on node restart
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 - WebAPI refactor param iterators (use get_param() + Variant::empty())
-
-Mainnet
-- Genesis rewards (mainnet-rc)
-- New project wallet
-- Create project reward relay
-- Update timestamp before launch
