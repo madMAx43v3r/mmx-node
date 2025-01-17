@@ -494,14 +494,16 @@ Vue.component('block-view', {
 										<td class="key-cell">Space Fork</td>
 										<td>{{data.space_fork_proofs}} / {{data.space_fork_len}}</td>
 									</tr>
-									<tr>
-										<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
-										<td>{{data.proof[0].plot_id}}</td>
-									</tr>
-									<tr>
-										<td class="key-cell">Challenge</td>
-										<td>{{data.proof[0].challenge}}</td>
-									</tr>
+									<template v-if="data.proof[0]">
+										<tr>
+											<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
+											<td>{{data.proof[0].plot_id}}</td>
+										</tr>
+										<tr>
+											<td class="key-cell">Challenge</td>
+											<td>{{data.proof[0].challenge}}</td>
+										</tr>
+									</template>
 									<tr>
 										<td class="key-cell">{{ $t('block_view.farmer_key') }}</td>
 										<td><router-link :to="'/explore/farmer/' + data.farmer_key">{{data.farmer_key}}</router-link></td>
