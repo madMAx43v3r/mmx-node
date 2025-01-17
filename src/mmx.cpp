@@ -1725,6 +1725,11 @@ int main(int argc, char** argv)
 
 			if(command == "info")
 			{
+				if(module == "farm") {
+					const auto info = node.get_farmed_block_summary(farmer.get_farmer_keys());
+					std::cout << "Farmed Blocks: " << info.num_blocks << std::endl;
+					std::cout << "Total Rewards: " << mmx::to_value(info.total_rewards, params->decimals) << " MMX" << std::endl;
+				}
 				if(info->harvester) {
 					std::cout << "[" << *info->harvester << "]" << std::endl;
 				}
