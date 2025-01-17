@@ -604,9 +604,23 @@ void Node::sync_more()
 	}
 }
 
-void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& blocks)
+void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& result)
 {
 	sync_pending.erase(height);
+
+	// filter out blocks too far into the future
+	// prevent extension attack with invalid VDFs during sync
+	const auto max_time_stamp = get_time_ms() + max_future_sync * params->block_interval_ms;
+
+	std::vector<std::shared_ptr<const Block>> blocks;
+	for(auto block : result) {
+		if(block->time_stamp < max_time_stamp) {
+			blocks.push_back(block);
+		} else {
+			log(WARN) << "Block at height " << block->height
+					<< " is too far in the future: " << vnx::get_date_string(false, block->time_stamp);
+		}
+	}
 
 	uint64_t total_size = 0;
 	for(auto block : blocks) {
