@@ -318,7 +318,8 @@ void Node::update()
 			for(const auto& fork : fork_line) {
 				const auto& block = fork->block;
 				if(block->height + params->commit_delay <= peak->height
-					&& !sync_pending.count(block->height))
+					&& !sync_pending.count(block->height)
+					&& (is_synced || block->height < sync_pos))
 				{
 					commit(block);
 				} else {
