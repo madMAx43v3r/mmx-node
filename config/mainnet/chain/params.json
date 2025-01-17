@@ -29,7 +29,7 @@
 	"max_rcall_width": 5,
 	"min_fee_ratio": [1, 2, 3, 5, 10],
 	"initial_time_diff":  600,
-	"initial_space_diff": 50,
+	"initial_space_diff": 100,
 	"initial_time_stamp": 1735823207000,
 	"time_diff_divider": 100,
 	"time_diff_constant": 1000000,
