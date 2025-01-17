@@ -310,7 +310,7 @@ void Node::update()
 
 		// make sure not to commit "weak" forks
 		// prevent extension attack without valid VDF during sync
-		if(fork_weight >= commit_threshold)
+		if(fork_weight >= commit_threshold || fork_line.size() > max_sync_ahead / 2)
 		{
 			for(const auto& fork : fork_line) {
 				const auto& block = fork->block;
