@@ -298,11 +298,12 @@ void Node::update()
 	}
 	uint32_t fork_weight = 0;
 	const auto fork = find_fork(peak->hash);
-	const auto fork_line = get_fork_line(fork);
 
 	// commit to disk
 	if(root && peak->height > root->height)
 	{
+		const auto fork_line = get_fork_line(fork);
+
 		uint64_t total_proofs = 0;
 		for(const auto& fork : fork_line) {
 			total_proofs += fork->block->proof.size();
@@ -330,6 +331,7 @@ void Node::update()
 	const auto root = get_root();
 	const auto now_ms = get_time_ms();
 	const auto elapsed = (now_ms - time_begin) / 1e3;
+	const auto fork_line = get_fork_line(fork);
 
 	if(!prev_peak || peak->hash != prev_peak->hash)
 	{
