@@ -1027,8 +1027,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			for(const auto& io : block_outputs) {
 				keys.emplace(io.address, io.contract);
 			}
-			const auto count = prefetch_balances(keys);
-			log(DEBUG) << "apply(): pre-fetched " << count << " / " << keys.size() << " balance entries at height " << block->height;
+			prefetch_balances(keys);
 		}
 		for(const auto& out : block_outputs)
 		{
