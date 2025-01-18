@@ -116,7 +116,8 @@ uint64_t get_num_bytes(const vnx::Variant& var)
 		return total;
 	} else if(var.is_object()) {
 		uint64_t total = 4;
-		for(const auto& entry : var.to_object().get_fields()) {
+		const auto obj = var.to_object();
+		for(const auto& entry : obj.get_fields()) {
 			total += entry.first.size() + get_num_bytes(entry.second);
 		}
 		return total;
