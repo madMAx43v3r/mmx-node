@@ -567,7 +567,6 @@ Vue.component('main-menu', {
 	},
 	template: `
 		<v-tabs>
-			<node-status/>
 			<v-tab to="/node">{{ $t('main_menu.node') }}</v-tab>
 			<v-tab to="/wallet">{{ $t('main_menu.wallet') }}</v-tab>
 			<v-tab to="/farmer">{{ $t('main_menu.farmer') }}</v-tab>
@@ -575,6 +574,7 @@ Vue.component('main-menu', {
 			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
 			<v-tab to="/swap">{{ $t('main_menu.swap') }}</v-tab>
 			<v-spacer></v-spacer>
+			<node-status/>
 			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
 			<template v-if="!$route.meta.is_login && !$isWinGUI">
 				<v-tab @click="logout">{{ $t('main_menu.logout') }}</v-tab>
