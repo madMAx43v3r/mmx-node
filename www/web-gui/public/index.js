@@ -356,7 +356,7 @@ const NodeView = {
 	template: `
 		<div>
 			<node-info></node-info>
-			<farmer-info></farmer-info>
+			<farmer-info v-if="$root.farmer"></farmer-info>
 			<node-menu class="mt-4"></node-menu>
 			<router-view class="mt-2"></router-view>
 		</div>
@@ -528,12 +528,12 @@ Vue.component('tx-fee-select', {
 })
 
 Vue.component('main-menu', {
+	data() {
+		return {
+			timer: null
+		}
+	},
 	methods: {
-		data() {
-			return {
-				timer: null
-			}
-		},		
 		update() {
 			fetch('/server/session')
 				.then(response => response.json())
@@ -556,8 +556,7 @@ Vue.component('main-menu', {
 		}
 	},
 	created() {
-		if(!this.$isWinGUI) 
-		{
+		if(!this.$isWinGUI) {
 			this.update();
 			this.timer = setInterval(() => { this.update(); }, 5000);
 		}
@@ -568,11 +567,11 @@ Vue.component('main-menu', {
 	template: `
 		<v-tabs>
 			<v-tab to="/node">{{ $t('main_menu.node') }}</v-tab>
-			<v-tab to="/wallet">{{ $t('main_menu.wallet') }}</v-tab>
-			<v-tab to="/farmer">{{ $t('main_menu.farmer') }}</v-tab>
+			<v-tab to="/wallet" v-if="$root.wallet">{{ $t('main_menu.wallet') }}</v-tab>
+			<v-tab to="/farmer" v-if="$root.farmer">{{ $t('main_menu.farmer') }}</v-tab>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
-			<v-tab to="/market">{{ $t('main_menu.market') }}</v-tab>
-			<v-tab to="/swap">{{ $t('main_menu.swap') }}</v-tab>
+			<v-tab to="/market" v-if="$root.wallet">{{ $t('main_menu.market') }}</v-tab>
+			<v-tab to="/swap" v-if="$root.wallet">{{ $t('main_menu.swap') }}</v-tab>
 			<v-spacer></v-spacer>
 			<node-status/>
 			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
@@ -783,8 +782,7 @@ Vue.component('git-update-checker', {
 		}
 	},
 	created() {
-		if(!this.$isWinGUI)
-		{
+		if(!this.$isWinGUI) {
 			this.update();
 			this.timer = setInterval(() => { this.update(); }, 60*60*1000);
 		}

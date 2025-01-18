@@ -126,6 +126,8 @@ Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
 
     new Vue({
         data: {
+			farmer: false,
+			wallet: false,
             nodeInfo: null
         },
         el: '#app',
@@ -148,7 +150,15 @@ Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
             } else {
                 this.$vuetify.theme.dark = localStorage.getItem('theme_dark') === 'true';
             }
-        }
+        },
+		created() {
+			fetch('/wapi/config/get?key=farmer')
+				.then(response => response.json())
+				.then(data => this.farmer = data || data == null ? true : false);
+			fetch('/wapi/config/get?key=wallet')
+				.then(response => response.json())
+				.then(data => this.wallet = data || data == null ? true : false);
+		}
 
     });
 })();
