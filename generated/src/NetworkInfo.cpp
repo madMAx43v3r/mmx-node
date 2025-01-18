@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 NetworkInfo::VNX_TYPE_HASH(0xd984018819746101ull);
-const vnx::Hash64 NetworkInfo::VNX_CODE_HASH(0x5dea3940893dc096ull);
+const vnx::Hash64 NetworkInfo::VNX_CODE_HASH(0xb17f3fd89a5445bfull);
 
 vnx::Hash64 NetworkInfo::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -62,6 +62,8 @@ void NetworkInfo::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[13], 13); vnx::accept(_visitor, average_txfee);
 	_visitor.type_field(_type_code->fields[14], 14); vnx::accept(_visitor, genesis_hash);
 	_visitor.type_field(_type_code->fields[15], 15); vnx::accept(_visitor, name);
+	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, node_commit);
+	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, node_version);
 	_visitor.type_end(*_type_code);
 }
 
@@ -83,6 +85,8 @@ void NetworkInfo::write(std::ostream& _out) const {
 	_out << ", \"average_txfee\": "; vnx::write(_out, average_txfee);
 	_out << ", \"genesis_hash\": "; vnx::write(_out, genesis_hash);
 	_out << ", \"name\": "; vnx::write(_out, name);
+	_out << ", \"node_commit\": "; vnx::write(_out, node_commit);
+	_out << ", \"node_version\": "; vnx::write(_out, node_version);
 	_out << "}";
 }
 
@@ -111,6 +115,8 @@ vnx::Object NetworkInfo::to_object() const {
 	_object["average_txfee"] = average_txfee;
 	_object["genesis_hash"] = genesis_hash;
 	_object["name"] = name;
+	_object["node_commit"] = node_commit;
+	_object["node_version"] = node_version;
 	return _object;
 }
 
@@ -132,6 +138,10 @@ void NetworkInfo::from_object(const vnx::Object& _object) {
 			_entry.second.to(is_synced);
 		} else if(_entry.first == "name") {
 			_entry.second.to(name);
+		} else if(_entry.first == "node_commit") {
+			_entry.second.to(node_commit);
+		} else if(_entry.first == "node_version") {
+			_entry.second.to(node_version);
 		} else if(_entry.first == "space_diff") {
 			_entry.second.to(space_diff);
 		} else if(_entry.first == "synced_since") {
@@ -201,6 +211,12 @@ vnx::Variant NetworkInfo::get_field(const std::string& _name) const {
 	if(_name == "name") {
 		return vnx::Variant(name);
 	}
+	if(_name == "node_commit") {
+		return vnx::Variant(node_commit);
+	}
+	if(_name == "node_version") {
+		return vnx::Variant(node_version);
+	}
 	return vnx::Variant();
 }
 
@@ -237,6 +253,10 @@ void NetworkInfo::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(genesis_hash);
 	} else if(_name == "name") {
 		_value.to(name);
+	} else if(_name == "node_commit") {
+		_value.to(node_commit);
+	} else if(_name == "node_version") {
+		_value.to(node_version);
 	}
 }
 
@@ -264,12 +284,12 @@ std::shared_ptr<vnx::TypeCode> NetworkInfo::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.NetworkInfo";
 	type_code->type_hash = vnx::Hash64(0xd984018819746101ull);
-	type_code->code_hash = vnx::Hash64(0x5dea3940893dc096ull);
+	type_code->code_hash = vnx::Hash64(0xb17f3fd89a5445bfull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::NetworkInfo);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<NetworkInfo>(); };
-	type_code->fields.resize(16);
+	type_code->fields.resize(18);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 1;
@@ -364,6 +384,18 @@ std::shared_ptr<vnx::TypeCode> NetworkInfo::static_create_type_code() {
 		auto& field = type_code->fields[15];
 		field.is_extended = true;
 		field.name = "name";
+		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[16];
+		field.is_extended = true;
+		field.name = "node_commit";
+		field.code = {32};
+	}
+	{
+		auto& field = type_code->fields[17];
+		field.is_extended = true;
+		field.name = "node_version";
 		field.code = {32};
 	}
 	type_code->build();
@@ -462,6 +494,8 @@ void read(TypeInput& in, ::mmx::NetworkInfo& value, const TypeCode* type_code, c
 		switch(_field->native_index) {
 			case 14: vnx::read(in, value.genesis_hash, type_code, _field->code.data()); break;
 			case 15: vnx::read(in, value.name, type_code, _field->code.data()); break;
+			case 16: vnx::read(in, value.node_commit, type_code, _field->code.data()); break;
+			case 17: vnx::read(in, value.node_version, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -497,6 +531,8 @@ void write(TypeOutput& out, const ::mmx::NetworkInfo& value, const TypeCode* typ
 	vnx::write_value(_buf + 85, value.average_txfee);
 	vnx::write(out, value.genesis_hash, type_code, type_code->fields[14].code.data());
 	vnx::write(out, value.name, type_code, type_code->fields[15].code.data());
+	vnx::write(out, value.node_commit, type_code, type_code->fields[16].code.data());
+	vnx::write(out, value.node_version, type_code, type_code->fields[17].code.data());
 }
 
 void read(std::istream& in, ::mmx::NetworkInfo& value) {

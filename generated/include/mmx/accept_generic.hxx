@@ -337,6 +337,8 @@
 #include <mmx/Wallet_send_many_return.hxx>
 #include <mmx/Wallet_send_off.hxx>
 #include <mmx/Wallet_send_off_return.hxx>
+#include <mmx/Wallet_set_address_count.hxx>
+#include <mmx/Wallet_set_address_count_return.hxx>
 #include <mmx/Wallet_sign_msg.hxx>
 #include <mmx/Wallet_sign_msg_return.hxx>
 #include <mmx/Wallet_sign_off.hxx>
@@ -3363,6 +3365,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_send_off> va
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_send_off_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_set_address_count> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_set_address_count_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

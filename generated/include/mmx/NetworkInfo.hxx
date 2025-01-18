@@ -30,6 +30,8 @@ public:
 	uint64_t average_txfee = 0;
 	::mmx::hash_t genesis_hash;
 	std::string name;
+	std::string node_commit;
+	std::string node_version;
 	
 	typedef ::vnx::Value Super;
 	
@@ -76,7 +78,7 @@ protected:
 
 template<typename T>
 void NetworkInfo::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<NetworkInfo>(16);
+	_visitor.template type_begin<NetworkInfo>(18);
 	_visitor.type_field("is_synced", 0); _visitor.accept(is_synced);
 	_visitor.type_field("height", 1); _visitor.accept(height);
 	_visitor.type_field("vdf_height", 2); _visitor.accept(vdf_height);
@@ -93,7 +95,9 @@ void NetworkInfo::accept_generic(T& _visitor) const {
 	_visitor.type_field("average_txfee", 13); _visitor.accept(average_txfee);
 	_visitor.type_field("genesis_hash", 14); _visitor.accept(genesis_hash);
 	_visitor.type_field("name", 15); _visitor.accept(name);
-	_visitor.template type_end<NetworkInfo>(16);
+	_visitor.type_field("node_commit", 16); _visitor.accept(node_commit);
+	_visitor.type_field("node_version", 17); _visitor.accept(node_version);
+	_visitor.template type_end<NetworkInfo>(18);
 }
 
 

@@ -113,6 +113,8 @@
 #include <mmx/Wallet_send_many_return.hxx>
 #include <mmx/Wallet_send_off.hxx>
 #include <mmx/Wallet_send_off_return.hxx>
+#include <mmx/Wallet_set_address_count.hxx>
+#include <mmx/Wallet_set_address_count_return.hxx>
 #include <mmx/Wallet_sign_msg.hxx>
 #include <mmx/Wallet_sign_msg_return.hxx>
 #include <mmx/Wallet_sign_off.hxx>
@@ -939,6 +941,20 @@ void WalletClient::remove_account_async(const uint32_t& index, const uint32_t& a
 	auto _method = ::mmx::Wallet_remove_account::create();
 	_method->index = index;
 	_method->account = account;
+	vnx_request(_method, true);
+}
+
+void WalletClient::set_address_count(const uint32_t& index, const uint32_t& count) {
+	auto _method = ::mmx::Wallet_set_address_count::create();
+	_method->index = index;
+	_method->count = count;
+	vnx_request(_method, false);
+}
+
+void WalletClient::set_address_count_async(const uint32_t& index, const uint32_t& count) {
+	auto _method = ::mmx::Wallet_set_address_count::create();
+	_method->index = index;
+	_method->count = count;
 	vnx_request(_method, true);
 }
 

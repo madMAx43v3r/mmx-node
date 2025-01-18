@@ -168,6 +168,10 @@ public:
 	
 	void remove_account_async(const uint32_t& index = 0, const uint32_t& account = 0);
 	
+	void set_address_count(const uint32_t& index = 0, const uint32_t& count = 0);
+	
+	void set_address_count_async(const uint32_t& index = 0, const uint32_t& count = 0);
+	
 	std::shared_ptr<const ::mmx::KeyFile> export_wallet(const uint32_t& index = 0);
 	
 	std::vector<std::string> get_mnemonic_wordlist(const std::string& lang = "en");
