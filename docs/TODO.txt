@@ -4,14 +4,11 @@ After Mainnet
 - Harvester latency graphs
 - Multisig wallet support
 - GUI settings tabs
-- GUI option to increase wallet address count
 - Native Linux GUI
 - GUI add peer feature
 - Swap warning for one-sided pool
-- Increase min_sync_peers to 5 after launch
-- 1000 commas for balances
-- Explorer search by block hash
-- WebGUI password local storage
-- WebGUI auto-reload on node restart
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 - WebAPI refactor param iterators (use get_param() + Variant::empty())
+- Remove genesis revert logic again
+- Node version display
+- RPC servers auto-restart with pm2
