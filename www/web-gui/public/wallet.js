@@ -244,8 +244,14 @@ Vue.component('account-balance', {
 				<router-link :to="'/explore/address/' + item.contract">{{item.is_native ? '' : item.contract}}</router-link>
 			</template>
 
+			<template v-slot:item.total="{ item }">
+				<b>{{amount_format(item.total)}}</b>
+			</template>
+			<template v-slot:item.reserved="{ item }">
+				<b>{{amount_format(item.reserved)}}</b>
+			</template>
 			<template v-slot:item.spendable="{ item }">
-				<b>{{item.spendable}}</b>
+				<b>{{amount_format(item.spendable)}}</b>
 			</template>
 
 			<template v-slot:item.token="{ item }">
@@ -316,8 +322,14 @@ Vue.component('balance-table', {
 			class="elevation-2"
 			v-if="!loaded || loaded && (data.length || show_empty)"
 		>
+			<template v-slot:item.total="{ item }">
+				<b>{{amount_format(item.total)}}</b>
+			</template>
+			<template v-slot:item.locked="{ item }">
+				<b>{{amount_format(item.locked)}}</b>
+			</template>
 			<template v-slot:item.spendable="{ item }">
-				<b>{{item.spendable}}</b>
+				<b>{{amount_format(item.spendable)}}</b>
 			</template>
 
 			<template v-slot:item.contract="{ item }">

@@ -34,6 +34,12 @@ function to_string_hex(number) {
     return '0x' + hex;
 }
 
+const intl_format = new Intl.NumberFormat(navigator.language, {minimumFractionDigits: 1, maximumFractionDigits: 12});
+
+function amount_format(value) {
+	return intl_format.format(value);
+}
+
 function get_tx_type_color(type, dark = false) {
 	if(type == "REWARD") return dark ? "lime--text" : "lime--text text--darken-2";
 	if(type == "RECEIVE" || type == "REWARD" || type == "VDF_REWARD") return "green--text";
