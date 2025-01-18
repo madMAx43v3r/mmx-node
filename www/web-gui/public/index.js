@@ -439,20 +439,28 @@ const Login = {
 	data() {
 		return {
 			passwd: null,
+			auto_login: false,
 			error: null
 		}
 	},
 	methods: {
-		submit() {
+		submit(passwd) {
 			this.error = null;
-			fetch('/server/login?user=mmx-admin&passwd_plain=' + this.passwd)
+			fetch('/server/login?user=mmx-admin&passwd_plain=' + passwd)
 				.then(response => {
 					if(response.ok) {
+						localStorage.setItem('login-passwd', passwd);
 						this.$router.push("/");
 					} else {
 						this.error = "Login failed!";
 					}
 				});
+		}
+	},
+	created() {
+		const passwd = localStorage.getItem('login-passwd');
+		if(passwd) {
+			this.submit(passwd);
 		}
 	},
 	template: `
@@ -465,7 +473,8 @@ const Login = {
 						:label="$t('login.password_label')"
 						required
 						type="password"/>
-					<v-btn outlined color="primary" @click="submit">{{ $t('login.login') }}</v-btn>
+					<v-checkbox v-model="auto_login" label="Save in Browser (until Logout)"></v-checkbox>
+					<v-btn outlined color="primary" @click="submit(passwd)">{{ $t('login.login') }}</v-btn>
 				</v-card-text>
 			</v-card>
 
@@ -539,6 +548,7 @@ Vue.component('main-menu', {
 			fetch('/server/logout')
 				.then(response => {
 					if(response.ok) {
+						localStorage.removeItem('login-passwd');
 						this.$router.push("/login");
 					}
 				});
