@@ -130,12 +130,16 @@ Vue.component('account-header', {
 	template: `
 		<div>
 			<v-chip label>{{ $t('account_header.wallet') }} #{{index}}</v-chip>
-			<v-chip label class="pr-0">
-				{{ address }}
-				<v-btn v-if="navigator.clipboard && info.address" @click="copyToClipboard(address)" text icon>
-					<v-icon small class="pr-0">mdi-content-copy</v-icon>
-				</btn>
-			</v-chip>
+			<template v-if="info.address">
+				<v-chip label :class="{'pr-0': navigator.clipboard}">
+					{{ address }}
+					<template v-if="navigator.clipboard">
+						<v-btn @click="copyToClipboard(address)" text icon>
+							<v-icon small class="pr-0">mdi-content-copy</v-icon>
+						</btn>
+					</template>
+				</v-chip>
+			</template>
 			<v-chip v-if="info.name" label>{{info.name}}</v-chip>
 			<v-btn v-if="info.with_passphrase && (is_locked != null)" @click="toggle_lock()" text icon>
 				<v-icon small class="pr-0">{{ is_locked ? "mdi-lock" : "mdi-lock-open-variant" }}</v-icon>
