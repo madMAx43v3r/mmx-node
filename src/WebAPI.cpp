@@ -1125,13 +1125,15 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	if(sub_path == "/config/get") {
 		require<vnx::permission_e>(vnx_session, vnx::permission_e::READ_CONFIG);
 		std::lock_guard lock(g_config_mutex);
-		const auto iter_key = query.find("key");
-		const auto config = vnx::get_all_configs(true);
-		vnx::Object object;
-		object.field = std::map<std::string, vnx::Variant>(config.begin(), config.end());
-		if(iter_key != query.end()) {
-			respond(request_id, object[iter_key->second]);
+		const auto key = get_param<std::string>(query, "key");
+		if(key.size()) {
+			vnx::Variant value;
+			vnx::read_config(key, value);
+			respond(request_id, value);
 		} else {
+			vnx::Object object;
+			const auto config = vnx::get_all_configs(true);
+			object.field = std::map<std::string, vnx::Variant>(config.begin(), config.end());
 			respond(request_id, object);
 		}
 	}
