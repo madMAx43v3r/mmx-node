@@ -848,7 +848,10 @@ Vue.component('account-details', {
 		update() {
 			fetch('/wapi/wallet/account?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.account = data);
+				.then(data => {
+					delete data.is_hidden;
+					this.account = data;
+				});
 			fetch('/wapi/wallet/address?index=' + this.index + '&limit=1000')
 				.then(response => response.json())
 				.then(data => this.addresses = data);
@@ -896,6 +899,8 @@ Vue.component('account-actions', {
 			account: null,
 			seed: null,
 			info: null,
+			name: null,
+			num_addresses: null,
 			error: null,
 			seed_dialog: false,
 			remove_dialog: false
@@ -905,23 +910,23 @@ Vue.component('account-actions', {
 		update() {
 			fetch('/wapi/wallet/account?index=' + this.index)
 				.then(response => response.json())
-				.then(data => this.account = data);
+				.then(data => {
+					this.account = data;
+					this.name = data.name;
+					this.num_addresses = data.num_addresses;
+				});
 		},
 		reset_cache() {
 			const req = {};
 			req.index = this.index;
 			fetch('/api/wallet/reset_cache', {body: JSON.stringify(req), method: "post"})
-				.then(response => {
-					if(response.ok) {
-						this.info = "Success";
-						this.error = null;
-					} else {
-						response.text().then(data => {
-							this.info = null;
-							this.error = data;
-						});
-					}
-				});
+				.then(res => this.on_response(res));
+		},
+		update_config() {
+			if(this.num_addresses != this.account.num_addresses) {
+				fetch('/api/wallet/set_address_count?index=' + this.index + "&count=" + this.num_addresses)
+					.then(res => this.on_response(res));
+			}
 		},
 		show_seed() {
 			fetch('/wapi/wallet/seed?index=' + this.index)
@@ -937,6 +942,17 @@ Vue.component('account-actions', {
 					if(response.ok) this.$router.push('/wallet/');
 				});
 		},
+		on_response(res) {
+			if(res.ok) {
+				this.info = "Success";
+				this.error = null;
+			} else {
+				res.text().then(data => {
+					this.info = null;
+					this.error = data;
+				});
+			}
+		},
 		copyToClipboard(value) {
 			navigator.clipboard.writeText(value).then(() => {});
 		}		
@@ -948,6 +964,24 @@ Vue.component('account-actions', {
 		<div>			
 			<v-card>
 				<v-card-text>
+					<v-row>
+						<v-col>
+							<v-text-field
+								v-model="name"
+								:label="$t('create_wallet.account_name')"
+								disabled>
+							</v-text-field>
+						</v-col>
+						<v-col cols=4>
+							<v-text-field
+								v-model.number="num_addresses"
+								:label="$t('create_wallet.number_of_addresses')"
+								class="text-align-right">
+							</v-text-field>
+						</v-col>
+					</v-row>
+					
+					<v-btn outlined @click="update_config">Update</v-btn>
 					<v-btn outlined @click="reset_cache">{{ $t('account_actions.reset_cache') }}</v-btn>
 
 					<v-dialog v-model="seed_dialog" max-width="800">

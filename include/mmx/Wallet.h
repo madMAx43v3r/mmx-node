@@ -166,6 +166,8 @@ protected:
 
 	void remove_account(const uint32_t& index, const uint32_t& account) override;
 
+	void set_address_count(const uint32_t& index, const uint32_t& count) override;
+
 	std::set<addr_t> get_token_list() const override;
 
 	void add_token(const addr_t& address) override;

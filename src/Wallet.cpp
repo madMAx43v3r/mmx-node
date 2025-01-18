@@ -41,6 +41,9 @@ void Wallet::init()
 
 void Wallet::main()
 {
+	if(num_addresses > max_addresses) {
+		throw std::logic_error("num_addresses > max_addresses");
+	}
 	if(vnx::File(storage_path + "wallet.dat").exists()) {
 		if(key_files.empty()) {
 			key_files.push_back("wallet.dat");
@@ -980,8 +983,11 @@ void Wallet::add_account(const uint32_t& index, const account_t& config, const v
 
 void Wallet::create_account(const account_t& config, const vnx::optional<std::string>& passphrase)
 {
-	if(config.num_addresses <= 0) {
-		throw std::logic_error("num_addresses <= 0");
+	if(config.num_addresses < 1) {
+		throw std::logic_error("num_addresses < 1");
+	}
+	if(config.num_addresses > max_addresses) {
+		throw std::logic_error("num_addresses > max_addresses");
 	}
 	const auto index = std::max<uint32_t>(max_key_files, wallets.size());
 	add_account(index, config, passphrase);
@@ -1065,26 +1071,53 @@ std::shared_ptr<const KeyFile> Wallet::export_wallet(const uint32_t& index) cons
 
 void Wallet::remove_account(const uint32_t& index, const uint32_t& account)
 {
-	if(index < 100) {
+	if(index < max_key_files) {
 		throw std::logic_error("cannot remove wallet");
 	}
 	const auto wallet = get_wallet(index);
 
 	const std::string path = config_path + vnx_name + ".json";
 	{
-		auto object = vnx::read_config_file(path);
-		auto& accounts = object["accounts+"];
-		auto list = accounts.to<std::vector<account_t>>();
-		const auto offset = index - 100;
-		if(offset < list.size()) {
-			list[offset].is_hidden = true;
+		auto config = vnx::read_config_file(path);
+		const auto offset = index - max_key_files;
+		if(offset < accounts.size()) {
+			accounts[offset].is_hidden = true;
 		} else {
 			throw std::logic_error("cannot remove wallet");
 		}
-		accounts = list;
-		vnx::write_config_file(path, object);
+		config["accounts+"] = accounts;
+		vnx::write_config_file(path, config);
 	}
 	wallets[index] = nullptr;
+}
+
+void Wallet::set_address_count(const uint32_t& index, const uint32_t& count)
+{
+	if(count < 1 || count > max_addresses) {
+		throw std::logic_error("invalid address count");
+	}
+	const std::string path = config_path + vnx_name + ".json";
+	{
+		auto config = vnx::read_config_file(path);
+		if(index >= max_key_files) {
+			const auto offset = index - max_key_files;
+			if(offset < accounts.size()) {
+				accounts[offset].num_addresses = count;
+			} else {
+				throw std::logic_error("cannot find wallet");
+			}
+			config["accounts+"] = accounts;
+
+			wallets[index] = nullptr;
+			add_account(index, accounts[offset], nullptr);
+		} else {
+			num_addresses = count;
+			config["num_addresses"] = count;
+			wallets.clear();
+			add_task(std::bind(&Wallet::vnx_restart, this));
+		}
+		vnx::write_config_file(path, config);
+	}
 }
 
 std::set<addr_t> Wallet::get_token_list() const

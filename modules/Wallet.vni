@@ -13,6 +13,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	uint max_key_files = 100;
 	uint num_addresses = 100;
+	uint max_addresses = 10000;
 	uint default_expire = 100;				// when transactions expire
 	
 	int lock_timeout_sec = 600;				// when to auto-lock after unlock [sec]
@@ -145,6 +146,8 @@ module Wallet implements vnx.addons.HttpComponent {
 	void import_wallet(account_t config, KeyFile* key_file, optional<string> passphrase);
 	
 	void remove_account(uint index, uint account);
+	
+	void set_address_count(uint index, uint count);
 	
 	KeyFile* export_wallet(uint index) const;
 	
