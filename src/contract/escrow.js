@@ -16,12 +16,22 @@ function unlock(currency) public
 {
 	assert(this.user == agent, "invalid user");
 	
+	if(!currency) {
+		currency = bech32();
+	} else {
+		currency = bech32(currency);
+	}
 	send(target, balance(currency), currency, "mmx_escrow_unlock");
 }
 
-function revoke(currency) public
+function cancel(currency) public
 {
 	assert(this.user == agent, "invalid user");
 	
+	if(!currency) {
+		currency = bech32();
+	} else {
+		currency = bech32(currency);
+	}
 	send(source, balance(currency), currency, "mmx_escrow_revoke");
 }
