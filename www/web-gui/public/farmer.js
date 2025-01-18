@@ -21,7 +21,7 @@ Vue.component('farmer-info', {
 			fetch('/wapi/farm/info')
 				.then(response => response.json())
 				.then(data => this.info = data);
-			fetch('/wapi/farm/blocks/summary')
+			fetch('/wapi/farm/blocks/summary?since=10000')
 				.then(response => response.json())
 				.then(data => this.summary = data);
 		}
