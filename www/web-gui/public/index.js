@@ -451,6 +451,7 @@ const Login = {
 					if(response.ok) {
 						localStorage.setItem('login-passwd', passwd);
 						this.$router.push("/");
+						location.reload();
 					} else {
 						this.error = "Login failed!";
 					}
