@@ -16,7 +16,14 @@ Vue.component('explore-menu', {
 				}
 				else if(hex.test(this.input)) {
 					if(this.input.length == 64) {
-						this.$router.push("/explore/transaction/" + this.input);
+						fetch(WAPI_URL + '/header?hash=' + this.input)
+							.then(response => {
+								if(response.ok) {
+									this.$router.push("/explore/block/hash/" + this.input);
+								} else {
+									this.$router.push("/explore/transaction/" + this.input);
+								}
+						});
 					} else if(this.input.length == 66) {
 						this.$router.push("/explore/farmer/" + this.input);
 					} else {

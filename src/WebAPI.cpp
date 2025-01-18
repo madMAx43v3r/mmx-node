@@ -714,6 +714,10 @@ std::shared_ptr<RenderContext> WebAPI::get_context() const
 
 void WebAPI::render_header(const vnx::request_id_t& request_id, std::shared_ptr<const BlockHeader> block) const
 {
+	if(!block) {
+		respond_status(request_id, 404);
+		return;
+	}
 	respond(request_id, render_value(block, get_context()));
 }
 
