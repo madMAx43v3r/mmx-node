@@ -63,12 +63,14 @@ void Router::init()
 
 void Router::main()
 {
+	if(num_peers_out < 1) {
+		throw std::logic_error("num_peers_out < 1");
+	}
 	if(min_sync_peers < 1) {
 		throw std::logic_error("min_sync_peers < 1");
 	}
-	if(num_peers_out < min_sync_peers) {
-		throw std::logic_error("num_peers_out < min_sync_peers");
-	}
+	min_sync_peers = std::min(min_sync_peers, num_peers_out);
+
 	if(max_connections >= 0) {
 		if(num_peers_out > uint32_t(max_connections)) {
 			throw std::logic_error("num_peers_out > max_connections");
