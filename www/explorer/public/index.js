@@ -83,6 +83,7 @@ Vue.component('main-menu', {
 	},
 	template: `
 		<v-tabs>
+			<v-img src="favicon.ico" class="mx-2" :max-width="100"/>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-spacer></v-spacer>
 			<v-btn icon color="info" @click="toggle_dark_mode">
