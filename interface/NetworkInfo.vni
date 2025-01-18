@@ -29,4 +29,7 @@ class NetworkInfo {
 	
 	string name;				// network name
 	
+	string node_commit;
+	string node_version;
+	
 }
