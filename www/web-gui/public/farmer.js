@@ -100,7 +100,7 @@ Vue.component('farmer-rewards', {
 	},
 	methods: {
 		update() {
-			fetch('/wapi/farm/blocks/summary')
+			fetch('/wapi/farm/blocks/summary?since=10000')
 				.then(response => response.json())
 				.then(data => this.data = data);
 			fetch('/wapi/node/info')
