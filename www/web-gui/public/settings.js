@@ -483,3 +483,46 @@ Vue.component('wallet-settings', {
 		</div>
 		`
 })
+
+Vue.component('build-version', {
+	data() {
+		return {
+			build_version: null,
+			build_commit: null
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/config/get')
+				.then(response => response.json())
+				.then(data => {
+					this.build_version = data["build.version"];
+					this.build_commit = data["build.commit"];
+				});
+		},
+	},
+	created() {
+		this.update();
+	},
+	template: `
+		<div>
+			<v-card class="my-2">
+				<v-card-title>{{ $t('build_version.build') }}</v-card-title>
+				<v-card-text>
+					<v-simple-table>
+						<tbody>
+							<tr>
+								<td>{{ $t('build_version.version') }}</td>
+								<td>{{ this.build_version }}</td>
+							</tr>
+							<tr>
+								<td>{{ $t('build_version.commit') }}</td>
+								<td>{{ this.build_commit }}</td>
+							</tr>
+						</tbody>
+					</v-simple-table>
+				</v-card-text>
+			</v-card>
+		</div>
+		`
+})

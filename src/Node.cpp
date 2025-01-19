@@ -46,6 +46,13 @@ void Node::init()
 
 void Node::main()
 {
+	std::string build_version; // NOTE: Read and log(INFO) current build version written by cmake to config/default/build.json
+	std::string build_commit;
+	vnx::read_config("build.version", build_version);
+	vnx::read_config("build.commit", build_commit);
+	log(INFO) << "Build version: " << build_version;
+	log(INFO) << "Build commit: " << build_commit;
+
 #ifdef WITH_OPENCL
 	cl_context opencl_context = nullptr;
 	try {

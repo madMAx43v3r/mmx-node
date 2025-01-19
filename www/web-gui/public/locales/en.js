@@ -316,6 +316,12 @@ const enLocale = {
         "add_token": "Add Token"
     },
 
+    "build_version": {
+        "build": "Build",
+        "version": "Version",
+        "commit": "Commit"
+    },
+
     "create_locked_contract": {
         "owner_address": "Owner Address",
         "unlock_height": "Unlock at Chain Height"
