@@ -666,7 +666,7 @@ void Harvester::update_nfts()
 			[this, job, address](const vnx::optional<plot_nft_info_t>& info) {
 				if(info) {
 					if(!plot_nfts.count(address)) {
-						log(INFO) << "Found plot NFT " << (info->name.empty() ? info->address.to_string() : "'" + info->name + "'")
+						log(INFO) << "Found PlotNFT " << (info->name.empty() ? info->address.to_string() : "'" + info->name + "'")
 								<< ": is_locked = " << vnx::to_string(info->is_locked)
 								<< ", server_url = " << vnx::to_string(info->server_url);
 					}
@@ -678,7 +678,7 @@ void Harvester::update_nfts()
 				}
 			},
 			[this, address](const std::exception& ex) {
-				log(WARN) << "Failed to query plot NFT " << address.to_string() << " due to: " << ex.what();
+				log(WARN) << "Failed to query PlotNFT " << address.to_string() << " due to: " << ex.what();
 			});
 		missing.erase(address);
 	}
