@@ -82,7 +82,7 @@ add_subdirectory(tools)
 add_subdirectory(test)
 
 find_package(Threads REQUIRED)
-find_package(Qt5 COMPONENTS Widgets WebEngine WebEngineWidgets)
+find_package(Qt5 QUIET COMPONENTS Widgets WebEngine WebEngineWidgets)
 find_library(MINIUPNPC_LIB NAMES miniupnpc)
 
 if(NOT DISABLE_OPENCL)
