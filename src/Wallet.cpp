@@ -729,7 +729,7 @@ balance_t Wallet::get_balance(const uint32_t& index, const addr_t& currency) con
 }
 
 std::map<addr_t, balance_t> Wallet::get_balances(
-		const uint32_t& index, const vnx::bool_t& with_zero, const vnx::bool_t& show_all) const
+		const uint32_t& index, const vnx::bool_t& with_zero) const
 {
 	const auto wallet = get_wallet(index);
 	update_cache(index);
@@ -757,15 +757,6 @@ std::map<addr_t, balance_t> Wallet::get_balances(
 	for(auto& entry : amounts) {
 		entry.second.total = entry.second.spendable + entry.second.reserved + entry.second.locked;
 		entry.second.is_validated = token_whitelist.count(entry.first);
-	}
-	if(!show_all) {
-		for(auto iter = amounts.begin(); iter != amounts.end();) {
-			if(!iter->second.is_validated) {
-				iter = amounts.erase(iter);
-			} else {
-				iter++;
-			}
-		}
 	}
 	return amounts;
 }
