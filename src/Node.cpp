@@ -400,15 +400,15 @@ void Node::add_fork(std::shared_ptr<fork_t> fork)
 
 void Node::add_transaction(std::shared_ptr<const Transaction> tx, const vnx::bool_t& pre_validate)
 {
-	if(!is_synced) {
-		throw std::logic_error("not synced");
-	}
 	if(tx->exec_result) {
 		auto tmp = vnx::clone(tx);
 		tmp->reset(params);
 		tx = tmp;
 	}
 	if(pre_validate) {
+		if(!is_synced) {
+			throw std::logic_error("not synced");
+		}
 		const auto res = validate(tx);
 		if(res.did_fail) {
 			throw std::runtime_error(res.get_error_msg());
