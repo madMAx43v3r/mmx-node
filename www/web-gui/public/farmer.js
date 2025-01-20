@@ -412,7 +412,7 @@ Vue.component('farmer-proofs', {
 	computed: {
 		headers() {
 			return [
-				{ text: this.$t('farmer_proofs.height'), value: 'vdf_height' },
+				{ text: "VDF height", value: 'vdf_height' },
 				{ text: this.$t('farmer_proofs.harvester'), value: 'harvester' },
 				{ text: this.$t('farmer_proofs.score'), value: 'proof.score' },
 				{ text: this.$t('farmer_proofs.sdiff'), value: 'proof.difficulty' },
