@@ -196,7 +196,7 @@ Vue.component('farmer-plots', {
 	computed: {
 		headers() {
 			return [
-				{ text: this.$t('farmer_plots.type'), value: 'ksize', width: "10%" },
+				{ text: this.$t('farmer_plots.type'), value: 'ksize', width: "20%" },
 				{ text: this.$t('farmer_plots.count'), value: 'count' },
 			]
 		},
@@ -237,42 +237,47 @@ Vue.component('farmer-plots', {
 	},
 	template: `
 		<div>
-			<v-data-table
-				:headers="headers"
-				:items="plot_count"
-				:loading="!loaded"
-				hide-default-footer
-				disable-sort
-				disable-pagination
-				class="elevation-2 my-2"
-			>
-				<template v-slot:item.ksize="{ item }">
-					K{{item.ksize}}
-				</template>
-				
-				<template v-slot:item.count="{ item }">
-					<b>{{item.count}}</b>
-				</template>
-			</v-data-table>
-
-			<v-data-table
-				:headers="headers2"
-				:items="harvester_bytes"
-				:loading="!loaded"
-				hide-default-footer
-				disable-sort
-				disable-pagination
-				class="elevation-2"
-			>
-				<template v-slot:item.bytes="{ item }">
-					<b>{{(item.bytes / Math.pow(1000, 4)).toFixed(3)}}</b> TB
-				</template>
-				<template v-slot:item.effective="{ item }">
-					<b>{{(item.effective / Math.pow(1000, 4)).toFixed(3)}}</b> TBe
-				</template>
-			</v-data-table>
-
-			<v-btn class="my-2" outlined @click="reload">{{ $t('farmer_plots.reload_plots') }}</v-btn>
+			<v-row class="my-2">
+				<v-col cols="4">
+					<v-data-table
+						:headers="headers"
+						:items="plot_count"
+						:loading="!loaded"
+						hide-default-footer
+						disable-sort
+						disable-pagination
+						class="elevation-2"
+					>
+						<template v-slot:item.ksize="{ item }">
+							K{{item.ksize}}
+						</template>
+						
+						<template v-slot:item.count="{ item }">
+							<b>{{item.count}}</b>
+						</template>
+					</v-data-table>
+				</v-col>
+				<v-col>
+					<v-data-table
+						:headers="headers2"
+						:items="harvester_bytes"
+						:loading="!loaded"
+						hide-default-footer
+						disable-sort
+						disable-pagination
+						class="elevation-2"
+					>
+						<template v-slot:item.bytes="{ item }">
+							<b>{{(item.bytes / Math.pow(1000, 4)).toFixed(3)}}</b> TB
+						</template>
+						
+						<template v-slot:item.effective="{ item }">
+							<b>{{(item.effective / Math.pow(1000, 4)).toFixed(3)}}</b> TBe
+						</template>
+					</v-data-table>
+				</v-col>
+			</v-row>
+			<v-btn outlined @click="reload">{{ $t('farmer_plots.reload_plots') }}</v-btn>
 		</div>
 		`
 })
