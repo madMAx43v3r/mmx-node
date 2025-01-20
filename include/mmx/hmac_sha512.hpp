@@ -48,8 +48,9 @@ inline std::pair<hash_t, hash_t> hmac_sha512_n(const hash_t& seed, const hash_t&
 	return out;
 }
 
-inline std::pair<hash_t, hash_t> pbkdf2_hmac_sha512(const hash_t& seed, const hash_t& key, const uint32_t num_iters)
+inline std::pair<hash_t, hash_t> kdf_hmac_sha512(const hash_t& seed, const hash_t& key, const uint32_t num_iters)
 {
+	// This is NOT standard PBKDF2, but a simplified adaptation.
 	uint8_t tmp[64] = {};
 
 	HMAC_SHA512 func(key.data(), key.size());

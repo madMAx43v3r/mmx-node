@@ -88,7 +88,7 @@ public:
 		if(addresses.size()) {
 			first_addr = addresses[0];
 		}
-		const auto master = pbkdf2_hmac_sha512(seed_value, passphrase, PBKDF2_ITERS);
+		const auto master = kdf_hmac_sha512(seed_value, passphrase, KDF_ITERS);
 		const auto chain = hmac_sha512_n(master.first, master.second, 11337);
 		const auto account = hmac_sha512_n(chain.first, chain.second, config.index);
 
@@ -559,7 +559,7 @@ public:
 private:
 	void create_farmer_key()
 	{
-		const auto master = pbkdf2_hmac_sha512(seed_value, hash_t("MMX/farmer_keys"), PBKDF2_ITERS);
+		const auto master = kdf_hmac_sha512(seed_value, hash_t("MMX/farmer_keys"), KDF_ITERS);
 		const auto tmp = hmac_sha512_n(master.first, master.second, 0);
 		farmer_key.first = skey_t(tmp.first);
 		farmer_key.second = pubkey_t(skey_t(tmp.first));
@@ -575,7 +575,7 @@ private:
 
 	const std::shared_ptr<const ChainParams> params;
 
-	static constexpr size_t PBKDF2_ITERS = 4096;
+	static constexpr size_t KDF_ITERS = 4096;
 
 };
 
