@@ -1132,9 +1132,9 @@ int main(int argc, char** argv)
 							if(info->is_locked && info->unlock_height) {
 								std::cout << "  Unlock Height: " << *info->unlock_height << std::endl;
 							}
-							std::cout << "  Server URL: " << (info->server_url ? *info->server_url : std::string("N/A")) << std::endl;
+							std::cout << "  Server URL: " << (info->server_url ? *info->server_url : std::string("N/A (solo farming)")) << std::endl;
 							if(verbose) {
-								std::cout << "  Target Address: " << (info->target ? info->target->to_string() : std::string("N/A")) << std::endl;
+								std::cout << "  Pool Target: " << (info->target ? info->target->to_string() : std::string("N/A")) << std::endl;
 								std::cout << "  Owner: " << info->owner.to_string() << std::endl;
 							}
 						}
@@ -1726,15 +1726,15 @@ int main(int argc, char** argv)
 			if(command == "info")
 			{
 				if(module == "farm") {
-					const auto info = node.get_farmed_block_summary(farmer.get_farmer_keys());
+					const auto info = node.get_farmed_block_summary(farmer.get_farmer_keys(), params->reward_activation);
 					std::cout << "Farmed Blocks: " << info.num_blocks << std::endl;
 					std::cout << "Total Rewards: " << mmx::to_value(info.total_rewards, params->decimals) << " MMX" << std::endl;
 				}
 				if(info->harvester) {
 					std::cout << "[" << *info->harvester << "]" << std::endl;
 				}
-				std::cout << "Physical size:  " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
-				std::cout << "Effective size: " << info->total_bytes_effective / pow(1000, 4) << " TBe" << std::endl;
+				std::cout << "Physical Size:  " << info->total_bytes / pow(1000, 4) << " TB" << std::endl;
+				std::cout << "Effective Size: " << info->total_bytes_effective / pow(1000, 4) << " TBe" << std::endl;
 				std::cout << "Plots:" << std::endl;
 				uint64_t total_plots = 0;
 				for(const auto& entry : info->plot_count) {
@@ -1757,7 +1757,7 @@ int main(int argc, char** argv)
 					if(data.name) {
 						std::cout << "  Name: " << (*data.name) << std::endl;
 					}
-					std::cout << "  Server URL: " << (data.server_url ? *data.server_url : std::string("Solo farming")) << std::endl;
+					std::cout << "  Server URL: " << (data.server_url ? *data.server_url : std::string("N/A (solo farming)")) << std::endl;
 					std::string target = "N/A";
 					if(data.pool_target) {
 						target = data.pool_target->to_string();
