@@ -1,4 +1,3 @@
-
 Vue.component('wallet-summary', {
 	data() {
 		return {
@@ -47,6 +46,7 @@ Vue.component('account-menu', {
 			<v-btn :to="'/wallet/account/' + index + '/log'">{{ $t('account_menu.log') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/offer'">{{ $t('account_menu.offer') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/liquid'">{{ $t('account_menu.liquidity') }}</v-btn>
+			<v-btn :to="'/wallet/account/' + index + '/plotnfts'">PlotNFTs</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/details'">{{ $t('account_menu.info') }}</v-btn>
 			<v-btn :to="'/wallet/account/' + index + '/options'"><v-icon>mdi-cog</v-icon></v-btn>
 		</v-btn-toggle>
@@ -684,7 +684,7 @@ Vue.component('account-contract-summary', {
 	},
 	template: `
 		<v-card class="my-2">
-			<v-card-text>			
+			<v-card-text>
 				<v-chip label>{{contract.__type}}</v-chip>
 				<v-chip label>{{address}}</v-chip>
 				<object-table :data="contract" class="my-2"></object-table>
@@ -2298,6 +2298,205 @@ Vue.component('create-locked-contract', {
 		</div>
 		`
 })
+
+Vue.component('create-plotnft', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			name: null,
+			valid: false,
+			confirmed: false,
+			result: null,
+			error: null
+		}
+	},
+	methods: {
+		check_valid() {
+			this.valid = this.name && this.name.length > 0;
+			if(!this.valid) {
+				this.confirmed = false;
+			}
+		},
+		submit() {
+			this.submit_ex(null);
+		},
+		submit_ex(passphrase) {
+			this.confirmed = false;
+			const req = {};
+			req.index = this.index;
+			req.name = this.name;
+			req.options = {passphrase: passphrase};
+			fetch('/api/wallet/plotnft_create', {body: JSON.stringify(req), method: "post"})
+				.then(response => {
+					if(response.ok) {
+						this.result = this.name;
+						this.name = null;
+					} else {
+						response.text().then(data => this.error = data);
+					}
+				});
+		}
+	},
+	watch: {
+		name(value) {
+			this.confirmed = false;
+			this.check_valid();
+		},
+		result(value) {
+			if(value) {
+				this.error = null;
+			}
+		},
+		error(value) {
+			if(value) {
+				this.result = null;
+			}
+		}
+	},
+	template: `
+		<div>
+			<v-card class="my-2">
+				<v-card-text>
+					<v-text-field 
+						label="New PlotNFT Name"
+						v-model="name">
+					</v-text-field>
+
+					<v-card-actions class="py-0">
+						<v-spacer></v-spacer>
+						<v-switch 
+							v-model="confirmed"
+							:disabled="!valid"
+							:label="$t('common.confirm')"
+							class="d-inline-block" style="margin-right: 50px">
+						</v-switch>
+						<v-btn @click="submit" outlined color="primary" :disabled="!confirmed">{{ $t('common.create') }}</v-btn>
+					</v-card-actions>
+				</v-card-text>
+			</v-card>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="success"
+				v-if="result"
+				elevation="2"
+				class="my-2"
+			>
+				Created new PlotNFT: {{result}}
+			</v-alert>
+
+			<v-alert
+				border="left"
+				colored-border
+				type="error"
+				v-if="error"
+				elevation="2"
+				class="my-2"
+			>
+				{{ $t('common.failed_with') }}: <b>{{error}}</b>
+			</v-alert>
+		</div>
+		`
+})
+
+Vue.component('account-plotnfts', {
+	props: {
+		index: Number
+	},
+	data() {
+		return {
+			list: [],
+			timer: null,
+		}
+	},
+	methods: {
+		update() {
+			if(!this.$root.params) {
+				setTimeout(() => { this.update(); }, 500);
+				return;
+			}
+			fetch('/wapi/wallet/contracts?index=' + this.index + '&type_hash=' + this.$root.params.plot_nft_binary + '&owned=true')
+				.then(response => response.json())
+				.then(data => this.list = data);
+		}
+	},
+	created() {
+		this.update();
+		timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div>
+			<template v-for="item in list">
+				<plotnft-control :address="item.address"></plotnft-control>
+			</template>
+		</div>
+		`
+})
+
+Vue.component('plotnft-control', {
+	props: {
+		address: String
+	},
+	data() {
+		return {
+			data: null,
+			timer: null,
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/plotnft?id=' + this.address)
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update();
+		timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<v-card v-if="data" class="my-2">
+			<v-card-title>
+				{{data.name}}
+			</v-card-title>
+			<v-card-text>
+				<v-simple-table>
+					<tbody>
+					<tr>
+						<td class="key-cell">Address</td>
+						<td>
+							{{data.address}}
+							<template v-if="navigator.clipboard">
+								<v-btn @click="navigator.clipboard.writeText(data.address)" text icon>
+									<v-icon small class="pr-0">mdi-content-copy</v-icon>
+								</btn>
+							</template>
+						</td>
+					</tr>
+					<tr>
+						<td class="key-cell">Pool Server</td>
+						<td v-if="data.server_url">{{data.server_url}}</td>
+						<td v-else>N/A (solo farming)</td>
+					</tr>
+					<tr v-if="data.is_locked">
+						<td class="key-cell">Unlock Height</td>
+						<td>{{data.unlock_height}}</td>
+					<tr>
+					</tbody>
+				</v-simple-table>
+			</v-card-text>
+		</v-card>
+	`
+});
 
 Vue.component('wallet-menu', {
 	data() {

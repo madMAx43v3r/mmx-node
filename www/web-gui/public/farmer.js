@@ -3,6 +3,7 @@ Vue.component('farmer-menu', {
 	template: `
 		<v-tabs>
 			<v-tab to="/farmer/plots">{{ $t('farmer_menu.plots') }}</v-tab>
+			<v-tab to="/farmer/plotnfts">NFTs</v-tab>
 			<v-tab to="/farmer/blocks">{{ $t('farmer_menu.blocks') }}</v-tab>
 			<v-tab to="/farmer/proofs">{{ $t('farmer_menu.proofs') }}</v-tab>
 		</v-tabs>
@@ -462,4 +463,87 @@ Vue.component('farmer-proofs', {
 		</v-data-table>
 		`
 })
+
+Vue.component('farmer-plotnfts', {
+	data() {
+		return {
+			list: null,
+			timer: null,
+		}
+	},
+	methods: {
+		update() {
+			fetch('/wapi/farm/info')
+				.then(response => response.json())
+				.then(data => this.list = data.pool_info);
+		}
+	},
+	created() {
+		this.update();
+		timer = setInterval(() => { this.update(); }, 10000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div>
+			<template v-for="item in list">
+				<plotnft-info :address="item[0]" :data="item[1]"></plotnft-info>
+			</template>
+			<template v-if="list && !list.length">
+				<v-alert type="warning" border="left" colored-border>No NFT plots found</v-alert>
+				<v-alert type="info" border="left" colored-border>Need to create a PlotNFT in Wallet first to plot NFT plots.</v-alert>
+			</template>
+		</div>
+		`
+})
+
+Vue.component('plotnft-info', {
+	props: {
+		address: String,
+		data: Object,
+	},
+	template: `
+		<v-card class="my-2">
+			<v-card-title>
+				<template v-if="data.is_plot_nft">{{data.name}}</template>
+				<template v-else>Invalid PlotNFT</template>
+			</v-card-title>
+			<v-card-text>
+				<v-simple-table>
+					<tbody>
+					<tr>
+						<td class="key-cell">Address</td>
+						<td>
+							{{address}}
+							<template v-if="navigator.clipboard">
+								<v-btn @click="navigator.clipboard.writeText(address)" text icon>
+									<v-icon small class="pr-0">mdi-content-copy</v-icon>
+								</btn>
+							</template>
+						</td>
+					</tr>
+					<tr>
+						<td class="key-cell">Pool Server</td>
+						<td v-if="data.server_url">{{data.server_url}}</td>
+						<td v-else>N/A (solo farming)</td>
+					</tr>
+					<tr v-if="data.pool_target">
+						<td class="key-cell">Pool Target</td>
+						<td><router-link :to="'/explore/address/' + data.pool_target">{{data.pool_target}}</router-link></td>
+					<tr>
+					<tr v-if="data.server_url">
+						<td class="key-cell">Partial Difficulty</td>
+						<td>{{data.partial_diff}}</td>
+					<tr>
+					<tr>
+						<td class="key-cell">Plot Count</td>
+						<td>{{data.plot_count}}</td>
+					<tr>
+					</tbody>
+				</v-simple-table>
+			</v-card-text>
+		</v-card>
+	`
+});
 

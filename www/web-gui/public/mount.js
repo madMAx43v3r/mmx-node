@@ -18,12 +18,11 @@ const routes = [
 			{ path: 'offer', component: AccountOffer, meta: { page: 'offer' } },
 			{ path: 'history', component: AccountHistory, meta: { page: 'history' } },
 			{ path: 'log', component: AccountLog, meta: { page: 'log' } },
-			{ path: 'plots', component: AccountPlots, meta: { page: 'plots' } },
 			{ path: 'liquid', component: AccountLiquid, meta: { page: 'liquid' } },
+			{ path: 'plotnfts', component: AccountPlotNFTs, meta: { page: 'plotnfts' } },
 			{ path: 'details', component: AccountDetails, meta: { page: 'details' } },
 			{ path: 'options', component: AccountOptions, meta: { page: 'options' } },
 			{ path: 'create/locked', component: AccountCreateLocked },
-			{ path: 'create/virtualplot', component: AccountCreateVirtualPlot },
 		]
 	},
 	{ path: '/market',
@@ -91,6 +90,7 @@ const routes = [
 			{ path: 'plots', component: FarmerPlots, meta: { page: 'plots' } },
 			{ path: 'blocks', component: FarmerBlocks, meta: { page: 'blocks' } },
 			{ path: 'proofs', component: FarmerProofs, meta: { page: 'proofs' } },
+			{ path: 'plotnfts', component: FarmerPlotNFTs, meta: { page: 'plotnfts' } },
 		]
 	},
 	{ path: '/settings', component: Settings, meta: { is_settings: true } },
@@ -128,6 +128,7 @@ Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
         data: {
 			farmer: false,
 			wallet: false,
+			params: null,
             nodeInfo: null
         },
         el: '#app',
@@ -152,6 +153,9 @@ Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
             }
         },
 		created() {
+			fetch('/wapi/chain/info')
+				.then(response => response.json())
+				.then(data => this.params = data);
 			fetch('/wapi/config/get?key=farmer')
 				.then(response => response.json())
 				.then(data => this.farmer = data || data == null ? true : false);

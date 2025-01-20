@@ -153,16 +153,14 @@ const AccountLog = {
 		<account-tx-history :index="index" :limit="200"></account-tx-history>
 	`
 }
-const AccountPlots = {
+const AccountPlotNFTs = {
 	props: {
 		index: Number
 	},
 	template: `
 		<div>
-			<router-link :to="'/wallet/account/' + index + '/create/virtualplot'">
-				<v-btn outlined>{{ this.$t('account_plots.new_plot') }}</v-btn>
-			</router-link>
-			<account-plots class="my-2" :index="index"></account-plots>
+			<account-plotnfts :index="index"></account-plotnfts>
+			<create-plotnft :index="index"></create-plotnft>
 		</div>
 	`
 }
@@ -196,14 +194,6 @@ const AccountCreateLocked = {
 	},
 	template: `
 		<create-locked-contract :index="index"></create-locked-contract>
-	`
-}
-const AccountCreateVirtualPlot = {
-	props: {
-		index: Number
-	},
-	template: `
-		<create-virtual-plot-contract :index="index"></create-virtual-plot-contract>
 	`
 }
 
@@ -423,6 +413,11 @@ const FarmerPlots = {
 				<farmer-plot-dirs></farmer-plot-dirs>
 			</div>
 		</div>
+	`
+}
+const FarmerPlotNFTs = {
+	template: `
+		<farmer-plotnfts></farmer-plotnfts>
 	`
 }
 
