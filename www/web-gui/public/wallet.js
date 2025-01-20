@@ -183,7 +183,7 @@ Vue.component('account-balance', {
 				{ text: this.$t('account_balance.reserved'), value: 'reserved' },
 				{ text: this.$t('account_balance.spendable'), value: 'spendable' },
 				{ text: this.$t('account_balance.token'), value: 'token' },
-				{ text: this.$t('account_balance.contract'), value: 'contract' }
+				{ text: this.$t('account_balance.contract'), value: 'contract', width: '50%' },
 			]
 		}
 	},
@@ -262,7 +262,7 @@ Vue.component('balance-table', {
 				{ text: this.$t('balance_table.locked'), value: 'locked'},
 				{ text: this.$t('balance_table.spendable'), value: 'spendable'},
 				{ text: this.$t('balance_table.token'), value: 'symbol'},
-				{ text: this.$t('balance_table.contract'), value: 'contract'},
+				{ text: this.$t('balance_table.contract'), value: 'contract', width: '50%'},
 			]
 		}
 	},
