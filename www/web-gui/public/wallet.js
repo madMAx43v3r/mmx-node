@@ -168,10 +168,6 @@ Vue.component('account-summary', {
 Vue.component('account-balance', {
 	props: {
 		index: Number,
-		show_all: {
-			type: Boolean,
-			default: false
-		}
 	},
 	data() {
 		return {
@@ -191,15 +187,9 @@ Vue.component('account-balance', {
 			]
 		}
 	},
-	watch: {
-		show_all() {
-			this.loaded = false;
-			this.update();
-		}
-	},
 	methods: {
 		update() {
-			fetch('/wapi/wallet/balance?index=' + this.index + '&show_all=' + this.show_all)
+			fetch('/wapi/wallet/balance?index=' + this.index)
 				.then(response => response.json())
 				.then(data => {
 					this.loaded = true;
@@ -228,20 +218,6 @@ Vue.component('account-balance', {
 			<template v-slot:progress>
 				<v-progress-linear indeterminate absolute top></v-progress-linear>
 				<v-skeleton-loader type="table-row-divider@3" v-if="data.length == 0"/>
-			</template>
-
-			<template v-slot:header.contract>
-				<div class="d-flex flex-row">
-					<div class="align-self-center">{{ $t('account_balance.contract') }}</div>
-					<div class="align-self-center ml-auto">
-						<v-switch
-							v-model="show_all" 
-							:label="$t('account_balance.show_unknown')"
-							hide-details
-							class="ma-0 pa-0"
-							style="transform: scale(0.75);"/>
-					</div>
-				</div>
 			</template>
 
 			<template v-slot:item.contract="{ item }">
