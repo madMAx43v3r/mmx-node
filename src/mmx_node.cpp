@@ -27,6 +27,36 @@
 #include <vnx/addons/HttpServer.h>
 #include <vnx/addons/HttpBalancer.h>
 
+#ifdef WITH_QT
+#include <QApplication>
+#include <QWebEngineView>
+#include <QLoggingCategory>
+#include <QWebEngineSettings>
+#include <QWebEngineProfile>
+#include <QWebEngineScript>
+#include <QWebEngineScriptCollection>
+#include <QWebEngineUrlRequestInterceptor>
+
+class RequestInterceptor : public QWebEngineUrlRequestInterceptor {
+public:
+	std::string api_host;
+	std::string api_token;
+	std::string api_token_header;
+	explicit RequestInterceptor(QObject* parent = nullptr) : QWebEngineUrlRequestInterceptor(parent) {}
+	virtual ~RequestInterceptor() = default;
+	void interceptRequest(QWebEngineUrlRequestInfo& info) override {
+		const auto host = info.requestUrl().host().toStdString() + ":" + std::to_string(info.requestUrl().port());
+		if(host == api_host) {
+			info.setHttpHeader(QByteArray::fromStdString(api_token_header), QByteArray::fromStdString(api_token));
+		}
+	}
+};
+
+static void qt_log_func(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+    vnx::log_debug() << "QT: " << msg.toStdString() << " (" << context.file << ":" << context.line << ")";
+}
+#endif
+
 
 int main(int argc, char** argv)
 {
@@ -52,7 +82,9 @@ int main(int argc, char** argv)
 	vnx::init("mmx_node", argc, argv, options);
 
 	const auto params = mmx::get_params();
+	const auto api_token = mmx::hash_t::random().to_string();
 
+	bool with_gui = false;
 	bool with_farmer = true;
 	bool with_wallet = true;
 	bool with_timelord = true;
@@ -60,6 +92,7 @@ int main(int argc, char** argv)
 	uint32_t wapi_threads = 1;
 	std::string public_endpoint = "0.0.0.0:11330";		// for remote farmer, etc
 
+	vnx::read_config("gui", with_gui);
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
@@ -131,6 +164,8 @@ int main(int argc, char** argv)
 		module->directory_files.push_back("index.html");
 		module.start_detached();
 	}
+	int http_port = 0;
+	std::string api_token_header;
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
 		module->components["/server/"] = "HttpServer";
@@ -141,6 +176,11 @@ int main(int argc, char** argv)
 		module->components["/api/router/"] = "Router";
 		module->components["/api/harvester/"] = "Harvester";
 		module->components["/gui/"] = "FileServer_1";
+		if(with_gui) {
+			http_port = module->port;
+			api_token_header = module->token_header_name;
+			module->token_map[api_token] = "ADMIN";
+		}
 		module.start_detached();
 	}
 	if(with_timelord) {
@@ -173,18 +213,50 @@ int main(int argc, char** argv)
 		module->storage_path = mmx_network + module->storage_path;
 		module.start_detached();
 	}
-
-	while(vnx::do_run())
 	{
 		vnx::Handle<mmx::Node> module = new mmx::Node("Node");
 		module->storage_path = mmx_network + module->storage_path;
 		module->database_path = mmx_network + module->database_path;
-		module.start();
-		module.wait();
-		if(!module->do_restart) {
-			break;
-		}
+		module.start_detached();
 	}
+
+	if(with_gui) {
+#ifdef WITH_QT
+		qInstallMessageHandler(qt_log_func);
+
+		int argc = 1;
+		QApplication app(argc, argv);
+
+		const auto host = "localhost:" + std::to_string(http_port);
+		const auto interceptor = new RequestInterceptor();
+		interceptor->api_host = host;
+		interceptor->api_token = api_token;
+		interceptor->api_token_header = api_token_header;
+
+		QWebEngineScript script;
+		script.setSourceCode("window.mmx_qtgui = true;");
+		script.setInjectionPoint(QWebEngineScript::DocumentCreation);
+		script.setWorldId(QWebEngineScript::MainWorld);
+
+		QWebEngineView view;
+		view.page()->profile()->setRequestInterceptor(interceptor);
+		view.page()->settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, true);
+		view.page()->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+		view.page()->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+		view.page()->scripts().insert(script);
+		view.setUrl(QUrl(QString::fromStdString("http://" + host + "/gui/")));
+		view.setWindowTitle("MMX Node");
+		view.resize(1300, 1000);
+		view.show();
+
+		app.exec();
+#else
+		vnx::wait();
+#endif
+	} else {
+		vnx::wait();
+	}
+
 	vnx::close();
 
 	mmx::secp256k1_free();

@@ -106,6 +106,7 @@ var vuetify = new Vuetify({
 	},
 });
 
+Vue.prototype.$isQtGUI = typeof window.mmx_qtgui !== 'undefined';
 Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
 
 (async () => {

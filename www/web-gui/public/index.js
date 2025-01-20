@@ -551,7 +551,7 @@ Vue.component('main-menu', {
 		}
 	},
 	created() {
-		if(!this.$isWinGUI) {
+		if(!this.$isWinGUI && !this.$isQtGUI) {
 			this.update();
 			this.timer = setInterval(() => { this.update(); }, 5000);
 		}
@@ -571,7 +571,7 @@ Vue.component('main-menu', {
 			<v-spacer></v-spacer>
 			<node-status/>
 			<v-tab to="/settings">{{ $t('main_menu.settings') }}</v-tab>
-			<template v-if="!$route.meta.is_login && !$isWinGUI">
+			<template v-if="!$route.meta.is_login && !$isWinGUI && !$isQtGUI">
 				<v-tab @click="logout">{{ $t('main_menu.logout') }}</v-tab>
 			</template>
 		</v-tabs>

@@ -45,8 +45,6 @@ class Node : public NodeBase {
 public:
 	Node(const std::string& _vnx_value);
 
-	bool do_restart = false;
-
 protected:
 	void init() override;
 

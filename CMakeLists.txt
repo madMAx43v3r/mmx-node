@@ -82,6 +82,7 @@ add_subdirectory(tools)
 add_subdirectory(test)
 
 find_package(Threads REQUIRED)
+find_package(Qt5 COMPONENTS Widgets WebEngine WebEngineWidgets)
 find_library(MINIUPNPC_LIB NAMES miniupnpc)
 
 if(NOT DISABLE_OPENCL)
@@ -316,6 +317,14 @@ target_link_libraries(mmx_farmer mmx_modules)
 target_link_libraries(mmx_wallet mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
 target_link_libraries(mmx_harvester mmx_modules)
+
+if(Qt5_FOUND)
+	# requires: qtwebengine5-dev
+	message(STATUS "Enabling WITH_QT")
+	add_compile_definitions(WITH_QT)
+	target_link_libraries(mmx_node Qt5::Widgets Qt5::WebEngine Qt5::WebEngineWidgets)
+# 	set_target_properties(mmx_node PROPERTIES AUTOMOC TRUE)
+endif()
 
 install(TARGETS mmx_db DESTINATION lib)
 install(TARGETS mmx_vm DESTINATION lib)
