@@ -116,7 +116,7 @@ protected:
 	virtual std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit) const = 0;
 	virtual std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index, const ::mmx::uint128& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::balance_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;
-	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index, const vnx::bool_t& with_zero, const vnx::bool_t& show_all) const = 0;
+	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_balances(const uint32_t& index, const vnx::bool_t& with_zero) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_total_balances(const std::vector<::mmx::addr_t>& addresses) const = 0;
 	virtual std::map<::mmx::addr_t, ::mmx::balance_t> get_contract_balances(const ::mmx::addr_t& address) const = 0;
 	virtual std::map<::mmx::addr_t, std::shared_ptr<const ::mmx::Contract>> get_contracts(const uint32_t& index, const vnx::optional<std::string>& type_name, const vnx::optional<::mmx::hash_t>& type_hash) const = 0;
