@@ -561,7 +561,7 @@ Vue.component('account-history-form', {
 					<v-row>
 						<v-col cols="3">
 							<v-select v-model="type" :label="$t('account_history.type')"
-								:items="select_types" item-text="text" item-value="value" :disabled="memo?.length>0">
+								:items="select_types" item-text="text" item-value="value" :disabled="memo != null && memo.length > 0">
 							</v-select>
 						</v-col>
 						<v-col>
@@ -731,7 +731,10 @@ Vue.component('account-contracts', {
 			return this.contractFilterValues.filter((value, index, self) => this.contractFilter.some( i => i === index) );
 		},
 		filteredData() {
-			return this.data?.filter( (item, index, self) => this.selectedContractFilterValues.some( r => item.__type == r) );
+			if(this.data) {
+				return this.data.filter( (item, index, self) => this.selectedContractFilterValues.some( r => item.__type == r) );
+			}
+			return null;
 		}
 	},
 	template: `
