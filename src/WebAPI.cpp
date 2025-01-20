@@ -2647,6 +2647,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/passphrase/validate") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		if(have_args) {
 			hash_t seed = args["seed"].to<hash_t>();
 			if(args.field.count("words")) {
