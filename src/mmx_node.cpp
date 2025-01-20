@@ -28,6 +28,7 @@
 #include <vnx/addons/HttpBalancer.h>
 
 #ifdef WITH_QT
+#include <QIcon>
 #include <QApplication>
 #include <QWebEngineView>
 #include <QLoggingCategory>
@@ -247,6 +248,7 @@ int main(int argc, char** argv)
 		view.page()->scripts().insert(script);
 		view.setUrl(QUrl(QString::fromStdString(full_url)));
 		view.setWindowTitle("MMX Node");
+		view.setWindowIcon(QIcon("www/web-gui/public/assets/img/logo_circle_color_cy256.png"));
 		view.resize(1300, 1000);
 		view.show();
 
