@@ -221,13 +221,14 @@ int main(int argc, char** argv)
 	}
 
 	if(with_gui) {
+		const auto host = "localhost:" + std::to_string(http_port);
+		const auto full_url = "http://" + host + "/gui/";
 #ifdef WITH_QT
 		qInstallMessageHandler(qt_log_func);
 
 		int argc = 1;
 		QApplication app(argc, argv);
 
-		const auto host = "localhost:" + std::to_string(http_port);
 		const auto interceptor = new RequestInterceptor();
 		interceptor->api_host = host;
 		interceptor->api_token = api_token;
@@ -244,7 +245,7 @@ int main(int argc, char** argv)
 		view.page()->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
 		view.page()->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 		view.page()->scripts().insert(script);
-		view.setUrl(QUrl(QString::fromStdString("http://" + host + "/gui/")));
+		view.setUrl(QUrl(QString::fromStdString(full_url)));
 		view.setWindowTitle("MMX Node");
 		view.resize(1300, 1000);
 		view.show();
