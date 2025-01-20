@@ -2307,6 +2307,7 @@ Vue.component('create-plotnft', {
 		return {
 			name: null,
 			valid: false,
+			fee_ratio: 1024,
 			confirmed: false,
 			result: null,
 			error: null
@@ -2327,7 +2328,10 @@ Vue.component('create-plotnft', {
 			const req = {};
 			req.index = this.index;
 			req.name = this.name;
-			req.options = {passphrase: passphrase};
+			req.options = {
+				fee_ratio: this.fee_ratio,
+				passphrase: passphrase
+			};
 			fetch('/api/wallet/plotnft_create', {body: JSON.stringify(req), method: "post"})
 				.then(response => {
 					if(response.ok) {
@@ -2337,6 +2341,11 @@ Vue.component('create-plotnft', {
 						response.text().then(data => this.error = data);
 					}
 				});
+		}
+	},
+	computed: {
+		fee_amount() {
+			return parseFloat((0.095 * this.fee_ratio / 1024).toFixed(3));
 		}
 	},
 	watch: {
@@ -2359,10 +2368,23 @@ Vue.component('create-plotnft', {
 		<div>
 			<v-card class="my-2">
 				<v-card-text>
-					<v-text-field 
-						label="New PlotNFT Name"
-						v-model="name">
-					</v-text-field>
+					<v-row>
+						<v-col>
+							<v-text-field
+								label="New PlotNFT Name"
+								v-model="name">
+							</v-text-field>
+						</v-col>
+						<v-col cols="2">
+							<tx-fee-select @update-value="value => this.fee_ratio = value"></tx-fee-select>
+						</v-col>
+						<v-col cols="2">
+							<v-text-field class="text-align-right"
+								label="TX Fee"
+								v-model.number="fee_amount" suffix="MMX" disabled>
+							</v-text-field>
+						</v-col>
+					</v-row>
 
 					<v-card-actions class="py-0">
 						<v-spacer></v-spacer>
