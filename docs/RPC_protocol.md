@@ -22,7 +22,7 @@ A secure random token can be generated with the `generate_passwd` tool.
 `ADMIN` allows access to every endpoint, even spending from the wallet.
 `USER` does not allow wallet spending.
 
-To use the token, a HTTP header `x-api-token: <token>` needs to specified for every request.
+To use the token, a HTTP header `x-api-token: <token>` needs to be specified for every request.
 The name of this header can be changed by setting `token_header_name` in `HttpServer.json`.
 
 ## Native API
@@ -34,10 +34,10 @@ The native API can be accessed via `/api/`:
 - `/api/farmer/` to access Farmer API
 - `/api/harvester/` to access Harvester API
 
-Documentation for those are found in [modules](https://github.com/madMAx43v3r/mmx-node/tree/master/modules) folder.
+Documentation for those are found in [modules](https://github.com/madMAx43v3r/mmx-node/tree/master/modules).
 
-`GET` can be used for const methods.
-`POST` is needed for non-const methods, with the payload being a JSON object with the function arguments.
+`GET` can be used for `const` methods.
+`POST` is needed for `non-const` methods, with a JSON object payload containing the function arguments.
 Results are returned in JSON format.
 
 Hashes and addresses are returned as byte arrays, not as a hex or bech32 string.
