@@ -1721,6 +1721,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/keys") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto iter_index = query.find("index");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
@@ -1753,6 +1754,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/accounts") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		wallet->get_all_accounts(
 			[this, request_id](const std::vector<account_info_t>& list) {
 				respond(request_id, render_value(list));
@@ -1760,6 +1762,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/wallet/account") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto iter_index = query.find("index");
 		if(iter_index != query.end()) {
 			const uint32_t index = vnx::from_string<int64_t>(iter_index->second);
@@ -1773,6 +1776,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/balance") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto iter_index = query.find("index");
 		const auto iter_currency = query.find("currency");
 		const auto iter_with_zero = query.find("with_zero");
@@ -1791,6 +1795,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/contracts") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto index = get_param<int32_t>(query, "index", -1);
 		if(index >= 0) {
 			const auto type_name = get_param<vnx::optional<std::string>>(query, "type");
@@ -1822,6 +1827,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/address") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto index = get_param<int32_t>(query, "index", -1);
 		if(index >= 0) {
 			const auto limit = get_param<uint32_t>(query, "limit", 1);
@@ -1848,6 +1854,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/tokens") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		wallet->get_token_list(
 			[this, request_id](const std::set<addr_t>& tokens) {
 				get_context(std::unordered_set<addr_t>(tokens.begin(), tokens.end()), request_id,
@@ -1871,6 +1878,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/wallet/history") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto index = get_param<int32_t>(query, "index", -1);
 		if(index >= 0) {
 			query_filter_t filter;
@@ -1891,6 +1899,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/history/memo") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto index = get_param<int32_t>(query, "index", -1);
 		if(index >= 0) {
 			const auto memo = get_param<std::string>(query, "memo");
@@ -1912,6 +1921,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/tx_history") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto index = get_param<int32_t>(query, "index", -1);
 		if(index >= 0) {
 			const auto limit = get_param<int32_t>(query, "limit", 100);
@@ -1923,6 +1933,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/offers") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto iter_index = query.find("index");
 		if(iter_index != query.end()) {
 			const auto iter_state = query.find("state");
@@ -2185,6 +2196,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/wallet/swap/liquid") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto index = get_param<int32_t>(query, "index", -1);
 		if(index >= 0) {
 			wallet->get_swap_liquidity(index,
@@ -2346,6 +2358,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		}
 	}
 	else if(sub_path == "/farm/info") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		farmer->get_farm_info(
 			[this, request_id](std::shared_ptr<const FarmInfo> info) {
 				vnx::Object out;
@@ -2357,6 +2370,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/farm/blocks") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto iter_limit = query.find("limit");
 		const auto iter_since = query.find("since");
 		const int32_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
@@ -2372,6 +2386,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/farm/blocks/summary") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto iter_since = query.find("since");
 		const uint32_t since = iter_since != query.end() ? vnx::from_string<int64_t>(iter_since->second) : 0;
 		farmer->get_farmer_keys(
@@ -2401,6 +2416,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 	}
 	else if(sub_path == "/farm/proofs") {
+		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
 		const auto iter_limit = query.find("limit");
 		const size_t limit = iter_limit != query.end() ? vnx::from_string<int64_t>(iter_limit->second) : -1;
 		std::vector<vnx::Object> res;
