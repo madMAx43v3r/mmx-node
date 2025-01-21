@@ -1127,9 +1127,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		std::lock_guard lock(g_config_mutex);
 		const auto key = get_param<std::string>(query, "key");
 		if(key.size()) {
-			vnx::Variant value;
-			vnx::read_config(key, value);
-			respond(request_id, value);
+			respond(request_id, vnx::get_config(key, true));
 		} else {
 			vnx::Object object;
 			const auto config = vnx::get_all_configs(true);
