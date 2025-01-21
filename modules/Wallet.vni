@@ -149,6 +149,7 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void set_address_count(uint index, uint count);
 	
+	@Permission(permission_e.SPENDING)
 	KeyFile* export_wallet(uint index) const;
 	
 	vector<string> get_mnemonic_wordlist(string lang = "en") const;
