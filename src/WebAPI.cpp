@@ -1105,8 +1105,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 503, "lost sync with network");
 			return;
 		}
-		if(		sub_path.substr(0, 8) == "/wallet/"
-			||	sub_path.substr(0, 8) == "/farm/")
+		if(		sub_path.rfind("/wallet/", 0) == 0
+			||	sub_path.rfind("/farm/", 0) == 0)
 		{
 			throw vnx::permission_denied();
 		}
