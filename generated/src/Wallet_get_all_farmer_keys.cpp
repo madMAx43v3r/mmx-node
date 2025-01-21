@@ -108,6 +108,7 @@ std::shared_ptr<vnx::TypeCode> Wallet_get_all_farmer_keys::static_create_type_co
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<Wallet_get_all_farmer_keys>(); };
 	type_code->is_const = true;
 	type_code->return_type = ::mmx::Wallet_get_all_farmer_keys_return::static_get_type_code();
+	type_code->permission = "mmx.permission_e.SPENDING";
 	type_code->build();
 	return type_code;
 }

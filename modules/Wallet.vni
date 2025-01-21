@@ -166,9 +166,10 @@ module Wallet implements vnx.addons.HttpComponent {
 	@Permission(permission_e.SPENDING)
 	vector<string> get_mnemonic_seed(uint index) const;
 	
-	
+	@Permission(permission_e.SPENDING)
 	pair<skey_t, pubkey_t> get_farmer_keys(uint index) const;
 	
+	@Permission(permission_e.SPENDING)
 	vector<pair<skey_t, pubkey_t>> get_all_farmer_keys() const;
 	
 }
