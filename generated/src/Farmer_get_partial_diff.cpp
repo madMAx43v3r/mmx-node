@@ -130,6 +130,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_get_partial_diff::static_create_type_code(
 		field.name = "plot_nft";
 		field.code = {11, 32, 1};
 	}
+	type_code->permission = "mmx.permission_e.REMOTE";
 	type_code->build();
 	return type_code;
 }
