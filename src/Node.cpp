@@ -1891,6 +1891,9 @@ void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 			if(tx_offsets.size() != block->tx_count) {
 				throw std::logic_error("tx count mismatch");
 			}
+			if(block->tx_list.size() != block->tx_count) {
+				throw std::logic_error("tx count mismatch");
+			}
 			if(is_main) {
 				for(uint32_t i = 0; i < block->tx_count; ++i) {
 					const auto& tx = block->tx_list[i];
