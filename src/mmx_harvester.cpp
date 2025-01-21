@@ -37,10 +37,8 @@ int main(int argc, char** argv)
 	vnx::init("mmx_harvester", argc, argv, options);
 
 	std::string node_url = ":11330";
-	std::string endpoint = ":11333";
 
 	vnx::read_config("node", node_url);
-	vnx::read_config("endpoint", endpoint);
 
 	auto node = vnx::Endpoint::from_url(node_url);
 	if(auto tcp = std::dynamic_pointer_cast<const vnx::TcpEndpoint>(node)) {
@@ -54,9 +52,7 @@ int main(int argc, char** argv)
 	proxy->forward_list = {"Node", "Farmer"};
 
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
-		module->use_authentication = true;
-		module->default_access = "REMOTE";
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url("localhost:11333"));
 		module.start_detached();
 	}
 	{

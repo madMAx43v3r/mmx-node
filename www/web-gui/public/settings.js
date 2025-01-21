@@ -7,6 +7,7 @@ Vue.component('node-settings', {
 			loading: true,
 			timelord: null,
 			open_port: null,
+			allow_remote: null,
 			opencl_device_list_relidx: null,
 			opencl_device: null,
 			opencl_device_list: null,
@@ -29,6 +30,7 @@ Vue.component('node-settings', {
 					this.loading = false;
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
+					this.allow_remote = data["allow_remote"] ? true : false;
 					this.opencl_device = data["Node.opencl_device_select"] != null ? data["Node.opencl_device_select"] : -1;
 					this.opencl_device_list_relidx = [];
 					this.opencl_device_list = [{name: "None", value: -1}];
@@ -144,6 +146,11 @@ Vue.component('node-settings', {
 				this.set_config("Router.open_port", value, true);
 			}
 		},
+		allow_remote(value, prev) {
+			if(prev != null) {
+				this.set_config("allow_remote", value, true);
+			}
+		},
 		opencl_device(value, prev) {
 			if(prev != null) {
 				this.set_config("Node.opencl_device_select", value, true, true);
@@ -242,6 +249,11 @@ Vue.component('node-settings', {
 					<v-checkbox
 						v-model="open_port"
 						:label="$t('node_settings.open_port')"
+						class="my-0"
+					></v-checkbox>
+					<v-checkbox
+						v-model="allow_remote"
+						label="Allow remote service access (for remote harvesters)"
 						class="my-0"
 					></v-checkbox>
 

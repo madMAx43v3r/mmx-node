@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 	proxy->forward_list = {"Node", "Router"};
 
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(":11335"));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url("localhost:11335"));
 		module.start_detached();
 	}
 	{

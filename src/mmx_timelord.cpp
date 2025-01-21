@@ -39,10 +39,8 @@ int main(int argc, char** argv)
 	vnx::init("mmx_timelord", argc, argv, options);
 
 	std::string node_url = ":11330";
-	std::string endpoint = ":11332";
 
 	vnx::read_config("node", node_url);
-	vnx::read_config("endpoint", endpoint);
 
 	vnx::log_info() << "SHA-NI support: " << (sha256_ni_available() ? "yes" : "no");
 #ifdef __aarch64__
@@ -61,7 +59,7 @@ int main(int argc, char** argv)
 	proxy->forward_list = {"Node", "Wallet"};
 
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url("localhost:11332"));
 		module->use_authentication = true;
 		module->default_access = "REMOTE";
 		module.start_detached();

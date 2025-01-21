@@ -93,17 +93,22 @@ int main(int argc, char** argv)
 	bool with_wallet = true;
 	bool with_timelord = true;
 	bool with_harvester = true;
+	bool allow_remote = false;
 	uint32_t wapi_threads = 1;
-	std::string public_endpoint = "0.0.0.0:11330";		// for remote farmer, etc
+	std::string endpoint = "0.0.0.0";		// requires allow_remote
 
 	vnx::read_config("gui", with_gui);
 	vnx::read_config("wallet", with_wallet);
 	vnx::read_config("farmer", with_farmer);
 	vnx::read_config("timelord", with_timelord);
 	vnx::read_config("harvester", with_harvester);
+	vnx::read_config("allow_remote", allow_remote);
 	vnx::read_config("wapi_threads", wapi_threads);
-	vnx::read_config("public_endpoint", public_endpoint);
+	vnx::read_config("endpoint", endpoint);
 
+	if(!allow_remote) {
+		endpoint = "localhost";
+	}
 	wapi_threads = std::max(std::min(wapi_threads, 256u), 1u);
 
 	vnx::log_info() << "AVX2 support:   " << (avx2_available() ? "yes" : "no");
@@ -111,6 +116,8 @@ int main(int argc, char** argv)
 #ifdef __aarch64__
 	vnx::log_info() << "ARM-SHA2 support: " << (sha256_arm_available() ? "yes" : "no");
 #endif // __aarch64__
+
+	vnx::log_info() << "Remote service access is: " << (allow_remote ? "enabled on " + endpoint : "disabled");
 
 	if(with_farmer) {
 		with_wallet = true;
@@ -140,13 +147,15 @@ int main(int argc, char** argv)
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server0", vnx::Endpoint::from_url(public_endpoint));
+		// for remote farmer / timelord
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server0", vnx::Endpoint::from_url(endpoint + ":11330"));
 		module->use_authentication = true;
 		module->default_access = "REMOTE";
 		module.start_detached();
 	}
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server1", vnx::Endpoint::from_url(":11331"));
+		// for CLI
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server1", vnx::Endpoint::from_url("localhost:11331"));
 		module.start_detached();
 	}
 	if(with_wallet) {
@@ -158,7 +167,7 @@ int main(int argc, char** argv)
 			module.start_detached();
 		}
 		{
-			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url("localhost:11335"));
 			module.start_detached();
 		}
 	}
@@ -194,7 +203,7 @@ int main(int argc, char** argv)
 			module.start_detached();
 		}
 		{
-			vnx::Handle<vnx::Server> module = new vnx::Server("Server2", vnx::Endpoint::from_url(":11332"));
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server2", vnx::Endpoint::from_url("localhost:11332"));
 			module.start_detached();
 		}
 	}
@@ -205,7 +214,7 @@ int main(int argc, char** argv)
 		}
 		{
 			// for remote harvesters
-			vnx::Handle<vnx::Server> module = new vnx::Server("Server3", vnx::Endpoint::from_url("0.0.0.0:11333"));
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server3", vnx::Endpoint::from_url(endpoint + ":11333"));
 			module->use_authentication = true;
 			module->default_access = "REMOTE";
 			module.start_detached();
