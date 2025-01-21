@@ -11,6 +11,7 @@
 #include <mmx/fixed128.hpp>
 #include <mmx/tree_hash.h>
 #include <mmx/write_bytes.h>
+#include <mmx/mnemonic.h>
 #include <mmx/utils.h>
 
 #include <mmx/ChainParams.hxx>
@@ -72,6 +73,7 @@ int main(int argc, char** argv)
 	VNX_TEST_BEGIN("hash_t")
 	{
 		vnx::test::expect(hash_t().to_string(), "0000000000000000000000000000000000000000000000000000000000000000");
+		vnx::test::expect(hash_t(std::string()).to_string(), "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855");
 		vnx::test::expect(hash_t() < hash_t(), false);
 		vnx::test::expect(hash_t() > hash_t(), false);
 		vnx::test::expect(hash_t() < hash_t("1"), true);
@@ -397,6 +399,23 @@ int main(int argc, char** argv)
 				mmx::pos::verify(proof.proof_xs, plot_challenge, proof.plot_id, plot_filter, proof.ksize);
 			});
 		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("mnemonic")
+	{
+		vnx::test::expect(
+				mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(hash_t(), mmx::mnemonic::wordlist_en)),
+				"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon art");
+		vnx::test::expect(
+				mmx::mnemonic::words_to_seed(mmx::mnemonic::string_to_words("void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold"), mmx::mnemonic::wordlist_en).to_string(),
+				"8F9D98FD746F9D0AFA660965B00FB2891AB25495C653D37DB50D52EC1AC185F5");
+		hash_t seed;
+		vnx::from_string("8F9D98FD746F9D0AFA660965B00FB2891AB25495C653D37DB50D52EC1AC185F5", seed);
+		vnx::test::expect(seed.to_string(), "8F9D98FD746F9D0AFA660965B00FB2891AB25495C653D37DB50D52EC1AC185F5");
+		vnx::test::expect(
+				mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(seed, mmx::mnemonic::wordlist_en)),
+				"void come effort suffer camp survey warrior heavy shoot primary clutch crush open amazing screen patrol group space point ten exist slush involve unfold");
 	}
 	VNX_TEST_END()
 
