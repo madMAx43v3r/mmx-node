@@ -7,6 +7,12 @@
 			"vnx.addons.permission_e.HTTP_REQUEST",
 			"vnx.addons.permission_e.FILE_DOWNLOAD"
 		],
+		"USER": [
+			"mmx.permission_e.PUBLIC",
+			"mmx.permission_e.REMOTE",
+			"vnx.addons.permission_e.HTTP_REQUEST",
+			"vnx.addons.permission_e.FILE_DOWNLOAD"
+		],
 		"REMOTE": [
 			"VIEW",
 			"PUBLISH",
