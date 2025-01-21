@@ -426,6 +426,7 @@ const Settings = {
 		<div>
 			<node-settings></node-settings>
 			<wallet-settings></wallet-settings>
+			<build-version></build-version>
 		</div>
 	`
 }
@@ -743,7 +744,7 @@ Vue.component('git-update-checker', {
 		async update() {
 			this.commit_status_message = '';
 			this.show = false;
-			fetch('GIT_COMMIT_HASH.json')
+			fetch('/wapi/config/get?key=build')  // NOTE: Current build.version from WAPI, 'v0.13.9', 'v0.13.9-8-gd7d82d79' or 'v0.0.0.20250117' format
 			.then( response => {
                 if (!response.ok) {
                     throw Error(response.statusText);
@@ -751,23 +752,18 @@ Vue.component('git-update-checker', {
                 return response.json();
             })
 			.then( data => {
-				var hash = data.GIT_COMMIT_HASH;
-				if(hash) {
-					fetch(`https://api.github.com/repos/madMAx43v3r/mmx-node/compare/master...${hash}`)
+				var version = data.version;
+				if(version) {
+					fetch(`https://api.github.com/repos/madMAx43v3r/mmx-node/tags`) // NOTE: Switched to getting latest tags from GitHub (vs. commmit before)
 					.then( response => response.json() )
 					.then( data => {
-						if(data && (data.behind_by > 0 || data.ahead_by > 0)) {
-							this.show = true;
-
-							if(data.ahead_by > 0) {
-								this.commit_status_message += `${data.ahead_by} commits ahead`;
+						if(data && data[0]) { 
+							const latest = data[0].name;
+							version = version.split("-", 1)[0]; // NOTE: Remove Remove possible commits above/below '-8-gd7d82d79' from tag version.
+							if(version != latest) { // NOTE: Only trigger message if different version tag, interim commits don't trigger anymore
+								this.show = true;
+								this.commit_status_message += `${version}, compared to ${latest} at`;
 							}
-
-							if(data.behind_by > 0) {
-								if (this.commit_status_message) this.commit_status_message += ', ';
-								this.commit_status_message += `${data.behind_by} commits behind`;
-							}
-
 						}
 					})
 				}

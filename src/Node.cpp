@@ -46,6 +46,9 @@ void Node::init()
 
 void Node::main()
 {
+	vnx::read_config("build.version", node_version); // NOTE: Read into Node current build version written by cmake to config/default/build.json
+	vnx::read_config("build.commit", node_commit);
+
 #ifdef WITH_OPENCL
 	cl_context opencl_context = nullptr;
 	try {

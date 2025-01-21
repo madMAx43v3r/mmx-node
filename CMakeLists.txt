@@ -28,8 +28,6 @@ if(MSVC)
 else()
 	message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
-	include(cmake/commit_hash_json.cmake)
-	
 	find_package(OpenMP REQUIRED)
 	find_library(JEMALLOC_LIB NAMES jemalloc)
 	
@@ -57,6 +55,8 @@ else()
 		set(DISABLE_OPENCL 1)
 	endif()
 endif()
+
+include(cmake/build_version_json.cmake)
 
 add_library(secp256k1 INTERFACE IMPORTED)
 set_target_properties(secp256k1 PROPERTIES INTERFACE_LINK_LIBRARIES ${secp256k1_LIBRARY})

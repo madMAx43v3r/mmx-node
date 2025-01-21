@@ -529,6 +529,9 @@ private:
 	std::unordered_map<hash_t, std::pair<hash_t, int64_t>> voted_blocks;			// [prev => [block hash, time ms]]
 	std::map<pubkey_t, vnx::Hash64> farmer_keys;									// [key => farmer_mac] our farmer keys
 
+	std::string node_version;
+	std::string node_commit;
+
 	bool is_synced = false;
 	bool update_pending = false;
 	uint32_t min_pool_fee_ratio = 0;
