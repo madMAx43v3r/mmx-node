@@ -21,18 +21,24 @@ module Farmer {
 	optional<ulong> payout_threshold;				// custom payout threshold (if pool supports it)
 	
 	
+	@Permission(permission_e.REMOTE)
 	vnx.Hash64 get_mac_addr() const;
 	
+	@Permission(permission_e.REMOTE)
 	ulong get_partial_diff(addr_t plot_nft) const;
 	
+	@Permission(permission_e.REMOTE)
 	map<addr_t, ulong> get_partial_diffs(vector<addr_t> plot_nfts) const;
 	
+	@Permission(permission_e.REMOTE)
 	vector<pubkey_t> get_farmer_keys() const;
 	
 	FarmInfo* get_farm_info() const;
 	
+	@Permission(permission_e.SIGN_MSG)
 	BlockHeader* sign_block(BlockHeader* block) const;
 	
+	@Permission(permission_e.SIGN_MSG)
 	signature_t sign_vote(ValidatorVote* vote) const;
 	
 	

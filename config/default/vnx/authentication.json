@@ -1,16 +1,20 @@
 {
 	"permissions": {
-		"USER": [
-			"mmx.permission_e.PUBLIC",
-			"vnx.addons.permission_e.HTTP_REQUEST",
-			"vnx.addons.permission_e.FILE_DOWNLOAD",
-			"PUBLISH"
-		],
 		"ADMIN": [
 			"mmx.permission_e.PUBLIC",
+			"mmx.permission_e.REMOTE",
+			"mmx.permission_e.SPENDING",
 			"vnx.addons.permission_e.HTTP_REQUEST",
-			"vnx.addons.permission_e.FILE_DOWNLOAD",
-			"mmx.permission_e.SPENDING"
+			"vnx.addons.permission_e.FILE_DOWNLOAD"
+		],
+		"REMOTE": [
+			"VIEW",
+			"PUBLISH",
+			"TIME_SYNC",
+			"mmx.permission_e.PUBLIC",
+			"mmx.permission_e.REMOTE",
+			"vnx.addons.permission_e.HTTP_REQUEST",
+			"vnx.addons.permission_e.FILE_DOWNLOAD"
 		],
 		"NETWORK": [
 			"mmx.permission_e.PUBLIC",
@@ -22,6 +26,10 @@
 		{
 			"name": "mmx-admin",
 			"access_roles": ["ADMIN"]
+		},
+		{
+			"name": "mmx-user",
+			"access_roles": ["USER"]
 		}
 	]
 }

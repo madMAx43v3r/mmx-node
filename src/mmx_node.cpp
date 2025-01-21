@@ -82,6 +82,9 @@ int main(int argc, char** argv)
 
 	vnx::init("mmx_node", argc, argv, options);
 
+	if(!vnx::is_config_protected("passwd")) {
+		throw std::logic_error("missing config protection");
+	}
 	const auto params = mmx::get_params();
 	const auto api_token = mmx::hash_t::random().to_string();
 
@@ -139,7 +142,7 @@ int main(int argc, char** argv)
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server0", vnx::Endpoint::from_url(public_endpoint));
 		module->use_authentication = true;
-		module->default_access = "USER";
+		module->default_access = "REMOTE";
 		module.start_detached();
 	}
 	{
@@ -204,7 +207,7 @@ int main(int argc, char** argv)
 			// for remote harvesters
 			vnx::Handle<vnx::Server> module = new vnx::Server("Server3", vnx::Endpoint::from_url("0.0.0.0:11333"));
 			module->use_authentication = true;
-			module->default_access = "USER";
+			module->default_access = "REMOTE";
 			module.start_detached();
 		}
 	}

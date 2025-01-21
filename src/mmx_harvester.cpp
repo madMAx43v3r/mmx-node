@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint));
 		module->use_authentication = true;
-		module->default_access = "USER";
+		module->default_access = "REMOTE";
 		module.start_detached();
 	}
 	{
