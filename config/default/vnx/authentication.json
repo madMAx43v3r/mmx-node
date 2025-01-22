@@ -1,6 +1,7 @@
 {
 	"permissions": {
 		"ADMIN": [
+			"!PROTECTED_CONFIG",
 			"mmx.permission_e.PUBLIC",
 			"mmx.permission_e.REMOTE",
 			"mmx.permission_e.SPENDING",

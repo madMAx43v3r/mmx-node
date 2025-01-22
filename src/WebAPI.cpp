@@ -1144,6 +1144,10 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 		{
 			const auto key = iter_key->second.to_string_value();
 			const auto value = iter_value->second;
+
+			if(vnx::is_config_protected(key)) {
+				throw std::logic_error("config is protected");
+			}
 			vnx::set_config(key, value);
 
 			const bool tmp_only = args["tmp_only"];
