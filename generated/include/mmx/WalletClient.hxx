@@ -172,8 +172,6 @@ public:
 	
 	void set_address_count_async(const uint32_t& index = 0, const uint32_t& count = 0);
 	
-	std::shared_ptr<const ::mmx::KeyFile> export_wallet(const uint32_t& index = 0);
-	
 	std::vector<std::string> get_mnemonic_wordlist(const std::string& lang = "en");
 	
 	std::set<::mmx::addr_t> get_token_list();
@@ -185,6 +183,8 @@ public:
 	void rem_token(const ::mmx::addr_t& address = ::mmx::addr_t());
 	
 	void rem_token_async(const ::mmx::addr_t& address = ::mmx::addr_t());
+	
+	std::shared_ptr<const ::mmx::KeyFile> export_wallet(const uint32_t& index = 0);
 	
 	::mmx::hash_t get_master_seed(const uint32_t& index = 0);
 	

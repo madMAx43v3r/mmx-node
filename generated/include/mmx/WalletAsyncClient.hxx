@@ -246,10 +246,6 @@ public:
 			const std::function<void()>& _callback = std::function<void()>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
-	uint64_t export_wallet(const uint32_t& index = 0, 
-			const std::function<void(std::shared_ptr<const ::mmx::KeyFile>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::KeyFile>)>(),
-			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
-	
 	uint64_t get_mnemonic_wordlist(const std::string& lang = "en", 
 			const std::function<void(const std::vector<std::string>&)>& _callback = std::function<void(const std::vector<std::string>&)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
@@ -264,6 +260,10 @@ public:
 	
 	uint64_t rem_token(const ::mmx::addr_t& address = ::mmx::addr_t(), 
 			const std::function<void()>& _callback = std::function<void()>(),
+			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
+	
+	uint64_t export_wallet(const uint32_t& index = 0, 
+			const std::function<void(std::shared_ptr<const ::mmx::KeyFile>)>& _callback = std::function<void(std::shared_ptr<const ::mmx::KeyFile>)>(),
 			const std::function<void(const vnx::exception&)>& _error_callback = std::function<void(const vnx::exception&)>());
 	
 	uint64_t get_master_seed(const uint32_t& index = 0, 
@@ -384,11 +384,11 @@ private:
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_import_wallet;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_remove_account;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_set_address_count;
-	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::KeyFile>)>, std::function<void(const vnx::exception&)>>> vnx_queue_export_wallet;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_mnemonic_wordlist;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::set<::mmx::addr_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_token_list;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_add_token;
 	std::unordered_map<uint64_t, std::pair<std::function<void()>, std::function<void(const vnx::exception&)>>> vnx_queue_rem_token;
+	std::unordered_map<uint64_t, std::pair<std::function<void(std::shared_ptr<const ::mmx::KeyFile>)>, std::function<void(const vnx::exception&)>>> vnx_queue_export_wallet;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const ::mmx::hash_t&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_master_seed;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::vector<std::string>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_mnemonic_seed;
 	std::unordered_map<uint64_t, std::pair<std::function<void(const std::pair<::mmx::skey_t, ::mmx::pubkey_t>&)>, std::function<void(const vnx::exception&)>>> vnx_queue_get_farmer_keys;

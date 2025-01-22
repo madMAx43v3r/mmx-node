@@ -47,7 +47,6 @@ public:
 	uint32_t default_expire = 100;
 	int32_t lock_timeout_sec = 600;
 	int32_t cache_timeout_ms = 1000;
-	vnx::bool_t enable_bls = true;
 	std::set<::mmx::addr_t> token_whitelist;
 	
 	typedef ::vnx::Module Super;
@@ -137,11 +136,11 @@ protected:
 	virtual void import_wallet(const ::mmx::account_t& config, std::shared_ptr<const ::mmx::KeyFile> key_file, const vnx::optional<std::string>& passphrase) = 0;
 	virtual void remove_account(const uint32_t& index, const uint32_t& account) = 0;
 	virtual void set_address_count(const uint32_t& index, const uint32_t& count) = 0;
-	virtual std::shared_ptr<const ::mmx::KeyFile> export_wallet(const uint32_t& index) const = 0;
 	virtual std::vector<std::string> get_mnemonic_wordlist(const std::string& lang) const = 0;
 	virtual std::set<::mmx::addr_t> get_token_list() const = 0;
 	virtual void add_token(const ::mmx::addr_t& address) = 0;
 	virtual void rem_token(const ::mmx::addr_t& address) = 0;
+	virtual std::shared_ptr<const ::mmx::KeyFile> export_wallet(const uint32_t& index) const = 0;
 	virtual ::mmx::hash_t get_master_seed(const uint32_t& index) const = 0;
 	virtual std::vector<std::string> get_mnemonic_seed(const uint32_t& index) const = 0;
 	virtual std::pair<::mmx::skey_t, ::mmx::pubkey_t> get_farmer_keys(const uint32_t& index) const = 0;
@@ -158,7 +157,7 @@ protected:
 
 template<typename T>
 void WalletBase::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<WalletBase>(14);
+	_visitor.template type_begin<WalletBase>(13);
 	_visitor.type_field("key_files", 0); _visitor.accept(key_files);
 	_visitor.type_field("accounts", 1); _visitor.accept(accounts);
 	_visitor.type_field("config_path", 2); _visitor.accept(config_path);
@@ -171,9 +170,8 @@ void WalletBase::accept_generic(T& _visitor) const {
 	_visitor.type_field("default_expire", 9); _visitor.accept(default_expire);
 	_visitor.type_field("lock_timeout_sec", 10); _visitor.accept(lock_timeout_sec);
 	_visitor.type_field("cache_timeout_ms", 11); _visitor.accept(cache_timeout_ms);
-	_visitor.type_field("enable_bls", 12); _visitor.accept(enable_bls);
-	_visitor.type_field("token_whitelist", 13); _visitor.accept(token_whitelist);
-	_visitor.template type_end<WalletBase>(14);
+	_visitor.type_field("token_whitelist", 12); _visitor.accept(token_whitelist);
+	_visitor.template type_end<WalletBase>(13);
 }
 
 

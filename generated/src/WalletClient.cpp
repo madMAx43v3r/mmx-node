@@ -957,19 +957,6 @@ void WalletClient::set_address_count_async(const uint32_t& index, const uint32_t
 	vnx_request(_method, true);
 }
 
-std::shared_ptr<const ::mmx::KeyFile> WalletClient::export_wallet(const uint32_t& index) {
-	auto _method = ::mmx::Wallet_export_wallet::create();
-	_method->index = index;
-	auto _return_value = vnx_request(_method, false);
-	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_export_wallet_return>(_return_value)) {
-		return _result->_ret_0;
-	} else if(_return_value && !_return_value->is_void()) {
-		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::KeyFile>>();
-	} else {
-		throw std::logic_error("WalletClient: invalid return value");
-	}
-}
-
 std::vector<std::string> WalletClient::get_mnemonic_wordlist(const std::string& lang) {
 	auto _method = ::mmx::Wallet_get_mnemonic_wordlist::create();
 	_method->lang = lang;
@@ -1017,6 +1004,19 @@ void WalletClient::rem_token_async(const ::mmx::addr_t& address) {
 	auto _method = ::mmx::Wallet_rem_token::create();
 	_method->address = address;
 	vnx_request(_method, true);
+}
+
+std::shared_ptr<const ::mmx::KeyFile> WalletClient::export_wallet(const uint32_t& index) {
+	auto _method = ::mmx::Wallet_export_wallet::create();
+	_method->index = index;
+	auto _return_value = vnx_request(_method, false);
+	if(auto _result = std::dynamic_pointer_cast<const ::mmx::Wallet_export_wallet_return>(_return_value)) {
+		return _result->_ret_0;
+	} else if(_return_value && !_return_value->is_void()) {
+		return _return_value->get_field_by_index(0).to<std::shared_ptr<const ::mmx::KeyFile>>();
+	} else {
+		throw std::logic_error("WalletClient: invalid return value");
+	}
 }
 
 ::mmx::hash_t WalletClient::get_master_seed(const uint32_t& index) {
