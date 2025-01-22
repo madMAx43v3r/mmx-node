@@ -203,6 +203,10 @@ add_library(mmx_modules SHARED
 	src/http_request.cpp
 )
 
+add_library(mmx_qtgui STATIC
+	src/Qt_GUI.cpp
+)
+
 add_library(uint256_t STATIC
 	uint256_t/uint128_t/uint128_t.cpp
 	uint256_t/uint256_t.cpp
@@ -226,6 +230,10 @@ target_include_directories(mmx_iface
 		generated/solution/include
 )
 
+target_include_directories(mmx_qtgui
+	PUBLIC include
+)
+
 target_include_directories(uint256_t
 	PUBLIC uint256_t uint256_t/uint128_t
 )
@@ -233,12 +241,11 @@ target_include_directories(uint256_t
 target_compile_definitions(uint256_t PUBLIC _UINT256_T_STATIC _UINT128_T_STATIC)
 
 target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t bech32 secp256k1)
-
 target_link_libraries(mmx_db mmx_iface)
 target_link_libraries(mmx_pos mmx_iface)
 target_link_libraries(mmx_vm mmx_db mmx_iface)
-
 target_link_libraries(mmx_modules mmx_pos mmx_vm mmx_db mmx_iface)
+target_link_libraries(mmx_qtgui vnx_base)
 
 if(MSVC)
 	set_target_properties(vnx_base_static PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
@@ -312,7 +319,7 @@ add_executable(mmx_timelord src/mmx_timelord.cpp)
 add_executable(mmx_harvester src/mmx_harvester.cpp)
 
 target_link_libraries(mmx mmx_iface mmx_vm)
-target_link_libraries(mmx_node mmx_modules)
+target_link_libraries(mmx_node mmx_modules mmx_qtgui)
 target_link_libraries(mmx_farmer mmx_modules)
 target_link_libraries(mmx_wallet mmx_modules)
 target_link_libraries(mmx_timelord mmx_modules)
@@ -322,8 +329,7 @@ if(Qt5_FOUND)
 	# requires: qtwebengine5-dev
 	message(STATUS "Enabling WITH_QT")
 	add_compile_definitions(WITH_QT)
-	target_link_libraries(mmx_node Qt5::Widgets Qt5::WebEngine Qt5::WebEngineWidgets)
-# 	set_target_properties(mmx_node PROPERTIES AUTOMOC TRUE)
+	target_link_libraries(mmx_qtgui Qt5::Widgets Qt5::WebEngine Qt5::WebEngineWidgets)
 endif()
 
 install(TARGETS mmx_db DESTINATION lib)
