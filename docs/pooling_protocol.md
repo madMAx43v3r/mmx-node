@@ -112,7 +112,7 @@ Returns status 200 with `application/json` object as follows:
 Returns pool information as `application/json` object:
 - `name`
 - `description`
-- `fee`: Pool fee (0 to 1)
+- `fee`: Pool fee (0 to 1, 1 = 100%)
 - `logo_path`: Relative path for logo image, starting with `/`.
 - `protocol_version`: `1`
 - `pool_target`: Plot NFT target address
