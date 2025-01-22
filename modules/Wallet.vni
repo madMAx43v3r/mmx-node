@@ -19,8 +19,6 @@ module Wallet implements vnx.addons.HttpComponent {
 	int lock_timeout_sec = 600;				// when to auto-lock after unlock [sec]
 	int cache_timeout_ms = 1000;			// how often to update from node [ms]
 	
-	bool enable_bls = true;
-	
 	set<addr_t> token_whitelist;
 	
 	
@@ -149,9 +147,6 @@ module Wallet implements vnx.addons.HttpComponent {
 	
 	void set_address_count(uint index, uint count);
 	
-	@Permission(permission_e.SPENDING)
-	KeyFile* export_wallet(uint index) const;
-	
 	vector<string> get_mnemonic_wordlist(string lang = "en") const;
 	
 	set<addr_t> get_token_list() const;
@@ -159,6 +154,9 @@ module Wallet implements vnx.addons.HttpComponent {
 	void add_token(addr_t address);
 	
 	void rem_token(addr_t address);
+	
+	@Permission(permission_e.SPENDING)
+	KeyFile* export_wallet(uint index) const;
 	
 	@Permission(permission_e.SPENDING)
 	hash_t get_master_seed(uint index) const;
