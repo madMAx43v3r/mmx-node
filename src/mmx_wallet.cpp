@@ -7,6 +7,7 @@
 
 #include <mmx/Wallet.h>
 #include <mmx/WebAPI.h>
+#include <mmx/Qt_GUI.h>
 
 #include <vnx/addons/FileServer.h>
 #include <vnx/addons/HttpServer.h>
@@ -40,11 +41,16 @@ int main(int argc, char** argv)
 
 	vnx::init("mmx_wallet", argc, argv, options);
 
+	bool with_gui = false;
 	std::string node_url = ":11330";
+
+	vnx::read_config("gui", with_gui);
 	vnx::read_config("node", node_url);
 
 	vnx::write_config("farmer", false);
 	vnx::write_config("local_node", false);
+
+	const auto api_token = mmx::hash_t::random().to_string();
 
 	mmx::sync_type_codes(mmx_network + "wallet/type_codes");
 
@@ -85,6 +91,8 @@ int main(int argc, char** argv)
 		module->directory_files.push_back("index.html");
 		module.start_detached();
 	}
+	int http_port = 0;
+	std::string api_token_header;
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
 		module->default_access = "NETWORK";
@@ -94,12 +102,29 @@ int main(int argc, char** argv)
 		module->components["/api/wallet/"] = "Wallet";
 		module->components["/api/router/"] = "Router";
 		module->components["/gui/"] = "FileServer_1";
+		if(with_gui) {
+			http_port = module->port;
+			api_token_header = module->token_header_name;
+			module->token_map[api_token] = "ADMIN";
+		}
 		module.start_detached();
 	}
 
 	proxy.start();
 
-	vnx::wait();
+	if(with_gui) {
+		const auto host = "localhost:" + std::to_string(http_port);
+#ifdef WITH_QT
+		qt_gui_exec(argv, host, api_token, api_token_header);
+#else
+		vnx::log_warn() << "No GUI available";
+		vnx::wait();
+#endif
+	} else {
+		vnx::wait();
+	}
+
+	vnx::close();
 
 	mmx::secp256k1_free();
 

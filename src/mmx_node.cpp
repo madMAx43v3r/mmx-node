@@ -212,6 +212,8 @@ int main(int argc, char** argv)
 		vnx::log_warn() << "No GUI available";
 		vnx::wait();
 #endif
+	} else {
+		vnx::wait();
 	}
 
 	vnx::close();

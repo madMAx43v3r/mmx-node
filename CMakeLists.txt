@@ -321,7 +321,7 @@ add_executable(mmx_harvester src/mmx_harvester.cpp)
 target_link_libraries(mmx mmx_iface mmx_vm)
 target_link_libraries(mmx_node mmx_modules mmx_qtgui)
 target_link_libraries(mmx_farmer mmx_modules)
-target_link_libraries(mmx_wallet mmx_modules)
+target_link_libraries(mmx_wallet mmx_modules mmx_qtgui)
 target_link_libraries(mmx_timelord mmx_modules)
 target_link_libraries(mmx_harvester mmx_modules)
 
