@@ -236,7 +236,7 @@ Vue.component('node-settings', {
 				</v-card-text>
 			</v-card>
 
-			<v-card class="my-2">
+			<v-card v-if="$root.local_node" class="my-2">
 				<v-card-title>{{ $t('node_settings.general') }}</v-card-title>
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
@@ -268,16 +268,18 @@ Vue.component('node-settings', {
 				</v-card-text>
 			</v-card>
 
-			<v-card class="my-2">
+			<v-card v-if="$root.farmer || $root.local_node" class="my-2">
 				<v-card-title>{{ $t('node_settings.reward') }}</v-card-title>
 				<v-card-text>
 					<v-text-field
+						v-if="$root.farmer"
 						:label="$t('node_settings.farmer_reward_address')"
 						:placeholder="$t('common.reward_address_placeholder')"
 						:value="farmer_reward_addr" @change="value => farmer_reward_addr = value"	
 					></v-text-field>
 
 					<v-text-field
+						v-if="$root.local_node"
 						:label="$t('node_settings.timeLord_reward_address')"
 						:placeholder="$t('common.reward_address_placeholder')"
 						:value="timelord_reward_addr" @change="value => timelord_reward_addr = value"
@@ -286,7 +288,7 @@ Vue.component('node-settings', {
 				</v-card-text>
 			</v-card>
 			
-			<v-card class="my-2">
+			<v-card v-if="$root.local_node" class="my-2">
 				<v-card-title>{{ $t('node_settings.blockchain') }}</v-card-title>
 				<v-card-text>
 					<v-text-field
@@ -297,7 +299,7 @@ Vue.component('node-settings', {
 				</v-card-text>
 			</v-card>
 			
-			<v-card class="my-2">
+			<v-card v-if="$root.farmer" class="my-2">
 				<v-card-title>{{ $t('harvester_settings.harvester') }}</v-card-title>
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>

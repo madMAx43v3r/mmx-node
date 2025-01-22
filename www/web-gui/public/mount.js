@@ -129,6 +129,7 @@ Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
         data: {
 			farmer: false,
 			wallet: false,
+			local_node: false,
 			params: null,
             nodeInfo: null
         },
@@ -163,6 +164,9 @@ Vue.prototype.$isWinGUI = typeof window.mmx !== 'undefined';
 			fetch('/wapi/config/get?key=wallet')
 				.then(response => response.json())
 				.then(data => this.wallet = data || data == null ? true : false);
+			fetch('/wapi/config/get?key=local_node')
+				.then(response => response.json())
+				.then(data => this.local_node = data || data == null ? true : false);
 		}
 
     });

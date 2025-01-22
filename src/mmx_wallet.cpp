@@ -43,6 +43,9 @@ int main(int argc, char** argv)
 	std::string node_url = ":11330";
 	vnx::read_config("node", node_url);
 
+	vnx::write_config("farmer", false);
+	vnx::write_config("local_node", false);
+
 	mmx::sync_type_codes(mmx_network + "wallet/type_codes");
 
 	auto node = vnx::Endpoint::from_url(node_url);
