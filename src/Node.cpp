@@ -1354,14 +1354,6 @@ void Node::reset()
 	history_log.clear();
 	contract_cache.clear();
 
-	// check for correct genesis
-	// TODO: remove this again
-	if(auto block = get_block_at(0)) {
-		if(block->hash.to_string() != "40248913714C8EEF21EB87708EE6DE4D1343F1A684EE9BD11BCE36BD7253D2A4") {
-			db->revert(0);
-		}
-	}
-
 	uint32_t height = 0;
 	if(height_map.find_last(height, state_hash))
 	{
