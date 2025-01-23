@@ -982,14 +982,12 @@ void Wallet::create_account(const account_t& config, const vnx::optional<std::st
 	}
 	const auto index = std::max<uint32_t>(max_key_files, wallets.size());
 	add_account(index, config, passphrase);
+	accounts.push_back(config);
 
 	const std::string path = config_path + vnx_name + ".json";
 	{
 		auto object = vnx::read_config_file(path);
-		auto& accounts = object["accounts+"];
-		auto list = accounts.to<std::vector<account_t>>();
-		list.push_back(config);
-		accounts = list;
+		object["accounts+"] = accounts;
 		vnx::write_config_file(path, object);
 	}
 }
