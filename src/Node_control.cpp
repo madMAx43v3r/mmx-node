@@ -24,9 +24,9 @@ namespace mmx {
 
 void Node::update_control()
 {
-	const auto fetch_func = [this](const std::string& url, const std::string& file_path, const std::string& key) {
+	const auto fetch_func = [this](const std::string& url, const std::string& file_path, const std::string& key, const std::string& options = "") {
 		try {
-			http_request_file(url, file_path);
+			http_request_file(url, file_path, options);
 			if(vnx::do_run()) {
 				add_task(std::bind(&Node::update_control, this));
 			}
@@ -145,11 +145,11 @@ void Node::update_control()
 		}
 	}
 
-	double gold_price = 0;
+	double gold_price_usd = 0;
 	if(metalsdev_price) {
-		gold_price = *metalsdev_price;
+		gold_price_usd = *metalsdev_price;
 	} else if(swissquote_price) {
-		gold_price = *swissquote_price;
+		gold_price_usd = *swissquote_price;
 	} else {
 		if(!try_again) {
 			reward_vote = 0;
@@ -158,12 +158,9 @@ void Node::update_control()
 		return;
 	}
 
-	if(mmx_usd_swap_addr == addr_t()) {
-		log(INFO) << "Reward voting is disabled due to lack of MMX swap / exchange";
-		return;
-	}
+	std::vector<double> mmx_price_inputs_usd;
 
-	try {
+	if(mmx_usd_swap_addr != addr_t()) try {
 		const auto swap_info = get_swap_info(mmx_usd_swap_addr);
 		const auto usd_contract_addr = swap_info.tokens[1];
 		const auto usd_contract = get_contract_as<mmx::contract::TokenBase>(usd_contract_addr);
@@ -173,24 +170,82 @@ void Node::update_control()
 		if(!swap_info.balance[0] || !swap_info.balance[1]) {
 			throw std::runtime_error("missing swap liquidity");
 		}
-		const auto mmx_usd_price = to_value(swap_info.balance[1], usd_contract->decimals) / to_value(swap_info.balance[0], params->decimals);
-		const auto current = gold_price / mmx_usd_price;
-
-		if(current > params->target_mmx_gold_price * 1.01) {
-			reward_vote = -1;
-		}
-		else if(current < params->target_mmx_gold_price / 1.01) {
-			reward_vote = 1;
-		}
-		else {
-			reward_vote = 0;
-		}
-		log(INFO) << u8"\U0001F4B5 MMX price = " << mmx_usd_price << " USD, XAU price = " << gold_price << " USD, MMX per ounce = "
-				<< current << " MMX (target " << params->target_mmx_gold_price << "), reward vote = " << reward_vote;
+		const auto price = to_value(swap_info.balance[1], usd_contract->decimals) / to_value(swap_info.balance[0], params->decimals);
+		mmx_price_inputs_usd.push_back(price);
 	}
 	catch(const std::exception& ex) {
-		log(WARN) << "Failed to calculate reward vote: " << ex.what();
+		log(WARN) << "Failed to get MMX swap price: " << ex.what();
 	}
+
+	{
+		const std::string file_path = storage_path + "safetrade_mmx_usdt.json";
+
+		if(is_expired(file_path)) {
+			const std::string key = "safetrade.com";
+			if(pending_fetch.insert(key).second) {
+				const auto tmp = vnx::from_hex_string("2d482022757365722d6167656e743a204d4d582d4e6f64652d313133333722");
+				const std::string options((const char*)tmp.data(), tmp.size());
+				fetch_threads->add_task(std::bind(
+						fetch_func, "https://safe.trade/api/v2/trade/public/currencies/mmx", file_path, key, options));
+			}
+			try_again = true;
+		} else {
+			try {
+				std::ifstream stream(file_path);
+				const auto json = vnx::read_json(stream, true);
+				if(!json) {
+					throw std::logic_error("empty file");
+				}
+				const auto object = json->to_object();
+
+				if(object["status"].to_string_value() != "enabled") {
+					throw std::logic_error("bad status: " + object["status"].to_string_value());
+				}
+				if(object["id"].to_string_value() != "mmx") {
+					throw std::logic_error("expected MMX");
+				}
+				const auto price = std::stod(object["price"].to_string_value());
+				if(price <= 0) {
+					throw std::logic_error("invalid price: " + std::to_string(price));
+				}
+				mmx_price_inputs_usd.push_back(price);
+				log(INFO) << "Got safetrade.com MMX price: " << price << " USD";
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to parse " << file_path << ": " << ex.what();
+			}
+		}
+	}
+
+	if(mmx_price_inputs_usd.empty()) {
+		if(!try_again) {
+			reward_vote = 0;
+			log(INFO) << "Reward voting is disabled due to lack of MMX swap / exchange";
+		}
+		return;
+	}
+	std::sort(mmx_price_inputs_usd.begin(), mmx_price_inputs_usd.end());
+
+	double mmx_price_usd = 0;
+	if(mmx_price_inputs_usd.size() % 2) {
+		mmx_price_usd = mmx_price_inputs_usd[mmx_price_inputs_usd.size() / 2];
+	} else {
+		const auto low = mmx_price_inputs_usd.size() / 2;
+		mmx_price_usd = (mmx_price_inputs_usd[low] + mmx_price_inputs_usd[low + 1]) / 2;
+	}
+	const auto current = gold_price_usd / mmx_price_usd;
+
+	if(current > params->target_mmx_gold_price * 1.01) {
+		reward_vote = -1;
+	}
+	else if(current < params->target_mmx_gold_price / 1.01) {
+		reward_vote = 1;
+	}
+	else {
+		reward_vote = 0;
+	}
+	log(INFO) << u8"\U0001F4B5 MMX price = " << mmx_price_usd << " USD, XAU price = " << gold_price_usd << " USD, MMX per ounce = "
+			<< current << " MMX (target " << params->target_mmx_gold_price << "), reward vote = " << reward_vote;
 }
 
 

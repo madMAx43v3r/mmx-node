@@ -15,12 +15,12 @@
 
 namespace mmx {
 
-void http_request_file(const std::string& url, const std::string& file_path)
+void http_request_file(const std::string& url, const std::string& file_path, const std::string& options)
 {
 	std::string curl_path;
 	vnx::read_config("curl.path", curl_path);
 
-	const std::string cmd = curl_path + "curl -s -m 100 \"" + url + "\" -o \"" + file_path + "\"";
+	const std::string cmd = curl_path + "curl -s -m 100 " + options + " \"" + url + "\" -o \"" + file_path + "\"";
 
 	if(std::system(cmd.c_str())) {
 		throw std::runtime_error("curl request failed");

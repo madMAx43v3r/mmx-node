@@ -13,7 +13,7 @@
 
 namespace mmx {
 
-void http_request_file(const std::string& url, const std::string& file_path);
+void http_request_file(const std::string& url, const std::string& file_path, const std::string& options = "");
 
 
 } // mmx
