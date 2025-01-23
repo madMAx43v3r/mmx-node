@@ -752,15 +752,21 @@ Vue.component('git-update-checker', {
                 return response.json();
             })
 			.then( data => {
-				var version = data.version;
-				if(version) {
+				if(data && data.version) {
+					var version = data.version;
 					fetch(`https://api.github.com/repos/madMAx43v3r/mmx-node/tags`) // NOTE: Switched to getting latest tags from GitHub (vs. commmit before)
 					.then( response => response.json() )
 					.then( data => {
-						if(data && data[0]) { 
-							const latest = data[0].name;
-							version = version.split("-", 1)[0]; // NOTE: Remove Remove possible commits above/below '-8-gd7d82d79' from tag version.
-							if(version != latest) { // NOTE: Only trigger message if different version tag, interim commits don't trigger anymore
+						if(data) {
+							var latest = '';
+							for(let item of data) {
+								if(item && item.name.length && item.name[0] === "v"){ // NOTE: Filter latest release to first tag starting with a 'v' character
+									latest = item.name;
+									break;
+								}
+							}
+							version = version.split("-", 1)[0]; // NOTE: Remove possible commits above/below '-8-gd7d82d79' from tag version.
+							if(version !== latest) { // NOTE: Only trigger message if different version tag, interim commits don't trigger anymore
 								this.show = true;
 								this.commit_status_message += `${version}, compared to ${latest} at`;
 							}

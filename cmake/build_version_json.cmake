@@ -2,7 +2,7 @@
 find_package(Git)
 
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} describe --tags
+  COMMAND ${GIT_EXECUTABLE} describe --tags --match "v[0-9]*.[0-9]*.[0-9]*"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_BUILD_VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE
