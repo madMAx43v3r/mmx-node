@@ -3,7 +3,7 @@ Vue.component('node-menu', {
 	template: `
 		<v-tabs>
 			<v-tab to="/node/log">{{ $t('node_menu.log') }}</v-tab>
-			<v-tab to="/node/peers">{{ $t('node_menu.peers') }}</v-tab>
+			<v-tab to="/node/peers" v-if="$root.local_node">{{ $t('node_menu.peers') }}</v-tab>
 			<v-tab to="/node/blocks">{{ $t('node_menu.blocks') }}</v-tab>
 			<v-tab to="/node/netspace">{{ $t('node_menu.netspace') }}</v-tab>
 			<v-tab to="/node/vdf_speed">{{ $t('node_menu.vdf_speed') }}</v-tab>
