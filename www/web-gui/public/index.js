@@ -744,7 +744,7 @@ Vue.component('git-update-checker', {
 		async update() {
 			this.commit_status_message = '';
 			this.show = false;
-			fetch('/wapi/config/get?key=build')  // NOTE: Current build.version from WAPI, 'v0.13.9', 'v0.13.9-8-gd7d82d79' or 'v0.0.0.20250117' format
+			fetch('/wapi/config/get?key=build')
 			.then( response => {
                 if (!response.ok) {
                     throw Error(response.statusText);
@@ -754,19 +754,19 @@ Vue.component('git-update-checker', {
 			.then( data => {
 				if(data && data.version) {
 					var version = data.version;
-					fetch(`https://api.github.com/repos/madMAx43v3r/mmx-node/tags`) // NOTE: Switched to getting latest tags from GitHub (vs. commmit before)
+					fetch(`https://api.github.com/repos/madMAx43v3r/mmx-node/tags`)
 					.then( response => response.json() )
 					.then( data => {
 						if(data) {
 							var latest = '';
 							for(let item of data) {
-								if(item && item.name.length && item.name[0] === "v"){ // NOTE: Filter latest release to first tag starting with a 'v' character
+								if(item && item.name.length && item.name[0] === "v"){
 									latest = item.name;
 									break;
 								}
 							}
-							version = version.split("-", 1)[0]; // NOTE: Remove possible commits above/below '-8-gd7d82d79' from tag version.
-							if(version !== latest) { // NOTE: Only trigger message if different version tag, interim commits don't trigger anymore
+							version = version.split("-", 1)[0];
+							if(version !== latest) {
 								this.show = true;
 								this.commit_status_message += `${version}, compared to ${latest} at`;
 							}

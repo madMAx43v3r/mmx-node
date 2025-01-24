@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 
 	vnx::init("mmx_node", argc, argv, options);
 	{
-		std::string version; // NOTE: Read and log current build version written by cmake to config/default/build.json
+		std::string version;
 		std::string commit;
 		vnx::read_config("build.version", version);
 		vnx::read_config("build.commit", commit);
