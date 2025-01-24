@@ -187,6 +187,7 @@ Vue.component('explore-transactions', {
 				{ text: this.$t('explore_transactions.n_out'), value: 'outputs.length' },
 				{ text: this.$t('explore_transactions.n_op'), value: 'operations.length' },
 				{ text: this.$t('explore_transactions.transaction_id'), value: 'transaction_id' },
+				{ text: this.$t('account_tx_history.time'), value: 'time' },
 			]
 		}
 	},
@@ -235,7 +236,11 @@ Vue.component('explore-transactions', {
 			</template>
 
 			<template v-slot:item.transaction_id="{ item }">
-				<router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link>
+				<router-link :to="'/explore/transaction/' + item.id">{{get_short_hash(item.id, 16)}}</router-link>
+			</template>
+
+			<template v-slot:item.time="{ item }">
+				{{new Date(item.time).toLocaleString()}}
 			</template>
 
 		</v-data-table>
