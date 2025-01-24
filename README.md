@@ -4,6 +4,8 @@ _“ MMX &ndash; fast, low cost, feature rich, decentralized &ndash; with tokeno
 
 A blockchain written from scratch, doing most things differently.
 
+See the whitepaper: [MMX_Whitepaper_110125.pdf](https://github.com/madMAx43v3r/mmx-node/blob/master/docs/MMX_Whitepaper_110125.pdf)
+
 Design
 - Variable token supply governed by consensus (1 block = 1 vote)
 - High throughput L1 with consistent block interval (500 TPS, 10 sec)
