@@ -12,12 +12,9 @@ After Mainnet
 - RPC servers auto-restart with pm2
 - Wallet contacts
 - Log file deletion
-- Info that wallet remove will not delete wallet.dat on-disk (CLI + GUI)
-- SafeTrade price input
 - Improve CLI wallet create UX, same as GUI (but still allow offline create)
 - MMX wallet create show address
-- Explorer show TX timestamp
 - Randomize price api fetch interval
-- Reserve full TX fee on send
 - Show Gold + MMX price in GUI
-- Timelord static thread
+- Mark NFT plots in filename
+- Token icons in GUI
