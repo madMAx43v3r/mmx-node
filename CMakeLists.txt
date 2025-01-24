@@ -326,7 +326,6 @@ target_link_libraries(mmx_timelord mmx_modules)
 target_link_libraries(mmx_harvester mmx_modules)
 
 if(Qt5_FOUND)
-	# requires: qtwebengine5-dev
 	message(STATUS "Enabling WITH_QT")
 	add_compile_definitions(WITH_QT)
 	target_link_libraries(mmx_qtgui Qt5::Widgets Qt5::WebEngine Qt5::WebEngineWidgets)
@@ -348,13 +347,18 @@ install(TARGETS mmx_harvester DESTINATION bin)
 
 install(DIRECTORY
 	config data kernel scripts www
-	DESTINATION .
+	DESTINATION share/mmx-node
 )
 install(FILES
 	activate.sh run_node.sh run_farmer.sh run_wallet.sh run_timelord.sh run_harvester.sh
 	start_node.sh start_harvester.sh start_wallet.sh stop_node.sh stop_harvester.sh stop_wallet.sh
-	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-	DESTINATION .
+	PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+	DESTINATION share/mmx-node
+)
+install(FILES
+	cmake/debian/mmx_node.desktop
+	PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
+	DESTINATION share/applications
 )
 
 if(MSVC)

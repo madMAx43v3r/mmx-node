@@ -1,10 +1,15 @@
 #!/bin/bash
 
+set -e
+
 export PATH=$PATH:$PWD/bin:$PWD/build:$PWD/build/tools:$PWD/build/vnx-base/tools
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/lib:$PWD/lib64:$PWD/build:$PWD/build/vnx-base:$PWD/build/vnx-addons:$PWD/build/basic-opencl
 
 if [[ -z "${MMX_HOME}" ]]; then
 	export MMX_HOME="$PWD/"
+else
+	mkdir -p ${MMX_HOME}
+	echo MMX_HOME=${MMX_HOME}
 fi
 
 rm -f "${MMX_HOME}DB_VERSION"
@@ -41,9 +46,6 @@ fi
 
 echo NETWORK=${NETWORK}
 
-if [ "${MMX_HOME}" != "$PWD/" ]; then
-	echo MMX_HOME=${MMX_HOME}
-fi
 if [ "${MMX_DATA}" != "${MMX_HOME}" ]; then
 	echo MMX_DATA=${MMX_DATA}
 fi

@@ -1,0 +1,7 @@
+Package: mmx-node
+Section: base
+Priority: optional
+Depends: curl, screen, libminiupnpc17, libjemalloc2, libzstd1, zlib1g, ocl-icd-libopencl1, libgomp1, qt6-webengine-dev
+Maintainer: Max Wittal <max.wittal@mwittal.de>
+Description: MMX Node
+Homepage: https://mmx.network
