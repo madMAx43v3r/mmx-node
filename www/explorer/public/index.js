@@ -19,6 +19,12 @@ function get_short_hash(hash, length) {
 	return hash.substring(0, length) + '...' + hash.substring(64 - length);
 }
 
+const intl_format = new Intl.NumberFormat(navigator.language, {minimumFractionDigits: 1, maximumFractionDigits: 12});
+
+function amount_format(value) {
+	return intl_format.format(value);
+}
+
 function get_tx_type_color(type, dark = false) {
 	if(type == "REWARD") return dark ? "lime--text" : "lime--text text--darken-2";
 	if(type == "RECEIVE" || type == "REWARD" || type == "VDF_REWARD") return "green--text";
@@ -113,7 +119,7 @@ Vue.component('balance-table', {
 				{ text: this.$t('balance_table.locked'), value: 'locked'},
 				{ text: this.$t('balance_table.spendable'), value: 'spendable'},
 				{ text: this.$t('balance_table.token'), value: 'symbol'},
-				{ text: this.$t('balance_table.contract'), value: 'contract'},
+				{ text: this.$t('balance_table.contract'), value: 'contract', width: '50%'},
 			]
 		}
 	},
@@ -153,8 +159,14 @@ Vue.component('balance-table', {
 			class="elevation-2"
 			v-if="!loaded || loaded && (data.length || show_empty)"
 		>
+			<template v-slot:item.total="{ item }">
+				<b>{{amount_format(item.total)}}</b>
+			</template>
+			<template v-slot:item.locked="{ item }">
+				<b>{{amount_format(item.locked)}}</b>
+			</template>
 			<template v-slot:item.spendable="{ item }">
-				<b>{{item.spendable}}</b>
+				<b>{{amount_format(item.spendable)}}</b>
 			</template>
 
 			<template v-slot:item.contract="{ item }">

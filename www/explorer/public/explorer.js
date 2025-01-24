@@ -16,7 +16,14 @@ Vue.component('explore-menu', {
 				}
 				else if(hex.test(this.input)) {
 					if(this.input.length == 64) {
-						this.$router.push("/explore/transaction/" + this.input);
+						fetch(WAPI_URL + '/header?hash=' + this.input)
+							.then(response => {
+								if(response.ok) {
+									this.$router.push("/explore/block/hash/" + this.input);
+								} else {
+									this.$router.push("/explore/transaction/" + this.input);
+								}
+						});
 					} else if(this.input.length == 66) {
 						this.$router.push("/explore/farmer/" + this.input);
 					} else {
@@ -180,6 +187,7 @@ Vue.component('explore-transactions', {
 				{ text: this.$t('explore_transactions.n_out'), value: 'outputs.length' },
 				{ text: this.$t('explore_transactions.n_op'), value: 'operations.length' },
 				{ text: this.$t('explore_transactions.transaction_id'), value: 'transaction_id' },
+				{ text: this.$t('account_tx_history.time'), value: 'time' },
 			]
 		}
 	},
@@ -228,7 +236,11 @@ Vue.component('explore-transactions', {
 			</template>
 
 			<template v-slot:item.transaction_id="{ item }">
-				<router-link :to="'/explore/transaction/' + item.id">{{item.id}}</router-link>
+				<router-link :to="'/explore/transaction/' + item.id">{{get_short_hash(item.id, 16)}}</router-link>
+			</template>
+
+			<template v-slot:item.time="{ item }">
+				{{new Date(item.time).toLocaleString()}}
 			</template>
 
 		</v-data-table>
@@ -494,14 +506,16 @@ Vue.component('block-view', {
 										<td class="key-cell">Space Fork</td>
 										<td>{{data.space_fork_proofs}} / {{data.space_fork_len}}</td>
 									</tr>
-									<tr>
-										<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
-										<td>{{data.proof[0].plot_id}}</td>
-									</tr>
-									<tr>
-										<td class="key-cell">Challenge</td>
-										<td>{{data.proof[0].challenge}}</td>
-									</tr>
+									<template v-if="data.proof[0]">
+										<tr>
+											<td class="key-cell">{{ $t('block_view.plot_id') }}</td>
+											<td>{{data.proof[0].plot_id}}</td>
+										</tr>
+										<tr>
+											<td class="key-cell">Challenge</td>
+											<td>{{data.proof[0].challenge}}</td>
+										</tr>
+									</template>
 									<tr>
 										<td class="key-cell">{{ $t('block_view.farmer_key') }}</td>
 										<td><router-link :to="'/explore/farmer/' + data.farmer_key">{{data.farmer_key}}</router-link></td>
