@@ -628,16 +628,18 @@ Vue.component('node-status', {
 			}
 
 			if(this.status == this.node_status.Connecting || this.status == this.node_status.Syncing) {
-				await fetch('/api/router/get_peer_info')
-					.then( response => response.json() )
-					.then( data => {
-						if(data.peers && data.peers.length > 0) {
-							this.peer_fails = 0
-						} else {
-							this.peer_fails++
-						}
-					})
-					.catch( () => this.peer_fails++ );
+				if(this.$root.local_node) {
+					await fetch('/api/router/get_peer_info')
+						.then( response => response.json() )
+						.then( data => {
+							if(data.peers && data.peers.length > 0) {
+								this.peer_fails = 0
+							} else {
+								this.peer_fails++
+							}
+						})
+						.catch( () => this.peer_fails++ );
+				}
 			}
 
 			if(this.status == this.node_status.Connecting || this.status == this.node_status.Syncing 
@@ -677,7 +679,7 @@ Vue.component('node-status', {
 			return !this.$route.meta.is_login || this.$isWinGUI;
 		},
 		connectedToNetwork() {
-			return this.peer_fails < 1;
+			return this.peer_fails < 1 || !this.$root.local_node;
 		},
 		synced() {
 			return this.synced_fails == 0;
