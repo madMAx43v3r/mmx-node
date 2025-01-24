@@ -89,30 +89,29 @@ void TimeLord::main()
 		peak_iters = 0;		// force new output
 	});
 
+	vdf_thread = std::thread(&TimeLord::vdf_loop, this);
+
 	Super::main();
 
-	stop_vdf();
+	vdf_signal.notify_all();
+	vdf_thread.join();
 }
 
 void TimeLord::start_vdf(vdf_point_t begin)
 {
-	if(!is_running) {
-		is_running = true;
-		peak = nullptr;
+	if(!do_run) {
+		do_run = true;
+		is_reset = true;
+		peak = std::make_shared<vdf_point_t>(begin);
 		log(INFO) << "Started VDF at " << begin.num_iters;
-		vdf_thread = std::thread(&TimeLord::vdf_loop, this, begin);
+		vdf_signal.notify_all();
 	}
 }
 
 void TimeLord::stop_vdf()
 {
-	{
-		std::lock_guard<std::mutex> lock(mutex);
-		is_running = false;
-	}
-	if(vdf_thread.joinable()) {
-		vdf_thread.join();
-	}
+	std::lock_guard<std::mutex> lock(mutex);
+	do_run = false;
 	peak = nullptr;
 	peak_iters = 0;
 	history.clear();
@@ -164,7 +163,7 @@ void TimeLord::handle(std::shared_ptr<const IntervalRequest> req)
 		begin.output = *input;
 		begin.num_iters = start;
 
-		if(is_running) {
+		if(do_run) {
 			const bool is_fork = peak
 					&& find_value(history, start) != input
 					&& (!is_reset || start > peak->num_iters);
@@ -264,15 +263,24 @@ void TimeLord::update()
 	}
 }
 
-void TimeLord::vdf_loop(vdf_point_t point)
+void TimeLord::vdf_loop()
 {
+	vdf_point_t point;
+	bool is_running = false;
+
 	while(vnx_do_run()) {
 		{
-			std::lock_guard<std::mutex> lock(mutex);
+			std::unique_lock<std::mutex> lock(mutex);
 
-			if(!is_running) {
-				break;
+			while(vnx_do_run() && !do_run) {
+				if(is_running) {
+					is_running = false;
+					log(INFO) << "Stopped VDF";
+				}
+				vdf_signal.wait(lock);
 			}
+			is_running = true;
+
 			if(is_reset) {
 				point = *peak;
 				history.clear();
@@ -309,7 +317,6 @@ void TimeLord::vdf_loop(vdf_point_t point)
 			avg_iters_per_sec = (avg_iters_per_sec * 1023 + speed) / 1024;
 		}
 	}
-	log(INFO) << "Stopped VDF";
 }
 
 hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
@@ -332,7 +339,7 @@ hash_t TimeLord::compute(const hash_t& input, const uint64_t num_iters)
 
 void TimeLord::print_info()
 {
-	if(is_running) {
+	if(do_run) {
 		log(INFO) << double(avg_iters_per_sec) / 1e6 << " MH/s";
 	}
 	vnx::open_flow(vnx::get_pipe(node_server), vnx::get_pipe(vnx_name));

@@ -39,7 +39,7 @@ private:
 
 	void start_vdf(vdf_point_t begin);
 
-	void vdf_loop(vdf_point_t point);
+	void vdf_loop();
 
 	static hash_t compute(const hash_t& input, const uint64_t num_iters);
 
@@ -48,9 +48,11 @@ private:
 private:
 	std::mutex mutex;
 	std::thread vdf_thread;
+	std::condition_variable vdf_signal;
 
+	bool do_run = false;
 	bool is_reset = false;
-	bool is_running = false;
+
 	uint64_t segment_iters = 1000;
 	uint64_t avg_iters_per_sec = 0;
 
