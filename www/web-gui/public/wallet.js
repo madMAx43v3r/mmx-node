@@ -1018,6 +1018,9 @@ Vue.component('account-actions', {
 										<v-alert border="left" colored-border type="warning" elevation="2">
 											To recover any funds you will need to re-create the wallet from a stored backup!
 										</v-alert>
+										<v-alert border="left" colored-border type="info" elevation="2">
+											'{{account.key_file}}' needs to be deleted manually.
+										</v-alert>
 									</v-container>
 								</v-card-text>
 								<v-card-actions class="justify-end">
