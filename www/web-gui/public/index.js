@@ -522,6 +522,28 @@ Vue.component('tx-fee-select', {
 	`
 })
 
+Vue.component('tx-type-link', {
+	props: {
+		id: String,
+		type: String,
+	},
+	computed: {
+		link() {
+			switch(this.type) {
+				case 'REWARD':
+				case 'VDF_REWARD':
+				case 'PROJECT_REWARD':
+					return '/explore/block/hash/' + this.id;
+				default:
+					return '/explore/transaction/' + this.id;
+			}
+		}
+	},
+	template: `
+		<router-link :to="link">TX</router-link>
+	`
+})
+
 Vue.component('main-menu', {
 	data() {
 		return {

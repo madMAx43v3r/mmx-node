@@ -495,7 +495,7 @@ Vue.component('account-history', {
 			</template>
 			
 			<template v-slot:item.link="{ item }">
-				<router-link :to="'/explore/transaction/' + item.txid">TX</router-link>
+				<tx-type-link :type="item.type" :id="item.txid"/>
 			</template>
 
 			<template v-slot:item.time="{ item }">
