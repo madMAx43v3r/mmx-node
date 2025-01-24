@@ -356,7 +356,7 @@ install(FILES
 	DESTINATION share/mmx-node
 )
 install(FILES
-	cmake/debian/mmx_node.desktop
+	cmake/debian/mmx_node.desktop cmake/debian/mmx_wallet.desktop
 	PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
 	DESTINATION share/applications
 )
