@@ -50,5 +50,6 @@ CMakeUserPresets.json
 /.idea
 /_deps
 /*.dat
+/*.deb
 /config/default/build.json
 /test/vm/AFL/outputs/*
