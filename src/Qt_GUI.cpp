@@ -44,6 +44,9 @@ void qt_gui_exec(char** argv, std::string host, std::string api_token, std::stri
 {
 	qInstallMessageHandler(qt_log_func);
 
+	std::string version;
+	vnx::read_config("build.version", version);
+
 	const auto full_url = "http://" + host + "/gui/";
 
 	int argc = 1;
@@ -66,7 +69,7 @@ void qt_gui_exec(char** argv, std::string host, std::string api_token, std::stri
 	view.page()->settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
 	view.page()->scripts().insert(script);
 	view.setUrl(QUrl(QString::fromStdString(full_url)));
-	view.setWindowTitle("MMX Node");
+	view.setWindowTitle(QString::fromStdString("MMX - " + version));
 	view.setWindowIcon(QIcon("www/web-gui/public/assets/img/logo_circle_color_cy256.png"));
 	view.resize(1300, 1000);
 	view.show();
