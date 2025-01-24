@@ -39,6 +39,14 @@ int main(int argc, char** argv)
 	options["node"] = "address";
 
 	vnx::init("mmx_farmer", argc, argv, options);
+	{
+		std::string version;
+		std::string commit;
+		vnx::read_config("build.version", version);
+		vnx::read_config("build.commit", commit);
+		vnx::log_info() << "Build version: " << version;
+		vnx::log_info() << "Build commit: " << commit;
+	}
 
 	std::string node_url = ":11330";
 	std::string endpoint = "0.0.0.0";		// requires allow_remote

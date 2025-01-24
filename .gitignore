@@ -50,5 +50,5 @@ CMakeUserPresets.json
 /.idea
 /_deps
 /*.dat
-/www/web-gui/public/GIT_COMMIT_HASH.json
+/config/default/build.json
 /test/vm/AFL/outputs/*

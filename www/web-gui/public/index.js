@@ -426,6 +426,7 @@ const Settings = {
 		<div>
 			<node-settings></node-settings>
 			<wallet-settings></wallet-settings>
+			<build-version></build-version>
 		</div>
 	`
 }
@@ -765,7 +766,7 @@ Vue.component('git-update-checker', {
 		async update() {
 			this.commit_status_message = '';
 			this.show = false;
-			fetch('GIT_COMMIT_HASH.json')
+			fetch('/wapi/config/get?key=build')
 			.then( response => {
                 if (!response.ok) {
                     throw Error(response.statusText);
@@ -773,23 +774,24 @@ Vue.component('git-update-checker', {
                 return response.json();
             })
 			.then( data => {
-				var hash = data.GIT_COMMIT_HASH;
-				if(hash) {
-					fetch(`https://api.github.com/repos/madMAx43v3r/mmx-node/compare/master...${hash}`)
+				if(data && data.version) {
+					var version = data.version;
+					fetch(`https://api.github.com/repos/madMAx43v3r/mmx-node/tags`)
 					.then( response => response.json() )
 					.then( data => {
-						if(data && (data.behind_by > 0 || data.ahead_by > 0)) {
-							this.show = true;
-
-							if(data.ahead_by > 0) {
-								this.commit_status_message += `${data.ahead_by} commits ahead`;
+						if(data) {
+							var latest = '';
+							for(let item of data) {
+								if(item && item.name.length && item.name[0] === "v"){
+									latest = item.name;
+									break;
+								}
 							}
-
-							if(data.behind_by > 0) {
-								if (this.commit_status_message) this.commit_status_message += ', ';
-								this.commit_status_message += `${data.behind_by} commits behind`;
+							version = version.split("-", 1)[0];
+							if(version !== latest) {
+								this.show = true;
+								this.commit_status_message += `${version}, compared to ${latest} at`;
 							}
-
 						}
 					})
 				}

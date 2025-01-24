@@ -52,6 +52,14 @@ int main(int argc, char** argv)
 	options["t"] = "timelord";
 
 	vnx::init("mmx_node", argc, argv, options);
+	{
+		std::string version;
+		std::string commit;
+		vnx::read_config("build.version", version);
+		vnx::read_config("build.commit", commit);
+		vnx::log_info() << "Build version: " << version;
+		vnx::log_info() << "Build commit: " << commit;
+	}
 
 	if(!vnx::is_config_protected("passwd")) {
 		throw std::logic_error("missing config protection");

@@ -103,6 +103,8 @@ std::shared_ptr<const NetworkInfo> Node::get_network_info() const
 			info->time_stamp = peak->time_stamp;
 			info->synced_since = synced_since;
 			info->name = params->network;
+			info->node_version = node_version;
+			info->node_commit = node_commit;
 			info->time_diff = peak->time_diff;
 			info->space_diff = peak->space_diff;
 			info->vdf_speed = get_vdf_speed(params, peak->time_diff) / 1e6;
