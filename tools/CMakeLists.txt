@@ -15,8 +15,7 @@ target_link_libraries(dump_binary mmx_iface mmx_vm)
 target_link_libraries(generate_passwd mmx_iface)
 target_link_libraries(calc_test_rewards mmx_iface)
 
-install(TARGETS tx_bench DESTINATION bin)
-install(TARGETS mmx_compile DESTINATION bin)
-install(TARGETS dump_binary DESTINATION bin)
-install(TARGETS generate_passwd DESTINATION bin)
-install(TARGETS calc_test_rewards DESTINATION bin)
+install(TARGETS
+	tx_bench mmx_compile dump_binary generate_passwd calc_test_rewards
+	DESTINATION ${NODE_INSTALL_PATH}/bin
+)

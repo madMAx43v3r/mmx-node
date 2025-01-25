@@ -74,13 +74,13 @@ set(LIBBECH32_BUILD_TESTS OFF CACHE BOOL "LIBBECH32_BUILD_TESTS")
 set(LIBBECH32_BUILD_EXAMPLES OFF CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
 set(DIRENT_BUILD_TESTS OFF CACHE STRING "DIRENT_BUILD_TESTS")
 set(VNX_BUILD_TOOLS ON CACHE STRING "VNX_BUILD_TOOLS")
+set(MMX_BUILD_TOOLS ON CACHE STRING "MMX_BUILD_TOOLS")
+set(MMX_BUILD_TESTS ON CACHE STRING "MMX_BUILD_TESTS")
 set(NODE_INSTALL_PATH "." CACHE STRING "Where to install scripts")
 
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
 add_subdirectory(lib/libbech32)
-add_subdirectory(tools)
-add_subdirectory(test)
 
 find_package(Threads REQUIRED)
 find_package(Qt5 QUIET COMPONENTS Widgets WebEngine WebEngineWidgets)
@@ -337,7 +337,6 @@ install(TARGETS mmx_vm DESTINATION lib)
 install(TARGETS mmx_pos DESTINATION lib)
 install(TARGETS mmx_iface DESTINATION lib)
 install(TARGETS mmx_modules DESTINATION lib)
-install(FILES ${secp256k1_LIBRARY_FILES} DESTINATION lib)
 
 install(TARGETS mmx DESTINATION bin)
 install(TARGETS mmx_node DESTINATION bin)
@@ -347,9 +346,14 @@ install(TARGETS mmx_timelord DESTINATION bin)
 install(TARGETS mmx_harvester DESTINATION bin)
 
 install(DIRECTORY
-	config data kernel scripts www
+	config data kernel scripts
 	DESTINATION ${NODE_INSTALL_PATH}
 	PATTERN "config/local" EXCLUDE
+)
+install(DIRECTORY
+	www/web-gui
+	DESTINATION ${NODE_INSTALL_PATH}/www
+	PATTERN "node_modules" EXCLUDE
 )
 install(FILES
 	activate.sh run_node.sh run_farmer.sh run_wallet.sh run_wallet_gui.sh run_timelord.sh run_harvester.sh
@@ -362,6 +366,13 @@ install(FILES
 	PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
 	DESTINATION share/applications
 )
+
+if(MMX_BUILD_TOOLS)
+	add_subdirectory(tools)
+endif()
+if(MMX_BUILD_TESTS)
+	add_subdirectory(test)
+endif()
 
 if(MSVC)
 	include(cmake/win_pack.cmake)

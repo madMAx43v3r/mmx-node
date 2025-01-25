@@ -2,7 +2,7 @@
 
 set -e
 
-./make_release.sh -DNODE_INSTALL_PATH="share/mmx-node"
+./make_release.sh -DNODE_INSTALL_PATH="share/mmx-node" -DVNX_BUILD_TOOLS=OFF -DMMX_BUILD_TESTS=OFF
 
 VERSION=$(cat config/default/build.json | jq -r .version | sed 's/^v//')
 ARCH=${ARCH:-any}
@@ -18,6 +18,11 @@ echo "Architecture: ${ARCH}" >> $DST/DEBIAN/control
 cat cmake/debian/${DIST}/control >> $DST/DEBIAN/control
 
 cp -a build/dist/. $DST/usr/
+
+rm -r $DST/usr/include
+rm -r $DST/usr/interface
+rm -r $DST/usr/share/cmake
+find $DST/usr/ -name "*.a" -delete
 
 fakeroot dpkg-deb --build $DST
 
