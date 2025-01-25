@@ -24,13 +24,7 @@ jobs:
       - name: Set up build environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y git cmake build-essential automake libtool pkg-config curl libminiupnpc-dev libjemalloc-dev libzstd-dev zlib1g-dev ocl-icd-opencl-dev fakeroot devscripts debhelper dpkg-dev
-          # Install Qt WebEngine
-          if [[ "${{ matrix.ubuntu-version }}" == "20.04" ]]; then
-            sudo apt-get install -y qtwebengine5-dev
-          else
-            sudo apt-get install -y qt6-webengine-dev
-          fi
+          sudo apt-get install -y git cmake build-essential automake libtool pkg-config curl libminiupnpc-dev libjemalloc-dev libzstd-dev zlib1g-dev ocl-icd-opencl-dev qtwebengine5-dev fakeroot devscripts debhelper dpkg-dev
 
       - name: Build Debian package
         run: |
