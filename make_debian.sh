@@ -2,7 +2,7 @@
 
 set -e
 
-./make_release.sh
+./make_release.sh -DNODE_INSTALL_PATH="share/mmx-node"
 
 VERSION=$(cat config/default/build.json | jq -r .version | sed 's/^v//')
 ARCH=${ARCH:-any}

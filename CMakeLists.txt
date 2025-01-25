@@ -74,6 +74,7 @@ set(LIBBECH32_BUILD_TESTS OFF CACHE BOOL "LIBBECH32_BUILD_TESTS")
 set(LIBBECH32_BUILD_EXAMPLES OFF CACHE BOOL "LIBBECH32_BUILD_EXAMPLES")
 set(DIRENT_BUILD_TESTS OFF CACHE STRING "DIRENT_BUILD_TESTS")
 set(VNX_BUILD_TOOLS ON CACHE STRING "VNX_BUILD_TOOLS")
+set(NODE_INSTALL_PATH "." CACHE STRING "Where to install scripts")
 
 add_subdirectory(vnx-base)
 add_subdirectory(vnx-addons)
@@ -347,13 +348,13 @@ install(TARGETS mmx_harvester DESTINATION bin)
 
 install(DIRECTORY
 	config data kernel scripts www
-	DESTINATION share/mmx-node
+	DESTINATION ${NODE_INSTALL_PATH}
 )
 install(FILES
 	activate.sh run_node.sh run_farmer.sh run_wallet.sh run_wallet_gui.sh run_timelord.sh run_harvester.sh
 	start_node.sh start_harvester.sh start_wallet.sh stop_node.sh stop_harvester.sh stop_wallet.sh
 	PERMISSIONS OWNER_EXECUTE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ
-	DESTINATION share/mmx-node
+	DESTINATION ${NODE_INSTALL_PATH}
 )
 install(FILES
 	cmake/debian/mmx_node.desktop cmake/debian/mmx_wallet.desktop
