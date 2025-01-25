@@ -349,6 +349,7 @@ install(TARGETS mmx_harvester DESTINATION bin)
 install(DIRECTORY
 	config data kernel scripts www
 	DESTINATION ${NODE_INSTALL_PATH}
+	PATTERN "config/local" EXCLUDE
 )
 install(FILES
 	activate.sh run_node.sh run_farmer.sh run_wallet.sh run_wallet_gui.sh run_timelord.sh run_harvester.sh
