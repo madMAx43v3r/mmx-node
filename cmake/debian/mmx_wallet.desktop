@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=MMX Wallet
-Exec=sh -c "MMX_HOME=~/.mmx/ /usr/share/mmx-node/run_wallet.sh --gui"
+Exec=sh -c "MMX_HOME=~/.mmx/ /usr/share/mmx-node/run_wallet_gui.sh"
 Path=/usr/share/mmx-node
 Icon=/usr/share/mmx-node/www/web-gui/public/assets/img/logo_circle_color_cy256.png
 Terminal=false
