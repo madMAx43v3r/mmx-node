@@ -273,6 +273,8 @@ int main(int argc, char** argv)
 	vnx::read_config("output", output);
 	vnx::read_config("nonce", nonce);
 
+	vnx::write_config("Proxy.no_retry", true);		// exit on connect fail
+
 	bool did_fail = false;
 	auto params = mmx::get_params();
 	{
