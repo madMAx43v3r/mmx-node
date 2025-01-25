@@ -183,8 +183,8 @@ int main(int argc, char** argv)
 	std::string mmx_home;
 	if(auto path = ::getenv("MMX_HOME")) {
 		mmx_home = path;
-	} else {
-		mmx_home = ::getenv("HOME");
+	} else if(auto path = ::getenv("HOME")) {
+		mmx_home = path;
 		mmx_home += "/.mmx/";
 	}
 
