@@ -51,3 +51,5 @@ if [ "${MMX_DATA}" != "${MMX_HOME}" ]; then
 fi
 
 export MMX_NETWORK=${MMX_DATA}${NETWORK}/
+
+set +e
