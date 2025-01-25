@@ -2,8 +2,6 @@
 
 set -e
 
-DIST=${1:-dist}
-
 cd lib
 ./make_all.sh
 cd ..
@@ -12,10 +10,10 @@ mkdir -p build
 
 cd build
 
-rm -rf $DIST
+rm -rf dist
 
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$DIST $@ ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=dist $@ ..
 
 make -j $(nproc) install
 
-rm -rf $DIST/share/mmx-node/config/local
+rm -rf dist/share/mmx-node/config/local
