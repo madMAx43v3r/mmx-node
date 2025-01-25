@@ -1,0 +1,42 @@
+name: Debian
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        ubuntu-version: [20.04, 22.04, 24.04]
+    runs-on: ubuntu-${{ matrix.ubuntu-version }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          submodules: "recursive"
+
+      - name: Set up build environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git cmake build-essential automake libtool pkg-config curl libminiupnpc-dev libjemalloc-dev libzstd-dev zlib1g-dev ocl-icd-opencl-dev fakeroot devscripts debhelper dpkg-dev
+          # Install Qt WebEngine
+          if [[ "${{ matrix.ubuntu-version }}" == "20.04" ]]; then
+            sudo apt-get install -y qtwebengine5-dev
+          else
+            sudo apt-get install -y qt6-webengine-dev
+          fi
+
+      - name: Build Debian package
+        run: |
+          ARCH=amd64 DIST=ubuntu-${{ matrix.ubuntu-version }} ./make_debian.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: $(ls *.deb)
+          path: ./*.deb
