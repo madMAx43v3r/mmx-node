@@ -882,8 +882,7 @@ void Node::vote_for_block(std::shared_ptr<fork_t> fork)
 			vote->hash = block->hash;
 			vote->farmer_key = farmer_key;
 			try {
-				FarmerClient farmer(*farmer_mac);
-				vote->farmer_sig = farmer.sign_vote(vote);
+				vote->farmer_sig = FarmerClient(*farmer_mac).sign_vote(vote);
 				vote->content_hash = vote->calc_content_hash();
 				publish(vote, output_votes);
 				publish(vote, output_verified_votes);
