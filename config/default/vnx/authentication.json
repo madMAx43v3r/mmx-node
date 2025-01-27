@@ -14,6 +14,9 @@
 			"vnx.addons.permission_e.HTTP_REQUEST",
 			"vnx.addons.permission_e.FILE_DOWNLOAD"
 		],
+		"NODE": [
+			"mmx.permission_e.SIGN_BLOCK"
+		],
 		"REMOTE": [
 			"VIEW",
 			"PUBLISH",

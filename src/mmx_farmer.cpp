@@ -74,6 +74,7 @@ int main(int argc, char** argv)
 		}
 	}
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", node);
+	proxy->default_access = "NODE";		// allow Node to call Farmer without login
 	proxy->forward_list = {"Node", "Router"};
 
 	{
@@ -93,7 +94,7 @@ int main(int argc, char** argv)
 		module->database_path = mmx_network + module->database_path;
 		module.start_detached();
 		{
-			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url(":11335"));
+			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url("localhost:11335"));
 			module.start_detached();
 		}
 	} else {

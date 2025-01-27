@@ -35,10 +35,10 @@ module Farmer {
 	
 	FarmInfo* get_farm_info() const;
 	
-	@Permission(permission_e.SIGN_MSG)
+	@Permission(permission_e.SIGN_BLOCK)
 	BlockHeader* sign_block(BlockHeader* block) const;
 	
-	@Permission(permission_e.SIGN_MSG)
+	@Permission(permission_e.SIGN_BLOCK)
 	signature_t sign_vote(ValidatorVote* vote) const;
 	
 	

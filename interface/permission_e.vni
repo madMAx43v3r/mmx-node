@@ -5,6 +5,6 @@ enum permission_e {
 	PUBLIC,			// for public RPC
 	REMOTE,			// for remote services (harvester, etc)
 	SPENDING,		// for GUI / CLI
-	SIGN_MSG		// for signing blocks
+	SIGN_BLOCK		// for signing blocks
 	
 }
