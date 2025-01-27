@@ -1,6 +1,4 @@
-After Mainnet
 - Website
-- Linux packages
 - Harvester latency graphs
 - Multisig wallet support
 - GUI settings tabs
@@ -8,13 +6,11 @@ After Mainnet
 - Swap warning for one-sided pool
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 - WebAPI refactor param iterators (use get_param() + Variant::empty())
-- Node version display
 - RPC servers auto-restart with pm2
 - Wallet contacts
 - Log file deletion
-- Improve CLI wallet create UX, same as GUI (but still allow offline create)
-- MMX wallet create show address
 - Randomize price api fetch interval
 - Show Gold + MMX price in GUI
-- Mark NFT plots in filename
 - Token icons in GUI
+- Offline TX send
+- Hardware wallet support
