@@ -23,6 +23,7 @@
 #include <mmx/utils.h>
 #include <mmx/vm/instr_t.h>
 #include <mmx/vm_interface.h>
+#include <mmx/ECDSA_Wallet.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
@@ -995,29 +996,45 @@ int main(int argc, char** argv)
 				}
 				std::string seed_str;
 				std::vector<std::string> seed_words;
+				bool with_passphrase = false;
 				vnx::read_config("$3", seed_str);
 				vnx::read_config("mnemonic", seed_words);
+				vnx::read_config("with-passphrase", with_passphrase);
 
-				mmx::KeyFile wallet;
+				mmx::KeyFile key;
 				if(seed_str.empty()) {
 					if(seed_words.empty()) {
-						wallet.seed_value = mmx::hash_t::secure_random();
+						key.seed_value = mmx::hash_t::secure_random();
 					} else {
-						wallet.seed_value = mmx::mnemonic::words_to_seed(seed_words);
+						key.seed_value = mmx::mnemonic::words_to_seed(seed_words);
 					}
+				} else if(seed_str.size() == 64) {
+					key.seed_value.from_string(seed_str);
 				} else {
-					if(seed_str.size() == 64) {
-						wallet.seed_value.from_string(seed_str);
-					} else {
-						vnx::log_error() << "Invalid seed value: '" << seed_str << "'";
-						goto failed;
-					}
+					vnx::log_error() << "Invalid seed value: '" << seed_str << "'";
+					goto failed;
 				}
-				vnx::write_to_file(file_name, wallet);
+
+				vnx::optional<std::string> passphrase;
+				if(with_passphrase) {
+					passphrase = vnx::input_password("Passphrase: ");
+				}
+				key.finger_print = get_finger_print(key.seed_value, passphrase);
+
+				vnx::write_to_file(file_name, key);
 				std::filesystem::permissions(file_name, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write);
 
-				std::cout << "Created wallet '" << file_name << "' with seed " << wallet.seed_value << std::endl;
-				std::cout << mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(wallet.seed_value)) << std::endl;
+				std::cout << "Created wallet '" << file_name << "'" << std::endl;
+				std::cout << "  Mnemonic: " << mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(key.seed_value)) << std::endl;
+
+				mmx::account_t config;
+				config.num_addresses = 1;
+				config.finger_print = *key.finger_print;
+				config.with_passphrase = with_passphrase;
+
+				mmx::ECDSA_Wallet wallet(key.seed_value, config, params);
+				wallet.unlock(passphrase ? *passphrase : std::string());
+				std::cout << "  Address: " << wallet.get_address(0) << std::endl;
 			}
 			else if(command == "import")
 			{
