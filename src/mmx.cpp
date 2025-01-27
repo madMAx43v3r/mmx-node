@@ -1018,6 +1018,11 @@ int main(int argc, char** argv)
 				vnx::optional<std::string> passphrase;
 				if(with_passphrase) {
 					passphrase = vnx::input_password("Passphrase: ");
+					const auto check = vnx::input_password("Passphrase (again): ");
+					if(check != *passphrase) {
+						vnx::log_error() << "Passphrase mismatch!";
+						goto failed;
+					}
 				}
 				key.finger_print = get_finger_print(key.seed_value, passphrase);
 
@@ -1046,6 +1051,11 @@ int main(int argc, char** argv)
 				vnx::optional<std::string> passphrase;
 				if(with_passphrase) {
 					passphrase = vnx::input_password("Passphrase: ");
+					const auto check = vnx::input_password("Passphrase (again): ");
+					if(check != *passphrase) {
+						vnx::log_error() << "Passphrase mismatch!";
+						goto failed;
+					}
 				}
 				mmx::account_t config;
 				config.num_addresses = 0;	// use default
