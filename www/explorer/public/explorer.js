@@ -240,7 +240,7 @@ Vue.component('explore-transactions', {
 			</template>
 
 			<template v-slot:item.time="{ item }">
-				{{new Date(item.time).toLocaleString()}}
+				{{new Date(item.time_stamp).toLocaleString()}}
 			</template>
 
 		</v-data-table>
@@ -410,7 +410,7 @@ Vue.component('block-view', {
 									</tr>
 									<tr>
 										<td class="key-cell">{{ $t('block_view.time') }}</td>
-										<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
+										<td>{{new Date(data.time_stamp).toLocaleString()}}</td>
 									</tr>
 									<template v-if="data.reward_addr">
 										<tr>
@@ -649,7 +649,7 @@ Vue.component('transaction-view', {
 						</tr>
 						<tr v-if="data.time">
 							<td class="key-cell">{{ $t('transaction_view.time') }}</td>
-							<td>{{new Date(data.time * 1000).toLocaleString()}}</td>
+							<td>{{new Date(data.time_stamp).toLocaleString()}}</td>
 						</tr>
 						<tr v-if="data.deployed">
 							<td class="key-cell">{{ $t('transaction_view.address') }}</td>
@@ -972,7 +972,7 @@ Vue.component('address-history-table', {
 			</template>
 
 			<template v-slot:item.time="{ item }">
-				<span class="text-no-wrap">{{ new Date(item.time * 1000).toLocaleString() }}</span>
+				<span class="text-no-wrap">{{ new Date(item.time_stamp).toLocaleString() }}</span>
 			</template>
 
 		</v-data-table>
