@@ -1036,6 +1036,28 @@ int main(int argc, char** argv)
 				wallet.unlock(passphrase ? *passphrase : std::string());
 				std::cout << "  Address: " << wallet.get_address(0) << std::endl;
 			}
+			else if(command == "new")
+			{
+				bool with_passphrase = false;
+				std::vector<std::string> seed_words;
+				vnx::read_config("mnemonic", seed_words);
+				vnx::read_config("with-passphrase", with_passphrase);
+
+				vnx::optional<std::string> passphrase;
+				if(with_passphrase) {
+					passphrase = vnx::input_password("Passphrase: ");
+				}
+				mmx::account_t config;
+				config.num_addresses = 0;	// use default
+				vnx::read_config("$3", config.name);
+				vnx::read_config("limit", config.num_addresses);
+
+				vnx::optional<std::string> words;
+				if(seed_words.size()) {
+					words = mmx::mnemonic::words_to_string(seed_words);
+				}
+				wallet.create_wallet(config, words, passphrase);
+			}
 			else if(command == "import")
 			{
 				vnx::read_config("$3", file_name);
@@ -1171,7 +1193,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | import | remove | accounts | keys | lock | unlock | plotnft]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | new | import | remove | accounts | keys | lock | unlock | plotnft]" << std::endl;
 			}
 
 			if(tx) {
