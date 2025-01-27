@@ -15,7 +15,7 @@ struct MMX_EXPORT permission_e {
 	enum enum_t : uint32_t {
 		PUBLIC = 2166575688l,
 		REMOTE = 412167022l,
-		SIGN_MSG = 359339741l,
+		SIGN_BLOCK = 1091809605l,
 		SPENDING = 1957258863l,
 	};
 	

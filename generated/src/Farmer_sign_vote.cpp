@@ -130,7 +130,7 @@ std::shared_ptr<vnx::TypeCode> Farmer_sign_vote::static_create_type_code() {
 		field.name = "vote";
 		field.code = {16};
 	}
-	type_code->permission = "mmx.permission_e.SIGN_MSG";
+	type_code->permission = "mmx.permission_e.SIGN_BLOCK";
 	type_code->build();
 	return type_code;
 }
