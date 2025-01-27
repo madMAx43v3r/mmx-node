@@ -485,11 +485,11 @@ int main(int argc, char** argv)
 			else if(command == "accounts")
 			{
 				for(const auto& entry : wallet.get_all_accounts()) {
-					std::cout << "[" << entry.account << "] name = '" << entry.name << "', index = " << entry.index
+					std::cout << "[" << entry.account << "] " << vnx::to_string_value(entry.address) << ": "
+							<< "name = '" << entry.name << "', index = " << entry.index
 							<< ", passphrase = " << (entry.with_passphrase ? "yes" : "no")
 							<< ", finger_print = " << entry.finger_print
-							<< ", num_addresses = " << entry.num_addresses << ", key_file = " << entry.key_file
-							<< " (" << vnx::to_string_value(entry.address) << ")" << std::endl;
+							<< ", num_addresses = " << entry.num_addresses << ", key_file = " << entry.key_file << std::endl;
 				}
 			}
 			else if(command == "keys")
