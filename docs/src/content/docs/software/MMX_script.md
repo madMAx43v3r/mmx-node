@@ -1,3 +1,7 @@
+---
+title: MMX Script Language
+description: MMX Script smart contract language reference.
+---
 # MMX Script
 
 The MMX smart contract language is a restricted subset of JavaScript with some additional features.

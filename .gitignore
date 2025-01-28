@@ -53,3 +53,6 @@ CMakeUserPresets.json
 /*.deb
 /config/default/build.json
 /test/vm/AFL/outputs/*
+/docs/dist
+/docs/.astro
+/docs/node_modules
