@@ -11,6 +11,7 @@ export default defineConfig({
 			social: {
 				github: 'https://github.com/madMAx43v3r/mmx-node',
 			},
+			customCss: ['./src/styles/style.css'],
 			sidebar: [
 				{
 					label: 'Guides',

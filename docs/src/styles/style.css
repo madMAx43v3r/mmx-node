@@ -1,0 +1,7 @@
+:root {
+    --sl-content-width: 80%;
+    --sl-nav-gap: 5rem;
+    .content-panel .sl-container {
+        margin-left: 5rem;
+    }
+  }
