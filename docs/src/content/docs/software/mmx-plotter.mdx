@@ -1,0 +1,99 @@
+---
+title: MMX Plotter
+description: MMX Plotter is a tool for creating plots for the MMX blockchain.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## MMX Plotting
+For plotting MMX Plots, there is a CUDA plotter available. It can be found at [mmx-binaries](https://github.com/madMAx43v3r/mmx-binaries). The source code for the plotter can be found at [mmx-cuda-plotter](https://github.com/madMAx43v3r/mmx-cuda-plotter). A CUDA GPU is required for plotting due to the compression resistant plot format, plotting on CPU would take too long. The format is compression resistant, but not uncompressible. The current plotter allows for compression of up to c15, which only saves about 3% of disk space, but increases CPU load for lookups and proof retreival. It is not recommended to use c15. Due to the high frequency of lookups on MMX, larger capacity hard drives may struggle to seek quickly enough when full of k29 plots, for drives over 16TB k30 is the minimum recommended size.
+
+### Available K-Sizes (HDD plots)
+| K-Size | Size (GiB) | Full RAM (GiB) | Partial RAM (GiB) | Disk with Partial RAM (GiB) |
+|:-------|:----------:|:--------------:|:-----------------:|:---------------:|
+| K29  |  37    |      61    |       39      |      22     |
+| K30  |  75    |     116    |       68      |      46     |
+| K31  |  155   |     226    |      126      |      88     |
+| K32  |  320   |     446    |      246      |     177     |
+
+<Aside>All values are for c0 compression and are approximate based on observations while plotting. Due to differences in the tables, final plot sizes may vary significantly. For k32 a difference of 3-4GiB between largest to smallest plot files have been observed.</Aside>
+<Aside type="caution">The RAM Requirements above were tested to work on linux. Due to quirks of memory usage on Windows OS, it may not be possible to plot k31 in partial ram on a system with 128gb of ram.</Aside>
+
+### Compression
+The MMX CUDA Plotter supports compression levels c0-c15. GPU is not used for harvesting, which means all recompute of the qualities and proofs is done on CPU. c15 is _possible_ to farm on CPU, but it will be a lot of load, so it is not recommended to use c15 as the savings are minimal (approximately 3% from c0) for a significant increase in compute required. c10-c12 can be handled by most modern CPUs, but this will increase the load on the CPU. c1-c9 add very minimial load to the CPU. SSD plots are much smaller than HDD plots. SSD plots can not be farmed on HDDs (even in a RAID array) due to the high IOPs required to farm them. The CPU load to farm SSD plots is comparable to farming HDD plots with c8 compression, so c0 is recommended when making SSD plots.
+
+### SSD Plot Sizes
+| K-Size | Size (GiB) |
+|:-------|:----------:|
+| K29  |  15    |
+| K30  |  30    |
+| K31  |  62   |
+| K32  |  128   |
+
+## Creating Plots
+To create plots you will need a Farmer Public Key, and optionally a PlotNFT Contract Address (for pooling plots). To get the Farmer Public Key, use `mmx wallet keys` or go to the `Info` tab under the wallet in the GUI. For plotnft contract address, see [Pooling](../cli-commands/#pooling).
+
+### Command Line Reference
+To use the plotter via command line, navigate to the directory containing the plotter binaries and run the following command (replace `mmx_cuda_plot_k30` with the appropriate binary for your desired k-size):
+<Tabs>
+    <TabItem label="Full RAM">
+        For full Ram plotting, `-t` is used to temporarily store the the finished plot before moving it to the destination `-d`, RAM is used for the entire plotting process.
+        ```
+        ./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -d /mnt/farmdrive/ -f <farmer_key>
+        ```
+    </TabItem>
+    <TabItem label="Partial RAM">
+        For partial RAM plotting, `-2` is used to store temporary working files before moving the finished plot to `-t` and then to `-d`. RAM is used for the most write intensive parts of the plotting process. If `-t` is not specified, the plotter will set the `-t` argument to the same value as `-2`.
+        ```
+        ./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -2 /mnt/tmp_ssd/ -d /mnt/farmdrive/ -f <farmer_key>
+        ```
+    </TabItem>
+    <TabItem label="Disk Mode">
+        For disk mode plotting, `-3` takes the place of RAM and is used for write intensive temporary files. You can use a different drive for `-2` if desired, the faster of the two drives should be used for `-3`. If `-2` or `-t` are not specified, the plotter will set the value of both to the same value as `-3`.
+        ```
+        ./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -2 /mnt/tmp_ssd/ -3 /mnt/tmp_ssd/ -d /mnt/farmdrive/ -f <farmer_key>
+        ```
+    </TabItem>
+</Tabs>
+To send finished plots to multiple destinations, use the `-d` argument multiple times. For example:
+```
+./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -d /mnt/farmdrive1/ -d /mnt/farmdrive2/ -f <farmer_key>
+```
+<Aside>To simplify sending to multiple destinations over a network, you can use [plot-sink](https://github.com/madMAx43v3r/chia-gigahorse/tree/master/plot-sink).</Aside>
+
+
+Full Command Line Reference options:
+
+```
+Usage:
+  mmx_cuda_plot [OPTION...]
+
+  -C, --level arg      Compression level (0 to 15)
+      --ssd            Make SSD plots
+  -n, --count arg      Number of plots to create (default = 1, unlimited =
+                       -1)
+  -g, --device arg     CUDA device (default = 0)
+  -r, --ndevices arg   Number of CUDA devices (default = 1)
+  -t, --tmpdir arg     Temporary directories for plot storage (default =
+                       $PWD)
+  -2, --tmpdir2 arg    Temporary directory 2 for partial RAM / disk mode
+                       (default = @RAM)
+  -3, --tmpdir3 arg    Temporary directory 3 for disk mode (default = @RAM)
+  -d, --finaldir arg   Final destinations (default = <tmpdir>, remote =
+                       @HOST)
+  -z, --dstport arg    Destination port for remote copy (default = 1337)
+  -w, --waitforcopy    Wait for copy to start next plot
+  -c, --contract arg   Pool Contract Address (62 chars)
+  -f, --farmerkey arg  Farmer Public Key (33 bytes)
+  -S, --streams arg    Number of parallel streams (default = 3, must be >= 2)
+  -B, --chunksize arg  Bucket chunk size in MiB (default = 16, 1 to 256)
+  -Q, --maxtmp arg     Max number of plots to cache in tmpdir (default = -1)
+  -A, --copylimit arg  Max number of parallel copies in total (default = -1)
+  -W, --maxcopy arg    Max number of parallel copies to same HDD (default =
+                       1, unlimited = -1)
+  -M, --memory arg     Max shared / pinned memory in GiB (default =
+                       unlimited)
+      --version        Print version
+  -h, --help           Print help
+  ```
