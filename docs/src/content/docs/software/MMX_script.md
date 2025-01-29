@@ -1,9 +1,7 @@
 ---
-title: MMX Script Language
+title: MMX Script
 description: MMX Script smart contract language reference.
 ---
-# MMX Script
-
 The MMX smart contract language is a restricted subset of JavaScript with some additional features.
 
 ## Types
@@ -360,9 +358,6 @@ This allows a more efficient way to deploy with funding, compared to executing a
 	- Liquidity is locked for 24 hours after it's been added / or fee-tier was changed
 	- A single account can only provide liquidity for one fee-tier
 	- Fee payouts are heuristic for better trade efficiency (manual trigger, no automatic compounding)
-- [virtual_plot.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/virtual_plot.js) - Virtual Plot
-	- Used for Proof Of Stake farming
-	- Only 90% of deposited balance is returned on withdrawal, to avoid short-term staking.
 - [plot_nft.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/plot_nft.js) - Plot NFT
 	- Used for pooled farming to control rewards / switch pools
 - [token.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/token.js) - Simple Token

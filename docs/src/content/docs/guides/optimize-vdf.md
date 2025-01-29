@@ -1,22 +1,23 @@
 ---
-title: Optimizing VDF Verification
+title: OpenCL Setup
 description: How to improve VDF verification speed.
 ---
-Using OpenCL is an optional (but highly recommended) feature for farming MMX. Offloading the verification of the VDF from the CPU to an OpenCL accelerated GPU (even an APU  with integrated GPU) can increase both performance and power efficiency.
-
-Example Hardware and times spreadsheet (go to current testnet tab): https://docs.google.com/spreadsheets/d/1NlK-dq7vCbX4NHzrOloyy4ylLW-fdXjuT8468__SF64/edit#gid=0
-
-**During initial blockchain sync, CPU usage will be very high in any case.**
+Using OpenCL is an optional but highly recommended feature for running MMX.\
+Offloading the verification of the VDF to a GPU or iGPU can increase both performance and power efficiency.
 
 Once the blockchain is synced, you will see these lines:
 ```
 [Node] INFO: Verified VDF for height 239702, delta = 10.111297 sec, took 0.089002 sec.
 ```
-which indicates that your node is now verifying the current VDFs as they are received. Your GPU would now be utilized every ~8 seconds.
+Which indicates that your node is now verifying the current VDFs as they are received. Your GPU would now be utilized every ~10 seconds.
 
-If OpenCL is not being utilized for VDF verification, you should see relatively high CPU usage across all cores every ~8 seconds.
+If OpenCL is not being utilized for VDF verification, you should see relatively high CPU usage across all cores every ~10 seconds.
 
-If you are running a Timelord (the default is OFF), you will see high CPU usage on at least 2 cores in any case, even if your GPU is used for verification.
+If you are running a Timelord (the default is off), you will see high CPU usage on at least one core in any case, even if your GPU is used for verification.
+
+Note: During initial blockchain sync, CPU usage can be high in any case.
+
+Example Hardware and times spreadsheet: https://docs.google.com/spreadsheets/d/1NlK-dq7vCbX4NHzrOloyy4ylLW-fdXjuT8468__SF64/edit?pli=1&gid=618383284#gid=618383284
 
 ## OpenCL for Intel iGPUs
 Intel iGPUs prior to 11th gen will most likely not be sufficient for mainnet.
@@ -76,14 +77,14 @@ Windows: https://google.com/search?q=amd+graphics+driver+download
 
 Install Nvidia drivers.
 
-There's an issue on Windows Laptops which requires a config file `config/local/opencl/platform` with contents `"NVIDIA CUDA"` (including the quotes) to make it detect the GPU (`opencl_device` should be 0 in this case as well).
-
 ### Ubuntu
 
 ```
 sudo apt install nvidia-driver-470
+sudo apt install nvidia-driver-565
 ```
 Version 470 still works with older Kepler cards like a Quadro K2000.
+Use latest version for newer GPUs.
 
 ### Arch Linux
 ```
@@ -104,4 +105,4 @@ VDF verification is now optimized for CPUs that support AVX2 and acceleration is
 
 To disable VDF verification done on GPU with OpenCL and force the CPU to do it, run `./run_node.sh --Node.opencl_device -1` when running your node.
 
-Or for a more permanent solution, edit your Node.json file in ~/config/local/ and set `opencl_device` value to -1.
+Or for a more permanent solution, edit `config/local/Node.json` and set `opencl_device` value to -1.

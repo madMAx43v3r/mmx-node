@@ -2,15 +2,25 @@
 title: Installation Guide
 description: How to install MMX Node.
 ---
+
 ## Windows
 
-You will need to install and update "Microsoft Visual C++ Redistributable for Visual Studio 2022" to the latest.
+Windows installers are available here: https://github.com/madMAx43v3r/mmx-node/releases
 
-Scroll down to "Other tools and redistributables:" https://visualstudio.microsoft.com/downloads/
-
-Windows executables: https://github.com/madMAx43v3r/mmx-node/releases
+You will need to install and update "Microsoft Visual C++ Redistributable for Visual Studio 2022" to the latest:\
+Scroll down to "Other tools and redistributables" here: https://visualstudio.microsoft.com/downloads/
 
 ## Linux
+
+Linux binary packages are available here: https://github.com/madMAx43v3r/mmx-node/releases
+
+To install a binary package:
+```
+sudo apt install ~/Downloads/mmx-node-1.1.7-amd64-ubuntu-20.04.deb
+```
+This will automatically install dependencies as well.
+
+When no matching package is found, continue below to build from source.
 
 ### Dependencies
 
@@ -30,24 +40,11 @@ sudo pacman -S qt5-webengine  # for native GUI
 
 Fedora Linux:
 ```
-yum install kernel-devel git cmake automake libtool curl gcc gcc-c++ miniupnpc-devel jemalloc-devel ocl-icd-devel zlib-ng-devel zstd clinfo screen
+sudo yum install kernel-devel git cmake automake libtool curl gcc gcc-c++ miniupnpc-devel jemalloc-devel ocl-icd-devel zlib-ng-devel zstd clinfo screen
+sudo yum install qt5-qtwebengine-devel  # for native GUI
 ```
 
-Note: OpenCL packages are optional, ie. `ocl-icd-opencl-dev`, etc...
-
-OpenCL provides faster and more [efficient VDF verification](https://github.com/madMAx43v3r/mmx-node/wiki/Optimizations-for-VDF-Verification) using an integrated or dedicated GPU.
-
-A standard iGPU found in Intel 1165G7 with 96EU iGPU on a low power laptop can verify VDF in about 4 sec at 48 MH/s timelord speed. For more info, please see: [What kind of GPU do I need for VDF verifications?](https://github.com/madMAx43v3r/mmx-node/wiki/Frequently-Asked-Questions#what-kind-of-gpu-do-i-need-for-verifying-the-vdf-whats-the-minimum-requiredrecommended-gpu-for-vdf-verifications)
-
-If you dont have a fast modern (>4 GHz) CPU, it is required to have a GPU with OpenCL support.
-
-Make sure to be in the `video` and or `render` group (depends on distribution) to be able to access a GPU:
-```
-sudo adduser $USER video
-sudo adduser $USER render
-```
-
-### Building
+### Building from Source
 
 ```
 git clone https://github.com/madMAx43v3r/mmx-node.git
@@ -60,15 +57,9 @@ To update to latest version:
 ./update.sh
 ```
 
-To switch to latest testnet:
-```
-rm NETWORK
-./update.sh
-```
-
 ### Rebuilding
 
-If you suspect some files might not build properly or if you want to recompile, stop the node then run:
+If the build is broken for some reason:
 ```
 ./clean_all.sh
 ./update.sh

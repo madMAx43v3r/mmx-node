@@ -2,12 +2,10 @@
 title: Pooling Protocol
 description: MMX Pooling Protocol reference.
 ---
-# MMX Pooling protocol
-
 ## Notes
 - MMX addresses are encoded via bech32 string
 - Hashes and signatures are encoded via little-endian upper-case hex string, without `0x` prefix
-- Account address = payout address
+- Account address = Payout address
 
 ## Pool Server API
 

@@ -18,7 +18,7 @@ See `$MMX_HOME/PASSWD` or `mmx-node/PASSWD` for the login password, it is auto g
 
 In case of a binary package install, the password will be in `~/.mmx/PASSWD`. By default, the GUI is only available on localhost.
 
-## CLI Setup
+## CLI
 
 When compiled from source:
 ```
@@ -29,7 +29,7 @@ With a binary package install, just open a new terminal. On Windows search for `
 
 Note: A new wallet can also be created in the GUI.
 
-## Creating a Wallet (offline)
+### Creating a Wallet (offline)
 
 ```
 mmx wallet create [-f filename] [--with-passphrase]
@@ -63,7 +63,7 @@ mmx wallet get seed [-j index]
 
 Note: A Node / Wallet restart is needed to pick up a new wallet.
 
-## Creating a Wallet (online)
+### Creating a Wallet (online)
 
 With a running Node / Wallet:
 ```
@@ -73,9 +73,17 @@ All parameters are optional. The new wallet can be seen with `mmx wallet account
 
 To use a passphrase, specify `--with-passphrase` without the actual passphrase. It will be queried interactively, to avoid it being stored in terminal history.
 
+### Running a Node
 
-## Configuration
-Note: Capitalization of configuration files matters. \
+First perform the installation and setup steps, then:
+
+```
+./run_node.sh
+```
+You can enable port forwarding on TCP port 11337, if you want to help out the network and accept incoming connections.
+
+### Configuration
+Note: Capitalization of configuration files names matters. \
 Note: Any config changes require a node restart to become effective.
 
 #### Custom Farmer Reward Address
@@ -111,13 +119,58 @@ Create / Edit file `config/local/Router.json`:
 echo true > config/local/timelord
 ```
 
+#### Custom home directory
+To set a custom storage path for the blockchain DB, wallet files, etc:
+```
+export MMX_HOME=/your/path/
+```
+Wallet files will end up in `MMX_HOME`, everything else in `mainnet` subfolder.
+When compiling from source, `MMX_HOME` is not set, so it defaults to the current directory.
+When installing a binary package `MMX_HOME` defaults to `~/.mmx/`.
+
+Note: A trailing `/` in the path is required.
+
 #### Custom data directory
 
-To have the blockchain and DB stored in a custom directory you can set environment variable `MMX_DATA` (for example):
+To store the DB in a custom directory you can set environment variable `MMX_DATA` (for example):
 ```
 export MMX_DATA=/mnt/mmx_data/
 ```
-A node restart is required. Optionally the previous `testnetX` folder can be copied to the new `MMX_DATA` path (after stopping the node), to avoid having to sync from scratch again.
+A node restart is required. Optionally the `mainnet` folder can be copied to the new `MMX_DATA` path (after stopping the node), to avoid having to sync from scratch again.
+
+Note: A trailing `/` in the path is required.
+
+#### Reducing network traffic
+
+If you have a slow internet connection or want to reduce traffic in general you can lower the number of connections in `config/local/Router.json`.
+For example to run at the bare recommended minimum:
+```
+{
+	"num_peers_out": 4,
+	"max_connections": 4
+}
+```
+`num_peers_out` is the maximum number of outgoing connections to synced peers. `max_connections` is the maximum total number of connections.
+Keep in mind this will increase your chances of losing sync.
+
+Another more drastic measure is to disable relaying messages to other nodes, by setting `do_relay` to `false` in `config/local/Router.json`.
+However this will hurt the network, so please only disable it if absolutely necessary.
+
+### Running in background
+
+To run a node in the background you can enter a `screen` session:
+```
+screen -S node
+(start node as above)
+<Ctrl+A> + D (to detach)
+screen -r node (to attach again)
+```
+
+### Recover from forking
+
+To re-sync starting from a specific height: `mmx node revert <height>`.
+This is needed if for some reason the node forked from the network. Just subtract 1000 blocks or more from the current height you are stuck at.
+
 
 ## Plotting
 
@@ -164,63 +217,3 @@ To add a plot directory add the path to `plot_dirs` array in `config/local/Harve
 Directories are searched recursively by default. To disable recursive search you can set `recursive_search` to `false` in `Harvester.json`.
 
 For the above reason, avoid adding a root directory (e.g. `H:\`), unless your drive only contains plots. Instead, make a folder and place all your plots in there (e.g. `H:\MMX Plots\`).
-
-## Running a Node
-
-First perform the installation and setup steps.
-
-To run a node for the current testnet:
-```
-./run_node.sh
-```
-
-You can enable port forwarding on TCP port 12341, if you want to help out the network and accept incoming connections.
-
-To set a custom storage path for the blockchain, wallet files, etc:
-```
-export MMX_HOME=/your/path/
-```
-Wallet files will end up in `MMX_HOME`, everything else in a `testnetX` subfolder. By default `MMX_HOME` is not set, so it's the current directory.
-
-### Reducing network traffic
-
-If you have a slow internet connection or want to reduce traffic in general you can lower the number of connections in `config/local/Router.json`.
-For example to run at the bare recommended minimum:
-```
-{
-	"num_peers_out": 4,
-	"max_connections": 4
-}
-```
-`num_peers_out` is the maximum number of outgoing connections to synced peers. `max_connections` is the maximum total number of connections.
-Keep in mind this will increase your chances of losing sync.
-
-Another more drastic measure is to disable relaying messages to other nodes, by setting `do_relay` to `false` in `config/local/Router.json`.
-However this will hurt the network, so please only disable it if absolutely necessary.
-
-### Running in background
-
-To run a node in the background you can enter a `screen` session:
-```
-screen -S node
-(start node as above)
-<Ctrl+A> + D (to detach)
-screen -r node (to attach again)
-```
-
-### Recover from forking
-
-To re-sync starting from a specific height: `./run_node.sh --Node.replay_height <height>`.
-Or while running: `mmx node revert <height>`.
-This is needed if for some reason you forked from the network. Just subtract 500 or 1000 blocks from the current height you are stuck at.
-To re-sync from scratch delete `block_chain.dat` and `db` folder in `testnetX`, or run `mmx node revert 0`.
-
-### Switching to latest testnet
-
-After stopping the node:
-```
-rm NETWORK
-./update.sh
-./run_node.sh
-```
-Blockchain data are now stored in `testnetX` folder by default.

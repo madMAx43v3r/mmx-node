@@ -1,5 +1,5 @@
 ---
-title: Blockchain Primer
+title: Blockchain
 description: Introduction to the MMX Blockchain.
 ---
 A blockchain written from scratch, doing most things differently.

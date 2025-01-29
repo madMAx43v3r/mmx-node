@@ -12,17 +12,14 @@ https://github.com/madMAx43v3r/mmx-node/wiki/Getting-Started
 ### _I started MMX-node in Windows but getting error message "Faulting module path: C:\Program Files\MMX Node\gui\cefsharp\libcef.dll" or something like that. What's wrong?_
 Are you sure you have read the installation wiki linked above? It says to update and install the latest Microsoft Visual C++ Redistributable.
 
-### _How do I upgrade to a newer testnet?_
-```
-cd into your ~/mmx-node/
-rm NETWORK
-./clean_all.sh (optional)
-./update.sh
-```
-Blockchain data are now stored in `testnetX` folder by default.
+### _Okay I have synced up to the latest blockchain height and I still see high CPU usage?_
+Check that VDF verification is done via GPU. Disable Timelord when enabled by accident.
 
-### _Okay I have synced up to the latest blockchain height and I still see high CPU usage and some GPU?_
-Please check that there are no background processes and you are not running the timelord. Also check that VDF verification is done with a GPU.
+On Linux make sure to be in the `video` and or `render` group (depends on distribution) to be able to access a GPU:
+```
+sudo adduser $USER video
+sudo adduser $USER render
+```
 
 ### _The timelord is taking a huge chunk of my CPU usage, how do I disable it?_
 You can disable it in GUI settings. (It's disabled by default now)
@@ -85,7 +82,7 @@ Note that the last entry is not followed by a `,`
 The score is actually an indication of how close your plot has proofs for the challenge. The lower the score, the better the proof is.
 
 ### _Do I need to open some ports to allow MMX to communicate with other peers?_
-You don't have to. But if you have fast internet connection and feel like helping out the network by allowing incoming connections, you can enable port forwarding on TCP 12341 for testnet11.
+You don't have to. But if you have fast internet connection and feel like helping out the network by allowing incoming connections, you can enable port forwarding on TCP 11337 for mainnet.
 
 UPnP automatic port forwarding is now enabled by default, however it can disabled in GUI settings.
 

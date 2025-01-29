@@ -2,15 +2,14 @@
 title: CLI Commands
 description: MMX Node CLI Command Reference.
 ---
-To use the CLI:
+When compiled from source:
 ```
 cd mmx-node
 source ./activate.sh
 ```
+With a binary package install, just open a new terminal. On Windows search for `MMX CMD`.
 
-For Windows: Use the shortcut in the start menu or manually run `mmx_cmd.cmd` from a terminal/command prompt.
-
-To run any mmx commands (except mmx wallet create), the node needs to be running. See [Getting Started](../guides/getting-started.md) to read on how to start it.
+To run any `mmx` commands (except `mmx wallet create`), the node needs to be running. See [Getting Started](../guides/getting-started.md) to read on how to start it.
 
 
 ## Node CLI

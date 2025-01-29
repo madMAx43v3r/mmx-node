@@ -7,39 +7,44 @@ description: How to setup and use remote mmx services.
 
 These steps are provided for farming on many machines on a single local area network, or even over a wide area network.
 
+To enable remote access to a Node or Farmer:
+```
+echo true > config/local/allow_remote
+```
+Alternatively, see "Allow remote service access" in GUI Settings.
+
+Remote harvesters need access to port `11333`, while remote farmer, timelord and wallet need port `11330`.
+
+### Remote Harvester
+
+To run a remote harvester:
+```bash title="Remote Harvester"
+./run_harvester.sh -n node.ip
+```
+Alternatively to set the node address permanently: `echo node.ip > config/local/node`
+
+Note: To connect to a remote farmer, replace `node.ip` with the farmer IP.
+
+To disable the built-in harvester in the node: `echo false > config/local/harvester`
+
 ### Remote Farmer
 
 To run a remote farmer with it's own wallet and harvester:
 ```bash title="Remote Farmer"
-./run_farmer.sh -n node.ip:11330
+./run_farmer.sh -n node.ip
 ```
-Alternatively to set the node address permanently: `echo node.ip:11330 > config/local/node`
+Alternatively to set the node address permanently: `echo node.ip > config/local/node`
 
 To disable the built-in farmer in the node: `echo false > config/local/farmer`
 
-### Remote Harvester
-
-To run a remote harvester, while connecting to a node:
-```bash title="Remote Harvester"
-./run_harvester.sh -n node.ip:11330
-```
-Alternatively to set the node address permanently: `echo node.ip:11330 > config/local/node`
-
-To run a remote harvester, while connecting to a remote farmer:
-```bash title="Remote Harvester"
-./run_harvester.sh -n farmer.ip:11333
-```
-Alternatively to set the farmer address permanently: `echo farmer.ip:11333 > config/local/node`
-
-To disable the built-in harvester in the node: `echo false > config/local/harvester`
 
 ### Remote Timelord
 
 To run a remote timelord:
 ```bash title="Remote Timelord"
-./run_timelord.sh -n node.ip:11330
+./run_timelord.sh -n node.ip
 ```
-Alternatively to set the node address permanently: `echo node.ip:11330 > config/local/node`
+Alternatively to set the node address permanently: `echo node.ip > config/local/node`
 
 To disable the built-in timelord in the node: `echo false > config/local/timelord`
 
@@ -47,9 +52,9 @@ To disable the built-in timelord in the node: `echo false > config/local/timelor
 
 To run a remote wallet:
 ```bash title="Remote Wallet"
-./run_wallet.sh -n node.ip:11330
+./run_wallet.sh -n node.ip
 ```
-Alternatively to set the node address permanently: `echo node.ip:11330 > config/local/node`
+Alternatively to set the node address permanently: `echo node.ip > config/local/node`
 
 To disable the built-in wallet in the node:
 ```bash title="Disable Wallet"
@@ -59,7 +64,7 @@ echo false > config/local/farmer
 
 ### Remote connections over public networks
 
-To use the remote services over a public network such the internet you should use an SSH tunnel, instead of opening port `11330` to the world.
+To use the remote services over a public network such the internet you should use an SSH tunnel, instead of opening port `11330` or `11333` to the world.
 
 To run an SSH tunnel to connect to a node from another machine (such as from a remote farmer):
 ```bash title="SSH Tunnel"

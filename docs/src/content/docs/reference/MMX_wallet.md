@@ -1,5 +1,5 @@
 ---
-title: MMX Wallet Development
+title: MMX Wallet
 description: Important information for developing a wallet for MMX.
 ---
 ## MMX Wallet / Address Format
@@ -11,4 +11,4 @@ Notes for 3rd party development:
 	- There is no index being hashed in the first iteration
 - The byte order for bech32 addresses is reversed:
 	- When converting a public key to bech32, first the sha256 hash is computed, then the byte order is reversed and converted with standard Bech32m.
-	- When converting a bech32 address to a hash, the bytes from the resulting standard Bech32m decode need to be reversed
+	- When converting a bech32 address to a hash, the bytes from the resulting standard Bech32m decode need to be reversed.
