@@ -1,3 +1,7 @@
+---
+title: Pooling Protocol
+description: MMX Pooling Protocol reference.
+---
 # MMX Pooling protocol
 
 ## Notes

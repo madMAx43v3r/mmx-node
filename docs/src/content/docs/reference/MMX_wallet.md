@@ -1,3 +1,7 @@
+---
+title: MMX Wallet Development
+description: Important information for developing a wallet for MMX.
+---
 ## MMX Wallet / Address Format
 
 Notes for 3rd party development:

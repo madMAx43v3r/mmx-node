@@ -1,3 +1,7 @@
+---
+title: MMX Script Language
+description: MMX Script smart contract language reference.
+---
 # MMX Script
 
 The MMX smart contract language is a restricted subset of JavaScript with some additional features.
@@ -341,13 +345,13 @@ This allows a more efficient way to deploy with funding, compared to executing a
 
 ### Built-in Contracts
 
-- [offer.js](../src/contract/offer.js) - Offer
+- [offer.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/offer.js) - Offer
 	- Allows to trade between two currencies at a fixed price (See GUI -> Market)
 	- Takers can trade any fraction of the offer
 	- Maker can cancel / refill at any time
 	- Bids are accumulated in the contract (for lower tx fees)
 	- Manual withdrawal will transfer accumulated bids to maker wallet
-- [swap.js](../src/contract/swap.js) - Swap
+- [swap.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/swap.js) - Swap
 	- Liquidity pool AMM, similar to UniSwap (see GUI -> Swap)
 	- Has 4 different fee-tiers, each with their own liquidty and price
 	- A trade is divided into multiple chunks / iterations
@@ -356,18 +360,18 @@ This allows a more efficient way to deploy with funding, compared to executing a
 	- Liquidity is locked for 24 hours after it's been added / or fee-tier was changed
 	- A single account can only provide liquidity for one fee-tier
 	- Fee payouts are heuristic for better trade efficiency (manual trigger, no automatic compounding)
-- [virtual_plot.js](../src/contract/virtual_plot.js) - Virtual Plot
+- [virtual_plot.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/virtual_plot.js) - Virtual Plot
 	- Used for Proof Of Stake farming
 	- Only 90% of deposited balance is returned on withdrawal, to avoid short-term staking.
-- [plot_nft.js](../src/contract/plot_nft.js) - Plot NFT
+- [plot_nft.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/plot_nft.js) - Plot NFT
 	- Used for pooled farming to control rewards / switch pools
-- [token.js](../src/contract/token.js) - Simple Token
+- [token.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/token.js) - Simple Token
 	- Token contract with single owner to mint a token (without limits)
-- [nft.js](../src/contract/nft.js) - NFT
+- [nft.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/nft.js) - NFT
 	- Contract used to mint NFTs
 	- Ensures only a single token is ever minted by a verified creator
-- [time_lock.js](../src/contract/time_lock.js) - Simple Time Lock
-- [escrow.js](../src/contract/escrow.js) - Simple Escrow with middle-man
+- [time_lock.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/time_lock.js) - Simple Time Lock
+- [escrow.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/escrow.js) - Simple Escrow with middle-man
 
 ### Minting tokens
 
