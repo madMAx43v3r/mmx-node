@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 		vnx::log_info() << "Build commit: " << commit;
 	}
 
-	std::string node_url = ":11330";
+	std::string node_url = ":11333";
 
 	vnx::read_config("node", node_url);
 
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 	if(auto tcp = std::dynamic_pointer_cast<const vnx::TcpEndpoint>(node)) {
 		if(!tcp->port || tcp->port == vnx::TcpEndpoint::default_port) {
 			auto tmp = vnx::clone(tcp);
-			tmp->port = 11330;
+			tmp->port = 11333;
 			node = tmp;
 		}
 	}
