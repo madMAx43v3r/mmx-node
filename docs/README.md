@@ -1,17 +1,23 @@
-# Starlight Starter Kit: Basics
+# Contributing to MMX Docs
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+If you would like to contribute to MMX Docs, you can do so by following these steps:
+1. Fork the repository
+2. Clone *your fork* repository and cd into it
+3. Create a new branch
+4. Make your changes:
+    - First cd into the `docs` directory
+    - Run `npm install` to install dependencies (requires Node.js/npm)
+    - Run `npm run dev` to start the local server
+    - Make your changes in your favorite code editor
+5. Commit your changes
+6. Push to your fork
+7. Create a pull request
 
-```
-npm create astro@latest -- --template starlight
-```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/starlight/tree/main/examples/basics)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/starlight/tree/main/examples/basics)
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/withastro/starlight&create_from_path=examples/basics)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwithastro%2Fstarlight%2Ftree%2Fmain%2Fexamples%2Fbasics&project-name=my-starlight-docs&repository-name=my-starlight-docs)
+Clicking the `Edit page` button at the bottom of docs pages will take you to the source file for that page and prompt you to create or add to your fork of mmx-node to submit a pull request. If you want to add a new page, you can do so by creating a new `.md` or `.mdx` file in the appropriate subdirectory for the category desired. View existing files for formatting examples. Creating a new category for the sidebar can be done by creating a new directory in `src/content/docs/` and then adding that directory to the `sidebar` array in `astro.config.mjs`.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+
+See below for the basic structure of the docs, npm commands, and links to the full starlight and astro documentation.
 
 ## 🚀 Project Structure
 

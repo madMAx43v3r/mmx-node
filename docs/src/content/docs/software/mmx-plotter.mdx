@@ -9,7 +9,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 ## MMX Plotting
 For plotting MMX Plots, there is a CUDA plotter available. It can be found at [mmx-binaries](https://github.com/madMAx43v3r/mmx-binaries). The source code for the plotter can be found at [mmx-cuda-plotter](https://github.com/madMAx43v3r/mmx-cuda-plotter). A CUDA GPU is required for plotting due to the compression resistant plot format, plotting on CPU would take too long. The format is compression resistant, but not uncompressible. The current plotter allows for compression of up to c15, which only saves about 3% of disk space, but increases CPU load for lookups and proof retreival. It is not recommended to use c15. Due to the high frequency of lookups on MMX, larger capacity hard drives may struggle to seek quickly enough when full of k29 plots, for drives over 16TB k30 is the minimum recommended size.
 
-### Available K-Sizes (HDD plots)
+### Available K-Sizes and Temp space requirements (HDD plots)
 | K-Size | Size (GiB) | Full RAM (GiB) | Partial RAM (GiB) | Disk with Partial RAM (GiB) |
 |:-------|:----------:|:--------------:|:-----------------:|:---------------:|
 | K29  |  37    |      61    |       39      |      22     |
@@ -18,6 +18,7 @@ For plotting MMX Plots, there is a CUDA plotter available. It can be found at [m
 | K32  |  320   |     446    |      246      |     177     |
 
 <Aside>All values are for c0 compression and are approximate based on observations while plotting. Due to differences in the tables, final plot sizes may vary significantly. For k32 a difference of 3-4GiB between largest to smallest plot files have been observed.</Aside>
+<Aside>Full RAM, and Partial RAM refer to plotting modes. Disk space is what is needed by `-2` with partial RAM plotting. When using full disk mode plotting, temp space required for `-3` is the same as Partial RAM requirements. If `-3` and `-2` are the same drive, use the Full RAM space as a reference.</Aside>
 <Aside type="caution">The RAM Requirements above were tested to work on linux. Due to quirks of memory usage on Windows OS, it may not be possible to plot k31 in partial ram on a system with 128gb of ram.</Aside>
 
 ### Compression

@@ -12,6 +12,10 @@ export default defineConfig({
 				github: 'https://github.com/madMAx43v3r/mmx-node',
 			},
 			customCss: ['./src/styles/style.css'],
+			lastUpdated: true,
+			editLink: {
+				baseUrl: 'https://github.com/madMAx43v3r/mmx-node/edit/master/docs'
+			},
 			sidebar: [
 				{
 					label: 'Guides',
