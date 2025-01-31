@@ -4,4 +4,39 @@
     .content-panel .sl-container {
         margin-left: 5rem;
     }
-  }
+	--mmx-color-purple: hsl(262, 36%, 36%);
+
+    --sl-color-white: hsl(0, 0%, 100%); /* “white” */
+	--sl-color-gray-1: hsl(224, 20%, 94%);
+	--sl-color-gray-2: hsl(224, 6%, 77%);
+	--sl-color-gray-3: hsl(224, 6%, 56%);
+	--sl-color-gray-4: hsl(224, 7%, 36%);
+	--sl-color-gray-5: hsl(224, 10%, 23%);
+	--sl-color-gray-6: hsl(224, 14%, 16%);
+	--sl-color-black: hsl(224, 10%, 10%);
+
+	--sl-hue-orange: 41;
+	--sl-color-orange-low: hsl(var(--sl-hue-orange), 39%, 22%);
+	--sl-color-orange: hsl(var(--sl-hue-orange), 82%, 63%);
+	--sl-color-orange-high: hsl(var(--sl-hue-orange), 82%, 87%);
+	--sl-hue-green: 101;
+	--sl-color-green-low: hsl(var(--sl-hue-green), 39%, 22%);
+	--sl-color-green: hsl(var(--sl-hue-green), 82%, 63%);
+	--sl-color-green-high: hsl(var(--sl-hue-green), 82%, 80%);
+	--sl-hue-blue: 234;
+	--sl-color-blue-low: hsl(var(--sl-hue-blue), 54%, 20%);
+	--sl-color-blue: hsl(var(--sl-hue-blue), 100%, 60%);
+	--sl-color-blue-high: hsl(var(--sl-hue-blue), 100%, 87%);
+	--sl-hue-purple: 281;
+	--sl-color-purple-low: hsl(var(--sl-hue-purple), 39%, 22%);
+	--sl-color-purple: hsl(var(--sl-hue-purple), 82%, 63%);
+	--sl-color-purple-high: hsl(var(--sl-hue-purple), 82%, 89%);
+	--sl-hue-red: 339;
+	--sl-color-red-low: hsl(var(--sl-hue-red), 39%, 22%);
+	--sl-color-red: hsl(var(--sl-hue-red), 82%, 63%);
+	--sl-color-red-high: hsl(var(--sl-hue-red), 82%, 87%);
+
+	--sl-color-accent-low: hsl(224, 54%, 20%);
+	--sl-color-accent: hsl(224, 100%, 60%);
+	--sl-color-accent-high: hsl(224, 100%, 85%);
+}
