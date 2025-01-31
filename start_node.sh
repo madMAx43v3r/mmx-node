@@ -7,7 +7,7 @@ then
 fi
 
 DIR=$(dirname "$0")
-screen -S mmx_node -d -m ${DIR}/run_node.sh
+screen -S mmx_node -d -m ${DIR}/run_node.sh $@
 
 echo "Started MMX node in screen, to attach type 'screen -r mmx_node'."
 

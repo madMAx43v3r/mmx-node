@@ -7,7 +7,7 @@ then
 fi
 
 DIR=$(dirname "$0")
-screen -S mmx_harvester -d -m ${DIR}/run_harvester.sh
+screen -S mmx_harvester -d -m ${DIR}/run_harvester.sh $@
 
 echo "Started MMX harvester in screen, to attach type 'screen -r mmx_harvester'."
 
