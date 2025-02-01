@@ -97,7 +97,7 @@ A `docker-compose.yml` for the cpu only node can look like this:
 version: '3'
 services:
   node:
-    image: ghcr.io/madmax43v3r/mmx-node:edge
+    image: ghcr.io/madmax43v3r/mmx-node:latest
     restart: unless-stopped
     volumes:
       - /some/path/to/mmx/node/data:/data
@@ -110,7 +110,7 @@ For amd gpu support please see the following `docker-compose.yml`:
 version: '3'
 services:
   node:
-    image: ghcr.io/madmax43v3r/mmx-node:edge-amd
+    image: ghcr.io/madmax43v3r/mmx-node:latest-amd
     restart: unless-stopped
     group_add:
       - video
@@ -130,7 +130,7 @@ For nvidia gpu support please see the following `docker-compose.yml`:
 version: '3'
 services:
   node:
-    image: ghcr.io/madmax43v3r/mmx-node:edge-nvidia
+    image: ghcr.io/madmax43v3r/mmx-node:latest-nvidia
     restart: unless-stopped
     runtime: nvidia
     volumes:
@@ -145,7 +145,7 @@ Running a remote harvester is done by overwriting the `CMD` of the Dockerfile, f
 version: '3'
 services:
   harvester:
-    image: ghcr.io/madmax43v3r/mmx-node:edge
+    image: ghcr.io/madmax43v3r/mmx-node:latest
     restart: unless-stopped
     volumes:
       - /some/path/to/mmx/node/data:/data
