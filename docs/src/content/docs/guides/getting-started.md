@@ -5,13 +5,15 @@ i18nReady: true
 ---
 
 ## GUI
-The native GUI can be opened by searching for `MMX Node`.
+The native GUI can be opened by searching for `MMX Node` (when installed via binary package).
 
 In case of compiling from source:
 ```
-./run_node.sh --gui
-./run_wallet.sh --gui
+./run_node.sh --gui      # includes wallet and farmer
+./run_wallet.sh --gui    # remote wallet (connect to another node)
 ```
+
+### WebGUI
 The WebGUI is available at: http://localhost:11380/gui/
 
 See `$MMX_HOME/PASSWD` or `mmx-node/PASSWD` for the login password, it is auto generated at compile time.

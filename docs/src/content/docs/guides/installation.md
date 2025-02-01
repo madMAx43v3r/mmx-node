@@ -7,8 +7,8 @@ description: How to install MMX Node.
 
 Windows installers are available here: https://github.com/madMAx43v3r/mmx-node/releases
 
-You will need to install and update "Microsoft Visual C++ Redistributable for Visual Studio 2022" to the latest:\
-Scroll down to "Other tools and redistributables" here: https://visualstudio.microsoft.com/downloads/
+You might need to install or update "Microsoft Visual C++ Redistributable for Visual Studio 2022" to the latest:\
+Scroll down to "Other Tools" here: https://visualstudio.microsoft.com/downloads/
 
 ## Linux
 
