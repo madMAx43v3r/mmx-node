@@ -442,16 +442,19 @@ const Login = {
 	methods: {
 		submit(passwd) {
 			this.error = null;
-			fetch('/server/login?user=mmx-admin&passwd_plain=' + passwd)
-				.then(response => {
-					if(response.ok) {
-						localStorage.setItem('login-passwd', passwd);
-						this.$router.push("/");
-						location.reload();
-					} else {
-						this.error = "Login failed!";
-					}
-				});
+			fetch('/server/login', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify({user: 'mmx-admin', passwd_plain: passwd})
+			}).then(response => {
+				if(response.ok) {
+					localStorage.setItem('login-passwd', passwd);
+					this.$router.push("/");
+					location.reload();
+				} else {
+					this.error = "Login failed!";
+				}
+			});
 		}
 	},
 	created() {
