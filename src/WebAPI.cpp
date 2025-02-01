@@ -1030,7 +1030,9 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 				if(info) {
 					out = render_object(*info, context);
 					if(auto height = info->height) {
-						out["confirm"] = curr_height >= *height ? 1 + curr_height - *height : 0;
+						out["confirm"] = curr_height >= *height ? curr_height - *height + 1 : 0;
+					} else {
+						out["confirm"] = 0;
 					}
 					if(info->did_fail) {
 						out["state"] = "failed";
@@ -1040,6 +1042,8 @@ void WebAPI::render_tx_history(const vnx::request_id_t& request_id, const std::v
 						} else {
 							out["state"] = "pending";
 						}
+					} else {
+						out["state"] = "confirmed";
 					}
 				} else if(curr_height > tx->expires) {
 					out["state"] = "expired";
