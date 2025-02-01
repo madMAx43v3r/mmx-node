@@ -1,11 +1,9 @@
 ---
-title: Using Remote Services
+title: Remote Services
 description: How to setup and use remote mmx services.
 ---
 
-## Remote Services
-
-These steps are provided for farming on many machines on a single local area network, or even over a wide area network.
+The following steps are provided for running multiple harvesters with a single node, or for separate node / farmer / wallet setups.
 
 To enable remote access to a Node or Farmer:
 ```
@@ -35,8 +33,9 @@ To run a remote farmer with it's own wallet and harvester:
 ```
 Alternatively to set the node address permanently: `echo node.ip > config/local/node`
 
-To disable the built-in farmer in the node: `echo false > config/local/farmer`
-
+To disable the built-in farmer in the node: `echo false > config/local/farmer` \
+To disable the built-in wallet in the node or farmer: `echo false > config/local/wallet` \
+To disable the built-in harvester in the farmer: `echo false > config/local/harvester`
 
 ### Remote Timelord
 
@@ -56,15 +55,11 @@ To run a remote wallet:
 ```
 Alternatively to set the node address permanently: `echo node.ip > config/local/node`
 
-To disable the built-in wallet in the node:
-```bash title="Disable Wallet"
-echo false > config/local/wallet
-echo false > config/local/farmer
-```
+To disable the built-in wallet in the node: `echo false > config/local/wallet`
 
 ### Remote connections over public networks
 
-To use the remote services over a public network such the internet you should use an SSH tunnel, instead of opening port `11330` or `11333` to the world.
+To use the remote services over a public network such the internet you should use an SSH tunnel, instead of opening port `11330` or `11333` to the world (which would hurt security).
 
 To run an SSH tunnel to connect to a node from another machine (such as from a remote farmer):
 ```bash title="SSH Tunnel"

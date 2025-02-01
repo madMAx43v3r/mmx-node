@@ -2,7 +2,6 @@
 title: RPC Protocol
 description: MMX Node RPC Protocol.
 ---
-# RPC Protocol
 
 Every node exposes a HTTP endpoint on `localhost:11380` (by default).
 Binding to `0.0.0.0` needs to be enabled in `config/local/HttpServer.json`.
