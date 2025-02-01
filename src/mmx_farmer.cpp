@@ -113,7 +113,6 @@ int main(int argc, char** argv)
 		module.start_detached();
 	} else {
 		proxy->import_list.push_back("harvester.challenges");
-		proxy->export_list.push_back("harvester.proof");
 	}
 
 	proxy.start();
