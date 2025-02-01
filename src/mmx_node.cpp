@@ -98,11 +98,15 @@ int main(int argc, char** argv)
 
 	vnx::log_info() << "Remote service access is: " << (allow_remote ? "enabled on " + endpoint : "disabled");
 
-	if(with_farmer) {
-		with_wallet = true;
-	} else {
+	if(!with_wallet) {
+		with_farmer = false;
+	}
+	if(!with_farmer) {
 		with_harvester = false;
 	}
+	vnx::write_config("farmer", with_farmer);
+	vnx::write_config("harvester", with_harvester);
+
 	mmx::sync_type_codes(mmx_network + "type_codes");
 
 	{
