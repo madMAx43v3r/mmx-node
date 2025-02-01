@@ -45,8 +45,17 @@ int main(int argc, char** argv)
 	}
 
 	std::string node_url = ":11333";
+	std::string endpoint = "0.0.0.0";		// requires allow_remote
+	bool allow_remote = false;
 
 	vnx::read_config("node", node_url);
+	vnx::read_config("endpoint", endpoint);
+	vnx::read_config("allow_remote", allow_remote);
+
+	if(!allow_remote) {
+		endpoint = "localhost";
+	}
+	vnx::log_info() << "Remote service access is: " << (allow_remote ? "enabled on " + endpoint : "disabled");
 
 	auto node = vnx::Endpoint::from_url(node_url);
 	if(auto tcp = std::dynamic_pointer_cast<const vnx::TcpEndpoint>(node)) {
@@ -60,7 +69,9 @@ int main(int argc, char** argv)
 	proxy->forward_list = {"Node", "Farmer"};
 
 	{
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url("localhost:11333"));
+		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint + ":11333"));
+		module->use_authentication = true;
+		module->default_access = "REMOTE";
 		module.start_detached();
 	}
 	{

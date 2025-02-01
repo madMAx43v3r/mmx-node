@@ -358,6 +358,10 @@ int main(int argc, char** argv)
 				vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 				proxy->forward_list = {"Wallet", "Node"};
 				proxy.start_detached();
+				{
+					vnx::ProxyClient client(proxy.get_name());
+					client.login(user, passwd);
+				}
 				try {
 					params = node.get_params();
 				} catch(...) {
@@ -1217,12 +1221,16 @@ int main(int argc, char** argv)
 		}
 		else if(module == "node")
 		{
-			std::string node_url = ":11331";
+			std::string node_url = ":11330";
 			vnx::read_config("node", node_url);
 
 			vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", vnx::Endpoint::from_url(node_url));
 			proxy->forward_list = {"Router", "Node"};
 			proxy.start_detached();
+			{
+				vnx::ProxyClient client(proxy.get_name());
+				client.login(user, passwd);
+			}
 			try {
 				params = node.get_params();
 			} catch(...) {

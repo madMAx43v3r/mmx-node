@@ -136,11 +136,6 @@ int main(int argc, char** argv)
 		module->default_access = "REMOTE";
 		module.start_detached();
 	}
-	{
-		// for CLI
-		vnx::Handle<vnx::Server> module = new vnx::Server("Server1", vnx::Endpoint::from_url("localhost:11331"));
-		module.start_detached();
-	}
 	if(with_wallet) {
 		{
 			vnx::Handle<mmx::Wallet> module = new mmx::Wallet("Wallet");
@@ -151,6 +146,8 @@ int main(int argc, char** argv)
 		}
 		{
 			vnx::Handle<vnx::Server> module = new vnx::Server("Server5", vnx::Endpoint::from_url("localhost:11335"));
+			module->use_authentication = true;
+			module->default_access = "USER";
 			module.start_detached();
 		}
 	}
@@ -183,10 +180,6 @@ int main(int argc, char** argv)
 		{
 			vnx::Handle<mmx::TimeLord> module = new mmx::TimeLord("TimeLord");
 			module->storage_path = mmx_network + module->storage_path;
-			module.start_detached();
-		}
-		{
-			vnx::Handle<vnx::Server> module = new vnx::Server("Server2", vnx::Endpoint::from_url("localhost:11332"));
 			module.start_detached();
 		}
 	}

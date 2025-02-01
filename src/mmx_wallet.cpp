@@ -75,6 +75,8 @@ int main(int argc, char** argv)
 
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url("localhost:11335"));
+		module->use_authentication = true;
+		module->default_access = "USER";
 		module.start_detached();
 	}
 	{
