@@ -151,10 +151,8 @@ void Node::main()
 	fetch_threads = std::make_shared<vnx::ThreadPool>(2);
 
 	router = std::make_shared<RouterAsyncClient>(router_name);
-	timelord = std::make_shared<TimeLordAsyncClient>(timelord_name);
 	http = std::make_shared<vnx::addons::HttpInterface<Node>>(this, vnx_name);
 	add_async_client(router);
-	add_async_client(timelord);
 	add_async_client(http);
 
 	vnx::Directory(storage_path).create();
@@ -525,12 +523,6 @@ void Node::start_sync(const vnx::bool_t& force)
 	sync_pos = 0;
 	sync_peak = nullptr;
 	sync_retry = 0;
-
-	timelord->stop_vdf(
-		[this]() {
-			log(INFO) << "Stopped TimeLord";
-		});
-
 	sync_more();
 }
 

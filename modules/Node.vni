@@ -61,7 +61,6 @@ module Node implements vnx.addons.HttpComponent {
 	string storage_path;
 	string database_path = "db/";
 	string router_name = "Router";
-	string timelord_name = "TimeLord";
 	
 	addr_t mmx_usd_swap_addr;
 	string metalsdev_api_key;

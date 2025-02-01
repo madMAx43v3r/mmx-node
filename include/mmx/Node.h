@@ -578,7 +578,6 @@ private:
 
 	std::shared_ptr<const ChainParams> params;
 	std::shared_ptr<RouterAsyncClient> router;
-	std::shared_ptr<TimeLordAsyncClient> timelord;
 	std::shared_ptr<vnx::addons::HttpInterface<Node>> http;
 
 	std::mutex vdf_mutex;
