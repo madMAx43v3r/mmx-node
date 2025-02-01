@@ -42,6 +42,7 @@ The compute load when farming HDD plots is independent of the number of plots. T
 SSD plots are 2.5x smaller than HDD plots. They cannot be farmed on HDDs (even in a RAID array) due to the high IOPS required to farm them (proportional to plot count).
 The CPU load to farm SSD plots is already quite high with C0, as such C0 is recommended when making SSD plots. Higher k-size reduces CPU and IOPS load.
 As such the most efficient SSD plots are k32 C0, with k29 having 8x higher CPU and IOPS load. k32 C3 is equal to k29 C0 in terms of CPU load.
+Farming 1024 uncompressed SSD plots is the same compute load as computing a single C10 full proof.
 
 ## Creating Plots
 To create plots you will need a Farmer Public Key, and optionally a PlotNFT contract address (for NFT plots). To get the Farmer Public Key, see `mmx wallet keys` or go to the `Info` tab under the wallet in the GUI.
