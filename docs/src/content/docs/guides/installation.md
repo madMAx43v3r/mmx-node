@@ -150,7 +150,7 @@ services:
     volumes:
       - /some/path/to/mmx/node/data:/data
       - /some/path/to/disks:/disks
-    command: './run_harvester.sh -n <some ip or hostname here>:11333'
+    command: './run_harvester.sh -n <some ip or hostname here>'
 ```
 
 ## Custom storage path
