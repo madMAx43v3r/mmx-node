@@ -161,6 +161,7 @@ int main(int argc, char** argv)
 	std::string api_token_header;
 	{
 		vnx::Handle<vnx::addons::HttpServer> module = new vnx::addons::HttpServer("HttpServer");
+		module->default_access = "NETWORK";
 		module->components["/server/"] = "HttpServer";
 		module->components["/wapi/"] = "WebAPI";
 		module->components["/api/node/"] = "Node";
