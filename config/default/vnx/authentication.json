@@ -22,9 +22,7 @@
 			"PUBLISH",
 			"TIME_SYNC",
 			"mmx.permission_e.PUBLIC",
-			"mmx.permission_e.REMOTE",
-			"vnx.addons.permission_e.HTTP_REQUEST",
-			"vnx.addons.permission_e.FILE_DOWNLOAD"
+			"mmx.permission_e.REMOTE"
 		],
 		"NETWORK": [
 			"mmx.permission_e.PUBLIC",
