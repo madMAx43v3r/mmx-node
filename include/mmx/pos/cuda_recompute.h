@@ -24,9 +24,12 @@ namespace pos {
 struct cuda_device_t {
 	int index = -1;
 	std::string name;
+	uint32_t max_resident = 0;
+	uint64_t buffer_size = 0;
 };
 
 struct cuda_result_t {
+	bool failed = false;
 	uint64_t id = 0;
 	uint32_t Y = 0;
 	std::array<uint32_t, N_META> M;
@@ -35,9 +38,11 @@ struct cuda_result_t {
 
 bool have_cuda_recompute();
 
-std::vector<cuda_device_t> get_cuda_recompute_devices();
+std::vector<cuda_device_t> get_cuda_devices();
 
-void cuda_recompute_init(const int max_devices = -1, const std::vector<int>& device_list = {});
+std::vector<cuda_device_t> get_cuda_devices_used();
+
+void cuda_recompute_init(const bool enable = true, const std::vector<int>& device_list = {});
 
 uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id, const std::vector<uint32_t>& x_values);
 
