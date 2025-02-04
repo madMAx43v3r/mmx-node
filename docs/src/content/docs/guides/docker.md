@@ -9,7 +9,16 @@ Docker images are available via `ghcr.io/madmax43v3r/mmx-node` in 2 build flavou
 - `latest`: Built from the most recent release version
 - `edge`: Built from the most recent commit to the master branch
 
-Additionally, each semver tag produces tagged images using the same three flavours from above: `<major>.<minor>.<patch>`, `<major>.<minor>` and `<major>` each with their respective suffix (eg. `0.9.5-amd`)
+The following tag suffixes are also available for GPU vendor specific builds:
+ - `-amd`
+ - `-intel`
+ - `-nvidia`
+
+Additionally, each semver tag produces tagged images:
+ - `<major>.<minor>.<patch>`
+ - `<major>.<minor>`
+ - `<major>`
+ - each with their respective suffix (eg. `1.1.9-amd`)
 
 Each image provides a volume for `/data` which you can override with your own volume or a mapped path to customize the storage location of the node data.
 
@@ -25,9 +34,13 @@ services:
       - /some/path/to/mmx-node:/data
     ports:
       - "11337:11337"  # Node p2p port. Forward your router to this port for peers to be able to connect
-      #- "127.0.0.1:11380:11380"  # API port. Uncomment and set host to 0.0.0.0 in config/local/HttpServer.json for webUI/API access
+      - "127.0.0.1:11380:11380"  # API port. Set host to 0.0.0.0 in /data/config/local/HttpServer.json for webUI/API access
       #- "11333:11333"  # Harvester port. Uncomment to allow remote harvesters to connect to the farmer
       #- "11330:11330"  # Farmer port. Uncomment to allow remote farmers to connect to the node
+    environment:
+      MMX_ALLOW_REMOTE: 'false'  # Set to true to allow connections from remote harvesters/farmers
+      MMX_HARVESTER_ENABLED: 'true'  # Set to false to disable local harvester
+      MMX_FARMER_ENABLED: 'true'  # Set to false to disable local farmer
 ```
 
 ### AMD GPU
@@ -38,9 +51,6 @@ services:
   node:
     image: ghcr.io/madmax43v3r/mmx-node:latest-amd
     restart: unless-stopped
-    group_add:
-      - video
-      - render
     devices:
       - /dev/dri:/dev/dri
       - /dev/kfd:/dev/kfd
@@ -48,9 +58,13 @@ services:
       - /some/path/to/mmx-node:/data
     ports:
       - "11337:11337"  # Node p2p port. Forward your router to this port for peers to be able to connect
-      #- "127.0.0.1:11380:11380"  # API port. Uncomment and set host to 0.0.0.0 in config/local/HttpServer.json for webUI/API access
+      - "127.0.0.1:11380:11380"  # API port. Set host to 0.0.0.0 in /data/config/local/HttpServer.json for webUI/API access
       #- "11333:11333"  # Harvester port. Uncomment to allow remote harvesters to connect to the farmer
       #- "11330:11330"  # Farmer port. Uncomment to allow remote farmers to connect to the node
+    environment:
+      MMX_ALLOW_REMOTE: 'false'  # Set to true to allow connections from remote harvesters/farmers
+      MMX_HARVESTER_ENABLED: 'true'  # Set to false to disable local harvester
+      MMX_FARMER_ENABLED: 'true'  # Set to false to disable local farmer
 ```
 
 ### Intel GPU
@@ -61,21 +75,21 @@ services:
   node:
     image: ghcr.io/madmax43v3r/mmx-node:latest-intel
     restart: unless-stopped
-    group_add:
-      - video
-      - render
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128
     volumes:
       - /some/path/to/mmx-node:/data
     ports:
       - "11337:11337"  # Node p2p port. Forward your router to this port for peers to be able to connect
-      #- "127.0.0.1:11380:11380"  # API port. Uncomment and set host to 0.0.0.0 in config/local/HttpServer.json for webUI/API access
+      - "127.0.0.1:11380:11380"  # API port. Set host to 0.0.0.0 in /data/config/local/HttpServer.json for webUI/API access
       #- "11333:11333"  # Harvester port. Uncomment to allow remote harvesters to connect to the farmer
       #- "11330:11330"  # Farmer port. Uncomment to allow remote farmers to connect to the node
+    environment:
+      MMX_ALLOW_REMOTE: 'false'  # Set to true to allow connections from remote harvesters/farmers
+      MMX_HARVESTER_ENABLED: 'true'  # Set to false to disable local harvester
+      MMX_FARMER_ENABLED: 'true'  # Set to false to disable local farmer
 ```
-
-Note: `- render` in `group_add` might need to be removed, depending on your system.
+Note: Intel ARC support requires a host system running Linux Kernel 6.3 or above
 
 ### NVIDIA GPU
 
@@ -90,17 +104,26 @@ services:
       - /some/path/to/mmx-node:/data
     ports:
       - "11337:11337"  # Node p2p port. Forward your router to this port for peers to be able to connect
-      #- "127.0.0.1:11380:11380"  # API port. Uncomment and set host to 0.0.0.0 in config/local/HttpServer.json for webUI/API access
+      - "127.0.0.1:11380:11380"  # API port. Set host to 0.0.0.0 in /data/config/local/HttpServer.json for webUI/API access
       #- "11333:11333"  # Harvester port. Uncomment to allow remote harvesters to connect to the farmer
       #- "11330:11330"  # Farmer port. Uncomment to allow remote farmers to connect to the node
+    environment:
+      MMX_ALLOW_REMOTE: 'false'  # Set to true to allow connections from remote harvesters/farmers
+      MMX_HARVESTER_ENABLED: 'true'  # Set to false to disable local harvester
+      MMX_FARMER_ENABLED: 'true'  # Set to false to disable local farmer
 ```
 Note: for nvidia you also need the `NVIDIA Container Toolkit` installed on the host, for more info please see: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 
 ## Remote Services
 
-Running a remote harvester or farmer can be done by overwriting the `CMD` of the Dockerfile, for example like this:
+ - Running a remote harvester or farmer can be done by overwriting the `CMD` of the Dockerfile, for example like this:
 
 ### Remote Harvester
+
+ - Set `MMX_ALLOW_REMOTE` to `true` in the node or farmer compose.yml
+ - Make sure port 11333 is uncommented/exposed in the node or farmer compose.yml
+ - Edit the following example with the node or farmers ip address and correct paths
+
 ```yml
 services:
   harvester:
@@ -111,9 +134,14 @@ services:
       - /some/path/to/mmx-node:/data
       - /some/path/to/disks:/disks
 ```
-Note: The harvester must be able to connect to the remote farmer on port 11333. See examples above and below
 
 ### Remote Farmer
+
+ - Set `MMX_ALLOW_REMOTE` to `true` in the node compose.yml
+ - To allow remote harvesters to connect to this farmer set `MMX_ALLOW_REMOTE` to `true` in the example below
+ - Make sure port 11330 is uncommented/exposed in the node compose.yml
+ - Edit the following example with the node ip address and correct data path
+
 ```yml
 services:
   farmer:
@@ -124,5 +152,7 @@ services:
       - /some/path/to/mmx-node:/data
     ports:
       - "11333:11333"  # Farmer listens on this port for remote harvester connections
+    environment:
+      MMX_ALLOW_REMOTE: 'false'  # Set to true to allow connections from remote harvesters
+      MMX_HARVESTER_ENABLED: 'true'  # Set to false to disable local harvester
 ```
-Note: The farmer must be able to connect to the remote node on port 11330. See examples above
