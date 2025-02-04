@@ -6,6 +6,7 @@
  */
 
 #include <mmx/pos/cuda_recompute.h>
+#include <vnx/ThreadPool.h>
 
 #include <cuda_sha512.h>
 #include <cuda_runtime.h>
@@ -14,8 +15,10 @@
 #include <tuple>
 #include <queue>
 #include <atomic>
+#include <thread>
 #include <stdexcept>
 #include <algorithm>
+#include <unordered_map>
 #include <condition_variable>
 
 
@@ -42,24 +45,31 @@ static const uint32_t MEM_HASH_INIT[16] = {
 };
 
 __global__
-void cuda_gen_mem_array(uint4* mem_out, uint4* key_out, const uint32_t* id, const uint32_t mem_size, const uint32_t x_0)
+void cuda_gen_mem_array(uint4* mem_out, uint4* key_out, uint32_t* X_out, const uint32_t* X_in, const uint32_t* ID_in,
+						const int xbits, const uint32_t y_0)
 {
-	const uint32_t x = blockIdx.x * blockDim.x + threadIdx.x;
-	const uint32_t num_entries = gridDim.x * blockDim.x;
+	const uint32_t x = threadIdx.x;
+	const uint32_t y = blockIdx.x;
+	const uint32_t z = blockIdx.y;
+	const uint32_t out = ((z * gridDim.x + y) * blockDim.x) + x;
+	const uint32_t num_entries = gridDim.y * gridDim.x * blockDim.x;
+
+	const uint32_t X_i = (X_in[z * blockDim.x + x] << xbits) | (y_0 + y);
+	X_out[out] = X_i;
 
 	__align__(8) uint32_t msg[32] = {};
 
-	msg[0] = x_0 + x;
+	msg[0] = X_i;
 
 	for(int i = 0; i < 8; ++i) {
-		msg[1 + i] = id[i];
+		msg[1 + i] = ID_in[z * 8 + i];
 	}
 	__align__(8) uint32_t key[16] = {};
 
 	cuda_sha512((uint64_t*)msg, 4 + 32, (uint64_t*)key);
 
 	for(int i = 0; i < 4; ++i) {
-		key_out[x * 4 + i] = make_uint4(key[i * 4 + 0], key[i * 4 + 1], key[i * 4 + 2], key[i * 4 + 3]);
+		key_out[out * 4 + i] = make_uint4(key[i * 4 + 0], key[i * 4 + 1], key[i * 4 + 2], key[i * 4 + 3]);
 	}
 
 	uint32_t state[32];
@@ -73,7 +83,7 @@ void cuda_gen_mem_array(uint4* mem_out, uint4* key_out, const uint32_t* id, cons
 	uint32_t b = 0;
 	uint32_t c = 0;
 
-	for(uint32_t i = 0; i < mem_size / 32; ++i)
+	for(uint32_t i = 0; i < 32; ++i)
 	{
 		for(int j = 0; j < 4; ++j) {
 #pragma unroll
@@ -84,7 +94,7 @@ void cuda_gen_mem_array(uint4* mem_out, uint4* key_out, const uint32_t* id, cons
 
 #pragma unroll
 		for(int k = 0; k < 8; ++k) {
-			mem_out[(uint64_t(i) * num_entries + x) * 8 + k] =
+			mem_out[(uint64_t(i) * num_entries + out) * 8 + k] =
 					make_uint4(state[k * 4 + 0], state[k * 4 + 1], state[k * 4 + 2], state[k * 4 + 3]);
 		}
 	}
@@ -188,17 +198,28 @@ namespace pos {
 struct device_t {
 
 	int index = -1;
+	bool failed = false;
 	uint32_t max_ids = 0;
 	uint64_t buffer_size = 0;
 
-	uint32_t* id_dev = nullptr;
-	uint32_t* hash_dev = nullptr;
-	uint32_t* key_dev = nullptr;
-	uint32_t* M_dev = nullptr;
-	uint32_t* Y_dev = nullptr;
+	uint32_t* X_buf = nullptr;			//    4 bytes
+	uint32_t* ID_buf = nullptr;			//   32 bytes
 
-	uint32_t* M_buf = nullptr;
-	uint32_t* Y_buf = nullptr;
+	uint32_t* X_dev = nullptr;			//    4 bytes
+	uint32_t* X_out = nullptr;			//    4 bytes
+	uint32_t* ID_dev = nullptr;			//   32 bytes
+	uint32_t* key_dev = nullptr;		//   64 bytes
+	uint32_t* mem_dev = nullptr;		// 4096 bytes
+	uint32_t* hash_dev = nullptr;		//  128 bytes
+	uint32_t* M_dev = nullptr;			//   64 bytes
+	uint32_t* Y_dev = nullptr;			//    4 bytes
+
+	uint32_t* Y_buf = nullptr;			//    4 bytes
+	uint32_t* M_buf = nullptr;			//   64 bytes
+
+	cudaStream_t stream = nullptr;
+
+	std::thread thread;
 
 };
 
@@ -217,14 +238,27 @@ struct request_t {
 };
 
 std::mutex g_mutex;
-std::condition_variable g_signal;
+std::condition_variable g_result_signal;
+std::condition_variable g_request_signal;
+
+std::atomic<bool> do_run {true};
 std::atomic<bool> have_init {false};
 std::vector<cuda_device_t> g_device_list;
+std::vector<std::shared_ptr<device_t>> g_devices;
 
 std::atomic<uint64_t> next_request_id {1};
-std::vector<std::tuple<int, int>> g_order_queue;
+std::deque<std::tuple<int, int>> g_order_queue;
+std::unordered_map<uint64_t, std::shared_ptr<const cuda_result_t>> g_result_map;
 std::map<std::tuple<int, int>, std::queue<std::shared_ptr<request_t>>> g_wait_map;
 
+std::shared_ptr<vnx::ThreadPool> g_cpu_threads;
+
+
+void cuda_compute_loop(std::shared_ptr<device_t> dev);
+
+inline uint64_t get_request_size(const int xbits) {
+	return uint64_t(256) << xbits;
+}
 
 bool have_cuda_recompute()
 {
@@ -252,7 +286,16 @@ void cuda_recompute_init(const int max_devices, const std::vector<int>& device_l
 
 uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id, const std::vector<uint32_t>& x_values)
 {
-	const std::tuple<int, int> type_key(ksize, xbits);
+	if(ksize < 0 || ksize > 32) {
+		throw std::logic_error("invalid ksize");
+	}
+	if(xbits < 0 || xbits > 16) {
+		throw std::logic_error("invalid xbits");
+	}
+	if(x_values.size() != 256) {
+		throw std::logic_error("invalid x_values");
+	}
+	const std::tuple<int, int> type(ksize, xbits);
 
 	auto req = std::make_shared<request_t>();
 	req->id = next_request_id++;
@@ -260,23 +303,163 @@ uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id,
 	req->xbits = xbits;
 	req->plot_id = plot_id;
 	req->x_values = x_values;
-
-	std::lock_guard<std::mutex> lock(g_mutex);
-
-	if(std::find(g_order_queue.begin(), g_order_queue.end(), type_key) == g_order_queue.end()) {
-		g_order_queue.push_back(type_key);
+	{
+		std::lock_guard<std::mutex> lock(g_mutex);
+		if(std::find(g_order_queue.begin(), g_order_queue.end(), type) == g_order_queue.end()) {
+			g_order_queue.push_back(type);
+		}
+		g_wait_map[type].push(req);
 	}
-	g_wait_map[type_key].push(req);
-
-	// TODO
+	g_request_signal.notify_all();
+	return req->id;
 }
 
 std::shared_ptr<const cuda_result_t> cuda_recompute_poll(const std::set<uint64_t>& jobs)
 {
+	while(true) {
+		std::unique_lock<std::mutex> lock(g_mutex);
+		if(!g_result_map.empty()) {
+			for(const auto id : jobs) {
+				const auto iter = g_result_map.find(id);
+				if(iter != g_result_map.end()) {
+					if(iter->second) {
+						return iter->second;
+					}
+					throw std::logic_error("compute failed");
+				}
+			}
+		}
+		if(!do_run) {
+			throw std::logic_error("shutdown");
+		}
+		g_result_signal.wait(lock);
+	}
+}
+
+static void full_proof_compute(std::shared_ptr<request_t> req)
+{
 	// TODO
 }
 
+void cuda_compute_loop(std::shared_ptr<device_t> dev)
+{
+	while(do_run) {
+		std::unique_lock<std::mutex> lock(g_mutex);
+		while(do_run && g_order_queue.empty()) {
+			g_request_signal.wait(lock);
+		}
+		if(!do_run) {
+			break;
+		}
+		const auto type = g_order_queue.front();
+		g_order_queue.pop_front();
 
+		const auto ksize = std::get<0>(type);
+		const auto xbits = std::get<1>(type);
+		const auto req_size = get_request_size(xbits);
+
+		uint64_t alloc_sum = 0;
+		std::vector<std::shared_ptr<request_t>> req_list;
+		req_list.reserve(dev->buffer_size / req_size);
+		{
+			auto& req_queue = g_wait_map[type];
+			while(!req_queue.empty()) {
+				if(!alloc_sum || alloc_sum + req_size <= dev->buffer_size) {
+					req_list.push_back(req_queue.front());
+					alloc_sum += req_size;
+					req_queue.pop();
+				} else {
+					break;
+				}
+			}
+			if(!req_queue.empty()) {
+				g_order_queue.push_back(type);
+			}
+		}
+		lock.unlock();
+
+		uint32_t num_iter = 1;
+		while(req_size / num_iter > dev->buffer_size) {
+			num_iter <<= 1;
+		}
+		const uint64_t N = (1u << xbits) / num_iter;
+		const uint64_t M = req_list.size();
+		const uint64_t grid_size = uint64_t(256) * N * M;
+		const uint32_t KMASK = (uint64_t(1) << ksize) - 1;
+
+		for(uint64_t i = 0; i < M; ++i) {
+			const auto& req = req_list[i];
+			req->X_tmp.resize(req_size);
+			req->Y_tmp.resize(req_size);
+			req->M_tmp.resize(req_size);
+			::memcpy(dev->X_buf + i * 256, req->x_values.data(), 256 * 4);
+			::memcpy(dev->ID_buf + i * 8, req->plot_id.data(), 32);
+		}
+		const auto stream = dev->stream;
+		cudaMemcpyAsync(dev->X_dev, dev->X_buf,   M * 256 * 4, cudaMemcpyHostToDevice, stream);
+		cudaMemcpyAsync(dev->ID_dev, dev->ID_buf, M * 32,      cudaMemcpyHostToDevice, stream);
+
+		for(uint32_t iter = 0; iter < num_iter; ++iter)
+		{
+			const uint64_t y_0 = iter * N;
+			{
+				dim3 block(256, 1);
+				dim3 grid(N, M);
+				cuda_gen_mem_array<<<grid, block, 0, stream>>>(
+						(uint4*)dev->mem_dev,
+						(uint4*)dev->key_dev,
+						dev->X_out,
+						dev->X_dev,
+						dev->ID_dev,
+						xbits, y_0);
+			}
+			{
+				dim3 block(32, 4);
+				dim3 grid(1, grid_size / block.y / 64, 64);
+				cuda_calc_mem_hash<<<grid, block, 0, stream>>>(
+						(uint4*)dev->mem_dev,
+						(uint4*)dev->hash_dev,
+						MEM_HASH_ITER);
+			}
+			{
+				dim3 block(256, 1);
+				dim3 grid(N * M, 1);
+				cuda_final_mem_hash<<<grid, block, 0, stream>>>(
+						(uint4*)dev->M_dev,
+						        dev->Y_dev,
+						(uint4*)dev->hash_dev,
+						(uint4*)dev->key_dev,
+						KMASK);
+			}
+			cudaMemcpyAsync(dev->X_buf, dev->X_out, grid_size * 4,  cudaMemcpyDeviceToHost, stream);
+			cudaMemcpyAsync(dev->Y_buf, dev->Y_dev, grid_size * 4,  cudaMemcpyDeviceToHost, stream);
+			cudaMemcpyAsync(dev->M_buf, dev->M_dev, grid_size * 64, cudaMemcpyDeviceToHost, stream);
+
+			const auto err = cudaStreamSynchronize(stream);
+			if(err != cudaSuccess) {
+				std::lock_guard<std::mutex> lock(g_mutex);
+				for(const auto& req : req_list) {
+					g_result_map[req->id] = nullptr;
+				}
+				g_result_signal.notify_all();
+				dev->failed = true;
+				std::cerr << "CUDA error " << err << ": " << cudaGetErrorString(err) << std::endl;
+				return;
+			}
+
+			for(uint64_t i = 0; i < M; ++i) {
+				const auto& req = req_list[i];
+				const uint64_t count = 256 * N;
+				::memcpy(req->X_tmp.data() + iter * count, dev->X_buf + i * count, count * 4);
+				::memcpy(req->Y_tmp.data() + iter * count, dev->Y_buf + i * count, count * 4);
+				for(uint64_t k = 0; k < count; ++k) {
+					::memcpy(req->M_tmp.data() + iter * count + k, dev->M_dev + i * count * 16, N_META * 4);
+				}
+			}
+		}
+		g_cpu_threads->add_task(std::bind(&full_proof_compute, req));
+	}
+}
 
 
 
