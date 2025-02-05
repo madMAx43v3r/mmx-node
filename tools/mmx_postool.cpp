@@ -12,6 +12,10 @@
 #include <cmath>
 #include <thread>
 
+#ifdef WITH_CUDA
+#include <mmx/pos/cuda_recompute.h>
+#endif
+
 using namespace mmx;
 
 
@@ -26,6 +30,8 @@ int main(int argc, char** argv)
 	options["v"] = "verbose";
 	options["D"] = "verbose-debug";
 	options["file"] = "plot files";
+	options["cuda"] = "flag";
+	options["devices"] = "CUDA devices";
 	options["plotdir"] = "plot files directory";
 	options["iter"] = "number of iterations";
 	options["threads"] = "number of threads";
@@ -36,6 +42,7 @@ int main(int argc, char** argv)
 
 	bool debug = false;
 	bool verbose = false;
+	bool cuda = true;
 	int num_iter = 10;
 
 	const auto processor_count = std::thread::hardware_concurrency();
@@ -43,6 +50,7 @@ int main(int argc, char** argv)
 	int plot_filter = 4;
 	std::vector<std::string> file_names;
 	std::vector<std::string> dir_names;
+	std::vector<int> cuda_devices;
 
 	vnx::read_config("verbose-debug", debug);
 	vnx::read_config("verbose", verbose);
@@ -50,6 +58,8 @@ int main(int argc, char** argv)
 	vnx::read_config("plotdir", dir_names);
 	vnx::read_config("iter", num_iter);
 	vnx::read_config("threads", num_threads);
+	vnx::read_config("cuda", cuda);
+	vnx::read_config("devices", cuda_devices);
 
 	if(debug) {
 		verbose = true;
@@ -58,6 +68,18 @@ int main(int argc, char** argv)
 		std::cout << "Threads: " << num_threads << std::endl;
 		std::cout << "Iterations: " << num_iter << std::endl;
 	}
+
+#ifdef WITH_CUDA
+	if(cuda) {
+		std::cout << "CUDA available: yes" << std::endl;
+	} else {
+		std::cout << "CUDA available: disabled" << std::endl;
+	}
+	mmx::pos::cuda_recompute_init(cuda, cuda_devices);
+#else
+	std::cout << "CUDA available: no" << std::endl;
+#endif
+
 	vnx::ThreadPool threads(num_threads, 10);
 
 	struct summary_t {
@@ -209,7 +231,13 @@ int main(int argc, char** argv)
 	}
 
 	threads.close();
+
+#ifdef WITH_CUDA
+	mmx::pos::cuda_recompute_shutdown();
+#endif
+
 	vnx::close();
+
 	mmx::secp256k1_free();
 
 	return bad_plots.size() ? -1 : 0;
