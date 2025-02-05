@@ -30,11 +30,10 @@ struct cuda_device_t {
 
 struct cuda_result_t {
 	uint64_t id = 0;
-	uint32_t Y = 0;
-	bytes_t<META_BYTES_OUT> M;
-	std::vector<uint32_t> X;
 	bool failed = false;
 	std::string error;
+	std::vector<uint32_t> X;
+	std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>> entries;
 };
 
 bool have_cuda_recompute();

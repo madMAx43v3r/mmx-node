@@ -174,13 +174,14 @@ add_library(mmx_db STATIC
 )
 
 add_library(mmx_pos STATIC
+	src/pos/mem_hash.cpp
+	src/pos/verify.cpp
 	src/pos/encoding.cpp
 	src/pos/Prover.cpp
 )
 
 add_library(mmx_pos_verify STATIC
-	src/pos/mem_hash.cpp
-	src/pos/verify.cpp
+	src/pos/verify_full.cpp
 )
 
 add_library(mmx_modules SHARED

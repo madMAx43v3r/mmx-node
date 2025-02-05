@@ -60,9 +60,10 @@ int main(int argc, char** argv)
 		if(res->failed) {
 			std::cout << "[" << res->id << "] failed with: " << res->error << std::endl;
 		} else {
-			std::cout << "[" << res->id << "] Y = " << res->Y << std::endl;
-			std::cout << "[" << res->id << "] M = " << res->M.to_string() << std::endl;
-			std::cout << "[" << res->id << "] X = " << vnx::to_string(res->X) << std::endl;
+			for(const auto& entry : res->entries) {
+				std::cout << "[" << res->id << "] Y = " << entry.first << std::endl;
+				std::cout << "[" << res->id << "] M = " << entry.second.to_string() << std::endl;
+			}
 		}
 		jobs.erase(res->id);
 	}

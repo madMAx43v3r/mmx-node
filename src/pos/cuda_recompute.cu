@@ -247,6 +247,7 @@ std::condition_variable g_request_signal;
 
 std::atomic<bool> do_run {true};
 std::atomic<bool> have_init {false};
+std::atomic<int> have_cuda {0};
 std::vector<cuda_device_t> g_device_list;
 std::vector<std::shared_ptr<device_t>> g_devices;
 
@@ -258,18 +259,14 @@ std::map<std::tuple<int, int>, std::queue<std::shared_ptr<request_t>>> g_wait_ma
 std::shared_ptr<vnx::ThreadPool> g_cpu_threads;
 
 
-static void cuda_recompute_loop(std::shared_ptr<device_t> dev);
-
 inline void cuda_check(const cudaError_t& code) {
 	if(code != cudaSuccess) {
 		throw hardware_error_t(std::string(cudaGetErrorString(code)));
 	}
 }
 
-bool have_cuda_recompute()
-{
-	std::lock_guard<std::mutex> lock(g_mutex);
-	return !g_devices.empty();
+bool have_cuda_recompute() {
+	return do_run && have_cuda > 0;
 }
 
 std::vector<cuda_device_t> get_cuda_devices()
@@ -300,6 +297,8 @@ std::vector<cuda_device_t> get_cuda_devices_used()
 	std::lock_guard<std::mutex> lock(g_mutex);
 	return g_device_list;
 }
+
+static void cuda_recompute_loop(std::shared_ptr<device_t> dev);
 
 void cuda_recompute_init(const bool enable, const std::vector<int>& device_list)
 {
@@ -338,6 +337,7 @@ void cuda_recompute_init(const bool enable, const std::vector<int>& device_list)
 			g_devices.push_back(dev);
 		}
 	}
+	have_cuda = g_devices.size();
 }
 
 void cuda_recompute_shutdown()
@@ -379,7 +379,7 @@ uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id,
 	req->x_values = x_values;
 	{
 		std::lock_guard<std::mutex> lock(g_mutex);
-		if(g_devices.empty()) {
+		if(!do_run || have_cuda <= 0) {
 			throw std::logic_error("no CUDA devices available");
 		}
 		if(std::find(g_order_queue.begin(), g_order_queue.end(), type) == g_order_queue.end()) {
@@ -418,16 +418,9 @@ static void cuda_finish_cpu(std::shared_ptr<request_t> req)
 	res->id = req->id;
 	try {
 		std::vector<uint32_t> X_out;
-		const auto entries = compute_full(req->X_tmp, req->Y_tmp, req->M_tmp, &X_out, req->plot_id, req->ksize);
-		if(entries.empty()) {
-			throw std::logic_error("no proof found");
-		}
-		if(entries.size() > 1) {
-			throw std::logic_error("more than one proof found");
-		}
-		res->X = X_out;
-		res->Y = entries[0].first;
-		res->M = entries[0].second;
+		const auto entries = compute_full(req->X_tmp, req->Y_tmp, req->M_tmp, &res->X, req->plot_id, req->ksize);
+		res->X = std::move(X_out);
+		res->entries = entries;
 	}
 	catch(const std::exception& ex) {
 		res->failed = true;
@@ -442,10 +435,12 @@ static void cuda_finish_cpu(std::shared_ptr<request_t> req)
 
 static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 {
+	cudaStream_t stream;
 	try {
 		cuda_check(cudaSetDevice(dev->index));
 		cuda_check(cudaDeviceSynchronize());
 		cuda_check(cudaSetDeviceFlags(cudaDeviceScheduleBlockingSync));
+		cuda_check(cudaStreamCreate(&stream));
 
 		cuda_check(cudaMallocHost(&dev->X_buf,  dev->buffer_size * 4));
 		cuda_check(cudaMallocHost(&dev->Y_buf,  dev->buffer_size * 4));
@@ -464,10 +459,8 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 	catch(const std::exception& ex) {
 		dev->failed = true;
 		vnx::log_error() << "CUDA: failed to allocate memory for device " << dev->index << ": " << ex.what();
-		return;
+		goto failed;
 	}
-	cudaStream_t stream;
-	cudaStreamCreate(&stream);
 
 	while(do_run) {
 		std::unique_lock<std::mutex> lock(g_mutex);
@@ -582,7 +575,7 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 				g_result_signal.notify_all();
 				dev->failed = true;
 				vnx::log_error() << "CUDA: error " << err << ": " << cudaGetErrorString(err);
-				return;
+				goto failed;
 			}
 
 			for(uint64_t i = 0; i < M; ++i) {
@@ -600,6 +593,9 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 			g_cpu_threads->add_task(std::bind(&cuda_finish_cpu, req));
 		}
 	}
+
+failed:
+	have_cuda--;
 }
 
 
