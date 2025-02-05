@@ -33,7 +33,7 @@ jobs:
       - name: Install CUDA Toolkit
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
-          cuda: '12.4.0'
+          cuda: ${{ matrix.ubuntu-version == '24.04' && '12.5.0' || '11.8.0' }}
           method: network
           sub-packages: '["nvcc", "cudart"]'
 
