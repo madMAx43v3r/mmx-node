@@ -56,3 +56,4 @@ CMakeUserPresets.json
 /docs/dist
 /docs/.astro
 /docs/node_modules
+/.vscode
