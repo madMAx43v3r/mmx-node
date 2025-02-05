@@ -30,6 +30,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git cmake build-essential automake libtool pkg-config curl libminiupnpc-dev libjemalloc-dev libzstd-dev zlib1g-dev ocl-icd-opencl-dev qtwebengine5-dev fakeroot devscripts debhelper dpkg-dev
 
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          method: network
+
       - name: Build Debian package
         run: |
           ARCH=amd64 DIST=ubuntu-${{ matrix.ubuntu-version }} ./make_debian.sh
