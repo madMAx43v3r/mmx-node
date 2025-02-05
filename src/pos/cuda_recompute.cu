@@ -329,14 +329,17 @@ void cuda_recompute_init(bool enable, std::vector<int> device_list)
 	}
 	g_cpu_threads = std::make_shared<vnx::ThreadPool>(std::max(std::thread::hardware_concurrency(), 4u));
 
-	for(auto& info : g_device_list) {
+	for(auto& info : g_device_list)
+	{
 		info.buffer_size = 256;
 		while(info.buffer_size < info.max_resident) {
 			info.buffer_size <<= 1;
 		}
 		info.buffer_size /= 2;
 
-		for(int i = 0; i < 4; ++i) {
+		const int num_threads = (info.max_resident * 3 + info.buffer_size - 1) / info.buffer_size;
+
+		for(int i = 0; i < num_threads; ++i) {
 			auto dev = std::make_shared<device_t>();
 			dev->index = info.index;
 			dev->buffer_size = info.buffer_size;
@@ -344,7 +347,7 @@ void cuda_recompute_init(bool enable, std::vector<int> device_list)
 			g_devices.push_back(dev);
 		}
 		vnx::log_info() << "Using CUDA device '" << info.name
-				<< "' [" << info.index << "] with threads " << info.max_resident << ", buffer " << info.buffer_size;
+				<< "' [" << info.index << "] with threads " << info.max_resident << ", buffer " << info.buffer_size << "x" << num_threads;
 	}
 	have_cuda = g_devices.size();
 
