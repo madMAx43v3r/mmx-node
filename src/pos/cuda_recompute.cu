@@ -334,7 +334,9 @@ void cuda_recompute_init(bool enable, std::vector<int> device_list)
 		while(info.buffer_size < info.max_resident) {
 			info.buffer_size <<= 1;
 		}
-		for(int i = 0; i < 2; ++i) {
+		info.buffer_size /= 2;
+
+		for(int i = 0; i < 4; ++i) {
 			auto dev = std::make_shared<device_t>();
 			dev->index = info.index;
 			dev->buffer_size = info.buffer_size;
