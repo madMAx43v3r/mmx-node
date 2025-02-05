@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 	vnx::read_config("devices", cuda_devices);
 
 	if(num_threads <= 0) {
-		num_threads = std::max(std::thread::hardware_concurrency(), 4u);
+		num_threads = std::max(std::thread::hardware_concurrency(), 16u);
 	}
 	if(num_iter <= 0) {
 		num_iter = std::max(1 << std::max(16 - clevel, 0), 4);
