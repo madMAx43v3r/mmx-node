@@ -33,7 +33,7 @@ jobs:
       - name: Install CUDA Toolkit
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
-          cuda: '11.8.0'
+          cuda: '12.0.0'
           method: network
 
       - name: Build Debian package
