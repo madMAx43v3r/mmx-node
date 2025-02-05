@@ -42,7 +42,7 @@ std::vector<cuda_device_t> get_cuda_devices();
 
 std::vector<cuda_device_t> get_cuda_devices_used();
 
-void cuda_recompute_init(const bool enable = true, const std::vector<int>& device_list = {});
+void cuda_recompute_init(bool enable = true, std::vector<int> device_list = {});
 
 void cuda_recompute_shutdown();
 

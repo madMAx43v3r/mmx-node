@@ -29,6 +29,10 @@
 #include <vnx/addons/HttpServer.h>
 #include <vnx/addons/HttpBalancer.h>
 
+#ifdef WITH_CUDA
+#include <mmx/pos/cuda_recompute.h>
+#endif
+
 
 int main(int argc, char** argv)
 {
@@ -95,6 +99,13 @@ int main(int argc, char** argv)
 #ifdef __aarch64__
 	vnx::log_info() << "ARM-SHA2 support: " << (sha256_arm_available() ? "yes" : "no");
 #endif // __aarch64__
+
+#ifdef WITH_CUDA
+	vnx::log_info() << "CUDA available: yes";
+	mmx::pos::cuda_recompute_init();
+#else
+	vnx::log_info() << "CUDA available: no";
+#endif
 
 	vnx::log_info() << "Remote service access is: " << (allow_remote ? "enabled on " + endpoint : "disabled");
 
@@ -222,6 +233,10 @@ int main(int argc, char** argv)
 	}
 
 	vnx::close();
+
+#ifdef WITH_CUDA
+	mmx::pos::cuda_recompute_shutdown();
+#endif
 
 	mmx::secp256k1_free();
 

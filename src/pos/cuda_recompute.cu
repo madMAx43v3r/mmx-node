@@ -300,13 +300,18 @@ std::vector<cuda_device_t> get_cuda_devices_used()
 
 static void cuda_recompute_loop(std::shared_ptr<device_t> dev);
 
-void cuda_recompute_init(const bool enable, const std::vector<int>& device_list)
+void cuda_recompute_init(bool enable, std::vector<int> device_list)
 {
 	std::lock_guard<std::mutex> lock(g_mutex);
 	if(have_init) {
 		return;
 	}
 	have_init = true;
+
+	if(device_list.empty()) {
+		vnx::read_config("cuda.devices", device_list);
+	}
+	vnx::read_config("cuda.enable", enable);
 
 	if(!enable) {
 		return;
@@ -336,8 +341,18 @@ void cuda_recompute_init(const bool enable, const std::vector<int>& device_list)
 			dev->thread = std::thread(&cuda_recompute_loop, dev);
 			g_devices.push_back(dev);
 		}
+		vnx::log_info() << "Using CUDA compute device '" << info.name
+				<< "' [" << info.index << "] with threads " << info.max_resident << ", buffer " << info.buffer_size;
 	}
 	have_cuda = g_devices.size();
+
+	if(!have_cuda) {
+		if(list.empty()) {
+			vnx::log_info() << "No CUDA devices found!";
+		} else {
+			vnx::log_info() << "No CUDA devices enabled!";
+		}
+	}
 }
 
 void cuda_recompute_shutdown()
@@ -418,7 +433,7 @@ static void cuda_finish_cpu(std::shared_ptr<request_t> req)
 	res->id = req->id;
 	try {
 		std::vector<uint32_t> X_out;
-		const auto entries = compute_full(req->X_tmp, req->Y_tmp, req->M_tmp, &res->X, req->plot_id, req->ksize);
+		const auto entries = compute_full(req->X_tmp, req->Y_tmp, req->M_tmp, &X_out, req->plot_id, req->ksize);
 		res->X = std::move(X_out);
 		res->entries = entries;
 	}
