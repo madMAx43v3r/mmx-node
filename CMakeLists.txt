@@ -89,13 +89,8 @@ find_library(MINIUPNPC_LIB NAMES miniupnpc)
 if(NOT DISABLE_OPENCL)
 	find_package(OpenCL)
 endif()
-
-if(OpenCL_FOUND)
-	message(STATUS "Using OpenCL")
-	add_subdirectory(basic-opencl)
-	target_compile_definitions(automy_basic_opencl
-		PUBLIC CL_TARGET_OPENCL_VERSION=120
-	)
+if(NOT DISABLE_CUDA)
+	include(cmake/use_cuda.cmake)
 endif()
 
 file(GLOB GENERATED_SOURCE_FILES
@@ -162,7 +157,7 @@ add_library(mmx_iface SHARED
 	src/ValidatorVote.cpp
 )
 
-add_library(mmx_vm SHARED
+add_library(mmx_vm STATIC
 	src/vm/Engine.cpp
 	src/vm/Compiler.cpp
 	src/vm/StorageProxy.cpp
@@ -173,16 +168,20 @@ add_library(mmx_vm SHARED
 	src/vm_interface.cpp
 )
 
-add_library(mmx_db SHARED
+add_library(mmx_db STATIC
 	src/DataBase.cpp
 	src/table.cpp
 )
 
-add_library(mmx_pos SHARED
+add_library(mmx_pos STATIC
 	src/pos/mem_hash.cpp
 	src/pos/verify.cpp
 	src/pos/encoding.cpp
 	src/pos/Prover.cpp
+)
+
+add_library(mmx_pos_verify STATIC
+	src/pos/verify_full.cpp
 )
 
 add_library(mmx_modules SHARED
@@ -243,7 +242,8 @@ target_compile_definitions(uint256_t PUBLIC _UINT256_T_STATIC _UINT128_T_STATIC)
 
 target_link_libraries(mmx_iface vnx_base vnx_addons uint256_t bech32 secp256k1)
 target_link_libraries(mmx_db mmx_iface)
-target_link_libraries(mmx_pos mmx_iface)
+target_link_libraries(mmx_pos mmx_pos_verify mmx_iface)
+target_link_libraries(mmx_pos_verify mmx_iface)
 target_link_libraries(mmx_vm mmx_db mmx_iface)
 target_link_libraries(mmx_modules mmx_pos mmx_vm mmx_db mmx_iface)
 target_link_libraries(mmx_qtgui vnx_base)
@@ -296,8 +296,22 @@ else()
 endif()
 
 if(OpenCL_FOUND)
+	message(STATUS "Found OpenCL")
+	add_subdirectory(basic-opencl)
+	target_compile_definitions(automy_basic_opencl
+		PUBLIC CL_TARGET_OPENCL_VERSION=120
+	)
 	target_link_libraries(mmx_modules automy_basic_opencl)
 	target_compile_definitions(mmx_modules PUBLIC WITH_OPENCL)
+endif()
+
+if(CUDA_FOUND)
+	message(STATUS "Found CUDA")
+	add_compile_definitions(WITH_CUDA)
+	cuda_add_library(mmx_pos_cuda STATIC src/pos/cuda_recompute.cu)
+	target_include_directories(mmx_pos_cuda PUBLIC include)
+	target_link_libraries(mmx_pos mmx_pos_cuda)
+	target_link_libraries(mmx_pos_cuda mmx_pos_verify mmx_iface)
 endif()
 
 if(JEMALLOC_LIB)
@@ -310,6 +324,12 @@ if(MINIUPNPC_LIB)
 	message(STATUS "Found miniupnpc")
 	target_link_libraries(mmx_modules ${MINIUPNPC_LIB})
 	target_compile_definitions(mmx_modules PRIVATE WITH_MINIUPNPC)
+endif()
+
+if(Qt5_FOUND)
+	message(STATUS "Found Qt5")
+	add_compile_definitions(WITH_QT)
+	target_link_libraries(mmx_qtgui Qt5::Widgets Qt5::WebEngine Qt5::WebEngineWidgets)
 endif()
 
 add_executable(mmx src/mmx.cpp)
@@ -326,15 +346,6 @@ target_link_libraries(mmx_wallet mmx_modules mmx_qtgui)
 target_link_libraries(mmx_timelord mmx_modules)
 target_link_libraries(mmx_harvester mmx_modules)
 
-if(Qt5_FOUND)
-	message(STATUS "Enabling WITH_QT")
-	add_compile_definitions(WITH_QT)
-	target_link_libraries(mmx_qtgui Qt5::Widgets Qt5::WebEngine Qt5::WebEngineWidgets)
-endif()
-
-install(TARGETS mmx_db DESTINATION lib)
-install(TARGETS mmx_vm DESTINATION lib)
-install(TARGETS mmx_pos DESTINATION lib)
 install(TARGETS mmx_iface DESTINATION lib)
 install(TARGETS mmx_modules DESTINATION lib)
 

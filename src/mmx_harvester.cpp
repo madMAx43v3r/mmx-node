@@ -13,6 +13,10 @@
 #include <vnx/Terminal.h>
 #include <vnx/TcpEndpoint.hxx>
 
+#ifdef WITH_CUDA
+#include <mmx/pos/cuda_recompute.h>
+#endif
+
 
 int main(int argc, char** argv)
 {
@@ -51,6 +55,13 @@ int main(int argc, char** argv)
 	vnx::read_config("node", node_url);
 	vnx::read_config("endpoint", endpoint);
 	vnx::read_config("allow_remote", allow_remote);
+
+#ifdef WITH_CUDA
+	vnx::log_info() << "CUDA available: yes";
+	mmx::pos::cuda_recompute_init();
+#else
+	vnx::log_info() << "CUDA available: no";
+#endif
 
 	if(!allow_remote) {
 		endpoint = "localhost";
@@ -93,6 +104,10 @@ int main(int argc, char** argv)
 	proxy.start();
 
 	vnx::wait();
+
+#ifdef WITH_CUDA
+	mmx::pos::cuda_recompute_shutdown();
+#endif
 
 	return 0;
 }
