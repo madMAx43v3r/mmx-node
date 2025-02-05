@@ -115,16 +115,24 @@ int main(int argc, char** argv)
 
 	const double max_plots_ssd = 8.0 / proof_time;
 	const double max_plots_hdd = max_plots_ssd * 1024;
+
 	const double saved_per_level = 1.0 * pow(1024, 3) / pow(1000, 3) / pow(2, 32 - ksize);	// GB
+
 	const double plot_size = mmx::get_effective_plot_size(ksize) / pow(1000, 3);
 	const double plot_size_hdd = plot_size - saved_per_level * clevel;
 	const double plot_size_ssd = plot_size / 2.5 - saved_per_level * clevel;
 
+	const double max_farm_size_ssd = max_plots_ssd * plot_size_ssd / pow(1000, 2);
+	const double max_farm_size_hdd = max_plots_hdd * plot_size_hdd / pow(1000, 2);
+
+	const double GiB_factor = pow(1000, 3) / pow(1024, 3);
+	const double PiB_factor = pow(1000, 5) / pow(1024, 5);
+
 	std::cout << "Plot: k" << ksize << " C" << clevel << std::endl;
-	std::cout << "Plot Size (SSD): " << plot_size_ssd << " GB" << std::endl;
-	std::cout << "Plot Size (HDD): " << plot_size_hdd << " GB" << std::endl;
-	std::cout << "Max Farm Size (SSD): " << max_plots_ssd * plot_size_ssd / pow(1000, 2) << " PB" << std::endl;
-	std::cout << "Max Farm Size (HDD): " << max_plots_hdd * plot_size_hdd / pow(1000, 2) << " PB" << std::endl;
+	std::cout << "Plot Size (SSD): " << plot_size_ssd << " GB / " << plot_size_ssd * GiB_factor << " GiB" << std::endl;
+	std::cout << "Plot Size (HDD): " << plot_size_hdd << " GB / " << plot_size_hdd * GiB_factor << " GiB" << std::endl;;
+	std::cout << "Max Farm Size (SSD): " << max_farm_size_ssd << " PB / " << max_farm_size_ssd * PiB_factor << " PiB" << std::endl;
+	std::cout << "Max Farm Size (HDD): " << max_farm_size_hdd << " PB / " << max_farm_size_hdd * PiB_factor << " PiB" << std::endl;
 
 #ifdef WITH_CUDA
 	mmx::pos::cuda_recompute_shutdown();
