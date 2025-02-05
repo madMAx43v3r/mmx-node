@@ -341,7 +341,7 @@ void cuda_recompute_init(bool enable, std::vector<int> device_list)
 			dev->thread = std::thread(&cuda_recompute_loop, dev);
 			g_devices.push_back(dev);
 		}
-		vnx::log_info() << "Using CUDA compute device '" << info.name
+		vnx::log_info() << "Using CUDA device '" << info.name
 				<< "' [" << info.index << "] with threads " << info.max_resident << ", buffer " << info.buffer_size;
 	}
 	have_cuda = g_devices.size();
