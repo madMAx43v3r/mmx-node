@@ -18,7 +18,7 @@ target_link_libraries(generate_passwd mmx_iface)
 target_link_libraries(calc_test_rewards mmx_iface)
 
 install(TARGETS
-	mmx_compile mmx_postool
+	mmx_compile mmx_postool mmx_posbench
 	DESTINATION bin
 )
 install(TARGETS
