@@ -49,7 +49,6 @@ endif()
 
 message(STATUS "MMX_VERSION=${MMX_VERSION}")
 
-#file(STRINGS "include/mmx/version.h" MMX_VERSION_H REGEX "^#define MMX_VERSION \"[^\"]*\"$")
 string(REGEX REPLACE "^v([0-9]+).*$" "\\1" MMX_VERSION_MAJOR "${MMX_VERSION}")
 string(REGEX REPLACE "^v[0-9]+\\.([0-9]+).*$" "\\1" MMX_VERSION_MINOR  "${MMX_VERSION}")
 string(REGEX REPLACE "^v[0-9]+\\.[0-9]+\\.([0-9]+.*)$" "\\1" MMX_VERSION_PATCH "${MMX_VERSION}")
@@ -69,8 +68,8 @@ set(MMX_BUNDLE "MMX Node")
 
 list(APPEND APP_FILES
 	mmx mmx_node mmx_farmer mmx_wallet mmx_timelord mmx_harvester
-	mmx_compile mmx_postool
-	mmx_db mmx_vm mmx_iface mmx_modules mmx_pos
+	mmx_compile mmx_postool mmx_posbench
+	mmx_iface mmx_modules
 	vnx_base vnx_addons url_cpp llhttp
 	vnxpasswd generate_passwd
 	automy_basic_opencl
@@ -134,6 +133,7 @@ install(FILES
 			$<TARGET_FILE_DIR:vnx_addons>/zstd.dll
 			$<TARGET_FILE_DIR:automy_basic_opencl>/OpenCL.dll
 			$<TARGET_FILE_DIR:mmx_modules>/miniupnpc.dll
+			$<TARGET_FILE_DIR:mmx_modules>/cudart64_12.dll
 		DESTINATION ./ COMPONENT applications)
 
 install(DIRECTORY kernel/ DESTINATION kernel COMPONENT applications)
