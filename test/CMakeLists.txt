@@ -40,3 +40,7 @@ target_link_libraries(vm_storage_tests mmx_vm)
 
 target_link_libraries(test_write_bytes_vitest_gen mmx_iface)
 
+if(CUDA_FOUND)
+	add_executable(test_cuda_recompute test_cuda_recompute.cpp)
+	target_link_libraries(test_cuda_recompute mmx_pos mmx_pos_cuda)
+endif()

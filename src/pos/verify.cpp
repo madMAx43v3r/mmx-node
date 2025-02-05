@@ -8,6 +8,7 @@
 #include <mmx/pos/verify.h>
 #include <mmx/pos/mem_hash.h>
 #include <mmx/hash_512_t.hpp>
+#include <mmx/utils.h>
 
 #include <set>
 #include <algorithm>
@@ -24,9 +25,9 @@ static std::mutex g_mutex;
 static std::shared_ptr<vnx::ThreadPool> g_threads;
 
 
-void compute_f1(std::vector<uint32_t>* X_tmp,
-				std::vector<std::array<uint32_t, N_META>>& M_tmp,
-				std::vector<std::pair<uint32_t, uint32_t>>& entries,
+void compute_f1(std::vector<uint32_t>* X_out,
+				std::vector<uint32_t>& Y_out,
+				std::vector<std::array<uint32_t, N_META>>& M_out,
 				std::mutex& mutex,
 				const uint32_t X,
 				const hash_t& id, const int ksize, const int xbits)
@@ -65,11 +66,11 @@ void compute_f1(std::vector<uint32_t>* X_tmp,
 		Y_i &= kmask;
 
 		std::lock_guard<std::mutex> lock(mutex);
-		if(X_tmp) {
-			X_tmp->push_back(X_i);
+		if(X_out) {
+			X_out->push_back(X_i);
 		}
-		entries.emplace_back(Y_i, M_tmp.size());
-		M_tmp.push_back(meta);
+		Y_out.push_back(Y_i);
+		M_out.push_back(meta);
 	}
 }
 
@@ -95,35 +96,33 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 			vnx::log_info() << "Using " << num_threads << " CPU threads for proof recompute";
 		}
 	}
-	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
 	const uint64_t num_entries_1 = X_set.size() << xbits;
 
 	std::mutex mutex;
 	std::vector<int64_t> jobs;
 	std::vector<uint32_t> X_tmp;
+	std::vector<uint32_t> Y_tmp;
 	std::vector<uint32_t> mem_buf(MEM_SIZE);
 	std::vector<std::array<uint32_t, N_META>> M_tmp;
-	std::vector<std::pair<uint32_t, uint32_t>> entries;
-	std::vector<std::vector<std::pair<uint32_t, uint32_t>>> LR_tmp(N_TABLE + 1);
 
 //	const auto t1_begin = get_time_ms();
 
 	if(X_out) {
 		X_tmp.reserve(num_entries_1);
 	}
+	Y_tmp.reserve(num_entries_1);
 	M_tmp.reserve(num_entries_1);
-	entries.reserve(num_entries_1);
 
 	for(const auto X : X_set)
 	{
 		if(use_threads) {
 			const auto job = g_threads->add_task(
-				[X_out, &X_tmp, &M_tmp, &entries, &mutex, X, id, ksize, xbits]() {
-					compute_f1(X_out ? &X_tmp : nullptr, M_tmp, entries, mutex, X, id, ksize, xbits);
+				[X_out, &X_tmp, &Y_tmp, &M_tmp, &mutex, X, id, ksize, xbits]() {
+					compute_f1(X_out ? &X_tmp : nullptr, Y_tmp, M_tmp, mutex, X, id, ksize, xbits);
 				});
 			jobs.push_back(job);
 		} else {
-			compute_f1(X_out ? &X_tmp : nullptr, M_tmp, entries, mutex, X, id, ksize, xbits);
+			compute_f1(X_out ? &X_tmp : nullptr, Y_tmp, M_tmp, mutex, X, id, ksize, xbits);
 		}
 	}
 
@@ -132,6 +131,30 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		jobs.clear();
 	}
 //	std::cout << "Table 1 took " << (get_time_ms() - t1_begin) << " ms" << std::endl;
+
+	return compute_full(X_tmp, Y_tmp, M_tmp, X_out, id, ksize);
+}
+
+std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>>
+compute_full(	const std::vector<uint32_t>& X_in,
+				const std::vector<uint32_t>& Y_in,
+				std::vector<std::array<uint32_t, N_META>>& M_in,
+				std::vector<uint32_t>* X_out,
+				const hash_t& id, const int ksize)
+{
+	if(M_in.size() != Y_in.size()) {
+		throw std::logic_error("input length mismatch");
+	}
+	const uint32_t kmask = ((uint64_t(1) << ksize) - 1);
+
+	std::vector<std::array<uint32_t, N_META>> M_tmp = std::move(M_in);
+	std::vector<std::pair<uint32_t, uint32_t>> entries;
+	std::vector<std::vector<std::pair<uint32_t, uint32_t>>> LR_tmp(N_TABLE + 1);
+
+	entries.reserve(Y_in.size());
+	for(size_t i = 0; i < Y_in.size(); ++i) {
+		entries.emplace_back(Y_in[i], i);
+	}
 
 	// sort function for proof ordering (enforce unique proofs)
 	const auto sort_func =
@@ -208,12 +231,23 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 //		std::cout << "Table " << t << " took " << (get_time_ms() - time_begin) << " ms, " << entries.size() << " entries" << std::endl;
 	}
 
+	if(X_out) {
+		X_out->clear();
+	}
 	std::sort(entries.begin(), entries.end(), sort_func);
 
+	std::set<std::array<uint32_t, N_META>> M_set;
 	std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>> out;
 	for(const auto& entry : entries)
 	{
-		if(X_out) {
+		const auto& meta = M_tmp[entry.second];
+		if(!M_set.insert(meta).second) {
+			continue;
+		}
+		out.emplace_back(entry.first, bytes_t<META_BYTES_OUT>(meta.data(), META_BYTES_OUT));
+
+		if(X_out && X_in.size() == Y_in.size())
+		{
 			std::vector<uint32_t> I_tmp;
 			I_tmp.push_back(std::get<1>(entry));
 
@@ -227,11 +261,9 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 				I_tmp = std::move(I_next);
 			}
 			for(const auto i : I_tmp) {
-				X_out->push_back(X_tmp[i]);
+				X_out->push_back(X_in[i]);
 			}
 		}
-		const auto& meta = M_tmp[entry.second];
-		out.emplace_back(entry.first, bytes_t<META_BYTES_OUT>(meta.data(), META_BYTES_OUT));
 	}
 	return out;
 }
@@ -253,7 +285,7 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 		throw std::logic_error("invalid proof");
 	}
 	if(entries.size() > 1) {
-		throw std::logic_error("more than one proof");
+		throw std::logic_error("more than one proof found");
 	}
 	const auto& result = entries[0];
 	const auto& Y = result.first;

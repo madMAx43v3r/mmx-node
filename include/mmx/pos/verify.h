@@ -22,6 +22,13 @@ std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>>
 compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out,
 		const hash_t& id, const int ksize, const int xbits);
 
+std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>>
+compute_full(	const std::vector<uint32_t>& X_in,
+				const std::vector<uint32_t>& Y_in,
+				std::vector<std::array<uint32_t, N_META>>& M_in,
+				std::vector<uint32_t>* X_out,
+				const hash_t& id, const int ksize);
+
 hash_t verify(	const std::vector<uint32_t>& X_values, const hash_t& challenge,
 				const hash_t& id, const int plot_filter, const int ksize);
 

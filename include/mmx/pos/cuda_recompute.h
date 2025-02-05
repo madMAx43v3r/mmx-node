@@ -29,11 +29,12 @@ struct cuda_device_t {
 };
 
 struct cuda_result_t {
-	bool failed = false;
 	uint64_t id = 0;
 	uint32_t Y = 0;
-	std::array<uint32_t, N_META> M;
+	bytes_t<META_BYTES_OUT> M;
 	std::vector<uint32_t> X;
+	bool failed = false;
+	std::string error;
 };
 
 bool have_cuda_recompute();
@@ -43,6 +44,8 @@ std::vector<cuda_device_t> get_cuda_devices();
 std::vector<cuda_device_t> get_cuda_devices_used();
 
 void cuda_recompute_init(const bool enable = true, const std::vector<int>& device_list = {});
+
+void cuda_recompute_shutdown();
 
 uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id, const std::vector<uint32_t>& x_values);
 

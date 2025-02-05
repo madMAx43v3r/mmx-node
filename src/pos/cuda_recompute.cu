@@ -6,6 +6,7 @@
  */
 
 #include <mmx/pos/cuda_recompute.h>
+#include <mmx/pos/verify.h>
 #include <vnx/ThreadPool.h>
 #include <vnx/vnx.h>
 
@@ -257,7 +258,7 @@ std::map<std::tuple<int, int>, std::queue<std::shared_ptr<request_t>>> g_wait_ma
 std::shared_ptr<vnx::ThreadPool> g_cpu_threads;
 
 
-void cuda_recompute_loop(std::shared_ptr<device_t> dev);
+static void cuda_recompute_loop(std::shared_ptr<device_t> dev);
 
 inline void cuda_check(const cudaError_t& code) {
 	if(code != cudaSuccess) {
@@ -267,7 +268,8 @@ inline void cuda_check(const cudaError_t& code) {
 
 bool have_cuda_recompute()
 {
-	return get_cuda_devices_used().size();
+	std::lock_guard<std::mutex> lock(g_mutex);
+	return !g_devices.empty();
 }
 
 std::vector<cuda_device_t> get_cuda_devices()
@@ -284,6 +286,7 @@ std::vector<cuda_device_t> get_cuda_devices()
 			dev.index = i;
 			dev.name = info.name;
 			dev.max_resident = info.multiProcessorCount * info.maxThreadsPerMultiProcessor;
+			list.push_back(dev);
 		}
 	}
 	return list;
@@ -323,17 +326,33 @@ void cuda_recompute_init(const bool enable, const std::vector<int>& device_list)
 	g_cpu_threads = std::make_shared<vnx::ThreadPool>(std::max(std::thread::hardware_concurrency(), 4u));
 
 	for(auto& info : g_device_list) {
-		auto dev = std::make_shared<device_t>();
-		dev->index = info.index;
-		dev->buffer_size = 256;
-		while(dev->buffer_size < info.max_resident) {
-			dev->buffer_size <<= 1;
+		info.buffer_size = 256;
+		while(info.buffer_size < info.max_resident) {
+			info.buffer_size <<= 1;
 		}
-		info.buffer_size = dev->buffer_size;
-
-		dev->thread = std::thread(&cuda_recompute_loop, dev);
-		g_devices.push_back(dev);
+		for(int i = 0; i < 2; ++i) {
+			auto dev = std::make_shared<device_t>();
+			dev->index = info.index;
+			dev->buffer_size = info.buffer_size;
+			dev->thread = std::thread(&cuda_recompute_loop, dev);
+			g_devices.push_back(dev);
+		}
 	}
+}
+
+void cuda_recompute_shutdown()
+{
+	{
+		std::lock_guard<std::mutex> lock(g_mutex);
+		do_run = false;
+	}
+	g_request_signal.notify_all();
+
+	for(auto dev : g_devices) {
+		dev->thread.join();
+	}
+	g_devices.clear();
+	g_device_list.clear();
 }
 
 uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id, const std::vector<uint32_t>& x_values)
@@ -341,7 +360,7 @@ uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id,
 	if(ksize < 0 || ksize > 32) {
 		throw std::logic_error("invalid ksize");
 	}
-	if(xbits < 0 || xbits > 16) {
+	if(xbits < 0 || xbits > 20 || xbits >= ksize) {
 		throw std::logic_error("invalid xbits");
 	}
 	if(x_values.size() != 256) {
@@ -360,6 +379,9 @@ uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id,
 	req->x_values = x_values;
 	{
 		std::lock_guard<std::mutex> lock(g_mutex);
+		if(g_devices.empty()) {
+			throw std::logic_error("no CUDA devices available");
+		}
 		if(std::find(g_order_queue.begin(), g_order_queue.end(), type) == g_order_queue.end()) {
 			g_order_queue.push_back(type);
 		}
@@ -377,13 +399,8 @@ std::shared_ptr<const cuda_result_t> cuda_recompute_poll(const std::set<uint64_t
 			for(const auto id : jobs) {
 				const auto iter = g_result_map.find(id);
 				if(iter != g_result_map.end()) {
-					auto res = iter->second;
+					const auto res = iter->second;
 					g_result_map.erase(iter);
-					if(!res) {
-						auto res = std::make_shared<cuda_result_t>();
-						res->id = id;
-						res->failed = true;
-					}
 					return res;
 				}
 			}
@@ -397,7 +414,30 @@ std::shared_ptr<const cuda_result_t> cuda_recompute_poll(const std::set<uint64_t
 
 static void cuda_finish_cpu(std::shared_ptr<request_t> req)
 {
-	// TODO
+	auto res = std::make_shared<cuda_result_t>();
+	res->id = req->id;
+	try {
+		std::vector<uint32_t> X_out;
+		const auto entries = compute_full(req->X_tmp, req->Y_tmp, req->M_tmp, &X_out, req->plot_id, req->ksize);
+		if(entries.empty()) {
+			throw std::logic_error("no proof found");
+		}
+		if(entries.size() > 1) {
+			throw std::logic_error("more than one proof found");
+		}
+		res->X = X_out;
+		res->Y = entries[0].first;
+		res->M = entries[0].second;
+	}
+	catch(const std::exception& ex) {
+		res->failed = true;
+		res->error = ex.what();
+	}
+	{
+		std::lock_guard<std::mutex> lock(g_mutex);
+		g_result_map[res->id] = res;
+	}
+	g_result_signal.notify_all();
 }
 
 static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
@@ -473,14 +513,23 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 		const uint64_t grid_size = uint64_t(256) * N * M;
 		const uint32_t KMASK = (uint64_t(1) << ksize) - 1;
 
+		std::unordered_set<uint32_t> x_set;
+
 		for(uint64_t i = 0; i < M; ++i) {
 			const auto& req = req_list[i];
 			req->X_tmp.resize(req_size);
 			req->Y_tmp.resize(req_size);
 			req->M_tmp.resize(req_size);
+			for(auto& x : req->x_values) {
+				while(!x_set.insert(x).second) {
+					x++;	// avoid duplicate inputs
+				}
+			}
 			::memcpy(dev->X_buf + i * 256, req->x_values.data(), 256 * 4);
 			::memcpy(dev->ID_buf + i * 8, req->plot_id.data(), 32);
+			x_set.clear();
 		}
+
 		cudaMemcpyAsync(dev->X_dev, dev->X_buf,   M * 256 * 4, cudaMemcpyHostToDevice, stream);
 		cudaMemcpyAsync(dev->ID_dev, dev->ID_buf, M * 32,      cudaMemcpyHostToDevice, stream);
 
@@ -502,8 +551,8 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 				dim3 block(32, 4);
 				dim3 grid(1, grid_size / block.y / 64, 64);
 				cuda_calc_mem_hash<<<grid, block, 0, stream>>>(
-						(uint4*)dev->mem_dev,
-						(uint4*)dev->hash_dev,
+						dev->mem_dev,
+						dev->hash_dev,
 						MEM_HASH_ITER);
 			}
 			{
@@ -524,7 +573,11 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 			if(err != cudaSuccess) {
 				std::lock_guard<std::mutex> lock(g_mutex);
 				for(const auto& req : req_list) {
-					g_result_map[req->id] = nullptr;
+					auto res = std::make_shared<cuda_result_t>();
+					res->id = req->id;
+					res->failed = true;
+					res->error = "CUDA error";
+					g_result_map[res->id] = res;
 				}
 				g_result_signal.notify_all();
 				dev->failed = true;
@@ -538,11 +591,14 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 				::memcpy(req->X_tmp.data() + iter * count, dev->X_buf + i * count, count * 4);
 				::memcpy(req->Y_tmp.data() + iter * count, dev->Y_buf + i * count, count * 4);
 				for(uint64_t k = 0; k < count; ++k) {
-					::memcpy(req->M_tmp.data() + iter * count + k, dev->M_dev + i * count * 16, N_META * 4);
+					::memcpy(req->M_tmp.data() + iter * count + k, dev->M_buf + (i * count + k) * 16, N_META * 4);
 				}
 			}
 		}
-		g_cpu_threads->add_task(std::bind(&cuda_finish_cpu, req));
+
+		for(const auto& req : req_list) {
+			g_cpu_threads->add_task(std::bind(&cuda_finish_cpu, req));
+		}
 	}
 }
 

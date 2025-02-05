@@ -38,8 +38,17 @@ static const uint64_t SHA512_INIT[8] = {
 	0x510e527fade682d1ull, 0x9b05688c2b3e6c1full, 0x1f83d9abfb41bd6bull, 0x5be0cd19137e2179ull
 };
 
-// TODO: optimize with __funnelshift_l()
+__device__ inline
+uint32_t cuda_bswap_32(const uint32_t y) {
+	return (y << 24) | ((y << 8) & 0xFF0000) | ((y >> 8) & 0xFF00) | (y >> 24);
+}
 
+__device__ inline
+uint64_t cuda_bswap_64(const uint64_t y) {
+	return (uint64_t(cuda_bswap_32(y)) << 32) | cuda_bswap_32(y >> 32);
+}
+
+// TODO: optimize with __funnelshift_l()
 uint64_t __device__ inline sha512_Ch(uint64_t x, uint64_t y, uint64_t z) { return z ^ (x & (y ^ z)); }
 uint64_t __device__ inline sha512_Maj(uint64_t x, uint64_t y, uint64_t z) { return (x & y) | (z & (x | y)); }
 uint64_t __device__ inline sha512_S0(uint64_t x) { return (x >> 28 | x << 36) ^ (x >> 34 | x << 30) ^ (x >> 39 | x << 25); }
