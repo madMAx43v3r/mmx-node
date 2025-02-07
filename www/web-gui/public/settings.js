@@ -8,6 +8,7 @@ Vue.component('node-settings', {
 			timelord: null,
 			open_port: null,
 			allow_remote: null,
+			cuda_enable: null,
 			opencl_device_list_relidx: null,
 			opencl_device: null,
 			opencl_device_list: null,
@@ -31,6 +32,7 @@ Vue.component('node-settings', {
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
 					this.allow_remote = data["allow_remote"] ? true : false;
+					this.cuda_enable = data["cuda_enable"] ? true : false;
 					this.opencl_device = data["Node.opencl_device_select"] != null ? data["Node.opencl_device_select"] : -1;
 					this.opencl_device_list_relidx = [];
 					this.opencl_device_list = [{name: "None", value: -1}];
@@ -159,6 +161,11 @@ Vue.component('node-settings', {
 				this.set_config("Node.opencl_device_name", (value >= 0) ? this.opencl_device_list_relidx[value].name : null, true);
 			}
 		},
+		cuda_enable(value, prev) {
+			if(prev != null) {
+				this.set_config("cuda.enable", value, true);
+			}
+		},
 		farmer_reward_addr(value, prev) {
 			if(prev != "null") {
 				this.set_config("Farmer.reward_addr", value.length ? value : null, true);
@@ -237,7 +244,7 @@ Vue.component('node-settings', {
 			</v-card>
 
 			<v-card v-if="$root.local_node" class="my-2">
-				<v-card-title>{{ $t('node_settings.general') }}</v-card-title>
+				<v-card-title>Node</v-card-title>
 				<v-card-text>
 					<v-progress-linear :active="loading" indeterminate absolute top></v-progress-linear>
 					
@@ -288,17 +295,6 @@ Vue.component('node-settings', {
 				</v-card-text>
 			</v-card>
 			
-			<v-card v-if="$root.local_node" class="my-2">
-				<v-card-title>{{ $t('node_settings.blockchain') }}</v-card-title>
-				<v-card-text>
-					<v-text-field
-						:label="$t('node_settings.revert_db_to_height')"
-						v-model="revert_height"
-					></v-text-field>
-					<v-btn @click="revert_sync(revert_height)" outlined color="error">{{ $t('node_settings.revert') }}</v-btn>
-				</v-card-text>
-			</v-card>
-			
 			<v-card v-if="$root.farmer" class="my-2">
 				<v-card-title>{{ $t('harvester_settings.harvester') }}</v-card-title>
 				<v-card-text>
@@ -344,7 +340,29 @@ Vue.component('node-settings', {
 					<v-btn @click="add_plot_dir(new_plot_dir)" outlined color="primary">{{ $t('harvester_settings.add_directory') }}</v-btn>
 				</v-card-text>
 			</v-card>
-							
+
+			<v-card v-if="$root.farmer || $root.local_node" class="my-2">
+				<v-card-title>CUDA</v-card-title>
+				<v-card-text>
+					<v-checkbox
+						v-model="cuda_enable"
+						label="Enable CUDA compute (farming and proof verify)"
+						class="my-0"
+					></v-checkbox>
+				</v-card-text>
+			</v-card>
+
+			<v-card v-if="$root.local_node" class="my-2">
+				<v-card-title>{{ $t('node_settings.blockchain') }}</v-card-title>
+				<v-card-text>
+					<v-text-field
+						:label="$t('node_settings.revert_db_to_height')"
+						v-model="revert_height"
+					></v-text-field>
+					<v-btn @click="revert_sync(revert_height)" outlined color="error">{{ $t('node_settings.revert') }}</v-btn>
+				</v-card-text>
+			</v-card>
+			
 			<v-alert
 				border="left"
 				colored-border
