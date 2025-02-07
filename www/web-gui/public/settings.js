@@ -32,7 +32,7 @@ Vue.component('node-settings', {
 					this.timelord = data.timelord ? true : false;
 					this.open_port = data["Router.open_port"] ? true : false;
 					this.allow_remote = data["allow_remote"] ? true : false;
-					this.cuda_enable = data["cuda_enable"] ? true : false;
+					this.cuda_enable = data["cuda.enable"] ? true : false;
 					this.opencl_device = data["Node.opencl_device_select"] != null ? data["Node.opencl_device_select"] : -1;
 					this.opencl_device_list_relidx = [];
 					this.opencl_device_list = [{name: "None", value: -1}];
