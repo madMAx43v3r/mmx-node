@@ -12,13 +12,8 @@ else
 	echo MMX_HOME=${MMX_HOME}
 fi
 
-rm -f "${MMX_HOME}DB_VERSION"
-
-if [ ! -d "${MMX_HOME}config/local" ]; then
-	mkdir -p "${MMX_HOME}config/"
-	cp -r config/local_init "${MMX_HOME}config/local"
-	echo "Initialized ${MMX_HOME}config/local/ with defaults."
-fi
+mkdir -p ${MMX_HOME}config/local
+cp -rnv config/local_init/. ${MMX_HOME}config/local
 
 PASSWD_PATH="${MMX_HOME}config/local/passwd"
 if [ ! -f "${PASSWD_PATH}" ] || [[ $(cat "${PASSWD_PATH}" | wc -c) -lt 64 ]]; then
