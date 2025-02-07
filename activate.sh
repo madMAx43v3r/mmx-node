@@ -13,7 +13,11 @@ else
 fi
 
 mkdir -p ${MMX_HOME}config/local
-cp -rnv config/local_init/. ${MMX_HOME}config/local
+if cp --update=none /dev/null /dev/null 2> /dev/null; then
+	cp -rv --update=none config/local_init/. ${MMX_HOME}config/local
+else
+	cp -rnv config/local_init/. ${MMX_HOME}config/local
+fi
 
 PASSWD_PATH="${MMX_HOME}config/local/passwd"
 if [ ! -f "${PASSWD_PATH}" ] || [[ $(cat "${PASSWD_PATH}" | wc -c) -lt 64 ]]; then
