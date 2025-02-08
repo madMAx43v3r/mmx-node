@@ -44,6 +44,14 @@ The CPU load to farm SSD plots is already quite high with C0, as such C0 is reco
 As such the most efficient SSD plots are k32 C0, with k29 having 8x higher CPU and IOPS load. k32 C3 is equal to k29 C0 in terms of CPU load.
 Farming 1024 uncompressed SSD plots is the same compute load as computing a single C10 full proof.
 
+#### Benchmark
+Before plotting with compression a benchmark should be performed to check if your system can handle it:
+```
+mmx_posbench -k 31 -C 10				# to benchmark k31 C10
+mmx_posbench --cuda 0 -k 31 -C 10		# to benchmark on CPU
+mmx_posbench --devices 1 2 -k 31 -C 10	# to select specific CUDA devices (starting at 0)
+```
+
 ## Creating Plots
 To create plots you will need a Farmer Public Key, and optionally a PlotNFT contract address (for NFT plots). To get the Farmer Public Key, see `mmx wallet keys` or go to the `Info` tab under the wallet in the GUI.
 For PlotNFT contract address, see [Pooling](../../software/cli-commands/#pooling).

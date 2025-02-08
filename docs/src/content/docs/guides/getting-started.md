@@ -121,7 +121,19 @@ Create / Edit file `config/local/Router.json`:
 echo true > config/local/timelord
 ```
 
+#### CUDA Settings
+
+Create / Edit `config/local/cuda.json`:
+```
+{
+	"enable": true,
+	"devices": [0, 1, ...]
+}
+```
+Empty device list = use all devices. Device indices start at 0. CUDA is enabled by default for all devices.
+
 #### Custom home directory
+
 To set a custom storage path for the blockchain DB, wallet files, etc:
 ```
 export MMX_HOME=/your/path/

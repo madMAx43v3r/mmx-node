@@ -44,6 +44,8 @@ sudo yum install kernel-devel git cmake automake libtool curl gcc gcc-c++ miniup
 sudo yum install qt5-qtwebengine-devel  # for native GUI
 ```
 
+Note: To enable CUDA support, CUDA needs to be installed: https://developer.nvidia.com/cuda-downloads
+
 ### Building from Source
 
 ```
@@ -51,6 +53,10 @@ git clone https://github.com/madMAx43v3r/mmx-node.git
 cd mmx-node
 ./update.sh
 ```
+
+To disable QT GUI: `./update.sh -DDISABLE_QT=1` \
+To disable CUDA support: `./update.sh -DDISABLE_CUDA=1` \
+These settings are stored, until the next `./clean_all.sh`, so only needs to be specified once. To enable again, set the config to `0`.
 
 To update to latest version:
 ```

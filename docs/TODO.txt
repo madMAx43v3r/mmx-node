@@ -17,3 +17,8 @@
 - Web Wallet
 - Publish updated whitepaper
 - Market + Swap balance formatting
+- VNX return pipe timeout
+- CUDA settings in GUI
+- CUDA settings documentation
+- Remote compute support
+- Remote compute GUI settings
