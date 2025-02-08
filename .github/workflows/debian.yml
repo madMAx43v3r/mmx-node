@@ -45,14 +45,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ubuntu-${{ matrix.ubuntu-version }}
-          path: ./*.deb
+          path: ./mmx-node-*.deb
       
       - name: Upload a Build Artifact to release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./*.deb
+          file: ./mmx-node-*.deb
           file_glob: true
           tag: ${{ github.ref }}
           overwrite: true
