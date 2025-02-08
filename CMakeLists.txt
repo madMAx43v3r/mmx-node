@@ -83,7 +83,6 @@ add_subdirectory(vnx-addons)
 add_subdirectory(lib/libbech32)
 
 find_package(Threads REQUIRED)
-find_package(Qt5 QUIET COMPONENTS Widgets WebEngine WebEngineWidgets)
 find_library(MINIUPNPC_LIB NAMES miniupnpc)
 
 if(NOT DISABLE_OPENCL)
@@ -91,6 +90,9 @@ if(NOT DISABLE_OPENCL)
 endif()
 if(NOT DISABLE_CUDA)
 	include(cmake/use_cuda.cmake)
+endif()
+if(NOT DISABLE_QT)
+	find_package(Qt5 QUIET COMPONENTS Widgets WebEngine WebEngineWidgets)
 endif()
 
 file(GLOB GENERATED_SOURCE_FILES
