@@ -28,19 +28,24 @@ Ubuntu Linux:
 ```
 sudo apt update
 sudo apt install git cmake build-essential automake libtool pkg-config curl libminiupnpc-dev libjemalloc-dev libzstd-dev zlib1g-dev ocl-icd-opencl-dev clinfo screen
+# Optional dependencies:
 sudo apt install qtwebengine5-dev  # for native GUI
+sudo apt install nvidia-cuda-toolkit  # for CUDA compute (farming)
 ```
 
 Arch Linux:
 ```
 sudo pacman -Syu
 sudo pacman -S base-devel git cmake curl miniupnpc jemalloc zstd zlib opencl-headers ocl-icd clinfo screen
+# Optional dependencies:
 sudo pacman -S qt5-webengine  # for native GUI
+sudo pacman -S cuda  # for CUDA compute (farming)
 ```
 
 Fedora Linux:
 ```
 sudo yum install kernel-devel git cmake automake libtool curl gcc gcc-c++ miniupnpc-devel jemalloc-devel ocl-icd-devel zlib-ng-devel zstd clinfo screen
+# Optional dependencies:
 sudo yum install qt5-qtwebengine-devel  # for native GUI
 ```
 
