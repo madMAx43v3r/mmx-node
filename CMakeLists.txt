@@ -312,16 +312,16 @@ if(CUDA_FOUND)
 	target_include_directories(mmx_pos_cuda PUBLIC include)
 	target_link_libraries(mmx_pos mmx_pos_cuda)
 	target_link_libraries(mmx_pos_cuda mmx_pos_verify mmx_iface)
-endif()
-
-if(MSVC AND CUDA_FOUND)
-    # Copy CUDA DLLs to the output folder
-    add_custom_command(TARGET mmx_modules
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_12.dll"
-        $<TARGET_FILE_DIR:mmx_modules>
-    )
+	
+	if(MSVC)
+	    # Copy CUDA DLLs to the output folder
+	    add_custom_command(TARGET mmx_modules
+	        POST_BUILD
+	        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	        "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_12.dll"
+	        $<TARGET_FILE_DIR:mmx_modules>
+	    )
+	endif()
 endif()
 
 if(JEMALLOC_LIB)
