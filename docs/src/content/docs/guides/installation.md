@@ -54,8 +54,8 @@ cd mmx-node
 ./update.sh
 ```
 
-To disable QT GUI: `./update.sh -DDISABLE_QT=1` \
-To disable CUDA support: `./update.sh -DDISABLE_CUDA=1` \
+To disable QT GUI: `./update.sh -D DISABLE_QT=1` \
+To disable CUDA support: `./update.sh -D DISABLE_CUDA=1` \
 These settings are stored, until the next `./clean_all.sh`, so only needs to be specified once. To enable again, set the config to `0`.
 
 To update to latest version:
