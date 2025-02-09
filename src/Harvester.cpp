@@ -132,12 +132,12 @@ void Harvester::handle(std::shared_ptr<const Challenge> value)
 }
 
 std::vector<uint32_t> Harvester::fetch_full_proof(
-		std::shared_ptr<pos::Prover> prover, const hash_t& challenge, const uint64_t index) const
+		std::shared_ptr<pos::Prover> prover, const uint64_t index) const
 {
 	// Note: NEEDS TO BE THREAD SAFE
 	try {
 		const auto time_begin = get_time_ms();
-		const auto data = prover->get_full_proof(challenge, index);
+		const auto data = prover->get_full_proof(index);
 		if(data.valid) {
 			const auto elapsed = (get_time_ms() - time_begin) / 1e3;
 			log(elapsed > 20 ? WARN : DEBUG) << "[" << my_name << "] Fetching full proof took " << elapsed << " sec (" << prover->get_file_path() << ")";
@@ -232,7 +232,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						if(res.proof.size()) {
 							proof_xs = res.proof;	// SSD plot
 						} else if(hard_fork) {
-							proof_xs = fetch_full_proof(prover, challenge, res.index);	// HDD plot
+							proof_xs = fetch_full_proof(prover, res.index);		// HDD plot
 						}
 
 						hash_t quality;
@@ -250,7 +250,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						if(is_solo_proof || is_partial_proof)
 						{
 							if(proof_xs.empty()) {
-								proof_xs = fetch_full_proof(prover, challenge, res.index);	// HDD plot
+								proof_xs = fetch_full_proof(prover, res.index);		// HDD plot
 							}
 							const auto hash = calc_proof_hash(value->challenge, proof_xs);
 							score = get_proof_score(hash);

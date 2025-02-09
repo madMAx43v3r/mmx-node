@@ -155,7 +155,7 @@ int main(int argc, char** argv)
 								if(entry.proof.size()) {
 									proof = entry.proof;
 								} else {
-									const auto res = prover->get_full_proof(challenge, entry.index);
+									const auto res = prover->get_full_proof(entry.index);
 									if(!res.valid) {
 										throw std::runtime_error(entry.error_msg);
 									}

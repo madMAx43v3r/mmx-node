@@ -55,7 +55,7 @@ private:
 	void check_queue();
 
 	std::vector<uint32_t> fetch_full_proof(
-			std::shared_ptr<pos::Prover> prover, const hash_t& challenge, const uint64_t index) const;
+			std::shared_ptr<pos::Prover> prover, const uint64_t index) const;
 
 	void lookup_task(std::shared_ptr<const Challenge> value, const int64_t recv_time_ms) const;
 

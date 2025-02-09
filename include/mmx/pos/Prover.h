@@ -35,7 +35,7 @@ public:
 
 	std::vector<proof_data_t> get_qualities(const hash_t& challenge, const int plot_filter) const;
 
-	proof_data_t get_full_proof(const hash_t& challenge, const uint64_t final_index) const;
+	proof_data_t get_full_proof(const uint64_t final_index) const;
 
 	std::shared_ptr<const PlotHeader> get_header() const {
 		return header;
