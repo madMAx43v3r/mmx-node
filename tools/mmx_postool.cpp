@@ -147,10 +147,6 @@ int main(int argc, char** argv)
 								if(!entry.valid) {
 									throw std::runtime_error(entry.error_msg);
 								}
-								if(!pos::check_post_filter(challenge, entry.meta, post_filter)) {
-									out->num_pass++;
-									continue;
-								}
 								if(debug) {
 									std::lock_guard<std::mutex> lock(mutex);
 									std::cout << "[" << iter << "] index = " << entry.index << ", meta = " << entry.meta.to_string() << std::endl;
@@ -165,7 +161,7 @@ int main(int argc, char** argv)
 									}
 									proof = res.proof;
 								}
-								pos::verify(proof, challenge, header->plot_id, plot_filter, post_filter, header->ksize, true);
+								pos::verify(proof, challenge, header->plot_id, plot_filter, 0, header->ksize, true);
 								if(debug) {
 									std::lock_guard<std::mutex> lock(mutex);
 									std::cout << "Proof " << entry.index << " passed: ";
@@ -174,8 +170,10 @@ int main(int argc, char** argv)
 									}
 									std::cout << std::endl;
 								}
+								if(pos::check_post_filter(challenge, entry.meta, post_filter)) {
+									out->num_proof++;
+								}
 								out->num_pass++;
-								out->num_proof++;
 							}
 							catch(const std::exception& ex) {
 								std::lock_guard<std::mutex> lock(mutex);
