@@ -1,24 +1,16 @@
-- Website
-- Harvester latency graphs
 - Multisig wallet support
 - GUI settings tabs
-- GUI add peer feature
 - Swap warning for one-sided pool
 - unsafe_add() / unsafe_sub() / unsafe_mul()
 - WebAPI refactor param iterators (use get_param() + Variant::empty())
 - RPC servers auto-restart with pm2
 - Wallet contacts
 - Log file deletion
-- Randomize price api fetch interval
 - Show Gold + MMX price in GUI
 - Token icons in GUI
-- Offline TX send
 - Hardware wallet support
 - Web Wallet
-- Publish updated whitepaper
 - Market + Swap balance formatting
-- VNX return pipe timeout
-- CUDA settings in GUI
-- CUDA settings documentation
 - Remote compute support
-- Remote compute GUI settings
+- Hard fork
+- Bitcointalk
