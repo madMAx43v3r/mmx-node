@@ -13,6 +13,7 @@
 #include <mmx/LookupInfo.hxx>
 #include <mmx/Partial.hxx>
 #include <mmx/utils.h>
+#include <mmx/pos/verify.h>
 #include <vnx/vnx.h>
 
 
@@ -202,6 +203,7 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 		{
 			const auto header = prover->get_header();
 			const auto time_begin = get_time_ms();
+			const bool hard_fork = value->vdf_height >= params->hardfork1_height;
 			const bool passed_filter = check_plot_filter(params, value->challenge, plot_id);
 
 			if(passed_filter) try
@@ -216,32 +218,47 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				const auto challenge = get_plot_challenge(value->challenge, plot_id);
 				const auto qualities = prover->get_qualities(challenge, params->plot_filter);
 
-				for(const auto& res : qualities)
-				{
-					if(!res.valid) {
-						log(WARN) << "[" << my_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
-						continue;
-					}
+				for(const auto& res : qualities) {
 					try {
-						const auto is_solo_proof =
-								check_proof_threshold(params, header->ksize, res.quality, value->difficulty);
-						const auto is_partial_proof = pool_config ?
-								check_proof_threshold(params, header->ksize, res.quality, pool_config->difficulty) : false;
+						if(!res.valid) {
+							log(WARN) << "[" << my_name << "] Failed to fetch quality: " << res.error_msg << " (" << prover->get_file_path() << ")";
+							continue;
+						}
+						if(hard_fork && !pos::check_post_filter(challenge, res.meta, params->post_filter)) {
+							continue;	// failed post filter
+						}
+						hash_t quality;
+						if(!hard_fork) {
+							quality = pos::calc_quality(challenge, res.meta);
+						}
 
-						hash_t hash;
-						uint16_t score = -1;
 						std::vector<uint32_t> proof_xs;
+						if(res.proof.size()) {
+							proof_xs = res.proof;	// SSD plot
+						} else if(hard_fork) {
+							proof_xs = fetch_full_proof(prover, challenge, res.index);	// HDD plot
+						}
+
+						if(hard_fork) {
+							quality = calc_proof_hash(challenge, proof_xs);
+						}
+						const auto is_solo_proof =
+								check_proof_threshold(params, header->ksize, quality, value->difficulty, hard_fork);
+						const auto is_partial_proof = pool_config ?
+								check_proof_threshold(params, header->ksize, quality, pool_config->difficulty, hard_fork) : false;
+
+						uint16_t score = -1;
 						if(is_solo_proof || is_partial_proof)
 						{
-							if(job->num_proofs++ >= max_proofs) {
-								continue;	// limit proofs per height
-							}
-							if(res.proof.size()) {
-								proof_xs = res.proof;	// SSD plot
+							hash_t hash;
+							if(hard_fork) {
+								hash = quality;
 							} else {
-								proof_xs = fetch_full_proof(prover, challenge, res.index);
+								if(proof_xs.empty()) {
+									proof_xs = fetch_full_proof(prover, challenge, res.index);	// HDD plot
+								}
+								hash = calc_proof_hash(value->challenge, proof_xs);
 							}
-							hash = calc_proof_hash(value->challenge, proof_xs);
 							score = get_proof_score(hash);
 						}
 
@@ -340,9 +357,6 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 				out->slow_plot = job->slow_plot;
 			}
 			publish(out, output_lookups);
-		}
-		if(job->num_proofs > max_proofs) {
-			log(WARN) << "Skipped fetching " << job->num_proofs - max_proofs << " proofs, difficulty too low!";
 		}
 		if(job->total_plots) {
 			const auto slow_time = job->slow_time_ms / 1e3;

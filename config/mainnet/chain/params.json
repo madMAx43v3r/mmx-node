@@ -2,6 +2,7 @@
 	"port": 11337,
 	"network": "mainnet",
 	"plot_filter": 4,
+	"post_filter": 10,
 	"min_ksize": 29,
 	"infuse_delay": 1,
 	"challenge_delay": 6,
@@ -45,5 +46,6 @@
 	"project_ratio": {
 		"value": 1,
 		"inverse": 100
-	}
+	},
+	"hardfork1_height": 1000000
 }

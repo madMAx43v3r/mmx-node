@@ -158,7 +158,7 @@ uint128_t calc_total_netspace(std::shared_ptr<const ChainParams> params, const u
 
 inline
 bool check_proof_threshold(std::shared_ptr<const ChainParams> params,
-							const uint8_t ksize, const hash_t& quality, const uint64_t space_diff)
+							const uint8_t ksize, const hash_t& quality, const uint64_t space_diff, const bool hard_fork)
 {
 	if(space_diff <= 0) {
 		return false;
@@ -166,7 +166,11 @@ bool check_proof_threshold(std::shared_ptr<const ChainParams> params,
 	const auto threshold =
 			((uint256_1 << 255) / (uint128_t(space_diff) * params->space_diff_constant)) * ((2 * ksize) + 1);
 
-	return (quality.to_uint256() >> (ksize - 1)) < threshold;
+	auto value = quality.to_uint256();
+	if(hard_fork) {
+		value >>= params->post_filter;		// compensate for post filter
+	}
+	return (value >> (ksize - 1)) < threshold;
 }
 
 inline
@@ -188,6 +192,7 @@ hash_t calc_proof_hash(const hash_t& challenge, const std::vector<uint32_t>& pro
 	for(auto& x : tmp) {
 		x = vnx::to_little_endian(x);
 	}
+	// proof needs to be hashed after challenge, otherwise compression to 256-bit is possible
 	return hash_t(challenge + hash_t(tmp.data(), tmp.size() * 4));
 }
 

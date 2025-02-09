@@ -10,6 +10,7 @@
 
 #include <mmx/PlotHeader.hxx>
 #include <mmx/hash_t.hpp>
+#include <mmx/pos/config.h>
 
 
 namespace mmx {
@@ -18,10 +19,10 @@ namespace pos {
 struct proof_data_t
 {
 	bool valid = false;
-	hash_t quality;						// quality hash
 	uint64_t index = 0;					// final entry index
 	std::string error_msg;				// in case valid == false
 	std::vector<uint32_t> proof;		// SSD plots will return full proof as well
+	bytes_t<META_BYTES_OUT> meta;
 };
 
 class Prover {

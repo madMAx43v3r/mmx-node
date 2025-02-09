@@ -1553,7 +1553,7 @@ std::tuple<pooling_error_e, std::string> Node::verify_partial(
 	}
 
 	try {
-		verify_proof(partial->proof, challenge, partial->proof->difficulty);
+		verify_proof(partial->proof, challenge, partial->proof->difficulty, partial->vdf_height);
 	} catch(const std::exception& ex) {
 		return {pooling_error_e::INVALID_PROOF, "Invalid proof: " + std::string(ex.what())};
 	}

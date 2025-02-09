@@ -149,7 +149,7 @@ std::vector<proof_data_t> Prover::get_qualities(const hash_t& challenge, const i
 			}
 			out.valid = true;
 			out.index = final_index;
-			out.quality = calc_quality(challenge, bytes_t<META_BYTES_OUT>(meta, META_BYTES_OUT));
+			out.meta = bytes_t<META_BYTES_OUT>(meta, META_BYTES_OUT);
 		} else {
 			try {
 				out = get_full_proof(challenge, final_index);
@@ -245,7 +245,7 @@ proof_data_t Prover::get_full_proof(const hash_t& challenge, const uint64_t fina
 	}
 	out.valid = true;
 	out.proof = X_out;
-	out.quality = calc_quality(challenge, res[0].second);
+	out.meta = res[0].second;
 	return out;
 }
 

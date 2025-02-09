@@ -4,9 +4,10 @@ class ChainParams {
 	
 	uint port;
 	int  decimals = 6;
-	uint min_ksize = 26;
+	uint min_ksize = 29;
 	uint max_ksize = 32;
-	uint plot_filter = 8;					// log2 (physical only)
+	uint plot_filter = 4;					// log2
+	uint post_filter = 10;					// log2
 	
 	uint commit_delay = 18;					// for writing to disk (should be less than challenge_interval - challenge_delay)
 	uint infuse_delay = 6;					// for primary VDF infusion
@@ -75,6 +76,8 @@ class ChainParams {
 	
 	uint reward_activation = 50000;
 	uint transaction_activation = 100000;
+	
+	uint hardfork1_height = 1000000;		// VDF height
 	
 	
 	double get_block_time() const;			// [sec]
