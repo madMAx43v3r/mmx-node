@@ -381,10 +381,10 @@ void cuda_recompute_shutdown()
 
 uint64_t cuda_recompute(const int ksize, const int xbits, const hash_t& plot_id, const std::vector<uint32_t>& x_values)
 {
-	if(ksize < 0 || ksize > 32) {
+	if(ksize < 8 || ksize > 32) {
 		throw std::logic_error("invalid ksize");
 	}
-	if(xbits < 0 || xbits > 20 || xbits >= ksize) {
+	if(xbits < 0 || xbits > 20 || xbits + 8 >= ksize) {
 		throw std::logic_error("invalid xbits");
 	}
 	if(x_values.size() != 256) {
