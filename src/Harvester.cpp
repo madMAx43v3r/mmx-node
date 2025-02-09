@@ -249,15 +249,10 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						uint16_t score = -1;
 						if(is_solo_proof || is_partial_proof)
 						{
-							hash_t hash;
-							if(hard_fork) {
-								hash = quality;
-							} else {
-								if(proof_xs.empty()) {
-									proof_xs = fetch_full_proof(prover, challenge, res.index);	// HDD plot
-								}
-								hash = calc_proof_hash(value->challenge, proof_xs);
+							if(proof_xs.empty()) {
+								proof_xs = fetch_full_proof(prover, challenge, res.index);	// HDD plot
 							}
+							const auto hash = calc_proof_hash(value->challenge, proof_xs);
 							score = get_proof_score(hash);
 						}
 
