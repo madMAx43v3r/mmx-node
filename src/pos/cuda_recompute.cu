@@ -314,6 +314,7 @@ void cuda_recompute_init(bool enable, std::vector<int> device_list)
 	vnx::read_config("cuda.enable", enable);
 
 	if(!enable) {
+		vnx::log_info() << "CUDA compute is disabled";
 		return;
 	}
 	auto list = get_cuda_devices();
@@ -329,6 +330,8 @@ void cuda_recompute_init(bool enable, std::vector<int> device_list)
 	}
 	const auto num_threads = std::max(std::thread::hardware_concurrency(), 4u);
 	g_cpu_threads = std::make_shared<vnx::ThreadPool>(num_threads, num_threads);
+
+	vnx::log_info() << "Using " << num_threads << " CPU threads for CUDA recompute";
 
 	for(auto& info : g_device_list)
 	{
