@@ -165,7 +165,7 @@ int main(int argc, char** argv)
 									}
 									proof = res.proof;
 								}
-								const auto quality = pos::verify(proof, challenge, header->plot_id, plot_filter, post_filter, header->ksize, true);
+								pos::verify(proof, challenge, header->plot_id, plot_filter, post_filter, header->ksize, true);
 								if(debug) {
 									std::lock_guard<std::mutex> lock(mutex);
 									std::cout << "Proof " << entry.index << " passed: ";
