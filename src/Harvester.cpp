@@ -227,10 +227,6 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 						if(hard_fork && !pos::check_post_filter(challenge, res.meta, params->post_filter)) {
 							continue;	// failed post filter
 						}
-						hash_t quality;
-						if(!hard_fork) {
-							quality = pos::calc_quality(challenge, res.meta);
-						}
 
 						std::vector<uint32_t> proof_xs;
 						if(res.proof.size()) {
@@ -239,8 +235,11 @@ void Harvester::lookup_task(std::shared_ptr<const Challenge> value, const int64_
 							proof_xs = fetch_full_proof(prover, challenge, res.index);	// HDD plot
 						}
 
+						hash_t quality;
 						if(hard_fork) {
 							quality = calc_proof_hash(challenge, proof_xs);
+						} else {
+							quality = pos::calc_quality(challenge, res.meta);
 						}
 						const auto is_solo_proof =
 								check_proof_threshold(params, header->ksize, quality, value->difficulty, hard_fork);
