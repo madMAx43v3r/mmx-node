@@ -327,7 +327,8 @@ void cuda_recompute_init(bool enable, std::vector<int> device_list)
 			}
 		}
 	}
-	g_cpu_threads = std::make_shared<vnx::ThreadPool>(std::max(std::thread::hardware_concurrency(), 4u));
+	const auto num_threads = std::max(std::thread::hardware_concurrency(), 4u);
+	g_cpu_threads = std::make_shared<vnx::ThreadPool>(num_threads, num_threads);
 
 	for(auto& info : g_device_list)
 	{
