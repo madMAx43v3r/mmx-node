@@ -1,0 +1,19 @@
+services:
+  node:
+    image: ghcr.io/madmax43v3r/mmx-node:edge
+    restart: unless-stopped
+    command: "./run_node.sh --Harvester.plot_dirs /plots/"
+    volumes:
+      - ~/.mmx_testnet:/data
+      #- /mnt/data1/mmx/OG:/plots/1
+      #- /mnt/data2/mmx/OG:/plots/2
+    ports:
+      - "12343:12343"  # Node p2p port. Forward your router to this port for peers to be able to connect
+      - "127.0.0.1:11381:11380"  # API port. Set host to 0.0.0.0 in /data/config/local/HttpServer.json for webUI/API access
+      #- "11333:11333"  # Harvester port. Uncomment to allow remote harvesters to connect to the farmer
+      #- "11330:11330"  # Farmer port. Uncomment to allow remote farmers to connect to the node
+    environment:
+      MMX_ALLOW_REMOTE: 'false'  # Set to true to allow connections from remote harvesters/farmers
+      MMX_FARMER_ENABLED: 'true'  # Set to false to disable local farmer
+      MMX_HARVESTER_ENABLED: 'true'  # Set to false to disable local harvester
+      MMX_NETWORK_OVERRIDE: 'testnet13'
