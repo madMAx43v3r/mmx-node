@@ -4,6 +4,10 @@ source ./activate.sh
 
 config_path="${MMX_HOME}config/local/"
 
+if [ "${MMX_NETWORK}" ]; then
+  echo "${MMX_NETWORK}" > "${MMX_HOME}NETWORK"
+fi
+
 if [[ "${MMX_ALLOW_REMOTE}" == "true" ]]; then
   echo true > "${config_path}allow_remote" && echo "*** Remote Access Enabled ***"
 elif [[ "${MMX_ALLOW_REMOTE}" == "false" ]]; then
