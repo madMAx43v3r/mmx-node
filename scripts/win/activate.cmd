@@ -2,20 +2,20 @@
 
 SET "MMX_ENV=%~dp0"
 SET "MMX_ENV=%MMX_ENV:~0,-1%"
-SET "PATH=%PATH%; %MMX_ENV%"
+SET "PATH=%PATH%;%MMX_ENV%"
 
 IF "%MMX_HOME%"=="" (
 	SET "MMX_HOME=%USERPROFILE%\.mmx"
 )
 
-SET "MMX_HOME=%MMX_HOME%\\"
+SET "MMX_HOME=%MMX_HOME%\"
 
 IF "%MMX_DATA%"=="" (
 	SET "MMX_DATA=%MMX_HOME%"
 )
 
 SET "NETWORK=mainnet"
-SET "MMX_NETWORK=%MMX_DATA%%NETWORK%\\"
+SET "MMX_NETWORK=%MMX_DATA%%NETWORK%\"
 
 ECHO NETWORK=%NETWORK%
 ECHO MMX_HOME=%MMX_HOME%
@@ -24,7 +24,7 @@ IF NOT "%MMX_DATA%"=="%MMX_HOME%" (
 )
 
 MKDIR "%MMX_HOME%config\local"
-ROBOCOPY "config\local_init\\" "%MMX_HOME%config\local\\" /V /E /XC /XN /XO
+ROBOCOPY "config\local_init\\" "%MMX_HOME%config\local\\" /NFL /NDL /NJH /NJS /E /XC /XN /XO
 
 IF NOT EXIST "%MMX_HOME%PASSWD" (
 	generate_passwd > "%MMX_HOME%PASSWD"
