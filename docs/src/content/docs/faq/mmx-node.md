@@ -5,9 +5,9 @@ description: Frequently asked questions about using MMX Node.
 ## MMX Node
 
 ### _How do I get started? Where do I download the client?_
-https://github.com/madMAx43v3r/mmx-node/wiki/Installation
+https://docs.mmx.network/guides/installation/
 
-https://github.com/madMAx43v3r/mmx-node/wiki/Getting-Started
+https://docs.mmx.network/guides/getting-started/
 
 ### _I started MMX-node in Windows but getting error message "Faulting module path: C:\Program Files\MMX Node\gui\cefsharp\libcef.dll" or something like that. What's wrong?_
 Are you sure you have read the installation wiki linked above? It says to update and install the latest Microsoft Visual C++ Redistributable.
@@ -35,7 +35,7 @@ Before running a `mmx ...` command in a new terminal, you need to `source ./acti
 Alternatively, you can open terminal window from MMX-node folder/shortcut from the `Start Menu` with source pre-activated.
 
 ### _Where can I find a list of CLI commands for MMX node?_
-https://github.com/madMAx43v3r/mmx-node/wiki/CLI-Commands
+https://docs.mmx.network/software/cli-commands/
 
 ### _How is network difficulty calculated?_
 
@@ -87,4 +87,4 @@ You don't have to. But if you have fast internet connection and feel like helpin
 UPnP automatic port forwarding is now enabled by default, however it can disabled in GUI settings.
 
 ### _My setup is a complicated mix of several computers, where I run a full node on one computer and a few remote harvesters. How do I set them up?_
-https://github.com/madMAx43v3r/mmx-node/wiki/Remote-Services
+https://docs.mmx.network/guides/remote-services/

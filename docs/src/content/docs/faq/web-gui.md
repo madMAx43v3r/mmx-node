@@ -24,4 +24,4 @@ For example: `192.168.1.123:11380/gui/`
 Note: Only use this option if your local network is secure and no devices can sniff traffic and capture your password.
 
 Option #2:
-https://github.com/madMAx43v3r/mmx-node/wiki/Remote-Services#remote-connections-over-public-networks
+https://docs.mmx.network/guides/remote-services/#remote-connections-over-public-networks

@@ -36,7 +36,7 @@ For Windows, download proprietary clinfo utility from:
 https://opencl.gpuinfo.org/download.php
 
 ### _How do I get OpenCL to do VDF verifications?_
-https://github.com/madMAx43v3r/mmx-node/wiki/Using-OpenCL-for-VDF-Verification
+https://docs.mmx.network/guides/optimize-vdf/
 
 ### _I have an Intel/AMD CPU that come with an iGPU and another discrete GPU installed. MMX can use the iGPU to do OpenCL VDF, but not with the discrete GPU. How can I use the discrete GPU to do OpenCL VDF?_
 First, install the drivers for the discrete GPU. Use clinfo for Linux or for Windows, download clinfo utility here:
