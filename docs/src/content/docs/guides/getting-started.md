@@ -3,6 +3,7 @@ title: Getting Started
 description: Getting started with MMX.
 i18nReady: true
 ---
+**[Install](../installation/) MMX-Node.**
 
 ## GUI
 The native GUI can be opened by searching for `MMX Node` (when installed via binary package).
@@ -188,6 +189,8 @@ This is needed if for some reason the node forked from the network. Just subtrac
 
 ## Plotting
 
+**For an in depth guide on plotting, see** [Plotting Guide](../mmx-plotter/).
+
 To get the farmer key for plotting:
 ```
 mmx wallet keys [-j index]
@@ -210,13 +213,11 @@ Example Partial RAM: `./mmx_cuda_plot_k30 -C 5 -n -1 -2 /mnt/tmp_ssd/ -d <dst> -
 
 Example Disk Mode: `./mmx_cuda_plot_k30 -C 5 -n -1 -3 /mnt/tmp_ssd/ -d <dst> -f <farmer_key>`
 
-Usage is the same as for Gigahorse (https://github.com/madMAx43v3r/chia-gigahorse/tree/master/cuda-plotter), just without `-p` pool key.
-
-If you have a fast CPU ([passmark benchmark](https://www.cpubenchmark.net) > 5000 points) you can use `-C 10` for HDD plots.
+If you would like to use compressed plots, it is recommended that you run the mmx_posbench tool to benchmark your hardware.
 
 To create SSD plots (for farming on SSDs) add `--ssd` to the command and use `-C 0`. SSD plots are 250% more efficient but cannot be farmed on HDDs. They have higher CPU load to farm, hence it's recommended to plot uncompressed.
 
-The minimum k-size for mainnet will be k29, for testnet it is k26. The plots from testnet11 and onwards can be reused for mainnet later.
+The minimum k-size for mainnet is k29, the maximum k-size is k32.
 
 To add a plot directory add the path to `plot_dirs` array in `config/local/Harvester.json`, for example:
 ```
