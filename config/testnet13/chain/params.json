@@ -31,7 +31,7 @@
 	"min_fee_ratio": [1, 2, 3, 5, 10],
 	"initial_time_diff":  500,
 	"initial_space_diff": 10,
-	"initial_time_stamp": 1739127557270,
+	"initial_time_stamp": 1739193395000,
 	"time_diff_divider": 100,
 	"time_diff_constant": 1000000,
 	"space_diff_constant": 100000000000,
@@ -47,5 +47,5 @@
 		"value": 1,
 		"inverse": 100
 	},
-	"hardfork1_height": 10
+	"hardfork1_height": 100
 }
