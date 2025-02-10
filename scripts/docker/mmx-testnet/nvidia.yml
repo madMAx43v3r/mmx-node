@@ -1,0 +1,4 @@
+services:
+  node:
+    image: ghcr.io/madmax43v3r/mmx-node:edge-nvidia
+    runtime: nvidia
