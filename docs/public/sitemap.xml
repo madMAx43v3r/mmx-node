@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+
+<url>
+  <loc>https://docs.mmx.network/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/MMX_Whitepaper_290125.pdf</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/guides/getting-started/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/faq/mmx-blockchain/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/software/cli-commands/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/reference/blockchain/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/guides/docker/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/guides/installation/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/guides/mmx-plotter/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/guides/optimize-vdf/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/guides/remote-services/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/software/mmx_script/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/software/rpc_protocol/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/reference/mmx_wallet/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/reference/pooling_protocol/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/reference/token_standard/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/faq/mmx-node/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/faq/plotting/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/faq/timelord/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/faq/vdf/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/faq/wallet/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>https://docs.mmx.network/faq/web-gui/</loc>
+  <lastmod>2025-02-10T14:07:54+00:00</lastmod>
+  <priority>0.64</priority>
+</url>
+
+
+</urlset>
