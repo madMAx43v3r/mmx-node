@@ -587,7 +587,7 @@ Vue.component('main-menu', {
 	},
 	template: `
 		<v-tabs>
-			<v-img src="favicon.ico" class="mx-2" :max-width="100"/>
+			<v-img src="assets/img/logo_text_color_cy256_square.png" class="mx-2" :max-width="100"/>
 			<v-tab to="/node">{{ $t('main_menu.node') }}</v-tab>
 			<v-tab to="/wallet" v-if="$root.wallet">{{ $t('main_menu.wallet') }}</v-tab>
 			<v-tab to="/farmer" v-if="$root.farmer">{{ $t('main_menu.farmer') }}</v-tab>
