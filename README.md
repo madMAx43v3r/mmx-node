@@ -53,12 +53,10 @@ See `#mmx-news` and `#mmx-general` on Discord: https://discord.gg/BswFhNkMzY
 
 ## Installation / Setup / Usage
 
-Please take a look at the Wiki:
-
-- [Installation](https://github.com/madMAx43v3r/mmx-node/wiki/Installation)
-- [Getting Started](https://github.com/madMAx43v3r/mmx-node/wiki/Getting-Started)
-- [CLI Commands](https://github.com/madMAx43v3r/mmx-node/wiki/CLI-Commands)
-- [Frequently Asked Questions](https://github.com/madMAx43v3r/mmx-node/wiki/Frequently-Asked-Questions)
+- [Installation](https://docs.mmx.network/guides/installation/)
+- [Getting Started](https://docs.mmx.network/guides/getting-started/)
+- [CLI Commands](https://docs.mmx.network/software/cli-commands/)
+- [Plotting Guide](https://docs.mmx.network/guides/mmx-plotter/)
 
 ## WebGUI
 
