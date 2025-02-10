@@ -25,26 +25,26 @@ C10 can be farmed on most modern CPUs while still giving a gain of 3%. Larger ca
 <Aside>Full RAM, and Partial RAM refer to plotting modes. Disk space is what is needed by `-2` with partial RAM plotting. When using full disk mode plotting, temp space required for `-3` is the same as Partial RAM requirements. If `-3` and `-2` are the same drive, use the Full RAM space as a reference.</Aside>
 <Aside type="caution">The RAM Requirements above were tested to work on linux. Due to quirks of memory usage on Windows OS, it may not be possible to plot k31 in partial ram on a system with 128gb of ram.</Aside>
 
-### Compression
+## Compression
 The MMX CUDA Plotter supports compression levels C0 to C15. Farming compressed plots is currently only supported on CPU.
 However recomputing a full proof on HDD plots is only required when a good enough quality has been found, either to make a block or to make a partial.
 GPU recompute would only add a few extra percent of gains, at the cost of needing a (big) GPU to sit idle most of the time (in case of HDD plots).
 GPU recompute for farming lots of (uncompressed) SSD plots is planned, as this is the only use case where it makes sense.
 Since SSD plots always need to recompute the proof output hash (quality), meaning the compute load is proportional to number of plots.
 
-#### HDD Plots
+### HDD Plots
 C15 is _possible_ to farm on CPU, but only with ~64 cores or more. It is not recommended to use C15 as the gain over C10 is minimal (1.5%).
 C10-C12 can be handled by most modern CPUs. C5 can be farmed on almost any CPU, with minimal power draw.
 When making NFT plots, it is recommended to use a lower C level (3-5 levels lower) since more proofs need to be computed when pooling (one for each partial).
 The compute load when farming HDD plots is independent of the number of plots. The challenge is computing a full proof fast enough to make a block or partial in time.
 
-#### SSD Plots
+### SSD Plots
 SSD plots are 2.5x smaller than HDD plots. They cannot be farmed on HDDs (even in a RAID array) due to the high IOPS required to farm them (proportional to plot count).
 The CPU load to farm SSD plots is already quite high with C0, as such C0 is recommended when making SSD plots. Higher k-size reduces CPU and IOPS load.
 As such the most efficient SSD plots are k32 C0, with k29 having 8x higher CPU and IOPS load. k32 C3 is equal to k29 C0 in terms of CPU load.
 Farming 1024 uncompressed SSD plots is the same compute load as computing a single C10 full proof.
 
-#### Benchmark
+### Benchmark
 Before plotting with compression a benchmark should be performed to check if your system can handle it:
 ```
 mmx_posbench -k 31 -C 10				# to benchmark k31 C10
