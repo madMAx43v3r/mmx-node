@@ -20,7 +20,7 @@ Note: During initial blockchain sync, CPU usage can be high in any case.
 Example Hardware and times spreadsheet: https://docs.google.com/spreadsheets/d/1NlK-dq7vCbX4NHzrOloyy4ylLW-fdXjuT8468__SF64/edit?pli=1&gid=618383284#gid=618383284
 
 ## OpenCL for Intel iGPUs
-Intel iGPUs prior to 11th gen will most likely not be sufficient for mainnet.
+Intel iGPUs prior to 11th gen are not sufficient for mainnet. Intel's desktop iGPUs have much fewer compute units than their mobile counterparts, so only the mobile SKUs in laptops/mini-PCs will be suitable for OpenCL VDF verify. 11th gen and newer desktop CPUs with the SHA instruction set can get decent performance on the CPU cores without OpenCL.
 
 Ubuntu 20.04, 21.04
 ```
@@ -75,7 +75,9 @@ Windows: https://google.com/search?q=amd+graphics+driver+download
 
 ## OpenCL for Nvidia GPUs
 
-Install Nvidia drivers.
+Due to the massive generational leap in compute performance, the Maxwell generation (900 series Geforce, M-series and some K-series Quadro) should be the minimum consideration for Nvidia GPUs. 
+
+Install Nvidia drivers:
 
 ### Ubuntu
 

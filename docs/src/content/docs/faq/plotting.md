@@ -23,7 +23,9 @@ For mainnet, k29 to k32 are supported.
 That depends on what kind of hardware you already have. The minimum k size of k29 requires 64GB to plot all in RAM. If you only have 32GB RAM and huge/fast NVMe, you can try plotting in partial RAM. Or you can disk plot k32s.
 If you have 128GB or 256GB RAM, you should try to plot the largest k size possible (k30 and k31 all in RAM, respectively).
 
-With the latest new MMX plot format, there is probably 3% difference in non-compressed and C15 (maximum compression). So it's not really worth the extra compute for just a few GB difference. Personally, I think C1-C5 is where it matters. I recommend C3 if you're harvesting with a Pi4 and have farm size < 300TB. If you run dual Xeon v3/v4, you can try C5 or C6. 
+With maximum compression level currently supported by the MMX plotter, there is roughly 3% difference between non-compressed and C15. So it's not really worth the extra compute for just a few GB difference. Personally, I think C1-C5 is where it matters. I recommend C3 if you're harvesting with a Pi4 and have farm size < 300TB. If you run dual Xeon v3/v4, you can try C5 or C6. 
+
+You can run the [benchmark](/guides/mmx-plotter/#benchmark) tool to see what compression level your hardware can handle or read the full [Plotting Guide](/guides/mmx-plotter/).
 
 ### _What are the final plot sizes for k29 to k32, C0 to C15 ?_
 Please refer to this spreadsheet, switch to the "Miscellaneous" tab.
@@ -59,3 +61,6 @@ Current plotter use the RAM natively, there is no need to assign RAM disk or tmp
 | K32  |  320   |     446    |      246      |     177     |
 
 **Note: The numbers above are just an approximation.**
+
+### _Can I make pooling plots?_
+Yes, you can create poolable plots using a plotnft contract. You first have to create the plotnft contract which requires about 0.1 MMX. You can then use the plotnft contract address when creating the plots using the `-c <contract_address>` option. By default the plotnft will be set to solo. There are currently no public pools operating on mainnet.

@@ -1,9 +1,16 @@
 :root {
     --sl-content-width: 80%;
+	
     --sl-nav-gap: 5rem;
     .content-panel .sl-container {
         margin-left: 5rem;
     }
+	@media (max-width: 800px) {
+		--sl-content-width: 100%;
+		.content-panel .sl-container {
+			margin-left: 0;
+		};
+	}
 	--mmx-color-purple: hsl(262, 36%, 36%);
 
     --sl-color-white: hsl(0, 0%, 100%); /* “white” */
