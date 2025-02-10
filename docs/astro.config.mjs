@@ -17,6 +17,7 @@ export default defineConfig({
 				baseUrl: 'https://github.com/madMAx43v3r/mmx-node/edit/master/docs'
 			},
 			sidebar: [
+				{	label: 'Homepage', link: 'https://mmx.network/'},
 				{
 					label: 'Guides',
 					autogenerate: { directory: 'guides' },
