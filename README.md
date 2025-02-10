@@ -4,13 +4,14 @@ _“ MMX &ndash; fast, low cost, feature rich, decentralized &ndash; with tokeno
 
 A blockchain written from scratch, doing most things differently.
 
-See the whitepaper: [MMX_Whitepaper_110125.pdf](https://github.com/madMAx43v3r/mmx-node/blob/master/docs/MMX_Whitepaper_110125.pdf)
+Website: https://mmx.network \
+Whitepaper: [MMX_Whitepaper_290125.pdf](https://docs.mmx.network/MMX_Whitepaper_290125.pdf)
 
 Design
 - Variable token supply governed by consensus (1 block = 1 vote)
 - High throughput L1 with consistent block interval (500 TPS, 10 sec)
 - Novel Smart Contract VM for ease of development and high performance
-- Energy efficient Proof of Space, with optional Proof of Stake (limited to Tx fees)
+- Energy efficient Proof of Space and Time
 - Block reward is adjusted to stabilize price, a key property of any currency
 - Minimum transaction fee to allow large block size without spam
 - Limited external library usage to keep codebase clean and secure
@@ -52,6 +53,8 @@ _<sup>[2]</sup> A fixed reward of 0.5 MMX per block win on incentivized testnets
 See `#mmx-news` and `#mmx-general` on Discord: https://discord.gg/BswFhNkMzY
 
 ## Installation / Setup / Usage
+
+See documentation: https://docs.mmx.network/
 
 - [Installation](https://docs.mmx.network/guides/installation/)
 - [Getting Started](https://docs.mmx.network/guides/getting-started/)
