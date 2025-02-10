@@ -392,9 +392,9 @@ private:
 	void verify_proof(std::shared_ptr<fork_t> fork) const;
 
 	template<typename T>
-	void verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff) const;
+	void verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff, const uint32_t& vdf_height) const;
 
-	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const;
+	void verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff, const uint32_t& vdf_height) const;
 
 	void verify_vdf(std::shared_ptr<const ProofOfTime> proof, const int64_t recv_time);
 

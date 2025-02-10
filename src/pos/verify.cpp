@@ -161,7 +161,15 @@ hash_t calc_quality(const hash_t& challenge, const bytes_t<META_BYTES_OUT>& meta
 	return hash_t(std::string("proof_quality") + challenge + meta);
 }
 
-hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, const hash_t& id, const int plot_filter, const int ksize)
+bool check_post_filter(const hash_t& challenge, const bytes_t<META_BYTES_OUT>& meta, const int post_filter)
+{
+	// proof output needs to be hashed after challenge, otherwise compression to 256-bit is possible
+	const hash_t hash(std::string("post_filter") + challenge + meta);
+	return (hash.to_uint256() >> (256 - post_filter)) == 0;
+}
+
+hash_t verify(	const std::vector<uint32_t>& X_values, const hash_t& challenge, const hash_t& id,
+				const int plot_filter, const int post_filter, const int ksize, const bool hard_fork)
 {
 	if(X_values.size() != (1 << (N_TABLE - 1))) {
 		throw std::logic_error("invalid proof size");
@@ -189,7 +197,15 @@ hash_t verify(const std::vector<uint32_t>& X_values, const hash_t& challenge, co
 	if(X_out != X_values) {
 		throw std::logic_error("invalid proof order");
 	}
-	return calc_quality(challenge, result.second);
+
+	if(hard_fork) {
+		if(!check_post_filter(challenge, result.second, post_filter)) {
+			throw std::logic_error("post filter failed");
+		}
+		return calc_proof_hash(challenge, X_out);
+	} else {
+		return calc_quality(challenge, result.second);
+	}
 }
 
 

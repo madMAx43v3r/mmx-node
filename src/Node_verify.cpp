@@ -62,7 +62,7 @@ void Node::verify(std::shared_ptr<const ProofResponse> value) const
 	if(!find_challenge(value->vdf_height, challenge, space_diff)) {
 		throw std::logic_error("cannot find challenge");
 	}
-	verify_proof(value->proof, challenge, space_diff);
+	verify_proof(value->proof, challenge, space_diff, value->vdf_height);
 
 	publish(value, output_verified_proof);
 }
@@ -166,14 +166,14 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	const auto challenge = get_challenge(block, 0, space_diff);
 
 	for(auto proof : block->proof) {
-		verify_proof(proof, challenge, space_diff);
+		verify_proof(proof, challenge, space_diff, block->vdf_height);
 	}
 	fork->is_proof_verified = true;
 }
 
 template<typename T>
 void Node::verify_proof_impl(
-		std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff) const
+		std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff, const uint32_t& vdf_height) const
 {
 	if(proof->ksize < params->min_ksize) {
 		throw std::logic_error("ksize too low");
@@ -181,16 +181,19 @@ void Node::verify_proof_impl(
 	if(proof->ksize > params->max_ksize) {
 		throw std::logic_error("ksize too high");
 	}
+	const bool hard_fork = vdf_height >= params->hardfork1_height;
 	const auto plot_challenge = get_plot_challenge(challenge, proof->plot_id);
 
-	const auto quality = pos::verify(proof->proof_xs, plot_challenge, proof->plot_id, params->plot_filter, proof->ksize);
+	const auto quality = pos::verify(
+			proof->proof_xs, plot_challenge, proof->plot_id,
+			params->plot_filter, params->post_filter, proof->ksize, hard_fork);
 
-	if(!check_proof_threshold(params, proof->ksize, quality, space_diff)) {
+	if(!check_proof_threshold(params, proof->ksize, quality, space_diff, hard_fork)) {
 		throw std::logic_error("not good enough");
 	}
 }
 
-void Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff) const
+void Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t& challenge, const uint64_t space_diff, const uint32_t& vdf_height) const
 {
 	if(space_diff <= 0) {
 		throw std::logic_error("difficulty zero");
@@ -213,9 +216,9 @@ void Node::verify_proof(std::shared_ptr<const ProofOfSpace> proof, const hash_t&
 	const auto nft_proof = std::dynamic_pointer_cast<const ProofOfSpaceNFT>(proof);
 
 	if(og_proof) {
-		verify_proof_impl(og_proof, challenge, space_diff);
+		verify_proof_impl(og_proof, challenge, space_diff, vdf_height);
 	} else if(nft_proof) {
-		verify_proof_impl(nft_proof, challenge, space_diff);
+		verify_proof_impl(nft_proof, challenge, space_diff, vdf_height);
 	} else {
 		throw std::logic_error("invalid proof type: " + proof->get_type_name());
 	}

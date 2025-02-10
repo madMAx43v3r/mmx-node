@@ -18,6 +18,8 @@ namespace pos {
 
 hash_t calc_quality(const hash_t& challenge, const bytes_t<META_BYTES_OUT>& meta);
 
+bool check_post_filter(const hash_t& challenge, const bytes_t<META_BYTES_OUT>& meta, const int post_filter);
+
 std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>>
 compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out,
 		const hash_t& id, const int ksize, const int xbits);
@@ -29,8 +31,8 @@ compute_full(	const std::vector<uint32_t>& X_in,
 				std::vector<uint32_t>* X_out,
 				const hash_t& id, const int ksize);
 
-hash_t verify(	const std::vector<uint32_t>& X_values, const hash_t& challenge,
-				const hash_t& id, const int plot_filter, const int ksize);
+hash_t verify(	const std::vector<uint32_t>& X_values, const hash_t& challenge, const hash_t& id,
+				const int plot_filter, const int post_filter, const int ksize, const bool hard_fork);
 
 
 } // pos

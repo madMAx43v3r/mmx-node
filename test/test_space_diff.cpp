@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 
 	for(int iter = 0; iter < num_iter; ++iter)
 	{
-		const hash_t challenge(std::to_string(iter));
+		const hash_t challenge(prover->get_plot_id() + std::to_string(iter));
 
 		const auto qualities = prover->get_qualities(challenge, plot_filter);
 
@@ -64,7 +64,9 @@ int main(int argc, char** argv)
 				if(!entry.valid) {
 					throw std::runtime_error(entry.error_msg);
 				}
-				if(check_proof_threshold(params, ksize, entry.quality, space_diff)) {
+				const auto quality = pos::calc_quality(challenge, entry.meta);
+
+				if(check_proof_threshold(params, ksize, quality, space_diff, false)) {
 					total_proofs++;
 				}
 			}

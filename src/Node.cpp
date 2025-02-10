@@ -295,37 +295,44 @@ void Node::init_chain()
 	block->vdf_output = hash_t("MMX/" + params->network + "/vdf/0");
 	block->challenge = hash_t("MMX/" + params->network + "/challenge/0");
 
-	std::shared_ptr<const Transaction> tx_rewards;
-	vnx::from_string(read_file("data/tx_testnet_rewards.json"), tx_rewards);
-	if(!tx_rewards) {
-		throw std::logic_error("failed to read testnet rewards");
-	}
-	block->tx_list.push_back(tx_rewards);
-
-	uint64_t total_rewards = 0;
-	for(const auto& out : tx_rewards->outputs) {
-		total_rewards += out.amount;
-	}
-	log(INFO) << "Total testnet rewards: " << total_rewards / 1000000 << " MMX";
-
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_offer_binary.dat"));
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_swap_binary.dat"));
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_token_binary.dat"));
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_plot_nft_binary.dat"));
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_nft_binary.dat"));
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_template_binary.dat"));
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_escrow_binary.dat"));
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_time_lock_binary.dat"));
-	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/tx_relay_binary.dat"));
-
-	if(auto tx = vnx::read_from_file<Transaction>("data/tx_project_relay.dat")) {
-		auto exec = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy);
-		if(!tx->is_valid(params) || !tx->sender || tx->expires != 0xFFFFFFFF || !exec || exec->binary != params->relay_binary) {
-			throw std::logic_error("invalid tx_project_relay");
+	const bool is_mainnet = params->network == "mainnet";
+	if(is_mainnet) {
+		std::shared_ptr<const Transaction> tx_rewards;
+		vnx::from_string(read_file("data/" + params->network + "/tx_testnet_rewards.json"), tx_rewards);
+		if(!tx_rewards) {
+			throw std::logic_error("failed to read testnet rewards");
 		}
-		block->project_addr = tx->id;
+		block->tx_list.push_back(tx_rewards);
+
+		uint64_t total_rewards = 0;
+		for(const auto& out : tx_rewards->outputs) {
+			total_rewards += out.amount;
+		}
+		log(INFO) << "Total testnet rewards: " << total_rewards / 1000000 << " MMX";
+	}
+
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_offer_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_swap_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_token_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_plot_nft_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_nft_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_template_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_escrow_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_time_lock_binary.dat"));
+	block->tx_list.push_back(vnx::read_from_file<Transaction>("data/" + params->network + "/tx_relay_binary.dat"));
+
+	if(is_mainnet) {
+		if(auto tx = vnx::read_from_file<Transaction>("data/" + params->network + "/tx_project_relay.dat")) {
+			auto exec = std::dynamic_pointer_cast<const contract::Executable>(tx->deploy);
+			if(!tx->is_valid(params) || !tx->sender || tx->expires != 0xFFFFFFFF || !exec || exec->binary != params->relay_binary) {
+				throw std::logic_error("invalid tx_project_relay");
+			}
+			block->project_addr = tx->id;
+		} else {
+			throw std::logic_error("failed to load tx_project_relay");
+		}
 	} else {
-		throw std::logic_error("failed to load tx_project_relay");
+		block->project_addr = addr_t("mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z");
 	}
 
 	for(auto tx : block->tx_list) {

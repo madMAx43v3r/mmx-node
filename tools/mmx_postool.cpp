@@ -48,6 +48,7 @@ int main(int argc, char** argv)
 	const auto processor_count = std::thread::hardware_concurrency();
 	int num_threads = processor_count ? processor_count : 16;
 	int plot_filter = 4;
+	int post_filter = 10;
 	std::vector<std::string> file_names;
 	std::vector<std::string> dir_names;
 	std::vector<int> cuda_devices;
@@ -86,6 +87,7 @@ int main(int argc, char** argv)
 		std::string file;
 		bool valid = false;
 		std::atomic<uint32_t> num_pass {0};
+		std::atomic<uint32_t> num_proof {0};
 		std::atomic<uint32_t> num_fail {0};
 	};
 
@@ -119,7 +121,7 @@ int main(int argc, char** argv)
 			std::cout << "--------------------------------------------------------------------------------" << std::endl;
 			std::cout << "Checking '" << file_name << "'" << std::endl;
 
-			auto header = prover->get_header();
+			const auto header = prover->get_header();
 			if(verbose) {
 				std::cout << "Size: " << (header->has_meta ? "HDD" : "SSD") << " K" << header->ksize << " C" << prover->get_clevel()
 						<< " (" << header->plot_size / pow(1024, 3) << " GiB)" << std::endl;
@@ -133,8 +135,10 @@ int main(int argc, char** argv)
 
 			for(int iter = 0; iter < num_iter && vnx::do_run(); ++iter)
 			{
-				threads.add_task([iter, prover, header, out, plot_filter, verbose, debug, &mutex]() {
-					const hash_t challenge(std::to_string(iter));
+				threads.add_task([iter, prover, header, out, plot_filter, post_filter, verbose, debug, &mutex]()
+				{
+					const auto plot_id = prover->get_plot_id();
+					const hash_t challenge(plot_id + std::to_string(iter));
 					try {
 						const auto qualities = prover->get_qualities(challenge, plot_filter);
 
@@ -145,22 +149,19 @@ int main(int argc, char** argv)
 								}
 								if(debug) {
 									std::lock_guard<std::mutex> lock(mutex);
-									std::cout << "[" << iter << "] index = " << entry.index << ", quality = " << entry.quality.to_string() << std::endl;
+									std::cout << "[" << iter << "] index = " << entry.index << ", meta = " << entry.meta.to_string() << std::endl;
 								}
 								std::vector<uint32_t> proof;
 								if(entry.proof.size()) {
 									proof = entry.proof;
 								} else {
-									const auto res = prover->get_full_proof(challenge, entry.index);
+									const auto res = prover->get_full_proof(entry.index);
 									if(!res.valid) {
 										throw std::runtime_error(entry.error_msg);
 									}
 									proof = res.proof;
 								}
-								const auto quality = pos::verify(proof, challenge, header->plot_id, plot_filter, header->ksize);
-								if(quality != entry.quality) {
-									throw std::logic_error("invalid quality");
-								}
+								pos::verify(proof, challenge, header->plot_id, plot_filter, 0, header->ksize, true);
 								if(debug) {
 									std::lock_guard<std::mutex> lock(mutex);
 									std::cout << "Proof " << entry.index << " passed: ";
@@ -168,6 +169,9 @@ int main(int argc, char** argv)
 										std::cout << X << " ";
 									}
 									std::cout << std::endl;
+								}
+								if(pos::check_post_filter(challenge, entry.meta, post_filter)) {
+									out->num_proof++;
 								}
 								out->num_pass++;
 							}
@@ -193,6 +197,9 @@ int main(int argc, char** argv)
 			const auto expected = uint64_t(num_iter) << plot_filter;
 			std::cout << "Pass: " << out->num_pass << " / " << expected << ", " << float(100 * out->num_pass) / expected << " %" << std::endl;
 			std::cout << "Fail: " << out->num_fail << " / " << expected << ", " << float(100 * out->num_fail) / expected << " %" << std::endl;
+			if(verbose) {
+				std::cout << "Proofs: " << out->num_proof << ", " << float(100 * out->num_proof) / expected << " %" << std::endl;
+			}
 
 			if(prover->has_meta()) {
 				std::cout << "Full Proof Time: " << elapsed / out->num_pass << " sec (should be less than 20)" << std::endl;

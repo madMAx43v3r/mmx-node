@@ -1,9 +1,9 @@
 {
-	"port": 11337,
-	"network": "mainnet",
+	"port": 12343,
+	"network": "testnet13",
 	"plot_filter": 4,
 	"post_filter": 10,
-	"min_ksize": 29,
+	"min_ksize": 26,
 	"infuse_delay": 1,
 	"challenge_delay": 6,
 	"challenge_interval": 256,
@@ -29,9 +29,9 @@
 	"max_rcall_depth": 3,
 	"max_rcall_width": 5,
 	"min_fee_ratio": [1, 2, 3, 5, 10],
-	"initial_time_diff":  600,
-	"initial_space_diff": 100,
-	"initial_time_stamp": 1737119420000,
+	"initial_time_diff":  500,
+	"initial_space_diff": 10,
+	"initial_time_stamp": 1739193395000,
 	"time_diff_divider": 100,
 	"time_diff_constant": 1000000,
 	"space_diff_constant": 100000000000,
@@ -47,5 +47,5 @@
 		"value": 1,
 		"inverse": 100
 	},
-	"hardfork1_height": 1000000
+	"hardfork1_height": 100
 }
