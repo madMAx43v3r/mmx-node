@@ -922,7 +922,7 @@ uint128 Node::get_total_supply(const addr_t& currency) const
 {
 	uint128 total = 0;
 	total_supply_map.find(currency, total);
-	return total;
+	return clamped_sub(total, get_balance(addr_t(), currency));
 }
 
 vnx::optional<plot_nft_info_t> Node::get_plot_nft_info(const addr_t& address) const

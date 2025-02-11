@@ -1030,6 +1030,8 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			}
 			prefetch_balances(keys);
 		}
+		std::unordered_map<addr_t, uint128_t> supply_delta;
+
 		for(const auto& out : block_outputs)
 		{
 			if(out.memo) {
@@ -1038,6 +1040,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 			}
 			txio_log.insert(std::make_tuple(out.address, block->height, counter), out);
 			balance_cache.get(out.address, out.contract) += out.amount;
+			supply_delta[out.contract] += out.amount;
 			counter++;
 		}
 		for(const auto& in : block_inputs)
@@ -1050,6 +1053,7 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				memo_log.insert(std::make_tuple(key, block->height, counter), in.address);
 			}
 			txio_log.insert(std::make_tuple(in.address, block->height, counter), in);
+			clamped_sub_assign(supply_delta[in.contract], in.amount);
 			counter++;
 		}
 		for(const auto& tx : block->get_transactions()) {
@@ -1073,34 +1077,17 @@ void Node::apply(	std::shared_ptr<const Block> block,
 				iter++;
 			}
 		}
-		std::unordered_map<addr_t, std::array<uint128_t, 2>> supply_delta;
 
 		for(const auto& entry : balance_cache.balance) {
-			const auto& key = entry.first;
-			const auto& value = entry.second;
-			const auto& address = key.first;
-			const auto& currency = key.second;
-			uint128 prev = 0;
-			balance_table.find(key, prev);
-			if(value > prev) {
-				supply_delta[currency][address != addr_t() ? 1 : 0] += value - prev;
-			} else if(value < prev) {
-				supply_delta[currency][0] += prev - value;
-			}
-			balance_table.insert(key, value);
+			balance_table.insert(entry.first, entry.second);
 		}
 		for(const auto& entry : supply_delta) {
 			const auto& currency = entry.first;
 			const auto& delta = entry.second;
-			if(delta[0] != delta[1]) {
-				uint128 value = 0;
-				total_supply_map.find(currency, value);
-				value += delta[1];
-				if(delta[0] > value) {
-					throw std::logic_error("negative supply for " + currency.to_string());
-				}
-				value -= delta[0];
-				total_supply_map.insert(currency, value);
+			if(delta) {
+				uint128 prev = 0;
+				total_supply_map.find(currency, prev);
+				total_supply_map.insert(currency, prev + delta);
 			}
 		}
 
