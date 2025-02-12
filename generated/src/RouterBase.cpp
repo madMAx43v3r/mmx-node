@@ -30,12 +30,16 @@
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Router_kick_peer.hxx>
 #include <mmx/Router_kick_peer_return.hxx>
+#include <mmx/Router_sign_msg.hxx>
+#include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Transaction.hxx>
 #include <mmx/VDF_Point.hxx>
 #include <mmx/ValidatorVote.hxx>
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/ModuleInterface_vnx_get_config.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_return.hxx>
 #include <vnx/ModuleInterface_vnx_get_config_object.hxx>
@@ -71,7 +75,7 @@ namespace mmx {
 
 
 const vnx::Hash64 RouterBase::VNX_TYPE_HASH(0x952c4ef2956f31c4ull);
-const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x23718f39baaceb22ull);
+const vnx::Hash64 RouterBase::VNX_CODE_HASH(0x3e3476f20c4870c1ull);
 
 RouterBase::RouterBase(const std::string& _vnx_name)
 	:	MsgServer::MsgServer(_vnx_name)
@@ -775,7 +779,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.Router";
 	type_code->type_hash = vnx::Hash64(0x952c4ef2956f31c4ull);
-	type_code->code_hash = vnx::Hash64(0x23718f39baaceb22ull);
+	type_code->code_hash = vnx::Hash64(0x3e3476f20c4870c1ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::RouterBase);
 	type_code->parents.resize(2);
@@ -783,7 +787,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->parents[1] = ::vnx::addons::TcpServerBase::static_get_type_code();
 	type_code->depends.resize(1);
 	type_code->depends[0] = ::mmx::node_type_e::static_get_type_code();
-	type_code->methods.resize(22);
+	type_code->methods.resize(23);
 	type_code->methods[0] = ::mmx::Router_discover::static_get_type_code();
 	type_code->methods[1] = ::mmx::Router_fetch_block::static_get_type_code();
 	type_code->methods[2] = ::mmx::Router_fetch_block_at::static_get_type_code();
@@ -795,17 +799,18 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 	type_code->methods[8] = ::mmx::Router_get_peer_info::static_get_type_code();
 	type_code->methods[9] = ::mmx::Router_get_peers::static_get_type_code();
 	type_code->methods[10] = ::mmx::Router_kick_peer::static_get_type_code();
-	type_code->methods[11] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
-	type_code->methods[12] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
-	type_code->methods[13] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
-	type_code->methods[14] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
-	type_code->methods[15] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
-	type_code->methods[16] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
-	type_code->methods[17] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
-	type_code->methods[18] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
-	type_code->methods[19] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
-	type_code->methods[20] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
-	type_code->methods[21] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
+	type_code->methods[11] = ::mmx::Router_sign_msg::static_get_type_code();
+	type_code->methods[12] = ::vnx::ModuleInterface_vnx_get_config::static_get_type_code();
+	type_code->methods[13] = ::vnx::ModuleInterface_vnx_get_config_object::static_get_type_code();
+	type_code->methods[14] = ::vnx::ModuleInterface_vnx_get_module_info::static_get_type_code();
+	type_code->methods[15] = ::vnx::ModuleInterface_vnx_get_type_code::static_get_type_code();
+	type_code->methods[16] = ::vnx::ModuleInterface_vnx_restart::static_get_type_code();
+	type_code->methods[17] = ::vnx::ModuleInterface_vnx_self_test::static_get_type_code();
+	type_code->methods[18] = ::vnx::ModuleInterface_vnx_set_config::static_get_type_code();
+	type_code->methods[19] = ::vnx::ModuleInterface_vnx_set_config_object::static_get_type_code();
+	type_code->methods[20] = ::vnx::ModuleInterface_vnx_stop::static_get_type_code();
+	type_code->methods[21] = ::vnx::addons::HttpComponent_http_request::static_get_type_code();
+	type_code->methods[22] = ::vnx::addons::HttpComponent_http_request_chunk::static_get_type_code();
 	type_code->fields.resize(58);
 	{
 		auto& field = type_code->fields[0];
@@ -1124,7 +1129,7 @@ std::shared_ptr<vnx::TypeCode> RouterBase::static_create_type_code() {
 		auto& field = type_code->fields[45];
 		field.data_size = 4;
 		field.name = "node_version";
-		field.value = vnx::to_string(102);
+		field.value = vnx::to_string(103);
 		field.code = {3};
 	}
 	{
@@ -1302,6 +1307,12 @@ std::shared_ptr<vnx::Value> RouterBase::vnx_call_switch(std::shared_ptr<const vn
 			auto _args = std::static_pointer_cast<const ::mmx::Router_kick_peer>(_method);
 			auto _return_value = ::mmx::Router_kick_peer_return::create();
 			kick_peer(_args->address);
+			return _return_value;
+		}
+		case 0x88ede2fbb99ab63eull: {
+			auto _args = std::static_pointer_cast<const ::mmx::Router_sign_msg>(_method);
+			auto _return_value = ::mmx::Router_sign_msg_return::create();
+			_return_value->_ret_0 = sign_msg(_args->msg);
 			return _return_value;
 		}
 		case 0xbbc7f1a01044d294ull: {

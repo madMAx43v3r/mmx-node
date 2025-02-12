@@ -15,6 +15,8 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
@@ -58,7 +60,7 @@ public:
 	uint32_t max_sent_cache = 20000;
 	uint32_t max_hash_cache = 100000;
 	uint32_t max_vdf_segments = 65536;
-	uint32_t node_version = 102;
+	uint32_t node_version = 103;
 	::mmx::node_type_e mode = ::mmx::node_type_e::FULL_NODE;
 	vnx::bool_t do_relay = true;
 	vnx::bool_t open_port = false;
@@ -110,6 +112,7 @@ protected:
 	virtual void discover() = 0;
 	virtual ::mmx::hash_t get_id() const = 0;
 	virtual ::mmx::node_info_t get_info() const = 0;
+	virtual std::pair<::mmx::pubkey_t, ::mmx::signature_t> sign_msg(const ::mmx::hash_t& msg) const = 0;
 	virtual std::vector<std::string> get_peers(const uint32_t& max_count) const = 0;
 	virtual std::vector<std::string> get_known_peers() const = 0;
 	virtual std::vector<std::string> get_connected_peers() const = 0;

@@ -224,6 +224,8 @@
 #include <mmx/Router_get_peers_return.hxx>
 #include <mmx/Router_kick_peer.hxx>
 #include <mmx/Router_kick_peer_return.hxx>
+#include <mmx/Router_sign_msg.hxx>
+#include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Solution.hxx>
 #include <mmx/TimeLord_stop_vdf.hxx>
 #include <mmx/TimeLord_stop_vdf_return.hxx>
@@ -2344,6 +2346,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_kick_peer> v
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_kick_peer_return> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_sign_msg> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_sign_msg_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

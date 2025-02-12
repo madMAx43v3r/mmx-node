@@ -15,6 +15,8 @@
 #include <mmx/hash_t.hpp>
 #include <mmx/node_info_t.hxx>
 #include <mmx/node_type_e.hxx>
+#include <mmx/pubkey_t.hpp>
+#include <mmx/signature_t.hpp>
 #include <vnx/TopicPtr.hpp>
 #include <vnx/addons/HttpData.hxx>
 #include <vnx/addons/HttpRequest.hxx>
@@ -37,6 +39,8 @@ public:
 	::mmx::hash_t get_id();
 	
 	::mmx::node_info_t get_info();
+	
+	std::pair<::mmx::pubkey_t, ::mmx::signature_t> sign_msg(const ::mmx::hash_t& msg = ::mmx::hash_t());
 	
 	std::vector<std::string> get_peers(const uint32_t& max_count = 10);
 	

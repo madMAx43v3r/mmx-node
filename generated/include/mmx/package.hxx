@@ -248,6 +248,8 @@ class Router_get_peers;
 class Router_get_peers_return;
 class Router_kick_peer;
 class Router_kick_peer_return;
+class Router_sign_msg;
+class Router_sign_msg_return;
 class Solution;
 class TimeLordBase;
 class TimeLord_stop_vdf;
@@ -657,6 +659,8 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_pee
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_get_peers_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_kick_peer; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_kick_peer_return; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Router_sign_msg_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Solution; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLordBase; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_TimeLord_stop_vdf; ///< \private
@@ -1063,6 +1067,8 @@ void read(TypeInput& in, ::mmx::Router_get_peers& value, const TypeCode* type_co
 void read(TypeInput& in, ::mmx::Router_get_peers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_kick_peer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Router_kick_peer_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Router_sign_msg& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::Router_sign_msg_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Solution& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1472,6 +1478,8 @@ void write(TypeOutput& out, const ::mmx::Router_get_peers& value, const TypeCode
 void write(TypeOutput& out, const ::mmx::Router_get_peers_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_kick_peer& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Router_kick_peer_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Router_sign_msg& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::Router_sign_msg_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Solution& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeLordBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::TimeLord_stop_vdf& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1881,6 +1889,8 @@ void read(std::istream& in, ::mmx::Router_get_peers& value); ///< \private
 void read(std::istream& in, ::mmx::Router_get_peers_return& value); ///< \private
 void read(std::istream& in, ::mmx::Router_kick_peer& value); ///< \private
 void read(std::istream& in, ::mmx::Router_kick_peer_return& value); ///< \private
+void read(std::istream& in, ::mmx::Router_sign_msg& value); ///< \private
+void read(std::istream& in, ::mmx::Router_sign_msg_return& value); ///< \private
 void read(std::istream& in, ::mmx::Solution& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLordBase& value); ///< \private
 void read(std::istream& in, ::mmx::TimeLord_stop_vdf& value); ///< \private
@@ -2290,6 +2300,8 @@ void write(std::ostream& out, const ::mmx::Router_get_peers& value); ///< \priva
 void write(std::ostream& out, const ::mmx::Router_get_peers_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_kick_peer& value); ///< \private
 void write(std::ostream& out, const ::mmx::Router_kick_peer_return& value); ///< \private
+void write(std::ostream& out, const ::mmx::Router_sign_msg& value); ///< \private
+void write(std::ostream& out, const ::mmx::Router_sign_msg_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::Solution& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLordBase& value); ///< \private
 void write(std::ostream& out, const ::mmx::TimeLord_stop_vdf& value); ///< \private
@@ -2699,6 +2711,8 @@ void accept(Visitor& visitor, const ::mmx::Router_get_peers& value); ///< \priva
 void accept(Visitor& visitor, const ::mmx::Router_get_peers_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_kick_peer& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Router_kick_peer_return& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Router_sign_msg& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::Router_sign_msg_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Solution& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLordBase& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::TimeLord_stop_vdf& value); ///< \private
@@ -3324,6 +3338,10 @@ template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_kick_peer> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_kick_peer_return> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_sign_msg> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Router_sign_msg_return> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Solution> value); ///< \private
 template<typename V>
@@ -8729,6 +8747,52 @@ struct type<::mmx::Router_kick_peer_return> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_kick_peer_return& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Router_sign_msg> {
+	void read(TypeInput& in, ::mmx::Router_sign_msg& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Router_sign_msg& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Router_sign_msg& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Router_sign_msg& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Router_sign_msg& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::Router_sign_msg_return> {
+	void read(TypeInput& in, ::mmx::Router_sign_msg_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::Router_sign_msg_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::Router_sign_msg_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::Router_sign_msg_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::Router_sign_msg_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::Router_sign_msg_return& value, bool special = false);
 };
 
 /// \private
