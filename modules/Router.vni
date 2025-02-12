@@ -39,7 +39,7 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	uint max_hash_cache = 100000;
 	uint max_vdf_segments = 65536;			// for relay without verify
 	
-	uint node_version = 102;
+	uint node_version = 103;
 	node_type_e mode = FULL_NODE;
 	
 	bool do_relay = true;
@@ -63,6 +63,8 @@ module Router extends vnx.addons.MsgServer implements vnx.addons.HttpComponent {
 	hash_t get_id() const;
 	
 	node_info_t get_info() const;
+	
+	pair<pubkey_t, signature_t> sign_msg(hash_t msg) const;
 	
 	vector<string> get_peers(uint max_count = 10) const;
 	

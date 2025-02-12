@@ -40,6 +40,8 @@ protected:
 
 	node_info_t get_info() const override;
 
+	std::pair<pubkey_t, signature_t> sign_msg(const hash_t& msg) const override;
+
 	std::vector<std::string> get_peers(const uint32_t& max_count) const override;
 
 	std::vector<std::string> get_known_peers() const override;
@@ -93,6 +95,7 @@ private:
 		int64_t connected_since_ms = 0;
 		double pending_cost = 0;
 		node_info_t info;
+		hash_t challenge;
 		std::string address;
 		vnx::optional<hash_t> node_id;
 		std::queue<hash_t> hash_queue;
@@ -215,6 +218,8 @@ private:
 	bool is_connected = false;
 
 	hash_t node_id;
+	skey_t node_skey;
+	pubkey_t node_key;
 	std::set<std::string> peer_set;
 	std::set<std::string> self_addrs;
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]

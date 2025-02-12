@@ -19,6 +19,8 @@
 #include <mmx/Router_get_info_return.hxx>
 #include <mmx/Router_get_peers.hxx>
 #include <mmx/Router_get_peers_return.hxx>
+#include <mmx/Router_sign_msg.hxx>
+#include <mmx/Router_sign_msg_return.hxx>
 #include <mmx/Node_get_height.hxx>
 #include <mmx/Node_get_height_return.hxx>
 #include <mmx/Node_get_synced_height.hxx>
@@ -97,7 +99,9 @@ void Router::main()
 	subscribe(input_vdf_points, max_queue_ms);
 	subscribe(input_vdfs, max_queue_ms);
 
-	node_id = hash_t::random();
+	node_skey = skey_t(hash_t::random());
+	node_key = pubkey_t(node_skey);
+	node_id = node_key.get_addr();
 	{
 		vnx::File file(storage_path + "known_peers.dat");
 		if(file.exists()) {
@@ -158,6 +162,11 @@ node_info_t Router::get_info() const
 	info.version = node_version;
 	info.type = mode;
 	return info;
+}
+
+std::pair<pubkey_t, signature_t> Router::sign_msg(const hash_t& msg) const
+{
+	return std::make_pair(node_key, signature_t::sign(node_skey, msg));
 }
 
 static
@@ -1407,27 +1416,8 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Router_get_id_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_id_return>(result)) {
 				const auto& id = value->_ret_0;
-				const auto peer = find_peer(client);
-				for(const auto& entry : peer_map) {
-					const auto& existing = entry.second;
-					if(existing->node_id) {
-						if(id == *existing->node_id) {
-							if(peer && fixed_peers.count(peer->address)) {
-								if(existing->is_outbound) {
-									disconnect(existing->client);
-								}
-							} else {
-								log(INFO) << "Already connected to " << existing->address << ", disconnecting from " << (peer ? peer->address : "?");
-								disconnect(client);
-							}
-						}
-					}
-				}
-				if(peer) {
-					peer->node_id = id;
-				}
 				if(id == get_id()) {
-					if(peer) {
+					if(auto peer = find_peer(client)) {
 						log(INFO) << "Discovered our own address: " << peer->address;
 						self_addrs.insert(peer->address);
 						block_peers.insert(peer->address);
@@ -1439,7 +1429,35 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 		case Router_get_info_return::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_info_return>(result)) {
 				if(auto peer = find_peer(client)) {
-					peer->info = value->_ret_0;
+					const auto& info = value->_ret_0;
+					if(info.version >= 103) {
+						auto req = Router_sign_msg::create();
+						req->msg = peer->challenge;
+						send_request(peer, req);
+					}
+					peer->info = info;
+				}
+			}
+			break;
+		case Router_sign_msg_return::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Router_sign_msg_return>(result)) {
+				if(auto peer = find_peer(client)) {
+					const auto& key = value->_ret_0.first;
+					const auto& sig = value->_ret_0.second;
+					const auto id = key.get_addr();
+					if(id == peer->info.id && sig.verify(key, peer->challenge)) {
+						for(const auto& entry : peer_map) {
+							const auto& existing = entry.second;
+							if(existing->node_id && id == *existing->node_id) {
+								log(INFO) << "Replacing connection to " << existing->address << " with new address " << peer->address;
+								disconnect(existing->client);
+							}
+						}
+						peer->node_id = id;
+					} else {
+						log(WARN) << "Node ID verification for peer " << peer->address << " failed!";
+						disconnect(client);
+					}
 				}
 			}
 			break;
@@ -1592,6 +1610,7 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	auto peer = std::make_shared<peer_t>();
 	peer->client = client;
 	peer->address = address;
+	peer->challenge = hash_t::random();
 	peer->info.type = node_type_e::FULL_NODE;	// assume full node
 	peer->connected_since_ms = get_time_ms();
 	{
