@@ -97,6 +97,7 @@ private:
 		node_info_t info;
 		hash_t challenge;
 		std::string address;
+		std::string host_name;
 		vnx::optional<hash_t> node_id;
 		std::queue<hash_t> hash_queue;
 		std::unordered_set<hash_t> sent_hashes;
@@ -210,6 +211,8 @@ private:
 
 	std::vector<std::shared_ptr<peer_t>> find_peers(const std::string& address) const;
 
+	std::string resolve(const std::string& host_name);
+
 	bool relay_msg_hash(const hash_t& hash);
 
 	bool receive_msg_hash(const hash_t& hash, uint64_t client);
@@ -222,6 +225,7 @@ private:
 	pubkey_t node_key;
 	std::set<std::string> peer_set;
 	std::set<std::string> self_addrs;
+	std::map<std::string, std::string> host_map;		// [hostname => IP address]
 	std::map<std::string, int64_t> peer_retry_map;		// [address => when to try again [sec]]
 	std::map<std::string, uint64_t> connect_tasks;
 	std::multimap<uint32_t, std::shared_ptr<const ProofOfTime>> vdf_history;		// [vdf_height => proof]

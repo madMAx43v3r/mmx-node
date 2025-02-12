@@ -10,6 +10,7 @@
 #include <mmx/skey_t.hpp>
 #include <mmx/pubkey_t.hpp>
 #include <mmx/utils.h>
+#include <mmx/helpers.h>
 
 #include <mmx/Return.hxx>
 #include <mmx/Request.hxx>
@@ -771,24 +772,42 @@ bool Router::process(std::shared_ptr<const Return> ret)
 	return did_consume;
 }
 
-void Router::connect_to(const std::string& address)
+std::string Router::resolve(const std::string& host_name)
 {
-	if(connect_tasks.count(address)) {
+	if(auto address = find_value(host_map, host_name)) {
+		return *address;
+	}
+	try {
+		return host_map[host_name] = vnx::resolve_host(host_name);
+	} catch(const std::exception& ex) {
+		log(DEBUG) << ex.what();
+	}
+	return std::string();
+}
+
+void Router::connect_to(const std::string& host_name)
+{
+	if(connect_tasks.count(host_name)) {
 		return;
 	}
-	log(DEBUG) << "Trying to connect to " << address;
-
-	vnx::TcpEndpoint peer;
-	peer.host_name = address;
-	peer.port = params->port;
-
+	log(DEBUG) << "Trying to connect to " << host_name;
 	try {
+		const auto address = vnx::resolve_host(host_name);
+		if(address != host_name) {
+			log(INFO) << "Peer host " << host_name << " resolves to " << address;
+		}
+		host_map[host_name] = address;
+
+		vnx::TcpEndpoint peer;
+		peer.host_name = host_name;
+		peer.port = params->port;
+
 		const auto client = connect_client(peer);
-		connect_tasks[address] = client;
+		connect_tasks[host_name] = client;
 	}
 	catch(const std::exception& ex) {
 		if(show_warnings) {
-			log(WARN) << "Connecting to peer " << address << " failed with: " << ex.what();
+			log(WARN) << "Connecting to peer " << host_name << " failed with: " << ex.what();
 		}
 	}
 }
@@ -799,9 +818,9 @@ void Router::connect()
 	const auto now_sec = now_ms / 1000;
 
 	// connect to fixed peers
-	for(const auto& address : fixed_peers) {
-		if(!peer_addr_map.count(address)) {
-			connect_to(address);
+	for(const auto& host_name : fixed_peers) {
+		if(!peer_addr_map.count(resolve(host_name))) {
+			connect_to(host_name);
 		}
 	}
 
@@ -809,7 +828,7 @@ void Router::connect()
 	std::set<std::shared_ptr<peer_t>> outbound_not_synced;
 	for(const auto& entry : peer_map) {
 		const auto& peer = entry.second;
-		if(peer->is_outbound && !fixed_peers.count(peer->address)) {
+		if(peer->is_outbound && !fixed_peers.count(peer->host_name)) {
 			if(peer->is_synced) {
 				outbound_synced.insert(peer);
 			}
@@ -829,8 +848,9 @@ void Router::connect()
 		}
 		all_peers.insert(seed_peers.begin(), seed_peers.end());
 
-		for(const auto& address : all_peers)
+		for(const auto& host_name : all_peers)
 		{
+			const auto address = resolve(host_name);
 			if(!is_valid_address(address)) {
 				continue;
 			}
@@ -846,7 +866,9 @@ void Router::connect()
 					continue;
 				}
 			}
-			if(!peer_addr_map.count(address) && !block_peers.count(address) && !connect_tasks.count(address)) {
+			if(!peer_addr_map.count(address) && !connect_tasks.count(host_name)
+				&& !block_peers.count(address) && !block_peers.count(host_name))
+			{
 				try_peers.insert(address);
 			}
 		}
@@ -1079,7 +1101,7 @@ void Router::on_proof(uint64_t client, std::shared_ptr<const ProofResponse> valu
 void Router::on_vdf_point(uint64_t client, std::shared_ptr<const VDF_Point> value)
 {
 	if(auto peer = find_peer(client)) {
-		if(master_nodes.count(peer->address)) {
+		if(master_nodes.count(peer->host_name)) {
 			if(value->is_valid()) {
 				if(receive_msg_hash(value->content_hash, client)) {
 					auto copy = vnx::clone(value);
@@ -1606,8 +1628,9 @@ void Router::on_resume(uint64_t client)
 	}
 }
 
-void Router::on_connect(uint64_t client, const std::string& address)
+void Router::on_connect(uint64_t client, const std::string& host_name)
 {
+	const auto address = resolve(host_name);
 	if(block_peers.count(address)) {
 		disconnect(client);
 		return;
@@ -1615,11 +1638,12 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	auto peer = std::make_shared<peer_t>();
 	peer->client = client;
 	peer->address = address;
+	peer->host_name = host_name;
 	peer->challenge = hash_t::random();
 	peer->info.type = node_type_e::FULL_NODE;	// assume full node
 	peer->connected_since_ms = get_time_ms();
 	{
-		const auto it = connect_tasks.find(address);
+		const auto it = connect_tasks.find(host_name);
 		if(it != connect_tasks.end() && it->second == client) {
 			// we connected to them
 			peer->is_outbound = true;
@@ -1643,13 +1667,13 @@ void Router::on_connect(uint64_t client, const std::string& address)
 	log(DEBUG) << "Connected to peer " << peer->address;
 }
 
-void Router::on_disconnect(uint64_t client, const std::string& address)
+void Router::on_disconnect(uint64_t client, const std::string& host_name)
 {
 	if(auto peer = find_peer(client)) {
 		peer->is_valid = false;
 	}
 	// async processing to allow for() loops over peer_map, etc
-	add_task([this, client, address]() {
+	add_task([this, client, host_name]() {
 		if(auto peer = find_peer(client)) {
 			const auto range = peer_addr_map.equal_range(peer->address);
 			for(auto iter = range.first; iter != range.second; ++iter) {
@@ -1658,12 +1682,14 @@ void Router::on_disconnect(uint64_t client, const std::string& address)
 					break;
 				}
 			}
-			log(DEBUG) << "Peer " << address << " disconnected";
+			log(DEBUG) << "Peer " << host_name << " disconnected";
 		}
+		const auto address = resolve(host_name);
 		{
-			const auto it = connect_tasks.find(address);
+			const auto it = connect_tasks.find(host_name);
 			if(it != connect_tasks.end() && it->second == client) {
-				log(DEBUG) << "Failed to connect to " << it->first;
+				log(DEBUG) << "Failed to connect to " << host_name;
+				peer_set.erase(host_name);
 				peer_set.erase(address);
 				connect_tasks.erase(it);
 			}
