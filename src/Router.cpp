@@ -1305,6 +1305,11 @@ void Router::on_request(uint64_t client, std::shared_ptr<const Request> msg)
 				send_result<Router_get_info_return>(client, msg->id, get_info());
 			}
 			break;
+		case Router_sign_msg::VNX_TYPE_ID:
+			if(auto value = std::dynamic_pointer_cast<const Router_sign_msg>(method)) {
+				send_result<Router_sign_msg_return>(client, msg->id, sign_msg(value->msg));
+			}
+			break;
 		case Router_get_peers::VNX_TYPE_ID:
 			if(auto value = std::dynamic_pointer_cast<const Router_get_peers>(method)) {
 				send_result<Router_get_peers_return>(client, msg->id, get_peers(value->max_count));
