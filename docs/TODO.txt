@@ -12,5 +12,4 @@
 - Web Wallet
 - Market + Swap balance formatting
 - Remote compute support
-- Hard fork
 - Bitcointalk
