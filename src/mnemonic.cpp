@@ -20,7 +20,7 @@ std::vector<std::string> seed_to_words(const hash_t& seed, const std::vector<std
 		throw std::logic_error("wordlist.size() != 2048");
 	}
 	auto bits = seed.to_uint256();
-	const auto checksum = hash_t(hash_t().from_uint(bits, true)).bytes[0];
+	const auto checksum = hash_t(bytes_t<32>().from_uint(bits, true))[0];
 
 	std::vector<std::string> words;
 	for(int i = 0; i < 24; ++i) {
@@ -68,8 +68,8 @@ hash_t words_to_seed(const std::vector<std::string>& words, const std::vector<st
 			checksum = (iter->second & 0xFF);
 		}
 	}
-	const auto expect_le = hash_t(hash_t().from_uint(seed, false))[0];
-	const auto expect_be = hash_t(hash_t().from_uint(seed, true))[0];
+	const auto expect_le = hash_t(bytes_t<32>().from_uint(seed, false))[0];
+	const auto expect_be = hash_t(bytes_t<32>().from_uint(seed, true))[0];
 	if(checksum != expect_le && checksum != expect_be) {
 		throw std::runtime_error("mnemonic checksum failed");
 	}
