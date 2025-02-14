@@ -837,6 +837,10 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 			fork->is_all_proof_verified = false;
 		}
 
+		if(fork->root && fork->root->hash != root->hash && !sync_pending.empty() && *sync_pending.begin() < root->height) {
+			continue;	// wait for backwards sync
+		}
+
 		if(fork->is_all_proof_verified && fork->root && !fork->is_invalid)
 		{
 			if(!best) {
