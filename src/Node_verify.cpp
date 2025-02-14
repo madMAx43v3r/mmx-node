@@ -52,6 +52,8 @@ void Node::verify(std::shared_ptr<const ProofResponse> value) const
 	if(!value->is_valid()) {
 		throw std::logic_error("invalid response");
 	}
+	value->validate();
+
 	if(auto root = get_root()) {
 		if(value->vdf_height <= root->vdf_height) {
 			throw std::logic_error("proof too old");

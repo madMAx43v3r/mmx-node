@@ -43,12 +43,13 @@ hash_t ProofResponse::calc_content_hash() const
 
 void ProofResponse::validate() const
 {
-	if(proof) {
-		proof->validate();
+	if(!proof) {
+		throw std::logic_error("missing proof");
+	}
+	proof->validate();
 
-		if(!farmer_sig.verify(proof->farmer_key, hash)) {
-			throw std::logic_error("invalid farmer signature");
-		}
+	if(!farmer_sig.verify(proof->farmer_key, hash)) {
+		throw std::logic_error("invalid farmer signature");
 	}
 }
 
