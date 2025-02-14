@@ -334,6 +334,8 @@ private:
 
 	void sync_more();
 
+	void sync_height(const uint32_t& height);
+
 	void sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& blocks);
 
 	void fetch_block(const hash_t& hash);
@@ -389,7 +391,7 @@ private:
 
 	void verify(std::shared_ptr<const ProofResponse> value) const;
 
-	void verify_proof(std::shared_ptr<fork_t> fork) const;
+	void verify_proof(std::shared_ptr<const BlockHeader> block) const;
 
 	template<typename T>
 	void verify_proof_impl(std::shared_ptr<const T> proof, const hash_t& challenge, const uint64_t space_diff, const uint32_t& vdf_height) const;
@@ -521,7 +523,6 @@ private:
 	std::multimap<uint64_t, std::shared_ptr<const VDF_Point>> vdf_index;			// [iters => proof]
 
 	std::shared_ptr<const BlockHeader> root;										// root for heaviest chain
-	std::unordered_map<hash_t, std::shared_ptr<const BlockHeader>> alt_roots;		// alternate roots (for *currently* weaker forks)
 
 	std::multimap<uint32_t, hash_t> challenge_map;									// [vdf height => challenge]
 	std::unordered_map<hash_t, std::vector<proof_data_t>> proof_map;				// [challenge => sorted proofs]
@@ -551,6 +552,7 @@ private:
 	std::vector<std::pair<pubkey_t, uint32_t>> farmer_ranking;					// sorted by count DSC [farmer key => num blocks]
 
 	uint32_t sync_pos = 0;									// current sync height
+	uint32_t sync_start = 0;								// sync start height
 	uint32_t sync_retry = 0;
 	uint32_t synced_since = 0;								// height of last sync done
 	int64_t sync_finish_ms = 0;								// when peak was reached

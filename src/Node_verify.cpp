@@ -69,9 +69,9 @@ void Node::verify(std::shared_ptr<const ProofResponse> value) const
 	publish(value, output_verified_proof);
 }
 
-void Node::verify_proof(std::shared_ptr<fork_t> fork) const
+void Node::verify_proof(std::shared_ptr<const BlockHeader> block) const
 {
-	const auto block = fork->block;
+	// NOTE: NEEDS TO BE THREAD SAFE
 	const auto prev = find_prev(block);
 	if(!prev) {
 		throw std::logic_error("cannot verify");
@@ -170,7 +170,6 @@ void Node::verify_proof(std::shared_ptr<fork_t> fork) const
 	for(auto proof : block->proof) {
 		verify_proof(proof, challenge, space_diff, block->vdf_height);
 	}
-	fork->is_proof_verified = true;
 }
 
 template<typename T>

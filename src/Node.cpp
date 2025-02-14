@@ -365,10 +365,6 @@ void Node::trigger_update()
 
 void Node::add_block(std::shared_ptr<const Block> block)
 {
-	const auto root = get_root();
-	if(block->height <= root->height) {
-		return;
-	}
 	try {
 		if(!block->is_valid()) {
 			throw std::logic_error("invalid block");
@@ -378,6 +374,12 @@ void Node::add_block(std::shared_ptr<const Block> block)
 	}
 	catch(const std::exception& ex) {
 		log(WARN) << "Pre-validation failed for a block at height " << block->height << ": " << ex.what();
+		return;
+	}
+
+	const auto root = get_root();
+	if(block->height <= root->height) {
+		write_block(block, false);
 		return;
 	}
 	auto fork = std::make_shared<fork_t>();
@@ -552,6 +554,7 @@ void Node::sync_more()
 
 	if(!sync_pos) {
 		sync_pos = root->height + 1;
+		sync_start = sync_pos;
 		log(INFO) << "Starting sync at height " << sync_pos;
 	}
 	if(sync_pos > root->height && sync_pos - root->height > params->commit_delay + max_sync_ahead) {
@@ -559,18 +562,21 @@ void Node::sync_more()
 	}
 	const size_t max_pending = sync_retry ? 2 : std::max(std::min<int>(max_sync_pending, max_sync_jobs), 4);
 
-	while(sync_pending.size() < max_pending && (!sync_peak || sync_pos < *sync_peak))
-	{
-		const auto height = sync_pos++;
-		sync_pending.insert(height);
-		router->get_blocks_at(height,
-				std::bind(&Node::sync_result, this, height, std::placeholders::_1),
-				[this, height](const vnx::exception& ex) {
-					sync_pos = height;
-					sync_pending.erase(height);
-					log(WARN) << "get_blocks_at() failed with: " << ex.what();
-				});
+	while(sync_pending.size() < max_pending && (!sync_peak || sync_pos < *sync_peak)) {
+		sync_height(sync_pos++);
 	}
+}
+
+void Node::sync_height(const uint32_t& height)
+{
+	sync_pending.insert(height);
+	router->get_blocks_at(height,
+			std::bind(&Node::sync_result, this, height, std::placeholders::_1),
+			[this, height](const vnx::exception& ex) {
+				sync_pos = std::min(sync_pos, height);	// reset, try again
+				sync_pending.erase(height);
+				log(WARN) << "get_blocks_at() failed with: " << ex.what();
+			});
 }
 
 void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr<const Block>>& result)
@@ -595,6 +601,19 @@ void Node::sync_result(const uint32_t& height, const std::vector<std::shared_ptr
 	for(auto block : blocks) {
 		add_block(block);
 		total_size += block->static_cost;
+	}
+
+	if(height == sync_start) {
+		for(auto block : blocks) {
+			if(!find_prev(block)) {
+				if(sync_start > 1) {
+					sync_height(--sync_start);	// walk back in case we missed blocks before
+					log(WARN) << "Syncing backwards to height " << sync_start << " ...";
+				}
+			} else {
+				log(DEBUG) << "Sync connected to our chain at height " << height << ", hash " << block->hash;
+			}
+		}
 	}
 	{
 		const auto value = max_sync_jobs * (1 - std::min<double>(total_size / double(params->max_block_size), 1));
@@ -663,13 +682,16 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 	std::shared_ptr<const BlockHeader> forked_at;
 
 	const auto root_hash = fork_line[0]->block->prev;
-	const auto alt = find_value(alt_roots, root_hash, nullptr);
-	if(alt) {
+	if(root_hash != root->hash) {
 		did_fork = true;
 		log(WARN) << "Performing deep fork ...";
 		const auto time_begin = get_time_ms();
+		const auto new_root = get_header(root_hash);
+		if(!new_root) {
+			throw std::logic_error("missing alternate root");
+		}
 		try {
-			forked_at = alt;
+			forked_at = new_root;
 			std::vector<hash_t> list;
 			while(forked_at) {
 				hash_t hash;
@@ -691,6 +713,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 			for(const auto& hash : list) {
 				if(auto block = get_block(hash)) {
 					try {
+						verify_proof(block);	// need to verify proofs again (in case of backwards sync)
 						apply(block, validate(block));
 					}
 					catch(const std::exception& ex) {
@@ -701,9 +724,7 @@ std::shared_ptr<const BlockHeader> Node::fork_to(std::shared_ptr<fork_t> peak)
 					throw std::logic_error("failed to read block");
 				}
 			}
-			alt_roots.erase(root_hash);
-			alt_roots[root->hash] = root;
-			root = alt;
+			root = new_root;
 
 			log(INFO) << "Deep fork to new root at height " << root->height << " took "
 					<< (get_time_ms() - time_begin) / 1e3 << " sec";
@@ -803,7 +824,7 @@ std::shared_ptr<Node::fork_t> Node::find_best_fork() const
 		const auto& block = fork->block;
 		const auto  prev = fork->prev.lock();
 
-		if(block->prev == root->hash || alt_roots.count(block->prev)) {
+		if(block->height == root->height + 1) {
 			fork->root = find_prev(block);
 			fork->total_votes = fork->votes;
 			fork->is_all_proof_verified = fork->is_proof_verified;
@@ -861,7 +882,7 @@ std::vector<std::shared_ptr<Node::fork_t>> Node::get_fork_line(std::shared_ptr<f
 	auto fork = peak ? peak : find_fork(state_hash);
 	while(fork) {
 		line.push_back(fork);
-		if(fork->block->prev == root->hash || alt_roots.count(fork->block->prev)) {
+		if(fork->block->height == root->height + 1 && find_prev(fork->block)) {
 			std::reverse(line.begin(), line.end());
 			return line;
 		}
@@ -941,8 +962,6 @@ void Node::commit(std::shared_ptr<const Block> block)
 			prev->fork_length = std::max(prev->fork_length, fork->fork_length + 1);
 		}
 	}
-	const auto old_roots = std::move(alt_roots);
-	alt_roots.clear();
 	fork_tree.erase(block->hash);
 
 	const auto range = fork_index.equal_range(height);
@@ -951,10 +970,7 @@ void Node::commit(std::shared_ptr<const Block> block)
 		const auto& fork = iter->second;
 		const auto& block = fork->block;
 		if(fork_tree.erase(block->hash) && fork->is_proof_verified) {
-			if(fork->fork_length > 0 || old_roots.count(block->prev)) {
-				write_block(block, false);
-				alt_roots[block->hash] = block;
-			}
+			write_block(block, false);
 		}
 	}
 	fork_index.erase(height);
@@ -1335,7 +1351,6 @@ void Node::revert(const uint32_t height)
 void Node::reset()
 {
 	root = nullptr;
-	alt_roots.clear();
 	fork_tree.clear();
 	fork_index.clear();
 	history.clear();
@@ -1376,16 +1391,10 @@ void Node::reset()
 		height_index.find_range(root->height, height + 1, list);
 		for(const auto& hash : list) {
 			if(auto block = get_block(hash)) {
-				if(block->height == root->height) {
-					if(block->hash != root->hash) {
-						alt_roots[hash] = block;
-					}
-				} else {
-					auto fork = std::make_shared<fork_t>();
-					fork->block = block;
-					fork->is_vdf_verified = true;
-					add_fork(fork);
-				}
+				auto fork = std::make_shared<fork_t>();
+				fork->block = block;
+				fork->is_vdf_verified = true;
+				add_fork(fork);
 			}
 		}
 

@@ -201,16 +201,22 @@ void Node::verify_block_proofs()
 	{
 		const auto& fork = entry.second;
 		const auto& block = fork->block;
-		if(!fork->prev.lock()) {
-			fork->prev = find_fork(block->prev);
-		}
-		if(auto prev = fork->prev.lock()) {
-			if(prev->is_invalid) {
-				fork->is_invalid = true;
+		if(block->height == root->height + 1) {
+			if(!fork->is_connected) {
+				fork->is_connected = (find_prev(block, params->commit_delay + params->infuse_delay, true) != nullptr);
 			}
-			fork->is_connected = prev->is_connected;
-		} else if(block->prev == root->hash) {
-			fork->is_connected = true;
+		} else {
+			if(!fork->prev.lock()) {
+				fork->prev = find_fork(block->prev);
+			}
+			if(auto prev = fork->prev.lock()) {
+				if(prev->is_invalid) {
+					fork->is_invalid = true;
+				}
+				fork->is_connected = prev->is_connected;
+			} else {
+				fork->is_connected = false;
+			}
 		}
 		if(!fork->is_connected || fork->is_invalid || fork->is_proof_verified) {
 			continue;
@@ -227,12 +233,12 @@ void Node::verify_block_proofs()
 				fork->is_vdf_verified = true;
 			}
 		}
-		if(fork->is_vdf_verified)
-		{
+		if(fork->is_vdf_verified) {
 			threads->add_task([this, fork, &mutex]() {
 				const auto& block = fork->block;
 				try {
-					verify_proof(fork);
+					verify_proof(block);
+					fork->is_proof_verified = true;
 
 					if(auto proof = block->proof[0]) {
 						std::lock_guard<std::mutex> lock(mutex);
@@ -361,7 +367,7 @@ void Node::update()
 		if(forked_at && prev_peak) {
 			const auto depth = prev_peak->height - forked_at->height;
 			if(depth > 1) {
-				log(WARN) << "Forked " << depth << " blocks deep at height " << peak->height;
+				log(WARN) << "Forked " << depth << " blocks deep, down to height " << forked_at->height;
 			}
 		}
 		stuck_timer->reset();
