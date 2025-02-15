@@ -93,3 +93,10 @@ https://devblogs.microsoft.com/commandline/oneapi-l0-openvino-and-opencl-coming-
 ## Custom storage path
 
 To change the storage path for everything you can set environment variable `MMX_HOME` to `/your/path/` (trailing slash required). By default the current directory is used, ie. `mmx-node`.
+
+## Testnet
+
+To run a node on testnet: `echo testnet13 > NETWORK` and restart. \
+To switch back to mainnet: `rm NETWORK` and restart.
+
+Alternatively, it's possible to run testnet in parallel via docker: https://github.com/madMAx43v3r/mmx-node/tree/master/scripts/docker/mmx-testnet
