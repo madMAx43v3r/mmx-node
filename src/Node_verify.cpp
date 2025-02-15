@@ -243,13 +243,13 @@ void Node::verify_vdf(std::shared_ptr<const ProofOfTime> proof, const int64_t re
 	const auto num_iters = get_block_iters(params, get_time_diff(prev));
 
 	if(proof->num_iters != num_iters) {
-		throw std::logic_error("invalid num_iters");
+		throw std::logic_error("invalid num_iters: " + std::to_string(proof->num_iters));
 	}
 	if(proof->segment_size != params->vdf_segment_size) {
-		throw std::logic_error("invalid segment size");
+		throw std::logic_error("invalid segment size: " + std::to_string(proof->segment_size));
 	}
 	if(proof->segments.size() * proof->segment_size != num_iters) {
-		throw std::logic_error("invalid segment count");
+		throw std::logic_error("invalid segment count: " + std::to_string(proof->segments.size()));
 	}
 	vdf_threads->add_task(std::bind(&Node::verify_vdf_task, this, proof, recv_time));
 	vdf_verify_pending.insert(proof->hash);
