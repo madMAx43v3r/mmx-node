@@ -25,15 +25,9 @@ To dump a transaction: `mmx node get tx <txid>`
 
 To dump a contract: `mmx node get contract <address>`
 
-To get balance for an address: `mmx node get balance <address> <options>`
-```
--x <currency>
-```
+To get balance for an address: `mmx node get balance <address> -x <currency>`
 
-To get raw balance for an address: `mmx node get amount <address> <options>`
-```
--x <currency>
-```
+To get raw balance for an address: `mmx node get amount <address> -x <currency>`
 
 To dump a block: `mmx node get block <height>`
 
@@ -87,7 +81,9 @@ To get a list of all contract addresses: `mmx wallet get contracts`
 
 To get the mnemonic seed words of a wallet: `mmx wallet get seed`
 
-To show wallet activity for last N heights: `mmx wallet log -N`
+To show entire wallet activity : `mmx wallet log`
+
+To show recent wallet activity : `mmx wallet log -N <limit>`
 
 To transfer funds: `mmx wallet send <options>`
 ```
@@ -96,10 +92,8 @@ To transfer funds: `mmx wallet send <options>`
 	-t <destination address>
 	-x <currency>
 ```
-To withdraw funds from a contract: `mmx wallet send_from`
-```
-	-s <source address>
-```
+To withdraw funds from a contract: `mmx wallet send_from -s <address>`
+
 To transfer an NFT, same as sending with one satoshi: `mmx wallet transfer`
 
 To create an offer on the chain: `mmx wallet offer`
