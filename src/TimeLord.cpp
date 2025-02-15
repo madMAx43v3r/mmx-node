@@ -89,6 +89,8 @@ void TimeLord::main()
 		peak_iters = 0;		// force new output
 	});
 
+	log(DEBUG) << "vdf_segment_size = " << segment_iters;
+
 	vdf_thread = std::thread(&TimeLord::vdf_loop, this);
 
 	Super::main();
