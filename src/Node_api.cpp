@@ -401,6 +401,9 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 	if(const auto& memo = filter.memo) {
 		return get_history_memo(addresses, *memo, filter);
 	}
+	if(filter.limit == 0) {
+		return {};
+	}
 	std::map<addr_t, uint32_t> count_map;
 	std::map<addr_t, std::tuple<addr_t, uint32_t, uint32_t>> state_map;
 
@@ -488,8 +491,8 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo, L.amount) >
 			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo, R.amount);
 	});
-	if(filter.limit >= 0 && res.size() > size_t(filter.limit)) {
-		size_t i = filter.limit;
+	if(filter.limit > 0 && res.size() > size_t(filter.limit)) {
+		size_t i = filter.limit - 1;
 		for(const auto cutoff = res[i].height; i < res.size() && res[i].height == cutoff; ++i);
 		res.resize(i);
 	}
@@ -498,6 +501,9 @@ std::vector<tx_entry_t> Node::get_history(const std::vector<addr_t>& addresses, 
 
 std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addresses, const std::string& memo, const query_filter_t& filter) const
 {
+	if(filter.limit == 0) {
+		return {};
+	}
 	std::map<addr_t, uint32_t> count_map;
 	std::map<addr_t, std::tuple<hash_t, uint32_t, uint32_t>> state_map;
 
@@ -568,8 +574,8 @@ std::vector<tx_entry_t> Node::get_history_memo(const std::vector<addr_t>& addres
 		return std::make_tuple(L.height, L.txid, L.type, L.contract, L.address, L.memo, L.amount) >
 			   std::make_tuple(R.height, R.txid, R.type, R.contract, R.address, R.memo, R.amount);
 	});
-	if(filter.limit >= 0 && res.size() > size_t(filter.limit)) {
-		size_t i = filter.limit;
+	if(filter.limit > 0 && res.size() > size_t(filter.limit)) {
+		size_t i = filter.limit - 1;
 		for(const auto cutoff = res[i].height; i < res.size() && res[i].height == cutoff; ++i);
 		res.resize(i);
 	}
