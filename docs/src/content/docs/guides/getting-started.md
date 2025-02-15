@@ -47,16 +47,11 @@ To use a passphrase, specify `--with-passphrase` without the actual passphrase:
 $ mmx wallet create --with-passphrase
 Passphrase: <type here>
 ```
-It will be queried interactively, to avoid it being stored in terminal history.
 
-To create a wallet with a known mnemonic seed:
+To create a wallet with a known mnemonic seed, specify `--with-mnemonic` without the actual words:
 ```
-mmx wallet create --mnemonic word1 word2 ... [-f filename] [--with-passphrase]
-```
-
-To create a wallet with a known seed hash (legacy):
-```
-mmx wallet create <seed_hash> [-f filename] [--with-passphrase]
+mmx wallet create --with-mnemonic
+Mnemonic: word1 word2 ... <enter>
 ```
 
 To get the mnemonic seed from a wallet (with Node / Wallet already running):
@@ -70,11 +65,13 @@ Note: A Node / Wallet restart is needed to pick up a new wallet.
 
 With a running Node / Wallet:
 ```
-mmx wallet new [name] [--with-passphrase] [-N <num_addresses>]
+mmx wallet new [name] [--with-mnemonic] [--with-passphrase] [-N <num_addresses>]
 ```
 All parameters are optional. The new wallet can be seen with `mmx wallet accounts` (last entry).
 
-To use a passphrase, specify `--with-passphrase` without the actual passphrase. It will be queried interactively, to avoid it being stored in terminal history.
+To use a known mnemonic seed, specify `--with-mnemonic` without the actual words. Then input the words when promted, with a space inbetween them.
+
+To use a passphrase, specify `--with-passphrase` without the actual passphrase. Then input the passphrase when promted.
 
 ### Running a Node
 

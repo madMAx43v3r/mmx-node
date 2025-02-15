@@ -998,25 +998,29 @@ int main(int argc, char** argv)
 					vnx::log_error() << "Wallet file '" << file_name << "' already exists!";
 					goto failed;
 				}
-				std::string seed_str;
-				std::vector<std::string> seed_words;
+				bool with_seed = false;
+				bool with_mnemonic = false;
 				bool with_passphrase = false;
-				vnx::read_config("$3", seed_str);
-				vnx::read_config("mnemonic", seed_words);
+				vnx::read_config("with-seed", with_seed);
+				vnx::read_config("with-mnemonic", with_mnemonic);
 				vnx::read_config("with-passphrase", with_passphrase);
 
 				mmx::KeyFile key;
-				if(seed_str.empty()) {
-					if(seed_words.empty()) {
-						key.seed_value = mmx::hash_t::secure_random();
-					} else {
-						key.seed_value = mmx::mnemonic::words_to_seed(seed_words);
+				if(with_seed) {
+					std::string seed_str;
+					std::cout << "Seed: ";
+					std::getline(std::cin, seed_str);
+					if(seed_str.size() != 64) {
+						throw std::logic_error("invalid seed");
 					}
-				} else if(seed_str.size() == 64) {
 					key.seed_value.from_string(seed_str);
+				} else if(with_mnemonic) {
+					std::string seed_words;
+					std::cout << "Mnemonic: ";
+					std::getline(std::cin, seed_words);
+					key.seed_value = mmx::mnemonic::words_to_seed(mmx::mnemonic::string_to_words(seed_words));
 				} else {
-					vnx::log_error() << "Invalid seed value: '" << seed_str << "'";
-					goto failed;
+					key.seed_value = mmx::hash_t::secure_random();
 				}
 
 				vnx::optional<std::string> passphrase;
@@ -1047,9 +1051,9 @@ int main(int argc, char** argv)
 			}
 			else if(command == "new")
 			{
+				bool with_mnemonic = false;
 				bool with_passphrase = false;
-				std::vector<std::string> seed_words;
-				vnx::read_config("mnemonic", seed_words);
+				vnx::read_config("with-mnemonic", with_mnemonic);
 				vnx::read_config("with-passphrase", with_passphrase);
 
 				vnx::optional<std::string> passphrase;
@@ -1067,8 +1071,11 @@ int main(int argc, char** argv)
 				vnx::read_config("limit", config.num_addresses);
 
 				vnx::optional<std::string> words;
-				if(seed_words.size()) {
-					words = mmx::mnemonic::words_to_string(seed_words);
+				if(with_mnemonic) {
+					std::string tmp;
+					std::cout << "Mnemonic: ";
+					std::getline(std::cin, tmp);
+					words = tmp;
 				}
 				wallet.create_wallet(config, words, passphrase);
 			}

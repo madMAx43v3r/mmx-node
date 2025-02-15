@@ -118,21 +118,22 @@ To mint tokens: `mmx wallet mint`
 ```
 To deploy a contract: `mmx wallet deploy <file>`
 
-To mutate a contract: `mmx wallet mutate <function> <args>`
+To execute a smart contract function: `mmx wallet exec <function> <args> -x <contract>`
+
+To deposit funds to a smart contract: `mmx wallet deposit <function> <args>`
 ```
-	-x <contract>
+	-a <amount to send, 1.23>
+	-t <contract address>
+	-x <currency>
 ```
-To execute a smart contract function: `mmx wallet exec <function> <args>`
-```
-	-x <contract>
-```
+
 To create a new wallet (offline): `mmx wallet create -f [file_name] [--with-passphrase]`
 
 To create a new wallet (online): `mmx wallet new [name] [--with-passphrase]`
 
-To restore a wallet from a seed hash: `mmx wallet create [seed hash]`
+To restore a wallet from a seed hash: `mmx wallet create --with-seed`
 
-To restore a wallet from a set of 24 mnemonic words: `mmx wallet create --mnemonic [word1 word2 word3....]`
+To restore a wallet from a set of 24 mnemonic words: `mmx wallet create --with-mnemonic`
 
 To show all wallets and their index: `mmx wallet accounts`
 
