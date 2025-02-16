@@ -9,6 +9,7 @@ Every smart contract has the following hard coded fields:
 - `meta_data`: Generic variable with extra info
 
 By convention, `meta_data` is an Object with the following fields:
+- `is_token`: Boolean to indiciate a standard token
 - `icon_url`: Currency icon (shown next to balance)
 - `logo_url`: Bigger logo image (shown on details page)
 - `website_url`: Website link
