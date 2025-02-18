@@ -436,7 +436,8 @@ void Node::verify_vdf_task(std::shared_ptr<const ProofOfTime> proof, const int64
 	}
 	catch(const std::exception& ex) {
 		add_task([this, proof]() {
-			timelord_trust[proof->timelord_key] = 0;
+			auto& trust = timelord_trust[proof->timelord_key];
+			trust = std::min<int64_t>(trust, 0) - 100;
 			vdf_verify_pending.erase(proof->hash);
 			trigger_update();
 		});
