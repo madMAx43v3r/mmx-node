@@ -1,4 +1,13 @@
 :root {
+	/* Header link */
+	span.icon-link::before {
+		content: '#';
+		font-size: 0.8em;
+		margin-left: 10px;
+		text-decoration: none;
+		display: inline-block;
+	  }
+
     --sl-content-width: 80%;
 	
     --sl-nav-gap: 5rem;

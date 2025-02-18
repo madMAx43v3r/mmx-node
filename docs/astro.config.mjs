@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import rehypeSlug from 'rehype-slug';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 
 // https://astro.build/config
 export default defineConfig({
@@ -34,7 +36,13 @@ export default defineConfig({
 					label: 'FAQ',
 					autogenerate: { directory: 'faq' },
 				},
-			],
+			],	
 		}),
 	],
+	markdown: {
+		rehypePlugins: [
+			rehypeSlug, 
+			[rehypeAutolinkHeadings, { behavior: 'append' }]
+		],
+	  },
 });
