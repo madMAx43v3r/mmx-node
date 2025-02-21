@@ -1007,14 +1007,17 @@ std::shared_ptr<const Block> Node::make_block(
 	}
 
 	uint64_t total_fees = 0;
-	if(block->height >= params->transaction_activation)
-	{
-		const auto deadline = get_time_ms() + params->block_interval_ms / 2;
-		const auto tx_list = validate_for_block(deadline);
-		// select transactions
-		for(const auto& entry : tx_list) {
-			block->tx_list.push_back(entry.tx);
-			total_fees += entry.fee;
+	if(block->height >= params->transaction_activation) {
+		try {
+			const auto deadline = get_time_ms() + params->block_interval_ms / 2;
+			const auto tx_list = validate_for_block(deadline);
+			// select transactions
+			for(const auto& entry : tx_list) {
+				block->tx_list.push_back(entry.tx);
+				total_fees += entry.fee;
+			}
+		} catch(const std::exception& ex) {
+			log(WARN) << "Making empty block due to: " << ex.what();
 		}
 	}
 
