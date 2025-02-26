@@ -18,6 +18,7 @@
 
 namespace mmx {
 
+const uint32_t BlockHeader::SUPPORT_HARDFORK1;
 
 const vnx::Hash64 BlockHeader::VNX_TYPE_HASH(0xcaae941a2fc712a6ull);
 const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xa96ccf5d216026e8ull);

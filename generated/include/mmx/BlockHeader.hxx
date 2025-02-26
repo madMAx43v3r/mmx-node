@@ -20,6 +20,7 @@ namespace mmx {
 
 class MMX_EXPORT BlockHeader : public ::vnx::Value {
 public:
+	static const uint32_t SUPPORT_HARDFORK1 = 0x1;
 	
 	uint32_t version = 0;
 	uint32_t support_flags = 0;
