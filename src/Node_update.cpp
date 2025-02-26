@@ -944,6 +944,7 @@ std::shared_ptr<const Block> Node::make_block(
 	block->reward_vote = reward_vote;
 	block->project_addr = prev->project_addr;
 	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
+	block->support_flags |= Block::SUPPORT_HARDFORK1;
 
 	block->vdf_iters = prev->vdf_iters;
 	for(auto point : vdf_points) {

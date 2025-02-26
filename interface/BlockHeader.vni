@@ -78,4 +78,7 @@ class BlockHeader {
 	
 	void set_base_reward(ChainParams* params, BlockHeader* prev);
 	
+	
+	static const uint SUPPORT_HARDFORK1 = 0x1;
+	
 }
