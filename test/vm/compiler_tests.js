@@ -261,5 +261,12 @@ if(!(0 || null || 1)) {
 	assert(!is_array(null));
 	assert(!is_map(null));
 }
+{
+	var i = 0;
+	while(i < 10) {
+		i++;
+	}
+	assert(i == 10);
+}
 
 
