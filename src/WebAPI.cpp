@@ -2845,6 +2845,15 @@ void WebAPI::resolve_vm_varptr(	const addr_t& contract,
 			callback(vnx::Variant(out));
 			break;
 		}
+		case vm::TYPE_TRUE:
+			callback(vnx::Variant(true));
+			break;
+		case vm::TYPE_FALSE:
+			callback(vnx::Variant(false));
+			break;
+		case vm::TYPE_NIL:
+			callback(vnx::Variant());
+			break;
 		default:
 			callback(vnx::Variant(vm::to_string(var)));
 	}
