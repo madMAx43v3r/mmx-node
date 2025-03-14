@@ -1684,6 +1684,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			filter.since = get_param<uint32_t>(query, "since", 0);
 			filter.until = get_param<uint32_t>(query, "until", -1);
 			filter.type = get_param<vnx::optional<tx_type_e>>(query, "type");
+			filter.memo = get_param<vnx::optional<std::string>>(query, "memo");
 			if(auto currency = get_param<vnx::optional<addr_t>>(query, "currency")) {
 				filter.currency.insert(*currency);
 			}
@@ -1699,7 +1700,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 400, "address/history?id|limit|since|until|type|currency");
+			respond_status(request_id, 400, "address/history?id|limit|since|until|type|memo|currency");
 		}
 	}
 	else if(sub_path == "/contract/exec_history") {

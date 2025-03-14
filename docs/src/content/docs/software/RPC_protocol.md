@@ -300,6 +300,7 @@ Query parameters:
 - `since`: Since block height, inclusive (default = 0)
 - `until`: Until block height, inclusive (default = current height)
 - `type`: Optional type filter: `RECEIVE`, `SPEND`, `TXFEE`, `REWARD`, `VDF_REWARD`
+- `memo`: Optional memo filter (exact matches only)
 - `currency`: Optional curreny filter (bech32 token address)
 
 Returns an array of objects:
@@ -311,10 +312,6 @@ Returns an array of objects:
 - etc
 
 Note: This endpoint includes pending transactions, `is_pending` or `height` needs to be checked.
-
-#### GET /wapi/wallet/history/memo
-
-Same as `/wapi/wallet/history` but with additional query param `memo` to search for a specific memo.
 
 #### GET /wapi/wallet/tx_history
 
