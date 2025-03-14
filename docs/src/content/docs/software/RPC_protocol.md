@@ -137,6 +137,17 @@ Returns object:
 - `balances`: Array of balance objects
 - `nfts`: Array of NFT addresses
 
+#### GET /wapi/supply
+
+To query current supply of a given token.
+
+Query parameters:
+- `id`: Currency address (bech32, defaults to MMX)
+
+Returns object:
+- `value`: Supply with decimals
+- `amount`: Supply as raw integer
+
 #### GET /wapi/contract
 
 Query parameters:

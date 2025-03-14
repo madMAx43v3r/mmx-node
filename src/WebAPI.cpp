@@ -1393,6 +1393,17 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 400, "balance?id|currency|limit");
 		}
 	}
+	else if(sub_path == "/supply") {
+		const auto currency = get_param<addr_t>(query, "id");
+		get_context({currency}, request_id,
+			[this, request_id, currency](std::shared_ptr<const RenderContext> context) {
+				node->get_total_supply(currency,
+					[this, currency, context, request_id](const mmx::uint128& supply) {
+						respond(request_id, render(to_amount_object(supply, context->get_currency(currency)->decimals)));
+					},
+					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+			});
+	}
 	else if(sub_path == "/contract") {
 		const auto iter = query.find("id");
 		if(iter != query.end()) {
