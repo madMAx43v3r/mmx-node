@@ -111,7 +111,6 @@ protected:
 	virtual void reset_cache(const uint32_t& index) = 0;
 	virtual void update_cache(const uint32_t& index) const = 0;
 	virtual std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index, const ::mmx::query_filter_t& filter) const = 0;
-	virtual std::vector<::mmx::tx_entry_t> get_history_memo(const uint32_t& index, const std::string& memo, const ::mmx::query_filter_t& filter) const = 0;
 	virtual std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit) const = 0;
 	virtual std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index, const ::mmx::uint128& amount, const ::mmx::addr_t& currency, const ::mmx::spend_options_t& options) const = 0;
 	virtual ::mmx::balance_t get_balance(const uint32_t& index, const ::mmx::addr_t& currency) const = 0;

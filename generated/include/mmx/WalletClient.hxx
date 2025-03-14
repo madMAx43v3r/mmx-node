@@ -106,8 +106,6 @@ public:
 	
 	std::vector<::mmx::tx_entry_t> get_history(const uint32_t& index = 0, const ::mmx::query_filter_t& filter = ::mmx::query_filter_t());
 	
-	std::vector<::mmx::tx_entry_t> get_history_memo(const uint32_t& index = 0, const std::string& memo = "", const ::mmx::query_filter_t& filter = ::mmx::query_filter_t());
-	
 	std::vector<::mmx::tx_log_entry_t> get_tx_log(const uint32_t& index = 0, const int32_t& limit = 100);
 	
 	std::vector<::mmx::txin_t> gather_inputs_for(const uint32_t& index = 0, const ::mmx::uint128& amount = ::mmx::uint128(), const ::mmx::addr_t& currency = ::mmx::addr_t(), const ::mmx::spend_options_t& options = ::mmx::spend_options_t());

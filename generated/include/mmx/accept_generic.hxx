@@ -283,8 +283,6 @@
 #include <mmx/Wallet_get_farmer_keys_return.hxx>
 #include <mmx/Wallet_get_history.hxx>
 #include <mmx/Wallet_get_history_return.hxx>
-#include <mmx/Wallet_get_history_memo.hxx>
-#include <mmx/Wallet_get_history_memo_return.hxx>
 #include <mmx/Wallet_get_master_seed.hxx>
 #include <mmx/Wallet_get_master_seed_return.hxx>
 #include <mmx/Wallet_get_mnemonic_seed.hxx>
@@ -2881,24 +2879,6 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_history>
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_history_return> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_history_memo> value) {
-	if(value) {
-		value->accept_generic(visitor);
-	} else {
-		visitor.accept(nullptr);
-	}
-}
-
-template<typename V>
-void accept_generic(V& visitor, std::shared_ptr<const ::mmx::Wallet_get_history_memo_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {
