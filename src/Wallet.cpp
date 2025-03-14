@@ -691,23 +691,6 @@ std::vector<tx_entry_t> Wallet::get_history(const uint32_t& index, const query_f
 	return result;
 }
 
-std::vector<tx_entry_t> Wallet::get_history_memo(
-		const uint32_t& index, const std::string& memo, const query_filter_t& filter_) const
-{
-	const auto wallet = get_wallet(index);
-
-	auto filter = filter_;
-	if(filter.white_list) {
-		filter.currency = token_whitelist;
-	}
-	std::vector<tx_entry_t> result;
-	for(auto& entry : node->get_history_memo(wallet->get_all_addresses(), memo, filter)) {
-		entry.is_validated = filter.white_list || token_whitelist.count(entry.contract);
-		result.push_back(entry);
-	}
-	return result;
-}
-
 std::vector<tx_log_entry_t> Wallet::get_tx_log(const uint32_t& index, const int32_t& limit) const
 {
 	const auto wallet = get_wallet(index);

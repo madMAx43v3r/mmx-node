@@ -110,9 +110,6 @@ protected:
 
 	std::vector<tx_entry_t> get_history(const uint32_t& index, const query_filter_t& filter) const override;
 
-	std::vector<tx_entry_t> get_history_memo(
-			const uint32_t& index, const std::string& memo, const query_filter_t& filter) const override;
-
 	std::vector<tx_log_entry_t> get_tx_log(const uint32_t& index, const int32_t& limit) const override;
 
 	balance_t get_balance(const uint32_t& index, const addr_t& currency) const override;

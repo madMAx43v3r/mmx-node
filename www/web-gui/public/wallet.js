@@ -410,21 +410,12 @@ Vue.component('account-history', {
 				this.data = [];
 				this.loading = true;
 			}
-			if(this.memo) {
-				fetch('/wapi/wallet/history/memo?limit=' + this.limit + '&index=' + this.index + '&memo=' + this.memo + '&currency=' + this.currency)
-					.then(response => response.json())
-					.then(data => {
-						this.loading = false;
-						this.data = data;
-					});
-			} else {
-				fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&currency=' + this.currency)
-					.then(response => response.json())
-					.then(data => {
-						this.loading = false;
-						this.data = data;
-					});
-			}
+			fetch('/wapi/wallet/history?limit=' + this.limit + '&index=' + this.index + '&type=' + this.type + '&memo=' + this.memo + '&currency=' + this.currency)
+				.then(response => response.json())
+				.then(data => {
+					this.loading = false;
+					this.data = data;
+				});
 		}
 	},
 	watch: {

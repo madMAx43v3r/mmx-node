@@ -1894,6 +1894,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			filter.since = get_param<uint32_t>(query, "since", 0);
 			filter.until = get_param<uint32_t>(query, "until", -1);
 			filter.type = get_param<vnx::optional<tx_type_e>>(query, "type");
+			filter.memo = get_param<vnx::optional<std::string>>(query, "memo");
 			if(auto currency = get_param<vnx::optional<addr_t>>(query, "currency")) {
 				filter.currency.insert(*currency);
 			}
@@ -1901,29 +1902,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
 		} else {
-			respond_status(request_id, 400, "wallet/history?index|limit|since|until|type|currency");
-		}
-	}
-	else if(sub_path == "/wallet/history/memo") {
-		require<vnx::permission_e>(vnx_session, vnx::permission_e::CONST_REQUEST);
-		const auto index = get_param<int32_t>(query, "index", -1);
-		if(index >= 0) {
-			const auto memo = get_param<std::string>(query, "memo");
-			query_filter_t filter;
-			filter.max_search = 1000000;
-			filter.with_pending = true;
-			filter.limit = get_param<int32_t>(query, "limit", 100);
-			filter.since = get_param<uint32_t>(query, "since", 0);
-			filter.until = get_param<uint32_t>(query, "until", -1);
-			filter.type = get_param<vnx::optional<tx_type_e>>(query, "type");
-			if(auto currency = get_param<vnx::optional<addr_t>>(query, "currency")) {
-				filter.currency.insert(*currency);
-			}
-			wallet->get_history_memo(index, memo, filter,
-				std::bind(&WebAPI::render_history, this, request_id, std::placeholders::_1),
-				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
-		} else {
-			respond_status(request_id, 400, "wallet/history/memo?index|memo|limit|since|until|type|currency");
+			respond_status(request_id, 400, "wallet/history?index|limit|since|until|type|memo|currency");
 		}
 	}
 	else if(sub_path == "/wallet/tx_history") {
@@ -2691,7 +2670,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			"config/get", "config/set", "farmers", "farmer", "farmer/blocks", "chain/info",
 			"node/info", "node/log", "header", "headers", "block", "blocks", "transaction", "transactions", "address", "contract", "plotnft"
 			"address/history", "wallet/balance", "wallet/contracts", "wallet/address"
-			"wallet/history", "wallet/history/memo", "wallet/send", "wallet/send_many", "wallet/send_off",
+			"wallet/history", "wallet/send", "wallet/send_many", "wallet/send_off",
 			"wallet/make_offer", "wallet/cancel_offer", "wallet/accept_offer", "wallet/offer_withdraw", "wallet/offer_trade",
 			"wallet/swap/liquid", "wallet/swap/trade", "wallet/swap/add_liquid", "wallet/swap/rem_liquid", "wallet/swap/payout",
 			"wallet/swap/switch_pool", "wallet/swap/rem_all_liquid", "wallet/accounts", "wallet/account",
