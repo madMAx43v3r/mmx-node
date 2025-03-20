@@ -7,6 +7,7 @@ import { Icon } from '@astrojs/starlight/components';
         <a class="navbar-item" href="/">
             <img src="/images/mmx_rect.png" alt="MMX logo" class="logo" />
         </a>
+        <div class="navbar-text">Documentation</div>
         <div class="navbar-spacer"></div>
         <div class="navbar-end">
             <a class="navbar-item" href="https://mmx.network/"><Icon name="star" class="icon" size="1.33em"></Icon></a>
@@ -24,7 +25,7 @@ import { Icon } from '@astrojs/starlight/components';
         left: 0;
         width: 100%;
         height: 4rem;
-        background-color: hsl(224, 14%, 16%);
+	background-color: var(--sl-color-gray-6);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         z-index: 1000;
     }
@@ -41,19 +42,30 @@ import { Icon } from '@astrojs/starlight/components';
     }
 
     .navbar-item {
-        color: hsl(262, 36%, 79%);
+        color: var(--sl-color-white);
         text-decoration: none;
         margin-left: 1rem;
         font-size: 1.2rem;
         height: 100%;
     }
+
+    .navbar-text {
+        color: var(--sl-color-white);
+        text-decoration: none;
+        margin-left: 1rem;
+        font-size: 1.75rem;
+        height: 100%;
+        line-height: 4rem;
+        font-weight: 600;
+    }
+
     .navbar-end {
         display: flex;
         align-items: center;
     }
 
     .navbar-item:hover {
-        color: hsl(262, 36%, 36%);
+	color: var(--sl-color-accent-high);
     }
 
     .navbar-spacer {
@@ -74,7 +86,12 @@ import { Icon } from '@astrojs/starlight/components';
         .navbar-item {
             padding: 0 0.5rem;
             font-size: 1.5rem;
-            
+        }
+
+        .navbar-text {
+            padding: 0 0.25rem;
+	    line-height: 5rem;
+            font-size: 2.18rem;
         }
     }
 </style>
