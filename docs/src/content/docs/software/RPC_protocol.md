@@ -146,7 +146,7 @@ Query parameters:
 
 Returns object:
 - `value`: Supply with decimals
-- `amount`: Supply as raw integer
+- `amount`: Supply as raw integer (but string format)
 
 #### GET /wapi/contract
 
