@@ -10,6 +10,9 @@
 - Token icons in GUI
 - Hardware wallet support
 - Web Wallet
-- Market + Swap balance formatting
+- Market + Swap + TX Explorer balance formatting
 - Remote compute support
 - Bitcointalk
+- WAPI wallet/deposit
+- Verify proof first, then VDF, while limiting max VDF verify count
+- Hardfork2 with challenge chain hash infusion + forced infusion at certain length
