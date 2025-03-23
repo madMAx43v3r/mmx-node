@@ -4,16 +4,16 @@
             <q-list bordered class="rounded-borders">
                 <q-expansion-item
                     v-if="isLocalNode"
-                    v-model="panelState['general']"
+                    v-model="panelState['node']"
                     expand-separator
-                    :label="$t('node_settings.general')"
+                    label="Node"
                     :icon="mdiTools"
                     :header-class="headerClass"
                     group="expansionGroup"
                 >
                     <q-card>
                         <q-card-section>
-                            <GeneralSettings />
+                            <NodeSettings />
                         </q-card-section>
                     </q-card>
                 </q-expansion-item>
@@ -98,7 +98,7 @@
                 </q-expansion-item>
             </q-list>
 
-            <BuildVersionInfo class="q-mt-lg" />
+            <BuildVersionInfo class="q-mt-md" />
         </div>
     </q-page>
 </template>
@@ -113,7 +113,7 @@ import {
     mdiApplicationCogOutline,
 } from "@mdi/js";
 
-import GeneralSettings from "./GeneralSettings";
+import NodeSettings from "./NodeSettings";
 import RewardSettings from "./RewardSettings";
 import HarvesterSettings from "./HarvesterSettings";
 import BlockchainSettings from "./BlockchainSettings";
@@ -128,7 +128,7 @@ const appStore = useAppStore();
 const router = useRouter();
 const route = useRoute();
 
-const state = route.query.state || "general";
+const state = route.query.state || "node";
 const initPanelState = computed(() => {
     const res = {};
     res[state] = true;
