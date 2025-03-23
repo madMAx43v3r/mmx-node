@@ -1,13 +1,16 @@
 <template>
-    <q-input
-        ref="revertHeightRef"
-        v-model="revertHeight"
-        :label="$t('node_settings.revert_db_to_height')"
-        :rules="[rules.number]"
-    />
-    <q-btn :disable="btnDisabled" outline color="negative" @click="handleRevertSync(revertHeight)">
-        {{ $t("node_settings.revert") }}
-    </q-btn>
+    <q-card flat>
+        <q-linear-progress v-if="loading" query class="absolute-top" />
+        <q-input
+            ref="revertHeightRef"
+            v-model="revertHeight"
+            :label="$t('node_settings.revert_db_to_height')"
+            :rules="[rules.number]"
+        />
+        <q-btn :disable="btnDisabled" outline color="negative" @click="handleRevertSync(revertHeight)">
+            {{ $t("node_settings.revert") }}
+        </q-btn>
+    </q-card>
 </template>
 
 <script setup>
