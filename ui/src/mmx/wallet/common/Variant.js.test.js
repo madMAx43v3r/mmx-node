@@ -1,0 +1,19 @@
+import { describe, it, assert, expect } from "vitest";
+
+import "../utils/Uint8ArrayUtils";
+import { Variant } from "./Variant";
+
+describe("Variant", () => {
+    it("unsupported type", () => {
+        expect(() => new Variant(Symbol("unsupported type"))).toThrowError();
+    });
+
+    it("deep recursion", () => {
+        let obj = 1337;
+        for (let index = 1; index <= 100 - 1; index++) {
+            obj = { index, obj };
+        }
+        expect(() => new Variant(obj)).not.toThrowError();
+        expect(() => new Variant({ obj: obj })).toThrowError();
+    });
+});

@@ -1,0 +1,69 @@
+import { describe, it, assert } from "vitest";
+
+import { ECDSA_Wallet } from "./ECDSA_Wallet";
+import { Transaction } from "./Transaction";
+import "./Transaction.ext";
+
+import { JSONbigNative } from "./utils/JSONbigNative";
+import "./utils/Uint8ArrayUtils";
+
+const mnemonic = import.meta.env.VITE_TEST_MNEMONIC;
+
+const ecdsaWallet = new ECDSA_Wallet(mnemonic, "");
+
+const txs = new Map();
+
+txs.set("TRANSFER", {
+    json: '{"__type": "mmx.Transaction", "id": "BE81B668509D9611DBBEBAC9B21CC44250DC97278720FABFA18AEAB7F4A78A10", "version": 0, "expires": 20958, "fee_ratio": 1024, "static_cost": 50000, "max_fee_amount": 5040000, "note": "TRANSFER", "nonce": 16274384975138489954, "network": "mainnet", "sender": "mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6", "inputs": [{"address": "mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6", "contract": "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev", "amount": "100000", "memo": null, "solution": 0, "flags": 0}], "outputs": [{"address": "mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6", "contract": "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev", "amount": "100000", "memo": null}], "execute": [], "solutions": [{"__type": "mmx.solution.PubKey", "version": 0, "pubkey": "0344EE96D1B85CAC0F99B7CFA44F39EFFC590BDF51D45099D1F24AA09E5F9AD6E0", "signature": "9834FF50F306E1E911B93594F1347EEF3280EABF95E22C34F89DF679D8C21BC263DF9D84861C305C267300D749003808CE64E13BF1BFF932D0A2248C22CEE4F5"}], "deploy": null, "exec_result": null, "content_hash": "C7B2ED1BDEBC15075DC972BFE1339802625935393792C55357C3E015415CA5B4"}',
+    hex: "BCA5EADCAC6204CE6669656C643C3E737472696E673C3E070000000000000076657273696F6E00000000000000006669656C643C3E737472696E673C3E070000000000000065787069726573DE510000000000006669656C643C3E737472696E673C3E09000000000000006665655F726174696F00040000000000006669656C643C3E737472696E673C3E0E000000000000006D61785F6665655F616D6F756E7480E74C00000000006669656C643C3E737472696E673C3E04000000000000006E6F74657D592C33000000006669656C643C3E737472696E673C3E05000000000000006E6F6E6365628615D5E83ADAE16669656C643C3E737472696E673C3E07000000000000006E6574776F726B737472696E673C3E07000000000000006D61696E6E65746669656C643C3E737472696E673C3E060000000000000073656E6465726F7074696F6E616C3C3E0162797465733C3E20000000000000003C19773DC9B0475ACA09957E520DEAFC197B82AC9F78169B7207361B074641D76669656C643C3E737472696E673C3E0600000000000000696E70757473766563746F723C3E01000000000000007478696E5F743C3E62797465733C3E20000000000000003C19773DC9B0475ACA09957E520DEAFC197B82AC9F78169B7207361B074641D762797465733C3E20000000000000000000000000000000000000000000000000000000000000000000000000000000A08601000000000000000000000000006F7074696F6E616C3C3E00000000000000000000000000000000006669656C643C3E737472696E673C3E07000000000000006F757470757473766563746F723C3E010000000000000074786F75745F743C3E62797465733C3E20000000000000003C19773DC9B0475ACA09957E520DEAFC197B82AC9F78169B7207361B074641D762797465733C3E20000000000000000000000000000000000000000000000000000000000000000000000000000000A08601000000000000000000000000006F7074696F6E616C3C3E006669656C643C3E737472696E673C3E07000000000000006578656375746500000000000000006669656C643C3E737472696E673C3E06000000000000006465706C6F7962797465733C3E200000000000000000000000000000000000000000000000000000000000000000000000000000006669656C643C3E737472696E673C3E0B000000000000007374617469635F636F737450C30000000000006669656C643C3E737472696E673C3E0900000000000000736F6C7574696F6E73010000000000000062797465733C3E2000000000000000431558151428CF9CB0B179861436C542AB557D9120D0504CCFC0CAC4F991A6AA6669656C643C3E737472696E673C3E0B00000000000000657865635F726573756C7462797465733C3E20000000000000000000000000000000000000000000000000000000000000000000000000000000",
+});
+
+txs.forEach((item, key) => {
+    describe(`Transaction #${key}`, () => {
+        const json = item.json;
+        const hex = item.hex;
+        const deposit = item.deposit;
+
+        const _tx = Transaction.parse(json);
+        const id = _tx.id;
+        const content_hash = _tx.content_hash;
+
+        it("parse", () => {
+            const tx = Transaction.parse(json);
+            assert.equal(tx.toString(), JSONbigNative.stringify(JSONbigNative.parse(json)));
+        });
+
+        it("calc_hash full", () => {
+            const tx = Transaction.parse(json);
+
+            const hash_serialize = tx.hash_serialize(true);
+            const hash = tx.calc_hash(true);
+
+            assert.equal(hash_serialize.toHex(), hex);
+            assert.equal(hash.toHex(), content_hash);
+        });
+
+        it("calc_hash short", () => {
+            const tx = Transaction.parse(json);
+            const hash = tx.calc_hash(false);
+            assert.equal(hash.toHex(), id);
+        });
+
+        it("finalize", () => {
+            const tx = Transaction.parse(json);
+            tx.id = null;
+            tx.finalize();
+            assert.equal(tx.id, id);
+        });
+
+        it("sign", async () => {
+            const tx = Transaction.parse(json);
+            tx.id = null;
+            tx.inputs = [];
+            tx.solutions = [];
+
+            await ecdsaWallet.completeAsync(tx, { expire_at: tx.expires, network: "mainnet" }, deposit);
+            assert.equal(tx.toString(), JSONbigNative.stringify(JSONbigNative.parse(json)));
+        });
+    });
+});

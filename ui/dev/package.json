@@ -1,0 +1,16 @@
+{
+  "name": "dev-proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "proxy.js",
+  "scripts": {
+    "dev:proxy": "nodemon --watch dev/proxy.js dev/proxy.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

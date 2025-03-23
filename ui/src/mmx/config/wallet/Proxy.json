@@ -1,0 +1,4 @@
+{
+	"import_list": ["node.verified_blocks"],
+	"export_list": ["vnx.log_out"]
+}

@@ -1,0 +1,8 @@
+{
+	"num_threads": 32,
+	"max_queue_ms": 30000,
+	"config_path": "config/local/",
+	"dir_blacklist": [
+		".", "..", "lost+found", "$RECYCLE.BIN", "System Volume Information"
+	]
+}

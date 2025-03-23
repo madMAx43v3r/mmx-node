@@ -1,0 +1,8 @@
+{
+	"open_port": true,
+	"num_peers_out": 8,
+	"max_connections": 100,
+	"fixed_peers": [],
+	"seed_peers+": [],
+	"block_peers+": []
+}

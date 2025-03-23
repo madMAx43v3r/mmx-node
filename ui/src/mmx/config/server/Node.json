@@ -1,0 +1,5 @@
+{
+	"num_threads": 32,
+	"num_api_threads": 32,
+	"max_history": 10000
+}

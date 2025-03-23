@@ -1,0 +1,114 @@
+// app global css in SCSS form
+
+$font: "Roboto Flex Variable", sans-serif;
+$mono-font: "Roboto Mono Variable", monospace;
+
+body {
+    font-family: $font;
+    font-weight: 500;
+    //overflow: scroll;
+}
+
+.app-max-width {
+    max-width: 1161px !important;
+}
+
+.body--light {
+    @import "highlight.js/styles/github";
+}
+
+.body--dark {
+    @import "highlight.js/styles/github-dark";
+}
+
+.body--dark .m-bg-grey {
+    background-color: $grey-9;
+}
+
+.body--light .m-bg-grey {
+    background-color: $grey-3;
+    color: black;
+}
+
+.q-notifications .restart-needed .q-notification__caption {
+    color: $negative;
+}
+
+.main-currency {
+    font-weight: bold;
+}
+.main-currency:after {
+    content: " MMX";
+    font-weight: normal;
+}
+
+.percents:after {
+    content: " %";
+}
+
+.mono,
+.hljs {
+    font-family: $mono-font;
+}
+
+.key-cell {
+    min-width: 150px;
+    width: 5%;
+    text-align: right;
+}
+
+.q-tab__label {
+    letter-spacing: 1.25px;
+}
+
+.q-layout-padding {
+    // padding: 16px;
+    padding-top: 8px;
+}
+
+.dense-amount {
+    padding-right: 2px !important;
+}
+
+.dense-symbol {
+    padding-left: 2px !important;
+}
+
+// .q-field--disabled .q-field__inner {
+//     cursor: default;
+// }
+
+.q-field--readonly .q-field__suffix,
+input:read-only {
+    color: $grey-5 !important;
+}
+
+.amount-input {
+    font-weight: bold;
+    text-align: right;
+    padding-right: 20px;
+}
+
+.amount-input:read-only {
+    padding-right: unset;
+}
+
+.q-field__suffix {
+    opacity: 1 !important;
+}
+
+.q-btn.disabled {
+    filter: brightness(70%);
+}
+
+.body--light .q-card.q-card--flat {
+    border: 1px solid $grey-4;
+}
+
+.body--light .q-table--flat {
+    border: 1px solid $grey-4;
+}
+
+.q-dialog__backdrop {
+    backdrop-filter: blur(4px) grayscale(100%);
+}
