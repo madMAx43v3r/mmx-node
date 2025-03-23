@@ -51,6 +51,22 @@
                 </q-expansion-item>
 
                 <q-expansion-item
+                    v-if="isFarmer || isLocalNode"
+                    v-model="panelState['cuda']"
+                    expand-separator
+                    label="CUDA"
+                    :icon="mdiExpansionCard"
+                    :header-class="headerClass"
+                    group="expansionGroup"
+                >
+                    <q-card>
+                        <q-card-section>
+                            <CudaSettings />
+                        </q-card-section>
+                    </q-card>
+                </q-expansion-item>
+
+                <q-expansion-item
                     v-if="isLocalNode"
                     v-model="panelState['blockchain']"
                     expand-separator
@@ -108,6 +124,7 @@ import {
     mdiTools,
     mdiCashMultiple,
     mdiTractorVariant,
+    mdiExpansionCard,
     mdiDatabaseOutline,
     mdiHandCoinOutline,
     mdiApplicationCogOutline,
@@ -116,6 +133,7 @@ import {
 import NodeSettings from "./NodeSettings";
 import RewardSettings from "./RewardSettings";
 import HarvesterSettings from "./HarvesterSettings";
+import CudaSettings from "./CudaSettings";
 import BlockchainSettings from "./BlockchainSettings";
 import WalletSettings from "./WalletSettings";
 import UISettings from "./UISettings";

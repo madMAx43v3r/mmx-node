@@ -9,6 +9,7 @@
         "bunx",
         "codepaths",
         "composables",
+        "CUDA",
         "echarts",
         "fontsource",
         "highlightjs",

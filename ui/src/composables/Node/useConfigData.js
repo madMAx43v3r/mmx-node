@@ -17,6 +17,12 @@ const configMapping = {
         default: false,
     },
 
+    cuda_enable: {
+        name: "cuda.enable",
+        restart: true,
+        default: false,
+    },
+
     opencl_platform: {
         name: "opencl.platform",
         restart: true,
