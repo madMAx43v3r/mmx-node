@@ -15,7 +15,7 @@
     "dev:offline": "bunx --bun vite --config vite.config.offline.js",
     "build:offline": "bunx --bun vite build --config vite.config.offline.js",
     "preview:offline": "bunx --bun vite preview --config vite.config.offline.js",
-    "build:all": "bun run build && bun run build:explorer && bun run build:offline",
+    "build:all": "bun run build && bun run build:explorer",
     "build:android": "bun run build:explorer && bunx cap sync && bunx capacitor-assets generate --android && bunx cap build android"
   },
   "dependencies": {
