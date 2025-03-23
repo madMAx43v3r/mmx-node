@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 	}
 	{
 		vnx::Handle<vnx::addons::FileServer> module = new vnx::addons::FileServer("FileServer_1");
-		module->www_root = "www/web-gui/public/";
+		module->www_root = "ui/dist/gui/";
 		module->directory_files.push_back("index.html");
 		module.start_detached();
 	}
