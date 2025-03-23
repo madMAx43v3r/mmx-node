@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "clean": "mkdir -p dist && rm -rf dist/* || true",
     "lint": "bunx --bun eslint  ./ --fix",
     "format": "bunx --bun prettier --write \"**/*.{js,vue,scss,html,md,json}\" --list-different --ignore-path .gitignore --ignore-path .prettierignore",
     "dev": "bunx --bun vite",
