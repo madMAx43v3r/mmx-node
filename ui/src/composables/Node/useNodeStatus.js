@@ -27,19 +27,22 @@ export const useNodeStatus = () => {
 
     // --- Session
     const session = useSessionMutation();
-    const sessionIntervalFn = () =>
-        session.mutate(null, {
-            onSuccess: (data) => {
-                if (data && data.user) {
-                    sessionFails.value = 0;
-                } else {
+    const sessionIntervalFn = () => {
+        if (sessionStore.isLoggedIn) {
+            session.mutate(null, {
+                onSuccess: (data) => {
+                    if (data && data.user) {
+                        sessionFails.value = 0;
+                    } else {
+                        sessionFails.value++;
+                    }
+                },
+                onError: () => {
                     sessionFails.value++;
-                }
-            },
-            onError: () => {
-                sessionFails.value++;
-            },
-        });
+                },
+            });
+        }
+    };
 
     const sessionInterval = computed(() => {
         let interval = connectedToNode.value && connectedToNetwork.value ? 5000 : 1000;
