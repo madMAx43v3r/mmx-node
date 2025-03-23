@@ -71,10 +71,10 @@ const sign = (privKey, msg) => {
     return secp256k1.sign(msg, privKey).toCompactRawBytes();
 };
 
-// const signAsync = async (privKey, msg) => {
-//     return (await secp256k1.signAsync(msg, privKey)).toCompactRawBytes();
-// };
+const signAsync = async (privKey, msg) => {
+    return (await secp256k1.signAsync(msg, privKey)).toCompactRawBytes();
+};
 
 const syncFunctionList = { getFarmerKey, getAddress, getFingerPrint, getKeys };
 
-export { getFarmerKey, getKeys, getAddress, getFingerPrint, sign, syncFunctionList };
+export { getFarmerKey, getKeys, getAddress, getFingerPrint, sign, signAsync, syncFunctionList };
