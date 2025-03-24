@@ -1,5 +1,5 @@
 <template>
-    <div class="q-gutter-y-sm">
+    <div class="q-gutter-y-sm q-mt-sm">
         <AccountPlotNFTsCreate v-bind="props" />
         <div class="q-gutter-y-sm">
             <q-linear-progress v-if="loading" query />
