@@ -1,5 +1,5 @@
 import { assert, describe, expect, it } from "vitest";
-import { mnemonicToSeed, seedToWords } from "./mnemonic";
+import { mnemonicToSeed, seedToWords, randomWords } from "./mnemonic";
 
 import "./utils/Uint8ArrayUtils";
 import { hash_t } from "./common/addr_t";
@@ -36,5 +36,12 @@ describe("mnemonic #2", async () => {
         const seed = hexToBytes(hashStr);
         const words = seedToWords(seed);
         assert.equal(words, mnemonic);
+    });
+});
+
+describe("mnemonic #3", async () => {
+    it("randomWords", () => {
+        const mnemonic = randomWords();
+        assert.isNotEmpty(mnemonic);
     });
 });
