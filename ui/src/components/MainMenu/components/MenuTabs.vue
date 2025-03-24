@@ -8,7 +8,14 @@
                 <q-space />
             </template>
             <template v-else-if="item.component">
-                <component :is="item.component" />
+                <template v-if="item.tabTagWrap ?? true">
+                    <div class="q-tab self-stretch flex flex-center text-center">
+                        <component :is="item.component" />
+                    </div>
+                </template>
+                <template v-else>
+                    <component :is="item.component" />
+                </template>
             </template>
             <template v-else>
                 <q-route-tab

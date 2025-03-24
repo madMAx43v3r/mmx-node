@@ -18,7 +18,7 @@ const tabs = computed(() => [
     { space: true },
     // wapiChangerRouteTabItem.value,
     themeChangerRouteTabItem.value,
-    { component: I18nDropDown },
+    { component: I18nDropDown, tabTagWrap: false },
 ]);
 
 import { useNodeInfo } from "@/queries/wapi";
