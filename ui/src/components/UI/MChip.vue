@@ -1,5 +1,5 @@
 <template>
-    <q-chip square color="blue-grey-10">
+    <q-chip square>
         <slot />
         <UseClipboard v-if="copy && defaultSlotContent" v-slot="{ copy: copyX, copied }">
             <q-btn
@@ -37,6 +37,16 @@ const defaultSlotContent = computed(() => (slots.default ? slots.default()[0].ch
     padding: 0.02em 0.9em;
     margin: 4px 2px;
 }
+
+.body--dark .q-chip {
+    background-color: $blue-grey-10;
+}
+
+.body--light .q-chip {
+    background-color: $blue-grey-2;
+    color: black;
+}
+
 ::v-deep(.q-chip__content) {
     white-space: unset;
 }
