@@ -1,6 +1,6 @@
-# Contributing to MMX Docs
+# Contributing to MMX Documentation
 
-If you would like to contribute to MMX Docs, you can do so by following these steps:
+If you would like to contribute to MMX Documentation, you can do so by following these steps:
 1. Fork the repository
 2. Clone *your fork* repository and cd into it
 3. Create a new branch

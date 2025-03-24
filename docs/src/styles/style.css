@@ -1,28 +1,5 @@
 :root {
-	/* Header link */
-	span.icon-link::before {
-		content: '#';
-		font-size: 0.8em;
-		margin-left: 10px;
-		text-decoration: none;
-		display: inline-block;
-	  }
-
-    --sl-content-width: 80%;
-	
-    --sl-nav-gap: 5rem;
-    .content-panel .sl-container {
-        margin-left: 5rem;
-    }
-	@media (max-width: 800px) {
-		--sl-content-width: 100%;
-		.content-panel .sl-container {
-			margin-left: 0;
-		};
-	}
-	--mmx-color-purple: hsl(267, 60%, 39%);
-
-	--sl-color-white: hsl(0, 0%, 100%); /* “white” */
+	--sl-color-white: hsl(0, 0%, 100%);
 	--sl-color-gray-1: hsl(232, 0%, 94%);
 	--sl-color-gray-2: hsl(232, 0%, 77%);
 	--sl-color-gray-3: hsl(232, 0%, 56%);
@@ -31,36 +8,27 @@
 	--sl-color-gray-6: hsl(232, 0%, 16%);
 	--sl-color-black: hsl(232, 0%, 7%);
 
-	--sl-hue-orange: 41;
-	--sl-color-orange-low: hsl(var(--sl-hue-orange), 39%, 22%);
-	--sl-color-orange: hsl(var(--sl-hue-orange), 82%, 63%);
-	--sl-color-orange-high: hsl(var(--sl-hue-orange), 82%, 87%);
-	--sl-hue-green: 101;
-	--sl-color-green-low: hsl(var(--sl-hue-green), 39%, 22%);
-	--sl-color-green: hsl(var(--sl-hue-green), 82%, 63%);
-	--sl-color-green-high: hsl(var(--sl-hue-green), 82%, 80%);
-	--sl-hue-blue: 234;
-	--sl-color-blue-low: hsl(var(--sl-hue-blue), 54%, 20%);
-	--sl-color-blue: hsl(var(--sl-hue-blue), 100%, 60%);
-	--sl-color-blue-high: hsl(var(--sl-hue-blue), 100%, 87%);
-	--sl-hue-purple: 281;
-	--sl-color-purple-low: hsl(var(--sl-hue-purple), 39%, 22%);
-	--sl-color-purple: hsl(var(--sl-hue-purple), 82%, 63%);
-	--sl-color-purple-high: hsl(var(--sl-hue-purple), 82%, 89%);
-	--sl-hue-red: 339;
-	--sl-color-red-low: hsl(var(--sl-hue-red), 39%, 22%);
-	--sl-color-red: hsl(var(--sl-hue-red), 82%, 63%);
-	--sl-color-red-high: hsl(var(--sl-hue-red), 82%, 87%);
+	--sl-nav-pad-y: 0rem;
 
-	--sl-color-accent-low: hsl(224, 54%, 20%);
-	--sl-color-accent: hsl(224, 100%, 60%);
-	--sl-color-accent-high: hsl(224, 100%, 85%);
+        .site-title { color: var(--sl-color-white); }
 
-	--sl-font-system: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-		'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-		'Segoe UI Symbol', 'Noto Color Emoji';
-	--sl-font-system-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
-		'Courier New', monospace;
-	--__sl-font: var(--sl-font, var(--sl-font-system)), var(--sl-font-system);
-	--__sl-font-mono: var(--sl-font-mono, var(--sl-font-system-mono)), var(--sl-font-system-mono);
+	span.icon-link::before {
+		content: '#';
+		font-size: 0.8em;
+		margin-left: 10px;
+		text-decoration: none;
+		display: inline-block;
+	}
+}
+
+:root[data-theme='light'] {
+	--sl-color-white: hsl(232, 0%, 5%);
+	--sl-color-gray-1: hsl(232, 0%, 13%);
+	--sl-color-gray-2: hsl(232, 0%, 20%);
+	--sl-color-gray-3: hsl(232, 0%, 33%);
+	--sl-color-gray-4: hsl(232, 0%, 53%);
+	--sl-color-gray-5: hsl(232, 0%, 75%);
+	--sl-color-gray-6: hsl(232, 0%, 93%);
+	--sl-color-gray-7: hsl(232, 0%, 96%);
+	--sl-color-black: hsl(0, 0%, 100%);
 }
