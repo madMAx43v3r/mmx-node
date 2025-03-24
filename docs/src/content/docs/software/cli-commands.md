@@ -9,7 +9,7 @@ source ./activate.sh
 ```
 With a binary package install, just open a new terminal. On Windows search for `MMX CMD`.
 
-To run any `mmx` commands (except `mmx wallet create`), the node needs to be running. See [Getting Started](../guides/getting-started.md) to read on how to start it.
+To run any `mmx` commands (except `mmx wallet create`), the node needs to be running. See [Getting Started](../../guides/getting-started/) to read on how to start it.
 
 
 ## Node CLI
