@@ -3,7 +3,6 @@ import { useMutation, useQueryClient, keepPreviousData } from "@tanstack/vue-que
 import { useQueryWrapper as useQuery } from "@/composables/useQueryWrapper";
 import { ONE_SECOND } from "../common";
 
-var prevHeight = -1;
 const getNodeInfo = (signal) => axios.get("/wapi/node/info", { signal }).then((response) => response.data);
 export const useNodeInfo = (params) => {
     const query = useQuery({
@@ -17,10 +16,12 @@ export const useNodeInfo = (params) => {
     const queryClient = useQueryClient();
     watch(query.data, (data) => {
         if (!data) return;
+
         const height = data.height;
-        if (prevHeight != height) {
+        if (nodeStore.height != height) {
             console.log(`⛰️ New height: ${height}`);
 
+            const prevHeight = nodeStore.height;
             nodeStore.height = height;
 
             //queryClient.invalidateQueries({ queryKey: ["session"] });
@@ -41,8 +42,6 @@ export const useNodeInfo = (params) => {
             if (height % 3 == 0) {
                 queryClient.invalidateQueries({ queryKey: ["farm", "blocks"] }, { cancelRefetch: false });
             }
-
-            prevHeight = height;
         }
     });
 
