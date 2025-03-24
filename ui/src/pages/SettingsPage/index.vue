@@ -2,116 +2,22 @@
     <q-page padding>
         <div class="q-gutter-y-sm">
             <q-list bordered class="rounded-borders">
-                <q-expansion-item
-                    v-if="isLocalNode"
-                    v-model="panelState['node']"
-                    expand-separator
-                    label="Node"
-                    :icon="mdiTools"
-                    :header-class="headerClass"
-                    group="expansionGroup"
-                >
-                    <q-card>
-                        <q-card-section>
-                            <NodeSettings />
-                        </q-card-section>
-                    </q-card>
-                </q-expansion-item>
-
-                <q-expansion-item
-                    v-if="isLocalNode || isFarmer"
-                    v-model="panelState['reward']"
-                    expand-separator
-                    label="Reward"
-                    :icon="mdiCashMultiple"
-                    :header-class="headerClass"
-                    group="expansionGroup"
-                >
-                    <q-card>
-                        <q-card-section>
-                            <RewardSettings />
-                        </q-card-section>
-                    </q-card>
-                </q-expansion-item>
-
-                <q-expansion-item
-                    v-if="isFarmer"
-                    v-model="panelState['harvester']"
-                    expand-separator
-                    :label="$t('harvester_settings.harvester')"
-                    :icon="mdiTractorVariant"
-                    :header-class="headerClass"
-                    group="expansionGroup"
-                >
-                    <q-card>
-                        <q-card-section>
-                            <HarvesterSettings />
-                        </q-card-section>
-                    </q-card>
-                </q-expansion-item>
-
-                <q-expansion-item
-                    v-if="isFarmer || isLocalNode"
-                    v-model="panelState['cuda']"
-                    expand-separator
-                    label="CUDA"
-                    :icon="mdiExpansionCard"
-                    :header-class="headerClass"
-                    group="expansionGroup"
-                >
-                    <q-card>
-                        <q-card-section>
-                            <CudaSettings />
-                        </q-card-section>
-                    </q-card>
-                </q-expansion-item>
-
-                <q-expansion-item
-                    v-if="isLocalNode"
-                    v-model="panelState['blockchain']"
-                    expand-separator
-                    :label="$t('node_settings.blockchain')"
-                    :icon="mdiDatabaseOutline"
-                    :header-class="headerClass"
-                    group="expansionGroup"
-                >
-                    <q-card>
-                        <q-card-section>
-                            <BlockchainSettings />
-                        </q-card-section>
-                    </q-card>
-                </q-expansion-item>
-
-                <q-expansion-item
-                    v-model="panelState['wallet']"
-                    expand-separator
-                    :label="$t('wallet_settings.token_whitelist')"
-                    :icon="mdiHandCoinOutline"
-                    :header-class="headerClass"
-                    group="expansionGroup"
-                >
-                    <q-card>
-                        <q-card-section>
-                            <WalletSettings />
-                        </q-card-section>
-                    </q-card>
-                </q-expansion-item>
-
-                <q-expansion-item
-                    v-if="!appStore.isWinGUI"
-                    v-model="panelState['ui']"
-                    expand-separator
-                    :label="$t('node_settings.ui')"
-                    :icon="mdiApplicationCogOutline"
-                    :header-class="headerClass"
-                    group="expansionGroup"
-                >
-                    <q-card>
-                        <q-card-section>
-                            <UISettings />
-                        </q-card-section>
-                    </q-card>
-                </q-expansion-item>
+                <template v-for="panel in panels" :key="panel">
+                    <q-expansion-item
+                        v-model="panelState[panel.name]"
+                        :label="panel.label"
+                        :icon="panel.icon"
+                        header-class="text-h6"
+                        expand-separator
+                        group="expansionGroup"
+                    >
+                        <q-card>
+                            <q-card-section>
+                                <component :is="panel.component" />
+                            </q-card-section>
+                        </q-card>
+                    </q-expansion-item>
+                </template>
             </q-list>
 
             <BuildVersionInfo class="q-mt-md" />
@@ -139,15 +45,71 @@ import WalletSettings from "./WalletSettings";
 import UISettings from "./UISettings";
 import BuildVersionInfo from "./BuildVersionInfo.vue";
 
-const headerClass = "text-h6";
-
 const appStore = useAppStore();
+
+const { data, isLocalNode, isFarmer } = useConfigData();
+
+const { t } = useI18n();
+const panels = [
+    {
+        name: "ui",
+        label: t("node_settings.ui"),
+        icon: mdiApplicationCogOutline,
+        component: UISettings,
+        visible: !appStore.isWinGUI,
+    },
+    {
+        name: "node",
+        label: "Node",
+        icon: mdiTools,
+        component: NodeSettings,
+        visible: isLocalNode.value,
+    },
+    {
+        name: "reward",
+        label: "Reward",
+        icon: mdiCashMultiple,
+        component: RewardSettings,
+        visible: isLocalNode.value || isFarmer.value,
+    },
+    {
+        name: "harvester",
+        label: t("harvester_settings.harvester"),
+        icon: mdiTractorVariant,
+        component: HarvesterSettings,
+        visible: isFarmer.value,
+    },
+    {
+        name: "cuda",
+        label: "CUDA",
+        icon: mdiExpansionCard,
+        component: CudaSettings,
+        visible: isFarmer.value || isLocalNode.value,
+    },
+    {
+        name: "blockchain",
+        label: t("node_settings.blockchain"),
+        icon: mdiDatabaseOutline,
+        component: BlockchainSettings,
+        visible: isLocalNode.value,
+    },
+    {
+        name: "wallet",
+        label: t("wallet_settings.token_whitelist"),
+        icon: mdiHandCoinOutline,
+        component: WalletSettings,
+        visible: true,
+    },
+];
+
+const firstVisiblePanel = computed(() => panels.find((panel) => panel.visible));
 
 const router = useRouter();
 const route = useRoute();
 
-const state = route.query.state || "node";
 const initPanelState = computed(() => {
+    const state = route.query.state || firstVisiblePanel.value?.name;
+
     const res = {};
     res[state] = true;
     return res;
@@ -166,6 +128,4 @@ watch(
     },
     { deep: true }
 );
-
-const { data, isLocalNode, isFarmer } = useConfigData();
 </script>
