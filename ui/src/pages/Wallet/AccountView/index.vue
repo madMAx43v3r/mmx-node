@@ -2,9 +2,11 @@
     <div>
         <AccountHeader :index="index" />
         <template v-if="!noData">
-            <AccountMenu :index="index" />
+            <q-card flat>
+                <AccountMenu :index="index" />
+                <AccountBalanceTable v-if="!useRouterView" :index="index" />
+            </q-card>
             <TrRouterView v-if="useRouterView" :index="index" />
-            <AccountBalanceTable v-else :index="index" />
         </template>
         <template v-else>
             <EmptyState title="No such wallet" :icon="mdiWallet" />
