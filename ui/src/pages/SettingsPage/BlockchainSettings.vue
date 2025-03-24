@@ -6,6 +6,7 @@
             v-model="revertHeight"
             :label="$t('node_settings.revert_db_to_height')"
             :rules="[rules.number]"
+            clearable
         />
         <q-btn :disable="btnDisabled" outline color="negative" @click="handleRevertSync(revertHeight)">
             {{ $t("node_settings.revert") }}
