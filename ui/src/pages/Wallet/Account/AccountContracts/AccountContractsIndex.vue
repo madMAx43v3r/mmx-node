@@ -4,8 +4,8 @@
     <div v-for="(row, key) in filteredRows" :key="key" class="q-gutter-y-xs">
         <div>
             <div class="row q-gutter-x-none">
-                <m-chip square outline>{{ row.__type }}</m-chip>
-                <m-chip square outline>{{ row.address }}</m-chip>
+                <m-chip>{{ row.__type }}</m-chip>
+                <m-chip>{{ row.address }}</m-chip>
             </div>
 
             <q-card flat>

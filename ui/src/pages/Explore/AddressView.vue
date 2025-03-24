@@ -2,8 +2,8 @@
     <div class="q-gutter-y-sm">
         <div>
             <div class="row q-gutter-x-none">
-                <m-chip square outline>{{ $t("common.address") }}</m-chip>
-                <m-chip square outline copy>{{ address }}</m-chip>
+                <m-chip>{{ $t("common.address") }}</m-chip>
+                <m-chip copy>{{ address }}</m-chip>
             </div>
 
             <q-card v-if="!noData" flat>
@@ -12,7 +12,7 @@
         </div>
 
         <div v-if="data">
-            <m-chip square outline>{{ data.__type }}</m-chip>
+            <m-chip>{{ data.__type }}</m-chip>
             <q-card flat>
                 <ObjectTable :data="data" />
             </q-card>

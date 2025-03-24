@@ -2,12 +2,12 @@
     <div class="q-gutter-y-sm">
         <div>
             <div class="row q-gutter-x-none">
-                <m-chip square outline>{{ $t("swap.swap") }}</m-chip>
-                <m-chip v-if="data" square outline>
+                <m-chip>{{ $t("swap.swap") }}</m-chip>
+                <m-chip v-if="data">
                     {{ data.price ? parseFloat(data.price.toPrecision(6)) : "N/A" }}
                     {{ data.symbols[1] }} / {{ data.symbols[0] }}
                 </m-chip>
-                <m-chip square outline>{{ address }}</m-chip>
+                <m-chip>{{ address }}</m-chip>
             </div>
 
             <q-table

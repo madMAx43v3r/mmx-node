@@ -2,8 +2,8 @@
     <div class="q-gutter-y-sm">
         <div>
             <div class="row q-gutter-x-none">
-                <m-chip square outline>{{ $t("transaction_view.transaction") }}</m-chip>
-                <m-chip square outline>{{ transactionId }}</m-chip>
+                <m-chip>{{ $t("transaction_view.transaction") }}</m-chip>
+                <m-chip>{{ transactionId }}</m-chip>
             </div>
             <q-card flat>
                 <EmptyState v-if="noData" :icon="mdiBank" :title="$t('transaction_view.no_such_transaction')" />
@@ -20,8 +20,8 @@
 
             <div v-for="(op, index) in data.operations" :key="index">
                 <div class="row q-gutter-x-none">
-                    <m-chip square outline> Operation[{{ index }}] </m-chip>
-                    <m-chip square outline>{{ op.__type }}</m-chip>
+                    <m-chip> Operation[{{ index }}] </m-chip>
+                    <m-chip>{{ op.__type }}</m-chip>
                 </div>
                 <q-card flat>
                     <ObjectTable :data="op" />
@@ -30,7 +30,7 @@
 
             <div v-if="data.deployed">
                 <div class="row q-gutter-x-none">
-                    <m-chip square outline>{{ data.deployed.__type }}</m-chip>
+                    <m-chip>{{ data.deployed.__type }}</m-chip>
                 </div>
                 <q-card flat>
                     <ObjectTable :data="data.deployed" />

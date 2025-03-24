@@ -7,8 +7,8 @@
             <template v-else>
                 <div>
                     <div class="row q-gutter-x-none">
-                        <m-chip square outline>{{ $t("common.address") }}</m-chip>
-                        <m-chip square outline>{{ address }}</m-chip>
+                        <m-chip>{{ $t("common.address") }}</m-chip>
+                        <m-chip>{{ address }}</m-chip>
                         <div class="col q-my-auto">
                             <q-btn
                                 label="Logout"

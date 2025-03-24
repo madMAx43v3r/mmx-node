@@ -8,10 +8,10 @@
                 <div v-if="address" class="q-gutter-y-sm">
                     <div>
                         <div class="row q-col-gutter-xs">
-                            <m-chip square outline class="col-auto">
+                            <m-chip class="col-auto">
                                 {{ $t("common.address") }}
                             </m-chip>
-                            <m-chip square outline copy class="col-auto">
+                            <m-chip copy class="col-auto">
                                 {{ address }}
                             </m-chip>
                             <m-chip

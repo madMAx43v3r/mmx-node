@@ -1,5 +1,5 @@
 <template>
-    <q-chip>
+    <q-chip square outline>
         <slot />
         <UseClipboard v-if="copy && defaultSlotContent" v-slot="{ copy: copyX, copied }">
             <q-btn

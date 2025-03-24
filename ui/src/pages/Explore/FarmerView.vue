@@ -2,8 +2,8 @@
     <div class="q-gutter-y-sm">
         <div>
             <div class="row q-gutter-x-none">
-                <m-chip square outline>Farmer</m-chip>
-                <m-chip square outline>{{ farmerKey }}</m-chip>
+                <m-chip>Farmer</m-chip>
+                <m-chip>{{ farmerKey }}</m-chip>
             </div>
             <q-card flat>
                 <ListTable :rows="framerDataListRows" :data="framerData" :loading="framerDataLoading" />

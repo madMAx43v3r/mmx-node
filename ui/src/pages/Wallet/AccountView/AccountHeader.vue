@@ -1,12 +1,12 @@
 <template>
     <div class="row q-gutter-x-none">
-        <m-chip square outline>{{ $t("account_header.wallet") }} #{{ index }}</m-chip>
+        <m-chip>{{ $t("account_header.wallet") }} #{{ index }}</m-chip>
 
-        <m-chip v-if="rows.address" square outline copy>
+        <m-chip v-if="rows.address" copy>
             {{ rows.address }}
         </m-chip>
 
-        <m-chip v-if="rows.name" square outline>{{ rows.name }}</m-chip>
+        <m-chip v-if="rows.name">{{ rows.name }}</m-chip>
 
         <q-btn
             v-if="rows.with_passphrase"

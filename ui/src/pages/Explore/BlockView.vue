@@ -2,9 +2,9 @@
     <div class="q-gutter-y-sm">
         <div>
             <div class="row q-gutter-x-none">
-                <m-chip square outline>{{ $t("block_view.block") }}</m-chip>
-                <m-chip square outline>{{ height }}</m-chip>
-                <m-chip v-if="!noData" square outline>{{ data?.hash }}</m-chip>
+                <m-chip>{{ $t("block_view.block") }}</m-chip>
+                <m-chip>{{ height }}</m-chip>
+                <m-chip v-if="!noData">{{ data?.hash }}</m-chip>
                 <q-space />
                 <q-btn-group rounded>
                     <q-btn :to="prevPath" :icon="mdiArrowLeft" outline :disable="height <= 0" />

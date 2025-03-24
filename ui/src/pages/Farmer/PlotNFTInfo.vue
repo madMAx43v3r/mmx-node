@@ -2,7 +2,7 @@
     <div>
         <div>
             <div class="row q-gutter-x-none">
-                <m-chip square outline>{{ data.name }}</m-chip>
+                <m-chip>{{ data.name }}</m-chip>
             </div>
 
             <q-card flat>
