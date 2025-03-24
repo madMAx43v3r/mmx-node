@@ -1,18 +1,22 @@
 <template>
-    <q-select
-        v-model="appStore.locale"
-        emit-value
-        map-options
-        :label="$t('node_settings.language')"
-        :options="availableLanguages"
-    />
-    <q-select
-        v-model="appStore.isDarkTheme"
-        emit-value
-        map-options
-        :label="$t('node_settings.theme')"
-        :options="themes"
-    />
+    <q-card>
+        <q-card-section>
+            <q-select
+                v-model="appStore.locale"
+                emit-value
+                map-options
+                :label="$t('node_settings.language')"
+                :options="availableLanguages"
+            />
+            <q-select
+                v-model="appStore.isDarkTheme"
+                emit-value
+                map-options
+                :label="$t('node_settings.theme')"
+                :options="themes"
+            />
+        </q-card-section>
+    </q-card>
 </template>
 
 <script setup>

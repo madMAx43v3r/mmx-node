@@ -11,11 +11,7 @@
                         expand-separator
                         group="expansionGroup"
                     >
-                        <q-card>
-                            <q-card-section>
-                                <component :is="panel.component" />
-                            </q-card-section>
-                        </q-card>
+                        <component :is="panel.component" />
                     </q-expansion-item>
                 </template>
             </q-list>

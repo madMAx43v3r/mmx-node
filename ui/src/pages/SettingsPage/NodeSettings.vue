@@ -1,23 +1,24 @@
 <template>
-    <q-card :disable="loading" flat>
-        <q-linear-progress v-if="loading" query class="absolute-top" />
-        <div class="col-12">
-            <q-checkbox v-model="data.timelord" :label="$t('node_settings.enable_timelord')" />
-        </div>
-        <div class="col-12">
-            <q-checkbox v-model="data.open_port" :label="$t('node_settings.open_port')" />
-        </div>
-        <div class="col-12">
-            <q-checkbox v-model="data.allow_remote" label="Allow remote service access (for remote harvesters)" />
-        </div>
+    <q-card flat>
+        <q-card-section>
+            <div>
+                <q-checkbox v-model="data.timelord" :label="$t('node_settings.enable_timelord')" />
+            </div>
+            <div>
+                <q-checkbox v-model="data.open_port" :label="$t('node_settings.open_port')" />
+            </div>
+            <div>
+                <q-checkbox v-model="data.allow_remote" label="Allow remote service access (for remote harvesters)" />
+            </div>
 
-        <q-select
-            v-model="opencl_device_select"
-            :label="$t('node_settings.opencl_device')"
-            :options="data.opencl_device_list"
-            emit-value
-            map-options
-        />
+            <q-select
+                v-model="opencl_device_select"
+                :label="$t('node_settings.opencl_device')"
+                :options="data.opencl_device_list"
+                emit-value
+                map-options
+            />
+        </q-card-section>
     </q-card>
 </template>
 
@@ -34,11 +35,3 @@ watch(opencl_device_select, (value) => {
     data.opencl_device_name = value >= 0 ? data.opencl_device_list_relidx[value].name : null;
 });
 </script>
-
-<style scoped>
-.q-checkbox1 {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction1: row;
-}
-</style>
