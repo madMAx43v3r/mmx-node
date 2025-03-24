@@ -1,12 +1,12 @@
 <template>
     <div class="q-gutter-y-sm q-mt-sm">
-        <AccountPlotNFTsCreate v-bind="props" />
         <div class="q-gutter-y-sm">
             <q-linear-progress v-if="loading" query />
             <template v-for="item in contracts" :key="item.address">
                 <AccountPlotNFTsControl :address="item.address" />
             </template>
         </div>
+        <AccountPlotNFTsCreate v-bind="props" />
     </div>
 </template>
 
