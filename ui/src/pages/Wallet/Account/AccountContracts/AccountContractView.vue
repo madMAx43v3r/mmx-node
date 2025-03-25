@@ -2,6 +2,9 @@
     <div>
         <div class="row q-gutter-x-none">
             <m-chip>{{ data.__type }}</m-chip>
+            <m-chip v-if="binary">
+                {{ binary.name }}
+            </m-chip>
             <m-chip>{{ data.address }}</m-chip>
         </div>
 
@@ -38,4 +41,7 @@ const props = defineProps({
         required: true,
     },
 });
+
+const { chainBinariesSwapped } = useChainBinaries();
+const binary = computed(() => chainBinariesSwapped.value[props.data?.binary]);
 </script>
