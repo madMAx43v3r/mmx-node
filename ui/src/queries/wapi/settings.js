@@ -12,6 +12,7 @@ export const useConfig = () => {
     });
 };
 
+/*
 const getConfigKey = (params, signal) =>
     axios.get("/wapi/config/get", { params, signal }).then((response) => response.data);
 export const useConfigKey = (params) => {
@@ -20,6 +21,7 @@ export const useConfigKey = (params) => {
         queryFn: ({ signal }) => getConfigKey(params, signal),
     });
 };
+*/
 
 const setConfig = (payload) => axios.post("/wapi/config/set", payload).then((response) => response.data);
 export const useSetConfig = () => {
