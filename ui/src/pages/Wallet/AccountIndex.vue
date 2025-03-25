@@ -1,7 +1,7 @@
 <template>
     <div>
         <q-linear-progress v-if="loading" query class="absolute-top" />
-        <div class="q-gutter-y-sm">
+        <div class="q-gutter-y-md">
             <template v-for="(account, key) in rows" :key="key">
                 <AccountView :index="account.account" :use-router-view="false" />
             </template>
