@@ -1,5 +1,6 @@
 <template>
-    <div class="q-gutter-y-sm">
+    <q-card flat>
+        <FarmerMenu />
         <q-table
             :rows="rows"
             :columns="columns"
@@ -16,10 +17,12 @@
                 </q-td>
             </template>
         </q-table>
-    </div>
+    </q-card>
 </template>
 
 <script setup>
+import FarmerMenu from "../FarmerPage/FarmerMenu";
+
 const props = defineProps({
     limit: {
         type: Number,

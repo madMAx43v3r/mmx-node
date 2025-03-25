@@ -1,35 +1,38 @@
 <template>
     <div class="q-gutter-y-sm">
-        <div class="row q-gutter-x-xs">
-            <q-table
-                :rows="rows?.plot_count ?? []"
-                :columns="columns"
-                :loading="loading"
-                :pagination="{ rowsPerPage: 0 }"
-                hide-pagination
-                flat
-                class="col-4"
-            >
-            </q-table>
+        <q-card flat>
+            <FarmerMenu />
+            <div class="row q-gutter-x-xs">
+                <q-table
+                    :rows="rows?.plot_count ?? []"
+                    :columns="columns"
+                    :loading="loading"
+                    :pagination="{ rowsPerPage: 0 }"
+                    hide-pagination
+                    flat
+                    class="col-4"
+                >
+                </q-table>
 
-            <q-table
-                :rows="rows?.harvester_bytes ?? []"
-                :columns="columns2"
-                :loading="loading"
-                :pagination="{ rowsPerPage: 0 }"
-                hide-pagination
-                flat
-                class="col"
-            >
-                <template v-slot:body-cell="bcProps">
-                    <q-td :props="bcProps">
-                        <div :class="getXClasses(bcProps)">
-                            {{ bcProps.value }}
-                        </div>
-                    </q-td>
-                </template>
-            </q-table>
-        </div>
+                <q-table
+                    :rows="rows?.harvester_bytes ?? []"
+                    :columns="columns2"
+                    :loading="loading"
+                    :pagination="{ rowsPerPage: 0 }"
+                    hide-pagination
+                    flat
+                    class="col"
+                >
+                    <template v-slot:body-cell="bcProps">
+                        <q-td :props="bcProps">
+                            <div :class="getXClasses(bcProps)">
+                                {{ bcProps.value }}
+                            </div>
+                        </q-td>
+                    </template>
+                </q-table>
+            </div>
+        </q-card>
 
         <FarmerPlotDirs />
 
@@ -49,6 +52,7 @@
 
 <script setup>
 import { mdiRefresh } from "@mdi/js";
+import FarmerMenu from "../FarmerPage/FarmerMenu";
 
 const { t } = useI18n();
 const columns = computed(() => [
