@@ -1,13 +1,15 @@
 <template>
-    <q-tabs align="left" indicator-color="primary" outside-arrows class="m-bg-grey">
-        <template v-for="(item, key) in tabs" :key="key">
-            <q-route-tab :to="item.to" :exact="item.exact ?? false" :label="item.label" :icon="item.icon">
-                <q-badge v-if="item.badge" color="positive" floating transparent rounded>
-                    {{ item.badge }}
-                </q-badge>
-            </q-route-tab>
-        </template>
-    </q-tabs>
+    <q-card flat>
+        <q-tabs align="left" indicator-color="primary" outside-arrows class="m-bg-grey">
+            <template v-for="(item, key) in tabs" :key="key">
+                <q-route-tab :to="item.to" :exact="item.exact ?? false" :label="item.label" :icon="item.icon">
+                    <q-badge v-if="item.badge" color="positive" floating transparent rounded>
+                        {{ item.badge }}
+                    </q-badge>
+                </q-route-tab>
+            </template>
+        </q-tabs>
+    </q-card>
 </template>
 
 <script setup>

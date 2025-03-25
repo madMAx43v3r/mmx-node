@@ -1,5 +1,5 @@
 <template>
-    <div class="row q-gutter-x-none">
+    <div>
         <m-chip>{{ $t("account_header.wallet") }} #{{ index }}</m-chip>
 
         <m-chip v-if="rows.address" copy>

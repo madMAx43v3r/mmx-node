@@ -36,15 +36,11 @@ const defaultSlotContent = computed(() => (slots.default ? slots.default()[0].ch
     min-height: 28px;
     overflow-wrap: anywhere;
     padding: 0.02em 0.9em;
-    margin: 4px 2px;
+    margin: 0px 0px 4px 0px;
 }
 
-.q-chip:is(:first-child) {
-    margin-left: 0px;
-}
-
-.q-chip:is(:last-child) {
-    margin-right: 0px;
+.q-chip:not(:last-child) {
+    margin-right: 4px;
 }
 
 .body--dark .q-chip {

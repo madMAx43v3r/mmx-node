@@ -1,17 +1,15 @@
 <template>
-    <div>
-        <AccountHeader :index="index" />
-        <template v-if="!noData">
-            <q-card flat>
-                <AccountMenu :index="index" />
-                <AccountBalanceTable v-if="!useRouterView" :index="index" />
-            </q-card>
-            <TrRouterView v-if="useRouterView" :index="index" />
-        </template>
-        <template v-else>
-            <EmptyState title="No such wallet" :icon="mdiWallet" />
-        </template>
-    </div>
+    <template v-if="!noData">
+        <div>
+            <AccountHeader :index="index" />
+            <AccountMenu :index="index" />
+            <AccountBalanceTable v-if="!useRouterView" :index="index" class="q-mt-sm" />
+            <TrRouterView :index="index" class="q-mt-sm" />
+        </div>
+    </template>
+    <template v-else>
+        <EmptyState title="No such wallet" :icon="mdiWallet" />
+    </template>
 </template>
 
 <script setup>
