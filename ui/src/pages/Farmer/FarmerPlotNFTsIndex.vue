@@ -1,5 +1,5 @@
 <template>
-    <q-card flat>
+    <q-card flat style="background-color: transparent">
         <FarmerMenu />
         <div class="q-pt-sm q-gutter-y-sm">
             <template v-for="item in list" :key="item">
