@@ -33,6 +33,7 @@ const defaultSlotContent = computed(() => (slots.default ? slots.default()[0].ch
 <style lang="scss" scoped>
 .q-chip {
     height: unset;
+    min-height: 28px;
     overflow-wrap: anywhere;
     padding: 0.02em 0.9em;
     margin: 4px 2px;
