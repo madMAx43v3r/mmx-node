@@ -51,5 +51,9 @@ export const useChainBinaries = () => {
         );
     });
 
-    return { chainBinaries, chainBinariesSwapped };
+    const filterInit = computed(() =>
+        Object.fromEntries(Object.entries(chainBinariesSwapped.value).map(([key, value]) => [key, true]))
+    );
+
+    return { chainBinaries, chainBinariesSwapped, filterInit };
 };
