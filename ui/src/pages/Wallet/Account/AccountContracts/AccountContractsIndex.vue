@@ -1,13 +1,14 @@
 <template>
     <div>
-        <template v-for="(address, key) in uniqBinaries" :key="key">
-            <q-chip v-model:selected="filter[address]" outline color="primary" text-color="white">
-                {{ chainBinariesSwapped[address].name }}
+        <template v-for="(chip, key) in filterChips" :key="key">
+            <q-chip v-model:selected="filter[chip.address]" outline color="primary" text-color="white">
+                {{ chip.name }}
             </q-chip>
         </template>
-
-        <div v-for="(row, key) in filteredRows" :key="key" class1="q-gutter-y-xs">
-            <AccountContractView :data="row" />
+        <div class="q-gutter-y-xs">
+            <template v-for="(row, key) in filteredRows" :key="key">
+                <AccountContractView :data="row" />
+            </template>
         </div>
     </div>
 </template>
@@ -22,20 +23,45 @@ const props = defineProps({
     },
 });
 
-const filter = ref({});
-
 import { useWalletContracts } from "@/queries/wapi";
 const { rows, loading } = useWalletContracts(props);
 
-const uniqBinaries = computed(() => Array.from(new Set(rows.value.map((row) => row.binary))));
+const { chainBinaries, chainBinariesSwapped, filterInit } = useChainBinaries();
 
-const { chainBinariesSwapped, filterInit } = useChainBinaries();
-
+const filter = ref({});
 watchEffect(() => {
     filter.value = filterInit.value;
 });
 
-const filteredRows = computed(() => rows.value.filter((row) => filter.value[row.binary]));
+const filterChips = computed(() => {
+    const distinctWalletContractBinaries = Array.from(
+        new Set(rows.value.filter((row) => chainBinariesSwapped.value[row.binary]).map((row) => row.binary))
+    );
+
+    const result = Object.fromEntries(
+        Object.entries(chainBinariesSwapped.value).filter(([key, value]) =>
+            distinctWalletContractBinaries.includes(key)
+        )
+    );
+
+    const hasOthers = Object.entries(rows.value).some(([key, value]) => typeof result[value.binary] === "undefined");
+
+    if (hasOthers) {
+        result.others = {
+            name: "Others", // TODO i18n
+            address: "others",
+            key: "others",
+        };
+    }
+
+    return result;
+});
+
+const filteredRows = computed(() =>
+    rows.value.filter(
+        (row) => filter.value[row.binary] || (filter.value.others && typeof filter.value[row.binary] === "undefined")
+    )
+);
 
 const router = useRouter();
 const handleDeposit = (index, address) => {
