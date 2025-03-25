@@ -39,6 +39,14 @@ const defaultSlotContent = computed(() => (slots.default ? slots.default()[0].ch
     margin: 4px 2px;
 }
 
+.q-chip:is(:first-child) {
+    margin-left: 0px;
+}
+
+.q-chip:is(:last-child) {
+    margin-right: 0px;
+}
+
 .body--dark .q-chip {
     background-color: $blue-grey-10;
 }
