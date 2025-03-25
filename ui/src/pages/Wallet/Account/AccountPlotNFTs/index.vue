@@ -23,12 +23,12 @@ const props = defineProps({
 
 import { useChainInfo, useWalletContracts } from "@/queries/wapi";
 const { rows: chainInfo } = useChainInfo();
-const plotnftBinary = toRef(() => chainInfo.value?.plot_nft_binary);
+const plotNftBinary = toRef(() => chainInfo.value?.plot_nft_binary);
 
 const params = reactive({
     index: toRef(() => props.index),
-    type_hash: toRef(() => plotnftBinary.value),
+    type_hash: toRef(() => plotNftBinary.value),
     owned: true,
 });
-const { rows: contracts, loading } = useWalletContracts(params, () => !!plotnftBinary.value);
+const { rows: contracts, loading } = useWalletContracts(params, () => !!plotNftBinary.value);
 </script>
