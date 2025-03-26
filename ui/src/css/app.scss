@@ -112,3 +112,7 @@ input:read-only {
 .q-dialog__backdrop {
     backdrop-filter: blur(4px) grayscale(100%);
 }
+
+.q-skeleton--anim {
+    cursor: unset;
+}
