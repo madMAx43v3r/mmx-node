@@ -42,7 +42,7 @@
 	}
 
 	@media (min-width: 72rem) {
-		.main-pane { width: calc(100% - var(--sl-sidebar-width));
+		.main-pane { width: calc(100% - var(--sl-sidebar-width)); }
 		.sl-container:has(h1#_top) { margin-inline: 0 auto; }
 	}
 }
