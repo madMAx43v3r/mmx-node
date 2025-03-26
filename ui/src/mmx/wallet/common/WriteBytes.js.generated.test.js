@@ -1,16 +1,15 @@
-import { describe, it, assert, expect } from "vitest";
+import { assert, describe, it } from "vitest";
 
-import { tx_note_e } from "./tx_note_e";
 import { addr_t, bytes_t } from "./addr_t";
 import { WriteBytes } from "./WriteBytes";
 
-import "../utils/Uint8ArrayUtils";
-import { Execute } from "./Operation";
 import { optional } from "./optional";
-import { Variant } from "./Variant";
-import { txin_t, txout_t } from "./txio_t";
 import { pair } from "./pair";
+import { txin_t, txout_t } from "./txio_t";
+import { Variant } from "./Variant";
 import { vnxObject } from "./vnxObject";
+
+import "../utils/Uint8ArrayUtils";
 
 describe("WriteBuffer", () => {
     it("bool true", () => {

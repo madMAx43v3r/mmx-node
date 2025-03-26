@@ -135,4 +135,4 @@ class Deposit extends Execute {
     }
 }
 
-export { Operation, Execute };
+export { Operation };

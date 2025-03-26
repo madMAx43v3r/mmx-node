@@ -1,14 +1,7 @@
-import { describe, it, assert, expect } from "vitest";
-
-import { tx_note_e } from "./tx_note_e";
-import { addr_t, bytes_t } from "./addr_t";
+import { assert, describe, expect, it } from "vitest";
 import { WriteBytes } from "./WriteBytes";
 
 import "../utils/Uint8ArrayUtils";
-import { Execute } from "./Operation";
-import { optional } from "./optional";
-import { Variant } from "./Variant";
-import { txin_t, txout_t } from "./txio_t";
 
 describe("WriteBuffer", () => {
     it("field without value", () => {
