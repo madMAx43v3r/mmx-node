@@ -38,13 +38,6 @@ class Execute {
                     return value.map((i) => new Variant(i));
                 case "user":
                     return new optional(value ? new addr_t(value) : null);
-
-                // Deposit fields
-                case "currency":
-                    return new addr_t(value);
-                case "amount":
-                    return new uint128(value);
-                // ----
                 default:
                     return value;
             }
@@ -111,6 +104,24 @@ class Deposit extends Execute {
         super({ address, solution, method, args, user });
         this.currency = currency;
         this.amount = amount;
+    }
+
+    static hashHandler = {
+        get: (target, prop) => {
+            const value = target[prop];
+            switch (prop) {
+                case "currency":
+                    return new addr_t(value);
+                case "amount":
+                    return new uint128(value);
+                default:
+                    return Execute.hashHandler.get(target, prop);
+            }
+        },
+    };
+
+    getHashProxy() {
+        return new Proxy(this, Deposit.hashHandler);
     }
 
     hash_serialize(full_hash) {
