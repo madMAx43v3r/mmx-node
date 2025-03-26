@@ -5,7 +5,7 @@
                 {{ chip.name }}
             </q-chip>
         </template>
-        <div class="q-gutter-y-xs">
+        <div class="q-gutter-y-md">
             <template v-for="(row, key) in filteredRows" :key="key">
                 <AccountContractView :data="row" />
             </template>
