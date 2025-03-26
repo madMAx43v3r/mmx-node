@@ -1,5 +1,6 @@
 import { hexToBytes, isBytes, u8 } from "@noble/hashes/utils";
 
+import { uint128 } from "./uint128";
 import { bytes_t } from "./addr_t";
 import { txin_t, txout_t } from "./txio_t";
 import { optional } from "./optional";
@@ -122,6 +123,11 @@ export class WriteBytes extends WriteBuffer {
         this.write_bytes(value.field);
     }
 
+    write_bytes_uint128(value) {
+        this.write_bytes(value.lower());
+        this.write_bytes(value.upper());
+    }
+
     write_bytes(_value, full_hash) {
         let value = _value;
         if (typeof value === "boolean") {
@@ -156,6 +162,8 @@ export class WriteBytes extends WriteBuffer {
                 this.write_bytes_pair(value);
             } else if (value instanceof vnxObject) {
                 this.write_bytes_object(value);
+            } else if (value instanceof uint128) {
+                this.write_bytes_uint128(value);
             } else {
                 throw new Error(`Unknown object type`);
             }
