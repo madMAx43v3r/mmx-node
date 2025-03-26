@@ -1,10 +1,12 @@
 <template>
     <div>
-        <template v-for="(chip, key) in filterChips" :key="key">
-            <q-chip v-model:selected="filter[chip.address]" outline color="primary" text-color="white">
-                {{ chip.name }}
-            </q-chip>
-        </template>
+        <div class="q-pb-sm">
+            <template v-for="(chip, key) in filterChips" :key="key">
+                <q-chip v-model:selected="filter[chip.address]" outline color="primary" text-color="white">
+                    {{ chip.name }}
+                </q-chip>
+            </template>
+        </div>
         <div class="q-gutter-y-md">
             <template v-for="(row, key) in filteredRows" :key="key">
                 <AccountContractView :data="row" />
