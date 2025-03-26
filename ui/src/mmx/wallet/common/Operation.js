@@ -17,6 +17,7 @@ class Operation {
     }
 }
 
+// cpp implementation: /src/operation/Execute.cpp
 class Execute {
     #type_hash = BigInt("0x8cd9012d9098c1d1");
 
@@ -93,6 +94,7 @@ class Execute {
     }
 }
 
+// cpp implementation: /src/operation/Deposit.cpp
 class Deposit extends Execute {
     #type_hash = BigInt("0xc23408cb7b04b0ec");
     __type = "mmx.operation.Deposit";
