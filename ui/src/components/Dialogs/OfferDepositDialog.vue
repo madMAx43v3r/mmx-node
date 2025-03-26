@@ -131,7 +131,7 @@ import { useWalletBalance } from "@/queries/wapi";
 const { data: walletBalance } = useWalletBalance(
     reactive({
         index: toRef(() => props.index),
-        currency: toRef(() => props.offer.bid_symbol),
+        currency: toRef(() => props.offer.bid_currency),
     }),
     (data) => (data ? data.spendable : 0)
 );
