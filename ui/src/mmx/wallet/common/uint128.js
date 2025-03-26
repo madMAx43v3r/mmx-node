@@ -1,5 +1,5 @@
 export class uint128 {
-    #value = 0n;
+    #value = null;
 
     constructor(value) {
         if (typeof value === "string") {
