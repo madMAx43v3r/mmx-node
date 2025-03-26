@@ -3,7 +3,7 @@ import { VueQueryPlugin, QueryClient, QueryCache } from "@tanstack/vue-query";
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            retry: true,
+            retry: false,
             networkMode: "always",
         },
         mutations: {
