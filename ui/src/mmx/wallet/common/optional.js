@@ -9,8 +9,4 @@ export class optional {
     valueOf() {
         return this.#value;
     }
-
-    // toString() {
-    //     return this.#value.toString();
-    // }
 }
