@@ -1,6 +1,7 @@
 import { addr_t, hash_t } from "./addr_t";
 import { optional } from "./optional";
 import { Variant } from "./Variant";
+import { uint128 } from "./uint128";
 
 import { WriteBytes } from "./WriteBytes";
 
@@ -37,8 +38,13 @@ class Execute {
                     return value.map((i) => new Variant(i));
                 case "user":
                     return new optional(value ? new addr_t(value) : null);
+
+                // Deposit fields
                 case "currency":
                     return new addr_t(value);
+                case "amount":
+                    return new uint128(value);
+                // ----
                 default:
                     return value;
             }
