@@ -14,14 +14,14 @@ class Contract {
         this.version = params.version;
     }
 
-    calc_cost(params) {
-        if (!params) {
-            throw new Error("chain params is required");
-        }
+    // calc_cost(params) {
+    //     if (!params) {
+    //         throw new Error("chain params is required");
+    //     }
 
-        const cost = BigInt(this.num_bytes()) * BigInt(params.min_txfee_byte);
-        return cost;
-    }
+    //     const cost = BigInt(this.num_bytes()) * BigInt(params.min_txfee_byte);
+    //     return cost;
+    // }
 
     num_bytes(total) {
         return 16;
