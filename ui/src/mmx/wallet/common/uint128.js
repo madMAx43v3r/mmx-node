@@ -10,7 +10,7 @@ export class uint128 {
         } else if (typeof value === "bigint") {
             _value = value;
         } else {
-            throw new Error("Invalid uint128 value");
+            throw new Error("Unsupported type");
         }
 
         if (_value >> 128n) {

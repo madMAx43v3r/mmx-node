@@ -22,8 +22,8 @@ describe("uint128", () => {
         expect(() => new uint128(0xffffffffffffffffffffffffffffffffn + 1n)).toThrowError();
     });
 
-    it("invalid value", () => {
-        expect(() => new uint128([])).toThrowError();
+    it("unsupported type", () => {
+        expect(() => new uint128(Symbol("unsupported type"))).toThrowError();
     });
 
     it("number", () => {
