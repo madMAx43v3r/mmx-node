@@ -28,12 +28,14 @@ describe("uint128", () => {
 
     it("number", () => {
         const value = new uint128(0x1337133713371337);
+        assert.equal(value.valueOf(), 0x1337133713371337);
         assert.equal(value.lower(), 0x1337133713371337);
         assert.equal(value.upper(), 0x0);
     });
 
     it("string", () => {
         const value = new uint128("0xffffffffffffffff1337133713371337");
+        assert.equal(value.valueOf(), 0xffffffffffffffff1337133713371337n);
         assert.equal(value.lower(), 0x1337133713371337n);
         assert.equal(value.upper(), 0xffffffffffffffffn);
     });
