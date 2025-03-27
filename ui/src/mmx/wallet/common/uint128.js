@@ -1,8 +1,19 @@
 export class uint128 {
     #value = null;
 
+    #lower = null;
+    #upper = null;
+
     valueOf() {
         return this.#value;
+    }
+
+    lower() {
+        return this.#lower;
+    }
+
+    upper() {
+        return this.#upper;
     }
 
     constructor(value) {
@@ -22,13 +33,7 @@ export class uint128 {
         }
 
         this.#value = _value;
-    }
-
-    lower() {
-        return this.#value & 0xffffffffffffffffn;
-    }
-
-    upper() {
-        return (this.#value >> 64n) & 0xffffffffffffffffn;
+        this.#lower = _value & 0xffffffffffffffffn;
+        this.#upper = (_value >> 64n) & 0xffffffffffffffffn;
     }
 }
