@@ -1,5 +1,6 @@
 import { WriteBytes } from "./WriteBytes";
 import { addr_t, hash_t } from "./addr_t";
+import { get_num_bytes } from "./utils";
 import { Variant } from "./Variant";
 
 class Contract {
@@ -63,7 +64,7 @@ class TokenBase extends Contract {
 
     num_bytes() {
         const hp = this.getHashProxy();
-        return super.num_bytes() + this.name.length + this.symbol.length + hp.meta_data.size();
+        return super.num_bytes() + this.name.length + this.symbol.length + get_num_bytes(hp.meta_data);
     }
 }
 
@@ -135,11 +136,21 @@ class Executable extends TokenBase {
     num_bytes() {
         const hp = this.getHashProxy();
 
-        let sum = super.num_bytes();
-        sum += 32 + this.init_method.length + hp.depends.size * 32;
-        hp.init_args.map((i) => (sum += i.size()));
+        let sum = super.num_bytes() + 32 + this.init_method.length + hp.depends.size * 32;
+        hp.init_args.map((arg) => (sum += get_num_bytes(arg)));
         hp.depends.forEach((value, key) => (sum += key.length));
         return sum;
+    }
+
+    calc_cost(params) {
+        if (!params) {
+            throw new Error("chain params is required");
+        }
+        const hp = this.getHashProxy();
+        const cost =
+            BigInt(this.num_bytes()) * BigInt(params.min_txfee_byte) +
+            BigInt(hp.depends.size) * BigInt(params.min_txfee_depend);
+        return cost;
     }
 }
 export { Contract, Executable };
