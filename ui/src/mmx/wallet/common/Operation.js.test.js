@@ -1,4 +1,4 @@
-import { describe, it, assert } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import { Operation } from "./Operation";
 
 import "../utils/Uint8ArrayUtils";
@@ -30,5 +30,11 @@ describe("mmx.operation.Execute", () => {
         const op = new Operation(obj);
         const hash_serialize = op.hash_serialize(true);
         assert.equal(hash_serialize.toHex(), hex);
+    });
+});
+
+describe("mmx.operation.Operation", () => {
+    it("invalid type", () => {
+        expect(() => new Operation(Symbol("invalid type"))).toThrowError();
     });
 });
