@@ -15,7 +15,7 @@ Scroll down to "Other Tools" here: https://visualstudio.microsoft.com/downloads/
 Linux binary packages are available here: https://github.com/madMAx43v3r/mmx-node/releases
 
 To install a binary package:
-```
+```bash frame="none"
 sudo apt install ~/Downloads/mmx-node-1.1.7-amd64-ubuntu-20.04.deb
 ```
 This will automatically install dependencies as well.
@@ -25,7 +25,7 @@ When no matching package is found, continue below to build from source.
 ### Dependencies
 
 Ubuntu Linux:
-```
+```bash frame="none"
 sudo apt update
 sudo apt install git cmake build-essential automake libtool pkg-config curl libminiupnpc-dev libjemalloc-dev libzstd-dev zlib1g-dev ocl-icd-opencl-dev clinfo screen
 # Optional dependencies:
@@ -34,7 +34,7 @@ sudo apt install nvidia-cuda-toolkit  # for CUDA compute (farming)
 ```
 
 Arch Linux:
-```
+```bash frame="none"
 sudo pacman -Syu
 sudo pacman -S base-devel git cmake curl miniupnpc jemalloc zstd zlib opencl-headers ocl-icd clinfo screen
 # Optional dependencies:
@@ -43,7 +43,7 @@ sudo pacman -S cuda  # for CUDA compute (farming)
 ```
 
 Fedora Linux:
-```
+```bash frame="none"
 sudo yum install kernel-devel git cmake automake libtool curl gcc gcc-c++ miniupnpc-devel jemalloc-devel ocl-icd-devel zlib-ng-devel zstd clinfo screen
 # Optional dependencies:
 sudo yum install qt5-qtwebengine-devel  # for native GUI
@@ -53,7 +53,7 @@ Note: To enable CUDA support, CUDA needs to be installed: https://developer.nvid
 
 ### Building from Source
 
-```
+```bash frame="none"
 git clone https://github.com/madMAx43v3r/mmx-node.git
 cd mmx-node
 ./update.sh
@@ -64,14 +64,14 @@ To disable CUDA support: `./update.sh -D DISABLE_CUDA=1` \
 These settings are stored, until the next `./clean_all.sh`, so only needs to be specified once. To enable again, set the config to `0`.
 
 To update to latest version:
-```
+```bash frame="none"
 ./update.sh
 ```
 
 ### Rebuilding
 
 If the build is broken for some reason:
-```
+```bash frame="none"
 ./clean_all.sh
 ./update.sh
 ```

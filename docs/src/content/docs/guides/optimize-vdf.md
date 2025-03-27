@@ -23,12 +23,12 @@ Example Hardware and times spreadsheet: https://docs.google.com/spreadsheets/d/1
 Intel iGPUs prior to 11th gen are not sufficient for mainnet. Intel's desktop iGPUs have much fewer compute units than their mobile counterparts, so only the mobile SKUs in laptops/mini-PCs will be suitable for OpenCL VDF verify. 11th gen and newer desktop CPUs with the SHA instruction set can get decent performance on the CPU cores without OpenCL.
 
 Ubuntu 20.04, 21.04
-```
+```bash frame="none"
 sudo apt install intel-opencl-icd
 ```
 
 Ubuntu ppa for 18.04, 20.04, 21.04
-```
+```bash frame="none"
 sudo add-apt-repository ppa:intel-opencl/intel-opencl
 sudo apt update
 sudo apt install intel-opencl-icd
@@ -50,24 +50,24 @@ Change directory to the Download folder and install with `sudo dpkg -i amdgpu-in
 `sudo apt install rocm-opencl`
 
 Follow on-screen instructions and then run:
-```
+```bash frame="none"
 sudo apt update
 sudo apt upgrade
 ```
 
 Arch Linux:
-```
+```bash frame="none"
 sudo pacman -S opencl-amd
 ```
 
 Mesa drivers with opencl drivers do seem to work, but performance is very poor (VDF verification >4x longer).\
 To install mesa drivers:\
 Ubuntu:
-```
+```bash frame="none"
 sudo apt install mesa-opencl-icd
 ```
 Arch:
-```
+```bash frame="none"
 sudo pacman -S mesa mesa-utils opencl-mesa
 ```
 
@@ -81,7 +81,7 @@ Install Nvidia drivers:
 
 ### Ubuntu
 
-```
+```bash frame="none"
 sudo apt install nvidia-driver-470
 sudo apt install nvidia-driver-565
 ```
@@ -89,15 +89,15 @@ Version 470 still works with older Kepler cards like a Quadro K2000.
 Use latest version for newer GPUs.
 
 ### Arch Linux
-```
+```bash frame="none"
 sudo pacman -S nvidia nvidia-utils opencl-nvidia
 ```
 For older GPUs, use drivers from the AUR:
-```
-Kepler series newest driver: 470xx
+```bash frame="none"
+# Kepler series newest driver: 470xx
 yay -S nvidia-470xx-dkms nvidia-470xx-utils opencl-nvidia-470xx
 
-Fermi series newest driver: 390xx
+# Fermi series newest driver: 390xx
 yay -S nvidia-390xx-dkms nvidia-390xx-utils opencl-nvidia-390xx
 ```
 

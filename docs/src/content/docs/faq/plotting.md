@@ -8,7 +8,7 @@ description: Frequently asked questions about plotting.
 At the end of the command, add `2>&1 | tee /home/user/desired_path/$(uuid).log;`
 
 Example:
-```
+```bash frame="none"
 ./mmx_cuda_plot -f [insert your public farmer key here] -p [insert your pool key here]  -t /mnt/NVME/Temp/ -2 /mnt/ramdisk/ -d /mnt/NVME/Temp/ -C 3 -S 2  -n 18 2>&1 | tee /home/user/desired_path/(filename).log;
 ```
 

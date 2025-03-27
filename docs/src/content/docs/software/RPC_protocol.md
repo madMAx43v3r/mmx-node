@@ -14,7 +14,7 @@ A web-friendly `/wapi/` is available for select features.
 Authentication is required to access private API endpoints or remove limits from public enpoints.
 
 The best way to setup static authentication is to create an API token, by editing `config/local/HttpServer.json`:
-```
+```json
 {
 	"token_map": [
 		["secure_random_token_here", "ADMIN"]
@@ -396,7 +396,7 @@ Request payload is an object of arguments:
 Returns contract address (bech32) if successful.
 
 Example `payload` for a smart contract:
-```
+```json
 {
 	"__type": "mmx.contract.Executable",
 	"name": "Fake Testnet USD",
