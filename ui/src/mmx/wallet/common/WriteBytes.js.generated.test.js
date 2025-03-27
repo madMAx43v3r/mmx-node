@@ -1,13 +1,14 @@
 import { assert, describe, it } from "vitest";
 
 import { addr_t, bytes_t } from "./addr_t";
-import { WriteBytes } from "./WriteBytes";
-
+import { uint128 } from "./uint128";
 import { optional } from "./optional";
 import { pair } from "./pair";
 import { txin_t, txout_t } from "./txio_t";
 import { Variant } from "./Variant";
 import { vnxObject } from "./vnxObject";
+
+import { WriteBytes } from "./WriteBytes";
 
 import "../utils/Uint8ArrayUtils";
 
@@ -73,6 +74,33 @@ describe("WriteBuffer", () => {
         wb.write_field("field_name", 9223372036854775807n);
         const jsHex = wb.buffer.toHex();
         const cppHex = "6669656C643C3E737472696E673C3E0A000000000000006669656C645F6E616D65FFFFFFFFFFFFFF7F";
+        assert.equal(jsHex, cppHex);
+    });
+
+    it("uint128", () => {
+        const wb = new WriteBytes();
+        wb.write_field("field_name", new uint128("0x13371337133713371337133713371337"));
+        const jsHex = wb.buffer.toHex();
+        const cppHex =
+            "6669656C643C3E737472696E673C3E0A000000000000006669656C645F6E616D6537133713371337133713371337133713";
+        assert.equal(jsHex, cppHex);
+    });
+
+    it("uint128 min", () => {
+        const wb = new WriteBytes();
+        wb.write_field("field_name", new uint128("0x00"));
+        const jsHex = wb.buffer.toHex();
+        const cppHex =
+            "6669656C643C3E737472696E673C3E0A000000000000006669656C645F6E616D6500000000000000000000000000000000";
+        assert.equal(jsHex, cppHex);
+    });
+
+    it("uint128 max", () => {
+        const wb = new WriteBytes();
+        wb.write_field("field_name", new uint128("0xffffffffffffffffffffffffffffffff"));
+        const jsHex = wb.buffer.toHex();
+        const cppHex =
+            "6669656C643C3E737472696E673C3E0A000000000000006669656C645F6E616D65FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
         assert.equal(jsHex, cppHex);
     });
 
