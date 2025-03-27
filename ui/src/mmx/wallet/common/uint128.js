@@ -2,15 +2,22 @@ export class uint128 {
     #value = null;
 
     constructor(value) {
+        let _value;
         if (typeof value === "string") {
-            this.#value = BigInt(value);
+            _value = BigInt(value);
         } else if (typeof value === "number") {
-            this.#value = BigInt(value);
+            _value = BigInt(value);
         } else if (typeof value === "bigint") {
-            this.#value = value;
+            _value = value;
         } else {
             throw new Error("Invalid uint128 value");
         }
+
+        if (_value >> 128n) {
+            throw new Error("uint128() overflow");
+        }
+
+        this.#value = _value;
     }
 
     lower() {
