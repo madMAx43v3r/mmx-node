@@ -16,4 +16,14 @@ describe("Variant", () => {
         expect(() => new Variant(obj)).not.toThrowError();
         expect(() => new Variant({ obj: obj })).toThrowError();
     });
+
+    it("size", () => {
+        const variant = new Variant({
+            bool: true,
+            int: 1337,
+            obj: { bool: true, int: 1337, string: "1337" },
+            string: "1337",
+        });
+        assert.equal(variant.size(), 119);
+    });
 });
