@@ -233,9 +233,9 @@ Account balances can be up to 128-bit, while amounts (for deposit and sending) a
 Let's say we choose 64-bit precision.
 This means we multiply all constants by 2^64 (or left shift by 64) and right shift by 64 to get a result.
 For example `123456 * 1.337 = 165060.672`:
-```
-const factor = 24663296826549670511; 		// 1.337
-const result = (123456 * factor) >> 64;		// 165060
+```js
+const factor = 24663296826549670511;       // 1.337
+const result = (123456 * factor) >> 64;    // 165060
 ```
 Fixed point arithmetic always rounds down.
 When converting floating point constants, rounding to nearest is best for accuracy.
@@ -287,7 +287,7 @@ null + 1
 ### Contract Storage
 
 Any global variable will be persisted accross the lifetime of a contract:
-```
+```js
 var storage = [];
 function add(value) public {
 	push(storage, value);
@@ -301,7 +301,7 @@ function get() const public {
 
 Any `static` private function can be a constructor. When deploying a contract you have to specify which function to use. \
 The default is to use `init()`:
-```
+```js
 var foo;
 var spec;
 function init(bar) {
@@ -318,7 +318,7 @@ Note: Global variables are initialized to `null` before constructor is executed.
 ### Deposit
 
 Deposits in MMX are made through function calls to a `payable` function:
-```
+```js
 var currency = bech32();
 var balances = {};
 function deposit(account) public payable {
@@ -389,7 +389,7 @@ A smart contract's code is actually a separate "contract" of type `mmx.contract.
 Multiple contracts can share the same binary, this reduces the cost of deploying contracts significantly.
 
 If the code is not deployed on-chain yet, it needs to be compiled and deployed first:
-```
+```bash frame="none"
 mmx_compile -t -n testnet12 -f example.js -o example.dat
 mmx wallet deploy example.dat
 ```
@@ -398,7 +398,7 @@ mmx wallet deploy example.dat
 
 Once the binary is confirmed on-chain, we can deploy any number of contracts with the same code. \
 This can be done via JSON files:
-```
+```json
 {
 	"__type": "mmx.contract.Executable",
 	"name": "Example",
@@ -413,47 +413,47 @@ If the contract does not represent a token, `name`, `symbol` and `decimals` can 
 If `init_method` is "init", it can be omitted as well since it's the default.
 
 Now deploying a contract from JSON file:
-```
+```bash frame="none"
 mmx wallet deploy example.json
 ```
 Every contract will have a different address since the wallet generates a random 64-bit transaction nonce by default.
 
 The node keeps track which `sender` deployed a contract, as such you can view all your deployed contracts via:
-```
+```bash frame="none"
 mmx wallet show contracts
 ```
 
 ### Executing a smart contract function
 
 Executing a smart contract function can be done via command line:
-```
+```bash frame="none"
 mmx wallet exec <method> [args] -x <contract>
 ```
 This will submit a transaction to the network.
 
 To make a deposit:
-```
+```bash frame="none"
 mmx wallet deposit <method> [args] -a <amount> -x <currency> -t <contract>
 ```
 Be careful not to confuse `-x` and `-t`: `-t` is the destination, while `-x` is the currency to deposit.
 
 By default `this.user` is set to the wallet's first address (index `0`).
 This can be overriden with a different address index:
-```
+```bash frame="none"
 mmx wallet exec <method> [args] -k <index>
 mmx wallet exec <method> [args] -k -1  # this will set `user` to `null`
 ```
 The same applies to `mmx wallet deposit`.
 
 Specific examples:
-```
+```bash frame="none"
 mmx wallet exec test_me 1 2 3 -x mmx1...
 mmx wallet deposit test_me 1 2 3 -x mmx1... -t mmx1...  # `-t` is like `-x` for `exec`
 mmx wallet deposit -x mmx1... -t mmx1...  # this will call `deposit()` without args
 ```
 
 To execute a function just for testing:
-```
+```bash frame="none"
 mmx node call <method> [args] -x <contract>
 ```
 This will not submit any transaction, but rather just simulate a call at the current blockchain `height + 1`.
@@ -461,24 +461,24 @@ This will not submit any transaction, but rather just simulate a call at the cur
 ### Inspecting a Contract
 
 To view the contract that was deployed:
-```
+```bash frame="none"
 mmx node get contract <address>
 ```
 
 To view a contract's state (global storage variables):
-```
+```bash frame="none"
 mmx node read -x <address>
 mmx node read <field> -x <address>  # `field` can be a variable name or hex address `0x...`
 ```
 
 To dump a contracts's entire storage:
-```
+```bash frame="none"
 mmx node dump -x <address>
 ```
 `<0x...>` denotes a reference, `[0x...,size]` denotes an array, `{0x...}` denotes a map / object.
 
 To dump a contract's binary code:
-```
+```bash frame="none"
 mmx node dump_code -x <address>
 ```
 
@@ -498,13 +498,13 @@ Memory is unified in MMX, but there are regions for different usage:
 As in JavaScript: Arrays, Maps and Objects are reference counted.
 
 That means "copying" by assignment does not make a deep copy, it only copies the reference:
-```
+```js
 const array = [1, 2, 3];
 const tmp = array;
 push(tmp, 4);
 return array;	// returns [1, 2, 3, 4]
 ```
-```
+```js
 const object = {"foo": {}};
 const foo = object.foo;
 foo.bar = true;
@@ -515,7 +515,7 @@ In order to make a deep-copy you need to use `clone()`.
 ### clone() from storage
 
 It's not possible to clone maps / objects from contract storage:
-``` 
+```js
 var object = {};
 function test() public {
 	return clone(object);		// will fail
@@ -537,11 +537,3 @@ Note: `this.balance` is updated automatically when receiving funds via deposit, 
 ### Instruction costs
 
 TODO
-
-
-
-
-
-
-
-

@@ -9,7 +9,7 @@ i18nReady: true
 The native GUI can be opened by searching for `MMX Node` (when installed via binary package).
 
 In case of compiling from source:
-```
+```bash frame="none"
 ./run_node.sh --gui      # includes wallet and farmer
 ./run_wallet.sh --gui    # remote wallet (connect to another node)
 ```
@@ -24,7 +24,7 @@ In case of a binary package install, the password will be in `~/.mmx/PASSWD`. By
 ## CLI
 
 When compiled from source:
-```
+```bash frame="none"
 cd mmx-node
 source ./activate.sh
 ```
@@ -34,7 +34,7 @@ Note: A new wallet can also be created in the GUI.
 
 ### Creating a Wallet (offline)
 
-```
+```bash frame="none"
 mmx wallet create [-f filename] [--with-passphrase]
 ```
 
@@ -43,19 +43,19 @@ The file name argument is optional. By default it is `wallet.dat`, which will be
 Additional wallets need to be added to `key_files` array in `config/local/Wallet.json`.
 
 To use a passphrase, specify `--with-passphrase` without the actual passphrase:
-```
-$ mmx wallet create --with-passphrase
+```bash frame="none"
+mmx wallet create --with-passphrase
 Passphrase: <type here>
 ```
 
 To create a wallet with a known mnemonic seed, specify `--with-mnemonic` without the actual words:
-```
+```bash frame="none"
 mmx wallet create --with-mnemonic
 Mnemonic: word1 word2 ... <enter>
 ```
 
 To get the mnemonic seed from a wallet (with Node / Wallet already running):
-```
+```bash frame="none"
 mmx wallet get seed [-j index]
 ```
 
@@ -64,7 +64,7 @@ Note: A Node / Wallet restart is needed to pick up a new wallet.
 ### Creating a Wallet (online)
 
 With a running Node / Wallet:
-```
+```bash frame="none"
 mmx wallet new [name] [--with-mnemonic] [--with-passphrase] [-N <num_addresses>]
 ```
 All parameters are optional. The new wallet can be seen with `mmx wallet accounts` (last entry).
@@ -77,7 +77,7 @@ To use a passphrase, specify `--with-passphrase` without the actual passphrase. 
 
 First perform the installation and setup steps, then:
 
-```
+```bash frame="none"
 ./run_node.sh
 ```
 You can enable port forwarding on TCP port 11337, if you want to help out the network and accept incoming connections.
@@ -89,7 +89,7 @@ Note: Any config changes require a node restart to become effective.
 #### Custom Farmer Reward Address
 
 Create / Edit file `config/local/Farmer.json`:
-```
+```json
 {
 	"reward_addr": "mmx1..."
 }
@@ -99,7 +99,7 @@ By default the first address of the first wallet is used.
 #### Custom Timelord Reward Address
 
 Create / Edit file `config/local/TimeLord.json`:
-```
+```json
 {
 	"reward_addr": "mmx1..."
 }
@@ -108,21 +108,21 @@ Create / Edit file `config/local/TimeLord.json`:
 #### Fixed Node Peers
 
 Create / Edit file `config/local/Router.json`:
-```
+```json
 {
 	"fixed_peers": ["192.168.0.123", "more"]
 }
 ```
 
 #### Enable Timelord
-```
+```bash frame="none"
 echo true > config/local/timelord
 ```
 
 #### CUDA Settings
 
 Create / Edit `config/local/cuda.json`:
-```
+```json
 {
 	"enable": true,
 	"devices": [0, 1, ...]
@@ -133,7 +133,7 @@ Empty device list = use all devices. Device indices start at 0. CUDA is enabled 
 #### Custom home directory
 
 To set a custom storage path for the blockchain DB, wallet files, etc:
-```
+```bash frame="none"
 export MMX_HOME=/your/path/
 ```
 Wallet files will end up in `MMX_HOME`, everything else in `mainnet` subfolder.
@@ -145,7 +145,7 @@ Note: A trailing `/` in the path is required.
 #### Custom data directory
 
 To store the DB in a custom directory you can set environment variable `MMX_DATA` (for example):
-```
+```bash frame="none"
 export MMX_DATA=/mnt/mmx_data/
 ```
 A node restart is required. Optionally the `mainnet` folder can be copied to the new `MMX_DATA` path (after stopping the node), to avoid having to sync from scratch again.
@@ -156,7 +156,7 @@ Note: A trailing `/` in the path is required.
 
 If you have a slow internet connection or want to reduce traffic in general you can lower the number of connections in `config/local/Router.json`.
 For example to run at the bare recommended minimum:
-```
+```json
 {
 	"num_peers_out": 4,
 	"max_connections": 4
@@ -171,11 +171,10 @@ However this will hurt the network, so please only disable it if absolutely nece
 ### Running in background
 
 To run a node in the background you can enter a `screen` session:
-```
-screen -S node
-(start node as above)
-<Ctrl+A> + D (to detach)
-screen -r node (to attach again)
+```bash frame="none"
+screen -S node    # start node as above
+# <Ctrl+A> + D    # to detach
+screen -r node    # to attach again
 ```
 
 ### Recover from forking
@@ -189,7 +188,7 @@ This is needed if for some reason the node forked from the network. Just subtrac
 **For an in depth guide on plotting, see** [Plotting Guide](../mmx-plotter/).
 
 To get the farmer key for plotting:
-```
+```bash frame="none"
 mmx wallet keys [-j index]
 ```
 The node needs to be running for this command to work. (`-j` to specify the index of a non-default wallet)
@@ -204,11 +203,14 @@ Download CUDA plotter here: https://github.com/madMAx43v3r/mmx-binaries/tree/mas
 
 There is no CPU plotter anymore for the new format, because it would be too inefficient. Any old Nvidia GPU will do, Maxwell or newer.
 
-Example Full RAM: `./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -d <dst> -f <farmer_key>`
-
-Example Partial RAM: `./mmx_cuda_plot_k30 -C 5 -n -1 -2 /mnt/tmp_ssd/ -d <dst> -f <farmer_key>`
-
-Example Disk Mode: `./mmx_cuda_plot_k30 -C 5 -n -1 -3 /mnt/tmp_ssd/ -d <dst> -f <farmer_key>`
+```bash frame="none"
+# Example Full RAM:
+./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -d <dst> -f <farmer_key>
+# Example Partial RAM:
+./mmx_cuda_plot_k30 -C 5 -n -1 -2 /mnt/tmp_ssd/ -d <dst> -f <farmer_key>
+# Example Disk Mode:
+./mmx_cuda_plot_k30 -C 5 -n -1 -3 /mnt/tmp_ssd/ -d <dst> -f <farmer_key>
+```
 
 If you would like to use compressed plots, it is recommended that you run the mmx_posbench tool to benchmark your hardware.
 
@@ -217,7 +219,7 @@ To create SSD plots (for farming on SSDs) add `--ssd` to the command and use `-C
 The minimum k-size for mainnet is k29, the maximum k-size is k32.
 
 To add a plot directory add the path to `plot_dirs` array in `config/local/Harvester.json`, for example:
-```
+```json
 {
 	"plot_dirs": [
 		"/mnt/drive1/plots/",

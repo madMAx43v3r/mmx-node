@@ -46,10 +46,10 @@ Farming 1024 uncompressed SSD plots is the same compute load as computing a sing
 
 ### Benchmark
 Before plotting with compression a benchmark should be performed to check if your system can handle it:
-```
-mmx_posbench -k 31 -C 10				# to benchmark k31 C10
-mmx_posbench --cuda 0 -k 31 -C 10		# to benchmark on CPU
-mmx_posbench --devices 1 2 -k 31 -C 10	# to select specific CUDA devices (starting at 0)
+```bash frame="none"
+mmx_posbench -k 31 -C 10                  # to benchmark k31 C10
+mmx_posbench --cuda 0 -k 31 -C 10         # to benchmark on CPU
+mmx_posbench --devices 1 2 -k 31 -C 10    # to select specific CUDA devices (starting at 0)
 ```
 
 ## Creating Plots
@@ -61,25 +61,25 @@ To use the plotter via command line, navigate to the directory containing the pl
 <Tabs>
     <TabItem label="Full RAM">
         For full Ram plotting, `-t` is used to temporarily store the the finished plot before moving it to the destination `-d`, RAM is used for the entire plotting process.
-        ```
+        ```bash frame="none"
         ./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -d /mnt/farmdrive/ -f <farmer_key>
         ```
     </TabItem>
     <TabItem label="Partial RAM">
         For partial RAM plotting, `-2` is used to store temporary working files before moving the finished plot to `-t` and then to `-d`. RAM is used for the most write intensive parts of the plotting process. If `-t` is not specified, the plotter will set the `-t` argument to the same value as `-2`.
-        ```
+        ```bash frame="none"
         ./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -2 /mnt/tmp_ssd/ -d /mnt/farmdrive/ -f <farmer_key>
         ```
     </TabItem>
     <TabItem label="Disk Mode">
         For disk mode plotting, `-3` takes the place of RAM and is used for write intensive temporary files. You can use a different drive for `-2` if desired, the faster of the two drives should be used for `-3`. If `-2` or `-t` are not specified, the plotter will set the value of both to the same value as `-3`.
-        ```
+        ```bash frame="none"
         ./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -2 /mnt/tmp_ssd/ -3 /mnt/tmp_ssd/ -d /mnt/farmdrive/ -f <farmer_key>
         ```
     </TabItem>
 </Tabs>
 To send finished plots to multiple destinations, use the `-d` argument multiple times. For example:
-```
+```bash frame="none"
 ./mmx_cuda_plot_k30 -C 5 -n -1 -t /mnt/tmp_ssd/ -d /mnt/farmdrive1/ -d /mnt/farmdrive2/ -f <farmer_key>
 ```
 <Aside>To simplify sending to multiple destinations over a network, you can use [plot-sink](https://github.com/madMAx43v3r/chia-gigahorse/tree/master/plot-sink).</Aside>
@@ -93,17 +93,13 @@ Usage:
 
   -C, --level arg      Compression level (0 to 15)
       --ssd            Make SSD plots
-  -n, --count arg      Number of plots to create (default = 1, unlimited =
-                       -1)
+  -n, --count arg      Number of plots to create (default = 1, unlimited = -1)
   -g, --device arg     CUDA device (default = 0)
   -r, --ndevices arg   Number of CUDA devices (default = 1)
-  -t, --tmpdir arg     Temporary directories for plot storage (default =
-                       $PWD)
-  -2, --tmpdir2 arg    Temporary directory 2 for partial RAM / disk mode
-                       (default = @RAM)
+  -t, --tmpdir arg     Temporary directories for plot storage (default = $PWD)
+  -2, --tmpdir2 arg    Temporary directory 2 for partial RAM / disk mode (default = @RAM)
   -3, --tmpdir3 arg    Temporary directory 3 for disk mode (default = @RAM)
-  -d, --finaldir arg   Final destinations (default = <tmpdir>, remote =
-                       @HOST)
+  -d, --finaldir arg   Final destinations (default = <tmpdir>, remote = @HOST)
   -z, --dstport arg    Destination port for remote copy (default = 1337)
   -w, --waitforcopy    Wait for copy to start next plot
   -c, --contract arg   Pool Contract Address (62 chars)
@@ -112,10 +108,8 @@ Usage:
   -B, --chunksize arg  Bucket chunk size in MiB (default = 16, 1 to 256)
   -Q, --maxtmp arg     Max number of plots to cache in tmpdir (default = -1)
   -A, --copylimit arg  Max number of parallel copies in total (default = -1)
-  -W, --maxcopy arg    Max number of parallel copies to same HDD (default =
-                       1, unlimited = -1)
-  -M, --memory arg     Max shared / pinned memory in GiB (default =
-                       unlimited)
+  -W, --maxcopy arg    Max number of parallel copies to same HDD (default = 1, unlimited = -1)
+  -M, --memory arg     Max shared / pinned memory in GiB (default = unlimited)
       --version        Print version
   -h, --help           Print help
-  ```
+```

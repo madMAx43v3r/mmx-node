@@ -3,7 +3,7 @@ title: CLI Commands
 description: MMX Node CLI Command Reference.
 ---
 When compiled from source:
-```
+```bash frame="none"
 cd mmx-node
 source ./activate.sh
 ```
@@ -171,7 +171,10 @@ To reload plots: `mmx harvester reload`
 To use pooling first create a plot NFT, then create plots for it and finally join a pool.
 
 ### Create Plot NFT
-`mmx wallet plotnft create <name>`
+
+```bash frame="none"
+mmx wallet plotnft create <name>
+```
 
 `<name>` can be any string without whitespace.
 
@@ -182,15 +185,20 @@ Note: Need to wait for the transaction to confirm before it will show up.\
 Note: This command takes the usual `-j <index>` argument to select a different wallet.
 
 ### Show Plot NFTs
-`mmx wallet plotnft show`
+
+```bash frame="none"
+mmx wallet plotnft show
+```
 
 The address shown in `[...]` is the plot NFT contract address, which needs to be used for plotting.
 
 Note: This command takes the usual `-j <index>` argument to select a different wallet.
 
 Example:
+```bash frame="none"
+mmx wallet plotnft show -j 1
 ```
-$ mmx wallet plotnft show -j 1
+```
 [mmx1wknv8xxvzjafrswsrwr3l85y6d8nms2dz22dgxl2qpcyjp64amtsjqjna5]
   Name: test1
   Locked: true
@@ -200,23 +208,34 @@ $ mmx wallet plotnft show -j 1
 ### Join a Pool
 First you need to obtain the pool server URL for the pool, via their website or discord.
 
-`mmx wallet plotnft join <pool_url> -x <plot_nft_address>`
+```bash frame="none"
+mmx wallet plotnft join <pool_url> -x <plot_nft_address>
+```
 
 `<plot_nft_address>` is the same as used for plotting, see `mmx wallet plotnft show`.
 
 Note: This command does not need any `-j` to select a wallet.
 
-Example: `mmx wallet plotnft join http://localhost:8080 -x mmx1wknv8xxvzjafrswsrwr3l85y6d8nms2dz22dgxl2qpcyjp64amtsjqjna5`
+Example:
+```bash frame="none"
+mmx wallet plotnft join http://localhost:8080 -x mmx1wknv8xxvzjafrswsrwr3l85y6d8nms2dz22dgxl2qpcyjp64amtsjqjna5
+```
 
 ### Leave Pool
-`mmx wallet plotnft unlock -x <plot_nft_address>`
+
+```bash frame="none"
+mmx wallet plotnft unlock -x <plot_nft_address>
+```
 
 This will take 256 blocks to complete, to avoid cheating.
 Once complete the plot NFT is in solo farming mode, which means block rewards will directly go to your Farmer reward address.
 
 Note: This command does not need any `-j` to select a wallet.
 
-Example: `mmx wallet plotnft unlock -x mmx1wknv8xxvzjafrswsrwr3l85y6d8nms2dz22dgxl2qpcyjp64amtsjqjna5`
+Example:
+```bash frame="none"
+mmx wallet plotnft unlock -x mmx1wknv8xxvzjafrswsrwr3l85y6d8nms2dz22dgxl2qpcyjp64amtsjqjna5
+```
 
 ### Switch Pool
 First leave the current pool, wait 256 blocks for the plot NFT to unlock, then join the new pool as shown above.
@@ -227,8 +246,10 @@ To see pool account: `mmx pool info`
 To see partials info: `mmx farm info`
 
 Example:
+```bash frame="none"
+mmx pool info
 ```
-$ mmx pool info
+```
 Pool [http://localhost:8080]
   Balance: 1.5 MMX
   Total Paid: 123.456 MMX
@@ -239,9 +260,10 @@ Pool [http://localhost:8080]
   Estimated Space: 13.3789 TB
 ```
 
+```bash frame="none"
+mmx farm info
 ```
-$ mmx farm info
-...
+```
 Plot NFT [mmx1wknv8xxvzjafrswsrwr3l85y6d8nms2dz22dgxl2qpcyjp64amtsjqjna5]
   Name: test1
   Server URL: http://localhost:8080

@@ -16,7 +16,7 @@ Are you sure you have read the installation wiki linked above? It says to update
 Check that VDF verification is done via GPU. Disable Timelord when enabled by accident.
 
 On Linux make sure to be in the `video` and or `render` group (depends on distribution) to be able to access a GPU:
-```
+```bash frame="none"
 sudo adduser $USER video
 sudo adduser $USER render
 ```
@@ -57,7 +57,7 @@ Stop the node, then delete the `testnetX` folder and restart node. This will syn
 Adding plot directories is now possible in the GUI settings page.
 
 Alternatively, open `config/local/Harvester.json` with a text editor. Follow the syntax below:
-```
+```json
 {
   "reload_interval": 3600,
   "farm_virtual_plots": true,
@@ -72,7 +72,7 @@ Alternatively, open `config/local/Harvester.json` with a text editor. Follow the
 }
 ```
 You may also put everything on 1 line if it helps you to see all the plot drives/folders:
-```
+```json
 "plot_dirs": ["D:/", "E:/", "F:/", "G:/", "H:/", "I:/", "J:/", "K:/", "L:/"]
 ```
 Backward slash "`\`" is not supported, so forward slash "`/`" must be used.

@@ -46,7 +46,9 @@ https://opencl.gpuinfo.org/download.php
 Perform OpenCL hardware diagnostic/info tool and get `cl_platform_name`
 
 Then run the node with the GPU you want OpenCL to be done with:
-`./run_node.sh --opencl.platform "name"`
+```bash frame="none"
+./run_node.sh --opencl.platform "name"
+```
 
 For Nvidia, it's "NVIDIA CUDA"
 
@@ -57,13 +59,19 @@ For Intel, it's "Intel(R) OpenCL"
 For a more permanent solution (or in Windows), you can also create a file named `platform` in ~/config/local/opencl/ and put the platform name in there. Please include the quotes "".
 
 If you have an AMD APU and another AMD discrete GPU with the same platform name, you can select which OpenCL device to use:
-`./run_node.sh --Node.opencl_device 0/1`
+```bash frame="none"
+./run_node.sh --Node.opencl_device 0/1
+```
 
 Or if you have an AMD APU and a mix of discrete AMD/Nvidia GPUs, you can combine the parameters. Example:
-`./run_node.sh --Node.opencl_device 2 --opencl.platform "NVIDIA CUDA"`
+```bash frame="none"
+./run_node.sh --Node.opencl_device 2 --opencl.platform "NVIDIA CUDA"
+```
 
 If you want to force use your CPU to do VDFs, while having a GPU installed in your computer, you can run this command:
-`./run_node.sh --Node.opencl_device -1`
+```bash frame="none"
+./run_node.sh --Node.opencl_device -1
+```
 
 ### _How do I know if MMX is using my GPU to do VDFs?_
 Start a node, look for this line:
