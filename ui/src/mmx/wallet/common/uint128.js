@@ -1,6 +1,10 @@
 export class uint128 {
     #value = null;
 
+    valueOf() {
+        return this.#value;
+    }
+
     constructor(value) {
         let _value;
         if (typeof value === "string") {
