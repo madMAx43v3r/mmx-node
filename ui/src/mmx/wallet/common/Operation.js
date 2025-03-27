@@ -2,6 +2,7 @@ import { addr_t, hash_t } from "./addr_t";
 import { optional } from "./optional";
 import { Variant } from "./Variant";
 import { uint128 } from "./uint128";
+import { get_num_bytes } from "./utils";
 
 import { WriteBytes } from "./WriteBytes";
 
@@ -85,10 +86,10 @@ class Execute {
         let payload = this.method.length;
 
         const hp = this.getHashProxy();
-        hp.args.reduce((acc, arg) => {
-            acc += arg.size();
+        payload += hp.args.reduce((acc, arg) => {
+            acc += get_num_bytes(arg);
             return acc;
-        }, payload);
+        }, 0);
 
         return 0n + BigInt(payload) * BigInt(params.min_txfee_byte);
     }
