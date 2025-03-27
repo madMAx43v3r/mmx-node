@@ -4,13 +4,9 @@ import { getFingerPrintAsync, getFarmerKeyAsync, getAddressAsync, getKeysAsync, 
 
 import { PubKey } from "./common/PubKey";
 import { txin_t } from "./common/txio_t";
+import { cost_to_fee } from "./common/utils";
 
 import { getChainParams } from "./utils/getChainParams";
-
-const cost_to_fee = (cost, feeRatio) => {
-    const fee = (BigInt(cost) * BigInt(feeRatio)) / 1024n;
-    return fee;
-};
 
 class ECDSA_Wallet {
     #seed_value;
@@ -106,7 +102,7 @@ class ECDSA_Wallet {
         Object.keys(missing).forEach((key) => {
             const currency = key;
             const amount = missing[key];
-            console.log("missing", amount, currency);
+            console.debug("missing", amount, currency);
         });
 
         const address = await this.getAddressAsync(0);
