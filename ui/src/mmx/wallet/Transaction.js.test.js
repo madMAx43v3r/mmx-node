@@ -2,6 +2,8 @@ import { describe, it, assert } from "vitest";
 
 import { ECDSA_Wallet } from "./ECDSA_Wallet";
 import { Transaction } from "./Transaction";
+import { getChainParams } from "./utils/getChainParams";
+
 import "./Transaction.ext";
 
 import { JSONbigNative } from "./utils/JSONbigNative";
@@ -114,6 +116,13 @@ txs.forEach((item, key) => {
             tx.id = null;
             tx.finalize();
             assert.equal(tx.id, id);
+        });
+
+        it("static_cost", async () => {
+            const tx = Transaction.parse(json);
+            const chainParams = await getChainParams(tx.network);
+            const static_cost = tx.calc_cost(chainParams);
+            assert.equal(static_cost, tx.static_cost);
         });
     });
 });
