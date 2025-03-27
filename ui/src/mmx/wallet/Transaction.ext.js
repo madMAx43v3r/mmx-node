@@ -28,8 +28,6 @@ Transaction.prototype.toCompressed = function () {
     const tmpTx = Transaction.parse(txStr);
 
     delete tmpTx.__type;
-    delete tmpTx.exec_result;
-    //delete tmpTx.content_hash;
 
     const inputStr = tmpTx.toString();
     const inputUint8 = strToU8(inputStr);
