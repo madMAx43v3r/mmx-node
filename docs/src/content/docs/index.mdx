@@ -39,6 +39,12 @@ head:
             .desc { display: none; }
             .title:has(svg) { margin-block-end: 0em; }
           }
+
+          @media (min-width: 50rem) {
+            --__sidebar-width: max(0rem, var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x));
+            --__main-column-fr: calc((100% + var(--__sidebar-pad, 0rem) - var(--__toc-width, var(--sl-sidebar-width)) -(2* var(--__toc-width, var(--sl-nav-pad-x))) - var(--sl-content-inline-start, 0rem) - var(--sl-content-width)) / 2);
+            .header { grid-template-columns: minmax(calc(var(--__sidebar-width) + max(0rem, var(--__main-column-fr) - var(--sl-nav-gap) + 6.7rem)), auto) 1fr auto; }
+          }
         }
 
         :root[data-theme='light'] {

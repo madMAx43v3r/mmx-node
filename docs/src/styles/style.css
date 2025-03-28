@@ -38,11 +38,15 @@
 	.right-sidebar-container { width: var(--sl-sidebar-width); }
 
 	@media (min-width: 50rem) {
-		.header { grid-template-columns: minmax(calc(var(--sl-sidebar-width) - var(--sl-nav-pad-x)),auto) 1fr auto; }
+		.header { grid-template-columns: minmax( max( min( 100% - 68.5rem , 22.2rem ) , calc( var(--sl-sidebar-width) - var(--sl-nav-pad-x) ) ) , auto ) 1fr auto; }
 	}
 
 	@media (min-width: 72rem) {
-		.main-pane { width: calc(100% - var(--sl-sidebar-width)); }
+		.main-pane {
+			padding-left: min( 100% - 70rem , 5rem );
+			padding-right: min( 100% - 75rem , 5rem );
+			width: min( 100% - var(--sl-sidebar-width) , 80rem  );
+		}
 		.sl-container:has(h1#_top) { margin-inline: 0 auto; }
 	}
 }
