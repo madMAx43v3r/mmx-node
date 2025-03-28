@@ -132,14 +132,14 @@ export const useNodeStatus = () => {
     if (process.env.NODE_ENV !== "production") {
         // --- Debug
         watchEffect(() => {
-            console.log("isQueryTakingLong", isQueryTakingLong.value);
-            //console.log("sessionFails", sessionFails.value);
-            console.log("connectedToNode", connectedToNode.value);
-            //console.log("peerFails", peerFails.value);
-            console.log("connectedToNetwork", connectedToNetwork.value);
-            //console.log("syncFails", syncFails.value);
-            console.log("synced", synced.value);
-            console.log("currentStatus", currentStatus.value);
+            console.debug("isQueryTakingLong", isQueryTakingLong.value);
+            //console.debug("sessionFails", sessionFails.value);
+            console.debug("connectedToNode", connectedToNode.value);
+            //console.debug("peerFails", peerFails.value);
+            console.debug("connectedToNetwork", connectedToNetwork.value);
+            //console.debug("syncFails", syncFails.value);
+            console.debug("synced", synced.value);
+            console.debug("currentStatus", currentStatus.value);
         });
     }
 
