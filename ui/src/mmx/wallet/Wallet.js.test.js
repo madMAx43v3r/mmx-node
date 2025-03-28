@@ -25,6 +25,8 @@ describe("Wallet", () => {
     it("getSendTxAsync", async () => {
         const tx = await Wallet.getSendTxAsync(ecdsaWallet, amount, dst_addr, currency, options);
         assert.equal(tx.id, "4EEC4FF00DE1ED2138384B9FD6B9116F86897BF4CADDDF2BA071231B9520EAE9");
+        assert.equal(tx.aux.feeAmount, "60000");
+        assert.equal(tx.aux.feeValue, 0.06);
     });
 
     it("getSendManyTxAsync", async () => {
@@ -39,5 +41,7 @@ describe("Wallet", () => {
             options
         );
         assert.equal(tx.id, "CB60F7A2B26FB3FEFD26F78514C7AD5C5B22BCD50FD785EDFB09937AAC41C8DB");
+        assert.equal(tx.aux.feeAmount, "90000");
+        assert.equal(tx.aux.feeValue, 0.09);
     });
 });
