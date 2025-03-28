@@ -34,7 +34,7 @@ export const useNodeStatus = () => {
                     if (data && data.user) {
                         sessionFails.value = 0;
                     } else {
-                        sessionFails.value++;
+                        throw new Error("No valid session");
                     }
                 },
                 onError: () => {
@@ -58,8 +58,12 @@ export const useNodeStatus = () => {
     const peerInfo = usePeerInfoMutation();
     const peerInfoIntervalFn = () =>
         peerInfo.mutate(null, {
-            onSuccess: () => {
-                peerFails.value = 0;
+            onSuccess: (data) => {
+                if (data.peers?.length > 0) {
+                    peerFails.value = 0;
+                } else {
+                    throw new Error("No peers");
+                }
             },
             onError: () => {
                 peerFails.value++;
