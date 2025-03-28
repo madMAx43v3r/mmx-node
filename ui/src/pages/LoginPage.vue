@@ -23,11 +23,9 @@
 
 <script setup>
 import { mdiLock, mdiAlertOctagon, mdiLogin } from "@mdi/js";
-import { storeToRefs } from "pinia";
 
 const passwdPlain = ref("");
-const sessionStore = useSessionStore();
-const { autoLogin } = storeToRefs(sessionStore);
+const autoLogin = ref(false);
 
 import { useLogin } from "@/queries/server";
 const login = useLogin();
@@ -39,6 +37,11 @@ const onError = () => {
         type: "negative",
     });
 };
+
+import { storeToRefs } from "pinia";
+const sessionStore = useSessionStore();
+const { autoLogin: autoLoginStore } = storeToRefs(sessionStore);
+
 const handleLogin = () => {
     const payload = {
         credentials: {
@@ -47,6 +50,10 @@ const handleLogin = () => {
         },
     };
     login.mutate(payload, {
+        onSuccess: (data, variables) => {
+            autoLoginStore.value = autoLogin.value;
+            sessionStore.doLogin(variables.credentials);
+        },
         onError,
     });
 };

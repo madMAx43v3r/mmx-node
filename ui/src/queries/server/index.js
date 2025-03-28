@@ -4,13 +4,8 @@ import { jsonContentTypeHeaders, ONE_SECOND } from "../common";
 
 const login = (credentials) => axios.post("/server/login", credentials, { headers: jsonContentTypeHeaders });
 export const useLogin = () => {
-    const sessionStore = useSessionStore();
     return useMutation({
         mutationFn: ({ credentials }) => login(credentials),
-        onSuccess: (data, variables) => {
-            const { credentials } = variables;
-            sessionStore.doLogin(credentials);
-        },
     });
 };
 
