@@ -34,7 +34,7 @@ class ECDSA_Wallet {
 
     getKeysAsync = async (index) => getKeysAsync(this.#seed_value, this.#passphrase, index);
 
-    signOf = async (tx, options) => {
+    signOfAsync = async (tx, options) => {
         tx.network = options.network;
         tx.finalize();
 
@@ -127,7 +127,7 @@ class ECDSA_Wallet {
             }
         }
 
-        await this.signOf(tx, options);
+        await this.signOfAsync(tx, options);
 
         this.addTxAuxFields(tx, chainParams);
     };
