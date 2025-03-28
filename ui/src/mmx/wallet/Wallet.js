@@ -9,7 +9,7 @@ class Wallet {
         return tx;
     }
 
-    static async getSendManyTxAsync(ecdsaWallet, payments, dst_addr, currency, options) {
+    static async getSendManyTxAsync(ecdsaWallet, payments, currency, options) {
         const tx = new Transaction();
         tx.note = "TRANSFER";
         payments.forEach((payment) => {

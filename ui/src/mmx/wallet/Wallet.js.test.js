@@ -36,7 +36,6 @@ describe("Wallet", () => {
                 { address: "mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6", amount: 1 },
                 { address: "mmx1mw38rg8jcy2tjc5r7sxque6z45qrw6dsu6g2wmhahwf30342rraqyhsnea", amount: 1 },
             ],
-            dst_addr,
             currency,
             options
         );
