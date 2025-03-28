@@ -7,6 +7,7 @@ import { txin_t } from "./common/txio_t";
 import { cost_to_fee } from "./common/utils";
 
 import { getChainParams } from "./utils/getChainParams";
+import { spend_options_t } from "./common/spend_options_t";
 
 class ECDSA_Wallet {
     #seed_value;
@@ -52,16 +53,8 @@ class ECDSA_Wallet {
         tx.content_hash = tx.calc_hash(true).toHex();
     };
 
-    completeAsync = async (tx, options, deposit = new Map()) => {
-        if (!options) {
-            throw new Error("options is required");
-        }
-        if (!options.network) {
-            throw new Error("network is required");
-        }
-        if (!options.expire_at) {
-            throw new Error("expire_at is required");
-        }
+    completeAsync = async (tx, _options, deposit = new Map()) => {
+        const options = new spend_options_t(_options);
 
         // set nonce for testing
         if (options.dev) {
@@ -71,7 +64,7 @@ class ECDSA_Wallet {
         tx.expires = options.expire_at;
 
         const bigIntMax = (...args) => args.reduce((m, e) => (e > m ? e : m));
-        tx.fee_ratio = bigIntMax(BigInt(tx.fee_ratio), BigInt(options.fee_ratio ?? 0n));
+        tx.fee_ratio = bigIntMax(BigInt(tx.fee_ratio), BigInt(options.fee_ratio));
 
         //---
         const missing = [];
@@ -124,7 +117,7 @@ class ECDSA_Wallet {
 
         const chainParams = await getChainParams(options.network);
         const static_cost = tx.calc_cost(chainParams);
-        tx.max_fee_amount = cost_to_fee(BigInt(static_cost) + BigInt(options.gas_limit ?? 5000000), tx.fee_ratio);
+        tx.max_fee_amount = cost_to_fee(BigInt(static_cost) + BigInt(options.gas_limit), tx.fee_ratio);
 
         if (!tx.sender) {
             if (options.sender) {
