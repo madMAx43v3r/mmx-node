@@ -133,9 +133,12 @@ class ECDSA_Wallet {
     };
 
     addTxAuxFields(tx, chainParams) {
-        const decimals = chainParams.decimals || 6;
-        const feeAmount = Number(cost_to_fee(tx.static_cost, tx.fee_ratio));
-        const feeValue = feeAmount / Math.pow(10, decimals);
+        const fee = cost_to_fee(tx.static_cost, tx.fee_ratio);
+
+        const decimals = chainParams.decimals;
+        const feeAmount = fee.toString();
+        const feeValue = Number(fee) / 10 ** decimals;
+
         tx.aux = { decimals, feeAmount, feeValue };
     }
 }
