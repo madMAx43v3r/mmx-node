@@ -7,11 +7,22 @@ import { get_num_bytes } from "./utils";
 import { WriteBytes } from "./WriteBytes";
 
 export class Operation {
+    static NO_SOLUTION = -1;
+
+    __type = "mmx.operation";
+
+    version = 0;
+    address = "";
+    solution = -1;
+
     constructor(op) {
         if (op.__type === "mmx.operation.Execute") {
             return new Execute(op);
         } else if (op.__type === "mmx.operation.Deposit") {
             return new Deposit(op);
+        } else if (typeof op === "object") {
+            this.address = op.address;
+            this.solution = op.solution ?? this.solution;
         } else {
             throw new Error("Invalid Operation type");
         }
@@ -19,13 +30,11 @@ export class Operation {
 }
 
 // cpp implementation: /src/operation/Execute.cpp
-export class Execute {
+export class Execute extends Operation {
     #type_hash = BigInt("0x8cd9012d9098c1d1");
 
     __type = "mmx.operation.Execute";
-    version = 0;
-    address = "";
-    solution = 0;
+
     method = "";
     args = [];
     user = "";
@@ -51,8 +60,7 @@ export class Execute {
     }
 
     constructor({ address, solution, method, args, user }) {
-        this.address = address;
-        this.solution = solution;
+        super({ address, solution });
         this.method = method;
         this.args = args;
         this.user = user;
