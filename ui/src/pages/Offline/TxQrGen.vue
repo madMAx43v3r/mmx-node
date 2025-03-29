@@ -71,7 +71,7 @@
                                 />
 
                                 <div class="row justify-end q-col-gutter-sm">
-                                    <TxFeeSelect v-model="formData.feeRatio" class="col-md-2 col-sm-3 col-xs-6" />
+                                    <TxFeeSelect v-model="formData.feeRatio2" class="col-md-2 col-sm-3 col-xs-6" />
                                     <TxFeeInput
                                         v-model="fee"
                                         class="col-md-2 col-sm-3 col-xs-6"
@@ -147,7 +147,7 @@ const defaultFormData = {
     amount: 1,
     currency: "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev",
     memo: "qr code tx",
-    feeRatio: null,
+    feeRatio2: null,
 };
 
 const formRef = ref(null);
