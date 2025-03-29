@@ -4,16 +4,16 @@ export class spend_options_t {
     fee_ratio = 1024;
     gas_limit = 5000000;
 
-    // expire_at = null;
-    // expire_delta = null;
-    // nonce = null;
-    // user = null;
-    // sender = null;
-    // passphrase = null;
-    // note = null;
-    // memo = null;
-    // owner_map = null;
-    // contract_map = null;
+    expire_at = null;
+    expire_delta = null;
+    nonce = null;
+    user = null;
+    sender = null;
+    passphrase = null;
+    note = null;
+    memo = null;
+    owner_map = null;
+    contract_map = null;
 
     constructor(options) {
         if (!options) {
