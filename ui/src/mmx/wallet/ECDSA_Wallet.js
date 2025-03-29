@@ -8,7 +8,7 @@ import { cost_to_fee } from "./common/utils";
 
 import { getChainParams } from "./utils/getChainParams";
 import { spend_options_t } from "./common/spend_options_t";
-import { Operation } from "./common/Operation";
+import { Operation, Execute } from "./common/Operation";
 
 export class ECDSA_Wallet {
     #seed_value;
@@ -100,7 +100,7 @@ export class ECDSA_Wallet {
                 continue;
             }
             let owner = op.address;
-            if (op.__type === "mmx.operation.Execute") {
+            if (new Operation(op) instanceof Execute) {
                 if (op.user) {
                     owner = op.user;
                 } else {
