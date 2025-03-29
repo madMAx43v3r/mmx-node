@@ -8,7 +8,7 @@ import { cost_to_fee } from "./common/utils";
 
 import { getChainParams } from "./utils/getChainParams";
 import { spend_options_t } from "./common/spend_options_t";
-import { Operation, Execute } from "./common/Operation";
+import { Operation, Execute, Deposit } from "./common/Operation";
 
 export class ECDSA_Wallet {
     #seed_value;
@@ -137,7 +137,7 @@ export class ECDSA_Wallet {
         });
 
         tx.execute.forEach((deposit) => {
-            if (deposit.__type === "mmx.operation.Deposit") {
+            if (new Operation(deposit) instanceof Deposit) {
                 missing[deposit.currency] = (missing[deposit.currency] ?? 0n) + BigInt(deposit.amount);
             }
         });
