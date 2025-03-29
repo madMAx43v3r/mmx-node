@@ -11,6 +11,17 @@ export const useNodeInfo = (params) => {
         refetchInterval: params?.refreshInterval ?? 1.1 * ONE_SECOND,
         enabled: params?.enabled ?? true,
     });
+    useNodeInfoWatch(query);
+    return query;
+};
+
+const useNodeInfoWatch = (_query) => {
+    let query;
+    if (_query) {
+        query = _query;
+    } else {
+        query = useNodeInfo({ enabled: false });
+    }
 
     const nodeStore = useNodeStore();
     const queryClient = useQueryClient();
@@ -44,12 +55,9 @@ export const useNodeInfo = (params) => {
             }
         }
     });
-
-    return query;
 };
-
 export const useNodeInfoMutation = () => {
-    useNodeInfo();
+    useNodeInfoWatch();
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: () => getNodeInfo(),
