@@ -35,6 +35,10 @@ class ECDSA_Wallet {
     getKeysAsync = async (index) => getKeysAsync(this.#seed_value, this.#passphrase, index);
 
     signOfAsync = async (tx, options) => {
+        if (options.nonce) {
+            tx.nonce = options.nonce;
+        }
+
         tx.network = options.network;
         tx.finalize();
 
@@ -55,11 +59,6 @@ class ECDSA_Wallet {
 
     completeAsync = async (tx, _options, deposit = new Map()) => {
         const options = new spend_options_t(_options);
-
-        // set nonce for testing
-        if (options.dev) {
-            tx.nonce = options.dev.nonce;
-        }
 
         tx.expires = options.expire_at;
 
