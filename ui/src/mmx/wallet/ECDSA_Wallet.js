@@ -155,19 +155,14 @@ export class ECDSA_Wallet {
             missing[key] = (missing[key] ?? 0n) + BigInt(value);
         });
 
-        Object.keys(missing).forEach((key) => {
-            const currency = key;
-            const amount = missing[key];
-            console.debug("missing", amount, currency);
-        });
-
         const address = await this.getAddressAsync(0);
-        tx.outputs.map((out) => {
+        Object.entries(missing).forEach(([currency, amount]) => {
+            //console.debug("missing", amount, currency);
             const obj = {
                 address: address,
-                contract: out.contract,
-                amount: out.amount,
-                memo: out.memo,
+                contract: currency,
+                amount: amount,
+                memo: options.memo,
             };
 
             const tx_in = new txin_t(obj);
