@@ -142,8 +142,6 @@ const address = computedAsync(
     }
 );
 
-import { Transaction } from "@/mmx/wallet/Transaction";
-
 const defaultFormData = {
     destination: "mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6",
     amount: 1,
@@ -157,7 +155,6 @@ const formData = reactive({ ...defaultFormData });
 const { isValid, isValidConfirmed } = useWalletFormStatus(formRef);
 
 import { Wallet } from "@/mmx/wallet/Wallet";
-import "@/mmx/wallet/Transaction.ext";
 const evaluating = ref(false);
 const tx = computedAsync(
     async () => {
@@ -212,6 +209,7 @@ const handleLogout = () => {
 
 import router from "@/plugins/router";
 import { useQRCode } from "@vueuse/integrations/useQRCode";
+import "@/mmx/wallet/Transaction.ext";
 const qrData = computed(() => {
     const txData = tx.value?.toCompressedBase64();
     if (!txData) return;
