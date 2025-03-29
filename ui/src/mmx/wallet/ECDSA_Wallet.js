@@ -158,15 +158,22 @@ export class ECDSA_Wallet {
         const address = await this.getAddressAsync(0);
         Object.entries(missing).forEach(([currency, amount]) => {
             //console.debug("missing", amount, currency);
-            const obj = {
-                address: address,
-                contract: currency,
-                amount: amount,
-                memo: options.memo,
-            };
+            if (amount) {
+                const input = tx.inputs.find((input) => input.address === address && input.contract === currency);
+                if (input) {
+                    input.amount += amount;
+                } else {
+                    const obj = {
+                        address: address,
+                        contract: currency,
+                        amount: amount,
+                        memo: options.memo,
+                    };
 
-            const tx_in = new txin_t(obj);
-            tx.inputs.push(tx_in);
+                    const tx_in = new txin_t(obj);
+                    tx.inputs.push(tx_in);
+                }
+            }
         });
         //---
 
