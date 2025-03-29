@@ -8,6 +8,7 @@ import { cost_to_fee } from "./common/utils";
 
 import { getChainParams } from "./utils/getChainParams";
 import { spend_options_t } from "./common/spend_options_t";
+import { Operation } from "./common/Operation";
 
 class ECDSA_Wallet {
     #seed_value;
@@ -34,6 +35,21 @@ class ECDSA_Wallet {
 
     getKeysAsync = async (index) => getKeysAsync(this.#seed_value, this.#passphrase, index);
 
+    signMsgAsync = async (address, msg, options) => {
+        if (address == (await this.getAddressAsync(0))) {
+            const keys = await this.getKeysAsync(0);
+
+            const signature = await signAsync(keys.privKey, msg);
+            const solution = new PubKey({
+                pubkey: keys.pubKey.toHex(),
+                signature: signature.toHex(),
+            });
+
+            return solution;
+        }
+        return null;
+    };
+
     signOfAsync = async (tx, options) => {
         if (options.nonce) {
             tx.nonce = options.nonce;
@@ -42,16 +58,64 @@ class ECDSA_Wallet {
         tx.network = options.network;
         tx.finalize();
 
-        const keys = await this.getKeysAsync(0);
+        const solution_map = new Map();
+        const signMsgExAsync = async (owner) => {
+            const iter = solution_map.get(owner);
 
-        const signature = await signAsync(keys.privKey, tx.id);
-        const solution = new PubKey({
-            pubkey: keys.pubKey.toHex(),
-            signature: signature.toHex(),
-        });
+            if (iter !== undefined) {
+                return iter;
+            }
+            const solution = await this.signMsgAsync(owner, tx.id, options);
+            if (solution !== null) {
+                const index = tx.solutions.length;
+                solution_map.set(owner, index);
+                tx.solutions.push(solution);
+                return index;
+            }
+            return -1;
+        };
 
-        tx.solutions.push(solution);
+        // sign sender
+        if (tx.sender && tx.solutions.length === 0) {
+            await signMsgExAsync(tx.sender);
+        }
 
+        // sign all inputs
+        for (const input of tx.inputs) {
+            if (input.solution !== txin_t.NO_SOLUTION) {
+                continue;
+            }
+            let owner = input.address;
+            const iter = options.owner_map.get(owner);
+            if (iter !== undefined) {
+                input.flags |= txin_t.IS_EXEC;
+                owner = iter;
+            }
+            input.solution = await signMsgExAsync(owner);
+        }
+
+        // sign all operations
+        for (const op of tx.execute) {
+            if (op.solution !== Operation.NO_SOLUTION) {
+                continue;
+            }
+            let owner = op.address;
+            if (op.__type === "mmx.operation.Execute") {
+                if (op.user) {
+                    owner = op.user;
+                } else {
+                    continue;
+                }
+            } else {
+                const iter = options.owner_map.get(op.address);
+                if (iter !== undefined) {
+                    owner = iter;
+                }
+            }
+            op.solution = await signMsgExAsync(owner);
+        }
+
+        // compute final content hash
         const chainParams = await getChainParams(options.network);
         tx.static_cost = tx.calc_cost(chainParams);
         tx.content_hash = tx.calc_hash(true).toHex();
@@ -104,8 +168,6 @@ class ECDSA_Wallet {
                 contract: out.contract,
                 amount: out.amount,
                 memo: out.memo,
-                solution: 0,
-                flags: 0,
             };
 
             const tx_in = new txin_t(obj);
