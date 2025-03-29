@@ -6,7 +6,7 @@ import { get_num_bytes } from "./utils";
 
 import { WriteBytes } from "./WriteBytes";
 
-class Operation {
+export class Operation {
     constructor(op) {
         if (op.__type === "mmx.operation.Execute") {
             return new Execute(op);
@@ -19,7 +19,7 @@ class Operation {
 }
 
 // cpp implementation: /src/operation/Execute.cpp
-class Execute {
+export class Execute {
     #type_hash = BigInt("0x8cd9012d9098c1d1");
 
     __type = "mmx.operation.Execute";
@@ -96,7 +96,7 @@ class Execute {
 }
 
 // cpp implementation: /src/operation/Deposit.cpp
-class Deposit extends Execute {
+export class Deposit extends Execute {
     #type_hash = BigInt("0xc23408cb7b04b0ec");
     __type = "mmx.operation.Deposit";
 
@@ -154,5 +154,3 @@ class Deposit extends Execute {
         return hash;
     }
 }
-
-export { Operation };
