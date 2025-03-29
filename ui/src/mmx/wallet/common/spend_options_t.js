@@ -12,8 +12,8 @@ export class spend_options_t {
     passphrase = null;
     note = null;
     memo = null;
-    owner_map = null;
-    contract_map = null;
+    owner_map = new Map();
+    contract_map = new Map();
 
     constructor(options) {
         if (!options) {
