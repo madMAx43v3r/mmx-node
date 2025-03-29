@@ -70,9 +70,11 @@ export const useNodeStatus = () => {
             },
         });
 
+    const syncing = ref(false);
     const peerInfoInterval = computed(() => {
         let interval = connectedToNetwork.value ? 5000 : 1000;
-        if (!connectedToNode.value) {
+
+        if (!connectedToNode.value || syncing.value) {
             interval = -1;
         }
         return interval;
@@ -85,13 +87,17 @@ export const useNodeStatus = () => {
     const nodeInfoIntervalFn = () =>
         nodeInfoMutation.mutate(null, {
             onSuccess: (data) => {
-                if (data && data.is_synced) {
-                    syncFails.value = 0;
+                if (data) {
+                    syncing.value = true;
+                    if (data.is_synced) {
+                        syncFails.value = 0;
+                    }
                 } else {
-                    syncFails.value++;
+                    throw new Error("No Sync");
                 }
             },
             onError: () => {
+                syncing.value = false;
                 syncFails.value++;
             },
         });
