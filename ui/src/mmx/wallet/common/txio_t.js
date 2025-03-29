@@ -2,7 +2,7 @@ import { ChainParams } from "../utils/ChainParams";
 import { addr_t } from "./addr_t";
 import { optional } from "./optional";
 
-class txio_t {
+export class txio_t {
     static MAX_MEMO_SIZE = 64;
     //__type = "mmx.txio_t";
 
@@ -49,7 +49,7 @@ class txio_t {
     }
 }
 
-class txin_t extends txio_t {
+export class txin_t extends txio_t {
     static NO_SOLUTION = -1;
     static IS_EXEC = 1;
 
@@ -64,6 +64,5 @@ class txin_t extends txio_t {
         this.flags = flags ?? this.flags;
     }
 }
-class txout_t extends txio_t {}
 
-export { txin_t, txout_t, txio_t };
+export class txout_t extends txio_t {}
