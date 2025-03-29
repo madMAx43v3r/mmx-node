@@ -9,10 +9,6 @@ import "./Transaction.ext";
 import { JSONbigNative } from "./utils/JSONbigNative";
 import "./utils/Uint8ArrayUtils";
 
-const mnemonic = import.meta.env.VITE_TEST_MNEMONIC;
-
-const ecdsaWallet = new ECDSA_Wallet(mnemonic, "");
-
 const txs = new Map();
 
 txs.set("TRANSFER", {
@@ -90,7 +86,6 @@ txs.forEach((item, key) => {
     describe(`Transaction #${key}`, () => {
         const json = item.json;
         const hex = item.hex;
-        const deposit = item.deposit;
 
         const _tx = Transaction.parse(json);
         const id = _tx.id;

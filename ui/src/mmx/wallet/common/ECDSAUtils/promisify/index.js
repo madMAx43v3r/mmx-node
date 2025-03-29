@@ -7,7 +7,6 @@ export const promisify = (fnName, ...args) => {
             const worker = new PromisifyWorker();
             worker.postMessage({ fnName, args });
             worker.onmessage = function (e) {
-                //console.log(e.data);
                 if (e.data.fnName === fnName) resolve(e.data.result);
                 if (e.data.type === "error") throw e.data.error;
             };
