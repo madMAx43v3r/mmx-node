@@ -126,7 +126,9 @@
 import { mdiLogout } from "@mdi/js";
 import rules from "@/helpers/rules";
 
-const wallet = ref();
+import { storeToRefs } from "pinia";
+const walletStore = useWalletStore();
+const { wallet } = storeToRefs(walletStore);
 
 const address = computedAsync(
     async () => {
