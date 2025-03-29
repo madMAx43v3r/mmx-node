@@ -4,11 +4,11 @@ import { optional } from "./optional";
 
 class txio_t {
     static MAX_MEMO_SIZE = 64;
-    __type = "mmx.txio_t";
+    //__type = "mmx.txio_t";
 
     address = "";
     contract = "";
-    amount = 0;
+    amount = "0";
     memo = null;
 
     static hashHandler = {
@@ -36,7 +36,7 @@ class txio_t {
     constructor({ address, contract, amount, memo }) {
         this.address = address;
         this.contract = contract;
-        this.amount = amount ?? this.amount;
+        this.amount = amount.toString() ?? this.amount;
         this.memo = memo ?? this.memo;
     }
 
@@ -53,7 +53,7 @@ class txin_t extends txio_t {
     static NO_SOLUTION = -1;
     static IS_EXEC = 1;
 
-    __type = "mmx.txin_t";
+    // __type = "mmx.txin_t";
 
     solution = -1;
     flags = 0;
