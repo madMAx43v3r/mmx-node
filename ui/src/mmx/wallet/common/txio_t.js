@@ -1,3 +1,4 @@
+import { ChainParams } from "../utils/ChainParams";
 import { addr_t } from "./addr_t";
 import { optional } from "./optional";
 
@@ -39,10 +40,8 @@ class txio_t {
         this.memo = memo ?? this.memo;
     }
 
-    calc_cost(params) {
-        if (!params) {
-            throw new Error("chain params is required");
-        }
+    calc_cost(_params) {
+        const params = new ChainParams(_params);
         let cost = BigInt(params.min_txfee_io);
 
         cost += this.memo ? BigInt(Math.floor((this.memo.length + 31) / 32)) * BigInt(params.min_txfee_memo) : 0n;
