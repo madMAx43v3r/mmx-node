@@ -10,7 +10,7 @@ import { getChainParams } from "./utils/getChainParams";
 import { spend_options_t } from "./common/spend_options_t";
 import { Operation } from "./common/Operation";
 
-class ECDSA_Wallet {
+export class ECDSA_Wallet {
     #seed_value;
     #passphrase = "";
 
@@ -171,7 +171,6 @@ class ECDSA_Wallet {
             };
 
             const tx_in = new txin_t(obj);
-            delete tx_in.__type;
             tx.inputs.push(tx_in);
         });
         //---
@@ -203,4 +202,3 @@ class ECDSA_Wallet {
         tx.aux = { decimals, feeAmount, feeValue };
     }
 }
-export { ECDSA_Wallet };
