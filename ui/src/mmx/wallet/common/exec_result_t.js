@@ -1,3 +1,4 @@
+import { ChainParams } from "../utils/ChainParams";
 import { WriteBytes } from "./WriteBytes";
 import { bytes_t, hash_t } from "./addr_t";
 import { optional } from "./optional";
@@ -64,10 +65,8 @@ class exec_result_t {
         return hash;
     }
 
-    calc_cost(params) {
-        if (!params) {
-            throw new Error("chain params is required");
-        }
+    calc_cost(_params) {
+        const params = new ChainParams(_params);
 
         const hp = this.getHashProxy();
         let cost = 0n;
