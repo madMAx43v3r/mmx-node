@@ -8,18 +8,31 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 export default defineConfig({
 	integrations: [
 		starlight({
-			title: 'MMX Docs',
+			title: 'Documentation',
 			favicon: '/favicon.ico',
-			social: {
-				github: 'https://github.com/madMAx43v3r/mmx-node',
+			logo: {
+				src: './src/assets/logo_text_color_cx256x156_rectangle.png',
 			},
-			customCss: ['./src/styles/style.css'],
+			components: {
+				SocialIcons: './src/components/SocialIcons.astro',
+			},
+			social: {
+				discord: 'https://discord.gg/BswFhNkMzY',
+				github: 'https://github.com/madMAx43v3r/mmx-node',
+				'x.com': 'https://x.com/MMX_Network_',
+			},
+			customCss: [
+				'./src/styles/style.css',
+			],
 			lastUpdated: true,
 			editLink: {
-				baseUrl: 'https://github.com/madMAx43v3r/mmx-node/edit/master/docs'
+				baseUrl: 'https://github.com/madMAx43v3r/mmx-node/edit/master/docs',
 			},
 			sidebar: [
-				{	label: 'Homepage', link: 'https://mmx.network/'},
+				{
+					label: 'Homepage',
+					link: 'https://mmx.network/',
+				},
 				{
 					label: 'Guides',
 					autogenerate: { directory: 'guides' },
@@ -36,13 +49,13 @@ export default defineConfig({
 					label: 'FAQ',
 					autogenerate: { directory: 'faq' },
 				},
-			],	
+			],
 		}),
 	],
 	markdown: {
 		rehypePlugins: [
-			rehypeSlug, 
+			rehypeSlug,
 			[rehypeAutolinkHeadings, { behavior: 'append' }]
 		],
-	  },
+	},
 });
