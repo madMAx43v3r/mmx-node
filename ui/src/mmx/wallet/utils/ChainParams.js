@@ -61,6 +61,9 @@ export class ChainParams {
     hardfork1_height = 1000000;
 
     constructor(params) {
+        if (!params) {
+            throw new Error("params is required");
+        }
         Object.assign(this, params);
     }
 }
