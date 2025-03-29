@@ -51,6 +51,9 @@ class txio_t {
 }
 
 class txin_t extends txio_t {
+    static NO_SOLUTION = -1;
+    static IS_EXEC = 1;
+
     __type = "mmx.txin_t";
 
     solution = -1;
