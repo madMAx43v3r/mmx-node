@@ -3,6 +3,13 @@ import { Transaction } from "./Transaction";
 
 export class Wallet {
     static async getSendTxAsync(ecdsaWallet, amount, dst_addr, currency, options) {
+        if (amount == 0) {
+            throw new Error("amount cannot be zero");
+        }
+        if (dst_addr == "") {
+            throw new Error("dst_addr cannot be zero");
+        }
+
         const tx = new Transaction();
         tx.note = "TRANSFER";
         tx.add_output(currency, dst_addr, amount, options.memo);
@@ -10,10 +17,16 @@ export class Wallet {
         return tx;
     }
 
-    static async getSendManyTxAsync(ecdsaWallet, payments, currency, options) {
+    static async getSendManyTxAsync(ecdsaWallet, amounts, currency, options) {
         const tx = new Transaction();
         tx.note = "TRANSFER";
-        payments.forEach((payment) => {
+        amounts.forEach((payment) => {
+            if (payment.amount == 0) {
+                throw new Error("amount cannot be zero");
+            }
+            if (payment.address == "") {
+                throw new Error("dst_addr cannot be zero");
+            }
             tx.add_output(currency, payment.address, payment.amount, options.memo);
         });
         await ecdsaWallet.completeAsync(tx, options);
@@ -60,7 +73,7 @@ export class Wallet {
     send_from(index, amount, dst_addr, src_addr, currency, options)
     deploy(index, contract, options)
     +execute(index, address, method, args, user, options)
-    deposit(index, address, method, args, amount, currency, options)
+    +deposit(index, address, method, args, amount, currency, options)
     make_offer(index, owner, bid_amount, bid_currency, ask_amount, ask_currency, options)
     offer_trade(index, address, amount, dst_addr, price, options)
     accept_offer(index, address, dst_addr, price, options)
