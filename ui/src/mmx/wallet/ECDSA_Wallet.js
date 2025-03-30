@@ -143,8 +143,7 @@ export class ECDSA_Wallet {
         });
 
         tx.inputs.forEach((input) => {
-            const amount = missing[input.contract];
-            if (input.amount && input.amount < amount) {
+            if (input.amount && input.amount < missing[input.contract]) {
                 missing[input.contract] -= BigInt(input.amount);
             } else {
                 missing[input.contract] = 0n;
