@@ -1,6 +1,8 @@
 import { Executable } from "./common/Contract";
 import { Deposit, Execute } from "./common/Operation";
+import { uint128 } from "./common/uint128";
 import { Transaction } from "./Transaction";
+import { getChainParams } from "./utils/getChainParams";
 
 export class Wallet {
     static async getSendTxAsync(ecdsaWallet, amount, dst_addr, currency, options) {
@@ -73,6 +75,35 @@ export class Wallet {
         await ecdsaWallet.completeAsync(tx, options);
         return tx;
     }
+
+    static async getMakeOfferTxAsync(ecdsaWallet, bid_amount, bid_currency, ask_amount, ask_currency, options) {
+        if (bid_amount == 0 || ask_amount == 0) {
+            throw new Error("amount cannot be zero");
+        }
+
+        const inv_price = (BigInt(bid_amount) << 64n) / BigInt(ask_amount);
+        if (inv_price >> 128n) {
+            throw new Error("price out of range");
+        }
+
+        const owner = await ecdsaWallet.getAddressAsync(0);
+
+        const chainParams = await getChainParams(options.network);
+
+        const offer = {
+            binary: chainParams.offer_binary,
+            init_method: "init",
+            init_args: [owner, bid_currency, ask_currency, new uint128(inv_price).toHex(), null],
+        };
+
+        const tx = new Transaction();
+        tx.note = "OFFER";
+        tx.deploy = new Executable(offer);
+
+        const deposit = [[bid_currency, bid_amount]];
+        await ecdsaWallet.completeAsync(tx, options, deposit);
+        return tx;
+    }
 }
 
 /*
@@ -82,7 +113,7 @@ export class Wallet {
     +deploy(index, contract, options)
     +execute(index, address, method, args, user, options)
     +deposit(index, address, method, args, amount, currency, options)
-    make_offer(index, owner, bid_amount, bid_currency, ask_amount, ask_currency, options)
+    +make_offer(index, owner, bid_amount, bid_currency, ask_amount, ask_currency, options)
     offer_trade(index, address, amount, dst_addr, price, options)
     accept_offer(index, address, dst_addr, price, options)
     offer_withdraw(index, address, options)
