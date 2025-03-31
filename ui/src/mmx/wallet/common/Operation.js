@@ -15,6 +15,15 @@ export class Operation {
     address = "";
     solution = -1;
 
+    toJSON() {
+        return {
+            __type: this.__type,
+            version: this.version,
+            address: this.address,
+            solution: this.solution,
+        };
+    }
+
     constructor(op) {
         if (op.__type === "mmx.operation.Execute") {
             return new Execute(op);
@@ -38,6 +47,15 @@ export class Execute extends Operation {
     method = "";
     args = [];
     user = "";
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            method: this.method,
+            args: this.args,
+            user: this.user,
+        };
+    }
 
     static hashHandler = {
         get: (target, prop) => {
@@ -111,10 +129,18 @@ export class Deposit extends Execute {
     currency = null;
     amount = 0;
 
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            currency: this.currency,
+            amount: this.amount.toString(),
+        };
+    }
+
     constructor({ address, solution, method, args, user, currency, amount }) {
         super({ address, solution, method, args, user });
         this.currency = currency;
-        this.amount = amount;
+        this.amount = BigInt(amount);
     }
 
     static hashHandler = {
