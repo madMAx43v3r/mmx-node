@@ -22,7 +22,7 @@ class Transaction {
     id = new hash_t().toString();
 
     version = 0;
-    expires = -1;
+    expires = 4294967295;
     fee_ratio = 1024;
     static_cost = 0;
     max_fee_amount = 0;
