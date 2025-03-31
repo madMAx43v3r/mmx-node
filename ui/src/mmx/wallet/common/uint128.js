@@ -16,6 +16,10 @@ export class uint128 {
         return this.#upper;
     }
 
+    toHex() {
+        return "0x" + this.valueOf().toString(16);
+    }
+
     constructor(value) {
         let _value;
         if (typeof value === "string") {

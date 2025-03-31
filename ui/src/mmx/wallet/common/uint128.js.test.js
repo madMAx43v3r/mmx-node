@@ -39,4 +39,12 @@ describe("uint128", () => {
         assert.equal(value.lower(), 0x1337133713371337n);
         assert.equal(value.upper(), 0xffffffffffffffffn);
     });
+
+    it("toHex", () => {
+        assert.equal(new uint128(100000).toHex(), "0x186a0");
+        assert.equal(new uint128(100).toHex(), "0x64");
+
+        const inv_price = (100000n << 64n) / 100n;
+        assert.equal(new uint128(inv_price).toHex(), "0x3e80000000000000000");
+    });
 });
