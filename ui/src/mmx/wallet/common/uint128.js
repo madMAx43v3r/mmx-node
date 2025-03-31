@@ -1,11 +1,11 @@
 export class uint128 {
-    #value = null;
+    static BITMASK_64 = 0xffffffffffffffffn;
 
     #lower = null;
     #upper = null;
 
     valueOf() {
-        return this.#value;
+        return (this.#upper << 64n) | this.#lower;
     }
 
     lower() {
@@ -32,8 +32,7 @@ export class uint128 {
             throw new Error("uint128() overflow");
         }
 
-        this.#value = _value;
-        this.#lower = _value & 0xffffffffffffffffn;
-        this.#upper = (_value >> 64n) & 0xffffffffffffffffn;
+        this.#lower = _value & uint128.BITMASK_64;
+        this.#upper = (_value >> 64n) & uint128.BITMASK_64;
     }
 }
