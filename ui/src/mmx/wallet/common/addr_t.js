@@ -31,7 +31,9 @@ export class addr_t extends bytes_t {
         if (typeof addr == "string") {
             const decoded = bech32m.decodeToBytes(addr);
             const { prefix, bytes } = decoded;
-            if (prefix != addr_t.prefix) throw new Error("Invalid address prefix");
+            if (prefix != addr_t.prefix) {
+                throw new Error("Invalid address prefix");
+            }
             super(bytes.toReversed());
         } else if (isBytes(addr)) {
             if (addr.length != 32) throw new Error("Invalid address length");
