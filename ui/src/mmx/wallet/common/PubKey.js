@@ -46,7 +46,7 @@ class PubKey {
 
     calc_hash(full_hash) {
         const tmp = this.hash_serialize(full_hash);
-        const hash = new hash_t(tmp).data();
+        const hash = new hash_t(tmp).valueOf();
         return hash;
     }
 

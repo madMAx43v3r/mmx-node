@@ -11,13 +11,13 @@ describe("addr_t", () => {
     it("str to bytes", () => {
         const addr = new addr_t(addrStr);
         assert.equal(addr.toString(), addrStr);
-        assert.equal(addr.data().toHex(), addrHex);
+        assert.equal(addr.valueOf().toHex(), addrHex);
     });
 
     it("bytes to str", () => {
         const addr = new addr_t(hexToBytes(addrHex));
         assert.equal(addr.toString(), addrStr);
-        assert.equal(addr.data().toHex(), addrHex);
+        assert.equal(addr.valueOf().toHex(), addrHex);
     });
 
     it("empty", () => {
@@ -26,7 +26,7 @@ describe("addr_t", () => {
 
         const addr = new addr_t();
         assert.equal(addr.toString(), addrStrEmpty);
-        assert.equal(addr.data().toHex(), addrEmptyHex);
+        assert.equal(addr.valueOf().toHex(), addrEmptyHex);
     });
 
     it("invalid address prefix", () => {

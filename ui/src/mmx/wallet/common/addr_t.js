@@ -16,12 +16,12 @@ export class bytes_t {
         this.#bytes = bytes;
     }
 
-    data() {
+    valueOf() {
         return this.#bytes;
     }
 
     toString() {
-        return this.data().toHex();
+        return this.valueOf().toHex();
     }
 }
 
@@ -44,7 +44,7 @@ export class addr_t extends bytes_t {
     }
 
     toString() {
-        return bech32m.encodeFromBytes(addr_t.prefix, this.data().toReversed());
+        return bech32m.encodeFromBytes(addr_t.prefix, this.valueOf().toReversed());
     }
 }
 
