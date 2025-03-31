@@ -124,6 +124,10 @@ export class ECDSA_Wallet {
     completeAsync = async (tx, _options, deposit = []) => {
         const options = new spend_options_t(_options);
 
+        if (options.note) {
+            tx.note = options.note;
+        }
+
         tx.expires = options.expire_at;
 
         const bigIntMax = (...args) => args.reduce((m, e) => (e > m ? e : m));
