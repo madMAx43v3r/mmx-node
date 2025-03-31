@@ -128,9 +128,17 @@ export class ECDSA_Wallet {
             tx.note = options.note;
         }
 
-        tx.expires = options.expire_at;
-
+        const bigIntMin = (...args) => args.reduce((m, e) => (e < m ? e : m));
         const bigIntMax = (...args) => args.reduce((m, e) => (e > m ? e : m));
+
+        if (options.expire_at) {
+            tx.expires = bigIntMin(tx.expires, options.expire_at);
+        }
+
+        if (options.expire_delta) {
+            throw new Error("expire_delta not supported");
+        }
+
         tx.fee_ratio = bigIntMax(BigInt(tx.fee_ratio), BigInt(options.fee_ratio));
 
         //---
