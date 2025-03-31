@@ -7,13 +7,13 @@ import { get_num_bytes } from "./utils";
 import { WriteBytes } from "./WriteBytes";
 
 export class Operation {
-    static NO_SOLUTION = -1;
+    static NO_SOLUTION = 65535;
 
     __type = "mmx.operation";
 
     version = 0;
-    address = "";
-    solution = -1;
+    address = null;
+    solution = Operation.NO_SOLUTION;
 
     toJSON() {
         return {
@@ -44,9 +44,9 @@ export class Execute extends Operation {
 
     __type = "mmx.operation.Execute";
 
-    method = "";
+    method = null;
     args = [];
-    user = "";
+    user = null;
 
     toJSON() {
         return {
@@ -79,9 +79,9 @@ export class Execute extends Operation {
 
     constructor({ address, solution, method, args, user }) {
         super({ address, solution });
-        this.method = method;
-        this.args = args;
-        this.user = user;
+        this.method = method ?? this.method;
+        this.args = args ?? this.args;
+        this.user = user ?? this.user;
     }
 
     hash_serialize(full_hash) {
