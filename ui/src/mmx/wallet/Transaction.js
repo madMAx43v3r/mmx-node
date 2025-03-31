@@ -13,6 +13,7 @@ import { Operation } from "./common/Operation";
 import { WriteBytes } from "./common/WriteBytes";
 import { exec_result_t } from "./common/exec_result_t";
 import { Executable } from "./common/Contract";
+import { ChainParams } from "./utils/ChainParams";
 
 class Transaction {
     #type_hash = BigInt("0xce0462acdceaa5bc");
@@ -168,10 +169,9 @@ class Transaction {
         this.outputs.push(obj);
     }
 
-    calc_cost(params) {
-        if (!params) {
-            throw new Error("chain params is required");
-        }
+    calc_cost(_params) {
+        const params = new ChainParams(_params);
+
         const hp = this.getHashProxy();
 
         let cost = BigInt(params.min_txfee);
