@@ -170,4 +170,29 @@ describe("Wallet", () => {
         const hash_serialize = tx.hash_serialize(true);
         assert.equal(hash_serialize.toHex(), hex);
     });
+
+    it("getOfferTradeTxAsync", async () => {
+        const txTest = txs.get("OFFER TRADE");
+        const json = JSONbigNative.parse(txTest.json);
+        const jsonTxt = JSONbigNative.stringify(json);
+        const hex = txTest.hex;
+
+        const options = {
+            network: "mainnet",
+            expire_at: json.expires,
+            nonce: json.nonce,
+        };
+
+        const address = "mmx1zmkneqqv28gyt8k8m3a09f2v2h3s0n44gly60hn5tq2d892re2asyh6g5x";
+        const amount = "100001";
+        const ask_currency = new addr_t().toString();
+        const price = "0x4189374bc6a7f0";
+
+        const tx = await Wallet.getOfferTradeTxAsync(ecdsaWallet, address, amount, ask_currency, price, options);
+
+        assert.equal(tx.toString(), jsonTxt);
+
+        const hash_serialize = tx.hash_serialize(true);
+        assert.equal(hash_serialize.toHex(), hex);
+    });
 });

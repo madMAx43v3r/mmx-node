@@ -104,6 +104,15 @@ export class Wallet {
         await ecdsaWallet.completeAsync(tx, options, deposit);
         return tx;
     }
+
+    static async getOfferTradeTxAsync(ecdsaWallet, address, amount, ask_currency, price, options) {
+        const options_ = { ...options };
+        options_.note = "TRADE";
+
+        const args = [await ecdsaWallet.getAddressAsync(0), new uint128(price).toHex()];
+
+        return await Wallet.getDepositTxAsync(ecdsaWallet, address, "trade", args, amount, ask_currency, options_);
+    }
 }
 
 /*
@@ -114,7 +123,7 @@ export class Wallet {
     +execute(index, address, method, args, user, options)
     +deposit(index, address, method, args, amount, currency, options)
     +make_offer(index, owner, bid_amount, bid_currency, ask_amount, ask_currency, options)
-    offer_trade(index, address, amount, dst_addr, price, options)
+    +offer_trade(index, address, amount, dst_addr, price, options)
     accept_offer(index, address, dst_addr, price, options)
     offer_withdraw(index, address, options)
     cancel_offer(index, address, options)
