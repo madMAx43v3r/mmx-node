@@ -56,10 +56,10 @@ export class TokenBase extends Contract {
     constructor(params) {
         super(params);
 
-        this.name = params.name;
-        this.symbol = params.symbol;
-        this.decimals = params.decimals;
-        this.meta_data = params.meta_data;
+        this.name = params.name ?? this.name;
+        this.symbol = params.symbol ?? this.symbol;
+        this.decimals = params.decimals ?? this.decimals;
+        this.meta_data = params.meta_data ?? this.meta_data;
     }
 
     num_bytes() {
@@ -75,15 +75,15 @@ export class Executable extends TokenBase {
     binary = "";
     init_method = "init";
     init_args = [];
-    depends = "";
+    depends = [];
 
     constructor(params) {
         super(params);
 
-        this.binary = params.binary;
-        this.init_method = params.init_method;
-        this.init_args = params.init_args;
-        this.depends = params.depends;
+        this.binary = params.binary ?? this.binary;
+        this.init_method = params.init_method ?? this.init_method;
+        this.init_args = params.init_args ?? this.init_args;
+        this.depends = params.depends ?? this.depends;
     }
 
     static hashHandler = {
