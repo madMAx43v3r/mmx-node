@@ -105,4 +105,36 @@ describe("Wallet", () => {
         const hash_serialize = tx.hash_serialize(true);
         assert.equal(hash_serialize.toHex(), hex);
     });
+
+    it("getDeployTxAsync", async () => {
+        const txTest = txs.get("TOKEN DEPLOY");
+        const json = JSONbigNative.parse(txTest.json);
+        const jsonTxt = JSONbigNative.stringify(json);
+        const hex = txTest.hex;
+
+        const options = {
+            network: "mainnet",
+            expire_at: json.expires,
+            nonce: json.nonce,
+            user: "mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6",
+        };
+
+        const contract = {
+            name: "Test coin",
+            symbol: "TEST",
+            decimals: 6,
+            meta_data: null,
+            binary: "mmx17pzl9cgmesyjur7rvvev70fx7f55rvyv7549cvrtf7chjml4qh4sryu9yl",
+            init_method: "init",
+            init_args: ["mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6"],
+            depends: [],
+        };
+
+        const tx = await Wallet.getDeployTxAsync(ecdsaWallet, contract, options);
+
+        assert.equal(tx.toString(), jsonTxt);
+
+        const hash_serialize = tx.hash_serialize(true);
+        assert.equal(hash_serialize.toHex(), hex);
+    });
 });

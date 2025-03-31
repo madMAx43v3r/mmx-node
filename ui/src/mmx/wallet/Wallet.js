@@ -1,3 +1,4 @@
+import { Executable } from "./common/Contract";
 import { Deposit, Execute } from "./common/Operation";
 import { Transaction } from "./Transaction";
 
@@ -64,14 +65,21 @@ export class Wallet {
         await ecdsaWallet.completeAsync(tx, options);
         return tx;
     }
+
+    static async getDeployTxAsync(ecdsaWallet, contract, options) {
+        const tx = new Transaction();
+        tx.note = "DEPLOY";
+        tx.deploy = new Executable(contract);
+        await ecdsaWallet.completeAsync(tx, options);
+        return tx;
+    }
 }
 
 /*
-
     +send(index, amount, dst_addr, currency, options)
     +send_many(index, amounts, currency, options)
     send_from(index, amount, dst_addr, src_addr, currency, options)
-    deploy(index, contract, options)
+    +deploy(index, contract, options)
     +execute(index, address, method, args, user, options)
     +deposit(index, address, method, args, amount, currency, options)
     make_offer(index, owner, bid_amount, bid_currency, ask_amount, ask_currency, options)

@@ -2,6 +2,7 @@ import { WriteBytes } from "./WriteBytes";
 import { addr_t, hash_t } from "./addr_t";
 import { get_num_bytes } from "./utils";
 import { Variant } from "./Variant";
+import { ChainParams } from "../utils/ChainParams";
 
 class Contract {
     // eslint-disable-next-line no-unused-private-class-members
@@ -11,13 +12,11 @@ class Contract {
     version = 0;
 
     constructor(params) {
-        this.version = params.version;
+        this.version = params.version ?? this.version;
     }
 
-    // calc_cost(params) {
-    //     if (!params) {
-    //         throw new Error("chain params is required");
-    //     }
+    // calc_cost(_params) {
+    //     const params = new ChainParams(_params);
 
     //     const cost = BigInt(this.num_bytes()) * BigInt(params.min_txfee_byte);
     //     return cost;
@@ -28,7 +27,7 @@ class Contract {
     }
 }
 
-class TokenBase extends Contract {
+export class TokenBase extends Contract {
     // eslint-disable-next-line no-unused-private-class-members
     #type_hash = BigInt("0x5aeed4c96d232b5e");
     __type = "mmx.contract.TokenBase";
@@ -56,6 +55,7 @@ class TokenBase extends Contract {
 
     constructor(params) {
         super(params);
+
         this.name = params.name;
         this.symbol = params.symbol;
         this.decimals = params.decimals;
@@ -68,7 +68,7 @@ class TokenBase extends Contract {
     }
 }
 
-class Executable extends TokenBase {
+export class Executable extends TokenBase {
     #type_hash = BigInt("0xfa6a3ac9103ebb12");
     __type = "mmx.contract.Executable";
 
@@ -142,10 +142,9 @@ class Executable extends TokenBase {
         return sum;
     }
 
-    calc_cost(params) {
-        if (!params) {
-            throw new Error("chain params is required");
-        }
+    calc_cost(_params) {
+        const params = new ChainParams(_params);
+
         const hp = this.getHashProxy();
         const cost =
             BigInt(this.num_bytes()) * BigInt(params.min_txfee_byte) +
@@ -153,4 +152,3 @@ class Executable extends TokenBase {
         return cost;
     }
 }
-export { Contract, Executable };
