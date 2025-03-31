@@ -121,7 +121,7 @@ export class ECDSA_Wallet {
         tx.content_hash = tx.calc_hash(true).toHex();
     };
 
-    completeAsync = async (tx, _options, deposit = new Map()) => {
+    completeAsync = async (tx, _options, deposit = []) => {
         const options = new spend_options_t(_options);
 
         tx.expires = options.expire_at;
@@ -150,8 +150,9 @@ export class ECDSA_Wallet {
             }
         });
 
-        deposit.forEach((value, key) => {
-            missing[key] = (missing[key] ?? 0n) + BigInt(value);
+        deposit.forEach((value) => {
+            const [address, amount] = value;
+            missing[address] = (missing[address] ?? 0n) + BigInt(amount);
         });
 
         const address = await this.getAddressAsync(0);
