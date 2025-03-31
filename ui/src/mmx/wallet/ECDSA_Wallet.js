@@ -6,7 +6,7 @@ import { PubKey } from "./common/PubKey";
 import { txin_t } from "./common/txio_t";
 import { cost_to_fee } from "./common/utils";
 
-import { getChainParams } from "./utils/getChainParams";
+import { getChainParamsAsync } from "./utils/getChainParamsAsync";
 import { spend_options_t } from "./common/spend_options_t";
 import { Operation, Execute, Deposit } from "./common/Operation";
 
@@ -116,7 +116,7 @@ export class ECDSA_Wallet {
         }
 
         // compute final content hash
-        const chainParams = await getChainParams(options.network);
+        const chainParams = await getChainParamsAsync(options.network);
         tx.static_cost = tx.calc_cost(chainParams);
         tx.content_hash = tx.calc_hash(true).toHex();
     };
@@ -177,7 +177,7 @@ export class ECDSA_Wallet {
         });
         //---
 
-        const chainParams = await getChainParams(options.network);
+        const chainParams = await getChainParamsAsync(options.network);
         const static_cost = tx.calc_cost(chainParams);
         tx.max_fee_amount = cost_to_fee(BigInt(static_cost) + BigInt(options.gas_limit), tx.fee_ratio);
 

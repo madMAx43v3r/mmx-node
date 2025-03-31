@@ -5,7 +5,7 @@ const chainExtraParamsList = import.meta.glob(`@mmxConfig/(mainnet|mainnet-rc|te
     as: "raw",
 });
 
-export const getChainParams = async (network) => {
+export const getChainParamsAsync = async (network) => {
     // get chain params
     const path = Object.keys(chainParamsList).filter((key) => key.endsWith(`${network}/chain/params.json`));
     const _chainParams = await chainParamsList[path]();

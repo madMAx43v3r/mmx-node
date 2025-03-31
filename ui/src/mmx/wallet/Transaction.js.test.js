@@ -1,7 +1,7 @@
 import { describe, it, assert } from "vitest";
 
 import { Transaction } from "./Transaction";
-import { getChainParams } from "./utils/getChainParams";
+import { getChainParamsAsync } from "./utils/getChainParamsAsync";
 
 import "./Transaction.ext";
 
@@ -49,7 +49,7 @@ txs.forEach((item, key) => {
 
         it("static_cost", async () => {
             const tx = Transaction.parse(json);
-            const chainParams = await getChainParams(tx.network);
+            const chainParams = await getChainParamsAsync(tx.network);
             const static_cost = tx.calc_cost(chainParams);
             assert.equal(static_cost, tx.static_cost);
         });

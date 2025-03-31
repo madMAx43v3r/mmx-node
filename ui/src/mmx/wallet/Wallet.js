@@ -2,7 +2,7 @@ import { Executable } from "./common/Contract";
 import { Deposit, Execute } from "./common/Operation";
 import { uint128 } from "./common/uint128";
 import { Transaction } from "./Transaction";
-import { getChainParams } from "./utils/getChainParams";
+import { getChainParamsAsync } from "./utils/getChainParamsAsync";
 
 export class Wallet {
     static async getSendTxAsync(ecdsaWallet, amount, dst_addr, currency, options) {
@@ -88,7 +88,7 @@ export class Wallet {
 
         const owner = await ecdsaWallet.getAddressAsync(0);
 
-        const chainParams = await getChainParams(options.network);
+        const chainParams = await getChainParamsAsync(options.network);
 
         const offer = {
             binary: chainParams.offer_binary,
