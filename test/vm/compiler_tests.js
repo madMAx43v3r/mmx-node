@@ -273,5 +273,17 @@ if(!(0 || null || 1)) {
 	}
 	assert(i == 10);
 }
+{
+	var map = {};
+	map[0] = 0;
+	map[0] += 1;
+	assert(map[0] == 1);
+}
+{
+	var map = {};
+	map[1] = 1;
+	map[1] -= 1;
+	assert(map[1] == 0);
+}
 
 
