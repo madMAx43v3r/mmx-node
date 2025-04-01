@@ -959,7 +959,7 @@ std::shared_ptr<const Block> Node::make_block(
 	block->proof_hash = proof[0].hash;
 	block->proof_chain = calc_proof_chain(prev->proof_chain, block->proof_hash);
 
-	block->challenge = calc_next_challenge(params, prev->challenge, block->vdf_count,
+	block->challenge = calc_next_challenge(params, prev, block->vdf_count,
 			block->height < params->hardfork2_height ? block->proof_hash : block->proof_chain, block->is_space_fork);
 
 	if(block->height % params->vdf_reward_interval == 0) {

@@ -121,15 +121,16 @@ bool check_space_fork(std::shared_ptr<const ChainParams> params, const hash_t& c
 
 inline
 hash_t calc_next_challenge(
-		std::shared_ptr<const ChainParams> params, const hash_t& challenge,
+		std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev,
 		const uint32_t vdf_count, const hash_t& proof_hash, bool& is_space_fork)
 {
 	// TODO: starting with hardfork2 `proof_hash` is `proof_chain`
-	hash_t out = challenge;
+	hash_t out = prev->challenge;
 	for(uint32_t i = 0; i < vdf_count; ++i) {
 		out = hash_t(std::string("next_challenge") + out);
 	}
-	is_space_fork = check_space_fork(params, out, proof_hash);
+	is_space_fork = check_space_fork(params, out, proof_hash)
+		|| (prev->height + 1 >= params->hardfork2_height && prev->space_fork_len + vdf_count > params->max_space_fork_len);
 
 	if(is_space_fork) {
 		out = hash_t(std::string("challenge_infusion") + out + proof_hash);

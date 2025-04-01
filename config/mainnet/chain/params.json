@@ -7,6 +7,7 @@
 	"infuse_delay": 1,
 	"challenge_delay": 6,
 	"challenge_interval": 256,
+	"max_space_fork_len": 8,
 	"commit_delay": 24,
 	"avg_proof_count": 4,
 	"max_proof_count": 20,
