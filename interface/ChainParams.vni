@@ -78,6 +78,7 @@ class ChainParams {
 	uint transaction_activation = 100000;
 	
 	uint hardfork1_height = 1000000;		// VDF height
+	uint hardfork2_height = 2000000;		// block height
 	
 	
 	double get_block_time() const;			// [sec]
