@@ -48,5 +48,6 @@
 		"value": 1,
 		"inverse": 100
 	},
-	"hardfork1_height": 1000000
+	"hardfork1_height": 1000000,
+	"hardfork2_height": 2000000
 }
