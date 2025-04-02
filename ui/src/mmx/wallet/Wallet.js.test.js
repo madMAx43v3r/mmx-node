@@ -197,6 +197,31 @@ describe("Wallet", () => {
         assert.equal(hash_serialize.toHex(), hex);
     });
 
+    it("getOfferWithdrawTxAsync", async () => {
+        const txTest = txs.get("OFFER WITHDRAW");
+        const json = JSONbigNative.parse(txTest.json);
+        const jsonTxt = JSONbigNative.stringify(json);
+        const hex = txTest.hex;
+
+        const options = {
+            network: "mainnet",
+            expire_at: json.expires,
+            nonce: json.nonce,
+        };
+
+        const offer = {
+            address: "mmx1lr5vtm5sx5yspj6283hv3zqrp0jc450yzxdt4adv62v7gqty6gsqxn3nk5",
+            owner: "mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6",
+        };
+
+        const tx = await Wallet.getOfferWithdrawTxAsync(ecdsaWallet, offer, options);
+
+        assert.equal(tx.toString(), jsonTxt);
+
+        const hash_serialize = tx.hash_serialize(true);
+        assert.equal(hash_serialize.toHex(), hex);
+    });
+
     it("getAcceptOfferTxAsync", async () => {
         const txTest = txs.get("OFFER ACCEPT");
         const json = JSONbigNative.parse(txTest.json);
