@@ -1,4 +1,4 @@
-import {equals, sort, reverse} from "std";
+import {equals, sort, reverse, compare} from "std";
 
 const RANK_MAP = {
     "2": 0, "3": 1, "4": 2, "5": 3, "6": 4, "7": 5, "8": 6, "9": 7, "10": 8,
@@ -25,13 +25,17 @@ const ACE_LOW_STRAIGHT = [12, 3, 2, 1, 0]; // A, 5, 4, 3, 2
 // C - Clubs
 // S - Spades
 
+function init() {
+    // TODO
+}
+
 // Function to get the rank of a poker hand (5 cards)
 // @param hand - array of array representing the poker hand
 // @return - array with the rank and sorted values of the hand
 //
 // Example:
 //   hand = [["2", "H"], ["3", "D"], ["4", "C"], ["5", "S"], ["6", "H"]]
-//   return => [4, [6, 5, 4, 3, 2]]
+//   return => [5, [4, 3, 2, 1, 0]]
 
 function get_rank(hand) public
 {
@@ -60,8 +64,14 @@ function get_rank(hand) public
         }
     }
     
+    var straight = false;
+    if(size(unique_values) == 5) {
+        straight = (unique_values[0] - unique_values[4] == 4);
+    }
     const low_straight = equals(unique_values, ACE_LOW_STRAIGHT);
-    const straight = (size(unique_values) == 5 && (unique_values[0] - unique_values[4] == 4)) || low_straight;
+    if(low_straight) {
+        straight = true;
+    }
 
     var flush = false;
     for(const suit of ["H", "D", "C", "S"]) {
@@ -81,7 +91,7 @@ function get_rank(hand) public
     var pairs = 0;
     var threes = 0;
     var fours = 0;
-    for(const v of values) {
+    for(const v of unique_values) {
         if(count[v] == 2) pairs++;
         if(count[v] == 3) threes++;
         if(count[v] == 4) fours++;
@@ -102,29 +112,19 @@ function get_rank(hand) public
 // Function to compare two poker hands
 // @param hand - first poker hand (array of array)
 // @param other - second poker hand (array of array)
-// @return - 1 if hand wins, 0 if other wins, 2 if tie
+// @return - "GT" if hand wins, "LT" if other wins, "EQ" if tie
 
 function check_win(hand, other) public
 {
     assert(size(hand) == 5, "hand must be 5 cards");
     assert(size(other) == 5, "hand must be 5 cards");
 
-    const rank1 = get_rank(hand);
-    const rank2 = get_rank(other);
-    
-    if(rank1[0] > rank2[0]) {
-        return 1;   // hand wins
-    } else if(rank1[0] < rank2[0]) {
-        return 0;   // other wins
+    const L = get_rank(hand);
+    const R = get_rank(other);
+
+    const res = compare(L[0], R[0]);
+    if(res == "EQ") {
+        return compare(L[1], R[1]);
     }
-    
-    for(var i = 0; i < 5; i++) {
-        if(rank1[1][i] > rank2[1][i]) {
-            return 1;
-        } else if(rank1[1][i] < rank2[1][i]) {
-            return 0;
-        }
-    }
-    
-    return 2;   // tie
+    return res;
 }
