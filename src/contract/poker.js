@@ -72,18 +72,18 @@ function get_rank(hand) public
     var threes = 0;
     var fours = 0;
     for(const v of values) {
-        if (count[v] == 2) pairs++;
-        if (count[v] == 3) threes++;
-        if (count[v] == 4) fours++;
+        if(count[v] == 2) pairs++;
+        if(count[v] == 3) threes++;
+        if(count[v] == 4) fours++;
     }
     
-    if (flush && straight) return [8, values]; // Straight flush
-    if (fours) return [7, values]; // Four of a kind
-    if (threes && pairs) return [6, values]; // Full house
-    if (flush) return [5, values]; // Flush
-    if (straight) return [4, values]; // Straight
-    if (threes) return [3, values]; // Three of a kind
-    if (pairs === 2) return [2, values]; // Two pair
-    if (pairs === 1) return [1, values]; // One pair
+    if(flush && straight) return [8, values]; // Straight flush
+    if(fours) return [7, values]; // Four of a kind
+    if(threes && pairs) return [6, values]; // Full house
+    if(flush) return [5, values]; // Flush
+    if(straight) return [4, values]; // Straight
+    if(threes) return [3, values]; // Three of a kind
+    if(pairs === 2) return [2, values]; // Two pair
+    if(pairs === 1) return [1, values]; // One pair
     return [0, values]; // High card
 }
