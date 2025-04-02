@@ -1,3 +1,4 @@
+import {equals, sort, reverse} from "std";
 
 const RANK_MAP = {
     "2": 0, "3": 1, "4": 2, "5": 3, "6": 4, "7": 5, "8": 6, "9": 7, "10": 8,
