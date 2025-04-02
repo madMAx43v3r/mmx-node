@@ -6,19 +6,27 @@ const chainExtraParamsList = import.meta.glob(`@mmxConfig/(mainnet|mainnet-rc|te
     import: "default",
 });
 
+const chainParamsCache = new Map();
 export const getChainParamsAsync = async (network) => {
-    // get chain params
-    const path = Object.keys(chainParamsList).filter((key) => key.endsWith(`${network}/chain/params.json`));
-    const _chainParams = await chainParamsList[path]();
+    let chainParams = chainParamsCache.get(network);
 
-    // get chain extra params
-    const extraPath = Object.keys(chainExtraParamsList).filter((key) => key.includes(`${network}/chain/params/`));
-    for (const key of extraPath) {
-        const param = key.match(/\/chain\/params\/(.*)$/)[1];
-        const extraParam = await chainExtraParamsList[key]();
-        _chainParams[param] = extraParam.trim();
+    if (chainParams) {
+        return chainParams;
+    } else {
+        // get chain params
+        const path = Object.keys(chainParamsList).filter((key) => key.endsWith(`${network}/chain/params.json`));
+        chainParams = await chainParamsList[path]();
+
+        // get chain extra params
+        const extraPath = Object.keys(chainExtraParamsList).filter((key) => key.includes(`${network}/chain/params/`));
+        for (const key of extraPath) {
+            const param = key.match(/\/chain\/params\/(.*)$/)[1];
+            const extraParam = await chainExtraParamsList[key]();
+            chainParams[param] = extraParam.trim();
+        }
+
+        const res = new ChainParams(chainParams);
+        chainParamsCache.set(network, new ChainParams(chainParams));
+        return res;
     }
-
-    const chainParams = new ChainParams(_chainParams);
-    return chainParams;
 };
