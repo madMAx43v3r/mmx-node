@@ -202,6 +202,10 @@ export class ConfigBuilder {
                             return "mmx";
                         }
 
+                        if (id.includes("/config/")) {
+                            return "mmx-config";
+                        }
+
                         //console.log(id);
                         return;
                     },
