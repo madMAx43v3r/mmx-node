@@ -1,5 +1,5 @@
 // Returns a new array with the elements of the input array in reverse order
-function reverse(arr) {
+function reverse(arr) const {
     const N = size(arr);
     const out = [];
     for(var i = 0; i < N; i++) {

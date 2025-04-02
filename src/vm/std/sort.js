@@ -1,6 +1,6 @@
 // Returns a sorted array in ascending order (using bubble sort)
 // Note: use reverse(sort(...)) to get a descending order
-function sort(arr) {
+function sort(arr) const {
     const N = size(arr);
     if(N <= 1) {
         return arr;

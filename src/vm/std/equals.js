@@ -1,7 +1,7 @@
 // Same as == operator, but does a deep (recursive) comparison for arrays
 // @returns true if the two values are equal, false otherwise
 // Note: Objects cannot be compared, as such comparison is based on the reference (address)
-function equals(L, R) {
+function equals(L, R) const {
     if(L == R) {
         return true;
     }
