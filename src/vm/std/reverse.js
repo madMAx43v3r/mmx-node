@@ -1,4 +1,4 @@
-
+// Returns a new array with the elements of the input array in reverse order
 function reverse(arr) {
     const N = size(arr);
     const out = [];
