@@ -1,12 +1,5 @@
 import {equals, sort, reverse, compare} from "std";
 
-const RANK_MAP = {
-    "2": 0, "3": 1, "4": 2, "5": 3, "6": 4, "7": 5, "8": 6, "9": 7, "10": 8,
-    "T": 8, "J": 9, "Q": 10, "K": 11, "A": 12
-};
-
-const ACE_LOW_STRAIGHT = [12, 3, 2, 1, 0]; // A, 5, 4, 3, 2
-
 // Poker Hand Ranking:
 // 0 - High Card
 // 1 - One Pair
@@ -37,10 +30,15 @@ function init() {
 //   hand = [["2", "H"], ["3", "D"], ["4", "C"], ["5", "S"], ["6", "H"]]
 //   return => [5, [4, 3, 2, 1, 0]]
 
-function get_rank(hand) public
+function get_rank(hand) const public
 {
     assert(size(hand) == 5, "hand must be 5 cards");
 
+    const RANK_MAP = {
+        "2": 0, "3": 1, "4": 2, "5": 3, "6": 4, "7": 5, "8": 6, "9": 7, "10": 8,
+        "T": 8, "J": 9, "Q": 10, "K": 11, "A": 12
+    };
+    
     var values = [];
     var suit_map = {"H": 0, "D": 0, "C": 0, "S": 0};
     
@@ -68,7 +66,7 @@ function get_rank(hand) public
     if(size(unique_values) == 5) {
         straight = (unique_values[0] - unique_values[4] == 4);
     }
-    const low_straight = equals(unique_values, ACE_LOW_STRAIGHT);
+    const low_straight = equals(unique_values, [12, 3, 2, 1, 0]);
     if(low_straight) {
         straight = true;
     }
@@ -114,11 +112,8 @@ function get_rank(hand) public
 // @param other - second poker hand (array of array)
 // @return - "GT" if hand wins, "LT" if other wins, "EQ" if tie
 
-function check_win(hand, other) public
+function check_win(hand, other) const public
 {
-    assert(size(hand) == 5, "hand must be 5 cards");
-    assert(size(other) == 5, "hand must be 5 cards");
-
     const L = get_rank(hand);
     const R = get_rank(other);
 
