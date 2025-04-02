@@ -450,7 +450,6 @@ protected:
 private:
 	int depth = 0;
 	int curr_pass = 0;
-	bool have_return = false;
 
 	uint8_t math_flags = 0;
 
@@ -1057,7 +1056,6 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 				scope.add_variable(arg);
 			}
 			curr_function = func;
-			have_return = false;
 
 			if(func.is_init) {
 				code.emplace_back(OP_CALL, 0, 0, scope.new_addr() - MEM_STACK);
@@ -1067,7 +1065,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			recurse(list.back());
 			frame.pop_back();
 
-			if(!have_return) {
+			if(code.empty() || code.back().code != OP_RET) {
 				code.emplace_back(OP_RET);
 			}
 			curr_function = nullptr;
@@ -1560,13 +1558,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(lhs) {
 				throw std::logic_error("unexpected left operand");
 			}
-			if(have_return) {
-				throw std::logic_error("multiple returns not allowed");
-			}
 			if(expr_len > 0) {
 				copy(MEM_STACK, recurse_expr(p_node, expr_len, nullptr, rank));
 			}
-			have_return = true;
 			code.emplace_back(OP_RET);
 		}
 		else {
