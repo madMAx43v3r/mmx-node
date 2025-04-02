@@ -285,5 +285,25 @@ if(!(0 || null || 1)) {
 	map[1] -= 1;
 	assert(map[1] == 0);
 }
+{
+	var N = 1;
+	for(var i = 0; i < N; ++i) {
+		if(i < 10) {
+			N++;
+		}
+	}
+	assert(N == 11);
+}
+{
+	var N = 1;
+	var i = 0;
+	while(i < N) {
+		if(i < 10) {
+			N++;
+		}
+		i++;
+	}
+	assert(N == 11);
+}
 
 
