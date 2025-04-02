@@ -35,28 +35,14 @@ export class ECDSA_Wallet {
     getFarmerKeyAsync = async () => (this.farmerKeyCache ??= getFarmerKeyAsync(this.#seed_value));
 
     addressCache = new Map();
-    getAddressAsync = async (index) => {
-        let addr = this.addressCache.get(index);
-        if (addr !== undefined) {
-            return addr;
-        } else {
-            addr = await getAddressAsync(this.#seed_value, this.#passphrase, index);
-            this.addressCache.set(index, addr);
-        }
-        return addr;
-    };
+    getAddressAsync = async (index) =>
+        this.addressCache.get(index) ??
+        this.addressCache.set(index, await getAddressAsync(this.#seed_value, this.#passphrase, index)).get(index);
 
     keysCache = new Map();
-    getKeysAsync = async (index) => {
-        let keys = this.keysCache.get(index);
-        if (keys !== undefined) {
-            return keys;
-        } else {
-            keys = await getKeysAsync(this.#seed_value, this.#passphrase, index);
-            this.keysCache.set(index, keys);
-        }
-        return keys;
-    };
+    getKeysAsync = async (index) =>
+        this.keysCache.get(index) ??
+        this.keysCache.set(index, await getKeysAsync(this.#seed_value, this.#passphrase, index)).get(index);
 
     signMsgAsync = async (address, msg, options) => {
         if (address == (await this.getAddressAsync(0))) {
