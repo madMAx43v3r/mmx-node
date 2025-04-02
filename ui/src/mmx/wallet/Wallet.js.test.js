@@ -151,6 +151,7 @@ describe("Wallet", () => {
             user: "mmx16aq5vpcmxcrh9xck0z06eqnmr87w5r2j062snjj6g7cvj0thry7q0mp3w6",
         };
 
+        const owner = 0;
         const bid_amount = 100000;
         const bid_currency = "mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev";
         const ask_amount = 100;
@@ -158,6 +159,7 @@ describe("Wallet", () => {
 
         const tx = await Wallet.getMakeOfferTxAsync(
             ecdsaWallet,
+            owner,
             bid_amount,
             bid_currency,
             ask_amount,

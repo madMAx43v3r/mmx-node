@@ -76,7 +76,7 @@ export class Wallet {
         return tx;
     }
 
-    static async getMakeOfferTxAsync(ecdsaWallet, bid_amount, bid_currency, ask_amount, ask_currency, options) {
+    static async getMakeOfferTxAsync(ecdsaWallet, owner, bid_amount, bid_currency, ask_amount, ask_currency, options) {
         if (bid_amount == 0 || ask_amount == 0) {
             throw new Error("amount cannot be zero");
         }
@@ -86,14 +86,14 @@ export class Wallet {
             throw new Error("price out of range");
         }
 
-        const owner = await ecdsaWallet.getAddressAsync(0);
+        const owner_addr = await ecdsaWallet.getAddressAsync(owner);
 
         const chainParams = await getChainParamsAsync(options.network);
 
         const offer = {
             binary: chainParams.offer_binary,
             init_method: "init",
-            init_args: [owner, bid_currency, ask_currency, new uint128(inv_price).toHex(), null],
+            init_args: [owner_addr, bid_currency, ask_currency, new uint128(inv_price).toHex(), null],
         };
 
         const tx = new Transaction();
@@ -142,6 +142,8 @@ export class Wallet {
 
         return this.getExecuteTxAsync(ecdsaWallet, address, "cancel", [], null, options_);
     }
+
+    // static async getSwapTradeTxAsync(ecdsaWallet, amount, currency, min_trade, num_iter, options) {}
 
     static async getPlotNftCreateTxAsync(ecdsaWallet, name, owner, options) {
         const chainParams = await getChainParamsAsync(options.network);
