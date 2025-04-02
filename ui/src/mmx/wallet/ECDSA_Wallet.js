@@ -10,7 +10,7 @@ import { getChainParamsAsync } from "./utils/getChainParamsAsync";
 import { spend_options_t } from "./common/spend_options_t";
 import { Operation, Execute, Deposit } from "./common/Operation";
 
-export class ECDSA_Wallet {
+export class ECDSA_Wallet_Keys {
     #seed_value;
     #passphrase = "";
 
@@ -43,6 +43,12 @@ export class ECDSA_Wallet {
     getKeysAsync = async (index) =>
         this.keysCache.get(index) ??
         this.keysCache.set(index, await getKeysAsync(this.#seed_value, this.#passphrase, index)).get(index);
+}
+
+export class ECDSA_Wallet extends ECDSA_Wallet_Keys {
+    constructor(seed, passphrase) {
+        super(seed, passphrase);
+    }
 
     signMsgAsync = async (address, msg, options) => {
         if (address == (await this.getAddressAsync(0))) {

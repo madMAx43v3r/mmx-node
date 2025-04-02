@@ -127,12 +127,12 @@ watchEffect(() => {
 const { isValid: isValidForm } = useWalletFormStatusL(formRef);
 const isValid = computed(() => isValidForm.value && wallet.value != null);
 
-import { ECDSA_Wallet } from "@/mmx/wallet/ECDSA_Wallet";
+import { ECDSA_Wallet_Keys } from "@/mmx/wallet/ECDSA_Wallet";
 const tmpWallet = computed(() => {
     const result = { wallet: null, error: "" };
     if (!isEmpty(formData.mnemonic) && isValidForm.value) {
         try {
-            result.wallet = new ECDSA_Wallet(formData.mnemonic, formData.passphrase);
+            result.wallet = new ECDSA_Wallet_Keys(formData.mnemonic, formData.passphrase);
         } catch (e) {
             result.error = e.message;
         }
