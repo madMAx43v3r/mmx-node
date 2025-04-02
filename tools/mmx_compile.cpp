@@ -246,7 +246,7 @@ int main(int argc, char** argv)
 
 				bool did_fail = true;
 				try {
-					vm::execute(child, *func, true);
+					vm::execute(child, *func, false);
 					did_fail = false;
 				}
 				catch(const std::exception& ex) {
@@ -296,6 +296,9 @@ int main(int argc, char** argv)
 						cache->set_balance(out.address, out.contract, (dst_bal ? *dst_bal : uint128()) + out.amount);
 					}
 					vm::copy(engine, child, stack_ptr, vm::MEM_STACK);
+					if(!func->is_const) {
+						child->commit();
+					}
 					cache->commit();
 				}
 				return;
