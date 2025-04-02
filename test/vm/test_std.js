@@ -1,3 +1,6 @@
+import {equals, sort, reverse} from "std";
+
+function main() {
 
 assert(equals(1, 1));
 assert(equals(1, 2) == false);
@@ -21,3 +24,7 @@ assert(equals(reverse([]), []));
 assert(equals(reverse([1]), [1]));
 assert(equals(reverse([1, 2]), [2, 1]));
 assert(equals(reverse([1, 2, 3]), [3, 2, 1]));
+
+} // main
+
+main();
