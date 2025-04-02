@@ -15,14 +15,7 @@ export const useNodeInfo = (params) => {
     return query;
 };
 
-const useNodeInfoWatch = (_query) => {
-    let query;
-    if (_query) {
-        query = _query;
-    } else {
-        query = useNodeInfo({ enabled: false });
-    }
-
+const useNodeInfoWatch = (query) => {
     const nodeStore = useNodeStore();
     const queryClient = useQueryClient();
     watch(query.data, (data) => {
@@ -57,7 +50,8 @@ const useNodeInfoWatch = (_query) => {
     });
 };
 export const useNodeInfoMutation = () => {
-    useNodeInfoWatch();
+    useNodeInfoWatch(useNodeInfo({ enabled: false }));
+
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: () => getNodeInfo(),
