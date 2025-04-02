@@ -32,10 +32,10 @@ function calc_price(x) const public
 {
 	x /= PRECISION;
 	var y = x;
-	for(var i = 0; i < PRICE_ITERS; ++i) {
+	for(var i = 0; i < PRICE_ITERS && y > 0; ++i) {
 		y = ((y << FRACT_BITS) + (x << FRACT_BITS) / y) >> (FRACT_BITS + 1);
 	}
-	return max(y, 100) * PRECISION;
+	return y * PRECISION;
 }
 
 function get_price(index) const public
