@@ -1,26 +1,21 @@
+import { useQueryClient } from "@tanstack/vue-query";
 import { useSession, useLogin } from "@/queries/server";
 
 export const useNodeSession = () => {
     const sessionStore = useSessionStore();
+
     const { data } = useSession();
 
-    // const $q = useQuasar();
-    const onError = () => {
-        sessionStore.doLogout(false);
-        // $q.notify({
-        //     message: "Login failed!", //TODO i18n
-        //     type: "negative",
-        // });
-    };
-
     const login = useLogin();
+    const queryClient = useQueryClient();
     const handleLogin = (credentials) => {
-        const payload = {
-            credentials,
-        };
-        login.mutate(payload, {
-            onError,
-        });
+        login.mutate(
+            { credentials },
+            {
+                onSuccess: () => queryClient.invalidateQueries({ queryKey: ["config"] }),
+                onError: () => sessionStore.doLogout(false),
+            }
+        );
     };
 
     watch(data, (data) => {
