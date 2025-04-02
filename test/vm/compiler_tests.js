@@ -20,6 +20,28 @@ function no_return() {}
 
 assert(no_return() == null);
 
+function multi_return(v) {
+	if(v < 10) {
+		return "SMALL";
+	}
+	if(v < 100) {
+		return "MEDIUM";
+	}
+	return "LARGE";
+}
+
+assert(multi_return(0) == "SMALL");
+assert(multi_return(11) == "MEDIUM");
+assert(multi_return(111) == "LARGE");
+
+function return_array() {
+	return [1, 2, 3];
+}
+
+assert(return_array()[0] == 1);
+assert(return_array()[1] == 2);
+assert(return_array()[2] == 3);
+
 assert(concat(string(1), string(2), string(3)) == "123");
 
 {
