@@ -10,7 +10,8 @@ import {equals, sort, reverse, compare} from "std";
 // 6 - Flush
 // 7 - Full House
 // 8 - Four of a Kind
-// 9 - Straight Flush
+// 9 - Ace Low Straight Flush
+// 10 - Straight Flush
 
 // Poker Suits:
 // H - Hearts
@@ -67,9 +68,6 @@ function get_rank(hand) const public
         straight = (unique_values[0] - unique_values[4] == 4);
     }
     const low_straight = equals(unique_values, [12, 3, 2, 1, 0]);
-    if(low_straight) {
-        straight = true;
-    }
 
     var flush = false;
     for(const suit of ["H", "D", "C", "S"]) {
@@ -95,16 +93,17 @@ function get_rank(hand) const public
         if(count[v] == 4) fours++;
     }
     
-    if(flush && straight) return [9, values];	// Straight Flush
-    if(fours) return [8, values];				// Four of a kind
-    if(threes && pairs) return [7, values];		// Full House
-    if(flush) return [6, values];				// Flush
-    if(low_straight) return [4, values];	    // Ace Low Straight
-    if(straight) return [5, values];			// Straight
-    if(threes) return [3, values];				// Three of a kind
-    if(pairs == 2) return [2, values];			// Two Pair
-    if(pairs == 1) return [1, values];			// One Pair
-    return [0, values];							// High Card
+    if(flush && straight) return [10, values];	    // Straight Flush
+    if(flush && low_straight) return [9, values];	// Ace Low Straight Flush
+    if(fours) return [8, values];				    // Four of a kind
+    if(threes && pairs) return [7, values];		    // Full House
+    if(flush) return [6, values];				    // Flush
+    if(straight) return [5, values];			    // Straight
+    if(low_straight) return [4, values];	        // Ace Low Straight
+    if(threes) return [3, values];				    // Three of a kind
+    if(pairs == 2) return [2, values];			    // Two Pair
+    if(pairs == 1) return [1, values];			    // One Pair
+    return [0, values];							    // High Card
 }
 
 // Function to compare two poker hands
