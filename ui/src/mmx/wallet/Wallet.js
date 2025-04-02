@@ -114,13 +114,21 @@ export class Wallet {
         return await Wallet.getDepositTxAsync(ecdsaWallet, address, "trade", args, amount, ask_currency, options_);
     }
 
-    // static async getAcceptOfferTxAsync(ecdsaWallet, offer, price, options) {
-    //     const args = [await ecdsaWallet.getAddressAsync(0), new uint128(price).toHex()];
+    static async getAcceptOfferTxAsync(ecdsaWallet, offer, price, options) {
+        const args = [await ecdsaWallet.getAddressAsync(0), new uint128(price).toHex()];
 
-    //     const options_ = { ...options };
-    //     options_.note = "TRADE";
-    //     return this.getDepositTxAsync(offer.address, "accept", args, offer.ask_amount, offer.ask_currency, options_);
-    // }
+        const options_ = { ...options };
+        options_.note = "TRADE";
+        return this.getDepositTxAsync(
+            ecdsaWallet,
+            offer.address,
+            "accept",
+            args,
+            offer.ask_amount,
+            offer.ask_currency,
+            options_
+        );
+    }
 
     static async getCancelOfferTxAsync(ecdsaWallet, address, offer_owner, options) {
         const options_ = { ...options };
@@ -139,7 +147,7 @@ export class Wallet {
     +deposit(index, address, method, args, amount, currency, options)
     +make_offer(index, owner, bid_amount, bid_currency, ask_amount, ask_currency, options)
     +offer_trade(index, address, amount, dst_addr, price, options)
-    accept_offer(index, address, dst_addr, price, options)
+    +accept_offer(index, address, dst_addr, price, options)
     offer_withdraw(index, address, options)
     +cancel_offer(index, address, options)
     swap_trade(index, address, amount, currency, min_trade, num_iter, options)
