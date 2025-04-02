@@ -16,6 +16,10 @@ function test1(a, b = 1) {
 assert(test1(1) == 2);
 assert(test1(1, 2) == 3);
 
+function no_return() {}
+
+assert(no_return() == null);
+
 assert(concat(string(1), string(2), string(3)) == "123");
 
 {
