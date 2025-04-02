@@ -1,41 +1,39 @@
 import { defineConfig } from "vite";
 
-import Fonts from "unplugin-fonts/vite";
 import AutoImport from "unplugin-auto-import/vite";
+import Fonts from "unplugin-fonts/vite";
 import Components from "unplugin-vue-components/vite";
 
 import GenerateFile from "vite-plugin-generate-file";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import VueDevTools from "vite-plugin-vue-devtools";
 
-import vue from "@vitejs/plugin-vue";
 import { quasar, transformAssetUrls } from "@quasar/vite-plugin";
+import vue from "@vitejs/plugin-vue";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 
-import { fileURLToPath, URL } from "node:url";
 import path from "node:path";
+import { fileURLToPath, URL } from "node:url";
 
 export const BuildTargets = {
     GUI: "GUI",
     EXPLORER: "EXPLORER",
     OFFLINE: "OFFLINE",
+    PLAYGROUND: "PLAYGROUND",
 };
 
 export class ConfigBuilder {
     #date = new Date();
 
-    txQRSendBaseUrl =
-        // eslint-disable-next-line no-undef
-        process.env.NODE_ENV === "production" ? "https://goldfish-app-wmlwj.ondigitalocean.app" : undefined;
-
-    publicRPCUrl =
-        // eslint-disable-next-line no-undef
-        process.env.NODE_ENV === "production" ? "https://rpc.mmx.network" : undefined;
+    txQRSendBaseUrl = "https://goldfish-app-wmlwj.ondigitalocean.app";
+    publicRPCUrl = "https://rpc.mmx.network";
 
     buildTarget = BuildTargets.GUI;
     writeBuildInfo = false;
     usePublicRPC = false;
     allowCustomRPC = false;
-    singleFile = false;
+    useDefaultRollupOptions = false;
+    useSingleFile = false;
 
     constructor(options) {
         Object.assign(this, options);
@@ -47,10 +45,18 @@ export class ConfigBuilder {
         (config.build ??= {}).outDir = `dist/${this.buildTarget.toLowerCase()}`;
 
         (config.define ??= {}).__BUILD_TARGET__ = JSON.stringify(this.buildTarget);
-        (config.define ??= {}).__TX_QR_SEND_BASE_URL__ = JSON.stringify(this.txQRSendBaseUrl);
+        (config.define ??= {}).__TX_QR_SEND_BASE_URL__ = JSON.stringify(
+            // eslint-disable-next-line no-undef
+            process.env.NODE_ENV === "production" ? this.txQRSendBaseUrl : undefined
+        );
+
+        (config.define ??= {}).__PUBLIC_RPC_URL__ = JSON.stringify(this.publicRPCUrl);
 
         if (this.usePublicRPC) {
-            (config.define ??= {}).__WAPI_URL__ = JSON.stringify(this.publicRPCUrl);
+            (config.define ??= {}).__WAPI_URL__ = JSON.stringify(
+                // eslint-disable-next-line no-undef
+                process.env.NODE_ENV === "production" ? this.publicRPCUrl : undefined
+            );
         }
 
         (config.define ??= {}).__ALLOW_CUSTOM_RPC__ = JSON.stringify(this.allowCustomRPC);
@@ -79,8 +85,12 @@ export class ConfigBuilder {
         }
 
         if (this.singleFile) {
-            (config.build ??= {}).rollupOptions = {};
+            this.useDefaultRollupOptions = true;
             (config.plugins ??= []).push(viteSingleFile());
+        }
+
+        if (this.useDefaultRollupOptions) {
+            (config.build ??= {}).rollupOptions = {};
         }
 
         //console.log("config :", config);
@@ -91,6 +101,7 @@ export class ConfigBuilder {
     initConfig = {
         base: "./",
         plugins: [
+            nodePolyfills(),
             VueDevTools(),
             vue({
                 template: { transformAssetUrls },
@@ -140,6 +151,7 @@ export class ConfigBuilder {
             alias: {
                 "@": fileURLToPath(new URL("./src", import.meta.url)),
                 "@mmxConfig": fileURLToPath(new URL("../config", import.meta.url)),
+                //"@bex": fileURLToPath(new URL("./src-bex", import.meta.url)),
             },
             extensions: [".js", ".json", ".jsx", ".mjs", ".ts", ".tsx", ".vue"],
         },
