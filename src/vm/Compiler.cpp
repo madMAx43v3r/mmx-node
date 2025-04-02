@@ -495,7 +495,7 @@ private:
 
 };
 
-const std::string Compiler::version = "1.0.0";
+const std::string Compiler::version = "1.1.0";
 
 Compiler::Compiler(const compile_flags_t& flags)
 	:	flags(flags)
