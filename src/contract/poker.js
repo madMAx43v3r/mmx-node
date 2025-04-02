@@ -40,7 +40,7 @@ function get_rank(hand) public
         push(values, RANK_MAP[card[0]]);
         suit_map[card[1]]++;
     }
-    reverse(sort(values));
+    values = reverse(sort(values));
     
     var unique_values = [];     // sorted as well (DSC)
     {
