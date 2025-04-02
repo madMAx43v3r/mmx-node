@@ -77,8 +77,8 @@ struct comment {
 struct reserved {
 	static constexpr auto name = "mmx.lang.reserved";
 	static constexpr auto rule = dsl::literal_set(
-			kw_if, kw_do, kw_in, kw_of, kw_for, kw_else, kw_while, kw_var, kw_let,
-			kw_null, kw_true, kw_false, kw_const, kw_public, kw_payable, kw_return,
+			kw_if, kw_do, kw_for, kw_else, kw_while, kw_var, kw_let,
+			kw_null, kw_true, kw_false, kw_const, kw_public, kw_return,
 			kw_function, kw_namespace, kw_this, kw_export, kw_static, kw_continue,
 			kw_break, kw_interface);
 };
