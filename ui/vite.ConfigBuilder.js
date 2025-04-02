@@ -198,8 +198,12 @@ export class ConfigBuilder {
                             return "locales/" + base;
                         }
 
+                        if (id.includes("/src/mmx/wallet/")) {
+                            return "mmx-wallet";
+                        }
+
                         if (id.includes("/src/")) {
-                            return "mmx";
+                            return "ui";
                         }
 
                         if (id.includes("/config/")) {
