@@ -1968,10 +1968,12 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			out.address = offset;
 		}
 		else if(lhs) {
-			if(lhs->name) {
-				throw std::logic_error("not a function: " + *lhs->name);
+			if(curr_pass > 0) {
+				if(lhs->name) {
+					throw std::logic_error("not a function: " + (*lhs->name));
+				}
+				throw std::logic_error("expected function name");
 			}
-			throw std::logic_error("expected function name");
 		}
 		else {
 			if(list.size() != 3) {
