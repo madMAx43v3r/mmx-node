@@ -272,4 +272,27 @@ describe("Wallet", () => {
         const hash_serialize = tx.hash_serialize(true);
         assert.equal(hash_serialize.toHex(), hex);
     });
+
+    it("getPlotNftCreateTxAsync", async () => {
+        const txTest = txs.get("NFT PLOT DEPLOY");
+        const json = JSONbigNative.parse(txTest.json);
+        const jsonTxt = JSONbigNative.stringify(json);
+        const hex = txTest.hex;
+
+        const options = {
+            network: "mainnet",
+            expire_at: json.expires,
+            nonce: json.nonce,
+        };
+
+        const name = "hello";
+        const owner = null;
+
+        const tx = await Wallet.getPlotNftCreateTxAsync(ecdsaWallet, name, owner, options);
+
+        assert.equal(tx.toString(), jsonTxt);
+
+        const hash_serialize = tx.hash_serialize(true);
+        assert.equal(hash_serialize.toHex(), hex);
+    });
 });

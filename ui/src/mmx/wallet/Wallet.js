@@ -142,6 +142,18 @@ export class Wallet {
 
         return this.getExecuteTxAsync(ecdsaWallet, address, "cancel", [], null, options_);
     }
+
+    static async getPlotNftCreateTxAsync(ecdsaWallet, name, owner, options) {
+        const chainParams = await getChainParamsAsync(options.network);
+
+        const nft = {
+            name,
+            binary: chainParams.plot_nft_binary,
+            init_args: [await ecdsaWallet.getAddressAsync(owner ?? 0)],
+        };
+
+        return this.getDeployTxAsync(ecdsaWallet, nft, options);
+    }
 }
 
 /*
@@ -160,6 +172,6 @@ export class Wallet {
     swap_add_liquid(index, address, amount, pool_idx, options)
     swap_rem_liquid(index, address, amount, options)
     plotnft_exec(address, method, args, options)
-    plotnft_create(index, name, owner, options)
+    +plotnft_create(index, name, owner, options)
 
 */
