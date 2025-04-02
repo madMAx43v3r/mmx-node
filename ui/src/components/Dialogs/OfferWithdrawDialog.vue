@@ -11,6 +11,18 @@
                 <q-card-section>
                     <div class="q-gutter-y-sm">
                         <div class="row justify-end q-col-gutter-sm">
+                            <q-input
+                                :model-value="offer.ask_balance_value"
+                                label="Withdraw amount"
+                                input-class="amount-input"
+                                :suffix="offer.ask_symbol"
+                                :rules="[rules.required, rules.amount]"
+                                readonly
+                                class="col-md-4 col-sm-5 col-xs-6"
+                            />
+                        </div>
+
+                        <div class="row justify-end q-col-gutter-sm">
                             <TxFeeSelect v-model="formData.feeRatio" class="col-md-3 col-sm-4 col-xs-6" />
                             <TxFeeInput
                                 v-model="fee"
