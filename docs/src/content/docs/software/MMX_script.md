@@ -44,7 +44,7 @@ Note: Objects are maps with string keys.
 - `switch()`
 - `function*`
 - `void`, `new`, `class`, `typeof`, `await`, `async`, `with`, `super`
-- `import`, `export`, `throw`, `try`, `catch`, `instanceof`, `yield`
+- `export`, `throw`, `try`, `catch`, `instanceof`, `yield`
 - Template strings
 - Multiple assignment: `[a, b] = arr, {a, b} = obj`
 - Spread syntax `(...)`
@@ -91,7 +91,7 @@ Note: Objects are maps with string keys.
 - `.`: field access (objects / maps only)
 - `++`: pre or post increment (integers only)
 - `--`: pre or post decrement (integers only)
-- `!`: Logical NOT (boolean only)
+- `!`: Logical NOT
 - `~`: Bitwise NOT (integer only)
 - `*`: Multiplication (integers only)
 - `/`: Division (integers only)
