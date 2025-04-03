@@ -23,21 +23,23 @@ var currency;
 var blind_bet;
 var bet_limit;
 var max_players;
-var timeout;
+var timeout_interval;
 
-var num_players = 0;
 var num_reveals = 0;
+var num_actions = 0;
 var deadline = null;
-var global_seed = null;
 var round = 0;
-var pot_size = 0;
+var state = 0;          // 0 - waiting for players, 1 - revealing, 2 - betting, 3 - showdown, 4 - finished
+var sequence = 1;
 var bet_amount = 0;
+var is_raise = false;
 
 var player_map = {};
 var player_list = [];
 
-var board = [];
-
+var board = null;
+var winning_hand = null;
+var winning_player = null;
 
 function init(currency_, blind_bet_, bet_limit_, max_players_, timeout_)
 {
@@ -45,9 +47,9 @@ function init(currency_, blind_bet_, bet_limit_, max_players_, timeout_)
     blind_bet = uint(blind_bet_);
     bet_limit = uint(bet_limit_) * blind_bet;
     max_players = uint(max_players_);
-    timeout = uint(timeout_);
+    timeout_interval = uint(timeout_);
     assert(max_players >= 2);
-    assert(timeout >= 6);
+    assert(timeout_interval >= 6);
 }
 
 function join(name, commit, private_commit) public payable
@@ -55,7 +57,9 @@ function join(name, commit, private_commit) public payable
     commit = binary_hex(commit);
     private_commit = binary_hex(private_commit);
 
-    assert(round == 0, "game already started");
+    const num_players = size(player_list);
+
+    assert(state == 0, "game already started");
     assert(num_players < max_players, "table full");
     assert(this.user, "missing user");
     assert(this.deposit.currency == currency, "invalid currency");
@@ -66,49 +70,246 @@ function join(name, commit, private_commit) public payable
     assert(!player_map[this.user], "already joined");
 
     if(!num_players) {
-        deadline = this.height + 3 * timeout;
+        extend_deadline(3);
     }
     if(deadline) {
         assert(this.height < deadline, "too late");
     }
 
-    player_map[this.user] = {
+    const player = {
         name: name,
+        address: this.user,
+        step: 0,
         bet: blind_bet,
-        seed: null,
+        seed: [],
         commit: commit,
-        private_seed: null,
         private_commit: private_commit,
     };
-    push(player_list, this.user);
+    
+    player_map[this.user] = num_players;
+    push(player_list, player);
 
-    pot_size += blind_bet;
-    num_players++;
+    check_start();
+}
 
-    if(num_players == max_players) {
-        round++;
-        deadline = this.height + timeout;
+function check_start()
+{
+    if(state == 0) {
+        if(size(player_list) >= max_players || is_timeout()) {
+            state = 1;  // revealing
+            extend_deadline();
+        }
     }
 }
 
-function reveal(seed) public
+function reveal(seed, next_commit) public
 {
+    check_start();
+    check_action();
+
+    assert(state == 1, "wrong state");
+    assert(this.height < deadline, "too late");
     assert(size(seed) == 32, "invalid seed length");
 
-    const player = player_map[this.user];
-    assert(player, "not a player");
-    assert(player.seed == null, "already revealed");
+    const player = get_player(this.user);
+    assert(is_active(player), "not active");
+    assert(size(player.seed) == round, "already revealed");
     assert(sha256(seed) == player.commit, "invalid seed");
 
-    player.seed = seed;
-    player.commit = null;
+    if(round < 4) {
+        next_commit = binary_hex(next_commit);
+        assert(size(next_commit) == 32, "invalid commit");
+        player.commit = next_commit;
+    } else {
+        player.commit = null;
+    }
+    push(player.seed, seed);
     num_reveals++;
 
-    if(num_reveals == num_players) {
-        num_reveals = 0;
-        global_seed = sha256(concat(player.seed, player.private_commit));
-        round++;
-        deadline = this.height + timeout;
+    check_reveal();
+}
+
+function bet() public
+{
+    check_reveal();
+
+    assert(state == 2, "wrong state");
+    assert(this.height < deadline, "too late");
+    assert(this.deposit.currency == currency, "invalid currency");
+
+    const player = get_player(this.user);
+    assert(is_active(player), "not active");
+    assert(sequence > player.step, "duplicate action");
+    
+    player.bet += this.deposit.amount;
+    assert(player.bet <= bet_limit, "bet limit exceeded");
+
+    if(player.bet > bet_amount) {
+        is_raise = true;
+        bet_amount = player.bet;
+    }
+    player.step = sequence;
+    num_actions++;
+    
+    check_action();
+}
+
+function check(auto_fold) public
+{
+    check_reveal();
+
+    assert(state == 2, "wrong state");
+    assert(this.height < deadline, "too late");
+
+    const player = get_player(this.user);
+    assert(is_active(player), "not active");
+    assert(sequence > player.step, "duplicate action");
+
+    if(is_raise && auto_fold) {
+        player.fold = true;
+    }
+    player.step = sequence;
+    num_actions++;
+
+    check_action();
+}
+
+function fold() public
+{
+    check_reveal();
+
+    assert(state == 2, "wrong state");
+    assert(this.height < deadline, "too late");
+
+    const player = get_player(this.user);
+    assert(is_active(player), "not active");
+    assert(sequence > player.step, "duplicate action");
+
+    player.fold = true;
+    player.step = sequence;
+    num_actions++;
+
+    check_action();
+}
+
+function show(hand, private_seed) public
+{
+    assert(state == 3, "wrong state");
+    assert(size(hand) == 5, "invalid hand");
+    assert(this.height < deadline, "too late");
+
+    const player = get_player(this.user);
+    assert(is_active(player), "not active");
+    assert(player.private_seed == null, "already shown");
+    assert(sha256(private_seed) == player.private_commit, "invalid private seed");
+
+    player.private_seed = private_seed;
+
+    // TODO: check hand
+}
+
+function claim() public
+{
+    assert(state == 3, "wrong state");
+    assert(is_timeout(), "too soon");
+    
+    if(winning_player) {
+        send(balance(currency), winning_player.address, currency, "poker_win");
+    } else {
+        // TODO: return all bets
+    }
+    state = 4;  // finished
+}
+
+function is_timeout() const public
+{
+    if(deadline) {
+        return this.height >= deadline;
+    }
+    return false;
+}
+
+function extend_deadline(factor = 1)
+{
+    deadline = this.height + factor * timeout_interval;
+}
+
+function get_player(address) const public
+{
+    const index = player_map[address];
+    assert(index != null, "not a player");
+    return player_list[index];
+}
+
+function is_active(player) const public
+{
+    var curr_round = round;
+    if(state == 1 && is_timeout()) {
+        curr_round++;
+    }
+    return size(player.seed) >= curr_round && player.fold == null;
+}
+
+function get_active() const public
+{
+    const active = [];
+    for(const player of player_list) {
+        if(is_active(player)) {
+            push(active, player);
+        }
+    }
+    return active;
+}
+
+function get_num_active() const public
+{
+    var count = 0;
+    for(const player of player_list) {
+        if(is_active(player)) {
+            count++;
+        }
+    }
+    return count;
+}
+
+function check_reveal()
+{
+    if(state == 1) {
+        if(num_reveals == get_num_active() || is_timeout()) {
+            num_reveals = 0;
+            round++;
+            state = 2;  // betting
+            extend_deadline();
+        }
+    }
+}
+
+function check_action()
+{
+    if(state == 2) {
+        if(num_actions == get_num_active() || is_timeout()) {
+            var done = true;
+            if(bet_amount) {
+                for(const player of get_active()) {
+                    if(player.bet < bet_amount) {
+                        if(is_raise) {
+                            done = false;
+                            break;
+                        } else {
+                            player.fold = true;
+                        }
+                    }
+                }
+            }
+            if(done) {
+                bet_amount = 0;
+                state = 1;  // revealing
+            }
+            is_raise = false;
+            sequence++;
+            num_actions = 0;
+            extend_deadline();
+        }
     }
 }
 
@@ -116,19 +317,16 @@ function reveal(seed) public
 
 function leave() public
 {
-    assert(round == 0, "game already started");
-    assert(num_players == 1, "cannot leave table");
-    assert(this.user, "missing user");
-    assert(this.height >= deadline, "too early");
+    assert(state == 0, "game already started");
+    assert(is_timeout(), "too early");
+    assert(size(player_list) == 1, "cannot leave table");
 
-    const player = player_map[this.user];
-    assert(player, "not a player");
+    const player = get_player(this.user);
 
-    pot_size -= player.bet;
     send(this.user, player.bet, currency);
 
-    player_map[this.user] = null;
-    num_players--;
+    player_map = {};
+    player_list = [];
     deadline = null;
 }
 
