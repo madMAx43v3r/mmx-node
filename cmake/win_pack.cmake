@@ -34,7 +34,7 @@ add_custom_command(TARGET mmx PRE_BUILD
 		${CMAKE_SOURCE_DIR}/config/ $<TARGET_FILE_DIR:mmx>/config/)
 add_custom_command(TARGET mmx PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${CMAKE_SOURCE_DIR}/www/ $<TARGET_FILE_DIR:mmx>/www/)
+		${CMAKE_SOURCE_DIR}/ui/dist/gui/ $<TARGET_FILE_DIR:mmx>/ui/dist/gui/)
 add_custom_command(TARGET mmx PRE_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${CMAKE_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:mmx>/data/)
@@ -138,7 +138,7 @@ install(FILES
 
 install(DIRECTORY kernel/ DESTINATION kernel COMPONENT applications)
 install(DIRECTORY config/ DESTINATION config COMPONENT applications)
-install(DIRECTORY www/ DESTINATION www COMPONENT applications)
+install(DIRECTORY ui/dist/gui/ DESTINATION ui/dist/gui COMPONENT applications)
 install(DIRECTORY data/ DESTINATION data COMPONENT applications)
 install(DIRECTORY scripts/win/ DESTINATION ./ COMPONENT applications)
 install(FILES ${PROJECT_SOURCE_DIR}/LICENSE DESTINATION ./ COMPONENT applications)

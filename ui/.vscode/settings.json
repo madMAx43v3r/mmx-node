@@ -1,0 +1,6 @@
+{
+    "files.eol": "\n",
+    "i18n-ally.localesPaths": [
+        "src/locales"
+    ],
+}

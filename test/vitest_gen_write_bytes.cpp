@@ -126,7 +126,29 @@ int main(int argc, char** argv)
 	//	print_test(testname, value, jsvalue);
 	//}
 
-	// TODO uint128
+	{
+		const auto testname = "uint128";
+		const std::string hex = "0x13371337133713371337133713371337";
+		const auto value = uint128(hex);
+		const std::string jsvalue = "new uint128(\"" + hex + "\"" + ")";
+		print_test(testname, value, jsvalue);
+	}
+
+	{
+		const auto testname = "uint128 min";
+		const std::string hex = "0x00";
+		const auto value = uint128(hex);
+		const std::string jsvalue = "new uint128(\"" + hex + "\"" + ")";
+		print_test(testname, value, jsvalue);
+	}
+
+	{
+		const auto testname = "uint128 max";
+		const std::string hex = "0xffffffffffffffffffffffffffffffff";
+		const auto value = uint128(hex);
+		const std::string jsvalue = "new uint128(\"" + hex + "\"" + ")";
+		print_test(testname, value, jsvalue);
+	}
 
 	{
 		const auto testname = "string";
