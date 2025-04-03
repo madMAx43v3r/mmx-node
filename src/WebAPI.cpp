@@ -715,7 +715,7 @@ std::shared_ptr<RenderContext> WebAPI::get_context() const
 void WebAPI::render_header(const vnx::request_id_t& request_id, std::shared_ptr<const BlockHeader> block) const
 {
 	if(!block) {
-		respond_status(request_id, 204);
+		respond_status(request_id, 404);
 		return;
 	}
 	respond(request_id, render_value(block, get_context()));
@@ -799,7 +799,7 @@ void WebAPI::render_block_graph(const vnx::request_id_t& request_id, size_t limi
 void WebAPI::render_block(const vnx::request_id_t& request_id, std::shared_ptr<const Block> block) const
 {
 	if(!block) {
-		respond_status(request_id, 204);
+		respond_status(request_id, 404);
 		return;
 	}
 	std::unordered_set<addr_t> addr_set;
@@ -859,7 +859,7 @@ void WebAPI::render_blocks(const vnx::request_id_t& request_id, size_t limit, co
 void WebAPI::render_transaction(const vnx::request_id_t& request_id, const vnx::optional<tx_info_t>& info) const
 {
 	if(!info) {
-		respond_status(request_id, 204);
+		respond_status(request_id, 404);
 		return;
 	}
 	auto context = get_context();
@@ -1425,7 +1425,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 					if(info) {
 						respond(request_id, render_value(info));
 					} else {
-						respond_status(request_id, 204);
+						respond_status(request_id, 404);
 					}
 				},
 				std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
