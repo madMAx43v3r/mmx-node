@@ -19,8 +19,117 @@ import {equals, sort, reverse, compare} from "std";
 // C - Clubs
 // S - Spades
 
-function init() {
-    // TODO
+var currency;
+var blind_bet;
+var bet_limit;
+var max_players;
+var timeout;
+
+var num_players = 0;
+var num_reveals = 0;
+var deadline = null;
+var global_seed = null;
+var round = 0;
+var pot_size = 0;
+var bet_amount = 0;
+
+var player_map = {};
+var player_list = [];
+
+var board = [];
+
+
+function init(currency_, blind_bet_, bet_limit_, max_players_, timeout_)
+{
+    currency = bech32(currency_);
+    blind_bet = uint(blind_bet_);
+    bet_limit = uint(bet_limit_) * blind_bet;
+    max_players = uint(max_players_);
+    timeout = uint(timeout_);
+    assert(max_players >= 2);
+    assert(timeout >= 6);
+}
+
+function join(name, commit, private_commit) public payable
+{
+    commit = binary_hex(commit);
+    private_commit = binary_hex(private_commit);
+
+    assert(round == 0, "game already started");
+    assert(num_players < max_players, "table full");
+    assert(this.user, "missing user");
+    assert(this.deposit.currency == currency, "invalid currency");
+    assert(this.deposit.amount == blind_bet, "invalid deposit amount");
+    assert(is_string(name) && size(name) > 1 && size(name) <= 24, "invalid name");
+    assert(size(commit) == 32, "invalid commit");
+    assert(size(private_commit) == 32, "invalid private commit");
+    assert(!player_map[this.user], "already joined");
+
+    if(!num_players) {
+        deadline = this.height + 3 * timeout;
+    }
+    if(deadline) {
+        assert(this.height < deadline, "too late");
+    }
+
+    player_map[this.user] = {
+        name: name,
+        bet: blind_bet,
+        seed: null,
+        commit: commit,
+        private_seed: null,
+        private_commit: private_commit,
+    };
+    push(player_list, this.user);
+
+    pot_size += blind_bet;
+    num_players++;
+
+    if(num_players == max_players) {
+        round++;
+        deadline = this.height + timeout;
+    }
+}
+
+function reveal(seed) public
+{
+    assert(size(seed) == 32, "invalid seed length");
+
+    const player = player_map[this.user];
+    assert(player, "not a player");
+    assert(player.seed == null, "already revealed");
+    assert(sha256(seed) == player.commit, "invalid seed");
+
+    player.seed = seed;
+    player.commit = null;
+    num_reveals++;
+
+    if(num_reveals == num_players) {
+        num_reveals = 0;
+        global_seed = sha256(concat(player.seed, player.private_commit));
+        round++;
+        deadline = this.height + timeout;
+    }
+}
+
+// Function to leave the game if nobody else joined after the deadline
+
+function leave() public
+{
+    assert(round == 0, "game already started");
+    assert(num_players == 1, "cannot leave table");
+    assert(this.user, "missing user");
+    assert(this.height >= deadline, "too early");
+
+    const player = player_map[this.user];
+    assert(player, "not a player");
+
+    pot_size -= player.bet;
+    send(this.user, player.bet, currency);
+
+    player_map[this.user] = null;
+    num_players--;
+    deadline = null;
 }
 
 // Function to get the rank of a poker hand (5 cards)
@@ -121,4 +230,15 @@ function check_win(hand, other) const public
         return compare(L[1], R[1]);
     }
     return res;
+}
+
+// Returns a random card based on a seed integer
+// @return - array with rank and suit of the card
+
+function get_card(seed) const public
+{
+    seed = uint(seed);
+    const RANK_MAP = ["2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"];
+    const SUIT_MAP = ["H", "D", "C", "S"];
+    return [RANK_MAP[seed % 13], SUIT_MAP[(seed / 13) % 4]];
 }
