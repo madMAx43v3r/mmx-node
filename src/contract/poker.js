@@ -359,7 +359,6 @@ function check_action()
                     if(player.bet < bet_amount) {
                         if(is_raise) {
                             done = false;
-                            break;
                         } else {
                             player.fold = true;
                         }
@@ -540,7 +539,7 @@ function compute() public
 
     const source = [];
     for(var i = 0; i < 4; i++) {
-        const hash = sha256(seed_list[i]);
+        var hash = sha256(seed_list[i]);
         if(i > 0) {
             hash = sha256(concat(source[i - 1], hash));
         }
@@ -548,10 +547,11 @@ function compute() public
     }
     global_seed = source[0];
 
-    board = [];
-    push(board, get_card(memcpy(source[1], 8, 0)));
-    push(board, get_card(memcpy(source[1], 8, 8)));
-    push(board, get_card(memcpy(source[1], 8, 16)));
-    push(board, get_card(memcpy(source[2], 8, 0)));
-    push(board, get_card(memcpy(source[3], 8, 0)));
+    board = [
+        get_card(memcpy(source[1], 8, 0)),
+        get_card(memcpy(source[1], 8, 8)),
+        get_card(memcpy(source[1], 8, 16)),
+        get_card(memcpy(source[2], 8, 0)),
+        get_card(memcpy(source[3], 8, 0))
+    ];
 }
