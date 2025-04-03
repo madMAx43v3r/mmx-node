@@ -28,6 +28,7 @@ class BlockHeader {
 	vector<ProofOfSpace*> proof;
 	
 	hash_t proof_hash;
+	hash_t proof_chain;
 	hash_t challenge;					// for proof lookups
 	
 	bool is_space_fork;					// if challenge is infused + space_diff update

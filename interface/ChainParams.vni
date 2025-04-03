@@ -15,6 +15,7 @@ class ChainParams {
 	uint challenge_interval = 48;			// challenge (and difficulty) is for next N blocks
 	uint max_diff_adjust = 10;				// per block (1/2^x)
 	uint max_vdf_count = 100;				// chain will halt if no proof is found within this time
+	uint max_space_fork_len = 8;				// forced infusion after multiples of challenge_interval
 	
 	uint avg_proof_count = 3;
 	uint max_proof_count = 50;
@@ -78,6 +79,7 @@ class ChainParams {
 	uint transaction_activation = 100000;
 	
 	uint hardfork1_height = 1000000;		// VDF height
+	uint hardfork2_height = 2000000;		// block height
 	
 	
 	double get_block_time() const;			// [sec]
