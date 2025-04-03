@@ -122,7 +122,7 @@ Note: Objects are maps with string keys.
 
 ## Built-in functions
 
-- `size(array)`: Returns an array's size
+- `size(array)`: Returns the size of an array, string or binary
 - `push(array, value)`: Pushes a value onto the end of an array
 - `pop(array)`: Pops a value off the back of an array
 - `set(map, key, value):`: Same as `map[key] = value` or `array[key] = value` (with integer key)
