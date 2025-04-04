@@ -22,3 +22,10 @@ No, MMX has it's own plot format that is compression resistant.
 I'd say it depends on your goals, the netspace on mainnet and your space allocation. But if you want to estimate your time to win MMX per day, you can use this calculator:
 
 https://docs.google.com/spreadsheets/d/1io9pQs4lQiGp3R0vszy9lF_cCNTmY32g5ECSlmFEjPE/
+
+### _Where can I find MMX branding assets?_
+Go the the [mmx-assets](https://github.com/madMAx43v3r/mmx-assets) repository. Basic info, logo and asset folders:
+- [`/logo/artwork/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/artwork/) _(artwork)_
+- [`/logo/assets/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/assets/) _(misc)_
+- [`/logo/raster/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/raster/) _(.png)_
+- [`/logo/vector/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/vector/) _(.svg)_ 
