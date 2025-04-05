@@ -1,18 +1,12 @@
 import { defineStore, getActivePinia, acceptHMRUpdate } from "pinia";
-import { useLocalStorage, useSessionStorage } from "@vueuse/core";
-import { jsonSerializer } from "@/stores/common";
+import { useLocalStorage, StorageSerializers } from "@vueuse/core";
 
 export const useSessionStore = defineStore("session", {
     state: () => ({
         isLoggedIn: useLocalStorage("isLoggedIn", false),
-        credentials: useLocalStorage("credentials", null, {
-            serializer: jsonSerializer,
-        }),
+        credentials: useLocalStorage("credentials", null, { serializer: StorageSerializers.object }),
         autoLogin: useLocalStorage("autoLogin", false),
-
-        activeWalletIndex: useLocalStorage("activeWalletIndex", null, {
-            serializer: jsonSerializer,
-        }),
+        activeWalletIndex: useLocalStorage("activeWalletIndex", null, { serializer: StorageSerializers.number }),
         market: {
             menu: {
                 bid: null,
