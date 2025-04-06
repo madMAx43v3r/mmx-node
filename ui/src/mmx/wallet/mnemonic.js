@@ -17,11 +17,20 @@ export const seedToWords = (seed, wordlist) => {
     return entropyToMnemonic(seed, wordlist);
 };
 
-export const randomSeed = () => randomBytes(32);
-
+// 24 words
+export const randomSeed = () => randomBytes(256 / 8);
 export const randomWords = (wordlist) => {
     if (!wordlist) {
         wordlist = wordlistEnglish;
     }
     return seedToWords(randomSeed(), wordlist);
+};
+
+// 12 words
+export const randomSeed12 = () => randomBytes(128 / 8);
+export const randomWords12 = (wordlist) => {
+    if (!wordlist) {
+        wordlist = wordlistEnglish;
+    }
+    return seedToWords(randomSeed12(), wordlist);
 };
