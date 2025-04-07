@@ -96,15 +96,37 @@ const explorerRoutes = [
     ...catchAll,
 ];
 
+const playgroundRoutes = [
+    {
+        path: "/",
+        redirect: "/tx/test",
+    },
+    {
+        path: "/tx/test",
+        component: () => import("@/pages/!tests/tx.vue"),
+        meta: {
+            title: "TX Test",
+        },
+    },
+    txQrSendRoute,
+    ...catchAll,
+];
+
 let routes;
 // eslint-disable-next-line no-undef
-if (__BUILD_TARGET__ === "EXPLORER") {
+if (__BUILD_TARGET__ === "GUI") {
+    routes = guiRoutes;
+    // eslint-disable-next-line no-undef
+} else if (__BUILD_TARGET__ === "EXPLORER") {
     routes = explorerRoutes;
     // eslint-disable-next-line no-undef
 } else if (__BUILD_TARGET__ === "OFFLINE") {
     routes = offlineRoutes;
+    // eslint-disable-next-line no-undef
+} else if (__BUILD_TARGET__ === "PLAYGROUND") {
+    routes = playgroundRoutes;
 } else {
-    routes = guiRoutes;
+    throw new Error("routes: Unknown build target");
 }
 
 export default routes;
