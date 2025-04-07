@@ -18,23 +18,10 @@
 <script setup>
 import { mdiLogout } from "@mdi/js";
 
-const wallet = ref();
-
-const address = computedAsync(
-    async () => {
-        return wallet.value && (await wallet.value.getAddressAsync(0));
-    },
-    null,
-    {
-        onError: (error) => {
-            throw error;
-        },
-    }
-);
+const contract = ref("{}");
 
 import { Transaction } from "@/mmx/wallet/Transaction";
 import { JSONbigNative } from "@/mmx/wallet/utils/JSONbigNative";
-const contract = ref("{}");
 
 const getPayload = async () => {
     const tx = Transaction.parse(contract.value);
