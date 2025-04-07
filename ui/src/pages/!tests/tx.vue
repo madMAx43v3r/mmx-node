@@ -60,8 +60,4 @@ const handleBroadcast = async () => {
     const payload = await getPayload();
     transactionBroadcast.mutate(payload);
 };
-
-const handleLogout = () => {
-    wallet.value = null;
-};
 </script>
