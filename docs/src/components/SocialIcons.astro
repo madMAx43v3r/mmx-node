@@ -1,39 +1,14 @@
 ---
-// Slightly modified standard 'SocialIcons.astro'
-// Use 'unsupported' social Icons
-// Use white/black link color, vs. --sl-color-text-accent
-
-import config from 'virtual:starlight/user-config';
-import { Icon } from '@astrojs/starlight/components';
-
-type Platform = keyof NonNullable<typeof config.social>;
-type SocialConfig = NonNullable<NonNullable<typeof config.social>[Platform]>;
-const links = Object.entries(config.social || {}) as [Platform, SocialConfig][];
-
-// Add social Icon 'Star' with link to homepage
-links.unshift( ["star", {"label":"Star", "url":"https://mmx.network/"} ]);
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
 ---
 
-{
-	links.length > 0 && (
-		<>
-			{links.map(([platform, { label, url }]) => (
-				<a href={url} rel="me" class="sl-flex">
-					<span class="sr-only">{label}</span>
-					<Icon name={platform} />
-				</a>
-			))}
-		</>
-	)
-}
+<a href="https://mmx.network/" rel="me" class="sl-flex">
+	<span class="sr-only">Homepage</span>
+	<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="--sl-icon-size: 1em;">
+		<path d="M8.5 14a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5.5H19V9.621L12 4.38 5 9.623V19.5h3.5zM12 2.43c.496 0 .962.172 1.368.474l6.512 4.879C20.586 8.305 21 8.939 21 9.62V19.5a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1V15h-3v5.5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V9.621c0-.682.414-1.316 1.12-1.838l6.512-4.879A2.28 2.28 0 0 1 12 2.43"></path>
+	</svg>
+</a>
 
-<style>
-	a {
-		color: var(--sl-color-white);
-		padding: 0.5em;
-		margin: -0.5em;
-	}
-	a:hover {
-		opacity: 0.66;
-	}
-</style>
+<Default>
+	<slot />
+</Default>

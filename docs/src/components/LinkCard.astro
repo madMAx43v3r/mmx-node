@@ -3,48 +3,55 @@ import { Icon } from '@astrojs/starlight/components';
 import { type StarlightIcon } from '@astrojs/starlight/types';
 
 interface Props {
-    icon?: StarlightIcon;
+	icon?: StarlightIcon;
 	title: string;
-    url: string;
+	url: string;
 }
 
 const { icon, title, url } = Astro.props;
+const isHomeIcon = icon.localeCompare("home") ? false : true;
 ---
 
 <a href={url} class="sl-link-card">
-        <span class="card sl-flex">
-            <p class="title sl-flex">
-                {icon && <Icon name={icon} class="icon" size="1.333em" />}
-                <span set:html={title} />
-            </p>
-            <div class="body"><slot /></div>
-        </span>
-        <Icon name="right-arrow" size="1.333em" class="icon rtl:flip arrow" />
+	<span class="card sl-flex">
+		<p class="title sl-flex">
+			{ isHomeIcon ? (
+				<svg aria-hidden="true" class="icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="font-size: 1.333em; width: 1em; height: 1em;">
+					<path d="M8.5 14a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5.5H19V9.621L12 4.38 5 9.623V19.5h3.5zM12 2.43c.496 0 .962.172 1.368.474l6.512 4.879C20.586 8.305 21 8.939 21 9.62V19.5a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1V15h-3v5.5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V9.621c0-.682.414-1.316 1.12-1.838l6.512-4.879A2.28 2.28 0 0 1 12 2.43"></path>
+				</svg>
+			) : (
+				<Icon name={icon} class="icon" size="1.333em" />
+			) }
+			<span set:html={title} />
+		</p>
+		<div class="body"><slot /></div>
+	</span>
+	<Icon name="right-arrow" size="1.333em" class="icon rtl:flip arrow" />
 </a>
 <style>
 	.sl-link-card {
 		--sl-card-border: var(--sl-color-purple);
 		--sl-card-bg: var(--sl-color-purple-low);
 		border: 2px solid var(--sl-color-gray-5);
-        border-radius: 0.5rem;
+		border-radius: 0.5rem;
 		background-color: var(--sl-color-black);
 		padding: clamp(1rem, calc(0.125rem + 3vw), 2rem);
-        position: relative;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
 	}
-    .arrow {
-        font-size: 1.5rem;
-        margin-left: auto;
-        color: var(--sl-color-gray-2);
-	flex: 0 0 1em;
-    } 
-    a {
+	.arrow {
+		font-size: 1.5rem;
+		margin-left: auto;
+		color: var(--sl-color-gray-2);
+		flex: 0 0 1em;
+	}
+	a {
 		text-decoration: none;
 		line-height: 1.2;
 	}
-    a::before {
+	a::before {
 		content: '';
 		position: relative;
 		inset: 0;
@@ -66,7 +73,7 @@ const { icon, title, url } = Astro.props;
 		--sl-card-bg: var(--sl-color-blue-low);
 	}
 	.title {
-        display: flex;
+		display: flex;
 		font-weight: 600;
 		font-size: 1.25rem;
 		color: var(--sl-color-white);
@@ -75,10 +82,10 @@ const { icon, title, url } = Astro.props;
 		align-items: center;
 		margin-top: 0;
 	}
-    .card {
-        display: flex;
-        flex-direction: column;
-    }
+	.card {
+		display: flex;
+		flex-direction: column;
+	}
 	.card .icon {
 		border: 2px solid var(--sl-card-border);
 		background-color: var(--sl-card-bg);
@@ -90,19 +97,17 @@ const { icon, title, url } = Astro.props;
 		margin: 0;
 		font-size: clamp(0.875rem, calc(0.5rem + 1vw), 1rem);
 	}
-    /* Hover state */
 	.sl-link-card:hover {
 		background: var(--sl-color-gray-7, var(--sl-color-gray-6));
 		border-color: var(--sl-color-gray-2);
 	}
-
 	.sl-link-card:hover .icon {
 		color: var(--sl-color-white);
 	}
 	@media (max-height: 650px) {
 		.title {
-            margin-bottom: 0;
-        }
+			margin-bottom: 0;
+		}
 	}
 	@media (max-width: 800px) and (max-height: 850px) {
 		.title {

@@ -13,6 +13,16 @@
 	.site-title { color: var(--sl-color-white); }
 	.site-title { font-size: var(--sl-text-h3); }
 
+	.social-icons > a {
+		color: var(--sl-color-white);
+		padding: 0.5em;
+		margin: -0.5em;
+	}
+
+	.social-icons > a:hover {
+		opacity: 0.66;
+	}
+
 	.sl-markdown-content :is(h1, h2, h3, h4, h5, h6) > a {
 		color: var(--sl-color-white);
 		text-decoration: none;
