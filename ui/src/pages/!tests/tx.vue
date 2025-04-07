@@ -4,7 +4,7 @@
             <template v-if="!wallet">
                 <SeedInputForm v-model:wallet="wallet" />
             </template>
-            <template v-else>
+            <template v-else-if="address">
                 <div>
                     <div class="row q-gutter-x-none">
                         <m-chip>{{ $t("common.address") }}</m-chip>
