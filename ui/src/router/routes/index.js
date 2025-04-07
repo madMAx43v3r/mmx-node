@@ -86,8 +86,8 @@ const explorerRoutes = [
         },
     },
     {
-        path: "/tx/test",
-        component: () => import("@/pages/!tests/tx.vue"),
+        path: "/pg/tx",
+        component: () => import("@/pages/!pg/tx.vue"),
         meta: {
             title: "TX Test",
         },
@@ -99,11 +99,11 @@ const explorerRoutes = [
 const playgroundRoutes = [
     {
         path: "/",
-        redirect: "/tx/test",
+        redirect: "/pg/tx",
     },
     {
-        path: "/tx/test",
-        component: () => import("@/pages/!tests/tx.vue"),
+        path: "/pg/tx",
+        component: () => import("@/pages/!pg/tx.vue"),
         meta: {
             title: "TX Test",
         },
