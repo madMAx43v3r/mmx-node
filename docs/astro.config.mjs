@@ -85,7 +85,7 @@ export default defineConfig({
 	markdown: {
 		rehypePlugins: [
 			rehypeSlug,
-			[rehypeAutolinkHeadings, { behavior: 'append' }]
+			[rehypeAutolinkHeadings, { behavior: 'wrap', properties: { className: ['sl-custom-rehype-heading'] } }]
 		],
 	},
 });
