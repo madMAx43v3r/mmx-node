@@ -195,6 +195,25 @@ Query parameters:
 
 Returns value for a specified key in a storage map.
 
+#### GET/POST /wapi/contract/call
+
+Executes a smart contract function in read only mode and returns the result.
+
+Query parameters:
+- `id`: Contract address (bech32)
+- `method`: Method name (without `()`)
+- `user`: Optional user address (bech32)
+
+When needing to specify function arguments, `POST` has to be used with the following JSON object content:
+- `args`: Array of function arguments
+- `deposit`: Optional deposit info (array of [currency, amount])
+
+Example: `POST /wapi/contract/call?id=mmx1...&method=get_price` with content:
+```
+{"args": [0]}
+```
+
+
 #### GET /wapi/farmers
 
 Query parameters:

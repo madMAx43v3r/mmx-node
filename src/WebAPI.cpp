@@ -2631,6 +2631,22 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 			respond_status(request_id, 400, "contract/storage/entry?id|name|addr|key");
 		}
 	}
+	else if(sub_path == "/contract/call") {
+		const auto address = get_param<addr_t>(query, "id");
+		const auto method = get_param<std::string>(query, "method");
+		const auto user = get_param<vnx::optional<addr_t>>(query, "user");
+		const auto params = args["args"].to<std::vector<vnx::Variant>>();
+		const auto deposit = args["deposit"].to<vnx::optional<std::pair<addr_t, uint128>>>();
+		if(address != addr_t() && method.size()) {
+			node->call_contract(address, method, params, user, deposit,
+					[this, request_id](const vnx::Variant& result) {
+						respond(request_id, render_value(result));
+					},
+					std::bind(&WebAPI::respond_ex, this, request_id, std::placeholders::_1));
+		} else {
+			respond_status(request_id, 400, "GET/POST contract/call?id|method {args: [...]}");
+		}
+	}
 	else if(sub_path == "/transaction/validate") {
 		if(have_args) {
 			const auto tx = parse_tx(args);
