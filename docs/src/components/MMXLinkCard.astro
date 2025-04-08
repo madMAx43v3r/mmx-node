@@ -1,0 +1,127 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+import { type StarlightIcon } from '@astrojs/starlight/types';
+
+interface Props {
+	icon: StarlightIcon;
+	title: string;
+	url: string;
+}
+
+const { icon, title, url } = Astro.props;
+const isHomeIcon = icon.localeCompare("home") ? false : true;
+---
+
+<a href={url} class="mmx-link-card">
+	<span class="mmx-card sl-flex">
+		<p class="mmx-title sl-flex">
+			{ isHomeIcon ? (
+				<svg aria-hidden="true" class="mainicon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="font-size: 1.333em; width: 1em; height: 1em;">
+					<path d="M8.5 14a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5.5H19V9.621L12 4.38 5 9.623V19.5h3.5zM12 2.43c.496 0 .962.172 1.368.474l6.512 4.879C20.586 8.305 21 8.939 21 9.62V19.5a2 2 0 0 1-2 2h-4.5a1 1 0 0 1-1-1V15h-3v5.5a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2V9.621c0-.682.414-1.316 1.12-1.838l6.512-4.879A2.28 2.28 0 0 1 12 2.43"></path>
+				</svg>
+			) : (
+				<Icon name={icon} class="mainicon" size="1.333em" />
+			) }
+			<span set:html={title} />
+		</p>
+		<div class="body desc"><slot /></div>
+	</span>
+	<Icon name="right-arrow" size="1.333em" class="arrowicon rtl:flip" />
+</a>
+<style>
+	.mmx-link-card {
+		--mmx-card-border: var(--sl-color-purple);
+		--mmx-card-bg: var(--sl-color-purple-low);
+		border: 2px solid var(--sl-color-gray-5);
+		border-radius: 0.5rem;
+		background-color: var(--sl-color-black);
+		padding: clamp(1rem, calc(0.125rem + 3vw), 2rem);
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+	}
+	.mmx-link-card .arrowicon {
+		font-size: 1.5rem;
+		margin-left: auto;
+		color: var(--sl-color-gray-2);
+		flex: 0 0 1em;
+	}
+	.mmx-link-card:hover {
+		background: var(--sl-color-gray-7, var(--sl-color-gray-6));
+		border-color: var(--sl-color-gray-2);
+	}
+	.mmx-link-card:hover .mainicon {
+		color: var(--sl-color-white);
+	}
+	.mmx-link-card:nth-child(6n + 1) {
+		--mmx-card-border: var(--sl-color-blue);
+		--mmx-card-bg: var(--sl-color-blue-low);
+	}
+	.mmx-link-card:nth-child(6n + 2) {
+		--mmx-card-border: var(--sl-color-purple);
+		--mmx-card-bg: var(--sl-color-purple-low);
+	}
+	.mmx-link-card:nth-child(6n + 3) {
+		--mmx-card-border: var(--sl-color-orange);
+		--mmx-card-bg: var(--sl-color-orange-low);
+	}
+	.mmx-link-card:nth-child(6n + 4) {
+		--mmx-card-border: var(--sl-color-purple);
+		--mmx-card-bg: var(--sl-color-purple-low);
+	}
+	.mmx-link-card:nth-child(6n + 5) {
+		--mmx-card-border: var(--sl-color-green);
+		--mmx-card-bg: var(--sl-color-green-low);
+	}
+	.mmx-link-card:nth-child(6n + 6) {
+		--mmx-card-border: var(--sl-color-red);
+		--mmx-card-bg: var(--sl-color-red-low);
+	}
+	.mmx-card {
+		display: flex;
+		flex-direction: column;
+	}
+	.mmx-card .mainicon {
+		border: 2px solid var(--mmx-card-border);
+		background-color: var(--mmx-card-bg);
+		padding: 0.2em;
+		border-radius: 0.25rem;
+		box-sizing: content-box;
+		flex: 0 0 1em;
+	}
+	.mmx-card .body {
+		margin: 0;
+		font-size: clamp(0.875rem, calc(0.5rem + 1vw), 1rem);
+	}
+	.mmx-title {
+		display: flex;
+		font-weight: 600;
+		font-size: 1.25rem;
+		color: var(--sl-color-white);
+		line-height: 1.2;
+		gap: 1rem;
+		align-items: center;
+		margin-top: 0;
+		margin-block-end: 1em;
+	}
+	a.mmx-link-card {
+		text-decoration: none;
+		line-height: 1.2;
+	}
+	a.mmx-link-card::before {
+		content: '';
+		position: relative;
+		inset: 0;
+	}
+	@media (max-height: 720px) {
+		.mmx-card .desc { display: none; }
+		.mmx-title { margin-bottom: 0; }
+		.mmx-title { margin-block-end: 0em; }
+	}
+	@media (max-width: 800px) and (max-height: 1072px) {
+		.mmx-card .desc { display: none; }
+		.mmx-title { margin-bottom: 0; }
+		.mmx-title { margin-block-end: 0em; }
+	}
+</style>
