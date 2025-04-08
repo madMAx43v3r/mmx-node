@@ -13,7 +13,7 @@ if (__BUILD_TARGET__ === "GUI") {
 } else if (__BUILD_TARGET__ === "OFFLINE") {
     menu = OfflineMainMenu;
 } else {
-    console.error("MainMenu: Unknown build target");
+    //console.error("MainMenu: Unknown build target");
     //throw new Error("Unknown build target");
 }
 
