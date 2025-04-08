@@ -1,13 +1,15 @@
 <template>
     <!-- {{ $q.screen.name }} -->
     <q-layout view="lhr Lpr lFr">
-        <q-header class="m-bg-grey">
-            <div class="row justify-center">
-                <div :class="layoutClass">
-                    <component :is="MainMenu" class="q-mx-lg" />
+        <template v-if="MainMenu">
+            <q-header class="m-bg-grey">
+                <div class="row justify-center">
+                    <div :class="layoutClass">
+                        <component :is="MainMenu" class="q-mx-lg" />
+                    </div>
                 </div>
-            </div>
-        </q-header>
+            </q-header>
+        </template>
 
         <div class="row justify-center">
             <div :class="layoutClass">
