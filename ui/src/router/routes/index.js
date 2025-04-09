@@ -35,6 +35,13 @@ const guiRoutes = [
             title: "Settings",
         },
     },
+    // {
+    //     path: "/tx/test",
+    //     component: () => import("@/pages/!tests/tx.vue"),
+    //     meta: {
+    //         title: "TX Test",
+    //     },
+    // },
 ];
 
 const txQrSendRoute = {

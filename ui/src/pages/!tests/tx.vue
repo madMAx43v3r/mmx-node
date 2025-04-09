@@ -24,10 +24,18 @@
                         <BalanceTable :address="address" show-empty />
                     </q-card>
                 </div>
-                <q-input v-model="contract" filled type="textarea" input-style="height: 500px" />
-                <div class="q-gutter-x-xs">
-                    <q-btn label="Validate" color="primary" @click="handleValidate" />
-                    <q-btn label="Broadcast" color="primary" @click="handleBroadcast" />
+                <div class="q-gutter-y-sm">
+                    <q-input v-model="contract" filled type="textarea" input-style="height: 500px" />
+                    <div class="q-gutter-x-xs">
+                        <q-btn label="Validate" color="primary" @click="handleValidate" />
+                        <q-btn label="Broadcast" color="primary" @click="handleBroadcast" />
+                    </div>
+
+                    <q-inner-loading
+                        :showing="transactionValidate.isPending.value || transactionBroadcast.isPending.value"
+                    >
+                        <q-spinner-gears color="primary" size="3em" />
+                    </q-inner-loading>
                 </div>
                 <AddressHistoryTable :address="address" :limit="20" show-empty />
             </template>
@@ -70,17 +78,17 @@ import { JSONbigNative } from "@/mmx/wallet/utils/JSONbigNative";
 const contract = ref(JSONbigNative.stringify(init, null, 4));
 
 const getPayload = async () => {
-    const tx = Transaction.parse(contract.value);
-    tx.inputs = [];
-    tx.solutions = [];
-
     const options = {
         //fee_ratio: 2048,
         expire_at: -1,
         network: "mainnet",
     };
 
-    await wallet.value.completeAsync(tx, options);
+    const tx = Transaction.parse(contract.value);
+
+    // tx.inputs = [];
+    // tx.solutions = [];
+    //await wallet.value.completeAsync(tx, options);
 
     const payload = JSONbigNative.stringify(tx, null, 4);
     contract.value = payload;
