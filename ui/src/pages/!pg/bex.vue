@@ -25,7 +25,7 @@ const $q = useQuasar();
 
 const isBexLoaded = computed(() => window.mmx && window.mmx.isFurryVault);
 
-const vault = computed(() => window.mmx);
+const vault = computed(() => isBexLoaded.value && window.mmx);
 
 const request = async (payload) => {
     try {
