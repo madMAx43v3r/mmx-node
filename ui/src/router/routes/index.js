@@ -99,13 +99,20 @@ const explorerRoutes = [
 const playgroundRoutes = [
     {
         path: "/",
-        redirect: "/pg/tx",
+        redirect: "/pg/bex",
+    },
+    {
+        path: "/pg/bex",
+        component: () => import("@/pages/!pg/bex.vue"),
+        meta: {
+            title: "BEX PLAYGROUND",
+        },
     },
     {
         path: "/pg/tx",
         component: () => import("@/pages/!pg/tx.vue"),
         meta: {
-            title: "TX Test",
+            title: "TX PLAYGROUND",
         },
     },
     txQrSendRoute,
