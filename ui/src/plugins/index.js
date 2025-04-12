@@ -5,12 +5,12 @@
  */
 
 // Plugins
-import { Quasar, quasarConfig } from "./quasar";
-import pinia from "./pinia";
-import router from "./router";
-import i18n from "./i18n";
-import VueQueryPlugin, { vueQueryPluginOptions } from "./query";
-import highlight from "./highlight";
+import { Quasar, quasarConfig } from "@/plugins/quasar";
+import pinia from "@/plugins/pinia";
+import router from "@/plugins/router";
+import i18n from "@/plugins/i18n";
+import VueQueryPlugin, { vueQueryPluginOptions } from "@/plugins/query";
+import highlight from "@/plugins/highlight";
 
 export function registerPlugins(app) {
     app.use(Quasar, quasarConfig);
