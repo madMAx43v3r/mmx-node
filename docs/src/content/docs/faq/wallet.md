@@ -1,10 +1,9 @@
 ---
 title: Wallet FAQ
-description: Frequently asked questions about using MMX Wallet.
+description: Frequently asked questions about MMX wallet.
 ---
-# Wallet
 
-### _I start my node and it showed warnings that it cannot find my wallet. How do I create a wallet?_
+### I start my node and it showed warnings that it cannot find my wallet. How do I create a wallet?
 You can create a wallet in the GUI now. Otherwise see below:
 
 Make sure that your wallet file is named `wallet.dat` and not `wallet_xxxxx.dat` and that it's placed in the right folder.

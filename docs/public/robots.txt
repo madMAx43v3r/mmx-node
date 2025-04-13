@@ -1,4 +1,4 @@
 # Allow crawling of all content
 User-agent: *
 Disallow: 
-Sitemap: https://docs.mmx.network/sitemap.xml
+Sitemap: https://docs.mmx.network/sitemap-index.xml

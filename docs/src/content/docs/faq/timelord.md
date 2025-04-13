@@ -1,10 +1,9 @@
 ---
-title: Timelord FAQ
-description: Frequently asked questions about MMX Timelord.
+title: TimeLord FAQ
+description: Frequently asked questions about MMX timelord.
 ---
-# Timelord
 
-### _I have the fastest CPU in the world. How do I run the timelord and how would I check/know that I am winning timelord rewards?_
+### I have the fastest CPU in the world. How do I run the timelord and how would I check/know that I am winning timelord rewards?
 You can run the node with ./run_node.sh --timelord 1. Look for a line that says, "timelord = "true/false.
 
 For a more permanent solution, create a file named `timelord` in your /config/local/ folder and put "true/false" in there and nothing else.
