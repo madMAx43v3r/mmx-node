@@ -24,7 +24,7 @@ const tabs = computed(() => [
     { to: "/market", label: t("main_menu.market"), visible: isWallet.value },
     { to: "/swap", label: t("main_menu.swap"), visible: isWallet.value },
     { space: true },
-    { component: BuildVersion },
+    { component: BuildVersion, visible: !appStore.isWinGUI },
     { component: NodeStatus },
     { to: "/settings", icon: mdiCog },
     ...(!appStore.isGUI ? [{ icon: mdiLogout, click: handleLogout }] : []),
