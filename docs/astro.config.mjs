@@ -7,6 +7,7 @@ import starlightSidebarTopics from 'starlight-sidebar-topics';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://docs.mmx.network',
 	integrations: [
 		starlight({
 			title: 'Docs',
@@ -18,11 +19,11 @@ export default defineConfig({
 				MarkdownContent: './src/components/MarkdownContent.astro',
 				SocialIcons: './src/components/SocialIcons.astro',
 			},
-			social: {
-				discord: 'https://discord.gg/BswFhNkMzY',
-				github: 'https://github.com/madMAx43v3r/mmx-node',
-				'x.com': 'https://x.com/MMX_Network_',
-			},
+			social: [
+				{ icon: 'discord', label: 'Discord', href: 'https://discord.gg/BswFhNkMzY' },
+				{ icon: 'github', label: 'GitHub', href: 'https://github.com/madMAx43v3r/mmx-node' },
+				{ icon: 'x.com', label: 'X', href: 'https://x.com/MMX_Network_' },
+			],
 			customCss: [
 				'./src/styles/style.css',
 			],
