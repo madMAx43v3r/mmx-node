@@ -25,12 +25,3 @@ export const randomWords = (wordlist) => {
     }
     return seedToWords(randomSeed(), wordlist);
 };
-
-// 12 words
-export const randomSeed12 = () => randomBytes(128 / 8);
-export const randomWords12 = (wordlist) => {
-    if (!wordlist) {
-        wordlist = wordlistEnglish;
-    }
-    return seedToWords(randomSeed12(), wordlist);
-};
