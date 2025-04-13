@@ -27,22 +27,22 @@ export class ECDSA_Wallet_Keys {
         this.#passphrase = passphrase ?? "";
     }
 
-    fingerPrintCache = null;
+    #fingerPrintCache = null;
     getFingerPrintAsync = async () =>
-        (this.fingerPrintCache ??= getFingerPrintAsync(this.#seed_value, this.#passphrase));
+        (this.#fingerPrintCache ??= getFingerPrintAsync(this.#seed_value, this.#passphrase));
 
-    farmerKeyCache = null;
-    getFarmerKeyAsync = async () => (this.farmerKeyCache ??= getFarmerKeyAsync(this.#seed_value));
+    #farmerKeyCache = null;
+    getFarmerKeyAsync = async () => (this.#farmerKeyCache ??= getFarmerKeyAsync(this.#seed_value));
 
-    addressCache = new Map();
+    #addressCache = new Map();
     getAddressAsync = async (index) =>
-        this.addressCache.get(index) ??
-        this.addressCache.set(index, await getAddressAsync(this.#seed_value, this.#passphrase, index)).get(index);
+        this.#addressCache.get(index) ??
+        this.#addressCache.set(index, await getAddressAsync(this.#seed_value, this.#passphrase, index)).get(index);
 
-    keysCache = new Map();
+    #keysCache = new Map();
     getKeysAsync = async (index) =>
-        this.keysCache.get(index) ??
-        this.keysCache.set(index, await getKeysAsync(this.#seed_value, this.#passphrase, index)).get(index);
+        this.#keysCache.get(index) ??
+        this.#keysCache.set(index, await getKeysAsync(this.#seed_value, this.#passphrase, index)).get(index);
 }
 
 export class ECDSA_Wallet extends ECDSA_Wallet_Keys {
