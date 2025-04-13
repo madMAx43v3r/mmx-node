@@ -17,3 +17,4 @@
 - Hardfork2 with challenge chain hash infusion + forced infusion at certain length
 - WebAPI to serve WebData from chain
 - Add NonKYC price input
+- Compiler support for break + continue
