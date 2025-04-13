@@ -137,6 +137,7 @@ export class ConfigBuilder {
                         "vue-i18n": ["useI18n"],
                         "vue-router": ["useRoute", "useRouter"],
                         "@vueuse/core": ["computedAsync"],
+                        pinia: ["storeToRefs"],
                         quasar: ["useQuasar"],
                     },
                 ],
