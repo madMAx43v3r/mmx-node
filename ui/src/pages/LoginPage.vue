@@ -38,7 +38,6 @@ const onError = () => {
     });
 };
 
-import { storeToRefs } from "pinia";
 const sessionStore = useSessionStore();
 const { autoLogin: autoLoginStore } = storeToRefs(sessionStore);
 

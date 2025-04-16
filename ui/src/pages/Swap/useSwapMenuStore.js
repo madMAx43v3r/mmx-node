@@ -1,5 +1,3 @@
-import { storeToRefs } from "pinia";
-
 export const useSwapMenuStore = () => {
     const sessionStore = useSessionStore();
     const { swap } = storeToRefs(sessionStore);

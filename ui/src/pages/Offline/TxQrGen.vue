@@ -126,7 +126,6 @@
 import { mdiLogout } from "@mdi/js";
 import rules from "@/helpers/rules";
 
-import { storeToRefs } from "pinia";
 const walletStore = useWalletStore();
 const { wallet } = storeToRefs(walletStore);
 

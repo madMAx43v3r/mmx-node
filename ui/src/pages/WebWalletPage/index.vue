@@ -54,7 +54,6 @@ import { mdiLogout } from "@mdi/js";
 
 import SendForm from "./SendForm";
 
-import { storeToRefs } from "pinia";
 const walletStore = useWalletStore();
 const { wallet } = storeToRefs(walletStore);
 
