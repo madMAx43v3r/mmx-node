@@ -15,8 +15,9 @@ export const getChainParamsAsync = async (network) => {
     } else {
         // get chain params
         const path = Object.keys(chainParamsList).filter((key) => key.endsWith(`${network}/chain/params.json`));
-        chainParams = await chainParamsList[path]();
+        const chainParamsTmp = await chainParamsList[path]();
 
+        chainParams = { ...chainParamsTmp };
         // get chain extra params
         const extraPath = Object.keys(chainExtraParamsList).filter((key) => key.includes(`${network}/chain/params/`));
         for (const key of extraPath) {
