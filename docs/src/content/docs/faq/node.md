@@ -3,87 +3,117 @@ title: Node FAQ
 description: Frequently asked questions about MMX node.
 ---
 
-### How do I get started? Where do I download the client?
-https://docs.mmx.network/guides/installation/
+### How do I get started with a node
 
-https://docs.mmx.network/guides/getting-started/
+[Download and install](../../../guides/installation/), then [get started](../../../guides/getting-started/).
 
-### I started MMX-node in Windows but getting error message "Faulting module path: C:\Program Files\MMX Node\gui\cefsharp\libcef.dll" or something like that. What's wrong?
-Are you sure you have read the installation wiki linked above? It says to update and install the latest Microsoft Visual C++ Redistributable.
+### "Faulting module" in Windows
 
-### Okay I have synced up to the latest blockchain height and I still see high CPU usage?
-Check that VDF verification is done via GPU. Disable Timelord when enabled by accident.
+Make sure you have latest Microsoft Visual C++ Redist installed:
+- [Microsoft Visual C++ Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist)
+- [Microsoft Visual C++ Redistributable for Visual Studio](https://visualstudio.microsoft.com/downloads/)
 
-On Linux make sure to be in the `video` and or `render` group (depends on distribution) to be able to access a GPU:
+### High CPU usage, even synced
+
+I'm getting high CPU usage, even when my node is synced to latest blockchain height.
+
+Make sure you are performing VDF verification [with GPU/iGPU](../../../guides/optimize-vdf/) (more info in [VDF FAQ](../../../faq/vdf/)).
+
+On Linux make sure user has access to GPU/iGPU through  the `video` and or `render` groups:
 ```bash frame="none"
 sudo adduser $USER video
 sudo adduser $USER render
 ```
 
-### The timelord is taking a huge chunk of my CPU usage, how do I disable it?
-You can disable it in GUI settings. (It's disabled by default now)
+Check if [timelord](#how-do-i-disable-timelord) has been enabled by accident.
 
-Alternatively, create a file named `timelord` (all lower case) in `config/local/`. Open the file in text editor and type `false`. Or simply run `echo false > config/local/timelord` and then restart the node.
+### How do I disable timelord?
 
-For Windows, put the file in `C:\Users\name\.mmx\config\local\`
+Timelord should be [disabled by default](../../../faq/timelord/). You can check if it is enabled by looking under SETTINGS in WebGUI. Or check the `config/local/timelord` file.
 
-**Do not edit any files in `Program Files`**
+### Warning when using mmx CLI command
 
-### I tried to run one of the `mmx ....` commands and I'm getting `[Proxy] WARN: connect() failed with: 10061 (localhost:11331)` error. What's wrong?
-Before running a `mmx ...` command in a new terminal, you need to `source ./activate.sh` inside the `mmx-node` directory first, and the node needs to be running (except for `mmx wallet create`).
-Alternatively, you can open terminal window from MMX-node folder/shortcut from the `Start Menu` with source pre-activated.
+I'm getting a warning when trying one of the `mmx ...` commands:\
+`[Proxy] WARN: connect() failed with: xxx (localhost:1133x)`
 
-### Where can I find a list of CLI commands for MMX node?
-https://docs.mmx.network/software/cli-commands/
+Make sure node is running. Except `mmx wallet create`, all other commands require node running.
+
+In Windows, start the MMX CMD shortcut from Start Menu.\
+If Linux binary package, enough to open a terminal.
+
+If compiled from source on Linux (before using CLI commands):
+```bash frame="none"
+cd mmx-node
+source ./activate.sh
+```
+
+### List of mmx CLI commands
+
+Overview of [CLI commands](../../../software/cli-commands/).
 
 ### How is network difficulty calculated?
 
-Difficulty is adjusted by a defined (and enforced via consensus) exponential low-pass filter, such that the average proof score is 8192, which will yield 8 proofs per block on average.
+Look Blockhain and Challenge Generation sections of [whitepaper](../../../articles/general/mmx-whitepaper/).
 
-### I left my node running for several hours and when I came back, it's saying that I have forked from the network and there is no way of recovering/syncing to the current height. How can I fix this?
+### How do I start farming plots created?
 
-You can revert to a lower height in the GUI settings page now. The height should be about 1000 blocks before the node gets stuck.
+I've just created some plots. How do I start farming them?
 
-Alternatively, run `mmx node revert [height]` while the node is running.
+Through SETTINGS in WebGUI, you have a Plot Directory input field below the Harvester section. Input the directory with the plots you have created, press ADD DIRECTORY button.
 
-### I copied the `block_chain.dat` file from another machine and now my node is saying I have forked from the network and there is no way of recovering/syncing to the current height. Or I suspect my database is corrupted. How can I fix this?
-Stop the node, then delete the `db` folder in `testnetX` and restart the node. Note that this will re-build the database and take some time.
-
-### I have tried replay_height and deleting the `db` folder and my node still won't sync. What do I do?
-Stop the node, then delete the `testnetX` folder and restart node. This will sync from scratch and might take some time.
-
-### I've just started plotting. Can I farm my plotted space right away? How do I add my plots so the harvester reads my plots properly?
-Adding plot directories is now possible in the GUI settings page.
-
-Alternatively, open `config/local/Harvester.json` with a text editor. Follow the syntax below:
+Alternatively you can edit the `config/local/Harvester.json` file:
 ```json
 {
+  "num_threads": 32,
+  "recursive_search": true,
   "reload_interval": 3600,
-  "farm_virtual_plots": true,
-  "recursive_search": false,
   "plot_dirs": [
-    "E:/MMXPlots",
-    "E:/Test Folder/",
-    "E:/Folder/Subfolder",
-    "/mnt/Seagate13/MMXPlots/",
-    "/mnt/Seagate42/MMXPlots/"
+    "E:/MMXplots/",
+    "F:/MMXplots/",
+    "/mnt/Harddisk123/MMXplots/",
+    "/mnt/Harddisk456/MMXplots/"
   ]
 }
 ```
-You may also put everything on 1 line if it helps you to see all the plot drives/folders:
-```json
-"plot_dirs": ["D:/", "E:/", "F:/", "G:/", "H:/", "I:/", "J:/", "K:/", "L:/"]
-```
-Backward slash "`\`" is not supported, so forward slash "`/`" must be used.
-Note that the last entry is not followed by a `,`
 
-### My node returned `[Router] INFO: Broadcasting proof for height 65105 with score 25761`. Why did a plot with lower score eventually win that block?
-The score is actually an indication of how close your plot has proofs for the challenge. The lower the score, the better the proof is.
+Only use forward slash `/`, even if Windows. Last entry is not followed by a comma `,`.
 
-### Do I need to open some ports to allow MMX to communicate with other peers?
-You don't have to. But if you have fast internet connection and feel like helping out the network by allowing incoming connections, you can enable port forwarding on TCP 11337 for mainnet.
+### A plot with lower score won the block?
 
-UPnP automatic port forwarding is now enabled by default, however it can disabled in GUI settings.
+Score indicates how close your plot has proofs for the challenge. The lower the score, the better the proof.
 
-### My setup is a complicated mix of several computers, where I run a full node on one computer and a few remote harvesters. How do I set them up?
-https://docs.mmx.network/guides/remote-services/
+### Do I need to open ports to communicate?
+
+Not really. But you will help the network by allowing incoming connection. If possible, enable port forwarding on `11337` (TCP).
+
+Per-default, automatic UPnP port forwarding is enabled. You can disable it through SETTINGS in WebGUI. Or set `"open_port": false,` in `config/local/Router.json` file.
+
+### How do I set up remote harvesters?
+
+I've got several computers. Full node on one, and a few remote harvesters. How do I set them up?
+
+Look [Remote Services](../../../guides/remote-services/) guide.
+
+### My node says it has forked from network
+
+Should rarely happen with mainnet. If forked, and not automatically getting back to synced. You can try to revert DB to a height about 1000 blocks before node got stuck.
+
+Through SETTINGS in WebGUI, try the `Revert DB to height` option.\
+If using CLI, try the `mmx node revert <height>` command.
+
+### I suspect my DB is corrupted
+
+:::note[Note]
+Make sure you really want to try syncing from scratch. Will take some time
+:::
+
+:::danger[Warning]
+Make sure you only delete the DB directory. Not directories with important information like wallets, which you already should have [secure backups](../../../articles/wallets/wallets-mnemonic-passphrase/#backup) of.
+:::
+
+To force a 100% sync from scratch. Stop the node, delete following directory:
+- Windows: `C:\Users\<user>\.mmx\mainnet\db\`
+- Linux: `~/.mmx/mainnet/db/`
+- Linux: `~/mmx-node/mainnet/db/`
+
+Start the node again. A clean sync will start from height 0.
