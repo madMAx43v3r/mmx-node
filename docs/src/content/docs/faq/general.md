@@ -5,7 +5,8 @@ description: Frequently asked questions about MMX blockchain.
 
 ### What is the MMX blockchain?
 
-Technical introduction, read [whitepaper](../../../articles/general/mmx-whitepaper/).\
+In-depth technical, read [whitepaper](../../../articles/general/mmx-whitepaper/).\
+Technical breakdown, read [reference](../../../reference/blockchain/).\
 Light introduction, read [article](../../../articles/general/mmx-tldr/).
 
 ### How much MMX per block reward?
