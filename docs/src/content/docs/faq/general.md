@@ -3,29 +3,63 @@ title: General FAQ
 description: Frequently asked questions about MMX blockchain.
 ---
 
-### Is there any pre-farm?
-No, but starting from testnet8 (starting from block 25,000), we incentivize farmers who participate, contribute and report bugs. For every block won, the reward address is recorded and will be paid a fixed 0.5 MMX at the genesis block in mainnet. This also applies for testnet9 and subsequent testnets before mainnet launch.
+### What is the MMX blockchain?
 
-###  How many MMX coins do I get per block reward?
-0.5 MMX + transaction fees
+In-depth technical, read [whitepaper](../../../articles/general/mmx-whitepaper/).\
+Technical breakdown, read [reference](../../../reference/blockchain/).\
+Light introduction, read [article](../../../articles/general/mmx-tldr/).
 
-###  Is there any dev fee?
-There is a project fee of 1% on transaction fees (not block reward).
+### How much MMX per block reward?
 
-###  What kind of computer do I need to run a MMX Node?
-You either need a low end GPU like a GTX 1650, or a modern high-core count CPU with SHA-NI support. This is needed to verify VDFs in MMX.
-RAM at least 4 GiB, and preferably an SSD to store the blockchain DB.
+Usually around 0.5 MMX + transaction fees.
 
-### Can I use Chia/Chives plots to farm MMX?
-No, MMX has it's own plot format that is compression resistant.
+To get the full picture. Read about Dynamic Supply, Reward Control Loop and Minimum Block Reward in [whitepaper](../../../articles/general/mmx-whitepaper/).
 
-### I don't have a lot of free space that I can allocate for MMX plots. Is it worth to farm MMX if I only have xxx TB?
-I'd say it depends on your goals, the netspace on mainnet and your space allocation. But if you want to estimate your time to win MMX per day, you can use this calculator:
+### Can I farm MMX with Chia plots?
 
-https://docs.google.com/spreadsheets/d/1io9pQs4lQiGp3R0vszy9lF_cCNTmY32g5ECSlmFEjPE/
+No.
+
+MMX was written from scratch by Max. He also reworked plot format to make it orders of magnitude more resistant to compression techniques that hit Chia.
+
+For an introduction to MMX plot format, read this [article](../../../articles/plotting/plot-format/).
+
+### How much MMX for a given TB farm?
+
+Formula (simplified):\
+`(farmTB / netspacePB) * 4.32` = MMX (per day)
+
+Example (250TB farm, Netspace 170PB):\
+`(250 / 170) * 4.32` = ~6.35 MMX (per day)
+
+Formula (expanded):\
+`(farmTB / (netspacePB * 1000)) * (8640 blocks per day * 0.5 MMX)`
+
+:::note[Note]
+Find current Netspace in [MMXplorer](https://mmxplorer.com/dashboard). Calculations above gives average blocks won per day, multiplied by 0.5 MMX. That [block reward](#how-much-mmx-per-block-reward) can vary.
+:::
+
+### Is there a pre-farm?
+
+No pre-farm, no pre-mine, no VC funded development.
+
+What was were 100% open and communicated incentivized testnets. Starting with testnet8, to reward community providing a realistic environment through initial development.
+
+List of incentivized testnets rewards are all public on GitHub ([testnet8/rewards.txt](https://github.com/madMAx43v3r/mmx-node/blob/master/data/testnet8/rewards.txt), [data](https://github.com/madMAx43v3r/mmx-node/blob/master/data)). Used to create mainnet genesis. No hidden pre-mine written into it, only community incentivized rewards.
+
+As a sidenote, developers had less than 1% of netspace through testnets. All covered in [whitepaper](../../../articles/general/mmx-whitepaper/). Including testnet rewards, written into mainnet genesis. Over 99% of it to community farmers.
+
+:::note[Note]
+Definition of pre-farm will always be contentious. If comparing or arguing facts above. Also include context, volume, spread, who owns/controls. It should all be scaled and weighted, to get a fair picture.
+:::
+
+### Is there a dev fee?
+
+There is a project funding fee.
+
+It is a 1% fee on *transaction fees*, <ins>not block reward</ins>. To fund continued development of MMX. More nuances to how it works, read Project Funding section of [whitepaper](../../../articles/general/mmx-whitepaper/).
 
 ### Where can I find MMX branding assets?
-Go the the [mmx-assets](https://github.com/madMAx43v3r/mmx-assets) repository. Basic info, logo and asset folders:
+Go to [mmx-assets](https://github.com/madMAx43v3r/mmx-assets) repository. Basic info, logo and assets folders:
 - [`/logo/artwork/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/artwork/) _(artwork)_
 - [`/logo/assets/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/assets/) _(misc)_
 - [`/logo/raster/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/raster/) _(.png)_

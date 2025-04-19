@@ -58,7 +58,7 @@ export default defineConfig({
 					},
 					{
 						label: 'Articles',
-						link: '/articles/general/mmx-tldr',
+						link: '/articles/general/mmx-whitepaper',
 						icon: 'document',
 						items: [
 							{

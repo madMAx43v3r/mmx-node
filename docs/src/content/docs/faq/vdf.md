@@ -3,80 +3,69 @@ title: VDF FAQ
 description: Frequently asked questions about MMX verified delay function (VDF).
 ---
 
-### What is VDF and why do we need to verify it as a farmer?
-A Verifiable Delay Function, is the Proof of Time part in Proof of Space and Time. It is referred to as a proof that a sequential function was executed a certain number of times.
+### Why do I need to verify VDF as a farmer?
 
-Verifiable: A verifier can verify the proof in a shorter amount of time than it took to generate it.
+A Verifiable Delay Function (VDF), is the Time part of Proof of Space (and Time). Time is proved through a sequential function executed a number of times.
+- Verifiable: Verifier can verify the proof in a shorter amount of time than it took to generate.
+- Delay: It proves that a certain amount of real time has elapsed.
+- Function: It is deterministic, computing input x always yields the same result y.
 
-Delay: It proofs that a certain amount of real time has elapsed.
+VDF verify requires either a modern multi-core CPU, or a decent GPU/iGPU.
 
-Function: This means it’s deterministic. Computing a VDF with an input x always yields the same result y.
+### What GPU/CPU do I need to verify VDF?
 
-VDF verification requires either a fast multi-threaded CPU or a (decent) GPU.
+You want your VDF verify below 5 sec. It is directly related to current speed of [fastest timelord](../../../articles/timelord/timelord-predictions/#tldr). Nvidia's GT1030 is affordable, power efficient and does VDF verifications in < 3 seconds, while GTX1650 in < 1 second.
 
-### What kind of GPU do I need for verifying the VDF? What's the minimum required/recommended GPU for VDF verifications?
-Nvidia's GT1030 is affordable, power efficient and does VDF verifications in < 4 seconds, while the GTX1650 does it in < 1 second. For best results, devices which support OpenCL 1.2 are recommended. It has been demonstrated that OpenCL 1.1 devices can verify VDFs, but performance is significantly lower than cards even 1 generation newer, and the additional requirement of installing specific drivers to support the older cards can be challenging, depending on the operating system used. For a list of supported GPUs, please see:
+For best results, devices which support >= OpenCL 1.2 are recommended. It has been shown that OpenCL 1.1 devices can verify VDFs, but performance is significantly lower. Additional requirement of installing specific drivers to support the older cards can be challenging.
 
-https://docs.google.com/spreadsheets/d/1LqyZut0JBwQpbCBnh73fPXkT-1WbCYoXVnIbf6jeyac/
+Also possible to use iGPU (integrated graphics). If the iGPU is powerful enough.
 
-For a list of popular GPUs with their VDF times, please see:
+Many newer CPUs with SHA extensions are capable of verifying VDF. Not as power efficient as GPU, but possible.
 
-https://docs.google.com/spreadsheets/d/1NlK-dq7vCbX4NHzrOloyy4ylLW-fdXjuT8468__SF64/
+For a list of supported GPUs, look [this Google spreadsheet](https://docs.google.com/spreadsheets/d/1LqyZut0JBwQpbCBnh73fPXkT-1WbCYoXVnIbf6jeyac/).\
+For a list of GPU/CPU VDF times, look [this Google spreadsheet](https://docs.google.com/spreadsheets/d/1NlK-dq7vCbX4NHzrOloyy4ylLW-fdXjuT8468__SF64/).
 
-### My node is showing `VDF verification took longer than recommended: x.xxx sec` or `[Node] WARN: VDF verification took longer than block interval, unable to keep sync!`. What is wrong?
-Verification times below 3 sec is good, whereas anything > 5 seconds is bad. If your VDF verification, either done by the CPU or GPU, took more than 5 seconds, then you will get this warning message. Upgrading your CPU or GPU is strongly recommended. If you think you have a fast GPU and still getting this message, verify that your GPU driver is properly installed and the verification process is really done with the GPU, not the CPU.
+:::note[Note]
+VDF verify logic was reduced to 1 stream with mainnet, vs. 2 or 3 in testnets. Numbers for testnets are probably too pessimistic.
+:::
 
-### How do I know if I have installed and set up OpenCL drivers correctly?
-Run clinfo in the command line. If it's showing at least 1 platform, it should work properly.
+### My node is warning of VDF verification times
 
-For Windows, download proprietary clinfo utility from:
+If you get any of these two warnings, you need to check why your VDF verify times are so high:\
+`VDF verification took longer than recommended ...`\
+`VDF verification took longer than block interval ...`
 
-https://opencl.gpuinfo.org/download.php
+Verification times below 3 sec are good, whereas anything > 5 seconds is bad. If you are above 5 sec, you will get warning messages.
 
-### How do I get OpenCL to do VDF verifications?
-https://docs.mmx.network/guides/optimize-vdf/
+[Check](#what-gpucpu-do-i-need-to-verify-vdf) that your GPU/CPU is powerful enough to verify VDF. If using GPU, [check](#how-do-i-know-if-node-is-using-gpu-for-vdf) that verification really is performed on it (and not CPU).
 
-### I have an Intel/AMD CPU that come with an iGPU and another discrete GPU installed. MMX can use the iGPU to do OpenCL VDF, but not with the discrete GPU. How can I use the discrete GPU to do OpenCL VDF?
-First, install the drivers for the discrete GPU. Use clinfo for Linux or for Windows, download clinfo utility here:
+### How do I know if node is using GPU for VDF?
 
-https://opencl.gpuinfo.org/download.php
-
-Perform OpenCL hardware diagnostic/info tool and get `cl_platform_name`
-
-Then run the node with the GPU you want OpenCL to be done with:
-```bash frame="none"
-./run_node.sh --opencl.platform "name"
+To be absolutely sure node is using GPU for VDF verify. Start node, and check:
+```
+[Node] INFO: Found OpenCL GPU device 'NVIDIA GeForce GT 1030' [0] (NVIDIA CUDA)
+[Node] INFO: Using OpenCL GPU device 'NVIDIA GeForce GT 1030' [0] (NVIDIA CUDA)
 ```
 
-For Nvidia, it's "NVIDIA CUDA"
+First one means the node found OpenCL device. Second one `Using OpenCL GPU` indicates node is actually using the device. If multiple GPU devices, can configure which one under SETTINGS in WebGUI.
 
-For AMD, it's "AMD Accelerated Parallel Processing"
+### How to make sure OpenCL is setup correctly?
 
-For Intel, it's "Intel(R) OpenCL"
+Go through the [OpenCL Setup](../../../guides/optimize-vdf/) guide. Then check that OpenCL platform and device drivers really are installed and active.
 
-For a more permanent solution (or in Windows), you can also create a file named `platform` in ~/config/local/opencl/ and put the platform name in there. Please include the quotes "".
-
-If you have an AMD APU and another AMD discrete GPU with the same platform name, you can select which OpenCL device to use:
-```bash frame="none"
-./run_node.sh --Node.opencl_device 0/1
+On Linux, check output of `clinfo -l` command:
+```
+Platform #0: NVIDIA CUDA
+ `-- Device #0: NVIDIA GeForce GT 1030
 ```
 
-Or if you have an AMD APU and a mix of discrete AMD/Nvidia GPUs, you can combine the parameters. Example:
-```bash frame="none"
-./run_node.sh --Node.opencl_device 2 --opencl.platform "NVIDIA CUDA"
-```
+On Windows (evaluate yourself if this 3rd-party utility is ok for you):\
+[OpenCL Hardware Capability Viewer](https://opencl.gpuinfo.org/download.php)
 
-If you want to force use your CPU to do VDFs, while having a GPU installed in your computer, you can run this command:
-```bash frame="none"
-./run_node.sh --Node.opencl_device -1
-```
+### Node and OpenCL is configured, only CPU used?
 
-### How do I know if MMX is using my GPU to do VDFs?
-Start a node, look for this line:
+Might not be a problem.
 
-[Node] INFO: Using OpenCL GPU device [0] GeForce RTX 3070 Ti (total of 1 found)
+When node is performing initial sync of blockchain DB, only CPU will be used. Any OpenCL GPU device will not be used for VDF verify until node is in sync with network.
 
-If you have more than 1 GPU, please select accordingly in file `/config/local/Node.json`.
-
-### I have installed and set up OpenCL drivers correctly, yet MMX only uses my CPU. What is wrong?
-VDF verification is done every 10 seconds and only for the latest block height. Syncing still uses the CPU.
+VDF verify is only performed every 10 sec (blocktime). If your GPU is somewhat powerful, that compute of VDF verify is a 'blip' of less than 1 sec.
