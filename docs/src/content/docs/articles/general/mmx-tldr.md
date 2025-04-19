@@ -5,7 +5,7 @@ prev: false
 next: false
 
 articlePublished: 2025-03-14
-articleUpdated: 2025-04-18
+articleUpdated: 2025-04-19
 
 authorName: voidxno
 authorPicture: https://avatars.githubusercontent.com/u/53347890?s=200
@@ -17,7 +17,7 @@ What is the [MMX blockchain](https://mmx.network/) ?
 _&#8220;&nbsp;MMX &ndash; fast, low cost, feature rich, decentralized &ndash; with tokenomics of an actual currency&nbsp;&#8221;_
 
 :::note
-For more technical information, read [whitepaper](../../../articles/general/mmx-whitepaper/).
+In-depth technical, read [whitepaper](../../../articles/general/mmx-whitepaper/). Technical breakdown, read [reference](../../../reference/blockchain/).
 :::
 
 ## TLDR;
