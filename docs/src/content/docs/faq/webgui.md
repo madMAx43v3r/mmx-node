@@ -3,24 +3,29 @@ title: WebGUI FAQ
 description: Frequently asked questions about MMX web interface (WebGUI).
 ---
 
-### How do I access the web GUI?
-Since testnet6, WebGUI requires a login. For now, the password is randomly generated and can be accessed from your MMX home directory. In order to access the WebGUI, your node needs to be running (not necessarily synced).
+### How do I access the WebGUI?
 
-For Windows, it's usually located at `C:\Users\name\.mmx\PASSWD` (open with notepad or text editor)
+If running Windows install or desktop Linux binary package. You already have access to WebGUI, wrapped as UI inside the application window.
 
-For Linux, it's usually located at `~/mmx-node/PASSWD` (cat or nano into the file)
+If running mmx-node in the background on Linux, or just want to access the WebGUI through a browser. It is available locally on machine: http://localhost:11380/gui/
 
-**If somehow the password you copied is wrong, you might have to generate a new one.**
-Delete `config/local/passwd` file, run `./activate.sh` again and restart your node.
+When accessed through a browser, you need to give a password. It is a randomly generated one, usually located here:
+- Windows: `C:\Users\<user>\.mmx\PASSWD`
+- Linux: `~/.mmx/PASSWD`
+- Linux: `~/mmx-node/PASSWD`
 
-### I've got some remote farmer/harvester setup all in a LAN. How do I access web GUI to my main node?
-Edit `config/local/HttpServer.json` to set `host` as follows: `{"host": "0.0.0.0"}` (Node restart needed to apply)
+In all cases MMX Node needs to be started, or mmx-node running in background.
 
-Then entering `[MMX-Node-IP]:11380/gui/` in the URL bar of your browser should work.
+### How do I access the WebGUI remotely?
 
-For example: `192.168.1.123:11380/gui/`
+Per-default, WebGUI is only exposed on localhost. You need to browse to it on machine it is running on. Through an unsecured `http` connection.
 
-Note: Only use this option if your local network is secure and no devices can sniff traffic and capture your password.
+It is possible to access it remotely. Either through an SSH tunnel (recommended), or opening up for external connections (not recommended).
 
-Option #2:
-https://docs.mmx.network/guides/remote-services/#remote-connections-over-public-networks
+:::danger[Warning]
+Make sure you understand the security risks, consequences, and measures needed if performing any of the steps below. The connection is unsecured `http`, and need to go over a 100% trusted network. Where no one can capture your network traffic to get access to sensitive information like passwords or wallets.
+:::
+
+Recommended way is to tunnel port `11380` through an SSH connection, from remote WebGUI machine. Making you able to browse and login locally on machine you have SSH'ed from. The security of the SSH connection will protect the unsecured `http` traffic. You can get some tips in [Remote Services](../../../guides/remote-services/#remote-connections-over-public-networks) guide.
+
+<ins>Not</ins> recommended way is to configure mmx-node's internal `HttpServer` to answer external connection requests. Edit `config/local/HttpServer.json` file to `"host": "0.0.0.0",` (default: `"host": "localhost",`). Now, after a restart, it will answer to external connection requests. Need to also check if OS firewall is blocking incoming requests on port `11380`. If machine with WebGUI has IP `192.168.1.10`, and reachable from your machine: http://192.168.1.10:11380/gui/

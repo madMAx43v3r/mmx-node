@@ -313,15 +313,3 @@ As told, many variables in play. Network latency, node reputation, so on. **Anot
 ## Feedback
 
 Please contradict findings above, or tell of new ones. Use [`#mmx-timelord`](https://discord.com/channels/852982773963161650/1026219599311675493) channel on Discord.
-
-## Donation
-
-If you find information useful, donations are welcome:
-
-```
-BTC: bc1qtl00g8lctmuud72rv5eqr6kkpt85ws0t2u9s8d
-ETH: 0x5fA8c257b502947A65D399906999D4FC373510B5
-MMX: mmx1pk95pv4lj5k3y9cwxzuuyznjsgdkqsu7wkxz029nqnenjathtv7suf9qgc
-XCH: xch1rk473wu3yqlxyyap4f4fhs8knzf4jt6aagtzka0g24hjgskmlv7qcme9gt
-KAS: kaspa:qqjrwh00du33v4f78re4x3u50420fcvemuu3ye3wy2dhllxtjlhagf04g97hj
-```

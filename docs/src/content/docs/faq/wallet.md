@@ -3,19 +3,11 @@ title: Wallet FAQ
 description: Frequently asked questions about MMX wallet.
 ---
 
-### I start my node and it showed warnings that it cannot find my wallet. How do I create a wallet?
-You can create a wallet in the GUI now. Otherwise see below:
+### Warning of "no wallet available"
 
-Make sure that your wallet file is named `wallet.dat` and not `wallet_xxxxx.dat` and that it's placed in the right folder.
+I'm getting a warning line in WebGUI and/or log file:\
+`Failed to get reward address from wallet: no wallet available`
 
-For Linux, it's `~/mmx-node/`
+Farmer needs a wallet address to send potential rewards to. It is a warning that no farmer reward address has been set, and there are no wallets created that farmer can default its rewards to.
 
-For Windows, it's `C:\Users\name\.mmx\`
-
-If the file does not exist yet, you may create it by running `mmx wallet create -f [filename.dat]`
-
-If you did not specify a filename, the default name `wallet.dat` will be used.
-
-If you have to create multiple wallets, be sure to edit your `config/local/Wallet.json` file and enter your `wallet_name.dat` file under `"key_files+": []`
-
-**`mmx wallet create` is the only MMX command that does not need the node running in the background.**
+If you really are farming with plots, make sure farmer is sending rewards to correct address. You can get information about creating wallets and setting farmer reward address in the [Getting Started](../../guides/getting-started/) guide.

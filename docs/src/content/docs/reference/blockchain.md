@@ -2,7 +2,15 @@
 title: Blockchain
 description: Introduction to the MMX Blockchain.
 ---
+
 A blockchain written from scratch, doing most things differently.
+1. MMX is designed to be a blockchain that can be used as an actual currency
+2. Variable supply will stabilize the price, key property of any currency
+3. Efficient implementation provides low transaction fees, at high throughput
+
+:::note
+In-depth technical, read [whitepaper](../../../articles/general/mmx-whitepaper/). Light introduction, read [article](../../../articles/general/mmx-tldr/).
+:::
 
 Design
 - Variable token supply governed by consensus (1 block = 1 vote)
@@ -31,12 +39,6 @@ Elements
 - Adaptive SHA256 VDF to govern block interval
 - Feature rich Node with built-in Block Explorer, Wallet, Market, Swap, RPC, etc
 
-MMX is designed to be a blockchain that can be used as an actual currency.
-
-Variable supply will stabilize the price, one of the key properties of any currency.
-
-Thanks to an efficient implementation, it will provide low transaction fees, even at high throughput.
-
 Mainnet started on 17th Jan 2025.
 
-See `#mmx-news` and `#mmx-general` on discord: https://discord.gg/BswFhNkMzY
+See [`#mmx-news`](https://discord.com/channels/852982773963161650/926566475249106974) and [`#mmx-general`](https://discord.com/channels/852982773963161650/925017012235817042) on [Discord](https://discord.gg/BswFhNkMzY).

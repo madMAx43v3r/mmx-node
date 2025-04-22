@@ -5,17 +5,19 @@ prev: false
 next: false
 
 articlePublished: 2025-03-14
-articleUpdated: 2025-04-03
+articleUpdated: 2025-04-19
 
 authorName: voidxno
 authorPicture: https://avatars.githubusercontent.com/u/53347890?s=200
 authorURL: https://github.com/voidxno
 ---
 
-What is the **[MMX blockchain](https://mmx.network/)** ?
+What is the [MMX blockchain](https://mmx.network/) ?
+
+_&#8220;&nbsp;MMX &ndash; fast, low cost, feature rich, decentralized &ndash; with tokenomics of an actual currency&nbsp;&#8221;_
 
 :::note
-For more technical information, read [Whitepaper](../../../articles/general/mmx-whitepaper/).
+In-depth technical, read [whitepaper](../../../articles/general/mmx-whitepaper/). Technical breakdown, read [reference](../../../reference/blockchain/).
 :::
 
 ## TLDR;
@@ -24,7 +26,7 @@ For more technical information, read [Whitepaper](../../../articles/general/mmx-
   - Mainnet **launched** 17jan2025
   - Designed as a real stable currency, cryptos original goal
 - **500 TPS**, 10 sec block time, consistent
-  - **Written from scratch** in high performance C++ code
+  - **Written from scratch** by [Max](https://github.com/madMAx43v3r), in high performance C++ code
   - Easily handle 1000 TPS in future
   - Nodes on regular home hardware and internet connections
 - Security by **Proof of Space and Time** (**PoST**)
@@ -67,7 +69,7 @@ If needed, **MMX** is a solid foundation for any L2 solution.
 
 - **Jan2025**: Mainnet live 17jan2025, **MMX**
 - **Oct2022**: Testnets 8-12, first incentivized
-- **Dec2021**: Testnets 1-7, development started, **by Max**
+- **Nov2021**: Testnets 1-7, development [started](https://github.com/madMAx43v3r/mmx-node/commits/master/?since=2021-11-25&until=2021-11-25), **by** [**Max**](https://github.com/madMAx43v3r)
 
 ## Tokenomics
 
