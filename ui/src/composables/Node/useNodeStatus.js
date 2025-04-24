@@ -19,11 +19,12 @@ export const useNodeStatus = () => {
     const sessionFails = ref(0);
     const peerFails = ref(0);
     const syncFails = ref(1);
+    const syncing = ref(false);
 
     const isQueryTakingLong = useIsQueryTakingLong(1000);
     const connectedToNode = computed(() => sessionFails.value < 1);
     const connectedToNetwork = computed(() => peerFails.value < 1 || !isLocalNode.value);
-    const synced = computed(() => syncFails.value < 1);
+    const synced = computed(() => syncing.value == false && syncFails.value < 1);
 
     // --- Session
     const session = useSessionMutation();
@@ -46,7 +47,7 @@ export const useNodeStatus = () => {
 
     const sessionInterval = computed(() => {
         let interval = connectedToNode.value && connectedToNetwork.value ? 5000 : 1000;
-        if (!sessionStore.isLoggedIn) {
+        if (sessionFails.value == 0 && !sessionStore.isLoggedIn) {
             interval = -1;
         }
         return interval;
@@ -70,11 +71,10 @@ export const useNodeStatus = () => {
             },
         });
 
-    const syncing = ref(false);
     const peerInfoInterval = computed(() => {
         let interval = connectedToNetwork.value ? 5000 : 1000;
 
-        if (!connectedToNode.value || syncing.value) {
+        if (peerFails.value == 0 && (!connectedToNode.value || syncing.value)) {
             interval = -1;
         }
         return interval;
@@ -90,6 +90,7 @@ export const useNodeStatus = () => {
                 if (data) {
                     syncing.value = true;
                     if (data.is_synced) {
+                        syncing.value = false;
                         syncFails.value = 0;
                     }
                 } else {
@@ -103,10 +104,7 @@ export const useNodeStatus = () => {
         });
 
     const nodeInfoInterval = computed(() => {
-        let interval = connectedToNetwork.value ? 5000 : 1000;
-        if (!connectedToNode.value) {
-            interval = -1;
-        }
+        let interval = synced.value ? 5000 : 1000;
         return interval;
     });
     useIntervalFn2(nodeInfoIntervalFn, nodeInfoInterval);
@@ -144,6 +142,7 @@ export const useNodeStatus = () => {
             //console.debug("peerFails", peerFails.value);
             console.debug("connectedToNetwork", connectedToNetwork.value);
             //console.debug("syncFails", syncFails.value);
+            console.debug("syncing", syncing.value);
             console.debug("synced", synced.value);
             console.debug("currentStatus", currentStatus.value);
         });
