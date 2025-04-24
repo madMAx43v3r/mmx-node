@@ -39,7 +39,9 @@ Leaves us with newest Intel/AMD CPUs that can clock 1x core the highest:
 - Intel Ultra 200S series (15th-gen, Arrow Lake)
 - AMD Ryzen 7000/9000 series (Zen 4/5)
 
-_NOTE: [eBACS](https://bench.cr.yp.to) have [SHA256 efficiency benchmarks](https://bench.cr.yp.to/impl-hashblocks/sha256.html) for different CPU architectures with SHA extensions (dolbeau/amd64-sha)._
+:::note[Note]
+[eBACS](https://bench.cr.yp.to) have [SHA256 efficiency benchmarks](https://bench.cr.yp.to/impl-hashblocks/sha256.html) for different CPU architectures with SHA extensions (dolbeau/amd64-sha).
+:::
 
 ## Today (Mar2025)
 

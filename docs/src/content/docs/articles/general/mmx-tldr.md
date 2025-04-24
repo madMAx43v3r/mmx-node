@@ -16,7 +16,7 @@ What is the [MMX blockchain](https://mmx.network/) ?
 
 _&#8220;&nbsp;MMX &ndash; fast, low cost, feature rich, decentralized &ndash; with tokenomics of an actual currency&nbsp;&#8221;_
 
-:::note
+:::note[Note]
 In-depth technical, read [whitepaper](../../../articles/general/mmx-whitepaper/). Technical breakdown, read [reference](../../../reference/blockchain/).
 :::
 
@@ -108,7 +108,9 @@ Ethereum is usually listed with anything from 15-50 maximum TPS. Real-life stati
 - **Chia**: `Documented as 20-40 TPS, real-life stress tests at 35` = `~35`\
 Not easy to get hard numbers to calculate Chia's maximum TPS potential. It is documented to be in the 20-40 range. A real-life stress test, with simplest-TX-es, have given about 35 TPS.
 
-_NOTE: An 100% apples to apples comparison is not possible without overly complicating it. Each blockchain has unique properties, real-life behavior, and limitations. This is an attempt to estimate a realistic capacity potential. As fair as possible, in a simple table._
+:::note[Note]
+An 100% apples to apples comparison is not possible without overly complicating it. Each blockchain has unique properties, real-life behavior, and limitations. This is an attempt to estimate a realistic capacity potential. As fair as possible, in a simple table.
+:::
 
 </details>
 

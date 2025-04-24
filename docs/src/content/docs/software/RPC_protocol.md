@@ -16,9 +16,9 @@ Authentication is required to access private API endpoints or remove limits from
 The best way to setup static authentication is to create an API token, by editing `config/local/HttpServer.json`:
 ```json
 {
-	"token_map": [
-		["secure_random_token_here", "ADMIN"]
-	]
+  "token_map": [
+    ["secure_random_token_here", "ADMIN"]
+  ]
 }
 ```
 A secure random token can be generated with the `generate_passwd` tool.
@@ -98,7 +98,7 @@ Returns transaction info object (see [tx_info_t.vni](https://github.com/madMAx43
 
 #### GET /wapi/transactions
 
-Returns array of most recent transaction info objects, or list of transaction info objects for a given block height. 
+Returns array of most recent transaction info objects, or list of transaction info objects for a given block height.
 
 Query parameters:
 - `limit`: Result limit (default = 100)
@@ -213,7 +213,6 @@ Example: `POST /wapi/contract/call?id=mmx1...&method=get_price` with content:
 {"args": [0]}
 ```
 
-
 #### GET /wapi/farmers
 
 Query parameters:
@@ -254,7 +253,9 @@ Returns status 400 with error message in case static validation failed, for exam
 - Invalid signature
 - Insufficient balance for TX fee
 
-Note: Clients must handle `nonce` field as a 64-bit integer, truncation will cause static failure.
+:::note[Note]
+Clients must handle `nonce` field as a 64-bit integer, truncation will cause static failure.
+:::
 
 #### POST /wapi/transaction/broadcast
 
@@ -267,18 +268,18 @@ Returns status 200 on success.
 Common parameters:
 - `index`: Wallet index, see `/wapi/wallet/accounts` or `mmx wallet accounts`.
 - `options`: Object with additional options:
-	- `auto_send`: If to send transaction automatically (default = true)
-	- `mark_spent`: If to mark transaction as spent in cache (default = false)
-	- `fee_ratio`: TX fee ratio as integer (default = 1024)
-	- `gas_limit`: Limit for extra dynamic cost (default = 5 MMX)
-	- `expire_at`: Optional expiration height
-	- `expire_delta`: Expiration delta, relative to current height (default = 100, `null` to disable)
-	- `nonce`: Custom nonce (needs be > 0)
-	- `user`: Custom user for contract calls (default = first address)
-	- `sender`: Custom sender address (who will pay TX fee, default = first address)
-	- `passphrase`: Optional passphrase to atomically unlock wallet.
-	- `note`: Transaction note, see [tx_note_e.vni](https://github.com/madMAx43v3r/mmx-node/blob/master/interface/tx_note_e.vni).
-	- `memo`: Optional memo string (max. 64 chars)
+  - `auto_send`: If to send transaction automatically (default = true)
+  - `mark_spent`: If to mark transaction as spent in cache (default = false)
+  - `fee_ratio`: TX fee ratio as integer (default = 1024)
+  - `gas_limit`: Limit for extra dynamic cost (default = 5 MMX)
+  - `expire_at`: Optional expiration height
+  - `expire_delta`: Expiration delta, relative to current height (default = 100, `null` to disable)
+  - `nonce`: Custom nonce (needs be > 0)
+  - `user`: Custom user for contract calls (default = first address)
+  - `sender`: Custom sender address (who will pay TX fee, default = first address)
+  - `passphrase`: Optional passphrase to atomically unlock wallet.
+  - `note`: Transaction note, see [tx_note_e.vni](https://github.com/madMAx43v3r/mmx-node/blob/master/interface/tx_note_e.vni).
+  - `memo`: Optional memo string (max. 64 chars)
 
 Endpoints that send a transaction will first validate it, and if invalid sending is aborted (saving TX fees).
 
@@ -341,7 +342,9 @@ Returns an array of objects:
 - `decimals`: Number of decimals
 - etc
 
-Note: This endpoint includes pending transactions, `is_pending` or `height` needs to be checked.
+:::note[Note]
+This endpoint includes pending transactions, `is_pending` or `height` needs to be checked.
+:::
 
 #### GET /wapi/wallet/tx_history
 
@@ -401,7 +404,9 @@ Request payload is an object of arguments:
 
 Returns status 200 if successful.
 
-Note: Clients must handle `nonce` field as a 64-bit integer, truncation will cause static failure.
+:::note[Note]
+Clients must handle `nonce` field as a 64-bit integer, truncation will cause static failure.
+:::
 
 #### POST /wapi/wallet/deploy
 
@@ -417,12 +422,12 @@ Returns contract address (bech32) if successful.
 Example `payload` for a smart contract:
 ```json
 {
-	"__type": "mmx.contract.Executable",
-	"name": "Fake Testnet USD",
-	"symbol": "USDM",
-	"decimals": 4,
-	"binary": "mmx17pzl9cgmesyjur7rvvev70fx7f55rvyv7549cvrtf7chjml4qh4sryu9yl",
-	"init_args": ["mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z"]
+  "__type": "mmx.contract.Executable",
+  "name": "Fake Testnet USD",
+  "symbol": "USDM",
+  "decimals": 4,
+  "binary": "mmx17pzl9cgmesyjur7rvvev70fx7f55rvyv7549cvrtf7chjml4qh4sryu9yl",
+  "init_args": ["mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z"]
 }
 ```
 
@@ -439,15 +444,3 @@ Request payload is an object of arguments:
 - `options`: Object with options
 
 Returns transaction object if successful.
-
-
-
-
-
-
-
-
-
-
-
-

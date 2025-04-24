@@ -2,6 +2,7 @@
 title: Pooling Protocol
 description: MMX Pooling Protocol reference.
 ---
+
 ## Notes
 - MMX addresses are encoded via bech32 string
 - Hashes and signatures are encoded via little-endian upper-case hex string, without `0x` prefix
@@ -46,6 +47,7 @@ Returns status 200 with `application/json` object as follows:
 - `error_message`: Message string
 
 #### Example partial
+
 TODO: update
 ```
 {
@@ -147,17 +149,18 @@ Returns account info as `application/json` object:
 
 Endpoint to verify a partial, optionally with plot NFT verification.
 
-Note:
+:::note[Note]
 Partials should be verfied after a certain delay, for example once the height of the partial has been reached on-chain.
 Partials are computed 6 blocks in advance, so waiting until the partial's height has been reached will give 6 blocks security.
 Even in case of a re-org larger than 6 blocks, the chance a partial won't be valid anymore is only ~5%.
+:::
 
 Content-Type: `application/json`
 
 Payload: Object
 - `partial`: The same object as was received by the pool via POST `/partial`.
 - `pool_target`: Expected plot NFT target address (optional)
-	- When specified will verify plot NFT is locked to given target address at current blockchain height.
+  - When specified will verify plot NFT is locked to given target address at current blockchain height.
 
 Returns status 200 with `application/json` object as follows:
 - `error_code`: Integer error code (see below)
@@ -187,13 +190,14 @@ A string is generated for JSON objects as follows:
 
 - First the `__type` field is added, followed with `/`
 - Then for each field in the specified order:
-	- The field name is added, followed with a `:`
-	- The field value is added (floating point values are floored first)
+  - The field name is added, followed with a `:`
+  - The field value is added (floating point values are floored first)
 - For any nested objects, the same scheme is followed.
 
 The final string is hashed via `SHA2-256`.
 
 ## Error Codes
+
 Error codes are transferred as strings in JSON:
 - `NONE`: No error
 - `INVALID_PARTIAL`
@@ -211,8 +215,3 @@ Error codes are transferred as strings in JSON:
 - `INVALID_TIMESTAMP`
 - `POOL_LOST_SYNC`
 - `SERVER_ERROR`
-
-
-
-
-

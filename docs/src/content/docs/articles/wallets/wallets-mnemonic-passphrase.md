@@ -14,7 +14,9 @@ authorURL: https://github.com/voidxno
 
 A look at MMX wallets, mnemonic and passphrase.
 
-_**IMPORTANT:**_ _My own understanding, using mmx-node. I take no responsibility for content. When it comes to crypto and wallets, YOU need to educate yourself. As always, NEVER share your mnemonic or passphrase with others._
+:::note[Important]
+My own understanding, using mmx-node. I take no responsibility for content. When it comes to crypto and wallets, _YOU_ need to educate yourself. As always, _NEVER_ share your mnemonic or passphrase with others.
+:::
 
 ## TLDR;
 
@@ -37,7 +39,6 @@ As long as you **backup** (securely), in some way, the **24-words mnemonic** and
 
 Also recommended to **note** the **finger\_print** and main **address** of wallet (Index[0]). Easy indicators to make sure you recreated the correct wallet with backup information.
 
-
 :::caution[Important]
 Perform the two steps above, and you will always be able to recreate and verify wallet.
 :::
@@ -48,13 +49,15 @@ Look [Find elements](#find-elements) on how to find information above.
 
 You can also backup (securely), the `.dat` file, that represents the wallet. Not really needed. The 24-words mnemonic and passphrase (if used), are enough to recreate wallet. Also, if wallet was created with a passphrase. You still need passphrase to access wallet, in addition to `.dat` file.
 
-:::tip
+:::tip[Tip]
 Topics in this article can be tricky to get a grip on. Try asking an LLM chatbot about _"BIP39 wallet standard"_, _"mnemonic"_ and _"passphrase"_. Converse, and you might get answers with angles that works better for you.
 :::
 
 ## Mnemonic
 
-_NOTE: Ignoring optional passphrase for now (25th word), that is next section._
+:::note[Note]
+Ignoring optional passphrase for now (25th word), that is next section.
+:::
 
 The 24-words mnemonic is a user friendly way to represent the raw binary hexadecimals seed value for wallet ([BIP39](https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki)).
 
@@ -162,7 +165,9 @@ So, if missing funds on a wallet. Make sure it is not issue above, by recreating
 
 ## Account Index
 
-_NOTE: Only an explanation that accounts within a wallet technically exists. Not needed in normal usage._
+:::note[Note]
+Only an explanation that accounts within a wallet technically exists. Not needed in normal usage.
+:::
 
 The 'Account' word can mislead in this context. Each wallet listed in WebGUI are also 'Accounts'. What we are talking about here is 'Account Index' **within a wallet**.
 

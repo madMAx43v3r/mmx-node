@@ -2,6 +2,7 @@
 title: MMX Script
 description: MMX Script smart contract language reference.
 ---
+
 The MMX smart contract language is a restricted subset of JavaScript with some additional features.
 
 ## Types
@@ -14,7 +15,9 @@ The MMX smart contract language is a restricted subset of JavaScript with some a
 - Array
 - Map
 
-Note: Objects are maps with string keys.
+:::note[Note]
+Objects are maps with string keys.
+:::
 
 ## Deviations from JavaScript
 
@@ -49,42 +52,42 @@ Note: Objects are maps with string keys.
 - Multiple assignment: `[a, b] = arr, {a, b} = obj`
 - Spread syntax `(...)`
 - Any built-in classes like:
-	- `Array`, `Map`, `Set`, `Time`, `Date`, `Number`, `Math`
-	- `Error`, `Object`, `Function`, `Boolean`, `Symbol`
-	- `String`, `RegExp`, `Promise`, `Iterator`, `Proxy`
+  - `Array`, `Map`, `Set`, `Time`, `Date`, `Number`, `Math`
+  - `Error`, `Object`, `Function`, `Boolean`, `Symbol`
+  - `String`, `RegExp`, `Promise`, `Iterator`, `Proxy`
 - Any built-in functions like:
-	- `eval()`, `escape()`, `unescape()`
+  - `eval()`, `escape()`, `unescape()`
 
 ## Additional features
 
 - `const` function modifier
-	- `function get_price() const {}`
-	- `const` functions cannot modify contract state
+  - `function get_price() const {}`
+  - `const` functions cannot modify contract state
 - `static` function modifier
-	- `function init_ex(...) static {}`
-	- Denotes that function is a constructor (executes static init first)
-	- Any `init()` function is implicitly static
+  - `function init_ex(...) static {}`
+  - Denotes that function is a constructor (executes static init first)
+  - Any `init()` function is implicitly static
 - `public` function modifier
-	- `function payout() public {}`
-	- Only public functions can be executed via transactions.
+  - `function payout() public {}`
+  - Only public functions can be executed via transactions.
 - `payable` function modifier
-	- `function trade(...) public payable {}`
-	- Required to support deposits with function call.
-	- A `deposit()` function is always `payable`.
+  - `function trade(...) public payable {}`
+  - Required to support deposits with function call.
+  - A `deposit()` function is always `payable`.
 
 - Special `this` object to access built-in variables:
-	- `txid`: The transaction ID (Type: 32-bytes or `null`)
-	- `height`: The block height at which the code is executed (Type: 256-bit unsigned int)
-	- `balance`: Map of contract balances (Type: Map[32-bytes] = 256-bit unsigned int)
-		- Returns `0` in case of missing balance entry (instead of `null`).
-	- `address`: Contract address (Type: 32-bytes)
-	- `user`: A user address can be specified when executing a contract function,
-		which is verified via a signature before executution, same as `msg.sender` in EVM.
-		In case of a remote call this is the address of the caller's contract.
-		(Type: 32-bytes or `null`)
-	- `deposit`: Object to check for deposited currency and amount (for `payable` functions):
-		- `currency`: Currency address (Type: 32-bytes)
-		- `amount`: Amount deposited (Type: 256-bit unsinged int)
+  - `txid`: The transaction ID (Type: 32-bytes or `null`)
+  - `height`: The block height at which the code is executed (Type: 256-bit unsigned int)
+  - `balance`: Map of contract balances (Type: Map[32-bytes] = 256-bit unsigned int)
+    - Returns `0` in case of missing balance entry (instead of `null`).
+  - `address`: Contract address (Type: 32-bytes)
+  - `user`: A user address can be specified when executing a contract function,
+    which is verified via a signature before executution, same as `msg.sender` in EVM.
+    In case of a remote call this is the address of the caller's contract.
+    (Type: 32-bytes or `null`)
+  - `deposit`: Object to check for deposited currency and amount (for `payable` functions):
+    - `currency`: Currency address (Type: 32-bytes)
+    - `amount`: Amount deposited (Type: 256-bit unsinged int)
 
 ## Operators (sorted by rank)
 
@@ -134,91 +137,91 @@ Note: Objects are maps with string keys.
 - `clone(v)`: Makes a (deep) copy and returns reference
 - `deref(v)`: Returns a (deep) copy (without reference) of the value given by a reference
 - `typeof(v)`: Returns an integer to denote a variable's type:
-	- 0 = `null`
-	- 1 = `false`
-	- 2 = `true`
-	- 4 = Integer (256-bit unsinged)
-	- 5 = String
-	- 6 = Binary
-	- 7 = Array
-	- 8 = Map
+  - 0 = `null`
+  - 1 = `false`
+  - 2 = `true`
+  - 4 = Integer (256-bit unsinged)
+  - 5 = String
+  - 6 = Binary
+  - 7 = Array
+  - 8 = Map
 - `concat(a, b, [...])`: Returns concatenation of two or more (binary) strings (like `a + b + ...` in JS)
 - `memcpy(src, count, [offset])`
-	- Returns a sub-string of `src` with length `count` starting at `offset`
-	- `offset` defaults to `0`
-	- `src` must be a string or binary string
-	- Out of bounds access will fail execution
+  - Returns a sub-string of `src` with length `count` starting at `offset`
+  - `offset` defaults to `0`
+  - `src` must be a string or binary string
+  - Out of bounds access will fail execution
 - `fail(message, [code])`: Fails execution with string `message` and optional integer `code`
 - `assert(condition, [message], [code])`: Fails execution if `condition` does not evaluate `true`
-	- If `message` is not specified, it will print source code instead.
+  - If `message` is not specified, it will print source code instead.
 - `bech32(addr)`: Parses a bech32 address string and returns 32 bytes.
-	- Returns 32 zero bytes if no argument given, which corresponds to the zero address.
+  - Returns 32 zero bytes if no argument given, which corresponds to the zero address.
 - `binary(v)`: Converts to a binary
-	- Returns binary for strings (1-to-1 copy)
-	- Returns little endian 32-byte binary for integers
+  - Returns binary for strings (1-to-1 copy)
+  - Returns little endian 32-byte binary for integers
 - `binary_le(v)`: Same as `binary()` except:
-	- Returns big endian 32-byte binary for integers
+  - Returns big endian 32-byte binary for integers
 - `binary_hex(v)`: Same as `binary()` except:
-	- Parses input string as a hex string, with optional `0x` prefix.
+  - Parses input string as a hex string, with optional `0x` prefix.
 - `bool(v)`: Converts to boolean
-	- Returns `false` for: `null`, `false`, `0`, empty (binary) string
-	- Otherwise returns `true`
+  - Returns `false` for: `null`, `false`, `0`, empty (binary) string
+  - Otherwise returns `true`
 - `uint(v)`: Converts to 256-bit unsigned integer
-	- `null` => 0, `false` => 0, `true` => 1
-	- `"123"` => 123, `"0b10"` => 2, `"0xFf"` => 255
-	- Binary strings are parsed in big endian: `[00, FF]` => `0x00FF` / `255`
+  - `null` => 0, `false` => 0, `true` => 1
+  - `"123"` => 123, `"0b10"` => 2, `"0xFf"` => 255
+  - Binary strings are parsed in big endian: `[00, FF]` => `0x00FF` / `255`
 - `uint_le(v)`: Same as `uint()` except binary strings are parsed in little endian.
 - `uint_hex(v)`: Same as `uint()` except strings are parsed in hex, even without `0x` prefix.
 - `string(v)`: Converts to a string
-	- Integers are converted to decimal
-	- String inputs are returned as-is
-	- Binary strings are converted as-is (like memcpy())
+  - Integers are converted to decimal
+  - String inputs are returned as-is
+  - Binary strings are converted as-is (like memcpy())
 - `string_hex(v)`: Same as `string()` except:
-	- Converts integers and binary strings to a hex string, without `0x` prefix.
+  - Converts integers and binary strings to a hex string, without `0x` prefix.
 - `string_bech32(v)`: Same as `string()` except:
-	- Converts binary string to a bech32 address string `mmx1...` (fails if not 32 bytes)
-	- Converts `null` to zero address string `mmx1qqqq...`
+  - Converts binary string to a bech32 address string `mmx1...` (fails if not 32 bytes)
+  - Converts `null` to zero address string `mmx1qqqq...`
 - `is_uint(v)`: Returns `true` if argument is of type integer
 - `is_string(v)`: Returns `true` if argument is of type string
 - `is_binary(v)`: Returns `true` if argument is of type binary
 - `is_array(v)`: Returns `true` if argument is of type array
 - `is_map(v)`: Returns `true` if argument is of type map
 - `balance([currency])`: Returns current balance for given currency (for the contract)
-	- `currency` defaults to MMX if not specified (32-byte binary)
+  - `currency` defaults to MMX if not specified (32-byte binary)
 - `send(address, amount, [currency], [memo])`: Transfer funds from contract to an address
-	- `address` is destination address as 32-byte binary
-	- `amount` is integer amount, fails if larger than 64-bit
-	- `currency` is currency address as 32-byte binary, defaults to MMX (ie. `bech32()`)
-	- `memo` is an optional memo string (fails if longer than 64 chars)
-	- Does nothing if `amount` is zero
-	- Fails if balance is insufficient
-	- Returns `null` (ie. nothing)
+  - `address` is destination address as 32-byte binary
+  - `amount` is integer amount, fails if larger than 64-bit
+  - `currency` is currency address as 32-byte binary, defaults to MMX (ie. `bech32()`)
+  - `memo` is an optional memo string (fails if longer than 64 chars)
+  - Does nothing if `amount` is zero
+  - Fails if balance is insufficient
+  - Returns `null` (ie. nothing)
 - `mint(address, amount, [memo])`: Mint new tokens of contract and send to address
-	- `address` is destination address as 32-byte binary
-	- `amount` is integer amount, fails if larger than 64-bit
-	- `memo` is an optional memo string (fails if longer than 64 chars)
-	- Does nothing if `amount` is zero
-	- Returns `null` (ie. nothing)
-	- This is the only way to mint tokens on MMX blockchain
+  - `address` is destination address as 32-byte binary
+  - `amount` is integer amount, fails if larger than 64-bit
+  - `memo` is an optional memo string (fails if longer than 64 chars)
+  - Does nothing if `amount` is zero
+  - Returns `null` (ie. nothing)
+  - This is the only way to mint tokens on MMX blockchain
 - `sha256(msg)`: Computes SHA-2 256-bit hash for given input message (binary or string)
-	- Returns hash as 32 bytes
+  - Returns hash as 32 bytes
 - `ecdsa_verify(msg, pubkey, signature)`: Verifies a ECDSA signature
-	- Returns `true` if valid, otherwise `false`
-	- `msg` must be 32 bytes
-	- `pubkey` must be 33 bytes
-	- `signature` must be 64 bytes
+  - Returns `true` if valid, otherwise `false`
+  - `msg` must be 32 bytes
+  - `pubkey` must be 33 bytes
+  - `signature` must be 64 bytes
 - `rcall(contract, method, [arg0], [arg1], ...)`: Calls function of another contract and returns value
-	- `contract` is a string idendifier of the contract to call (specified at deploy time)
-	- `method` is the method name as string (without `()`)
-	- Returns value from the function call
+  - `contract` is a string idendifier of the contract to call (specified at deploy time)
+  - `method` is the method name as string (without `()`)
+  - Returns value from the function call
 - `read(field, [address])`:
-	- Returns the value of a non-storage contract field (which is constant)
-	- `address` is current contract if not specified
-	- Storage fields cannot be read with this function, need to use `rcall()` instead
+  - Returns the value of a non-storage contract field (which is constant)
+  - `address` is current contract if not specified
+  - Storage fields cannot be read with this function, need to use `rcall()` instead
 - `log(level, message)`: For debugging / testing only
-	- Logs a string message at integer `level`
+  - Logs a string message at integer `level`
 - `event(name, data)`: For debugging / testing only
-	- Logs an event with string `name` and arbitrary `data`
+  - Logs an event with string `name` and arbitrary `data`
 - `__nop()`: Injects an `OP_NOP` instruction (for debugging)
 - `__copy(dst, src)`: Same as `dst = src` but bypasses compiler const check on `dst` for debugging.
 
@@ -228,7 +231,7 @@ Because floating point values and arithmetic are not supported, one has to use f
 
 First you need to choose how much precision is needed.
 A good choice would be 64-bits or 96-bits, such that a 256-bit overflow is not possible when adding a lot of 128-bit values.
-Account balances can be up to 128-bit, while amounts (for deposit and sending) are limited to 64-bit. 
+Account balances can be up to 128-bit, while amounts (for deposit and sending) are limited to 64-bit.
 
 Let's say we choose 64-bit precision.
 This means we multiply all constants by 2^64 (or left shift by 64) and right shift by 64 to get a result.
@@ -290,30 +293,33 @@ Any global variable will be persisted accross the lifetime of a contract:
 ```js
 var storage = [];
 function add(value) public {
-	push(storage, value);
+  push(storage, value);
 }
 function get() const public {
-	return storage;
+  return storage;
 }
 ```
 
 ### Constructor
 
-Any `static` private function can be a constructor. When deploying a contract you have to specify which function to use. \
+Any `static` private function can be a constructor. When deploying a contract you have to specify which function to use.\
 The default is to use `init()`:
 ```js
 var foo;
 var spec;
 function init(bar) {
-	foo = bar;
+  foo = bar;
 }
 function init_v(bar, v) static {
-	foo = bar;
-	spec = v;
+  foo = bar;
+  spec = v;
 }
 ```
-Note: `init()` is always marked as `static`.\
-Note: Global variables are initialized to `null` before constructor is executed.
+
+:::note[Note]
+`init()` is always marked as `static`.\
+Global variables are initialized to `null` before constructor is executed.
+:::
 
 ### Deposit
 
@@ -322,14 +328,17 @@ Deposits in MMX are made through function calls to a `payable` function:
 var currency = bech32();
 var balances = {};
 function deposit(account) public payable {
-	if(this.deposit.currency != currency) {
-		fail("invalid currency");
-	}
-	balances[account] += this.deposit.amount;
+  if(this.deposit.currency != currency) {
+    fail("invalid currency");
+  }
+  balances[account] += this.deposit.amount;
 }
 ```
-Note: If a function is called "deposit" the `payable` modifier can be omitted.
-Note: `this.balance` already includes the deposited amount, it always equals the amount that can be spent via `send()`.
+
+:::note[Note]
+If a function is called "deposit" the `payable` modifier can be omitted.\
+`this.balance` already includes the deposited amount, it always equals the amount that can be spent via `send()`.
+:::
 
 Trying to deposit funds via a non-`payable` function is not possible.
 However it's possible to send funds to a contract via normal transfer.
@@ -344,33 +353,33 @@ This allows a more efficient way to deploy with funding, compared to executing a
 ### Built-in Contracts
 
 - [offer.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/offer.js) - Offer
-	- Allows to trade between two currencies at a fixed price (See GUI -> Market)
-	- Takers can trade any fraction of the offer
-	- Maker can cancel / refill at any time
-	- Bids are accumulated in the contract (for lower tx fees)
-	- Manual withdrawal will transfer accumulated bids to maker wallet
+  - Allows to trade between two currencies at a fixed price (See GUI -> Market)
+  - Takers can trade any fraction of the offer
+  - Maker can cancel / refill at any time
+  - Bids are accumulated in the contract (for lower tx fees)
+  - Manual withdrawal will transfer accumulated bids to maker wallet
 - [swap.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/swap.js) - Swap
-	- Liquidity pool AMM, similar to UniSwap (see GUI -> Swap)
-	- Has 4 different fee-tiers, each with their own liquidty and price
-	- A trade is divided into multiple chunks / iterations
-	- `trade()` loops over all pools in multiple iterations and picks the best pool to trade with for each chunk (while taking the fee into account)
-	- Supports one-sided liquidity
-	- Liquidity is locked for 24 hours after it's been added / or fee-tier was changed
-	- A single account can only provide liquidity for one fee-tier
-	- Fee payouts are heuristic for better trade efficiency (manual trigger, no automatic compounding)
+  - Liquidity pool AMM, similar to UniSwap (see GUI -> Swap)
+  - Has 4 different fee-tiers, each with their own liquidty and price
+  - A trade is divided into multiple chunks / iterations
+  - `trade()` loops over all pools in multiple iterations and picks the best pool to trade with for each chunk (while taking the fee into account)
+  - Supports one-sided liquidity
+  - Liquidity is locked for 24 hours after it's been added / or fee-tier was changed
+  - A single account can only provide liquidity for one fee-tier
+  - Fee payouts are heuristic for better trade efficiency (manual trigger, no automatic compounding)
 - [plot_nft.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/plot_nft.js) - Plot NFT
-	- Used for pooled farming to control rewards / switch pools
+  - Used for pooled farming to control rewards / switch pools
 - [token.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/token.js) - Simple Token
-	- Token contract with single owner to mint a token (without limits)
+  - Token contract with single owner to mint a token (without limits)
 - [nft.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/nft.js) - NFT
-	- Contract used to mint NFTs
-	- Ensures only a single token is ever minted by a verified creator
+  - Contract used to mint NFTs
+  - Ensures only a single token is ever minted by a verified creator
 - [time_lock.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/time_lock.js) - Simple Time Lock
 - [escrow.js](https://github.com/madMAx43v3r/mmx-node/tree/master/src/contract/escrow.js) - Simple Escrow with middle-man
 
 ### Minting tokens
 
-Minting tokens is only possible via calling `mint()`, which mints new tokens of the contract. \
+Minting tokens is only possible via calling `mint()`, which mints new tokens of the contract.\
 Every contract is also a currency, contract address = currency address.
 
 A smart contract inherits from `mmx.contract.TokenBase`, which has the following fields:
@@ -396,17 +405,17 @@ mmx wallet deploy example.dat
 `mmx_compile` returns the binary address that we need to sepecify when deploying a contract later.
 `-n testnet12` can be omitted for mainnet.
 
-Once the binary is confirmed on-chain, we can deploy any number of contracts with the same code. \
+Once the binary is confirmed on-chain, we can deploy any number of contracts with the same code.\
 This can be done via JSON files:
 ```json
 {
-	"__type": "mmx.contract.Executable",
-	"name": "Example",
-	"symbol": "EXMPL",
-	"decimals": 6,
-	"binary": "mmx1...",
-	"init_method": "init",
-	"init_args": [...]
+  "__type": "mmx.contract.Executable",
+  "name": "Example",
+  "symbol": "EXMPL",
+  "decimals": 6,
+  "binary": "mmx1...",
+  "init_method": "init",
+  "init_args": [...]
 }
 ```
 If the contract does not represent a token, `name`, `symbol` and `decimals` can be omitted.
@@ -502,13 +511,13 @@ That means "copying" by assignment does not make a deep copy, it only copies the
 const array = [1, 2, 3];
 const tmp = array;
 push(tmp, 4);
-return array;	// returns [1, 2, 3, 4]
+return array;  // returns [1, 2, 3, 4]
 ```
 ```js
 const object = {"foo": {}};
 const foo = object.foo;
 foo.bar = true;
-return object;	// returns {foo: {"bar": true}}
+return object;  // returns {foo: {"bar": true}}
 ```
 In order to make a deep-copy you need to use `clone()`.
 
@@ -518,7 +527,7 @@ It's not possible to clone maps / objects from contract storage:
 ```js
 var object = {};
 function test() public {
-	return clone(object);		// will fail
+  return clone(object);  // will fail
 }
 ```
 
@@ -532,7 +541,9 @@ not other contracts or addresses (since that would break parallel execution).
 However it's possible to call a method of another contract that returns its balance.
 In this case execution is serialized.
 
-Note: `this.balance` is updated automatically when receiving funds via deposit, or when spending via `send()`.
+:::note[Note]
+`this.balance` is updated automatically when receiving funds via deposit, or when spending via `send()`.
+:::
 
 ### Instruction costs
 
