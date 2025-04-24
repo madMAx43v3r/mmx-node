@@ -27,7 +27,7 @@ const tabs = computed(() => [
     { component: BuildVersion, visible: !appStore.isWinGUI },
     { component: NodeStatus },
     { to: "/settings", icon: mdiCog },
-    ...(!appStore.isGUI ? [{ icon: mdiLogout, click: handleLogout }] : []),
+    { icon: mdiLogout, click: handleLogout, visible: !appStore.isWinGUI },
 ]);
 
 import { useLogout } from "@/queries/server";
