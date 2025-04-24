@@ -14,7 +14,9 @@ authorURL: https://github.com/voidxno
 
 Plot format, MMX.
 
-_**IMPORTANT:**_ _My own understanding, reading comments when mainnet plot format was rolled out with testnet11. Still relevant info, as an introduction. Reference official information if unsure._
+:::note[Important]
+My own understanding, reading comments when mainnet plot format was rolled out with testnet11. Still relevant info, as an introduction. Reference official information if unsure.
+:::
 
 ## TLDR;
 
@@ -69,8 +71,10 @@ Given the high IOPS for SSD-plots, recommended to use C0 for compression (0%).
 | `hdd`/`sdd-k31` | 216 GB | 120 GB | 8 GB |
 | `hdd`/`sdd-k32` | 410 GB | 232 GB | 8 GB |
 
-_NOTE: Disk mode usually less than 8 GB, depends on `-S` streams option._\
-_NOTE: If close to 32 GB, 32 GB system RAM not enough. 48/64 GB needed._
+:::note[Note]
+Disk mode usually less than 8 GB, depends on `-S` streams option.\
+If close to 32 GB, 32 GB system RAM not enough. 48/64 GB needed.
+:::
 
 **Temp disk space** needed when plotting (similar for HDD and SSD-plots):
 | | full RAM | partial RAM | disk mode |
@@ -88,7 +92,9 @@ _NOTE: If close to 32 GB, 32 GB system RAM not enough. 48/64 GB needed._
 | `hdd`/`sdd-k31` | 0.16 / 0.06 TiBW | 0.33 / 0.25 TiBW | 1.40 / 1.14 TiBW |
 | `hdd`/`sdd-k32` | 0.32 / 0.13 TiBW | 0.67 / 0.50 TiBW | 2.88 / 2.27 TiBW |
 
-- Testnet11 introduced a new farmer key, 33 bytes ECDSA vs old 48 BLS (`-f`, 66 chars vs old 96).
+:::note[Note]
+Testnet11 introduced a new farmer key, 33 bytes ECDSA vs old 48 BLS (`-f`, 66 chars vs old 96).
+:::
 
 Follow [`#mmx-general`](https://discord.com/channels/852982773963161650/925017012235817042) on Discord.
 

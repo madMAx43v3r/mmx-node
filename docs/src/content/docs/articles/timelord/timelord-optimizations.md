@@ -14,13 +14,15 @@ authorURL: https://github.com/voidxno
 
 Running an MMX TimeLord is optional (default is disabled). Not needed to run a fully functional node.
 
-Blockchain, as a whole, only need one active timelord to move forward. A few more, spread around, is preferred for redundancy and security.
+Blockchain, as a whole, only need one active timelord to move forward. A few more, spread around, is preferred for redundancy and security. Do not need to be fastest.
 
 If you want to contribute by running one, check [requirements](#requirements) below. Enable timelord in WebGUI, or set `true` in `config/local/timelord` file. Check that running, and speed, in NODE / LOG / TIMELORD tab in WebGUI. Probably lower than NODE / VDF Speed, unless you are the fastest timelord.
 
 No more is needed. Standard Linux compile and Windows binaries gives good performance for a timelord. Unless you want to optimize for fastest timelord, or the fun of it.
 
-_**IMPORTANT:**_ _Trying to be fastest TimeLord is not easy. YOU need to decide if worth it. **Overclock at your own risk, CPU can degrade**. Information shared here, is to **best of my knowledge as of Mar2025**._
+:::caution[Important]
+Trying to be fastest TimeLord is not easy. _YOU_ need to decide if worth it. **Overclock at your own risk, CPU can degrade**. Information shared here, is to **best of my knowledge as of Mar2025**.
+:::
 
 ## TLDR;
 
@@ -33,7 +35,9 @@ I want to run [fastest timelord](../../../articles/timelord/timelord-predictions
 * Have a GPU/iGPU verify VDF
 * [Clock 1x CPU core](#optimize-cpu-speed) as high as possible
 
-_NOTE: Optimize and **overclock at your own risk**._
+:::note[Note]
+Optimize and **overclock at your own risk**.
+:::
 
 ## Logic
 
@@ -74,7 +78,9 @@ You do not need to complicate it like below. Try to run a timelord. Measure spee
 
 Discuss and share in [`#mmx-timelord`](https://discord.com/channels/852982773963161650/1026219599311675493) channel on Discord. No requirement to divulge all your secrets. But a good place to get tips, or kickstart new ideas.
 
-_NOTE: Optimize and overclock at your own risk._
+:::note[Note]
+Optimize and **overclock at your own risk**.
+:::
 
 ### Test Environment
 
@@ -158,9 +164,11 @@ export LD=/usr/bin/ld.lld-19
 ./make_devel.sh
 ```
 
-_NOTE: You need to perform `export` statements in terminal environment before compile, or gcc14 will be used._<br>
-_NOTE: When you switch compiler, or compiler options. Always do `./clean_all.sh` before new compile._<br>
-_NOTE: You will get a lot of unused `-fmax-errors=1` warnings. Just ignore, or remove from compiler options._
+:::note[Note]
+You need to perform `export` statements in terminal environment before compile, or gcc14 will be used.\
+When you switch compiler, or compiler options. Always do `./clean_all.sh` before new compile.\
+You will get a lot of unused `-fmax-errors=1` warnings. Just ignore, or remove from compiler options.
+:::
 
 Default Clang19 compile (`./make_devel.sh`):
 
@@ -184,7 +192,9 @@ Some elements to experiment with (`./make_devel.sh`):
 
 There are others. Look up optimization in relevant compiler documentation.
 
-_NOTE: When you switch compiler, or compiler options. Always do `./clean_all.sh` before new compile._<br>
+:::note[Note]
+When you switch compiler, or compiler options. Always do `./clean_all.sh` before new compile.
+:::
 
 ### Optimize: Compiler options (AVX vs SSE4.2)
 
@@ -212,7 +222,9 @@ Small, but real jump from gcc14's **1.308** MH/s/0.1GHz:
 | :--- | :--- | :--- | :--- |
 | Ubuntu/gcc14 | 43.58 MH/s | /33 (3.3 GHz) | **1.320** MH/s/0.1GHz |
 
-_NOTE: For now, official releases will keep having SSE4.2 as baseline._
+:::note[Note]
+For now, official releases will keep having SSE4.2 as baseline.
+:::
 
 ### Optimize: Source code
 
@@ -269,7 +281,9 @@ Syntax becomes `isolcpus=8,9,10,11` and `taskset -cp 8-11 5122`. How OS process 
 
 At this stage we know what to expect for each 0.1 GHz, **1.351** MH/s. All testing we have observed have given linear increase, given CPU GHz. Now it is time to clock CPU core as high as possible.
 
-_NOTE: Optimize and **overclock at your own risk**._
+:::note[Note]
+Optimize and **overclock at your own risk**.
+:::
 
 First a boring observation. Many elements surrounding raw GHz of CPU core have been tested:
 

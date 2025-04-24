@@ -1,11 +1,12 @@
 ---
 title: Getting Started
 description: Getting started with MMX.
-i18nReady: true
 ---
+
 **[Install](../installation/) MMX-Node.**
 
 ## GUI
+
 The native GUI can be opened by searching for `MMX Node` (when installed via binary package).
 
 In case of compiling from source:
@@ -15,6 +16,7 @@ In case of compiling from source:
 ```
 
 ### WebGUI
+
 The WebGUI is available at: http://localhost:11380/gui/
 
 See `$MMX_HOME/PASSWD` or `mmx-node/PASSWD` for the login password, it is auto generated at compile time.
@@ -30,7 +32,9 @@ source ./activate.sh
 ```
 With a binary package install, just open a new terminal. On Windows search for `MMX CMD`.
 
-Note: A new wallet can also be created in the GUI.
+:::note[Note]
+A new wallet can also be created in the GUI.
+:::
 
 ### Creating a Wallet (offline)
 
@@ -59,7 +63,9 @@ To get the mnemonic seed from a wallet (with Node / Wallet already running):
 mmx wallet get seed [-j index]
 ```
 
-Note: A Node / Wallet restart is needed to pick up a new wallet.
+:::note[Note]
+A Node / Wallet restart is needed to pick up a new wallet.
+:::
 
 ### Creating a Wallet (online)
 
@@ -83,15 +89,18 @@ First perform the installation and setup steps, then:
 You can enable port forwarding on TCP port 11337, if you want to help out the network and accept incoming connections.
 
 ### Configuration
-Note: Capitalization of configuration files names matters. \
-Note: Any config changes require a node restart to become effective.
+
+:::note[Note]
+Capitalization of configuration files names matters.\
+Any config changes require a node restart to become effective.
+:::
 
 #### Custom Farmer Reward Address
 
 Create / Edit file `config/local/Farmer.json`:
 ```json
 {
-	"reward_addr": "mmx1..."
+  "reward_addr": "mmx1..."
 }
 ```
 By default the first address of the first wallet is used.
@@ -101,7 +110,7 @@ By default the first address of the first wallet is used.
 Create / Edit file `config/local/TimeLord.json`:
 ```json
 {
-	"reward_addr": "mmx1..."
+  "reward_addr": "mmx1..."
 }
 ```
 
@@ -110,11 +119,12 @@ Create / Edit file `config/local/TimeLord.json`:
 Create / Edit file `config/local/Router.json`:
 ```json
 {
-	"fixed_peers": ["192.168.0.123", "more"]
+  "fixed_peers": ["192.168.0.123", "more"]
 }
 ```
 
 #### Enable Timelord
+
 ```bash frame="none"
 echo true > config/local/timelord
 ```
@@ -124,8 +134,8 @@ echo true > config/local/timelord
 Create / Edit `config/local/cuda.json`:
 ```json
 {
-	"enable": true,
-	"devices": [0, 1, ...]
+  "enable": true,
+  "devices": [0, 1, ...]
 }
 ```
 Empty device list = use all devices. Device indices start at 0. CUDA is enabled by default for all devices.
@@ -140,7 +150,9 @@ Wallet files will end up in `MMX_HOME`, everything else in `mainnet` subfolder.
 When compiling from source, `MMX_HOME` is not set, so it defaults to the current directory.
 When installing a binary package `MMX_HOME` defaults to `~/.mmx/`.
 
-Note: A trailing `/` in the path is required.
+:::note[Note]
+A trailing `/` in the path is required.
+:::
 
 #### Custom data directory
 
@@ -150,7 +162,9 @@ export MMX_DATA=/mnt/mmx_data/
 ```
 A node restart is required. Optionally the `mainnet` folder can be copied to the new `MMX_DATA` path (after stopping the node), to avoid having to sync from scratch again.
 
-Note: A trailing `/` in the path is required.
+:::note[Note]
+A trailing `/` in the path is required.
+:::
 
 #### Reducing network traffic
 
@@ -158,8 +172,8 @@ If you have a slow internet connection or want to reduce traffic in general you 
 For example to run at the bare recommended minimum:
 ```json
 {
-	"num_peers_out": 4,
-	"max_connections": 4
+  "num_peers_out": 4,
+  "max_connections": 4
 }
 ```
 `num_peers_out` is the maximum number of outgoing connections to synced peers. `max_connections` is the maximum total number of connections.
@@ -182,7 +196,6 @@ screen -r node    # to attach again
 To re-sync starting from a specific height: `mmx node revert <height>`.
 This is needed if for some reason the node forked from the network. Just subtract 1000 blocks or more from the current height you are stuck at.
 
-
 ## Plotting
 
 **For an in depth guide on plotting, see** [Plotting Guide](../mmx-plotter/).
@@ -193,13 +206,15 @@ mmx wallet keys [-j index]
 ```
 The node needs to be running for this command to work. (`-j` to specify the index of a non-default wallet)
 
-Via GUI the farmer key can be found in Wallet > Info section, see `farmer_public_key`: 
+Via GUI the farmer key can be found in Wallet > Info section, see `farmer_public_key`:
 
 ![image](https://github.com/madMAx43v3r/mmx-node/assets/951738/7ebc8eaa-d0f9-43fd-bb87-0788a59b138a)
 
-Note: During plotting, the node does not need to be running (the plotter doesn't even need internet connection).
+:::note[Note]
+During plotting, the node does not need to be running (the plotter doesn't even need internet connection).
+:::
 
-Download CUDA plotter here: https://github.com/madMAx43v3r/mmx-binaries/tree/master/mmx-cuda-plotter
+Download CUDA plotter here: [mmx-binaries/mmx-cuda-plotter](https://github.com/madMAx43v3r/mmx-binaries/tree/master/mmx-cuda-plotter)
 
 There is no CPU plotter anymore for the new format, because it would be too inefficient. Any old Nvidia GPU will do, Maxwell or newer.
 
@@ -221,11 +236,11 @@ The minimum k-size for mainnet is k29, the maximum k-size is k32.
 To add a plot directory add the path to `plot_dirs` array in `config/local/Harvester.json`, for example:
 ```json
 {
-	"plot_dirs": [
-		"/mnt/drive1/plots/",
-		"/mnt/drive2/plots/",
-		"C:/windows/path/example/"
-	]
+  "plot_dirs": [
+    "/mnt/drive1/plots/",
+    "/mnt/drive2/plots/",
+    "C:/windows/path/example/"
+  ]
 }
 ```
 Directories are searched recursively by default. To disable recursive search you can set `recursive_search` to `false` in `Harvester.json`.

@@ -59,6 +59,7 @@ There is a project funding fee.
 It is a 1% fee on *transaction fees*, <ins>not block reward</ins>. To fund continued development of MMX. More nuances to how it works, read Project Funding section of [whitepaper](../../../articles/general/mmx-whitepaper/).
 
 ### Where can I find MMX branding assets?
+
 Go to [mmx-assets](https://github.com/madMAx43v3r/mmx-assets) repository. Basic info, logo and assets folders:
 - [`/logo/artwork/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/artwork/) _(artwork)_
 - [`/logo/assets/`](https://github.com/madMAx43v3r/mmx-assets/tree/master/logo/assets/) _(misc)_

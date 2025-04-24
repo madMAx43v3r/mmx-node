@@ -8,7 +8,7 @@ A blockchain written from scratch, doing most things differently.
 2. Variable supply will stabilize the price, key property of any currency
 3. Efficient implementation provides low transaction fees, at high throughput
 
-:::note
+:::note[Note]
 In-depth technical, read [whitepaper](../../../articles/general/mmx-whitepaper/). Light introduction, read [article](../../../articles/general/mmx-tldr/).
 :::
 
