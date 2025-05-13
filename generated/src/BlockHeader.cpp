@@ -21,7 +21,7 @@ namespace mmx {
 const uint32_t BlockHeader::SUPPORT_HARDFORK1;
 
 const vnx::Hash64 BlockHeader::VNX_TYPE_HASH(0xcaae941a2fc712a6ull);
-const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0xa96ccf5d216026e8ull);
+const vnx::Hash64 BlockHeader::VNX_CODE_HASH(0x421c044d8047d537ull);
 
 vnx::Hash64 BlockHeader::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -73,27 +73,28 @@ void BlockHeader::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[16], 16); vnx::accept(_visitor, vdf_reward_payout);
 	_visitor.type_field(_type_code->fields[17], 17); vnx::accept(_visitor, proof);
 	_visitor.type_field(_type_code->fields[18], 18); vnx::accept(_visitor, proof_hash);
-	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, challenge);
-	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, is_space_fork);
-	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, space_fork_len);
-	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, space_fork_proofs);
-	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, reward_amount);
-	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, reward_addr);
-	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, reward_contract);
-	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, reward_account);
-	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, reward_vote);
-	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, reward_vote_sum);
-	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, reward_vote_count);
-	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, base_reward);
-	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, project_addr);
-	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, static_cost);
-	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, total_cost);
-	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, tx_count);
-	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, tx_fees);
-	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, txfee_buffer);
-	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, tx_hash);
-	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, farmer_sig);
-	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, content_hash);
+	_visitor.type_field(_type_code->fields[19], 19); vnx::accept(_visitor, proof_chain);
+	_visitor.type_field(_type_code->fields[20], 20); vnx::accept(_visitor, challenge);
+	_visitor.type_field(_type_code->fields[21], 21); vnx::accept(_visitor, is_space_fork);
+	_visitor.type_field(_type_code->fields[22], 22); vnx::accept(_visitor, space_fork_len);
+	_visitor.type_field(_type_code->fields[23], 23); vnx::accept(_visitor, space_fork_proofs);
+	_visitor.type_field(_type_code->fields[24], 24); vnx::accept(_visitor, reward_amount);
+	_visitor.type_field(_type_code->fields[25], 25); vnx::accept(_visitor, reward_addr);
+	_visitor.type_field(_type_code->fields[26], 26); vnx::accept(_visitor, reward_contract);
+	_visitor.type_field(_type_code->fields[27], 27); vnx::accept(_visitor, reward_account);
+	_visitor.type_field(_type_code->fields[28], 28); vnx::accept(_visitor, reward_vote);
+	_visitor.type_field(_type_code->fields[29], 29); vnx::accept(_visitor, reward_vote_sum);
+	_visitor.type_field(_type_code->fields[30], 30); vnx::accept(_visitor, reward_vote_count);
+	_visitor.type_field(_type_code->fields[31], 31); vnx::accept(_visitor, base_reward);
+	_visitor.type_field(_type_code->fields[32], 32); vnx::accept(_visitor, project_addr);
+	_visitor.type_field(_type_code->fields[33], 33); vnx::accept(_visitor, static_cost);
+	_visitor.type_field(_type_code->fields[34], 34); vnx::accept(_visitor, total_cost);
+	_visitor.type_field(_type_code->fields[35], 35); vnx::accept(_visitor, tx_count);
+	_visitor.type_field(_type_code->fields[36], 36); vnx::accept(_visitor, tx_fees);
+	_visitor.type_field(_type_code->fields[37], 37); vnx::accept(_visitor, txfee_buffer);
+	_visitor.type_field(_type_code->fields[38], 38); vnx::accept(_visitor, tx_hash);
+	_visitor.type_field(_type_code->fields[39], 39); vnx::accept(_visitor, farmer_sig);
+	_visitor.type_field(_type_code->fields[40], 40); vnx::accept(_visitor, content_hash);
 	_visitor.type_end(*_type_code);
 }
 
@@ -118,6 +119,7 @@ void BlockHeader::write(std::ostream& _out) const {
 	_out << ", \"vdf_reward_payout\": "; vnx::write(_out, vdf_reward_payout);
 	_out << ", \"proof\": "; vnx::write(_out, proof);
 	_out << ", \"proof_hash\": "; vnx::write(_out, proof_hash);
+	_out << ", \"proof_chain\": "; vnx::write(_out, proof_chain);
 	_out << ", \"challenge\": "; vnx::write(_out, challenge);
 	_out << ", \"is_space_fork\": "; vnx::write(_out, is_space_fork);
 	_out << ", \"space_fork_len\": "; vnx::write(_out, space_fork_len);
@@ -170,6 +172,7 @@ vnx::Object BlockHeader::to_object() const {
 	_object["vdf_reward_payout"] = vdf_reward_payout;
 	_object["proof"] = proof;
 	_object["proof_hash"] = proof_hash;
+	_object["proof_chain"] = proof_chain;
 	_object["challenge"] = challenge;
 	_object["is_space_fork"] = is_space_fork;
 	_object["space_fork_len"] = space_fork_len;
@@ -218,6 +221,8 @@ void BlockHeader::from_object(const vnx::Object& _object) {
 			_entry.second.to(project_addr);
 		} else if(_entry.first == "proof") {
 			_entry.second.to(proof);
+		} else if(_entry.first == "proof_chain") {
+			_entry.second.to(proof_chain);
 		} else if(_entry.first == "proof_hash") {
 			_entry.second.to(proof_hash);
 		} else if(_entry.first == "reward_account") {
@@ -338,6 +343,9 @@ vnx::Variant BlockHeader::get_field(const std::string& _name) const {
 	if(_name == "proof_hash") {
 		return vnx::Variant(proof_hash);
 	}
+	if(_name == "proof_chain") {
+		return vnx::Variant(proof_chain);
+	}
 	if(_name == "challenge") {
 		return vnx::Variant(challenge);
 	}
@@ -443,6 +451,8 @@ void BlockHeader::set_field(const std::string& _name, const vnx::Variant& _value
 		_value.to(proof);
 	} else if(_name == "proof_hash") {
 		_value.to(proof_hash);
+	} else if(_name == "proof_chain") {
+		_value.to(proof_chain);
 	} else if(_name == "challenge") {
 		_value.to(challenge);
 	} else if(_name == "is_space_fork") {
@@ -512,12 +522,12 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.BlockHeader";
 	type_code->type_hash = vnx::Hash64(0xcaae941a2fc712a6ull);
-	type_code->code_hash = vnx::Hash64(0xa96ccf5d216026e8ull);
+	type_code->code_hash = vnx::Hash64(0x421c044d8047d537ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::BlockHeader);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<BlockHeader>(); };
-	type_code->fields.resize(40);
+	type_code->fields.resize(41);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -635,125 +645,131 @@ std::shared_ptr<vnx::TypeCode> BlockHeader::static_create_type_code() {
 	{
 		auto& field = type_code->fields[19];
 		field.is_extended = true;
-		field.name = "challenge";
+		field.name = "proof_chain";
 		field.code = {11, 32, 1};
 	}
 	{
 		auto& field = type_code->fields[20];
+		field.is_extended = true;
+		field.name = "challenge";
+		field.code = {11, 32, 1};
+	}
+	{
+		auto& field = type_code->fields[21];
 		field.data_size = 1;
 		field.name = "is_space_fork";
 		field.code = {31};
 	}
 	{
-		auto& field = type_code->fields[21];
+		auto& field = type_code->fields[22];
 		field.data_size = 4;
 		field.name = "space_fork_len";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[22];
+		auto& field = type_code->fields[23];
 		field.data_size = 4;
 		field.name = "space_fork_proofs";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[23];
+		auto& field = type_code->fields[24];
 		field.data_size = 8;
 		field.name = "reward_amount";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[24];
+		auto& field = type_code->fields[25];
 		field.is_extended = true;
 		field.name = "reward_addr";
 		field.code = {33, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[25];
+		auto& field = type_code->fields[26];
 		field.is_extended = true;
 		field.name = "reward_contract";
 		field.code = {33, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[26];
+		auto& field = type_code->fields[27];
 		field.is_extended = true;
 		field.name = "reward_account";
 		field.code = {33, 11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[27];
+		auto& field = type_code->fields[28];
 		field.data_size = 1;
 		field.name = "reward_vote";
 		field.code = {5};
 	}
 	{
-		auto& field = type_code->fields[28];
+		auto& field = type_code->fields[29];
 		field.data_size = 4;
 		field.name = "reward_vote_sum";
 		field.code = {7};
 	}
 	{
-		auto& field = type_code->fields[29];
+		auto& field = type_code->fields[30];
 		field.data_size = 4;
 		field.name = "reward_vote_count";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[30];
+		auto& field = type_code->fields[31];
 		field.data_size = 8;
 		field.name = "base_reward";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[31];
+		auto& field = type_code->fields[32];
 		field.is_extended = true;
 		field.name = "project_addr";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[32];
+		auto& field = type_code->fields[33];
 		field.data_size = 8;
 		field.name = "static_cost";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[33];
+		auto& field = type_code->fields[34];
 		field.data_size = 8;
 		field.name = "total_cost";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[34];
+		auto& field = type_code->fields[35];
 		field.data_size = 4;
 		field.name = "tx_count";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[35];
+		auto& field = type_code->fields[36];
 		field.data_size = 8;
 		field.name = "tx_fees";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[36];
+		auto& field = type_code->fields[37];
 		field.data_size = 8;
 		field.name = "txfee_buffer";
 		field.code = {4};
 	}
 	{
-		auto& field = type_code->fields[37];
+		auto& field = type_code->fields[38];
 		field.is_extended = true;
 		field.name = "tx_hash";
 		field.code = {11, 32, 1};
 	}
 	{
-		auto& field = type_code->fields[38];
+		auto& field = type_code->fields[39];
 		field.is_extended = true;
 		field.name = "farmer_sig";
 		field.code = {33, 11, 64, 1};
 	}
 	{
-		auto& field = type_code->fields[39];
+		auto& field = type_code->fields[40];
 		field.is_extended = true;
 		field.name = "content_hash";
 		field.code = {11, 32, 1};
@@ -837,43 +853,43 @@ void read(TypeInput& in, ::mmx::BlockHeader& value, const TypeCode* type_code, c
 		if(const auto* const _field = type_code->field_map[13]) {
 			vnx::read_value(_buf + _field->offset, value.vdf_iters, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[20]) {
+		if(const auto* const _field = type_code->field_map[21]) {
 			vnx::read_value(_buf + _field->offset, value.is_space_fork, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[21]) {
+		if(const auto* const _field = type_code->field_map[22]) {
 			vnx::read_value(_buf + _field->offset, value.space_fork_len, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[22]) {
+		if(const auto* const _field = type_code->field_map[23]) {
 			vnx::read_value(_buf + _field->offset, value.space_fork_proofs, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[23]) {
+		if(const auto* const _field = type_code->field_map[24]) {
 			vnx::read_value(_buf + _field->offset, value.reward_amount, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[27]) {
+		if(const auto* const _field = type_code->field_map[28]) {
 			vnx::read_value(_buf + _field->offset, value.reward_vote, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[28]) {
+		if(const auto* const _field = type_code->field_map[29]) {
 			vnx::read_value(_buf + _field->offset, value.reward_vote_sum, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[29]) {
+		if(const auto* const _field = type_code->field_map[30]) {
 			vnx::read_value(_buf + _field->offset, value.reward_vote_count, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[30]) {
+		if(const auto* const _field = type_code->field_map[31]) {
 			vnx::read_value(_buf + _field->offset, value.base_reward, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[32]) {
+		if(const auto* const _field = type_code->field_map[33]) {
 			vnx::read_value(_buf + _field->offset, value.static_cost, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[33]) {
+		if(const auto* const _field = type_code->field_map[34]) {
 			vnx::read_value(_buf + _field->offset, value.total_cost, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[34]) {
+		if(const auto* const _field = type_code->field_map[35]) {
 			vnx::read_value(_buf + _field->offset, value.tx_count, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[35]) {
+		if(const auto* const _field = type_code->field_map[36]) {
 			vnx::read_value(_buf + _field->offset, value.tx_fees, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[36]) {
+		if(const auto* const _field = type_code->field_map[37]) {
 			vnx::read_value(_buf + _field->offset, value.txfee_buffer, _field->code.data());
 		}
 	}
@@ -888,14 +904,15 @@ void read(TypeInput& in, ::mmx::BlockHeader& value, const TypeCode* type_code, c
 			case 16: vnx::read(in, value.vdf_reward_payout, type_code, _field->code.data()); break;
 			case 17: vnx::read(in, value.proof, type_code, _field->code.data()); break;
 			case 18: vnx::read(in, value.proof_hash, type_code, _field->code.data()); break;
-			case 19: vnx::read(in, value.challenge, type_code, _field->code.data()); break;
-			case 24: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
-			case 25: vnx::read(in, value.reward_contract, type_code, _field->code.data()); break;
-			case 26: vnx::read(in, value.reward_account, type_code, _field->code.data()); break;
-			case 31: vnx::read(in, value.project_addr, type_code, _field->code.data()); break;
-			case 37: vnx::read(in, value.tx_hash, type_code, _field->code.data()); break;
-			case 38: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
-			case 39: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
+			case 19: vnx::read(in, value.proof_chain, type_code, _field->code.data()); break;
+			case 20: vnx::read(in, value.challenge, type_code, _field->code.data()); break;
+			case 25: vnx::read(in, value.reward_addr, type_code, _field->code.data()); break;
+			case 26: vnx::read(in, value.reward_contract, type_code, _field->code.data()); break;
+			case 27: vnx::read(in, value.reward_account, type_code, _field->code.data()); break;
+			case 32: vnx::read(in, value.project_addr, type_code, _field->code.data()); break;
+			case 38: vnx::read(in, value.tx_hash, type_code, _field->code.data()); break;
+			case 39: vnx::read(in, value.farmer_sig, type_code, _field->code.data()); break;
+			case 40: vnx::read(in, value.content_hash, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -947,14 +964,15 @@ void write(TypeOutput& out, const ::mmx::BlockHeader& value, const TypeCode* typ
 	vnx::write(out, value.vdf_reward_payout, type_code, type_code->fields[16].code.data());
 	vnx::write(out, value.proof, type_code, type_code->fields[17].code.data());
 	vnx::write(out, value.proof_hash, type_code, type_code->fields[18].code.data());
-	vnx::write(out, value.challenge, type_code, type_code->fields[19].code.data());
-	vnx::write(out, value.reward_addr, type_code, type_code->fields[24].code.data());
-	vnx::write(out, value.reward_contract, type_code, type_code->fields[25].code.data());
-	vnx::write(out, value.reward_account, type_code, type_code->fields[26].code.data());
-	vnx::write(out, value.project_addr, type_code, type_code->fields[31].code.data());
-	vnx::write(out, value.tx_hash, type_code, type_code->fields[37].code.data());
-	vnx::write(out, value.farmer_sig, type_code, type_code->fields[38].code.data());
-	vnx::write(out, value.content_hash, type_code, type_code->fields[39].code.data());
+	vnx::write(out, value.proof_chain, type_code, type_code->fields[19].code.data());
+	vnx::write(out, value.challenge, type_code, type_code->fields[20].code.data());
+	vnx::write(out, value.reward_addr, type_code, type_code->fields[25].code.data());
+	vnx::write(out, value.reward_contract, type_code, type_code->fields[26].code.data());
+	vnx::write(out, value.reward_account, type_code, type_code->fields[27].code.data());
+	vnx::write(out, value.project_addr, type_code, type_code->fields[32].code.data());
+	vnx::write(out, value.tx_hash, type_code, type_code->fields[38].code.data());
+	vnx::write(out, value.farmer_sig, type_code, type_code->fields[39].code.data());
+	vnx::write(out, value.content_hash, type_code, type_code->fields[40].code.data());
 }
 
 void read(std::istream& in, ::mmx::BlockHeader& value) {

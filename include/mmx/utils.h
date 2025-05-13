@@ -113,6 +113,7 @@ bool check_plot_filter(
 inline
 bool check_space_fork(std::shared_ptr<const ChainParams> params, const hash_t& challenge, const hash_t& proof_hash)
 {
+	// TODO: starting with hardfork2 `proof_hash` is `proof_chain`
 	const hash_t infuse_hash(std::string("proof_infusion_check") + challenge + proof_hash);
 
 	return infuse_hash.to_uint256() % params->challenge_interval == 0;
@@ -120,19 +121,27 @@ bool check_space_fork(std::shared_ptr<const ChainParams> params, const hash_t& c
 
 inline
 hash_t calc_next_challenge(
-		std::shared_ptr<const ChainParams> params, const hash_t& challenge,
+		std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev,
 		const uint32_t vdf_count, const hash_t& proof_hash, bool& is_space_fork)
 {
-	hash_t out = challenge;
+	// TODO: starting with hardfork2 `proof_hash` is `proof_chain`
+	hash_t out = prev->challenge;
 	for(uint32_t i = 0; i < vdf_count; ++i) {
 		out = hash_t(std::string("next_challenge") + out);
 	}
-	is_space_fork = check_space_fork(params, out, proof_hash);
+	is_space_fork = check_space_fork(params, out, proof_hash)
+		|| (prev->height + 1 >= params->hardfork2_height && prev->space_fork_len + vdf_count > params->max_space_fork_len);
 
 	if(is_space_fork) {
 		out = hash_t(std::string("challenge_infusion") + out + proof_hash);
 	}
 	return out;
+}
+
+inline
+hash_t calc_proof_chain(const hash_t& chain_hash, const hash_t& proof_hash)
+{
+	return hash_t("proof_chain" + chain_hash + proof_hash);
 }
 
 inline

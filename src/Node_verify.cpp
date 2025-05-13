@@ -107,6 +107,11 @@ void Node::verify_proof(std::shared_ptr<const BlockHeader> block) const
 			prev = hash;
 		}
 	}
+	if(block->height >= params->hardfork2_height
+		&& block->proof_chain != calc_proof_chain(prev->proof_chain, block->proof_hash))
+	{
+		throw std::logic_error("invalid proof_chain");
+	}
 
 	uint64_t expected_iters = prev->vdf_iters;
 	for(uint32_t i = 0; i < block->vdf_count; ++i) {
@@ -124,7 +129,8 @@ void Node::verify_proof(std::shared_ptr<const BlockHeader> block) const
 
 	// need to verify challenge and space_diff update here
 	bool is_space_fork = false;
-	const auto next_challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, block->proof_hash, is_space_fork);
+	const auto next_challenge = calc_next_challenge(params, prev, block->vdf_count,
+			block->height < params->hardfork2_height ? block->proof_hash : block->proof_chain, is_space_fork);
 	if(block->challenge != next_challenge) {
 		throw std::logic_error("invalid challenge");
 	}
