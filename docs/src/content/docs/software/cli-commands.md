@@ -2,6 +2,7 @@
 title: CLI Commands
 description: MMX Node CLI Command Reference.
 ---
+
 When compiled from source:
 ```bash frame="none"
 cd mmx-node
@@ -11,8 +12,8 @@ With a binary package install, just open a new terminal. On Windows search for `
 
 To run any `mmx` commands (except `mmx wallet create`), the node needs to be running. See [Getting Started](../../guides/getting-started/) to read on how to start it.
 
-
 ## Node CLI
+
 To check on the node: `mmx node info`
 
 To check on the peers: `mmx node peers`
@@ -61,8 +62,8 @@ To force a re-sync: `mmx node sync`
 
 To replay/revert to an earlier block height: `mmx node revert <height>`
 
-
 ## Wallet CLI
+
 To show everything in a wallet: `mmx wallet show`
 
 To show wallet balances: `mmx wallet show balance`
@@ -87,10 +88,10 @@ To show recent wallet activity : `mmx wallet log -N <limit>`
 
 To transfer funds: `mmx wallet send <options>`
 ```
-	-a <amount to send, 1.23>
-	-r <tx fee multiplier>
-	-t <destination address>
-	-x <currency>
+  -a <amount to send, 1.23>
+  -r <tx fee multiplier>
+  -t <destination address>
+  -x <currency>
 ```
 To withdraw funds from a contract: `mmx wallet send_from -s <address>`
 
@@ -98,17 +99,17 @@ To transfer an NFT, same as sending with one satoshi: `mmx wallet transfer`
 
 To create an offer on the chain: `mmx wallet offer`
 ```
-	(-x / -z default MMX)
-	-a <bid amount> -b <ask amount>
-	-x <bid currency> -z <ask currency>
+  (-x / -z default MMX)
+  -a <bid amount> -b <ask amount>
+  -x <bid currency> -z <ask currency>
 ```
 To accept an offer: `mmx wallet accept <address>`
 
 To mint tokens: `mmx wallet mint`
 ```
-	-a <amount>
-	-t <destination>
-	-x <currency>
+  -a <amount>
+  -t <destination>
+  -x <currency>
 ```
 To deploy a contract: `mmx wallet deploy <file>`
 
@@ -116,9 +117,9 @@ To execute a smart contract function: `mmx wallet exec <function> <args> -x <con
 
 To deposit funds to a smart contract: `mmx wallet deposit <function> <args>`
 ```
-	-a <amount to send, 1.23>
-	-t <contract address>
-	-x <currency>
+  -a <amount to send, 1.23>
+  -t <contract address>
+  -x <currency>
 ```
 
 To create a new wallet (offline): `mmx wallet create -f [file_name] [--with-passphrase]`
@@ -139,8 +140,8 @@ To unlock a wallet with passphrase: `mmx wallet unlock`
 
 **To use a non-default wallet, specify `-j <index>` in combination with the above commands. See `mmx wallet accounts`.**
 
-
 ## Farmer CLI
+
 To check on the farm: `mmx farm info`
 
 To get total space in bytes: `mmx farm get space`
@@ -153,8 +154,8 @@ To remove plot directories: `mmx farm remove <dir>`
 
 To reload plots: `mmx farm reload`
 
-
 ## Harvester CLI
+
 To check on the harvester: `mmx harvester info`
 
 To get harvester space in bytes: `mmx harvester get space`
@@ -168,6 +169,7 @@ To remove plot directories: `mmx harvester remove <dir>`
 To reload plots: `mmx harvester reload`
 
 ## Pooling
+
 To use pooling first create a plot NFT, then create plots for it and finally join a pool.
 
 ### Create Plot NFT
@@ -181,8 +183,10 @@ mmx wallet plotnft create <name>
 After creation the plot NFT is in solo farming mode, which means block rewards will directly go to your Farmer reward address.
 See below how to join a pool.
 
-Note: Need to wait for the transaction to confirm before it will show up.\
-Note: This command takes the usual `-j <index>` argument to select a different wallet.
+:::note[Note]
+Need to wait for the transaction to confirm before it will show up.\
+This command takes the usual `-j <index>` argument to select a different wallet.
+:::
 
 ### Show Plot NFTs
 
@@ -192,7 +196,9 @@ mmx wallet plotnft show
 
 The address shown in `[...]` is the plot NFT contract address, which needs to be used for plotting.
 
-Note: This command takes the usual `-j <index>` argument to select a different wallet.
+:::note[Note]
+This command takes the usual `-j <index>` argument to select a different wallet.
+:::
 
 Example:
 ```bash frame="none"
@@ -206,6 +212,7 @@ mmx wallet plotnft show -j 1
 ```
 
 ### Join a Pool
+
 First you need to obtain the pool server URL for the pool, via their website or discord.
 
 ```bash frame="none"
@@ -214,7 +221,9 @@ mmx wallet plotnft join <pool_url> -x <plot_nft_address>
 
 `<plot_nft_address>` is the same as used for plotting, see `mmx wallet plotnft show`.
 
-Note: This command does not need any `-j` to select a wallet.
+:::note[Note]
+This command does not need any `-j` to select a wallet.
+:::
 
 Example:
 ```bash frame="none"
@@ -230,7 +239,9 @@ mmx wallet plotnft unlock -x <plot_nft_address>
 This will take 256 blocks to complete, to avoid cheating.
 Once complete the plot NFT is in solo farming mode, which means block rewards will directly go to your Farmer reward address.
 
-Note: This command does not need any `-j` to select a wallet.
+:::note[Note]
+This command does not need any `-j` to select a wallet.
+:::
 
 Example:
 ```bash frame="none"
@@ -238,9 +249,11 @@ mmx wallet plotnft unlock -x mmx1wknv8xxvzjafrswsrwr3l85y6d8nms2dz22dgxl2qpcyjp6
 ```
 
 ### Switch Pool
+
 First leave the current pool, wait 256 blocks for the plot NFT to unlock, then join the new pool as shown above.
 
 ### Show Info
+
 To see pool account: `mmx pool info`
 
 To see partials info: `mmx farm info`

@@ -2,6 +2,7 @@
 title: OpenCL Setup
 description: How to improve VDF verification speed.
 ---
+
 Using OpenCL is an optional but highly recommended feature for running MMX.\
 Offloading the verification of the VDF to a GPU or iGPU can increase both performance and power efficiency.
 
@@ -15,11 +16,14 @@ If OpenCL is not being utilized for VDF verification, you should see relatively 
 
 If you are running a Timelord (the default is off), you will see high CPU usage on at least one core in any case, even if your GPU is used for verification.
 
-Note: During initial blockchain sync, CPU usage can be high in any case.
+:::note[Note]
+During initial blockchain sync, CPU usage can be high in any case.
+:::
 
-Example Hardware and times spreadsheet: https://docs.google.com/spreadsheets/d/1NlK-dq7vCbX4NHzrOloyy4ylLW-fdXjuT8468__SF64/edit?pli=1&gid=618383284#gid=618383284
+Example Hardware and times [Google spreadsheet](https://docs.google.com/spreadsheets/d/1NlK-dq7vCbX4NHzrOloyy4ylLW-fdXjuT8468__SF64/edit?pli=1&gid=618383284#gid=618383284).
 
 ## OpenCL for Intel iGPUs
+
 Intel iGPUs prior to 11th gen are not sufficient for mainnet. Intel's desktop iGPUs have much fewer compute units than their mobile counterparts, so only the mobile SKUs in laptops/mini-PCs will be suitable for OpenCL VDF verify. 11th gen and newer desktop CPUs with the SHA instruction set can get decent performance on the CPU cores without OpenCL.
 
 Ubuntu 20.04, 21.04
@@ -34,10 +38,9 @@ sudo apt update
 sudo apt install intel-opencl-icd
 ```
 
-If the above doesn't work, you can try installing the latest drivers: https://dgpu-docs.intel.com/installation-guides/ubuntu/ubuntu-focal.html
+If the above doesn't work, you can try installing the latest drivers: [Intel GPU Ubuntu](https://dgpu-docs.intel.com/installation-guides/ubuntu/ubuntu-focal.html)
 
-
-Make sure your iGPU is not somehow disabled, like here for example: https://community.hetzner.com/tutorials/howto-enable-igpu
+Make sure your iGPU is not somehow disabled, like here for example: [Intel Enable iGPU](https://community.hetzner.com/tutorials/howto-enable-igpu)
 
 ## OpenCL for AMD GPUs
 
@@ -71,11 +74,11 @@ Arch:
 sudo pacman -S mesa mesa-utils opencl-mesa
 ```
 
-Windows: https://google.com/search?q=amd+graphics+driver+download
+Windows: [Google search AMD](https://google.com/search?q=amd+graphics+driver+download)
 
 ## OpenCL for Nvidia GPUs
 
-Due to the massive generational leap in compute performance, the Maxwell generation (900 series Geforce, M-series and some K-series Quadro) should be the minimum consideration for Nvidia GPUs. 
+Due to the massive generational leap in compute performance, the Maxwell generation (900 series Geforce, M-series and some K-series Quadro) should be the minimum consideration for Nvidia GPUs.
 
 Install Nvidia drivers:
 
@@ -89,6 +92,7 @@ Version 470 still works with older Kepler cards like a Quadro K2000.
 Use latest version for newer GPUs.
 
 ### Arch Linux
+
 ```bash frame="none"
 sudo pacman -S nvidia nvidia-utils opencl-nvidia
 ```

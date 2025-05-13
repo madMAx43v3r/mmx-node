@@ -12,7 +12,7 @@ Even though the wallet can have multiple accounts or addresses, only one is acti
 Returns the (currently active) wallet address in bech32 format.
 
 Keep in mind this address can be spoofed by the wallet.
-To make sure the user actually owns this address you need to have them sign a random message via `sign_message(msg)` and verify the signature. 
+To make sure the user actually owns this address you need to have them sign a random message via `sign_message(msg)` and verify the signature.
 
 ### get_public_key()
 
