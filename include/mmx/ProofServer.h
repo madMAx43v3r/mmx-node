@@ -32,6 +32,7 @@ private:
 	std::shared_ptr<vnx::ThreadPool> threads;
 
 	mutable uint32_t num_requests = 0;
+	mutable std::map<std::pair<int, int>, uint32_t> request_map;
 
 };
 

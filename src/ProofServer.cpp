@@ -27,9 +27,14 @@ void ProofServer::main()
 
 	set_timer_millis(60 * 1000, [this]() {
 		if(num_requests) {
-			log(INFO) << num_requests << " requests / min";
+			std::stringstream ss;
+			for(const auto& entry : request_map) {
+				ss << ", " << entry.second << " k" << entry.first.first << "-C" << entry.first.second;
+			}
+			log(INFO) << num_requests << " requests/min" << ss.str();
 		}
 		num_requests = 0;
+		request_map.clear();
 	});
 
 	Super::main();
@@ -63,6 +68,7 @@ void ProofServer::compute_async(
 	});
 
 	num_requests++;
+	request_map[std::make_pair(ksize, xbits)]++;
 }
 
 
