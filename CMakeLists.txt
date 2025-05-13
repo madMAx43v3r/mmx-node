@@ -203,6 +203,7 @@ add_library(mmx_modules SHARED
 	src/OCL_VDF.cpp
 	src/upnp_mapper.cpp
 	src/http_request.cpp
+	src/ProofServer.cpp
 )
 
 add_library(mmx_qtgui STATIC

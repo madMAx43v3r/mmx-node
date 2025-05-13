@@ -6,6 +6,7 @@
  */
 
 #include <mmx/Harvester.h>
+#include <mmx/pos/verify.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
@@ -51,10 +52,12 @@ int main(int argc, char** argv)
 	std::string node_url = ":11333";
 	std::string endpoint = "0.0.0.0";		// requires allow_remote
 	bool allow_remote = false;
+	bool remote_compute = false;
 
 	vnx::read_config("node", node_url);
 	vnx::read_config("endpoint", endpoint);
 	vnx::read_config("allow_remote", allow_remote);
+	vnx::read_config("remote_compute", remote_compute);
 
 #ifdef WITH_CUDA
 	vnx::log_info() << "CUDA available: yes";
@@ -68,6 +71,11 @@ int main(int argc, char** argv)
 	}
 	vnx::log_info() << "Remote service access is: " << (allow_remote ? "enabled on " + endpoint : "disabled");
 
+	if(remote_compute) {
+		mmx::pos::g_remote_compute = true;
+	}
+	vnx::log_info() << "Remote compute is: " << (remote_compute ? "enabled" : "disabled");
+
 	auto node = vnx::Endpoint::from_url(node_url);
 	if(auto tcp = std::dynamic_pointer_cast<const vnx::TcpEndpoint>(node)) {
 		if(!tcp->port || tcp->port == vnx::TcpEndpoint::default_port) {
@@ -77,7 +85,7 @@ int main(int argc, char** argv)
 		}
 	}
 	vnx::Handle<vnx::Proxy> proxy = new vnx::Proxy("Proxy", node);
-	proxy->forward_list = {"Node", "Farmer"};
+	proxy->forward_list = {"Node", "Farmer", "ProofServer"};
 
 	{
 		vnx::Handle<vnx::Server> module = new vnx::Server("Server", vnx::Endpoint::from_url(endpoint + ":11333"));

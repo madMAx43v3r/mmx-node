@@ -8,6 +8,7 @@
 #include <mmx/Farmer.h>
 #include <mmx/Wallet.h>
 #include <mmx/Harvester.h>
+#include <mmx/ProofServer.h>
 
 #include <vnx/vnx.h>
 #include <vnx/Proxy.h>
@@ -116,6 +117,10 @@ int main(int argc, char** argv)
 	{
 		vnx::Handle<mmx::Farmer> module = new mmx::Farmer("Farmer");
 		proxy->export_list.push_back(module->output_proofs);
+		module.start_detached();
+	}
+	{
+		vnx::Handle<mmx::ProofServer> module = new mmx::ProofServer("ProofServer");
 		module.start_detached();
 	}
 	if(with_harvester) {
