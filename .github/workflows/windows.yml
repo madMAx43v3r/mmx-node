@@ -103,7 +103,7 @@ jobs:
           format: html
           message: |
             MMX Node release ${{ steps.get_version.outputs.VERSION }}      
-            ${{ github.event.repository.url }}/releases/${{ steps.get_version.outputs.VERSION }}
+            https://github.com/${{ github.event.repo.name }}/releases/${{ steps.get_version.outputs.VERSION }}
             
             <a href="https://t.me/mmx_node">Telegram channel</a>
             <a href="https://t.me/mmx_node_chat">Telegram chat</a>
@@ -119,7 +119,7 @@ jobs:
           format: html
           message: |
             MMX Node release ${{ steps.get_version.outputs.VERSION }}      
-            ${{ github.event.repository.url }}/releases/${{ steps.get_version.outputs.VERSION }}
+            https://github.com/${{ github.event.repo.name }}/releases/${{ steps.get_version.outputs.VERSION }}
             
             <a href="https://t.me/mmx_node">Telegram channel</a>
             <a href="https://t.me/mmx_node_chat">Telegram chat</a>
@@ -132,4 +132,4 @@ jobs:
         with:
           args: |
             MMX Node release ${{ steps.get_version.outputs.VERSION }}      
-            ${{ github.event.repository.url }}/releases/${{ steps.get_version.outputs.VERSION }}          
+            https://github.com/${{ github.event.repo.name }}/releases/${{ steps.get_version.outputs.VERSION }}        
