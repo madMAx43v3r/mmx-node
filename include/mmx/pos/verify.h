@@ -10,13 +10,14 @@
 
 #include <mmx/hash_t.hpp>
 #include <mmx/pos/config.h>
+
 #include <vector>
 
 
 namespace mmx {
 namespace pos {
 
-void set_remote_compute(bool enable);
+MMX_POS_EXPORT void set_remote_compute(bool enable);
 
 hash_t calc_quality(const hash_t& challenge, const bytes_t<META_BYTES_OUT>& meta);
 
