@@ -11,7 +11,7 @@ namespace mmx {
 
 
 const vnx::Hash64 table_entry_t::VNX_TYPE_HASH(0x9bdbee40872de9a7ull);
-const vnx::Hash64 table_entry_t::VNX_CODE_HASH(0xf21173f3bbe05121ull);
+const vnx::Hash64 table_entry_t::VNX_CODE_HASH(0x7dfd2e2748a04e22ull);
 
 vnx::Hash64 table_entry_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -44,17 +44,17 @@ void table_entry_t::write(vnx::TypeOutput& _out, const vnx::TypeCode* _type_code
 void table_entry_t::accept(vnx::Visitor& _visitor) const {
 	const vnx::TypeCode* _type_code = mmx::vnx_native_type_code_table_entry_t;
 	_visitor.type_begin(*_type_code);
-	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, x);
-	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, y);
-	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, meta);
+	_visitor.type_field(_type_code->fields[0], 0); vnx::accept(_visitor, y);
+	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, meta);
+	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, x_values);
 	_visitor.type_end(*_type_code);
 }
 
 void table_entry_t::write(std::ostream& _out) const {
 	_out << "{";
-	_out << "\"x\": "; vnx::write(_out, x);
-	_out << ", \"y\": "; vnx::write(_out, y);
+	_out << "\"y\": "; vnx::write(_out, y);
 	_out << ", \"meta\": "; vnx::write(_out, meta);
+	_out << ", \"x_values\": "; vnx::write(_out, x_values);
 	_out << "}";
 }
 
@@ -67,9 +67,9 @@ void table_entry_t::read(std::istream& _in) {
 vnx::Object table_entry_t::to_object() const {
 	vnx::Object _object;
 	_object["__type"] = "mmx.table_entry_t";
-	_object["x"] = x;
 	_object["y"] = y;
 	_object["meta"] = meta;
+	_object["x_values"] = x_values;
 	return _object;
 }
 
@@ -77,8 +77,8 @@ void table_entry_t::from_object(const vnx::Object& _object) {
 	for(const auto& _entry : _object.field) {
 		if(_entry.first == "meta") {
 			_entry.second.to(meta);
-		} else if(_entry.first == "x") {
-			_entry.second.to(x);
+		} else if(_entry.first == "x_values") {
+			_entry.second.to(x_values);
 		} else if(_entry.first == "y") {
 			_entry.second.to(y);
 		}
@@ -86,25 +86,25 @@ void table_entry_t::from_object(const vnx::Object& _object) {
 }
 
 vnx::Variant table_entry_t::get_field(const std::string& _name) const {
-	if(_name == "x") {
-		return vnx::Variant(x);
-	}
 	if(_name == "y") {
 		return vnx::Variant(y);
 	}
 	if(_name == "meta") {
 		return vnx::Variant(meta);
 	}
+	if(_name == "x_values") {
+		return vnx::Variant(x_values);
+	}
 	return vnx::Variant();
 }
 
 void table_entry_t::set_field(const std::string& _name, const vnx::Variant& _value) {
-	if(_name == "x") {
-		_value.to(x);
-	} else if(_name == "y") {
+	if(_name == "y") {
 		_value.to(y);
 	} else if(_name == "meta") {
 		_value.to(meta);
+	} else if(_name == "x_values") {
+		_value.to(x_values);
 	}
 }
 
@@ -132,7 +132,7 @@ std::shared_ptr<vnx::TypeCode> table_entry_t::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.table_entry_t";
 	type_code->type_hash = vnx::Hash64(0x9bdbee40872de9a7ull);
-	type_code->code_hash = vnx::Hash64(0xf21173f3bbe05121ull);
+	type_code->code_hash = vnx::Hash64(0x7dfd2e2748a04e22ull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::table_entry_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<table_entry_t>>(); };
@@ -140,20 +140,20 @@ std::shared_ptr<vnx::TypeCode> table_entry_t::static_create_type_code() {
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
-		field.name = "x";
-		field.code = {3};
-	}
-	{
-		auto& field = type_code->fields[1];
-		field.data_size = 4;
 		field.name = "y";
 		field.code = {3};
 	}
 	{
-		auto& field = type_code->fields[2];
+		auto& field = type_code->fields[1];
 		field.data_size = 48;
 		field.name = "meta";
 		field.code = {11, 48, 1};
+	}
+	{
+		auto& field = type_code->fields[2];
+		field.is_extended = true;
+		field.name = "x_values";
+		field.code = {12, 3};
 	}
 	type_code->build();
 	return type_code;
@@ -199,17 +199,15 @@ void read(TypeInput& in, ::mmx::table_entry_t& value, const TypeCode* type_code,
 	const auto* const _buf = in.read(type_code->total_field_size);
 	if(type_code->is_matched) {
 		if(const auto* const _field = type_code->field_map[0]) {
-			vnx::read_value(_buf + _field->offset, value.x, _field->code.data());
-		}
-		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.y, _field->code.data());
 		}
-		if(const auto* const _field = type_code->field_map[2]) {
+		if(const auto* const _field = type_code->field_map[1]) {
 			vnx::read_value(_buf + _field->offset, value.meta, _field->code.data());
 		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
+			case 2: vnx::read(in, value.x_values, type_code, _field->code.data()); break;
 			default: vnx::skip(in, type_code, _field->code.data());
 		}
 	}
@@ -228,10 +226,10 @@ void write(TypeOutput& out, const ::mmx::table_entry_t& value, const TypeCode* t
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(56);
-	vnx::write_value(_buf + 0, value.x);
-	vnx::write_value(_buf + 4, value.y);
-	vnx::write_value(_buf + 8, value.meta);
+	auto* const _buf = out.write(52);
+	vnx::write_value(_buf + 0, value.y);
+	vnx::write_value(_buf + 4, value.meta);
+	vnx::write(out, value.x_values, type_code, type_code->fields[2].code.data());
 }
 
 void read(std::istream& in, ::mmx::table_entry_t& value) {

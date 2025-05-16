@@ -13,7 +13,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ProofServer_compute_return::VNX_TYPE_HASH(0x5b42e049360ce028ull);
-const vnx::Hash64 ProofServer_compute_return::VNX_CODE_HASH(0x2d90c5f793402a99ull);
+const vnx::Hash64 ProofServer_compute_return::VNX_CODE_HASH(0x14cf73a9abf3b403ull);
 
 vnx::Hash64 ProofServer_compute_return::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -114,7 +114,7 @@ std::shared_ptr<vnx::TypeCode> ProofServer_compute_return::static_create_type_co
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ProofServer.compute.return";
 	type_code->type_hash = vnx::Hash64(0x5b42e049360ce028ull);
-	type_code->code_hash = vnx::Hash64(0x2d90c5f793402a99ull);
+	type_code->code_hash = vnx::Hash64(0x14cf73a9abf3b403ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->is_return = true;

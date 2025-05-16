@@ -13,9 +13,9 @@ namespace mmx {
 struct MMX_EXPORT table_entry_t : vnx::struct_t {
 	
 	
-	uint32_t x = 0;
 	uint32_t y = 0;
 	std::array<uint8_t, 48> meta = {};
+	std::vector<uint32_t> x_values;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -58,9 +58,9 @@ struct MMX_EXPORT table_entry_t : vnx::struct_t {
 template<typename T>
 void table_entry_t::accept_generic(T& _visitor) const {
 	_visitor.template type_begin<table_entry_t>(3);
-	_visitor.type_field("x", 0); _visitor.accept(x);
-	_visitor.type_field("y", 1); _visitor.accept(y);
-	_visitor.type_field("meta", 2); _visitor.accept(meta);
+	_visitor.type_field("y", 0); _visitor.accept(y);
+	_visitor.type_field("meta", 1); _visitor.accept(meta);
+	_visitor.type_field("x_values", 2); _visitor.accept(x_values);
 	_visitor.template type_end<table_entry_t>(3);
 }
 
