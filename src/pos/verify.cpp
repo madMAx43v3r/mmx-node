@@ -100,7 +100,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 
 	if(g_remote_compute)
 	{
-		thread_local std::unique_ptr<ProofServerClient> server;
+		static thread_local std::unique_ptr<ProofServerClient> server;
 		if(!server) {
 			server = std::make_unique<ProofServerClient>("ProofServer");
 		}
