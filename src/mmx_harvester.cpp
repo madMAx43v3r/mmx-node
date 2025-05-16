@@ -71,9 +71,7 @@ int main(int argc, char** argv)
 	}
 	vnx::log_info() << "Remote service access is: " << (allow_remote ? "enabled on " + endpoint : "disabled");
 
-	if(remote_compute) {
-		mmx::pos::g_remote_compute = true;
-	}
+	mmx::pos::set_remote_compute(remote_compute);
 	vnx::log_info() << "Remote compute is: " << (remote_compute ? "enabled" : "disabled");
 
 	auto node = vnx::Endpoint::from_url(node_url);

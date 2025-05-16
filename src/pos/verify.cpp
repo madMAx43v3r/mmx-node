@@ -17,6 +17,7 @@
 #include <mmx/ProofServerClient.hxx>
 
 #include <set>
+#include <atomic>
 #include <algorithm>
 #include <vnx/vnx.h>
 #include <vnx/ThreadPool.h>
@@ -30,8 +31,13 @@ static constexpr uint32_t MEM_SIZE = 32 * 32;
 static std::mutex g_mutex;
 static std::shared_ptr<vnx::ThreadPool> g_threads;
 
-bool g_remote_compute = false;
+std::atomic_bool g_remote_compute = false;
 
+
+void set_remote_compute(bool enable)
+{
+	g_remote_compute = enable;
+}
 
 void compute_f1(std::vector<uint32_t>* X_out,
 				std::vector<uint32_t>& Y_out,
