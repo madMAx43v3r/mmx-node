@@ -2,8 +2,8 @@ package mmx;
 
 struct table_entry_t {
 	
-	uint32 x;
 	uint32 y;
 	uint8[48] meta;
+	vector<uint32> x_values;
 	
 }

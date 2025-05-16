@@ -53,12 +53,18 @@ void ProofServer::compute_async(
 			const auto res = pos::compute(X_values, &X_out, id, ksize, xbits);
 
 			std::vector<table_entry_t> out;
-			for(size_t i = 0; i < res.size(); ++i) {
-				table_entry_t tmp;
-				tmp.x = X_out[i];
-				tmp.y = res[i].first;
-				tmp.meta = res[i].second.bytes;
-				out.push_back(tmp);
+			if(res.size()) {
+				const auto x_count = X_out.size() / res.size();
+
+				for(size_t i = 0; i < res.size(); ++i) {
+					table_entry_t tmp;
+					tmp.y = res[i].first;
+					tmp.meta = res[i].second.bytes;
+					for(size_t k = 0; k < x_count; ++k) {
+						tmp.x_values.push_back(X_out[i * x_count + k]);
+					}
+					out.push_back(tmp);
+				}
 			}
 			compute_async_return(request_id, out);
 		}

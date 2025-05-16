@@ -112,7 +112,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 			const auto res = server->compute(X_values, id, ksize, xbits);
 			for(const auto& entry : res) {
 				if(X_out) {
-					X_out->push_back(entry.x);
+					X_out->insert(X_out->end(), entry.x_values.begin(), entry.x_values.end());
 				}
 				out.emplace_back(entry.y, entry.meta);
 			}
