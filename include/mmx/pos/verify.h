@@ -17,7 +17,7 @@
 namespace mmx {
 namespace pos {
 
-MMX_POS_EXPORT void set_remote_compute(bool enable);
+void set_remote_compute(bool enable);
 
 hash_t calc_quality(const hash_t& challenge, const bytes_t<META_BYTES_OUT>& meta);
 

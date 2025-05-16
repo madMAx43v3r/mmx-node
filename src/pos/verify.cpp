@@ -31,12 +31,13 @@ static constexpr uint32_t MEM_SIZE = 32 * 32;
 static std::mutex g_mutex;
 static std::shared_ptr<vnx::ThreadPool> g_threads;
 
-std::atomic_bool g_remote_compute = false;
+static bool have_init = false;
+static bool remote_compute = false;
 
 
 void set_remote_compute(bool enable)
 {
-	g_remote_compute = enable;
+	remote_compute = enable;
 }
 
 void compute_f1(std::vector<uint32_t>* X_out,
@@ -98,7 +99,15 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		throw std::logic_error("invalid xbits");
 	}
 
-	if(g_remote_compute)
+	if(!have_init)
+	{
+		std::lock_guard<std::mutex> lock(g_mutex);
+		if(!have_init) {
+			have_init = true;
+			vnx::read_config("mmx_pos.remote_compute", remote_compute);
+		}
+	}
+	if(remote_compute)
 	{
 		static thread_local std::unique_ptr<ProofServerClient> server;
 		if(!server) {

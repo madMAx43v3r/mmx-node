@@ -11,14 +11,6 @@
 #include <array>
 #include <cstdint>
 
-#ifdef MMX_POS_EXPORT_ENABLE
-#include <mmx_pos_export.h>
-#else
-#ifndef MMX_POS_EXPORT
-#define MMX_POS_EXPORT
-#endif
-#endif
-
 
 namespace mmx {
 namespace pos {
