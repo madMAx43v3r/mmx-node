@@ -1,0 +1,15 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "hossaini.quasar-intellisense",
+    "vitest.explorer",
+    "sdras.vue-vscode-snippets",
+    "vue.volar",
+    "gruntfuggly.todo-tree",
+    "streetsidesoftware.code-spell-checker",
+    "formulahendry.auto-rename-tag",
+    "fractalbrew.backticks",
+    "lokalise.i18n-ally"
+  ]
+}
