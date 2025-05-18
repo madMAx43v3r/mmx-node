@@ -241,22 +241,22 @@ public:
 	hardware_error_t(const std::string& msg) : runtime_error(msg) {}
 };
 
-std::mutex g_mutex;
-std::condition_variable g_result_signal;
-std::condition_variable g_request_signal;
+static std::mutex g_mutex;
+static std::condition_variable g_result_signal;
+static std::condition_variable g_request_signal;
 
-std::atomic<bool> do_run {true};
-std::atomic<bool> have_init {false};
-std::atomic<int> have_cuda {0};
-std::vector<cuda_device_t> g_device_list;
-std::vector<std::shared_ptr<device_t>> g_devices;
+static std::atomic<bool> do_run {true};
+static std::atomic<bool> have_init {false};
+static std::atomic<int> have_cuda {0};
+static std::vector<cuda_device_t> g_device_list;
+static std::vector<std::shared_ptr<device_t>> g_devices;
 
-std::atomic<uint64_t> next_request_id {1};
-std::deque<std::tuple<int, int>> g_order_queue;
-std::unordered_map<uint64_t, std::shared_ptr<const cuda_result_t>> g_result_map;
-std::map<std::tuple<int, int>, std::queue<std::shared_ptr<request_t>>> g_wait_map;
+static std::atomic<uint64_t> next_request_id {1};
+static std::deque<std::tuple<int, int>> g_order_queue;
+static std::unordered_map<uint64_t, std::shared_ptr<const cuda_result_t>> g_result_map;
+static std::map<std::tuple<int, int>, std::queue<std::shared_ptr<request_t>>> g_wait_map;
 
-std::shared_ptr<vnx::ThreadPool> g_cpu_threads;
+static std::shared_ptr<vnx::ThreadPool> g_cpu_threads;
 
 
 inline void cuda_check(const cudaError_t& code) {
