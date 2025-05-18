@@ -17,12 +17,22 @@ if(MSVC)
 	set(MSVC_DEBUG_OPTIONS /Od /FS)
 	set(MSVC_RELEASE_OPTIONS /W1 /O2)
 
-	add_compile_options( 
+	add_compile_options(
 		"$<$<CONFIG:Debug>:${MSVC_DEBUG_OPTIONS}>"
 		"$<$<CONFIG:RelWithDebInfo>:${MSVC_RELEASE_OPTIONS}>"
 		"$<$<CONFIG:Release>:${MSVC_RELEASE_OPTIONS}>"
 		"$<$<CONFIG:MinSizeRel>:${MSVC_RELEASE_OPTIONS}>"
-    )
+	)
+
+	set(MSVC_DEBUG_LINK_OPTIONS /NODEFAULTLIB:LIBCMT)
+	set(MSVC_RELEASE_LINK_OPTIONS /NODEFAULTLIB:LIBCMT)
+
+	add_link_options(
+		"$<$<CONFIG:Debug>:${MSVC_DEBUG_LINK_OPTIONS}>"
+		"$<$<CONFIG:RelWithDebInfo>:${MSVC_RELEASE_LINK_OPTIONS}>"
+		"$<$<CONFIG:Release>:${MSVC_RELEASE_LINK_OPTIONS}>"
+		"$<$<CONFIG:MinSizeRel>:${MSVC_RELEASE_LINK_OPTIONS}>"
+	)
 	
 	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
 else()
@@ -262,12 +272,8 @@ if(MSVC)
 	
 	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
-	
 	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
-
 	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_pos PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
