@@ -186,7 +186,7 @@ add_library(mmx_pos_verify STATIC
 	src/pos/verify_full.cpp
 )
 
-add_library(mmx_modules SHARED
+add_library(mmx_modules STATIC
 	src/TimeLord.cpp
 	src/Node.cpp
 	src/Node_api.cpp
