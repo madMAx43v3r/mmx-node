@@ -14,10 +14,12 @@
 #include <fstream>
 #include <mutex>
 
-#ifdef _MSC_VER
+#ifdef MMX_DB_EXPORT_ENABLE
 #include <mmx_db_export.h>
 #else
+#ifndef MMX_DB_EXPORT
 #define MMX_DB_EXPORT
+#endif
 #endif
 
 
