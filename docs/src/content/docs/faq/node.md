@@ -31,6 +31,24 @@ Check if [timelord](#how-do-i-disable-timelord) has been enabled by accident.
 
 Timelord should be [disabled by default](../../../faq/timelord/). You can check if it is enabled by looking under SETTINGS in WebGUI. Or check the `config/local/timelord` file.
 
+### What is VDF height?
+
+I see two different heights for blocks, both in logs and block explorer. Which is right?
+
+Both. Each block in MMX has two heights:
+- Block `Height` (always the lower value, Network Height)
+- `VDF Height` (always the higher value)
+
+In nearly all cases, block height is what is relevant for normal usage.
+
+A block is prepared by timelord every 10 sec, and given an VDF height.
+
+About 2% of the time a non-TX block is the result, because of no winning proof. In that case VDF height still increases, but block height stands still. Chain will still adjust itself to 8640 blocks each day, with ~10 sec block interval.
+
+Can look at block height as the 'public facing' height, while VDF height is an 'internal clock' height.
+
+[Time Calculator](../../../tools/time-calculator/) can help show the relation, and lookup or estimate time and date for heights.
+
 ### Warning when using mmx CLI command
 
 I'm getting a warning when trying one of the `mmx ...` commands:\
