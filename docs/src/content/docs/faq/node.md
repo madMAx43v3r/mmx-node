@@ -47,6 +47,8 @@ About 2% of the time a non-TX block is the result, because of no winning proof. 
 
 Can look at block height as the 'public facing' height, while VDF height is an 'internal clock' height.
 
+One example of VDF height usage is FARMER / PROOF tab. You submit proofs that passed plot filter to an VDF height. Block height is unknown at this point. It will depend on potential non-TX blocks before it becomes a block in chain. If your proof [was best](../../../faq/node/#a-plot-with-lower-score-won-the-block), it will be listed with block height under FARMER / BLOCKS tab. Can be tricky to correlate at times.
+
 [Time Calculator](../../../tools/time-calculator/) can help show the relation, and lookup or estimate time and date for heights.
 
 ### Warning when using mmx CLI command
