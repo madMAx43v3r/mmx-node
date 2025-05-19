@@ -17,12 +17,22 @@ if(MSVC)
 	set(MSVC_DEBUG_OPTIONS /Od /FS)
 	set(MSVC_RELEASE_OPTIONS /W1 /O2)
 
-	add_compile_options( 
+	add_compile_options(
 		"$<$<CONFIG:Debug>:${MSVC_DEBUG_OPTIONS}>"
 		"$<$<CONFIG:RelWithDebInfo>:${MSVC_RELEASE_OPTIONS}>"
 		"$<$<CONFIG:Release>:${MSVC_RELEASE_OPTIONS}>"
 		"$<$<CONFIG:MinSizeRel>:${MSVC_RELEASE_OPTIONS}>"
-    )
+	)
+
+	set(MSVC_DEBUG_LINK_OPTIONS /NODEFAULTLIB:LIBCMT)
+	set(MSVC_RELEASE_LINK_OPTIONS /NODEFAULTLIB:LIBCMT)
+
+	add_link_options(
+		"$<$<CONFIG:Debug>:${MSVC_DEBUG_LINK_OPTIONS}>"
+		"$<$<CONFIG:RelWithDebInfo>:${MSVC_RELEASE_LINK_OPTIONS}>"
+		"$<$<CONFIG:Release>:${MSVC_RELEASE_LINK_OPTIONS}>"
+		"$<$<CONFIG:MinSizeRel>:${MSVC_RELEASE_LINK_OPTIONS}>"
+	)
 	
 	find_library(secp256k1_LIBRARY secp256k1 HINTS ${secp256k1_LIBRARIES})
 else()
@@ -255,26 +265,12 @@ if(MSVC)
 	set_target_properties(vnx_base_static PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
 
 	GENERATE_EXPORT_HEADER(mmx_iface)
-	GENERATE_EXPORT_HEADER(mmx_modules)
-	GENERATE_EXPORT_HEADER(mmx_db)
-	GENERATE_EXPORT_HEADER(mmx_pos)
-	GENERATE_EXPORT_HEADER(mmx_vm)
 	
 	set_target_properties(mmx_iface PROPERTIES ENABLE_EXPORTS 1)
 	set_target_properties(mmx_iface PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	set_target_properties(mmx_iface PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
-	
-	set_target_properties(mmx_modules PROPERTIES ENABLE_EXPORTS 1)
-	set_target_properties(mmx_modules PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	set_target_properties(mmx_modules PROPERTIES LINK_OPTIONS "/NODEFAULTLIB:LIBCMT")
-
-	set_target_properties(mmx_vm PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	set_target_properties(mmx_pos PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-	set_target_properties(mmx_db PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
 	# Workaround for:
 	#	LNK1189: library limit of 65535 objects exceeded
-	#	D8040: error creating or communicating with child process
 	set(MSVC_MMX_IFACE_DEBUG_OPTIONS /Ob1)
 	target_compile_options(mmx_iface PRIVATE
 		"$<$<CONFIG:Debug>:${MSVC_MMX_IFACE_DEBUG_OPTIONS}>"

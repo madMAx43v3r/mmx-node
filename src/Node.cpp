@@ -465,7 +465,7 @@ void Node::handle(std::shared_ptr<const VDF_Point> value)
 	vdf_index.emplace(vdf_iters, value);
 	vdf_tree.emplace(value->output, value);
 
-	log(INFO) << "\U0001F552 Received VDF point for height " << value->vdf_height;
+	log(INFO) << u8"\U0001F552 Received VDF point for height " << value->vdf_height;
 
 	trigger_update();
 }
