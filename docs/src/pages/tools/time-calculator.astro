@@ -1,0 +1,427 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
+---
+
+<!--*
+    * File: time-calculator.astro
+    *
+    * Source: https://github.com/madMAx43v3r/mmx-node/docs/src/pages/tools/time-calculator.astro
+    * URL: https://docs.mmx.network/tools/time-calculator/
+    *
+    *-->
+
+<!-- Starlight design for Astro page -->
+
+<StarlightPage
+  frontmatter={{
+    title: 'Time Calculator',
+    description: 'Simple calculator to lookup or estimate blockchain heights, time and date.',
+  }}
+  headings={[
+    { depth: 3, slug: 'lookup-height', text: 'Lookup height' },
+    { depth: 3, slug: 'estimate-height', text: 'Estimate height' },
+  ]}
+>
+
+<!-- HTML content -->
+
+<p>
+  Simple calculator to lookup or estimate heights, time and date.<br>
+  Read this <a href="../../../faq/node/#what-is-vdf-height">FAQ</a> entry for understanding of height vs. VDF height.
+</p>
+
+<AnchorHeading level="3" id="lookup-height">Lookup height</AnchorHeading>
+
+<p><a href="../../../software/rpc_protocol/">RPC</a> query data from public blockchain <a href="https://explore.mmx.network/">explorer</a>.</p>
+
+<table>
+  <tr>
+    <td align="left">Height</td>
+    <td align="left">
+      <input type="text" size="15" id="lookupheight">
+      <button type="button" id="lookupbuttonheight">Query</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">VDF Height</td>
+    <td align="left"><span id="lookupvdfheight"></span></td>
+  </tr>
+  <tr>
+    <td align="left">Timestamp</td>
+    <td align="left"><span id="lookuptimestamp"></span></td>
+  </tr>
+  <tr>
+    <td align="left">Local Time</td>
+    <td align="left"><span id="lookuplocaltime"></span></td>
+  </tr>
+  <tr>
+    <td align="left">UTC Time</td>
+    <td align="left"><span id="lookuputctime"></span></td>
+  </tr>
+  <tr>
+    <td align="left">Discord</td>
+    <td align="left"><span id="lookupdiscord"></span></td>
+  </tr>
+</table>
+
+<AnchorHeading level="3" id="calculate-height">Estimate height</AnchorHeading>
+
+<p>Estimate result for a given height or timestamp.</p>
+
+<table>
+  <tr>
+    <td align="left">Height</td>
+    <td align="left">
+      <input type="text" size="15" id="estimateheight">
+      <button type="button" id="estimatebuttonheight">Estimate</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">VDF Height</td>
+    <td align="left">
+      <input type="text" size="15" id="estimatevdfheight">
+      <button type="button" id="estimatebuttonvdfheight">Estimate</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">Timestamp</td>
+    <td align="left">
+      <input type="text" size="15" id="estimatetimestamp">
+      <button type="button" id="estimatebuttontimestamp">Estimate</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">Local Time</td>
+    <td align="left"><span id="estimatelocaltime"></span></td>
+  </tr>
+  <tr>
+    <td align="left">UTC Time</td>
+    <td align="left"><span id="estimateutctime"></span></td>
+  </tr>
+  <tr>
+    <td align="left">Discord</td>
+    <td align="left"><span id="estimatediscord"></span></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Estimating with data from height <span id="estpheight"></span></summary>
+  <p>
+    VDF height: <span id="estpvdfheight"></span><br>
+    Timestamp: <span id="estptimestamp"></span><br>
+    <span id="estpnontx"></span>% non-TX heights, previous 500k<br>
+    <span id="estp10sdev"></span>% 10 sec deviation, previous 500k
+  </p>
+</details>
+<button type="button" id="estimateupdatebutton">Query updated estimate data</button>
+
+</StarlightPage>
+
+<!-- JavaScript code -->
+
+<script>
+
+var lookupxmlhttp = new XMLHttpRequest();
+var estimateupdatexmlhttp = new XMLHttpRequest();
+var urlblock = "https://rpc.mmx.network/block?height=";
+var urlnode = "https://rpc.mmx.network/node/info";
+
+var lookupfuncstage = 0;
+var estimatefuncstage = 0;
+var estimateupdatefuncstage = 0;
+
+var estpQToHeight = 1000000;
+var estpQToVDFHeight = 1019055;
+var estpQToTimestamp = 1747121045546;
+
+var estpQFromHeight = 500000;
+var estpQFromVDFHeight = 509337;
+var estpQFromTimestamp = 1742121511863;
+
+var estpHeight = 0;
+var estpVDFHeight = 0;
+var estpTimestamp = 0;
+var estpNonTX = 0;
+var estp10sDev = 0;
+
+var localeFormat = "en-GB";
+var localeOptLocal = { hour12: false, weekday: "short", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZoneName: "short" };
+var localeOptUTC = { timeZone: "UTC", hour12: false, weekday: "short", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZoneName: "short" };
+
+window.onload = function(){ initfunc(); };
+
+function initfunc()
+{
+ document.getElementById("lookupheight").addEventListener("keydown", function(){ if(event.key === "Enter"){ lookupfunc(); } } );
+ document.getElementById("lookupbuttonheight").addEventListener("click", function(){ lookupfunc(); } );
+
+ document.getElementById("estimateheight").addEventListener("keydown", function(){ if(event.key === "Enter"){ estimatefunc("height"); } } );
+ document.getElementById("estimatebuttonheight").addEventListener("click", function(){ estimatefunc("height"); } );
+ document.getElementById("estimatevdfheight").addEventListener("keydown", function(){ if(event.key === "Enter"){ estimatefunc("vdfheight"); } } );
+ document.getElementById("estimatebuttonvdfheight").addEventListener("click", function(){ estimatefunc("vdfheight"); } );
+ document.getElementById("estimatetimestamp").addEventListener("keydown", function(){ if(event.key === "Enter"){ estimatefunc("timestamp"); } } );
+ document.getElementById("estimatebuttontimestamp").addEventListener("click", function(){ estimatefunc("timestamp"); } );
+
+ document.getElementById("estimateupdatebutton").addEventListener("click", function(){ estimateupdatefunc(); } );
+
+ estpHeight = estpQToHeight;
+ estpVDFHeight = estpQToVDFHeight;
+ estpTimestamp = estpQToTimestamp;
+ estpNonTX = (estpQToVDFHeight - estpQFromVDFHeight) / (estpQToHeight - estpQFromHeight);
+ estp10sDev = (estpQToTimestamp - estpQFromTimestamp) / ((estpQToHeight - estpQFromHeight) * 10 * 1000);
+
+ document.getElementById("estpheight").innerHTML = estpHeight;
+ document.getElementById("estpvdfheight").innerHTML = estpVDFHeight;
+ document.getElementById("estptimestamp").innerHTML = estpTimestamp;
+ document.getElementById("estpnontx").innerHTML = ((estpNonTX - 1) * 100).toFixed(4);
+ document.getElementById("estp10sdev").innerHTML = ((estp10sDev - 1) * 100).toFixed(4);
+
+ lookupxmlhttp.onreadystatechange = function(){ lookupfunc(true, this.readyState, this.responseText, this.status); };
+ estimateupdatexmlhttp.onreadystatechange = function(){ estimateupdatefunc(true, this.readyState, this.responseText, this.status); };
+}
+
+function lookupfunc(callback = false, readystate = null, responsetext = null, status = null)
+{
+ if(lookupfuncstage > 0 && callback == false) return;
+
+ if(lookupfuncstage <= 0){ // Stage0: Query button/enter pressed
+   lookupfuncstage = 1;
+   document.getElementById("lookupbuttonheight").disabled = true;
+
+   var wasempty = (document.getElementById("lookupheight").value == "") ? true : false;
+   var lookupheight = Number(document.getElementById("lookupheight").value);
+   if(lookupheight !== lookupheight) lookupheight = 0;
+   if(lookupheight < 0) lookupheight = 0;
+
+   if(!wasempty) document.getElementById("lookupheight").value = lookupheight;
+   document.getElementById("lookupvdfheight").innerHTML = "...";
+   document.getElementById("lookuptimestamp").innerHTML = "...";
+   document.getElementById("lookuplocaltime").innerHTML = "...";
+   document.getElementById("lookuputctime").innerHTML = "...";
+   document.getElementById("lookupdiscord").innerHTML = "...";
+
+   if(wasempty){ // Input field empty, query latest height
+     lookupfuncstage = 1;
+     lookupxmlhttp.open("GET", urlnode, true);
+     lookupxmlhttp.send();
+     }
+   else{ // Input field value, query that height
+     lookupfuncstage = 2;
+     lookupxmlhttp.open("GET", urlblock + lookupheight, true);
+     lookupxmlhttp.send();
+     }
+
+   return;
+   }
+
+ else if(lookupfuncstage == 1){ // Stage1: Callback with latest height
+   if(readystate == 4){
+     var jsondata = (status == 200) ? JSON.parse(responsetext) : null;
+     var latestheight = (status == 200) ? jsondata["height"] : 0;
+
+     document.getElementById("lookupheight").value = latestheight;
+     var lookupheight = Number(document.getElementById("lookupheight").value);
+     if(lookupheight !== lookupheight) lookupheight = 0;
+     if(lookupheight < 0) lookupheight = 0;
+     document.getElementById("lookupheight").value = lookupheight;
+
+     lookupfuncstage = 2;
+     lookupxmlhttp.open("GET", urlblock + lookupheight, true);
+     lookupxmlhttp.send();
+     }
+   return;
+   }
+
+ else if(lookupfuncstage == 2){ // Stage2: Callback with height data
+   if(readystate == 4){
+     var jsondata = (status == 200) ? JSON.parse(responsetext) : null;
+
+     var outputtemp = "<em>unknown</em>";
+     if(status == 0) outputtemp = "<em>no response</em>";
+     if(status == 204) outputtemp = "<em>no height data</em>";
+
+     var outputheight = null;
+     var outputvdfheight = outputtemp;
+     var outputtimestamp = outputtemp;
+     var outputlocaltime = outputtemp;
+     var outpututctime = outputtemp;
+     var outputdiscord = outputtemp;
+
+     if(status == 200){
+       outputheight = jsondata["height"];
+       outputvdfheight = jsondata["vdf_height"];
+       outputtimestamp = "<code>" + jsondata["time_stamp"] + "</code>" + ' (ms, <a href="https://www.unixtimestamp.com/">Unix</a>)';
+       const datetimestamp = new Date(jsondata["time_stamp"]);
+       outputlocaltime = datetimestamp.toLocaleString(localeFormat, localeOptLocal);
+       outpututctime = datetimestamp.toLocaleString(localeFormat, localeOptUTC);
+       outputdiscord = "<code>&lt;t:" + Math.round(jsondata["time_stamp"] / 1000) + ":F&gt;</code>"  + ' (<a href="https://discord.com/developers/docs/reference#message-formatting-timestamp-styles">style</a>)';
+       }
+
+     if(outputheight != null) document.getElementById("lookupheight").value = outputheight;
+     document.getElementById("lookupvdfheight").innerHTML = outputvdfheight;
+     document.getElementById("lookuptimestamp").innerHTML = outputtimestamp;
+     document.getElementById("lookuplocaltime").innerHTML = outputlocaltime;
+     document.getElementById("lookuputctime").innerHTML = outpututctime;
+     document.getElementById("lookupdiscord").innerHTML = outputdiscord;
+
+     document.getElementById("lookupbuttonheight").disabled = false;
+     lookupfuncstage = 0;
+     }
+   return;
+   }
+}
+
+function estimatefunc(button = null)
+{
+ if(estimatefuncstage > 0) return;
+ estimatefuncstage = 1;
+ document.getElementById("estimatebuttonheight").disabled = true;
+ document.getElementById("estimatebuttonvdfheight").disabled = true;
+ document.getElementById("estimatebuttontimestamp").disabled = true;
+
+ var estimateheight = Number(document.getElementById("estimateheight").value);
+ if(estimateheight !== estimateheight) estimateheight = 0;
+
+ var estimatevdfheight = Number(document.getElementById("estimatevdfheight").value);
+ if(estimatevdfheight !== estimatevdfheight) estimatevdfheight = 0;
+
+ var estimatetimestamp = Number(document.getElementById("estimatetimestamp").value);
+ if(estimatetimestamp !== estimatetimestamp) estimatetimestamp = 0;
+
+ var outputheight = "";
+ var outputvdfheight = "";
+ var outputtimestamp = "";
+ var outputlocaltime = "...";
+ var outpututctime = "...";
+ var outputdiscord = "...";
+
+ document.getElementById("estimateheight").value = outputheight;
+ document.getElementById("estimatevdfheight").value = outputvdfheight;
+ document.getElementById("estimatetimestamp").value = outputtimestamp;
+ document.getElementById("estimatelocaltime").innerHTML = outputlocaltime;
+ document.getElementById("estimateutctime").innerHTML = outpututctime;
+ document.getElementById("estimatediscord").innerHTML = outputdiscord;
+
+ if(button === "vdfheight"){ // Estimate: VDF Height
+   outputvdfheight = estimatevdfheight;
+   outputheight = Math.round(estpHeight + ((outputvdfheight - estpVDFHeight) / estpNonTX));
+   outputtimestamp = Math.round(estpTimestamp + (((outputheight - estpHeight) * estp10sDev) * 10 * 1000));
+   }
+ else if(button === "timestamp"){ // Estimate: Timestamp
+   outputtimestamp = estimatetimestamp;
+   outputheight = Math.round(estpHeight + (((outputtimestamp - estpTimestamp) / estp10sDev) / 1000 / 10));
+   outputvdfheight = Math.round(estpVDFHeight + ((outputheight - estpHeight) * estpNonTX));
+   }
+ else{ // Estimate: Height
+   outputheight = estimateheight;
+   outputvdfheight = Math.round(estpVDFHeight + ((outputheight - estpHeight) * estpNonTX));
+   outputtimestamp = Math.round(estpTimestamp + (((outputheight - estpHeight) * estp10sDev) * 10 * 1000));
+   }
+
+ const datetimestamp = new Date(outputtimestamp);
+ outputlocaltime = datetimestamp.toLocaleString(localeFormat, localeOptLocal);
+ outpututctime = datetimestamp.toLocaleString(localeFormat, localeOptUTC);
+ outputdiscord = "<code>&lt;t:" + Math.round(outputtimestamp / 1000) + ":F&gt;</code>"  + ' (<a href="https://discord.com/developers/docs/reference#message-formatting-timestamp-styles">style</a>)';
+
+ document.getElementById("estimateheight").value = outputheight;
+ document.getElementById("estimatevdfheight").value = outputvdfheight;
+ document.getElementById("estimatetimestamp").value = outputtimestamp;
+ document.getElementById("estimatelocaltime").innerHTML = outputlocaltime;
+ document.getElementById("estimateutctime").innerHTML = outpututctime;
+ document.getElementById("estimatediscord").innerHTML = outputdiscord;
+
+ document.getElementById("estimatebuttontimestamp").disabled = false;
+ document.getElementById("estimatebuttonvdfheight").disabled = false;
+ document.getElementById("estimatebuttonheight").disabled = false;
+ estimatefuncstage = 0;
+}
+
+function estimateupdatefunc(callback = false, readystate = null, responsetext = null, status = null)
+{
+ if(estimateupdatefuncstage > 0 && callback == false) return;
+
+ if(estimateupdatefuncstage <= 0){ // Stage0: Update button pressed
+   estimateupdatefuncstage = 1;
+   document.getElementById("estimateupdatebutton").disabled = true;
+
+   document.getElementById("estpheight").innerHTML = "...";
+   document.getElementById("estpvdfheight").innerHTML = "...";
+   document.getElementById("estptimestamp").innerHTML = "...";
+   document.getElementById("estpnontx").innerHTML = "...";
+   document.getElementById("estp10sdev").innerHTML = "...";
+
+   estimateupdatefuncstage = 1;
+   estimateupdatexmlhttp.open("GET", urlnode, true);
+   estimateupdatexmlhttp.send();
+   return;
+   }
+
+ else if(estimateupdatefuncstage == 1){ // Stage1: Callback with latest height
+   if(readystate == 4){
+     if(status != 200){ estimateupdatefuncstage = 4; estimateupdatefunc(true); return; } // Fallback: Keep existing data
+     var jsondata = JSON.parse(responsetext);
+     var latestheight = jsondata["height"];
+     if(latestheight !== latestheight) latestheight = 0;
+     if(lookupheight < 0) lookupheight = 0;
+
+     estimateupdatefuncstage = 2;
+     estimateupdatexmlhttp.open("GET", urlblock + latestheight, true);
+     estimateupdatexmlhttp.send();
+     }
+   return;
+   }
+
+ else if(estimateupdatefuncstage == 2){ // Stage2: Callback with to height data
+   if(readystate == 4){
+     if(status != 200){ estimateupdatefuncstage = 4; estimateupdatefunc(true); return; } // Fallback: Keep existing data
+     var jsondata = JSON.parse(responsetext);
+
+     estpQToHeight = jsondata["height"];
+     estpQToVDFHeight = jsondata["vdf_height"];
+     estpQToTimestamp = jsondata["time_stamp"];
+
+     estimateupdatefuncstage = 3;
+     estimateupdatexmlhttp.open("GET", urlblock + (estpQToHeight - 500000), true);
+     estimateupdatexmlhttp.send();
+     }
+   return;
+   }
+
+ else if(estimateupdatefuncstage == 3){ // Stage3: Callback with from height data
+   if(readystate == 4){
+     if(status != 200){ estimateupdatefuncstage = 4; estimateupdatefunc(true); return; } // Fallback: Keep existing data
+     var jsondata = JSON.parse(responsetext);
+
+     estpQFromHeight = jsondata["height"];
+     estpQFromVDFHeight = jsondata["vdf_height"];
+     estpQFromTimestamp = jsondata["time_stamp"];
+
+     estpHeight = estpQToHeight;
+     estpVDFHeight = estpQToVDFHeight;
+     estpTimestamp = estpQToTimestamp;
+     estpNonTX = (estpQToVDFHeight - estpQFromVDFHeight) / (estpQToHeight - estpQFromHeight);
+     estp10sDev = (estpQToTimestamp - estpQFromTimestamp) / ((estpQToHeight - estpQFromHeight) * 10 * 1000);
+
+     estimateupdatefuncstage = 4;
+     estimateupdatefunc(true);
+     }
+   return;
+   }
+
+ else if(estimateupdatefuncstage == 4){ // Stage4: Callback to output estimate data
+   document.getElementById("estpheight").innerHTML = estpHeight;
+   document.getElementById("estpvdfheight").innerHTML = estpVDFHeight;
+   document.getElementById("estptimestamp").innerHTML = estpTimestamp;
+   document.getElementById("estpnontx").innerHTML = ((estpNonTX - 1) * 100).toFixed(4);
+   document.getElementById("estp10sdev").innerHTML = ((estp10sDev - 1) * 100).toFixed(4);
+
+   document.getElementById("estimateupdatebutton").disabled = false;
+   estimateupdatefuncstage = 0;
+   return;
+   }
+}
+
+</script>
+
+<!-- <eof> -->

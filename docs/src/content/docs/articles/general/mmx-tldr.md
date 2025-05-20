@@ -51,7 +51,7 @@ Native L1 blockchain logic, without any L2 scaling.
 | :--- | :--- | :--- | :--- | :--- |
 | Consensus | [PoST](## "Proof of Space and Time") | [PoW](## "Proof of Work") | [PoS](## "Proof of Stake") | [PoST](## "Proof of Space and Time") |
 | [TPS](## "Transactions per Second, real simplest-TX capacity, ignoring TX-fees") (capacity) _<sup>[1]</sup>_ | 500 _<sup>[(i)](## "250M cost limit / 50K cost simplest-TX / blocktime = ~500")</sup>_ | 12 _<sup>[(i)](## "1 MB / 140 bytes SegWit-TX / blocktime = ~12")</sup>_ | 119 _<sup>[(i)](## "30M gas limit / 21K gas simplest-TX / blocktime = ~119")</sup>_ | 35 _<sup>[(i)](## "Documented as 20-40 TPS, real-life stress tests at 35 = ~35")</sup>_ |
-| [Blocktime/TX](## "Average time it takes to create a new block with TX-es") (average) _<sup>[1]</sup>_ | ~10 sec _<sup>[(i)](## "Blocktime 10 sec, ~1.5% non-TX blocks, average TX blocktime = ~10 sec")</sup>_ | ~600 sec _<sup>[(i)](## "Average blocktime statistics = ~600 sec (~10 min)")</sup>_ | ~12 sec _<sup>[(i)](## "Average blocktime statistics = ~12 sec")</sup>_ | ~56 sec _<sup>[(i)](## "Blocktime 18.75 sec, 2/3 non-TX blocks, average TX blocktime = ~56 sec")</sup>_ |
+| [Blocktime/TX](## "Average time it takes to create a new block with TX-es") (average) _<sup>[1]</sup>_ | ~10 sec _<sup>[(i)](## "Blocktime 10 sec, ~2% non-TX blocks, average TX blocktime = ~10 sec")</sup>_ | ~600 sec _<sup>[(i)](## "Average blocktime statistics = ~600 sec (~10 min)")</sup>_ | ~12 sec _<sup>[(i)](## "Average blocktime statistics = ~12 sec")</sup>_ | ~56 sec _<sup>[(i)](## "Blocktime 18.75 sec, 2/3 non-TX blocks, average TX blocktime = ~56 sec")</sup>_ |
 | Smart Contracts (VM) | Yes | No | Yes | Yes |
 | Feature Rich (L1) | Yes | No | Basic | Yes |
 
@@ -119,7 +119,7 @@ An 100% apples to apples comparison is not possible without overly complicating 
 \
 **Premise**: Average time it takes to create a new block with TX-es, given frequency of non-TX blocks.
 
-- **MMX**: `Blocktime 10 sec, ~1.5% non-TX blocks, average TX blocktime` = `~10 sec`
+- **MMX**: `Blocktime 10 sec, ~2% non-TX blocks, average TX blocktime` = `~10 sec`
 - **Bitcoin**: `Average blocktime statistics` = `~600 sec` (`~10 min`)
 - **Ethereum**: `Average blocktime statistics` = `~12 sec`
 - **Chia**: `Blocktime 18.75 sec, 2/3 non-TX blocks, average TX blocktime` = `~56 sec`

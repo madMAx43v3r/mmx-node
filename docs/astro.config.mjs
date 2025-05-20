@@ -54,6 +54,15 @@ export default defineConfig({
 								label: 'FAQ',
 								autogenerate: { directory: 'faq' },
 							},
+							{
+								label: 'Tools',
+								items: [
+									{
+										label: 'Time Calculator',
+										link: 'tools/time-calculator/',
+									},
+								],
+							},
 						],
 					},
 					{
@@ -86,7 +95,7 @@ export default defineConfig({
 	markdown: {
 		rehypePlugins: [
 			rehypeSlug,
-			[rehypeAutolinkHeadings, { behavior: 'wrap', properties: { className: ['sl-custom-rehype-heading'] } }]
+			[rehypeAutolinkHeadings, { behavior: 'wrap' }]
 		],
 	},
 });

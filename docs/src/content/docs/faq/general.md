@@ -58,6 +58,22 @@ There is a project funding fee.
 
 It is a 1% fee on *transaction fees*, <ins>not block reward</ins>. To fund continued development of MMX. More nuances to how it works, read Project Funding section of [whitepaper](../../../articles/general/mmx-whitepaper/).
 
+### Can I help by donating to MMX?
+
+Yes. Separate from the project funding fee, Max has set up a donation address ([news post](https://discord.com/channels/852982773963161650/926566475249106974/1349043326032150538)):\
+`mmx12wa6h5j7nh9djc0hjqva8ke4m5zgfxjy3dvsj7n9kcrj3luhpyhqx93uud` ([view](https://explore.mmx.network/#/explore/address/mmx12wa6h5j7nh9djc0hjqva8ke4m5zgfxjy3dvsj7n9kcrj3luhpyhqx93uud))
+
+- To help with exchange listings, marketing, bug bounty, etc
+
+Donated funds will not be sold now. But rather used as liquidity, bug bounty rewards, or sold later at higher price.
+
+### What is the burn address of MMX?
+
+Burn address of MMX:\
+`mmx1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqdgytev`
+
+This is the zero/null address that no one controls, and no private key exists. Any MMX or other assets sent to this address are not retrievable, gone forever. Or 'burned' as it is often referenced.
+
 ### Where can I find MMX branding assets?
 
 Go to [mmx-assets](https://github.com/madMAx43v3r/mmx-assets) repository. Basic info, logo and assets folders:

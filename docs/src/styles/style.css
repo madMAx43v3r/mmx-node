@@ -27,19 +27,6 @@
 		color: var(--sl-color-white);
 		text-decoration: none;
 	}
-
-	.sl-custom-rehype-heading::after {
-		content: '#';
-		font-size: 0.8em;
-		margin-left: 10px;
-		display: inline-block;
-		color: var(--sl-color-text-accent);
-		visibility: hidden;
-	}
-
-	.sl-custom-rehype-heading:hover:after {
-		visibility: visible;
-	}
 }
 
 :root[data-theme='light'] {
