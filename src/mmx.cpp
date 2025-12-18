@@ -79,7 +79,7 @@ void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, s
 		const auto contract = get_contract(node, currency);
 		if(auto exe = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
 			if(exe->binary == params->nft_binary) {
-				std::cout << currency << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << std::endl;
+				std::cout << currency << " " << arrow << " " << entry.address << " TX(" << entry.txid << ")" << " TS(" << entry.time_stamp << ")" << std::endl;
 				continue;
 			}
 		}
@@ -87,7 +87,7 @@ void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, s
 		const auto decimals = token ? token->decimals : currency == mmx::addr_t() ? params->decimals : 0;
 		const auto symbol = token ? token->symbol : currency == mmx::addr_t() ? std::string("MMX") : std::string("???");
 		std::cout << mmx::to_value(entry.amount, decimals) << " " << symbol
-				<< " (" << entry.amount << ") " << arrow << " " << entry.address << " TX(" << entry.txid << ")";
+				<< " (" << entry.amount << ") " << arrow << " " << entry.address << " TX(" << entry.txid << ")" << " TS(" << entry.time_stamp << ")";
 		if(entry.memo) {
 			std::cout << " M(" << *entry.memo << ")";
 		}
