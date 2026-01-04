@@ -79,7 +79,7 @@ void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, s
 		const auto contract = get_contract(node, currency);
 		if(auto exe = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
 			if(exe->binary == params->nft_binary) {
-				std::cout << currency << " " << arrow << " " << entry.address << " TX(" << entry.txid << ")" << " TS(" << entry.time_stamp << ")" << std::endl;
+				std::cout << currency << " " << arrow << " " << entry.address << " (" << entry.txid << ")" << " TS(" << entry.time_stamp << ")" << std::endl;
 				continue;
 			}
 		}
