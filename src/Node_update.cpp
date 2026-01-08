@@ -944,7 +944,7 @@ std::shared_ptr<const Block> Node::make_block(
 	block->reward_vote = reward_vote;
 	block->project_addr = prev->project_addr;
 	block->txfee_buffer = calc_new_txfee_buffer(params, prev);
-	block->support_flags |= Block::SUPPORT_HARDFORK1;
+	block->support_flags |= (Block::SUPPORT_HARDFORK1 | Block::SUPPORT_HARDFORK2);
 
 	block->vdf_iters = prev->vdf_iters;
 	for(auto point : vdf_points) {
@@ -957,10 +957,9 @@ std::shared_ptr<const Block> Node::make_block(
 		block->proof.push_back(proof[i].proof);
 	}
 	block->proof_hash = proof[0].hash;
-	block->proof_chain = calc_proof_chain(prev->proof_chain, block->proof_hash);
+	block->proof_chain = calc_proof_chain(params, prev, block->proof_hash);
 
-	block->challenge = calc_next_challenge(params, prev, block->vdf_count,
-			block->height < params->hardfork2_height ? block->proof_hash : block->proof_chain, block->is_space_fork);
+	block->challenge = calc_next_challenge(params, prev, block, block->is_space_fork);
 
 	if(block->height % params->vdf_reward_interval == 0) {
 		block->vdf_reward_payout = get_vdf_reward_winner(block);

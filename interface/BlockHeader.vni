@@ -61,9 +61,9 @@ class BlockHeader {
 	hash_t content_hash;
 	
 	
-	bool is_valid() const;
+	bool is_valid(ChainParams* params) const;
 	
-	hash_t calc_hash() const;
+	hash_t calc_hash(ChainParams* params) const;
 	
 	hash_t calc_content_hash() const;
 	
@@ -81,5 +81,6 @@ class BlockHeader {
 	
 	
 	static const uint SUPPORT_HARDFORK1 = 0x1;
+	static const uint SUPPORT_HARDFORK2 = 0x2;
 	
 }

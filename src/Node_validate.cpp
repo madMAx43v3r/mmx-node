@@ -124,7 +124,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	 * - total_weight
 	 */
 
-	if(!block->is_valid()) {
+	if(!block->is_valid(params)) {
 		throw std::logic_error("static validation failed");
 	}
 	block->validate();

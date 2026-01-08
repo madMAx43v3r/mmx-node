@@ -540,7 +540,7 @@ bool Router::process(std::shared_ptr<const Return> ret)
 				else if(auto result = std::dynamic_pointer_cast<const Node_get_block_return>(ret->result)) {
 					if(auto block = result->_ret_0) {
 						const auto& hash = block->content_hash;
-						if(block->is_valid()) {
+						if(block->is_valid(params)) {
 							for(const auto& entry : job->got_hash) {
 								if(entry.second.second == hash) {
 									job->succeeded.insert(entry.first);
@@ -1049,7 +1049,7 @@ void Router::on_block(uint64_t client, std::shared_ptr<const Block> block)
 	if(block->height + params->commit_delay < verified_peak_height) {
 		return;		// prevent replay attack of old signed data
 	}
-	if(!block->is_valid()) {
+	if(!block->is_valid(params)) {
 		disconnect(client);
 		return;
 	}

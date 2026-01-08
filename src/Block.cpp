@@ -15,7 +15,7 @@
 
 namespace mmx {
 
-vnx::bool_t Block::is_valid() const
+vnx::bool_t Block::is_valid(std::shared_ptr<const ChainParams> params) const
 {
 	uint64_t static_cost_sum = 0;
 	uint64_t total_cost_sum = 0;
@@ -32,7 +32,7 @@ vnx::bool_t Block::is_valid() const
 		}
 		static_cost_sum += tx->static_cost;
 	}
-	return BlockHeader::is_valid()
+	return BlockHeader::is_valid(params)
 			&& static_cost == static_cost_sum
 			&& total_cost == total_cost_sum
 			&& tx_fees == tx_fees_sum

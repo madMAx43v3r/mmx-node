@@ -1875,7 +1875,7 @@ void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 
 			std::vector<int64_t> tx_offsets;
 			if(auto block = read_block(*blocks, true, &tx_offsets)) {
-				if(!block->is_valid()) {
+				if(!block->is_valid(params)) {
 					throw std::logic_error("invalid block");
 				}
 			} else {
