@@ -14,7 +14,7 @@ namespace mmx {
 
 
 const vnx::Hash64 ChainParams::VNX_TYPE_HASH(0x51bba8d28881e8e7ull);
-const vnx::Hash64 ChainParams::VNX_CODE_HASH(0x5bbd642fe8410bbbull);
+const vnx::Hash64 ChainParams::VNX_CODE_HASH(0xa9b174add613c7e6ull);
 
 vnx::Hash64 ChainParams::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -725,7 +725,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.ChainParams";
 	type_code->type_hash = vnx::Hash64(0x51bba8d28881e8e7ull);
-	type_code->code_hash = vnx::Hash64(0x5bbd642fe8410bbbull);
+	type_code->code_hash = vnx::Hash64(0xa9b174add613c7e6ull);
 	type_code->is_native = true;
 	type_code->is_class = true;
 	type_code->native_size = sizeof(::mmx::ChainParams);
@@ -1152,7 +1152,7 @@ std::shared_ptr<vnx::TypeCode> ChainParams::static_create_type_code() {
 		auto& field = type_code->fields[61];
 		field.data_size = 4;
 		field.name = "hardfork2_height";
-		field.value = vnx::to_string(2000000);
+		field.value = vnx::to_string(6300000);
 		field.code = {3};
 	}
 	type_code->build();

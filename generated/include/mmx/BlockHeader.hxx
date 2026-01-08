@@ -21,6 +21,7 @@ namespace mmx {
 class MMX_EXPORT BlockHeader : public ::vnx::Value {
 public:
 	static const uint32_t SUPPORT_HARDFORK1 = 0x1;
+	static const uint32_t SUPPORT_HARDFORK2 = 0x2;
 	
 	uint32_t version = 0;
 	uint32_t support_flags = 0;
@@ -77,8 +78,8 @@ public:
 	std::string get_type_name() const override;
 	const vnx::TypeCode* get_type_code() const override;
 	
-	virtual vnx::bool_t is_valid() const;
-	virtual ::mmx::hash_t calc_hash() const;
+	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
+	virtual ::mmx::hash_t calc_hash(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual ::mmx::hash_t calc_content_hash() const;
 	virtual void validate() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const;

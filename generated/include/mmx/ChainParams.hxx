@@ -76,7 +76,7 @@ public:
 	uint32_t reward_activation = 50000;
 	uint32_t transaction_activation = 100000;
 	uint32_t hardfork1_height = 1000000;
-	uint32_t hardfork2_height = 2000000;
+	uint32_t hardfork2_height = 6300000;
 	
 	typedef ::vnx::Value Super;
 	

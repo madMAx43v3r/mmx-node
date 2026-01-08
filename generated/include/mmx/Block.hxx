@@ -33,7 +33,7 @@ public:
 	const vnx::TypeCode* get_type_code() const override;
 	
 	virtual void finalize();
-	virtual vnx::bool_t is_valid() const override;
+	virtual vnx::bool_t is_valid(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const override;
 	virtual ::mmx::hash_t calc_tx_hash() const;
 	virtual std::shared_ptr<const ::mmx::BlockHeader> get_header() const override;
 	virtual std::vector<std::shared_ptr<const ::mmx::Transaction>> get_transactions() const;
