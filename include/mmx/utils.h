@@ -149,7 +149,7 @@ inline
 hash_t calc_proof_chain(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev, const hash_t& proof_hash)
 {
 	if(prev->height >= params->hardfork2_height) {
-		return hash_t("proof_chain" + prev->proof_chain + proof_hash);
+		return hash_t(std::string("proof_chain") + prev->proof_chain + proof_hash);
 	} else {
 		return proof_hash;
 	}
