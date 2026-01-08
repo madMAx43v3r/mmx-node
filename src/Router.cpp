@@ -548,8 +548,6 @@ bool Router::process(std::shared_ptr<const Return> ret)
 							}
 							job->succeeded.insert(client);
 							job->blocks[hash] = block;
-						} else {
-							ban_peer(client, "they sent us an invalid block");
 						}
 						job->pending_blocks.erase(hash);
 					}
