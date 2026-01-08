@@ -33,6 +33,9 @@ vnx::bool_t BlockHeader::is_valid(std::shared_ptr<const ChainParams> params) con
 
 hash_t BlockHeader::calc_hash(std::shared_ptr<const ChainParams> params) const
 {
+	if(!params) {
+		throw std::logic_error("BlockHeader::calc_hash(): params is null");
+	}
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
