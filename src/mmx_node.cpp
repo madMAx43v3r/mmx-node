@@ -10,6 +10,7 @@
 #include <mmx/TimeLord.h>
 #include <mmx/Farmer.h>
 #include <mmx/Harvester.h>
+#include <mmx/ProofServer.h>
 #include <mmx/Router.h>
 #include <mmx/WebAPI.h>
 #include <mmx/Qt_GUI.h>
@@ -198,6 +199,10 @@ int main(int argc, char** argv)
 	if(with_farmer) {
 		{
 			vnx::Handle<mmx::Farmer> module = new mmx::Farmer("Farmer");
+			module.start_detached();
+		}
+		{
+			vnx::Handle<mmx::ProofServer> module = new mmx::ProofServer("ProofServer");
 			module.start_detached();
 		}
 		{

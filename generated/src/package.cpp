@@ -199,6 +199,9 @@
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ProofServerBase.hxx>
+#include <mmx/ProofServer_compute.hxx>
+#include <mmx/ProofServer_compute_return.hxx>
 #include <mmx/ReceiveNote.hxx>
 #include <mmx/Request.hxx>
 #include <mmx/Return.hxx>
@@ -386,6 +389,7 @@
 #include <mmx/swap_info_t.hxx>
 #include <mmx/swap_pool_info_t.hxx>
 #include <mmx/swap_user_info_t.hxx>
+#include <mmx/table_entry_t.hxx>
 #include <mmx/trade_entry_t.hxx>
 #include <mmx/trade_log_t.hxx>
 #include <mmx/tx_entry_t.hxx>
@@ -2757,6 +2761,30 @@ void type<::mmx::ProofResponse>::create_dynamic_code(std::vector<uint16_t>& code
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::ProofServer_compute>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofServer_compute;
+}
+
+void type<::mmx::ProofServer_compute>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofServer_compute());
+}
+
+void type<::mmx::ProofServer_compute>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofServer_compute& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
+const TypeCode* type<::mmx::ProofServer_compute_return>::get_type_code() {
+	return mmx::vnx_native_type_code_ProofServer_compute_return;
+}
+
+void type<::mmx::ProofServer_compute_return>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::ProofServer_compute_return());
+}
+
+void type<::mmx::ProofServer_compute_return>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofServer_compute_return& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::ReceiveNote>::get_type_code() {
 	return mmx::vnx_native_type_code_ReceiveNote;
 }
@@ -5053,6 +5081,18 @@ void type<::mmx::swap_user_info_t>::create_dynamic_code(std::vector<uint16_t>& c
 	code.push_back(CODE_OBJECT);
 }
 
+const TypeCode* type<::mmx::table_entry_t>::get_type_code() {
+	return mmx::vnx_native_type_code_table_entry_t;
+}
+
+void type<::mmx::table_entry_t>::create_dynamic_code(std::vector<uint16_t>& code) {
+	create_dynamic_code(code, ::mmx::table_entry_t());
+}
+
+void type<::mmx::table_entry_t>::create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::table_entry_t& value, bool special) {
+	code.push_back(CODE_OBJECT);
+}
+
 const TypeCode* type<::mmx::trade_entry_t>::get_type_code() {
 	return mmx::vnx_native_type_code_trade_entry_t;
 }
@@ -5459,6 +5499,9 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::ProofOfSpaceOG::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofOfTime::static_create_type_code());
 	vnx::register_type_code(::mmx::ProofResponse::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofServerBase::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofServer_compute::static_create_type_code());
+	vnx::register_type_code(::mmx::ProofServer_compute_return::static_create_type_code());
 	vnx::register_type_code(::mmx::ReceiveNote::static_create_type_code());
 	vnx::register_type_code(::mmx::Request::static_create_type_code());
 	vnx::register_type_code(::mmx::Return::static_create_type_code());
@@ -5646,6 +5689,7 @@ void register_all_types() {
 	vnx::register_type_code(::mmx::swap_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::swap_pool_info_t::static_create_type_code());
 	vnx::register_type_code(::mmx::swap_user_info_t::static_create_type_code());
+	vnx::register_type_code(::mmx::table_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::trade_entry_t::static_create_type_code());
 	vnx::register_type_code(::mmx::trade_log_t::static_create_type_code());
 	vnx::register_type_code(::mmx::tx_entry_t::static_create_type_code());
@@ -5867,6 +5911,9 @@ const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceNFT = vnx::get_type_
 const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceOG = vnx::get_type_code(vnx::Hash64(0x6def5518efc37b4ull));
 const vnx::TypeCode* const vnx_native_type_code_ProofOfTime = vnx::get_type_code(vnx::Hash64(0xa84a63942b8e5c6aull));
 const vnx::TypeCode* const vnx_native_type_code_ProofResponse = vnx::get_type_code(vnx::Hash64(0x816e898b36befae0ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofServerBase = vnx::get_type_code(vnx::Hash64(0xa531590f144986a6ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofServer_compute = vnx::get_type_code(vnx::Hash64(0x1565fa29d1604750ull));
+const vnx::TypeCode* const vnx_native_type_code_ProofServer_compute_return = vnx::get_type_code(vnx::Hash64(0x5b42e049360ce028ull));
 const vnx::TypeCode* const vnx_native_type_code_ReceiveNote = vnx::get_type_code(vnx::Hash64(0x30439468cf29fa4bull));
 const vnx::TypeCode* const vnx_native_type_code_Request = vnx::get_type_code(vnx::Hash64(0x110ce6958669f66bull));
 const vnx::TypeCode* const vnx_native_type_code_Return = vnx::get_type_code(vnx::Hash64(0xb479dce669278664ull));
@@ -6054,6 +6101,7 @@ const vnx::TypeCode* const vnx_native_type_code_swap_entry_t = vnx::get_type_cod
 const vnx::TypeCode* const vnx_native_type_code_swap_info_t = vnx::get_type_code(vnx::Hash64(0x7586be908f15ae8ull));
 const vnx::TypeCode* const vnx_native_type_code_swap_pool_info_t = vnx::get_type_code(vnx::Hash64(0x6502e235a743dabull));
 const vnx::TypeCode* const vnx_native_type_code_swap_user_info_t = vnx::get_type_code(vnx::Hash64(0x1b6c720bff2d638cull));
+const vnx::TypeCode* const vnx_native_type_code_table_entry_t = vnx::get_type_code(vnx::Hash64(0x9bdbee40872de9a7ull));
 const vnx::TypeCode* const vnx_native_type_code_trade_entry_t = vnx::get_type_code(vnx::Hash64(0xed7d8e67cb8db394ull));
 const vnx::TypeCode* const vnx_native_type_code_trade_log_t = vnx::get_type_code(vnx::Hash64(0xafedf6853c645eb8ull));
 const vnx::TypeCode* const vnx_native_type_code_tx_entry_t = vnx::get_type_code(vnx::Hash64(0x438cda5719015870ull));

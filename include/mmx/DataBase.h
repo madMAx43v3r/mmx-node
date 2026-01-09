@@ -14,12 +14,6 @@
 #include <fstream>
 #include <mutex>
 
-#ifdef _MSC_VER
-#include <mmx_db_export.h>
-#else
-#define MMX_DB_EXPORT
-#endif
-
 
 namespace mmx {
 
@@ -191,10 +185,8 @@ public:
 		std::map<std::pair<std::shared_ptr<db_val_t>, uint32_t>, pointer_t, compare_t> block_map;
 	};
 
-	MMX_DB_EXPORT
 	static const std::function<int(const db_val_t&, const db_val_t&)> default_comparator;
 
-	MMX_DB_EXPORT
 	static const options_t default_options;
 
 private:

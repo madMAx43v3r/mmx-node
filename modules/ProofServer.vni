@@ -1,0 +1,11 @@
+package mmx;
+
+module ProofServer {
+	
+	uint num_threads = 32;
+	
+	
+	@Permission(permission_e.REMOTE)
+	vector<table_entry_t> compute(vector<uint32> X_values, hash_t id, int ksize, int xbits) const async;
+	
+}

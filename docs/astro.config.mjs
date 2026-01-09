@@ -3,24 +3,27 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import starlightSidebarTopics from 'starlight-sidebar-topics';
 
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://docs.mmx.network',
 	integrations: [
 		starlight({
-			title: 'Documentation',
+			title: 'Docs',
 			favicon: '/favicon.ico',
 			logo: {
 				src: './src/assets/logo_text_color_cx256x156_rectangle.png',
 			},
 			components: {
+				MarkdownContent: './src/components/MarkdownContent.astro',
 				SocialIcons: './src/components/SocialIcons.astro',
 			},
-			social: {
-				discord: 'https://discord.gg/BswFhNkMzY',
-				github: 'https://github.com/madMAx43v3r/mmx-node',
-				'x.com': 'https://x.com/MMX_Network_',
-			},
+			social: [
+				{ icon: 'discord', label: 'Discord', href: 'https://discord.gg/BswFhNkMzY' },
+				{ icon: 'github', label: 'GitHub', href: 'https://github.com/madMAx43v3r/mmx-node' },
+				{ icon: 'x.com', label: 'X', href: 'https://x.com/MMX_Network_' },
+			],
 			customCss: [
 				'./src/styles/style.css',
 			],
@@ -28,34 +31,71 @@ export default defineConfig({
 			editLink: {
 				baseUrl: 'https://github.com/madMAx43v3r/mmx-node/edit/master/docs',
 			},
-			sidebar: [
-				{
-					label: 'Homepage',
-					link: 'https://mmx.network/',
-				},
-				{
-					label: 'Guides',
-					autogenerate: { directory: 'guides' },
-				},
-				{
-					label: 'Software Reference',
-					autogenerate: { directory: 'software' },
-				},
-				{
-					label: 'Technical Reference',
-					autogenerate: { directory: 'reference' },
-				},
-				{
-					label: 'FAQ',
-					autogenerate: { directory: 'faq' },
-				},
+			plugins: [
+				starlightSidebarTopics([
+					{
+						label: 'Documentation',
+						link: '/guides/getting-started',
+						icon: 'open-book',
+						items: [
+							{
+								label: 'Guides',
+								autogenerate: { directory: 'guides' },
+							},
+							{
+								label: 'Software Reference',
+								autogenerate: { directory: 'software' },
+							},
+							{
+								label: 'Technical Reference',
+								autogenerate: { directory: 'reference' },
+							},
+							{
+								label: 'FAQ',
+								autogenerate: { directory: 'faq' },
+							},
+							{
+								label: 'Tools',
+								items: [
+									{
+										label: 'Time Calculator',
+										link: 'tools/time-calculator/',
+									},
+								],
+							},
+						],
+					},
+					{
+						label: 'Articles',
+						link: '/articles/general/mmx-whitepaper',
+						icon: 'document',
+						items: [
+							{
+								label: 'General',
+								autogenerate: { directory: 'articles/general' },
+							},
+							{
+								label: 'Plotting',
+								autogenerate: { directory: 'articles/plotting' },
+							},
+							{
+								label: 'TimeLord',
+								autogenerate: { directory: 'articles/timelord' },
+							},
+							{
+								label: 'Wallets',
+								autogenerate: { directory: 'articles/wallets' },
+							},
+						],
+					},
+				]),
 			],
 		}),
 	],
 	markdown: {
 		rehypePlugins: [
 			rehypeSlug,
-			[rehypeAutolinkHeadings, { behavior: 'append' }]
+			[rehypeAutolinkHeadings, { behavior: 'wrap' }]
 		],
 	},
 });

@@ -25,7 +25,7 @@ env:
 
 jobs:
   msvc:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,6 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: "build"
+          include-hidden-files: true
           path: ./build/${{ env.CMAKE_BUILD_PRESET }}/!bin/Release/
 
       - name: Run CPack
@@ -104,8 +105,8 @@ jobs:
           token: ${{ env.MMX_TELEGRAM_TOKEN }}
           format: html
           message: |
-            MMX Node release ${{ steps.get_version.outputs.VERSION }}      
-            ${{ github.event.repository.url }}/releases/${{ steps.get_version.outputs.VERSION }}
+            MMX Node release ${{ steps.get_version.outputs.VERSION }}
+            https://github.com/${{ github.repository }}/releases/${{ steps.get_version.outputs.VERSION }}
             
             <a href="https://t.me/mmx_node">Telegram channel</a>
             <a href="https://t.me/mmx_node_chat">Telegram chat</a>
@@ -120,18 +121,18 @@ jobs:
           token: ${{ env.MMX_TELEGRAM_TOKEN }}
           format: html
           message: |
-            MMX Node release ${{ steps.get_version.outputs.VERSION }}      
-            ${{ github.event.repository.url }}/releases/${{ steps.get_version.outputs.VERSION }}
+            MMX Node release ${{ steps.get_version.outputs.VERSION }}
+            https://github.com/${{ github.repository }}/releases/${{ steps.get_version.outputs.VERSION }}
             
             <a href="https://t.me/mmx_node">Telegram channel</a>
             <a href="https://t.me/mmx_node_chat">Telegram chat</a>
             <a href="https://t.me/mmx_node_chat_ru">Telegram chat[RU]</a>
-            <a href="https://discord.gg/tCwevssVmY">Discord</a>            
+            <a href="https://discord.gg/tCwevssVmY">Discord</a>
             
       - name: Discord notification
         if: ${{ env.DISCORD_WEBHOOK != '' }}
         uses: Ilshidur/action-discord@master
         with:
           args: |
-            MMX Node release ${{ steps.get_version.outputs.VERSION }}      
-            ${{ github.event.repository.url }}/releases/${{ steps.get_version.outputs.VERSION }}          
+            MMX Node release ${{ steps.get_version.outputs.VERSION }}
+            https://github.com/${{ github.repository }}/releases/${{ steps.get_version.outputs.VERSION }}

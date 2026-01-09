@@ -199,6 +199,8 @@
 #include <mmx/ProofOfSpaceOG.hxx>
 #include <mmx/ProofOfTime.hxx>
 #include <mmx/ProofResponse.hxx>
+#include <mmx/ProofServer_compute.hxx>
+#include <mmx/ProofServer_compute_return.hxx>
 #include <mmx/ReceiveNote.hxx>
 #include <mmx/Request.hxx>
 #include <mmx/Return.hxx>
@@ -2119,6 +2121,24 @@ void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfTime> value)
 
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofResponse> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofServer_compute> value) {
+	if(value) {
+		value->accept_generic(visitor);
+	} else {
+		visitor.accept(nullptr);
+	}
+}
+
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofServer_compute_return> value) {
 	if(value) {
 		value->accept_generic(visitor);
 	} else {

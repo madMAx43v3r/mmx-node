@@ -1,0 +1,117 @@
+---
+import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+import { Image } from 'astro:assets';
+
+const { id, lang, entry } = Astro.locals.starlightRoute;
+
+const isArticlePage = id.startsWith("articles/");
+
+const isPublishDate = entry.data.articlePublished !== undefined;
+const isUpdateDate = entry.data.articleUpdated !== undefined;
+const isAuthorName = entry.data.authorName !== undefined;
+const isAuthorPicture = entry.data.authorPicture !== undefined;
+const isAuthorURL = entry.data.authorURL !== undefined;
+const ElementAuthorURL = isAuthorURL ? 'a' : 'div';
+
+var checkEnoughDate = false;
+if(isPublishDate) checkEnoughDate = true;
+if(isUpdateDate) checkEnoughDate = true;
+const isEnoughDate = checkEnoughDate;
+
+var checkEnoughAuthor = false;
+if(isPublishDate) checkEnoughAuthor = true;
+if(isAuthorName) checkEnoughAuthor = true;
+const isEnoughAuthor = checkEnoughAuthor;
+
+var checkEnoughData = false;
+if(isEnoughDate) checkEnoughData = true;
+if(isEnoughAuthor) checkEnoughData = true;
+const isEnoughData = checkEnoughData;
+---
+
+{ isArticlePage ? (
+	<Default>
+		{ isEnoughData ? (
+			<div class="articlemeta not-content">
+				{ isEnoughDate ? (
+					<div class="datewrap sl-flex">
+						<div>
+							{ isPublishDate ? (
+								<time datetime={ entry.data.articlePublished.toISOString() }>
+									{ entry.data.articlePublished.toLocaleDateString(lang, { dateStyle: 'medium', timeZone: 'UTC' }) }
+								</time>
+							) : null }
+						</div>
+						<div>
+							{ isUpdateDate ? (
+								<span>Updated:</span>
+								<time datetime={ entry.data.articleUpdated.toISOString() }>
+									{ entry.data.articleUpdated.toLocaleDateString(lang, { dateStyle: 'medium', timeZone: 'UTC' }) }
+								</time>
+							) : null }
+						</div>
+					</div>
+				) : null }
+				{ isAuthorName ? (
+					<div class="authorwrap">
+						<ElementAuthorURL href={ isAuthorURL ? entry.data.authorURL : undefined } class="author">
+							{ isAuthorPicture && <Image alt={ entry.data.authorName } loading="eager" src={ entry.data.authorPicture } height={40} width={40} /> }
+							<div class="textwrap">
+								<div class="authorname">{ entry.data.authorName }</div>
+							</div>
+						</ElementAuthorURL>
+					</div>
+				) : null }
+			</div>
+			<style>
+				.articlemeta {
+					display: flex;
+					flex-direction: column;
+					gap: 0.75rem;
+				}
+				.datewrap {
+					gap: 0.75rem 3rem;
+					justify-content: space-between;
+					flex-wrap: wrap;
+					font-size: var(--sl-text-sm);
+					color: var(--sl-color-gray-3);
+				}
+				.authorwrap {
+					display: flex;
+					flex-wrap: wrap;
+					gap: 0.75rem 1rem;
+				}
+				.author {
+					align-items: center;
+					display: flex;
+					gap: 0.5rem;
+					line-height: var(--sl-line-height-headings);
+					text-decoration: none;
+					color: var(--sl-color-text-accent);
+				}
+				.author img  {
+					border: 1px solid var(--sl-color-gray-2);
+					border-radius: 9999px;
+					height: 2.5rem;
+					width: 2.5rem;
+				}
+				.author[href]:hover {
+					color: var(--sl-color-text);
+				}
+				.textwrap {
+					display: flex;
+					flex-direction: column;
+				}
+				.authorname {
+					font-size: var(--sl-text-base);
+					font-weight: 600;
+				}
+			</style>
+		) : null }
+		<slot />
+	</Default>
+) : (
+	<Default>
+		<slot />
+	</Default>
+) }

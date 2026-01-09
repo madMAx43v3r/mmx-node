@@ -26,6 +26,8 @@
 #include <memory>
 #include <iostream>
 
+#include "std/embedded.h"
+
 
 namespace mmx {
 namespace vm {
@@ -65,6 +67,8 @@ static constexpr auto kw_namespace = LEXY_KEYWORD("package", kw_id);
 static constexpr auto kw_continue = LEXY_KEYWORD("continue", kw_id);
 static constexpr auto kw_break = LEXY_KEYWORD("break", kw_id);
 static constexpr auto kw_interface = LEXY_KEYWORD("interface", kw_id);
+static constexpr auto kw_import = LEXY_KEYWORD("import", kw_id);
+static constexpr auto kw_from = LEXY_KEYWORD("from", kw_id);
 
 struct comment {
 	static constexpr auto name = "mmx.lang.comment";
@@ -77,10 +81,10 @@ struct comment {
 struct reserved {
 	static constexpr auto name = "mmx.lang.reserved";
 	static constexpr auto rule = dsl::literal_set(
-			kw_if, kw_do, kw_in, kw_of, kw_for, kw_else, kw_while, kw_var, kw_let,
-			kw_null, kw_true, kw_false, kw_const, kw_public, kw_payable, kw_return,
+			kw_if, kw_do, kw_for, kw_else, kw_while, kw_var, kw_let,
+			kw_null, kw_true, kw_false, kw_const, kw_public, kw_return,
 			kw_function, kw_namespace, kw_this, kw_export, kw_static, kw_continue,
-			kw_break, kw_interface);
+			kw_break, kw_interface, kw_import);
 };
 
 struct expected_identifier {
@@ -144,6 +148,17 @@ struct constant {
 	static constexpr auto name = "mmx.lang.constant";
 	static constexpr auto rule =
 			dsl::p<primitive> | dsl::p<address> | dsl::p<string> | dsl::p<integer>;
+};
+
+struct import_list {
+	static constexpr auto name = "mmx.lang.import_list";
+	static constexpr auto rule = dsl::curly_bracketed.list(dsl::recurse<restricted_identifier>, dsl::sep(dsl::comma));
+};
+
+struct import {
+	static constexpr auto name = "mmx.lang.import";
+	static constexpr auto rule =
+			kw_import >> dsl::p<import_list> + kw_from + dsl::p<string>;
 };
 
 struct scope {
@@ -240,7 +255,8 @@ struct expression {
 
 struct statement {
 	static constexpr auto name = "mmx.lang.statement";
-	static constexpr auto rule = (dsl::p<variable> | dsl::p<interface> | kw_break | kw_continue | dsl::else_ >> dsl::p<expression>) + dsl::semicolon;
+	static constexpr auto rule =
+			(dsl::p<variable> | dsl::p<interface> | dsl::p<import> | kw_break | kw_continue | dsl::else_ >> dsl::p<expression>) + dsl::semicolon;
 };
 
 struct else_ex;
@@ -450,7 +466,6 @@ protected:
 private:
 	int depth = 0;
 	int curr_pass = 0;
-	bool have_return = false;
 
 	uint8_t math_flags = 0;
 
@@ -480,7 +495,7 @@ private:
 
 };
 
-const std::string Compiler::version = "1.0.0";
+const std::string Compiler::version = "1.1.0";
 
 Compiler::Compiler(const compile_flags_t& flags)
 	:	flags(flags)
@@ -621,6 +636,53 @@ std::shared_ptr<const contract::Binary> Compiler::compile(const std::string& sou
 		throw std::logic_error("invalid state");
 	}
 	source = source_;
+	{
+		// resolve imports
+		parse_tree_t tree;
+		parse(tree);
+
+		for(const auto& node : get_children(tree.root())) {
+			const std::string name(node.kind().name());
+			if(name == lang::statement::name) {
+				const auto list = get_children(node);
+				if(!list.empty()) {
+					const auto node = list[0];
+					const std::string name(node.kind().name());
+					if(name == lang::import::name) try {
+						const auto list = get_children(node);
+						if(list.size() != 4) {
+							throw std::logic_error("invalid import");
+						}
+						std::set<std::string> units;
+						const auto import_list = list[1];
+						for(const auto& node : get_children(import_list)) {
+							const std::string name(node.kind().name());
+							if(name == lang::identifier::name) {
+								units.insert(get_literal(node));
+							}
+						}
+						const auto module = get_literal(list[3]);
+						if(module == "std") {
+							for(const auto& unit : units) {
+								const auto key = unit + ".js";
+								if(!std_file_map.count(key)) {
+									throw std::logic_error("unknown unit '" + unit + "'");
+								}
+								source += "\n// Imported from std/" + key + "\n";
+								source += std_file_map[key];
+							}
+						} else {
+							throw std::logic_error("unknown module '" + module + "'");
+						}
+					}
+					catch(const std::exception& ex) {
+						dump_parse_tree(tree.root(), debug());
+						throw std::logic_error("error at line " + std::to_string(get_line_number(node)) + ": " + ex.what());
+					}
+				}
+			}
+		}
+	}
 
 	binary = std::make_shared<contract::Binary>();
 	binary->source = source;
@@ -771,10 +833,15 @@ std::string Compiler::get_literal(const node_t& node)
 		return std::string(token.begin(), token.end());
 	} else {
 		const auto list = get_children(node);
-		if(list.size() != 1) {
-			throw std::logic_error("not a literal");
+		const std::string name(node.kind().name());
+		if(name == lang::string::name && list.size() == 3) {
+			return get_literal(list[1]);
+		} else {
+			if(list.size() != 1) {
+				throw std::logic_error("not a literal: " + std::string(node.kind().name()));
+			}
+			return get_literal(list[0]);
 		}
-		return get_literal(list[0]);
 	}
 }
 
@@ -914,7 +981,10 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 	const std::string p_name(node.parent().kind().name());
 	const auto list = get_children(node);
 
-	if(name == lang::namespace_ex::name)
+	if(name == lang::import::name) {
+		// ignore here
+	}
+	else if(name == lang::namespace_ex::name)
 	{
 		if(list.size() < 2) {
 			throw std::logic_error("invalid namespace declaration");
@@ -1057,7 +1127,6 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 				scope.add_variable(arg);
 			}
 			curr_function = func;
-			have_return = false;
 
 			if(func.is_init) {
 				code.emplace_back(OP_CALL, 0, 0, scope.new_addr() - MEM_STACK);
@@ -1067,7 +1136,7 @@ Compiler::vref_t Compiler::recurse(const node_t& node)
 			recurse(list.back());
 			frame.pop_back();
 
-			if(!have_return) {
+			if(code.empty() || code.back().code != OP_RET) {
 				code.emplace_back(OP_RET);
 			}
 			curr_function = nullptr;
@@ -1560,13 +1629,9 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 			if(lhs) {
 				throw std::logic_error("unexpected left operand");
 			}
-			if(have_return) {
-				throw std::logic_error("multiple returns not allowed");
-			}
 			if(expr_len > 0) {
 				copy(MEM_STACK, recurse_expr(p_node, expr_len, nullptr, rank));
 			}
-			have_return = true;
 			code.emplace_back(OP_RET);
 		}
 		else {

@@ -222,6 +222,9 @@ class ProofOfSpaceNFT;
 class ProofOfSpaceOG;
 class ProofOfTime;
 class ProofResponse;
+class ProofServerBase;
+class ProofServer_compute;
+class ProofServer_compute_return;
 class ReceiveNote;
 class Request;
 class Return;
@@ -416,6 +419,7 @@ struct swap_entry_t;
 struct swap_info_t;
 struct swap_pool_info_t;
 struct swap_user_info_t;
+struct table_entry_t;
 struct trade_entry_t;
 struct trade_log_t;
 struct tx_entry_t;
@@ -631,6 +635,9 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceNF
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfSpaceOG; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofOfTime; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofResponse; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofServerBase; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofServer_compute; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ProofServer_compute_return; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_ReceiveNote; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Request; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_Return; ///< \private
@@ -818,6 +825,7 @@ MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_entry_t; 
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_pool_info_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_swap_user_info_t; ///< \private
+MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_table_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_entry_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_trade_log_t; ///< \private
 MMX_EXPORT extern const vnx::TypeCode* const vnx_native_type_code_tx_entry_t; ///< \private
@@ -1037,6 +1045,9 @@ void read(TypeInput& in, ::mmx::ProofOfSpaceNFT& value, const TypeCode* type_cod
 void read(TypeInput& in, ::mmx::ProofOfSpaceOG& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofOfTime& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofServerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofServer_compute& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::ProofServer_compute_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Request& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::Return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1231,6 +1242,7 @@ void read(TypeInput& in, ::mmx::swap_entry_t& value, const TypeCode* type_code, 
 void read(TypeInput& in, ::mmx::swap_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::swap_pool_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::swap_user_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void read(TypeInput& in, ::mmx::table_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::trade_log_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void read(TypeInput& in, ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1446,6 +1458,9 @@ void write(TypeOutput& out, const ::mmx::ProofOfSpaceNFT& value, const TypeCode*
 void write(TypeOutput& out, const ::mmx::ProofOfSpaceOG& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofOfTime& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ProofResponse& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofServerBase& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofServer_compute& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::ProofServer_compute_return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Request& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::Return& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1640,6 +1655,7 @@ void write(TypeOutput& out, const ::mmx::swap_entry_t& value, const TypeCode* ty
 void write(TypeOutput& out, const ::mmx::swap_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::swap_pool_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::swap_user_info_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
+void write(TypeOutput& out, const ::mmx::table_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::trade_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::trade_log_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
 void write(TypeOutput& out, const ::mmx::tx_entry_t& value, const TypeCode* type_code, const uint16_t* code); ///< \private
@@ -1855,6 +1871,9 @@ void read(std::istream& in, ::mmx::ProofOfSpaceNFT& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfSpaceOG& value); ///< \private
 void read(std::istream& in, ::mmx::ProofOfTime& value); ///< \private
 void read(std::istream& in, ::mmx::ProofResponse& value); ///< \private
+void read(std::istream& in, ::mmx::ProofServerBase& value); ///< \private
+void read(std::istream& in, ::mmx::ProofServer_compute& value); ///< \private
+void read(std::istream& in, ::mmx::ProofServer_compute_return& value); ///< \private
 void read(std::istream& in, ::mmx::ReceiveNote& value); ///< \private
 void read(std::istream& in, ::mmx::Request& value); ///< \private
 void read(std::istream& in, ::mmx::Return& value); ///< \private
@@ -2049,6 +2068,7 @@ void read(std::istream& in, ::mmx::swap_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::swap_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::swap_pool_info_t& value); ///< \private
 void read(std::istream& in, ::mmx::swap_user_info_t& value); ///< \private
+void read(std::istream& in, ::mmx::table_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::trade_entry_t& value); ///< \private
 void read(std::istream& in, ::mmx::trade_log_t& value); ///< \private
 void read(std::istream& in, ::mmx::tx_entry_t& value); ///< \private
@@ -2264,6 +2284,9 @@ void write(std::ostream& out, const ::mmx::ProofOfSpaceNFT& value); ///< \privat
 void write(std::ostream& out, const ::mmx::ProofOfSpaceOG& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofOfTime& value); ///< \private
 void write(std::ostream& out, const ::mmx::ProofResponse& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofServerBase& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofServer_compute& value); ///< \private
+void write(std::ostream& out, const ::mmx::ProofServer_compute_return& value); ///< \private
 void write(std::ostream& out, const ::mmx::ReceiveNote& value); ///< \private
 void write(std::ostream& out, const ::mmx::Request& value); ///< \private
 void write(std::ostream& out, const ::mmx::Return& value); ///< \private
@@ -2458,6 +2481,7 @@ void write(std::ostream& out, const ::mmx::swap_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::swap_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::swap_pool_info_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::swap_user_info_t& value); ///< \private
+void write(std::ostream& out, const ::mmx::table_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::trade_entry_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::trade_log_t& value); ///< \private
 void write(std::ostream& out, const ::mmx::tx_entry_t& value); ///< \private
@@ -2673,6 +2697,9 @@ void accept(Visitor& visitor, const ::mmx::ProofOfSpaceNFT& value); ///< \privat
 void accept(Visitor& visitor, const ::mmx::ProofOfSpaceOG& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofOfTime& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ProofResponse& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofServerBase& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofServer_compute& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::ProofServer_compute_return& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::ReceiveNote& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Request& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::Return& value); ///< \private
@@ -2867,6 +2894,7 @@ void accept(Visitor& visitor, const ::mmx::swap_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::swap_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::swap_pool_info_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::swap_user_info_t& value); ///< \private
+void accept(Visitor& visitor, const ::mmx::table_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::trade_entry_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::trade_log_t& value); ///< \private
 void accept(Visitor& visitor, const ::mmx::tx_entry_t& value); ///< \private
@@ -3274,6 +3302,10 @@ template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofOfTime> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofResponse> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofServer_compute> value); ///< \private
+template<typename V>
+void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ProofServer_compute_return> value); ///< \private
 template<typename V>
 void accept_generic(V& visitor, std::shared_ptr<const ::mmx::ReceiveNote> value); ///< \private
 template<typename V>
@@ -8138,6 +8170,72 @@ struct type<::mmx::ProofResponse> {
 
 /// \private
 template<>
+struct type<::mmx::ProofServerBase> {
+	void read(TypeInput& in, ::mmx::ProofServerBase& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofServerBase& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofServerBase& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofServerBase& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofServerBase& value) {
+		vnx::accept(visitor, value);
+	}
+};
+
+/// \private
+template<>
+struct type<::mmx::ProofServer_compute> {
+	void read(TypeInput& in, ::mmx::ProofServer_compute& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofServer_compute& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofServer_compute& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofServer_compute& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofServer_compute& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofServer_compute& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::ProofServer_compute_return> {
+	void read(TypeInput& in, ::mmx::ProofServer_compute_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::ProofServer_compute_return& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::ProofServer_compute_return& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::ProofServer_compute_return& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::ProofServer_compute_return& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::ProofServer_compute_return& value, bool special = false);
+};
+
+/// \private
+template<>
 struct type<::mmx::ReceiveNote> {
 	void read(TypeInput& in, ::mmx::ReceiveNote& value, const TypeCode* type_code, const uint16_t* code) {
 		vnx::read(in, value, type_code, code);
@@ -12584,6 +12682,29 @@ struct type<::mmx::swap_user_info_t> {
 	const TypeCode* get_type_code();
 	void create_dynamic_code(std::vector<uint16_t>& code);
 	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::swap_user_info_t& value, bool special = false);
+};
+
+/// \private
+template<>
+struct type<::mmx::table_entry_t> {
+	void read(TypeInput& in, ::mmx::table_entry_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::read(in, value, type_code, code);
+	}
+	void write(TypeOutput& out, const ::mmx::table_entry_t& value, const TypeCode* type_code, const uint16_t* code) {
+		vnx::write(out, value, type_code, code);
+	}
+	void read(std::istream& in, ::mmx::table_entry_t& value) {
+		vnx::read(in, value);
+	}
+	void write(std::ostream& out, const ::mmx::table_entry_t& value) {
+		vnx::write(out, value);
+	}
+	void accept(Visitor& visitor, const ::mmx::table_entry_t& value) {
+		vnx::accept(visitor, value);
+	}
+	const TypeCode* get_type_code();
+	void create_dynamic_code(std::vector<uint16_t>& code);
+	void create_dynamic_code(std::vector<uint16_t>& code, const ::mmx::table_entry_t& value, bool special = false);
 };
 
 /// \private

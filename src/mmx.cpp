@@ -95,6 +95,57 @@ void show_history(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, s
 	}
 }
 
+void show_history_csv(std::vector<mmx::tx_entry_t> history, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
+{
+	std::reverse(history.begin(), history.end());
+
+	std::cout << "Height,Type,Amount,Symbol,AmountRaw,InOut,Address,TX,UnixTS,DateTime,Memo" << std::endl;
+
+	for(const auto& entry : history) {
+		const auto currency = entry.contract;
+		const auto contract = get_contract(node, currency);
+		if(auto exe = std::dynamic_pointer_cast<const mmx::contract::Executable>(contract)) {
+			if(exe->binary == params->nft_binary) {
+				continue;	// ignore NFTs
+			}
+		}
+		const auto token = std::dynamic_pointer_cast<const mmx::contract::TokenBase>(contract);
+
+		int decimals = 0;
+		std::string symbol;
+		if(token) {
+			symbol = token->symbol;
+			decimals = token->decimals;
+		} else {
+			if(currency == mmx::addr_t()) {
+				symbol = "MMX";
+				decimals = params->decimals;
+			} else {
+				continue;	// ignore non-tokens
+			}
+		}
+
+		std::string in_out = "IN";
+		switch(entry.type) {
+			case mmx::tx_type_e::SPEND:
+			case mmx::tx_type_e::TXFEE:   in_out = "OUT"; break;
+			default: break;
+		}
+
+		if(entry.is_pending) {
+			continue;
+		} else {
+			std::cout << entry.height;
+		}
+		std::cout << "," << entry.type.to_string_value() << ",\"" << mmx::to_value(entry.amount, decimals) << "\""
+				<< "," << symbol << "," << entry.amount << "," << in_out << "," << entry.address << "," << entry.txid
+				<< "," << entry.time_stamp / 1000 << "," << vnx::get_date_string_ex("%Y-%m-%dT%H:%M", false, entry.time_stamp / 1000);
+
+		std::cout << ",\"" << (entry.memo ? vnx::string_subs(*entry.memo, "\"", "\"\"") : "") << "\"";
+		std::cout << std::endl;
+	}
+}
+
 void print_tx(std::shared_ptr<const mmx::Transaction> tx, mmx::NodeClient& node, std::shared_ptr<const mmx::ChainParams> params)
 {
 	std::cout << "TX ID: " << tx->id << std::endl;
@@ -970,14 +1021,19 @@ int main(int argc, char** argv)
 					std::cerr << "mmx wallet swap [info | add | remove | payout] [-a <amount>] [-b <amount>] -x <contract>" << std::endl;
 				}
 			}
-			else if(command == "log")
+			else if(command == "log" || command == "log_csv")
 			{
 				mmx::query_filter_t filter;
 				filter.limit = limit;
 				filter.with_pending = true;
 				vnx::read_config("$3", filter.since);
 
-				show_history(wallet.get_history(index, filter), node, params);
+				const auto data = wallet.get_history(index, filter);
+				if(command == "log_csv") {
+					show_history_csv(data, node, params);
+				} else {
+					show_history(data, node, params);
+				}
 			}
 			else if(command == "lock")
 			{
@@ -1214,7 +1270,7 @@ int main(int argc, char** argv)
 				}
 			}
 			else {
-				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | new | import | remove | accounts | keys | lock | unlock | plotnft]" << std::endl;
+				std::cerr << "Help: mmx wallet [show | get | log | send | send_from | offer | trade | accept | buy | sell | swap | mint | deploy | exec | transfer | create | new | import | remove | accounts | keys | lock | unlock | plotnft | log_csv]" << std::endl;
 			}
 
 			if(tx) {
@@ -1279,7 +1335,7 @@ int main(int argc, char** argv)
 					std::cout << "Block[" << (info->height - i) << "] " << (hash ? *hash : mmx::hash_t()) << std::endl;
 				}
 			}
-			else if(command == "history")
+			else if(command == "history" || command == "history_csv")
 			{
 				mmx::addr_t address;
 				if(!vnx::read_config("$3", address)) {
@@ -1290,7 +1346,12 @@ int main(int argc, char** argv)
 				filter.limit = limit;
 				vnx::read_config("$4", filter.since);
 
-				show_history(node.get_history({address}, filter), node, params);
+				const auto data = node.get_history({address}, filter);
+				if(command == "history_csv") {
+					show_history_csv(data, node, params);
+				} else {
+					show_history(data, node, params);
+				}
 			}
 			else if(command == "peers")
 			{
@@ -1759,7 +1820,7 @@ int main(int argc, char** argv)
 				std::cout << "Price: " << price << " " << symbols[1] << " / " << symbols[0] << std::endl;
 			}
 			else {
-				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | history | offers | swaps | swap | sync | revert | call | send | read | dump | dump_code]" << std::endl;
+				std::cerr << "Help: mmx node [info | peers | tx | get | fetch | balance | history | offers | swaps | swap | sync | revert | call | send | read | dump | dump_code | history_csv]" << std::endl;
 			}
 		}
 		else if(module == "farm" || module == "harvester")

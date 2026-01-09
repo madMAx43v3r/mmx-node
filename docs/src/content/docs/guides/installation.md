@@ -5,14 +5,15 @@ description: How to install MMX Node.
 
 ## Windows
 
-Windows installers are available here: https://github.com/madMAx43v3r/mmx-node/releases
+Windows installers are available here: [mmx-node/releases](https://github.com/madMAx43v3r/mmx-node/releases)
 
-You might need to install or update "Microsoft Visual C++ Redistributable for Visual Studio 2022" to the latest:\
-Scroll down to "Other Tools" here: https://visualstudio.microsoft.com/downloads/
+:::note[Note]
+You might need to install or update [Microsoft Visual C++ Redistributable for Visual Studio 2022](https://visualstudio.microsoft.com/downloads/). Scroll down to "Other Tools".
+:::
 
 ## Linux
 
-Linux binary packages are available here: https://github.com/madMAx43v3r/mmx-node/releases
+Linux binary packages are available here: [mmx-node/releases](https://github.com/madMAx43v3r/mmx-node/releases)
 
 To install a binary package:
 ```bash frame="none"
@@ -49,7 +50,9 @@ sudo yum install kernel-devel git cmake automake libtool curl gcc gcc-c++ miniup
 sudo yum install qt5-qtwebengine-devel  # for native GUI
 ```
 
-Note: To enable CUDA support, CUDA needs to be installed: https://developer.nvidia.com/cuda-downloads
+:::note[Note]
+To enable CUDA support, CUDA needs to be installed: [CUDA Toolkit Downloads](https://developer.nvidia.com/cuda-downloads).
+:::
 
 ### Building from Source
 
@@ -59,8 +62,8 @@ cd mmx-node
 ./update.sh
 ```
 
-To disable QT GUI: `./update.sh -D DISABLE_QT=1` \
-To disable CUDA support: `./update.sh -D DISABLE_CUDA=1` \
+To disable QT GUI: `./update.sh -D DISABLE_QT=1`\
+To disable CUDA support: `./update.sh -D DISABLE_CUDA=1`\
 These settings are stored, until the next `./clean_all.sh`, so only needs to be specified once. To enable again, set the config to `0`.
 
 To update to latest version:
@@ -79,16 +82,15 @@ This is needed when updating system packages for example.
 
 ## Windows via WSL
 
-To setup Ubuntu 20.04 in WSL on Windows you can follow the tutorial over here: \
-https://docs.microsoft.com/en-us/learn/modules/get-started-with-windows-subsystem-for-linux/
+To setup Ubuntu 20.04 in WSL on Windows you can follow the tutorial over here:\
+[Get started with Windows Subsystem for Linux](https://docs.microsoft.com/en-us/learn/modules/get-started-with-windows-subsystem-for-linux/)
 
-Make sure to install Ubuntu in step 2: https://www.microsoft.com/store/p/ubuntu/9nblggh4msv6
+In steps, make sure to install: [Ubuntu on Windows](https://www.microsoft.com/store/p/ubuntu/9nblggh4msv6)
 
 Then type "Ubuntu" in the start menu and start it, you will be asked to setup a user and password.
 After that you can follow the normal instructions for Ubuntu 20.04.
 
-To get OpenCL working in WSL:
-https://devblogs.microsoft.com/commandline/oneapi-l0-openvino-and-opencl-coming-to-the-windows-subsystem-for-linux-for-intel-gpus/
+To get OpenCL working in WSL: [OpenCL coming to WSL](https://devblogs.microsoft.com/commandline/oneapi-l0-openvino-and-opencl-coming-to-the-windows-subsystem-for-linux-for-intel-gpus/)
 
 ## Custom storage path
 
@@ -96,7 +98,8 @@ To change the storage path for everything you can set environment variable `MMX_
 
 ## Testnet
 
-To run a node on testnet: `echo testnet13 > NETWORK` and restart. \
+To run a node on testnet: `echo testnet13 > NETWORK` and restart.\
 To switch back to mainnet: `rm NETWORK` and restart.
 
-Alternatively, it's possible to run testnet in parallel via docker: https://github.com/madMAx43v3r/mmx-node/tree/master/scripts/docker/mmx-testnet
+Alternatively, it's possible to run testnet in parallel via docker:\
+[mmx-node/scripts/docker/mmx-testnet](https://github.com/madMAx43v3r/mmx-node/tree/master/scripts/docker/mmx-testnet)

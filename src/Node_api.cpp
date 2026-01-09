@@ -915,7 +915,11 @@ vnx::Variant Node::call_contract(
 			try {
 				vm::execute(engine, *func, false);
 			} catch(const std::exception& ex) {
-				throw std::runtime_error("exception at 0x" + vnx::to_hex_string(engine->error_addr) + ": " + ex.what());
+				if(auto line = bin->find_line(engine->error_addr)) {
+					throw std::runtime_error("exception at 0x" + vnx::to_hex_string(engine->error_addr) + ", line " + std::to_string(*line) + ": " + ex.what());
+				} else {
+					throw std::runtime_error("exception at 0x" + vnx::to_hex_string(engine->error_addr) + ": " + ex.what());
+				}
 			}
 			return vm::read(engine, vm::MEM_STACK);
 		}

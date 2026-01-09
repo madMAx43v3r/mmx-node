@@ -14,7 +14,10 @@
 #include <mmx/pos/cuda_recompute.h>
 #endif
 
+#include <mmx/ProofServerClient.hxx>
+
 #include <set>
+#include <atomic>
 #include <algorithm>
 #include <vnx/vnx.h>
 #include <vnx/ThreadPool.h>
@@ -28,6 +31,14 @@ static constexpr uint32_t MEM_SIZE = 32 * 32;
 static std::mutex g_mutex;
 static std::shared_ptr<vnx::ThreadPool> g_threads;
 
+static bool have_init = false;
+static bool remote_compute = false;
+
+
+void set_remote_compute(bool enable)
+{
+	remote_compute = enable;
+}
 
 void compute_f1(std::vector<uint32_t>* X_out,
 				std::vector<uint32_t>& Y_out,
@@ -88,8 +99,41 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 		throw std::logic_error("invalid xbits");
 	}
 
+	if(!have_init)
+	{
+		std::lock_guard<std::mutex> lock(g_mutex);
+		if(!have_init) {
+			have_init = true;
+			vnx::read_config("mmx_pos.remote_compute", remote_compute);
+		}
+	}
+	if(remote_compute)
+	{
+		static thread_local std::unique_ptr<ProofServerClient> server;
+		if(!server) {
+			server = std::make_unique<ProofServerClient>("ProofServer");
+		}
+		if(X_out) {
+			X_out->clear();
+		}
+		std::vector<std::pair<uint32_t, bytes_t<META_BYTES_OUT>>> out;
+		try {
+			const auto res = server->compute(X_values, id, ksize, xbits);
+			for(const auto& entry : res) {
+				if(X_out) {
+					X_out->insert(X_out->end(), entry.x_values.begin(), entry.x_values.end());
+				}
+				out.emplace_back(entry.y, entry.meta);
+			}
+		} catch(const std::exception& ex) {
+			throw std::runtime_error("remote compute failed with: " + std::string(ex.what()));
+		}
+		return out;
+	}
+
 #ifdef WITH_CUDA
-	if(have_cuda_recompute()) {
+	if(have_cuda_recompute() && X_values.size() == 256)
+	{
 		const auto job = cuda_recompute(ksize, xbits, id, X_values);
 		const auto res = cuda_recompute_poll({job});
 		if(res) {

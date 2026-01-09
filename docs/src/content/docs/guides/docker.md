@@ -89,11 +89,14 @@ services:
       MMX_HARVESTER_ENABLED: 'true'  # Set to false to disable local harvester
       MMX_FARMER_ENABLED: 'true'  # Set to false to disable local farmer
 ```
-Note: Intel ARC support requires a host system running Linux Kernel 6.3 or above
+
+:::note[Note]
+Intel ARC support requires a host system running Linux Kernel 6.3 or above.
+:::
 
 ### NVIDIA GPU
 
-For nvidia gpu support please see the following `compose.yml`:
+For Nvidia gpu support please see the following `compose.yml`:
 ```yml
 services:
   node:
@@ -112,11 +115,14 @@ services:
       MMX_HARVESTER_ENABLED: 'true'  # Set to false to disable local harvester
       MMX_FARMER_ENABLED: 'true'  # Set to false to disable local farmer
 ```
-Note: for nvidia you also need the `NVIDIA Container Toolkit` installed on the host, for more info please see: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+
+:::note[Note]
+For Nvidia you also need the `NVIDIA Container Toolkit` installed on the host, for more info please see: [Installing the NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+:::
 
 ## Remote Services
 
- - Running a remote harvester or farmer can be done by overwriting the `CMD` of the Dockerfile, for example like this:
+Running a remote harvester or farmer can be done by overwriting the `CMD` of the Dockerfile, for example like this:
 
 ### Remote Harvester
 

@@ -1,0 +1,768 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
+---
+
+<!--*
+    * File: time-calculator.astro
+    *
+    * Source: https://github.com/madMAx43v3r/mmx-node/docs/src/pages/tools/time-calculator.astro
+    * URL: https://docs.mmx.network/tools/time-calculator/
+    *
+    *-->
+
+<!-- Starlight design for Astro page -->
+
+<StarlightPage
+  frontmatter={{
+    title: 'Time Calculator',
+    description: 'Simple calculator to lookup or estimate blockchain heights, time and date.',
+  }}
+  headings={[
+    { depth: 3, slug: 'lookup-height', text: 'Lookup height' },
+    { depth: 3, slug: 'estimate-height', text: 'Estimate height' },
+  ]}
+>
+
+<!-- HTML content -->
+
+<p>
+  Simple calculator to lookup or estimate heights, time and date.<br>
+  Read this <a href="../../../faq/node/#what-is-vdf-height">FAQ</a> entry for understanding of height vs. VDF height.
+</p>
+
+<AnchorHeading level="3" id="lookup-height">Lookup height</AnchorHeading>
+
+<p><a href="../../../software/rpc_protocol/">RPC</a> query data from public blockchain <a href="https://explore.mmx.network/">explorer</a>.</p>
+
+<table>
+  <tr>
+    <td align="left">Height</td>
+    <td align="left">
+      <input type="text" size="15" id="lookupheight">
+      <button type="button" id="lookupbuttonheight">Query</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">VDF Height</td>
+    <td align="left">
+      <input type="text" size="15" id="lookupvdf">
+      <button type="button" id="lookupbuttonvdf">Query</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">Timestamp</td>
+    <td align="left"><span id="lookuptimestamp"></span></td>
+  </tr>
+  <tr>
+    <td align="left">Local Time</td>
+    <td align="left"><span id="lookuplocaltime"></span></td>
+  </tr>
+  <tr>
+    <td align="left">UTC Time</td>
+    <td align="left"><span id="lookuputctime"></span></td>
+  </tr>
+  <tr>
+    <td align="left">Discord</td>
+    <td align="left"><span id="lookupdiscord"></span></td>
+  </tr>
+  <tr>
+    <td align="left">Proof Score</td>
+    <td align="left"><span id="lookupproof"></span></td>
+  </tr>
+</table>
+
+<AnchorHeading level="3" id="estimate-height">Estimate height</AnchorHeading>
+
+<p>Estimate result for a given height or timestamp.</p>
+
+<table>
+  <tr>
+    <td align="left">Height</td>
+    <td align="left">
+      <input type="text" size="15" id="estimateheight">
+      <button type="button" id="estimatebuttonheight">Estimate</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">VDF Height</td>
+    <td align="left">
+      <input type="text" size="15" id="estimatevdf">
+      <button type="button" id="estimatebuttonvdf">Estimate</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">Timestamp</td>
+    <td align="left">
+      <input type="text" size="15" id="estimatetimestamp">
+      <button type="button" id="estimatebuttontimestamp">Estimate</button>
+    </td>
+  </tr>
+  <tr>
+    <td align="left">Local Time</td>
+    <td align="left"><span id="estimatelocaltime"></span></td>
+  </tr>
+  <tr>
+    <td align="left">UTC Time</td>
+    <td align="left"><span id="estimateutctime"></span></td>
+  </tr>
+  <tr>
+    <td align="left">Discord</td>
+    <td align="left"><span id="estimatediscord"></span></td>
+  </tr>
+</table>
+
+<details>
+  <summary>Estimating with data from height <span id="estpheight"></span></summary>
+  <p>
+    VDF height: <span id="estpvdf"></span><br>
+    Timestamp: <span id="estptimestamp"></span><br>
+    <span id="estpnontx"></span>% non-TX heights, previous 500k<br>
+    <span id="estp10sdev"></span>% 10 sec deviation, previous 500k
+  </p>
+</details>
+<button type="button" id="estimatebuttonupdate">Query updated estimate data</button>
+
+</StarlightPage>
+
+<!-- JavaScript code -->
+
+<script>
+
+/* ---
+ * Variables used throughout Time Calculator
+ */
+
+var urlrpcserver = "https://rpc.mmx.network";
+var urlexpserver = "https://explore.mmx.network";
+
+var localeFormat = "en-GB";
+var localeOptLocal = { hour12: false, weekday: "short", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZoneName: "short" };
+var localeOptUTC = { timeZone: "UTC", hour12: false, weekday: "short", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZoneName: "short" };
+
+/* ---
+ * initfunc() - initialize internal logic for Time Calculator
+ */
+
+window.onload = function(){ initfunc(); };
+
+function initfunc()
+{
+ document.getElementById("lookupheight").addEventListener("keydown", function(){ if(event.key === "Enter"){ lookupheightfunc(); } } );
+ document.getElementById("lookupbuttonheight").addEventListener("click", function(){ lookupheightfunc(); } );
+
+ document.getElementById("lookupvdf").addEventListener("keydown", function(){ if(event.key === "Enter"){ lookupvdffunc(); } } );
+ document.getElementById("lookupbuttonvdf").addEventListener("click", function(){ lookupvdffunc(); } );
+
+ document.getElementById("estimateheight").addEventListener("keydown", function(){ if(event.key === "Enter"){ estimatefunc("height"); } } );
+ document.getElementById("estimatebuttonheight").addEventListener("click", function(){ estimatefunc("height"); } );
+ document.getElementById("estimatevdf").addEventListener("keydown", function(){ if(event.key === "Enter"){ estimatefunc("vdf"); } } );
+ document.getElementById("estimatebuttonvdf").addEventListener("click", function(){ estimatefunc("vdf"); } );
+ document.getElementById("estimatetimestamp").addEventListener("keydown", function(){ if(event.key === "Enter"){ estimatefunc("timestamp"); } } );
+ document.getElementById("estimatebuttontimestamp").addEventListener("click", function(){ estimatefunc("timestamp"); } );
+
+ document.getElementById("estimatebuttonupdate").addEventListener("click", function(){ estimateupdatefunc(); } );
+
+ estimatedata.paramHeight = estimatedata.paramQToHeight;
+ estimatedata.paramVDF = estimatedata.paramQToVDF;
+ estimatedata.paramTimestamp = estimatedata.paramQToTimestamp;
+ estimatedata.paramNonTX = (estimatedata.paramQToVDF - estimatedata.paramQFromVDF) / (estimatedata.paramQToHeight - estimatedata.paramQFromHeight);
+ estimatedata.param10sDev = (estimatedata.paramQToTimestamp - estimatedata.paramQFromTimestamp) / ((estimatedata.paramQToHeight - estimatedata.paramQFromHeight) * 10 * 1000);
+
+ document.getElementById("estpheight").innerHTML = estimatedata.paramHeight;
+ document.getElementById("estpvdf").innerHTML = estimatedata.paramVDF;
+ document.getElementById("estptimestamp").innerHTML = estimatedata.paramTimestamp;
+ document.getElementById("estpnontx").innerHTML = ((estimatedata.paramNonTX - 1) * 100).toFixed(4);
+ document.getElementById("estp10sdev").innerHTML = ((estimatedata.param10sDev - 1) * 100).toFixed(4);
+}
+
+/* ---
+ * lookupheightfunc() - Main entrypoint/callback for 'Lookup height' logic, Height
+ */
+
+const lookupheightdata = {
+  stage: 0,
+  callcount: 0,
+
+  querylatest: false,
+  queryheight: 0,
+
+  findvdf: 0,
+  findtimestamp: 0,
+  findproof: "",
+
+  fallback: false,
+  fallbackmsg: ""
+  }
+
+function lookupheightfunc(callback = false, jsondata = null, status = null)
+{
+ if(lookupheightdata.stage > 0 && !callback){ return; }
+
+ ++(lookupheightdata.callcount);
+ if(lookupheightdata.callcount > 10) return; // Failsafe, if too many calls/iters, one query
+
+ if(lookupheightdata.stage <= 0){ // Stage 0: Query 'Height' button/enter pressed
+   lookupheightdata.stage = 1;
+   lookupheightdata.callcount = 1;
+   lookup_disabled(true);
+
+   lookupheightdata.querylatest = (document.getElementById("lookupheight").value == "") ? true : false;
+   lookupheightdata.queryheight = lookup_getvalue(document.getElementById("lookupheight").value);
+   lookupheightdata.findvdf = 0;
+   lookupheightdata.findtimestamp = 0;
+   lookupheightdata.findproof = "";
+
+   lookupheightdata.fallback = false;
+   lookupheightdata.fallbackmsg = "";
+
+   lookup_output(lookupheightdata.querylatest ? null : lookupheightdata.queryheight, "", "...", "...", "...", "...", "...");
+
+   if(lookupheightdata.querylatest){ // Input field empty, query chain height
+     lookupheightdata.stage = 1;
+     rpcquerynodeinfo(lookupheightfunc);
+     return;
+     }
+
+   lookupheightdata.stage = 2;
+   rpcqueryheight(lookupheightdata.queryheight, lookupheightfunc);
+   return;
+   }
+
+ else if(lookupheightdata.stage == 1){ // Stage 1: Callback with chain height
+   if(status != 200){ // Fallback, no response
+      lookupheightdata.fallback = true;
+      lookupheightdata.fallbackmsg = "no response";
+      lookupheightdata.stage = 9;
+      lookupheightfunc(true, null, null);
+      return;
+      }
+
+   lookupheightdata.queryheight = lookup_getvalue(jsondata["height"]);
+
+   lookupheightdata.stage = 2;
+   rpcqueryheight(lookupheightdata.queryheight, lookupheightfunc);
+   return;
+   }
+
+ else if(lookupheightdata.stage == 2){ // Stage 2: Callback with height data
+   if(status != 200){ // Fallback, no height data, no response
+     lookupheightdata.fallback = true;
+     lookupheightdata.fallbackmsg = (status == 204) ? "no height data" : "no response";
+     lookupheightdata.stage = 9;
+     lookupheightfunc(true, null, null);
+     return;
+     }
+
+   var blockheight = lookup_getvalue(jsondata["height"]);
+   var blockvdf = lookup_getvalue(jsondata["vdf_height"]);
+   var blocktimestamp = lookup_getvalue(jsondata["time_stamp"]);
+   var blockproof = lookup_getvalue(jsondata["score"]);
+   var blockksize = lookup_getvalue(jsondata["ksize"]);
+   var blockvdfcount = lookup_getvalue(jsondata["vdf_count"]);
+
+   lookupheightdata.findvdf = blockvdf;
+   lookupheightdata.findtimestamp = blocktimestamp;
+   lookupheightdata.findproof = (blockheight == 0) ? "n/a" : blockproof + " (k" + blockksize + ", VDF: +" + blockvdfcount + ', <a href="' + urlexpserver + '/#/explore/block/height/' + blockheight + '">more</a>)';
+   lookupheightdata.stage = 9;
+   lookupheightfunc(true, null, null);
+   return;
+   }
+
+ else if(lookupheightdata.stage == 9){ // Stage 9: Output result of query
+   var outputtemp = "<em>" + (lookupheightdata.fallback ? lookupheightdata.fallbackmsg : "unknown") + "</em>";
+
+   var outputheight = null;
+   var outputvdf = "";
+   var outputtimestamp = outputtemp;
+   var outputlocaltime = outputtemp;
+   var outpututctime = outputtemp;
+   var outputdiscord = outputtemp;
+   var outputproof = outputtemp;
+
+   if(!lookupheightdata.fallback){
+     outputheight = lookupheightdata.queryheight;
+     outputvdf = lookupheightdata.findvdf;
+     outputtimestamp = lookupheightdata.findtimestamp + ' (ms, <a href="https://www.unixtimestamp.com/">Unix</a>)';
+     const datetimestamp = new Date(lookupheightdata.findtimestamp);
+     outputlocaltime = datetimestamp.toLocaleString(localeFormat, localeOptLocal);
+     outpututctime = datetimestamp.toLocaleString(localeFormat, localeOptUTC);
+     outputdiscord = "<code>&lt;t:" + Math.round(lookupheightdata.findtimestamp / 1000) + ":F&gt;</code>"  + ' (<a href="https://discord.com/developers/docs/reference#message-formatting-timestamp-styles">style</a>)';
+     outputproof = lookupheightdata.findproof;
+     }
+
+   lookup_output((outputheight != null) ? outputheight : null, outputvdf, outputtimestamp, outputlocaltime, outpututctime, outputdiscord, outputproof);
+
+   lookup_disabled(false);
+   lookupheightdata.callcount = 0;
+   lookupheightdata.stage  = 0;
+   return;
+   }
+}
+
+/* ---
+ * lookupvdffunc() - Main entrypoint/callback for 'Lookup height' logic, VDF Height
+ */
+
+const lookupvdfdata = {
+  stage: 0,
+  callcount: 0,
+
+  chainheight: 0,
+  chainvdf: 0,
+
+  querylatest: false,
+  queryvdf: 0,
+
+  findheight: 0,
+  findheightprev1x: -1,
+  findheightprev2x: -1,
+  findheightrepeat: false,
+  findtimestamp: 0,
+  findproof: "",
+
+  fallback: false,
+  fallbackmsg: "",
+
+  paramNonTX: 1.02 // Using static 2% estimate for VDF vs height ratio
+  }
+
+function lookupvdffunc(callback = false, jsondata = null, status = null)
+{
+ if(lookupvdfdata.stage > 0 && !callback){ return; }
+
+ ++(lookupvdfdata.callcount);
+ if(lookupvdfdata.callcount > 10) return; // Failsafe, if too many calls/iters, one query
+
+ if(lookupvdfdata.stage <= 0){ // Stage 0: Query 'VDF Height' button/enter pressed
+   lookupvdfdata.stage = 1;
+   lookupvdfdata.callcount = 1;
+   lookup_disabled(true);
+
+   lookupvdfdata.chainheight = 0;
+   lookupvdfdata.chainvdf = 0;
+   lookupvdfdata.querylatest = (document.getElementById("lookupvdf").value == "") ? true : false;
+   lookupvdfdata.queryvdf = lookup_getvalue(document.getElementById("lookupvdf").value);
+   lookupvdfdata.findheight = 0;
+   lookupvdfdata.findheightprev1x = -1;
+   lookupvdfdata.findheightprev2x = -1;
+   lookupvdfdata.findheightrepeat = false;
+   lookupvdfdata.findtimestamp = 0;
+   lookupvdfdata.findproof = "";
+
+   lookupvdfdata.fallback = false;
+   lookupvdfdata.fallbackmsg = "";
+
+   lookup_output("", lookupvdfdata.querylatest ? null : lookupvdfdata.queryvdf, "...", "...", "...", "...", "...");
+
+   lookupvdfdata.stage  = 1;
+   rpcquerynodeinfo(lookupvdffunc);
+   return;
+   }
+
+ else if(lookupvdfdata.stage == 1){ // Stage 1: Callback with chain height
+   if(status != 200){ // Fallback, no response
+      lookupvdfdata.fallback = true;
+      lookupvdfdata.fallbackmsg = "no response";
+      lookupvdfdata.stage = 9;
+      lookupvdffunc(true, null, null);
+      return;
+      }
+
+   lookupvdfdata.chainheight = lookup_getvalue(jsondata["height"]);
+   lookupvdfdata.chainvdf = lookup_getvalue(jsondata["vdf_height"]);
+
+   if(lookupvdfdata.querylatest) lookupvdfdata.queryvdf = lookupvdfdata.chainvdf;
+
+   if(!lookupvdfdata.querylatest && lookupvdfdata.queryvdf > lookupvdfdata.chainvdf){ // Fallback, no height data
+     lookupvdfdata.fallback = true;
+     lookupvdfdata.fallbackmsg = "no height data";
+     lookupvdfdata.stage = 9;
+     lookupvdffunc(true, null, null);
+     return;
+     }
+
+   lookupvdfdata.findheight = lookupvdfdata.querylatest ? lookupvdfdata.chainheight : Math.round(lookupvdfdata.queryvdf / lookupvdfdata.paramNonTX);
+   if(lookupvdfdata.findheight < 0) lookupvdfdata.findheight = 0;
+   if(lookupvdfdata.findheight > lookupvdfdata.chainheight) lookupvdfdata.findheight = lookupvdfdata.chainheight;
+   lookupvdfdata.findheightprev2x = lookupvdfdata.findheightprev1x;
+   lookupvdfdata.findheightprev1x = lookupvdfdata.findheight;
+
+   lookupvdfdata.stage = 2;
+   rpcqueryheight(lookupvdfdata.findheight, lookupvdffunc);
+   return;
+   }
+
+ else if(lookupvdfdata.stage == 2){ // Stage 2: Callback with height data
+   if(status != 200){ // Fallback, no response
+     lookupvdfdata.fallback = true;
+     lookupvdfdata.fallbackmsg = "no response";
+     lookupvdfdata.stage = 9;
+     lookupvdffunc(true, null, null);
+     return;
+     }
+
+   var blockheight = lookup_getvalue(jsondata["height"]);
+   var blockvdf = lookup_getvalue(jsondata["vdf_height"]);
+   var blocktimestamp = lookup_getvalue(jsondata["time_stamp"]);
+   var blockproof = lookup_getvalue(jsondata["score"]);
+   var blockksize = lookup_getvalue(jsondata["ksize"]);
+   var blockvdfcount = lookup_getvalue(jsondata["vdf_count"]);
+
+   if(blockvdf == lookupvdfdata.queryvdf || lookupvdfdata.querylatest){ // Found, use/output block height data
+     lookupvdfdata.findheight = blockheight;
+     lookupvdfdata.findtimestamp = blocktimestamp;
+     lookupvdfdata.findproof = (blockheight == 0) ? "n/a" : blockproof + " (k" + blockksize + ", VDF: +" + blockvdfcount + ', <a href="' + urlexpserver + '/#/explore/block/height/' + blockheight + '">more</a>)';
+     lookupvdfdata.stage = 9;
+     lookupvdffunc(true, null, null);
+     return;
+     }
+
+   if(blockvdfcount > 1 && lookupvdfdata.queryvdf > (blockvdf - blockvdfcount) && lookupvdfdata.queryvdf < blockvdf){ // Fallback, non-TX VDF height
+     lookupvdfdata.fallback = true;
+     lookupvdfdata.fallbackmsg = "non-tx vdf height";
+     lookupvdfdata.stage = 9;
+     lookupvdffunc(true, null, null);
+     return;
+     }
+
+   var blockadjust = Math.round((lookupvdfdata.queryvdf - blockvdf) / lookupvdfdata.paramNonTX);
+   if(lookupvdfdata.findheight + blockadjust == lookupvdfdata.findheightprev2x) lookupvdfdata.findheightrepeat = true;
+
+   if(lookupvdfdata.findheightrepeat && blockadjust < 0) blockadjust = -1;
+   if(lookupvdfdata.findheightrepeat && blockadjust >= 0) blockadjust = 1;
+   lookupvdfdata.findheight += blockadjust;
+   if(lookupvdfdata.findheight < 0) lookupvdfdata.findheight = 0;
+   if(lookupvdfdata.findheight > lookupvdfdata.chainheight) lookupvdfdata.findheight = lookupvdfdata.chainheight;
+   lookupvdfdata.findheightprev2x = lookupvdfdata.findheightprev1x;
+   lookupvdfdata.findheightprev1x = lookupvdfdata.findheight;
+
+   lookupvdfdata.stage = 2;
+   rpcqueryheight(lookupvdfdata.findheight, lookupvdffunc);
+   return;
+   }
+
+ else if(lookupvdfdata.stage == 9){ // Stage 9: Output result of query
+   var outputtemp = "<em>" + (lookupvdfdata.fallback ? lookupvdfdata.fallbackmsg : "unknown") + "</em>";
+
+   var outputheight = "";
+   var outputvdf = null;
+   var outputtimestamp = outputtemp;
+   var outputlocaltime = outputtemp;
+   var outpututctime = outputtemp;
+   var outputdiscord = outputtemp;
+   var outputproof = outputtemp;
+
+   if(!lookupvdfdata.fallback){
+     outputheight = lookupvdfdata.findheight;
+     outputvdf = lookupvdfdata.queryvdf;
+     outputtimestamp = lookupvdfdata.findtimestamp + ' (ms, <a href="https://www.unixtimestamp.com/">Unix</a>)';
+     const datetimestamp = new Date(lookupvdfdata.findtimestamp);
+     outputlocaltime = datetimestamp.toLocaleString(localeFormat, localeOptLocal);
+     outpututctime = datetimestamp.toLocaleString(localeFormat, localeOptUTC);
+     outputdiscord = "<code>&lt;t:" + Math.round(lookupvdfdata.findtimestamp / 1000) + ":F&gt;</code>"  + ' (<a href="https://discord.com/developers/docs/reference#message-formatting-timestamp-styles">style</a>)';
+     outputproof = lookupvdfdata.findproof;
+     }
+
+   lookup_output(outputheight, (outputvdf != null) ? outputvdf : null, outputtimestamp, outputlocaltime, outpututctime, outputdiscord, outputproof);
+
+   lookup_disabled(false);
+   lookupvdfdata.callcount = 0;
+   lookupvdfdata.stage  = 0;
+   return;
+   }
+}
+
+/* ---
+ * lookup_disabled() - Disable/enable 'Lookup height' input elements HTML
+ */
+
+function lookup_disabled(disabled = false)
+{
+ document.getElementById("lookupheight").disabled = disabled;
+ document.getElementById("lookupbuttonheight").disabled = disabled;
+ document.getElementById("lookupvdf").disabled = disabled;
+ document.getElementById("lookupbuttonvdf").disabled = disabled;
+}
+
+/* ---
+ * lookup_getvalue() - Secure 'Lookup height' value, positive integer
+ */
+
+function lookup_getvalue(value = null)
+{
+ if(value == null) return 0;
+ value = Number(value);
+ if(value !== value) value = 0;
+ if(value < 0) value = 0;
+ return Math.floor(value);
+}
+
+/* ---
+ * lookup_output() - Output values to 'Lookup height' elements HTML
+ */
+
+function lookup_output(height = null, vdf = null, timestamp = null, localtime = null, utctime = null, discord = null, proof = null)
+{
+ if(height != null) document.getElementById("lookupheight").value = height;
+ if(vdf != null)  document.getElementById("lookupvdf").value = vdf;
+ if(timestamp != null) document.getElementById("lookuptimestamp").innerHTML = timestamp;
+ if(localtime != null) document.getElementById("lookuplocaltime").innerHTML = localtime;
+ if(utctime != null) document.getElementById("lookuputctime").innerHTML = utctime;
+ if(discord != null) document.getElementById("lookupdiscord").innerHTML = discord;
+ if(proof != null) document.getElementById("lookupproof").innerHTML = proof;
+}
+
+/* ---
+ * estimatefunc() -  Main entrypoint/callback for 'Estimate height' logic
+ */
+
+const estimatedata = {
+  stage: 0,
+
+  paramQToHeight: 1000000,
+  paramQToVDF: 1019055,
+  paramQToTimestamp: 1747121045546,
+
+  paramQFromHeight: 500000,
+  paramQFromVDF: 509337,
+  paramQFromTimestamp: 1742121511863,
+
+  paramHeight: 0,
+  paramVDF: 0,
+  paramTimestamp: 0,
+  paramNonTX: 0,
+  param10sDev: 0
+  }
+
+function estimatefunc(button = null)
+{
+ if(estimatedata.stage > 0) return;
+ estimatedata.stage = 1;
+ estimate_disabled(true);
+
+ var estimateheight = estimate_getvalue(document.getElementById("estimateheight").value);
+ var estimatevdf = estimate_getvalue(document.getElementById("estimatevdf").value);
+ var estimatetimestamp = estimate_getvalue(document.getElementById("estimatetimestamp").value);
+
+ var outputheight = "";
+ var outputvdf = "";
+ var outputtimestamp = "";
+ var outputlocaltime = "...";
+ var outpututctime = "...";
+ var outputdiscord = "...";
+
+ estimate_output(outputheight, outputvdf, outputtimestamp, outputlocaltime, outpututctime, outputdiscord);
+
+ if(button === "vdf"){ // Estimate: VDF Height
+   outputvdf = estimatevdf;
+   outputheight = Math.round(estimatedata.paramHeight + ((outputvdf - estimatedata.paramVDF) / estimatedata.paramNonTX));
+   outputtimestamp = Math.round(estimatedata.paramTimestamp + (((outputheight - estimatedata.paramHeight) * estimatedata.param10sDev) * 10 * 1000));
+   }
+ else if(button === "timestamp"){ // Estimate: Timestamp
+   outputtimestamp = estimatetimestamp;
+   outputheight = Math.round(estimatedata.paramHeight + (((outputtimestamp - estimatedata.paramTimestamp) / estimatedata.param10sDev) / 1000 / 10));
+   outputvdf = Math.round(estimatedata.paramVDF + ((outputheight - estimatedata.paramHeight) * estimatedata.paramNonTX));
+   }
+ else{ // Estimate: Height
+   outputheight = estimateheight;
+   outputvdf = Math.round(estimatedata.paramVDF + ((outputheight - estimatedata.paramHeight) * estimatedata.paramNonTX));
+   outputtimestamp = Math.round(estimatedata.paramTimestamp + (((outputheight - estimatedata.paramHeight) * estimatedata.param10sDev) * 10 * 1000));
+   }
+
+ const datetimestamp = new Date(outputtimestamp);
+ outputlocaltime = datetimestamp.toLocaleString(localeFormat, localeOptLocal);
+ outpututctime = datetimestamp.toLocaleString(localeFormat, localeOptUTC);
+ outputdiscord = "<code>&lt;t:" + Math.round(outputtimestamp / 1000) + ":F&gt;</code>"  + ' (<a href="https://discord.com/developers/docs/reference#message-formatting-timestamp-styles">style</a>)';
+
+ estimate_output(outputheight, outputvdf, outputtimestamp, outputlocaltime, outpututctime, outputdiscord);
+
+ estimate_disabled(false);
+ estimatedata.stage = 0;
+}
+
+/* ---
+ * estimate_disabled() - Disable/enable 'Estimate height' input elements HTML
+ */
+
+function estimate_disabled(disabled = false)
+{
+ document.getElementById("estimateheight").disabled = disabled;
+ document.getElementById("estimatebuttonheight").disabled = disabled;
+ document.getElementById("estimatevdf").disabled = disabled;
+ document.getElementById("estimatebuttonvdf").disabled = disabled;
+ document.getElementById("estimatetimestamp").disabled = disabled;
+ document.getElementById("estimatebuttontimestamp").disabled = disabled;
+}
+
+/* ---
+ * estimate_getvalue() - Secure 'Estimate height' value, numeric
+ */
+
+function estimate_getvalue(value = null)
+{
+ if(value == null) return 0;
+ value = Number(value);
+ if(value !== value) value = 0;
+ return Math.floor(value);
+}
+
+/* ---
+ * estimate_output() - Output values to 'Estimate height' elements HTML
+ */
+
+function estimate_output(height = null, vdf = null, timestamp = null, localtime = null, utctime = null, discord = null)
+{
+ if(height != null) document.getElementById("estimateheight").value = height;
+ if(vdf != null) document.getElementById("estimatevdf").value = vdf;
+ if(timestamp != null) document.getElementById("estimatetimestamp").value = timestamp;
+ if(localtime != null) document.getElementById("estimatelocaltime").innerHTML = localtime;
+ if(utctime != null) document.getElementById("estimateutctime").innerHTML = utctime;
+ if(discord != null) document.getElementById("estimatediscord").innerHTML = discord;
+}
+
+/* ---
+ * estimateupdatefunc() - Main entrypoint/callback for 'Estimate height (update)' logic
+ */
+
+const estimateupdatedata = {
+  stage: 0,
+  callcount: 0
+  }
+
+function estimateupdatefunc(callback = false, jsondata = null, status = null)
+{
+ if(estimateupdatedata.stage > 0 && !callback) return;
+
+ ++(estimateupdatedata.callcount);
+ if(estimateupdatedata.callcount > 10) return; // Failsafe, if too many calls/iters, one query
+
+ if(estimateupdatedata.stage <= 0){ // Stage 0: Update button pressed
+   estimateupdatedata.stage = 1;
+   estimateupdatedata.callcount = 1;
+   document.getElementById("estimatebuttonupdate").disabled = true;
+
+   estimateupdate_output("...", "...", "...", "...", "...");
+
+   estimateupdatedata.stage = 1;
+   rpcquerynodeinfo(estimateupdatefunc);
+
+   return;
+   }
+
+ else if(estimateupdatedata.stage == 1){ // Stage 1: Callback with chain height
+   if(status != 200){ estimateupdatedata.stage = 9; estimateupdatefunc(true, null, null); return; } // Fallback, keep existing data
+   var chainheight = estimateupdate_getvalue(jsondata["height"]);
+
+   estimateupdatedata.stage = 2;
+   rpcqueryheight(chainheight, estimateupdatefunc);
+   return;
+   }
+
+ else if(estimateupdatedata.stage == 2){ // Stage 2: Callback with 'to' height data
+   if(status != 200){ estimateupdatedata.stage = 9; estimateupdatefunc(true, null, null); return; } // Fallback, keep existing data
+   estimatedata.paramQToHeight = estimateupdate_getvalue(jsondata["height"]);
+   estimatedata.paramQToVDF = estimateupdate_getvalue(jsondata["vdf_height"]);
+   estimatedata.paramQToTimestamp = estimateupdate_getvalue(jsondata["time_stamp"]);
+
+   estimateupdatedata.stage = 3;
+   rpcqueryheight(estimatedata.paramQToHeight - 500000, estimateupdatefunc);
+   return;
+   }
+
+ else if(estimateupdatedata.stage == 3){ // Stage 3: Callback with 'from' height data
+   if(status != 200){ estimateupdatedata.stage = 9; estimateupdatefunc(true, null, null); return; } // Fallback, keep existing data
+   estimatedata.paramQFromHeight = estimateupdate_getvalue(jsondata["height"]);
+   estimatedata.paramQFromVDF = estimateupdate_getvalue(jsondata["vdf_height"]);
+   estimatedata.paramQFromTimestamp = estimateupdate_getvalue(jsondata["time_stamp"]);
+
+   estimatedata.paramHeight = estimatedata.paramQToHeight;
+   estimatedata.paramVDF = estimatedata.paramQToVDF;
+   estimatedata.paramTimestamp = estimatedata.paramQToTimestamp;
+   estimatedata.paramNonTX = (estimatedata.paramQToVDF - estimatedata.paramQFromVDF) / (estimatedata.paramQToHeight - estimatedata.paramQFromHeight);
+   estimatedata.param10sDev = (estimatedata.paramQToTimestamp - estimatedata.paramQFromTimestamp) / ((estimatedata.paramQToHeight - estimatedata.paramQFromHeight) * 10 * 1000);
+
+   estimateupdatedata.stage = 9;
+   estimateupdatefunc(true, null, null);
+   return;
+   }
+
+ else if(estimateupdatedata.stage == 9){ // Stage 9: Output updated estimate data
+   estimateupdate_output(estimatedata.paramHeight, estimatedata.paramVDF, estimatedata.paramTimestamp, ((estimatedata.paramNonTX - 1) * 100).toFixed(4), ((estimatedata.param10sDev - 1) * 100).toFixed(4));
+
+   document.getElementById("estimatebuttonupdate").disabled = false;
+   estimateupdatedata.callcount = 0;
+   estimateupdatedata.stage = 0;
+   return;
+   }
+}
+
+/* ---
+ * estimateupdate_getvalue() - Secure 'Lookup height (update)' value, positive integer
+ */
+
+function estimateupdate_getvalue(value = null)
+{
+ if(value == null) return 0;
+ value = Number(value);
+ if(value !== value) value = 0;
+ if(value < 0) value = 0;
+ return Math.floor(value);
+}
+
+/* ---
+ * estimateupdate_output() - Output values to 'Estimate height (update)' elements HTML
+ */
+
+function estimateupdate_output(pheight = null, pvdf = null, ptimestamp = null, pnontx = null, p10sdev = null)
+{
+ if(pheight != null) document.getElementById("estpheight").innerHTML = pheight;
+ if(pvdf != null) document.getElementById("estpvdf").innerHTML = pvdf;
+ if(ptimestamp != null) document.getElementById("estptimestamp").innerHTML = ptimestamp;
+ if(pnontx != null) document.getElementById("estpnontx").innerHTML = pnontx;
+ if(p10sdev != null) document.getElementById("estp10sdev").innerHTML = p10sdev;
+}
+
+/* ---
+ * rpcqueryheight() - rpc query MMX block with height data
+ */
+
+function rpcqueryheight(height = 0, callbackfunc = null)
+{
+ if(!callbackfunc) return;
+
+ fetch(urlrpcserver + "/block?height=" + height)
+   .then(response => {
+     return ((response.status == 200) ? response.json() : null);
+     })
+   .then(data => {
+     callbackfunc(true, data, data ? 200 : 204);
+     })
+   .catch(err => {
+     callbackfunc(true, null, 0);
+     });
+}
+
+/* ---
+ * rpcquerynodeinfo() - rpc query MMX node info with chain height
+ */
+
+function rpcquerynodeinfo(callbackfunc = null)
+{
+ if(!callbackfunc) return;
+
+ fetch(urlrpcserver + "/node/info")
+   .then(response => {
+     return ((response.status == 200) ? response.json() : null);
+     })
+   .then(data => {
+     callbackfunc(true, data, data ? 200 : 204);
+     })
+   .catch(err => {
+     callbackfunc(true, null, 0);
+     });
+}
+
+</script>
+
+<!-- <eof> -->

@@ -74,6 +74,7 @@ int main(int argc, char** argv)
 	{
 		vnx::test::expect(hash_t().to_string(), "0000000000000000000000000000000000000000000000000000000000000000");
 		vnx::test::expect(hash_t(std::string()).to_string(), "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855");
+		vnx::test::expect(hash_t::empty().to_string(), "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855");
 		vnx::test::expect(hash_t() < hash_t(), false);
 		vnx::test::expect(hash_t() > hash_t(), false);
 		vnx::test::expect(hash_t() < hash_t("1"), true);

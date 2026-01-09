@@ -16,6 +16,32 @@ function test1(a, b = 1) {
 assert(test1(1) == 2);
 assert(test1(1, 2) == 3);
 
+function no_return() {}
+
+assert(no_return() == null);
+
+function multi_return(v) {
+	if(v < 10) {
+		return "SMALL";
+	}
+	if(v < 100) {
+		return "MEDIUM";
+	}
+	return "LARGE";
+}
+
+assert(multi_return(0) == "SMALL");
+assert(multi_return(11) == "MEDIUM");
+assert(multi_return(111) == "LARGE");
+
+function return_array() {
+	return [1, 2, 3];
+}
+
+assert(return_array()[0] == 1);
+assert(return_array()[1] == 2);
+assert(return_array()[2] == 3);
+
 assert(concat(string(1), string(2), string(3)) == "123");
 
 {
@@ -272,6 +298,38 @@ if(!(0 || null || 1)) {
 		i++;
 	}
 	assert(i == 10);
+}
+{
+	var map = {};
+	map[0] = 0;
+	map[0] += 1;
+	assert(map[0] == 1);
+}
+{
+	var map = {};
+	map[1] = 1;
+	map[1] -= 1;
+	assert(map[1] == 0);
+}
+{
+	var N = 1;
+	for(var i = 0; i < N; ++i) {
+		if(i < 10) {
+			N++;
+		}
+	}
+	assert(N == 11);
+}
+{
+	var N = 1;
+	var i = 0;
+	while(i < N) {
+		if(i < 10) {
+			N++;
+		}
+		i++;
+	}
+	assert(N == 11);
 }
 
 

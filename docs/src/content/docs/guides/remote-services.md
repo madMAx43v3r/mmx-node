@@ -21,7 +21,9 @@ To run a remote harvester:
 ```
 Alternatively to set the node address permanently: `echo node.ip > config/local/node`
 
-Note: To connect to a remote farmer, replace `node.ip` with the farmer IP.
+:::note[Note]
+To connect to a remote farmer, replace `node.ip` with the farmer IP.
+:::
 
 To disable the built-in harvester in the node: `echo false > config/local/harvester`
 
@@ -33,8 +35,8 @@ To run a remote farmer with it's own wallet and harvester:
 ```
 Alternatively to set the node address permanently: `echo node.ip > config/local/node`
 
-To disable the built-in farmer in the node: `echo false > config/local/farmer` \
-To disable the built-in wallet in the node or farmer: `echo false > config/local/wallet` \
+To disable the built-in farmer in the node: `echo false > config/local/farmer`\
+To disable the built-in wallet in the node or farmer: `echo false > config/local/wallet`\
 To disable the built-in harvester in the farmer: `echo false > config/local/harvester`
 
 ### Remote Timelord
