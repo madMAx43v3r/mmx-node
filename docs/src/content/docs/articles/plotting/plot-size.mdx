@@ -1,0 +1,165 @@
+---
+title: Plot size
+description: Plot sizes for MMX
+prev: false
+next: false
+
+articlePublished: 2026-03-01
+articleUpdated: 2026-03-01
+
+authorName: voidxno
+authorPicture: https://avatars.githubusercontent.com/u/53347890?s=200
+authorURL: https://github.com/voidxno
+---
+
+An attempt to quantify real-life MMX plot size patterns into charts, tables and formulas. Created by plotting lots of different k-sizes and C-levels. Both to find patterns, and make sure of them. Goal is an easy overview of plot size behavior, with solid numbers as a bonus.
+
+## TLDR;
+
+- [Compression resistant](../../../articles/plotting/plot-format/) plot format
+- Given a specific k-size/C-level, following is true:
+  - Plot size is random, within a small bell curved range
+  - Plot size will average out, given enough plots
+  - Varying size equals less or more proofs, not better compression
+- Given specific k-size, following is true:
+  - Delta size between C-levels is identical, linear
+  - Delta size of distribution bell curve is identical for all C-levels
+- Evaluate yourself [what C-compression](../../../faq/plotting/#what-k-size-and-c-compression-should-i-plot) level is worth it
+
+## Charts
+
+First chart is an overall overview using formulas created. Then two charts using real-life hdd-k29 plotting data to illustrate patterns. Those patterns repeat in other k-sizes. Decimal GiB numbers in overview chart have been rounded up. Less chance of underestimating combined size of plots.
+
+<details open="true">
+  <summary>Overview</summary>
+    <p>
+      <a href="/images/plot-size/plotsize.png"><img class="dark:sl-hidden" src="/images/plot-size/plotsize.png" /></a>
+      <a href="/images/plot-size/plotsize_dark.png"><img class="light:sl-hidden" src="/images/plot-size/plotsize_dark.png" /></a>
+    </p>
+</details>
+
+<details>
+  <summary>Distribution (hdd-k29, C0)</summary>
+    <p>
+      <a href="/images/plot-size/distribution_c0.png"><img class="dark:sl-hidden" src="/images/plot-size/distribution_c0.png" /></a>
+      <a href="/images/plot-size/distribution_c0_dark.png"><img class="light:sl-hidden" src="/images/plot-size/distribution_c0_dark.png" /></a>
+    </p>
+</details>
+
+<details>
+  <summary>Distribution (hdd-k29, C0-C15)</summary>
+    <p>
+      <a href="/images/plot-size/distribution_c0-c15.png"><img class="dark:sl-hidden" src="/images/plot-size/distribution_c0-c15.png" /></a>
+      <a href="/images/plot-size/distribution_c0-c15_dark.png"><img class="light:sl-hidden" src="/images/plot-size/distribution_c0-c15_dark.png" /></a>
+    </p>
+</details>
+
+## Average
+
+<details open="true">
+  <summary>List</summary>
+
+| | `hdd-k29` | `hdd-k30` | `hdd-k31` | `hdd-k32` |
+| :--- | :--- | :--- | :--- | :--- |
+| `C0` | 36.376 GiB | 75.196 GiB | 155.279 GiB | 320.321 GiB |
+| `C15` | 34.893 GiB | 72.223 GiB | 149.315 GiB | 308.351 GiB |
+| `%` | -4.08 % | -3.95 % | -3.84 % | -3.74 % |
+
+</details>
+
+<details>
+  <summary>Full list</summary>
+
+| | `hdd-k29` | `hdd-k30` | `hdd-k31` | `hdd-k32` |
+| :--- | :--- | :--- | :--- | :--- |
+| `C0` | 36.376 GiB | 75.196 GiB | 155.279 GiB | 320.321 GiB |
+| `C1` | 36.277 GiB | 74.998 GiB | 154.882 GiB | 319.523 GiB |
+| `C2` | 36.178 GiB | 74.800 GiB | 154.484 GiB | 318.725 GiB |
+| `C3` | 36.079 GiB | 74.602 GiB | 154.086 GiB | 317.927 GiB |
+| `C4` | 35.980 GiB | 74.404 GiB | 153.689 GiB | 317.129 GiB |
+| `C5` | 35.882 GiB | 74.205 GiB | 153.291 GiB | 316.331 GiB |
+| `C6` | 35.783 GiB | 74.007 GiB | 152.894 GiB | 315.533 GiB |
+| `C7` | 35.684 GiB | 73.809 GiB | 152.496 GiB | 314.735 GiB |
+| `C8` | 35.585 GiB | 73.611 GiB | 152.098 GiB | 313.937 GiB |
+| `C9` | 35.486 GiB | 73.412 GiB | 151.701 GiB | 313.139 GiB |
+| `C10` | 35.387 GiB | 73.214 GiB | 151.303 GiB | 312.341 GiB |
+| `C11` | 35.288 GiB | 73.016 GiB | 150.905 GiB | 311.543 GiB |
+| `C12` | 35.189 GiB | 72.818 GiB | 150.508 GiB | 310.745 GiB |
+| `C13` | 35.091 GiB | 72.620 GiB | 150.110 GiB | 309.947 GiB |
+| `C14` | 34.992 GiB | 72.421 GiB | 149.713 GiB | 309.149 GiB |
+| `C15` | 34.893 GiB | 72.223 GiB | 149.315 GiB | 308.351 GiB |
+| `%` | -4.08 % | -3.95 % | -3.84 % | -3.74 % |
+
+</details>
+
+<details>
+  <summary>Formula</summary>
+
+- HDD-plot C0 (GiB): `4.98452*k*1.99844^(k-30.99297)+0.00513`
+- HDD-plot C15 (%): `-(1.0871^(34.1291-k)+2.5423)`
+
+</details>
+
+## Distribution
+
+<details open="true">
+  <summary>List</summary>
+
+| | `hdd-k29` | `hdd-k30` | `hdd-k31` | `hdd-k32` |
+| :--- | :--- | :--- | :--- | :--- |
+| `50%` | &plusmn;0.113 GiB | &plusmn;0.169 GiB | &plusmn;0.251 GiB | &plusmn;0.369 GiB |
+| `80%` | &plusmn;0.217 GiB | &plusmn;0.327 GiB | &plusmn;0.485 GiB | &plusmn;0.711 GiB |
+| `99.5%` | &plusmn;0.485 GiB | &plusmn;0.729 GiB | &plusmn;1.082 GiB | &plusmn;1.586 GiB |
+
+</details>
+
+<details>
+  <summary>Formula</summary>
+
+- HDD-plot k29 (&plusmn;GiB): `0.153*sinh(0.00872*p)-0.0632*ln(100-p)+0.2911`
+- HDD-plot k-size (multiplier): `2.386E-18*k^12.05`
+
+</details>
+
+
+## References
+
+<details>
+  <summary>Basic data</summary>
+
+If useful to anyone. Link to [plot-size_csv.zip](/resources/data/plot-size/plot-size_csv.zip) with raw CSV data used to create formulas. Would even more data be preferable? Always. But was enough to see patterns, and estimate good values for formulas.
+
+:::note[Note]
+
+Important that such data is as-is, without any pre-filtering of plots that are larger or smaller.
+
+There are a few entries in k26 and k29 that are identical. Not wrong, just higher probability on lower k-sizes.
+
+Together with k29-k32, k26 was included. Not valid in mainnet, so not shown in charts and tables above. But formulas work for k26.
+
+Some signs in data that &plusmn; distribution might have a small difference. Not enough to warrant asymmetrical formulas.
+
+For reference. A lot of plots created, recorded, deleted. Hardware was Nvidia RTX A4500, Intel DC P4610 6.4TB SDD, and 128GB RAM. A combination of full RAM, partial RAM, and disk mode. Together with some plots already done on my farm.
+
+:::
+
+</details>
+
+<details>
+  <summary>Formula creation</summary>
+
+Formulas above are not perfect, but close enough. Transforming real source code logic into perfect formulas would be too complex. Better with a good approximation that matches real-life behavior.
+
+Strategy used:
+- Map all real-life plot data into spreadsheets
+- Transform numbers in different ways, find patterns
+- Create points for each k-size on a graph
+- Find basic curve formula that matches points on graph
+- Brute force iterate numbers in formula
+- Find numbers with least difference across all k-sizes
+
+</details>
+
+## Feedback
+
+Questions, or wrong info above. Use [`#mmx-general`](https://discord.com/channels/852982773963161650/925017012235817042) or [`#mmx-farming`](https://discord.com/channels/852982773963161650/853417165980827657) channels on Discord.
