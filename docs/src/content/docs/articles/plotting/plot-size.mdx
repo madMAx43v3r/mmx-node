@@ -20,15 +20,16 @@ An attempt to quantify real-life MMX plot size patterns into charts, tables and 
 - Given a specific k-size/C-level, following is true:
   - Plot size is random, within a small bell curved range
   - Plot size will average out, given enough plots
-  - Varying size equals less or more proofs, not better compression
+  - Varying size equals **less or more proofs, not better compression**
 - Given specific k-size, following is true:
   - Delta size between C-levels is identical, linear
   - Delta size of distribution bell curve is identical for all C-levels
 - Evaluate yourself [what C-compression](../../../faq/plotting/#what-k-size-and-c-compression-should-i-plot) level is worth it
+- A few thoughts about [filling a disk](#filling-a-disk) further down
 
 ## Charts
 
-First chart is an overall overview using formulas created. Then two charts using real-life hdd-k29 plotting data to illustrate patterns. Those patterns repeat in other k-sizes. Decimal GiB numbers in overview chart have been rounded up. Less chance of underestimating combined size of plots.
+First chart is an overall overview using formulas created. Followed by two charts using real-life hdd-k29 plotting data to illustrate patterns. Those patterns repeat in other k-sizes. Decimal GiB numbers in overview chart have been rounded up. Less chance of underestimating combined size of plots.
 
 <details open="true">
   <summary>Overview</summary>
@@ -102,14 +103,49 @@ First chart is an overall overview using formulas created. Then two charts using
 
 ## Distribution
 
+Nearly all plots will be within a 99.5% GiB range, with average plot size in middle.
+Given enough plots there will be a few outliers, but not many.
+99.5% is a representative value for a practical range.
+GiB numbers with one decimal place have been rounded down and up to best fit purpose.
+Less chance of underestimating average plot sizes and range values.
+
 <details open="true">
   <summary>List</summary>
 
 | | `hdd-k29` | `hdd-k30` | `hdd-k31` | `hdd-k32` |
 | :--- | :--- | :--- | :--- | :--- |
-| `50%` | &plusmn;0.113 GiB | &plusmn;0.169 GiB | &plusmn;0.251 GiB | &plusmn;0.369 GiB |
-| `80%` | &plusmn;0.217 GiB | &plusmn;0.327 GiB | &plusmn;0.485 GiB | &plusmn;0.711 GiB |
 | `99.5%` | &plusmn;0.485 GiB | &plusmn;0.729 GiB | &plusmn;1.082 GiB | &plusmn;1.586 GiB |
+| `C0` (average) | 36.4 GiB | 75.2 GiB | 155.3 GiB | 320.4 GiB |
+| `C0` (range) | 35.8 - 36.9 | 74.4 - 76.0 | 154.1 - 156.4 | 318.7 - 322.0 |
+
+
+</details>
+
+<details>
+  <summary>Full list</summary>
+
+| | `hdd-k29` | `hdd-k30` | `hdd-k31` | `hdd-k32` |
+| :--- | :--- | :--- | :--- | :--- |
+| `25%` | &plusmn;0.052 GiB | &plusmn;0.078 GiB | &plusmn;0.116 GiB | &plusmn;0.170 GiB |
+| `50%` | &plusmn;0.113 GiB | &plusmn;0.169 GiB | &plusmn;0.251 GiB | &plusmn;0.369 GiB |
+| `75%` | &plusmn;0.195 GiB | &plusmn;0.293 GiB | &plusmn;0.435 GiB | &plusmn;0.638 GiB |
+| `99.5%` | &plusmn;0.485 GiB | &plusmn;0.729 GiB | &plusmn;1.082 GiB | &plusmn;1.586 GiB |
+| `C0` | 35.8 - 36.9 | 74.4 - 76.0 | 154.1 - 156.4 | 318.7 - 322.0 |
+| `C1` | 35.7 - 36.8 | 74.2 - 75.8 | 153.7 - 156.0 | 317.9 - 321.2 |
+| `C2` | 35.6 - 36.7 | 74.0 - 75.6 | 153.4 - 155.6 | 317.1 - 320.4 |
+| `C3` | 35.5 - 36.6 | 73.8 - 75.4 | 153.0 - 155.2 | 316.3 - 319.6 |
+| `C4` | 35.4 - 36.5 | 73.6 - 75.2 | 152.6 - 154.8 | 315.5 - 318.8 |
+| `C5` | 35.3 - 36.4 | 73.4 - 75.0 | 152.2 - 154.4 | 314.7 - 318.0 |
+| `C6` | 35.2 - 36.3 | 73.2 - 74.8 | 151.8 - 154.0 | 313.9 - 317.2 |
+| `C7` | 35.1 - 36.2 | 73.0 - 74.6 | 151.4 - 153.6 | 313.1 - 316.4 |
+| `C8` | 35.1 - 36.1 | 72.8 - 74.4 | 151.0 - 153.2 | 312.3 - 315.6 |
+| `C9` | 35.0 - 36.0 | 72.6 - 74.2 | 150.6 - 152.8 | 311.5 - 314.8 |
+| `C10` | 34.9 - 35.9 | 72.4 - 74.0 | 150.2 - 152.4 | 310.7 - 314.0 |
+| `C11` | 34.8 - 35.8 | 72.2 - 73.8 | 149.8 - 152.0 | 309.9 - 313.2 |
+| `C12` | 34.7 - 35.7 | 72.0 - 73.6 | 149.4 - 151.6 | 309.1 - 312.4 |
+| `C13` | 34.6 - 35.6 | 71.8 - 73.4 | 149.0 - 151.2 | 308.3 - 311.6 |
+| `C14` | 34.5 - 35.5 | 71.6 - 73.2 | 148.6 - 150.8 | 307.5 - 310.8 |
+| `C15` | 34.4 - 35.4 | 71.4 - 73.0 | 148.2 - 150.4 | 306.7 - 310.0 |
 
 </details>
 
@@ -121,6 +157,12 @@ First chart is an overall overview using formulas created. Then two charts using
 
 </details>
 
+## Filling a disk
+
+Let's take a 18TB disk. Convert free space to GiB, with 2 GiB filesystem overhead:
+> `(18E12 / 1024^3) - 2.0` = `16761.8 GiB`
+
+_TBD: Writing in progress (will only illustrate that not one perfect way to do it) ..._
 
 ## References
 
