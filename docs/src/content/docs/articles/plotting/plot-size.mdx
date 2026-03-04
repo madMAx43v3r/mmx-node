@@ -4,8 +4,8 @@ description: Plot sizes for MMX
 prev: false
 next: false
 
-articlePublished: 2026-03-01
-articleUpdated: 2026-03-01
+articlePublished: 2026-03-04
+articleUpdated: 2026-03-04
 
 authorName: voidxno
 authorPicture: https://avatars.githubusercontent.com/u/53347890?s=200
@@ -103,11 +103,7 @@ First chart is an overall overview using formulas created. Followed by two chart
 
 ## Distribution
 
-Nearly all plots will be within a 99.5% GiB range, with average plot size in middle.
-Given enough plots there will be a few outliers, but not many.
-99.5% is a representative value for a practical range.
-GiB numbers with one decimal place have been rounded down and up to best fit purpose.
-Less chance of underestimating average plot sizes and range values.
+Nearly all plots will be within a 99.5% GiB range, with average plot size in middle. Given enough plots there will be a few outliers, but not many. 99.5% is a representative value for a practical range. GiB numbers with one decimal place have been rounded up and down to best fit purpose. Less chance of underestimating average plot sizes and range values.
 
 <details open="true">
   <summary>List</summary>
@@ -159,10 +155,29 @@ Less chance of underestimating average plot sizes and range values.
 
 ## Filling a disk
 
-Let's take a 18TB disk. Convert free space to GiB, with 2 GiB filesystem overhead:
-> `(18E12 / 1024^3) - 2.0` = `16761.8 GiB`
+No perfect way to get 0 bytes free when filling a disk with plots. Random element of plot size complicates some. But plot size has a predictable range, and averages out. As shown in charts and tables above.
 
-_TBD: Writing in progress (will only illustrate that not one perfect way to do it) ..._
+Also remember. Smaller or larger plot size within same k-size/C-level is not better compression. Just less or more proofs.
+
+Let's say you are able to plot k31 in RAM, going for that k-size. You feel confident with a C-level up to C4 on farming load ([individual choice](../../../faq/plotting/#what-k-size-and-c-compression-should-i-plot)).
+
+Take an 18TB disk. Convert capacity to GiB, with 2 GiB filesystem overhead:
+```
+18TB capacity:     (18E12 / 1024^3) - 2.0 = 16761.8 GiB
+hdd-k31 C4 (low):  16761.8 GiB / 152.6 = 109(.84) plots [free: 128.4 GiB]
+hdd-k31 C4 (avg):  16761.8 GiB / 153.7 = 109(.06) plots [free:   8.5 GiB]
+hdd-k31 C4 (high): 16761.8 GiB / 154.8 = 108(.28) plots [free:  43.4 GiB]
+```
+
+What is not realistic here is getting a run of only lowest possible C4, or highest. More probable is a 109 plot run averaging out closer to average C4 size. Because of low sample size (number of plots), statistics will have it somewhat under or over.
+
+What to do?
+- Keep it simple. Find your wanted k-size/C-level. Plot and fill disks, not thinking about left over free space.
+- Optionally go through disks afterwards, see if a few lower k-size/C-level plots could fill up left over free space.
+
+Other strategies are possible. Filtering a 'cache' (if you have space) of plots weighted against certain sizes. Then have a strategy to fill up disks. That will cost time and complicate plotting process. Often the simplest is best.
+
+Just go to Discord and ask for advice, links in [feedback](#feedback) section below.
 
 ## References
 
