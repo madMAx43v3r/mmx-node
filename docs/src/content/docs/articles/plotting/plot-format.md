@@ -22,10 +22,10 @@ My own understanding, reading comments when mainnet plot format was rolled out w
 
 - Plot format for MMX (mainnet), introduced with testnet11
 - **Resistant against compression**
-- Two types, HDD and SSD-plots (min k29, max k32):
+- Two types, HDD and SSD-plots (min k29, max k32, [plot size](../../../articles/plotting/plot-size/)):
   | | `k29` | `k30` | `k31` | `k32` |
   | :--- | :--- | :--- | :--- | :--- |
-  | `hdd` | 36.2 GiB | 75.3 GiB | 155.4 GiB | 320.3 GiB |
+  | `hdd` | 36.4 GiB | 75.2 GiB | 155.3 GiB | 320.4 GiB |
   | `sdd` | 14.7 GiB | 30.3 GiB |  62.3 GiB | 128.3 GiB |
 - SSD-plots have missing data, smaller, but require high disk IOPS
 - Plotting: GPU required, full RAM, partial RAM, disk mode

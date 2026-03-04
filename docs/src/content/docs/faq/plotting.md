@@ -9,10 +9,10 @@ From k29 to k32. Average sizes below, with C0 compression (0%).
 
 | | `k29` | `k30` | `k31` | `k32` |
 | :--- | :--- | :--- | :--- | :--- |
-| `hdd` | 36.2 GiB | 75.3 GiB | 155.4 GiB | 320.3 GiB |
+| `hdd` | 36.4 GiB | 75.2 GiB | 155.3 GiB | 320.4 GiB |
 | `sdd` | 14.7 GiB | 30.3 GiB |  62.3 GiB | 128.3 GiB |
 
-[Article](../../../articles/plotting/plot-format/) with an intro on MMX plot format.
+Articles with intro on MMX [plot format](../../../articles/plotting/plot-format/), and details on [plot size](../../../articles/plotting/plot-size/).
 
 ### Difference between HDD and SSD-plots?
 
@@ -47,6 +47,7 @@ Read more about pooling under [Creating Plots](../../../guides/mmx-plotter/#crea
 Here are a few resources for some stats.
 
 **Final plot sizes for k29/k32 and C0/C15:**\
+Topic of [this article](../../../articles/plotting/plot-size/).\
 Miscellaneous tab of [this Google spreadsheet](https://docs.google.com/spreadsheets/d/1EROCHCRJczwlohun0Wx0d2mzCzDrOMoMm-OEB-3voFE/).
 
 **Temp space and disk writes needed for plotting:**\
@@ -74,7 +75,7 @@ Plotter uses the RAM directly, no need to involve a RAMdisk.
 
 | | Size | Full RAM | Partial RAM | Disk/Partial RAM |
 | :--- | :--- | :--- | :--- | :--- |
-| k29 | 37 GiB | 61 GiB | 39 GiB | 22 GiB |
+| k29 | 36 GiB | 61 GiB | 39 GiB | 22 GiB |
 | k30 | 75 GiB | 116 GiB | 68 GiB | 46 GiB |
 | k31 | 155 GiB | 226 GiB | 126 GiB | 88 GiB |
 | k32 | 320 GiB | 446 GiB | 246 GiB | 177 GiB |
