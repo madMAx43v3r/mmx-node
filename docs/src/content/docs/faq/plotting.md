@@ -10,7 +10,7 @@ From k29 to k32. Average sizes below, with C0 compression (0%).
 | | `k29` | `k30` | `k31` | `k32` |
 | :--- | :--- | :--- | :--- | :--- |
 | `hdd` | 36.4 GiB | 75.2 GiB | 155.3 GiB | 320.4 GiB |
-| `sdd` | 14.7 GiB | 30.3 GiB |  62.3 GiB | 128.3 GiB |
+| `sdd` | 14.7 GiB | 30.3 GiB |  62.3 GiB | 128.4 GiB |
 
 Articles with intro on MMX [plot format](../../../articles/plotting/plot-format/), and details on [plot size](../../../articles/plotting/plot-size/).
 
