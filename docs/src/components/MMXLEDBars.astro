@@ -1,0 +1,118 @@
+<div>
+  <div class="mmxledbars-bg">
+    <div class="mmxledbars" id="mmxledbars"></div>
+  </div>
+</div>
+
+<style>
+:root {
+  --mmx-color-ledbars-0: hsl(267, 60%, 30%);
+  --mmx-color-ledbars-1: hsl(267, 60%, 23%);
+  --mmx-color-ledbars-2: hsl(267, 60%, 19%);
+  --mmx-color-ledbars-3: hsl(267, 60%, 15%);
+}
+:root[data-theme='light'] {
+  --mmx-color-ledbars-0: hsl(267, 60%, 75%);
+  --mmx-color-ledbars-1: hsl(267, 60%, 82%);
+  --mmx-color-ledbars-2: hsl(267, 60%, 86%);
+  --mmx-color-ledbars-3: hsl(267, 60%, 90%);
+}
+.mmxledbars-bg {
+  position: fixed;
+  display: flex;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 400px;
+  justify-content: center;
+  overflow: hidden;
+}
+.mmxledbars {
+  width: var(--sl-content-width);
+  min-width: var(--sl-content-width);
+}
+</style>
+
+<script>
+
+const minledcols = 40;
+const minledrows = 15;
+
+window.addEventListener("load", function (){ initledbars(); } );
+
+function initledbars()
+{
+ const container = document.getElementById("mmxledbars");
+ const cwidth = container.offsetWidth;
+ const cheight = container.offsetHeight;
+ const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+ svg.setAttribute("width", cwidth + "px");
+ svg.setAttribute("height", cheight + "px");
+
+ const ledsize = 12;
+ const ledgap = 8;
+ const ledcols = Math.floor(cwidth / (ledsize + ledgap));
+ const ledrows = Math.floor(cheight / (ledsize + ledgap));
+ const ledstartx = ledsize / 2 + (cwidth - ledcols * (ledsize + ledgap) + ledgap) / 2;
+ const ledstarty = cheight - 1;
+ const ledpalc = 4;
+ const ledpalvar = "--mmx-color-ledbars-";
+
+ if(ledcols < minledcols || ledrows < minledrows) return;
+
+ const ledcolscy = generateledpoints(ledcols, ledrows);
+
+ for(let col = 0; col < ledcols; ++col){
+   let nextp = Math.floor(Math.random() * ledpalc);
+   let zerop = nextp;
+
+   for(let row = 0; row < ledcolscy[col]; ++row){
+     if(row === ledcolscy[col] - 1 && zerop === 0 && nextp === 0)
+       nextp = Math.floor(Math.random() * (ledpalc - 1)) + 1;
+
+     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+     circle.setAttribute("cx", ledstartx + col * (ledsize + ledgap));
+     circle.setAttribute("cy", ledstarty - row * (ledsize + ledgap));
+     circle.setAttribute("r", ledsize / 2);
+     circle.setAttribute("fill", "var(" + ledpalvar + "" + nextp + ")");
+     svg.appendChild(circle);
+
+     if(nextp === 0)
+       ++nextp;
+     else{
+       nextp += Math.floor(Math.random() * 3) - 1;
+       if(nextp < 0 || nextp >= ledpalc) nextp = (nextp < 0) ? 0 : ledpalc - 1;
+       }
+     }
+   }
+
+ container.appendChild(svg);
+}
+
+function generateledpoints(numcols = minledcols, numrows = minledrows)
+{
+ if(numcols < minledcols) numcols = minledcols;
+ if(numrows < minledrows) numrows = minledrows;
+
+ const maxempty = Math.floor((numrows - 1) / 2);
+ const inoutc = Math.floor(numcols / 10);
+ const points = [];
+
+ for(let x = 0, lastval = -1; x < numcols; ++x){
+   let ledfloor = numrows - maxempty;
+   if(x < inoutc || x >= (numcols - inoutc)){
+     ledfloor = (Math.floor(ledfloor / inoutc) <= 0) ? 1 : Math.floor(ledfloor / inoutc);
+     ledfloor = ledfloor * ((x < inoutc) ? (x + 1) : (numcols - x));
+     }
+
+   let nextval = ledfloor + Math.floor(Math.random() * (maxempty + 1));
+   if(nextval === lastval) nextval += (nextval === ledfloor) ? 1 : -1;
+
+   points.push(nextval);
+   lastval = nextval;
+   }
+
+ return points;
+}
+
+</script>
