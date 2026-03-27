@@ -1,0 +1,407 @@
+{
+    "common": {
+        "yes": "Да",
+        "no": "Нет",
+
+        "default": "по умолчанию",
+
+        "node": "Узел",
+        "wallet": "Кошелёк",
+        "height": "Высота",
+        "blocks": "Блоки",
+        "balance": "Баланс",
+        "name": "Название",
+        "token": "Токен",
+        "currency": "Валюта",
+        "symbol": "Символ",
+        "price": "Цена",
+        "hash": "Хэш",
+        "reward": "Награда",
+        "amount": "Сумма",
+        "address": "Адрес",
+        "contract": "Контракт",
+        "type": "Тип",
+        "time": "Время",
+        "fee": "Комиссия",
+        "pending": "ожидается",
+
+        "confirm": "Подтвердить",
+        "deploy": "Развернуть",
+        "create": "Создать",
+        "remove": "Удалить",
+
+        "accept": "Принять",
+        "cancel": "Отмена",
+
+        "transaction_has_been_sent": "Транзакция отправлена",
+        "failed_with": "Ошибка",
+        "deployed_as": "Развёрнут как",
+
+        "any": "Все",
+
+        "link": "Ссылка",
+        "owner": "Владелец",
+        "manage": "Управлять",
+        "harvester": "Комбайн",
+        "deposit": "Вклад",
+
+        "user": "Пользователь"
+    },
+
+    "main_menu": {
+        "explore": "Обозреватель",
+        "farmer": "Фермер",
+        "market": "Торговля",
+        "exchange": "Биржа",
+        "settings": "Настройки",
+        "logout": "Выйти"
+    },
+
+    "node_status": {
+        "disconnected": "Отключено от узла",
+        "logged_off": "Вылогенненый",
+        "connecting": "Подключение",
+        "syncing": "Синхронизация",
+        "synced": "Синхронизировано"
+    },
+
+    "node_common": {
+        "vdf_speed": "Скорость VDF",
+        "block_reward": "Награда за блок",
+        "block_size": "Объем блока",
+        "tx_fees": "Комиссии",
+        "netspace": "Пространство сети"
+    },
+
+    "node_menu": {
+        "log": "Журнал",
+        "peers": "Пиры"
+    },
+
+    "node_info": {
+        "synced": "Синхронизировано",
+        "supply": "Эмиссия",
+        "no_addresses": "Количество адресов"
+    },
+
+    "farmer_info": {
+        "virtual_balance": "Виртуальный баланс",
+        "virtual_size": "Виртуальный объем",
+        "physical_size": "Физический объем",
+        "total_farm_size": "Общий объем фермы"
+    },
+
+    "node_log": {
+        "terminal": "Терминал",
+        "router": "Маршрутизатор",
+        "farmer": "Фермер",
+        "timelord": "Таймлорд"
+    },
+
+    "node_log_table": {
+        "module": "Модуль",
+        "message": "Сообщение"
+    },
+
+    "node_peers": {
+        "version": "Версия",
+        "received": "Загрузка",
+        "send": "Отдача",
+        "ping": "Пинг",
+        "duration": "Время",
+        "credits": "Кредиты",
+        "tx_gas": "TX Газ",
+        "connection": "Соединение",
+        "outbound": "исходящее",
+        "inbound": "входящее"
+    },
+
+    "wallet_summary": {
+        "new": "Новый"
+    },
+
+    "account_menu": {
+        "nfts": "NFT",
+        "contracts": "Контракты",
+        "addresses": "Адреса",
+        "send": "Отправить",
+        "plots": "Плоты",
+        "offer": "Офферы",
+        "history": "История",
+        "liquidity": "Ликвидность",
+        "info": "Информация",
+        "details": "Подробности"
+    },
+
+    "account_send_form": {
+        "source_address": "Исходный адрес",
+        "destination": "Получатель",
+        "destination_address": "Адрес получателя",
+        "address_input": "Ввод адреса",
+        "send": "Отправить"
+    },
+
+    "balance_table": {
+        "locked": "Заблокировано",
+        "spendable": "Доступно"
+    },
+
+    "account_balance": {
+        "reserved": "Зарезервировано",
+        "show_unknown": "Показывать неизвестные"
+    },
+
+    "account_plots": {
+        "size": "Объём",
+        "new_plot": "Новый плот",
+
+        "from": "с",
+        "to": "на",
+
+        "deposit_warning": "Только 90% суммы депозита будет возвращено при снятии средств, остальное сжигается",
+        "withdraw_warning": "Возвращается только 90% суммы, остальное сжигается"
+    },
+
+    "account_offers": {
+        "offering": "Предложено",
+        "received": "Получено",
+        "status": "Статус",
+        "actions": "Действия",
+        "revoke": "Отозвать",
+
+        "accepted": "Принято",
+        "revoked": "Отозвано",
+        "open": "Открыто",
+        "deposit_to": "Сделать вклад на"
+    },
+
+    "account_offer_form": {
+        "offer_amount": "Сумма оффера",
+        "offer_currency": "Валюта оффера",
+        "receive_amount": "Сумма получения",
+        "receive_currency_contract": "Валюта получения (контракт)",
+        "symbol": "Символ",
+        "offer": "Предложить"
+    },
+
+    "explore_menu": {
+        "transactions": "Транзакции",
+        "farmers": "Фермеры",
+        "block_height": "Высота блока"
+    },
+
+    "explore_blocks": {
+        "score": "Оценка",
+        "size": "Объём",
+        "cost": "Расходы"
+    },
+
+    "explore_transactions": {
+        "transaction_id": "ID транзакции"
+    },
+
+    "explore_farmers": {
+        "no_blocks": "Кол-во блоков",
+        "farmer_key": "Ключ фермера"
+    },
+
+    "block_view": {
+        "previous": "Предыдущий",
+        "next": "Следующий",
+        "block": "Блок",
+        "no_such_block": "Нет такого блока!",
+
+        "time_diff": "Time Diff",
+        "space_diff": "Space Diff",
+        "vdf_iterations": "Итерации VDF",
+        "tx_base": "TX Base",
+        "tx_count": "Кол-во транзакций",
+        "k_size": "K Размер",
+        "proof_score": "Оценка доказательства",
+        "plot_id": "ID плота",
+        "farmer_key": "Ключ фермера",
+
+        "inputs": "Входы",
+        "outputs": "Выходы",
+        "operations": "Операции"
+    },
+
+    "transaction_view": {
+        "transaction": "Транзакция",
+        "confirmed": "Подтверждения",
+        "expires": "Истекает",
+        "note": "Заметка",
+
+        "sender": "Отправитель",
+        "cost": "Стоимость",
+
+        "input": "Ввод",
+        "output": "Вывод",
+
+        "no_such_transaction": "Нет такой транзакции!"
+    },
+
+    "create_contract_menu": {
+        "contract_type": "Тип контракта"
+    },
+
+    "account_contract_summary": {
+        "deposit": "Вклад",
+        "withdraw": "Вывод"
+    },
+
+    "node_settings": {
+        "ui": "Графический интерфейс",
+        "language": "Язык",
+
+        "theme": "Тема",
+        "light": "Светлая",
+        "dark": "Темная",
+
+        "general": "Основные",
+        "enable_timelord": "Включить Таймлорд",
+        "enable_timelord_reward": "Включить вознаграждения Таймлорда (требуется еще одно ядро ЦП)",
+        "verify_timelord_reward": "Подтверждать вознаграждения Таймлорда (отключить, чтобы ускорить проверку VDF)",
+        "open_port": "Открыть сетевой порт, чтобы разрешить входящие подключения (UPnP)",
+        "farmer_reward_address": "Адрес награды Фермера",
+        "timeLord_reward_address": "Адрес награды Таймлорда",
+        "restart_needed": "(необходим перезапуск)",
+
+        "opencl_device": "Устройство OpenCL",
+
+        "blockchain": "Блокчейн",
+        "revert_db_to_height": "Откатить базу данных на высоту",
+        "revert": "Откатить"
+    },
+
+    "harvester_settings": {
+        "harvester_reload_interval": "Интервал перезарядки комбайна (сек)",
+        "plot_directory": "Каталог с плотами",
+        "add_directory": "Добавить каталог"
+    },
+
+    "wallet_settings": {
+        "token_whitelist": "Белый список токенов",
+        "token_address": "Адрес токена",
+        "add_token": "Добавить токен"
+    },
+
+    "create_locked_contract": {
+        "owner_address": "Адрес владельца",
+        "unlock_height": "Высота разблокировки"
+    },
+
+    "create_virtual_plot_contract": {
+        "farmer_public_key": "Публичный ключ Фермера",
+        "reward_address": "Адрес награды (опционально, для пулинга)"
+    },
+
+    "account_details": {
+        "copy_keys_to_plotter": "Копировать ключи в плоттер"
+    },
+
+    "account_actions": {
+        "reset_cache": "Сбросить кэш",
+        "show_seed": "Показать мнемонику"
+    },
+
+    "create_account": {
+        "account_index": "Индекс аккаунта",
+        "account_name": "Имя аккаунта",
+        "number_of_addresses": "Количество адресов",
+        "create_account": "Создать аккаунт"
+    },
+
+    "create_wallet": {
+        "use_custom_seed": "Использовать пользовательскую мнемонику",
+        "seed_hash": "Хеш мнемоники (опционально, шестнадцатеричная строка, 64 символа)",
+        "placeholder": "<случайный>",
+        "create_wallet": "Создать Кошелек"
+    },
+
+    "market_menu": {
+        "they_offer": "Предлагают",
+        "they_ask": "Запрашивают",
+        "anything": "Всё",
+        "offers": "Офферы",
+        "history": "История"
+    },
+
+    "market_offers": {
+        "accept_offer": "Принять оффер",
+        "wallet_ballance": "Баланс кошелька",
+        "you_send": "Вы отправляете",
+        "you_receive": "Вы получите",
+        "you_pay": "Вы платите",
+
+        "increase": "Увеличить",
+        "trade": "Обменять"
+    },
+
+    "login": {
+        "password_label": "Пароль (см. файл PASSWD)",
+        "login": "Войти"
+    },
+
+    "account_history_form": {
+        "any": "Все",
+        "spend": "Отправлено",
+        "receive": "Получено",
+        "reward": "Награды",
+        "tx_fee": "TX Комиссии"
+    },
+
+    "farmer_menu": {
+        "plots": "Плоты",
+        "blocks": "Блоки",
+        "proofs": "Доказательства"
+    },
+
+    "farmer_plots": {
+        "type": "Тип",
+        "count": "Кол-во",
+        "reload_plots": "Перезагрузить плоты"
+    },
+
+    "farmer_plot_dirs": {
+        "path": "Путь"
+    },
+
+    "swap": {
+        "pool_balance": "Баланс пула",
+        "volume": "Объем",
+        "24h": "24ч",
+        "7d": "7 дней",
+
+        "trade": "Обмен",
+        "history": "История",
+        "my_liquidity": "Моя ликвидность",
+        "pool_state": "Состояние пула",
+
+        "my_balance": "Мой баланс",
+        "fees_earned": "Заработанная комиссия",
+        "fee_level": "Уровень комиссии",
+        "unlock_height": "Высота разблокировки",
+
+        "user_total": "Всего",
+
+        "token_amount": "Количество токенов",
+        "currency_amount": "Количество валюты",
+
+        "price_match": "Price Match",
+        "payout": "Выплата",
+        "switch_fee": "Изменить уровень комиссии",
+        "add_liquidity": "Добавить ликвидность",
+        "remove_liquidity": "Забрать ликвидность",
+        "remove_all": "Забрать всё",
+
+        "wallet_ballance": "Баланс кошелька",
+        "buy_amount": "Сумма покупки",
+        "sell_amount": "Сумма продажи",
+        "trade_fee_estimated": "Комиссия (предполагаемая)",
+        "you_receive_estimated": "Вы получите (предположительно)",
+
+        "sell": "Продать",
+        "buy": "Kупить"
+    }
+}

@@ -370,8 +370,8 @@ install(DIRECTORY
 	PATTERN "config/local" EXCLUDE
 )
 install(DIRECTORY
-	www/web-gui
-	DESTINATION ${NODE_INSTALL_PATH}/www
+	ui/dist/gui
+	DESTINATION ${NODE_INSTALL_PATH}/ui/dist
 	PATTERN "node_modules" EXCLUDE
 )
 install(FILES
