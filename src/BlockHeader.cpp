@@ -12,7 +12,7 @@
 
 namespace mmx {
 
-vnx::bool_t BlockHeader::is_valid() const
+vnx::bool_t BlockHeader::is_valid(std::shared_ptr<const ChainParams> params) const
 {
 	if(height) {
 		if(proof.empty() || !farmer_sig || vdf_count < 1) {
@@ -27,12 +27,15 @@ vnx::bool_t BlockHeader::is_valid() const
 	return version == 0
 			&& (!reward_amount || reward_addr)
 			&& vdf_count == vdf_reward_addr.size()
-			&& hash == calc_hash()
+			&& hash == calc_hash(params)
 			&& content_hash == calc_content_hash();
 }
 
-hash_t BlockHeader::calc_hash() const
+hash_t BlockHeader::calc_hash(std::shared_ptr<const ChainParams> params) const
 {
+	if(!params) {
+		throw std::logic_error("BlockHeader::calc_hash(): params is null");
+	}
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
 	vnx::OutputBuffer out(&stream);
@@ -64,6 +67,9 @@ hash_t BlockHeader::calc_hash() const
 		write_field(out, "proof", 		list);
 	}
 	write_field(out, "proof_hash", 		proof_hash);
+	if(height >= params->hardfork2_height) {
+		write_field(out, "proof_chain", proof_chain);
+	}
 	write_field(out, "challenge", 		challenge);
 	write_field(out, "is_space_fork",	is_space_fork);
 	write_field(out, "space_fork_len",	space_fork_len);

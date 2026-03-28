@@ -7,7 +7,7 @@ class Block extends BlockHeader {
 	
 	void finalize();
 	
-	bool is_valid() const;
+	bool is_valid(ChainParams* params) const;
 	
 	hash_t calc_tx_hash() const;
 	
