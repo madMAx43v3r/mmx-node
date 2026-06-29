@@ -867,7 +867,8 @@ void Router::connect()
 				}
 			}
 			if(!peer_addr_map.count(address) && !connect_tasks.count(host_name)
-				&& !block_peers.count(address) && !block_peers.count(host_name))
+				&& !block_peers.count(address) && !block_peers.count(host_name)
+				&& !self_addrs.count(address) && !self_addrs.count(host_name))
 			{
 				try_peers.insert(address);
 			}
@@ -1447,7 +1448,6 @@ void Router::on_return(uint64_t client, std::shared_ptr<const Return> msg)
 					if(auto peer = find_peer(client)) {
 						log(INFO) << "Discovered our own address: " << peer->address;
 						self_addrs.insert(peer->address);
-						block_peers.insert(peer->address);
 					}
 					disconnect(client);
 				}
