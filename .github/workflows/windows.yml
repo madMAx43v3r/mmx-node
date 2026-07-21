@@ -27,13 +27,13 @@ jobs:
   msvc:
     runs-on: windows-2022
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
           submodules: "recursive"
 
-      - uses: Jimver/cuda-toolkit@v0.2.21
+      - uses: Jimver/cuda-toolkit@v0.2.35
         id: cuda-toolkit
         with:
           cuda: '12.5.0'
@@ -59,7 +59,7 @@ jobs:
           buildPreset: ${{ env.CMAKE_BUILD_PRESET }}
    
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "build"
           include-hidden-files: true
@@ -72,7 +72,7 @@ jobs:
         run: Get-ChildItem "./build/${{ env.CMAKE_BUILD_PRESET }}/!package" -Filter *.exe | Foreach-Object { 7z a ( (Convert-Path $_.PSParentPath) + "\"  + $_.BaseName + ".zip") $_.FullName }
 
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "package"
           path: ./build/${{ env.CMAKE_BUILD_PRESET }}/!package/*.exe
