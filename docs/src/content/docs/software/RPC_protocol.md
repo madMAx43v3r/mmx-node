@@ -468,7 +468,9 @@ Request payload is an object of arguments:
 - `pool_idx`: Fee tier index (0 = 0.05%, 1 = 0.25%, 2 = 1%, 3 = 5%)
 - `options`: Object with options
 
-**Note:** Liquidity is locked for 24 hours (8640 blocks) after deposit. Fee payouts are not automatic — use `pool_payout` to claim earned fees.
+:::note[Note]
+Liquidity is locked for 24 hours (8640 blocks) after deposit. Fee payouts are not automatic — use `pool_payout` to claim earned fees.
+:::
 
 Returns transaction object if successful.
 
@@ -482,7 +484,9 @@ Request payload is an object of arguments:
 - `amount`: Array `[token0_amount, token1_amount]` to remove (pass zero for one side to remove only the other)
 - `options`: Object with options
 
-**Note:** This does **not** claim accumulated swap fees before removing. If you have earned fees, call `pool_payout` first, or use `rem_all_liquid` instead which claims fees automatically.
+:::note[Note]
+This does **not** claim accumulated swap fees before removing. If you have earned fees, call `pool_payout` first, or use `rem_all_liquid` instead which claims fees automatically.
+:::
 
 Returns transaction object if successful.
 
@@ -495,7 +499,9 @@ Request payload is an object of arguments:
 - `address`: Swap pool address
 - `options`: Object with options
 
-**Note:** Unlike `rem_liquid`, this endpoint calls the contract's `_payout()` internally before removing, ensuring earned fees are claimed. Use this for full exits.
+:::note[Note]
+Unlike `rem_liquid`, this endpoint calls the contract's `_payout()` internally before removing, ensuring earned fees are claimed. Use this for full exits.
+:::
 
 Returns transaction object if successful.
 
@@ -508,7 +514,9 @@ Request payload is an object of arguments:
 - `address`: Swap pool address
 - `options`: Object with options
 
-**Note:** Fee payouts are manual (no automatic compounding). Call this periodically to claim accumulated fees. Has no effect if `fees_earned` is zero.
+:::note[Note]
+Fee payouts are manual (no automatic compounding). Call this periodically to claim accumulated fees. Has no effect if `fees_earned` is zero.
+:::
 
 Returns transaction object if successful.
 
@@ -522,6 +530,8 @@ Request payload is an object of arguments:
 - `pool_idx`: Target fee tier index (0 = 0.05%, 1 = 0.25%, 2 = 1%, 3 = 5%)
 - `options`: Object with options
 
-**Note:** A single account can only provide liquidity for one fee tier at a time. Switching resets the 24h lock period.
+:::note[Note]
+A single account can only provide liquidity for one fee tier at a time. Switching resets the 24h lock period.
+:::
 
 Returns transaction object if successful.
