@@ -8,7 +8,7 @@ const poker_binary = __test.compile("src/contract/poker.js");
 const poker_addr = poker.__deploy({
 	__type: "mmx.contract.Executable",
 	binary: poker_binary,
-	init_args: []
+	init_args: [null, null, null, 2, 6]
 });
 
 function main() {
