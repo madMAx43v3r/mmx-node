@@ -444,3 +444,94 @@ Request payload is an object of arguments:
 - `options`: Object with options
 
 Returns transaction object if successful.
+
+#### POST /wapi/wallet/swap/trade
+
+Execute a swap trade (buy or sell tokens via the AMM pool).
+
+Request payload is an object of arguments:
+- `index`: Wallet index
+- `address`: Swap pool address
+- `amount`: Array of two amounts `[token0_amount, token1_amount]` — one side must be zero, the other is the trade input
+- `options`: Object with options
+
+Returns transaction object if successful.
+
+#### POST /wapi/wallet/swap/add_liquid
+
+Add liquidity to a swap pool. Both tokens are deposited in a single transaction.
+
+Request payload is an object of arguments:
+- `index`: Wallet index
+- `address`: Swap pool address
+- `amount`: Array `[token0_amount, token1_amount]` to deposit (one-sided deposits are supported)
+- `pool_idx`: Fee tier index (0 = 0.05%, 1 = 0.25%, 2 = 1%, 3 = 5%)
+- `options`: Object with options
+
+:::note[Note]
+Liquidity is locked for 24 hours (8640 blocks) after deposit. Fee payouts are not automatic — use `pool_payout` to claim earned fees.
+:::
+
+Returns transaction object if successful.
+
+#### POST /wapi/wallet/swap/rem_liquid
+
+Remove a partial amount of liquidity from a swap pool.
+
+Request payload is an object of arguments:
+- `index`: Wallet index
+- `address`: Swap pool address
+- `amount`: Array `[token0_amount, token1_amount]` to remove (pass zero for one side to remove only the other)
+- `options`: Object with options
+
+:::note[Note]
+This does **not** claim accumulated swap fees before removing. If you have earned fees, call `pool_payout` first, or use `rem_all_liquid` instead which claims fees automatically.
+:::
+
+Returns transaction object if successful.
+
+#### POST /wapi/wallet/swap/rem_all_liquid
+
+Remove all liquidity from a swap pool. This claims accumulated fees first, then removes the full LP position from both sides.
+
+Request payload is an object of arguments:
+- `index`: Wallet index
+- `address`: Swap pool address
+- `options`: Object with options
+
+:::note[Note]
+Unlike `rem_liquid`, this endpoint calls the contract's `_payout()` internally before removing, ensuring earned fees are claimed. Use this for full exits.
+:::
+
+Returns transaction object if successful.
+
+#### POST /wapi/wallet/swap/payout
+
+Claim earned swap fees from a swap pool. Requires an active LP position with `fees_earned > 0`.
+
+Request payload is an object of arguments:
+- `index`: Wallet index
+- `address`: Swap pool address
+- `options`: Object with options
+
+:::note[Note]
+Fee payouts are manual (no automatic compounding). Call this periodically to claim accumulated fees. Has no effect if `fees_earned` is zero.
+:::
+
+Returns transaction object if successful.
+
+#### POST /wapi/wallet/swap/switch_pool
+
+Switch LP position to a different fee tier.
+
+Request payload is an object of arguments:
+- `index`: Wallet index
+- `address`: Swap pool address
+- `pool_idx`: Target fee tier index (0 = 0.05%, 1 = 0.25%, 2 = 1%, 3 = 5%)
+- `options`: Object with options
+
+:::note[Note]
+A single account can only provide liquidity for one fee tier at a time. Switching resets the 24h lock period.
+:::
+
+Returns transaction object if successful.
