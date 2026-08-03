@@ -107,6 +107,22 @@ assert(poker.check_win(
     [["2", "H"], ["3", "H"], ["4", "H"], ["5", "H"], ["6", "H"]]    // Straight Flush
 ) == "LT");
 
+{
+    const deal = poker.deal_cards([0, 0, 0, 0, 0], null);
+    assert(equals(deal[0], [
+        ["2", "H"], ["3", "H"], ["4", "H"], ["5", "H"], ["6", "H"]
+    ]));
+    assert(equals(deal[1], [0, 1, 2, 3, 4]));
+}
+{
+    const deal = poker.deal_cards([0, 0], [0, 1, 2, 3, 4]);
+    assert(equals(deal[0], [["7", "H"], ["8", "H"]]));
+    assert(equals(deal[1], [0, 1, 2, 3, 4, 5, 6]));
+}
+
+poker.deal_cards([0], [0, 0], {__test: 1, assert_fail: true});
+poker.deal_cards([0], [52], {__test: 1, assert_fail: true});
+
 } // main
 
 main();

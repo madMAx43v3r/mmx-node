@@ -208,15 +208,21 @@ function show(hand, private_seed) public
     player.private_seed = private_seed;
 
     const source = sha256(concat(global_seed, private_seed));
-    const pocket = [
-        get_card(memcpy(source, 8, 0)),
-        get_card(memcpy(source, 8, 8))
-    ];
+    // Pocket cards must only depend on the first-round global seed and the
+    // player's private seed, so the player can know them before the board.
+    const deal = deal_cards([
+        memcpy(source, 8, 0),
+        memcpy(source, 8, 8)
+    ], null);
+    const pocket = deal[0];
     const all_cards = concat(board, pocket);
 
     const cards = [];
+    const card_map = {};
     for(const i of hand) {
-        assert(i < 7, "invalid card index");
+        assert(is_uint(i) && i < 7, "invalid card index");
+        assert(card_map[i] == null, "duplicate card index");
+        card_map[i] = true;
         push(cards, all_cards[i]);
     }
     const rank = get_rank(cards);
@@ -523,6 +529,57 @@ function get_card(seed) const public
     return [RANK_MAP[seed % 13], SUIT_MAP[(seed / 13) % 4]];
 }
 
+// Deals cards without replacement. The returned tuple contains the cards and
+// all occupied deck indices, including the supplied exclusions.
+
+function deal_cards(seed_list, excluded) const public
+{
+    assert(is_array(seed_list), "seed list must be an array");
+
+    const used = [];
+    if(excluded) {
+        assert(is_array(excluded), "excluded cards must be an array");
+        for(const index of excluded) {
+            assert(is_uint(index) && index < 52, "invalid excluded card");
+            for(const prev of used) {
+                assert(index != prev, "duplicate excluded card");
+            }
+            push(used, index);
+        }
+    }
+
+    const cards = [];
+    for(const seed of seed_list) {
+        push(cards, draw_card(seed, used));
+    }
+    return [cards, used];
+}
+
+function draw_card(seed, used) const
+{
+    assert(size(used) < 52, "deck is empty");
+
+    const target = uint(seed) % (52 - size(used));
+    var offset = 0;
+
+    for(var index = 0; index < 52; index++) {
+        var available = true;
+        for(const prev of used) {
+            if(index == prev) {
+                available = false;
+            }
+        }
+        if(available) {
+            if(offset == target) {
+                push(used, index);
+                return get_card(index);
+            }
+            offset++;
+        }
+    }
+    assert(false, "failed to draw card");
+}
+
 function compute() public
 {
     if(board) {
@@ -547,11 +604,12 @@ function compute() public
     }
     global_seed = source[0];
 
-    board = [
-        get_card(memcpy(source[1], 8, 0)),
-        get_card(memcpy(source[1], 8, 8)),
-        get_card(memcpy(source[1], 8, 16)),
-        get_card(memcpy(source[2], 8, 0)),
-        get_card(memcpy(source[3], 8, 0))
-    ];
+    const deal = deal_cards([
+        memcpy(source[1], 8, 0),
+        memcpy(source[1], 8, 8),
+        memcpy(source[1], 8, 16),
+        memcpy(source[2], 8, 0),
+        memcpy(source[3], 8, 0)
+    ], null);
+    board = deal[0];
 }
