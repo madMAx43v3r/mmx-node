@@ -219,7 +219,7 @@ function show(hand, private_seed) public
     const rank = get_rank(cards);
 
     if(winning_hand) {
-        const res = check_win(rank, winning_hand);
+        const res = compare_rank(rank, winning_hand);
         if(res == "GT") {
             winning_hand = rank;
             winning_players = [player];
@@ -501,6 +501,14 @@ function check_win(hand, other) const public
 {
     const L = get_rank(hand);
     const R = get_rank(other);
+
+    return compare_rank(L, R);
+}
+
+function compare_rank(L, R) const public
+{
+    assert(is_array(L) && size(L) == 2, "invalid hand rank");
+    assert(is_array(R) && size(R) == 2, "invalid hand rank");
 
     const res = compare(L[0], R[0]);
     if(res == "EQ") {

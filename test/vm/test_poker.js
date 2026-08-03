@@ -107,6 +107,11 @@ assert(poker.check_win(
     [["2", "H"], ["3", "H"], ["4", "H"], ["5", "H"], ["6", "H"]]    // Straight Flush
 ) == "LT");
 
+assert(poker.compare_rank(
+    poker.get_rank([["A", "H"], ["4", "D"], ["7", "C"], ["9", "S"], ["J", "H"]]),
+    poker.get_rank([["2", "H"], ["4", "D"], ["7", "C"], ["9", "S"], ["J", "H"]])
+) == "GT");
+
 {
     const deal = poker.deal_cards([0, 0, 0, 0, 0], null);
     assert(equals(deal[0], [
