@@ -131,7 +131,7 @@ function reveal(seed, next_commit) public
     check_reveal();
 }
 
-function bet() public
+function bet() public payable
 {
     check_reveal();
 
