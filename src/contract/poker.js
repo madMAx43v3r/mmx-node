@@ -105,6 +105,14 @@ function check_start()
     }
 }
 
+function update() public
+{
+    check_start();
+    check_reveal();
+    check_action();
+    check_finish();
+}
+
 function reveal(seed, next_commit) public
 {
     check_start();
@@ -456,13 +464,13 @@ function check_finish()
 function leave() public
 {
     assert(state == 0, "game already started");
-    assert(is_timeout(), "too early");
     assert(size(player_list) == 1, "cannot leave table");
 
     const player = get_player(this.user);
 
     send(this.user, player.bet, currency);
 
+    deadline = null;
     player_map = {};
     player_list = [];
 }
