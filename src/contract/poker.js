@@ -415,7 +415,7 @@ function leave() public
 //
 // Example:
 //   hand = [["2", "H"], ["3", "D"], ["4", "C"], ["5", "S"], ["6", "H"]]
-//   return => [5, [4, 3, 2, 1, 0]]
+//   return => [5, [4]]
 
 function get_rank(hand) const public
 {
@@ -470,25 +470,27 @@ function get_rank(hand) const public
         count[v]++;
     }
     
-    var pairs = 0;
-    var threes = 0;
-    var fours = 0;
+    const pairs = [];
+    const singles = [];
+    var threes = null;
+    var fours = null;
     for(const v of unique_values) {
-        if(count[v] == 2) pairs++;
-        if(count[v] == 3) threes++;
-        if(count[v] == 4) fours++;
+        if(count[v] == 1) push(singles, v);
+        if(count[v] == 2) push(pairs, v);
+        if(count[v] == 3) threes = v;
+        if(count[v] == 4) fours = v;
     }
-    
-    if(flush && straight) return [10, values];	    // Straight Flush
-    if(flush && low_straight) return [9, values];	// Ace Low Straight Flush
-    if(fours) return [8, values];				    // Four of a kind
-    if(threes && pairs) return [7, values];		    // Full House
+
+    if(flush && straight) return [10, [values[0]]];  // Straight Flush
+    if(flush && low_straight) return [9, [3]];       // Ace Low Straight Flush
+    if(fours != null) return [8, [fours, singles[0]]];
+    if(threes != null && size(pairs)) return [7, [threes, pairs[0]]];
     if(flush) return [6, values];				    // Flush
-    if(straight) return [5, values];			    // Straight
-    if(low_straight) return [4, values];	        // Ace Low Straight
-    if(threes) return [3, values];				    // Three of a kind
-    if(pairs == 2) return [2, values];			    // Two Pair
-    if(pairs == 1) return [1, values];			    // One Pair
+    if(straight) return [5, [values[0]]];            // Straight
+    if(low_straight) return [4, [3]];                // Ace Low Straight
+    if(threes != null) return [3, [threes, singles[0], singles[1]]];
+    if(size(pairs) == 2) return [2, [pairs[0], pairs[1], singles[0]]];
+    if(size(pairs) == 1) return [1, [pairs[0], singles[0], singles[1], singles[2]]];
     return [0, values];							    // High Card
 }
 

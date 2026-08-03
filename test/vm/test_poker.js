@@ -112,6 +112,28 @@ assert(poker.compare_rank(
     poker.get_rank([["2", "H"], ["4", "D"], ["7", "C"], ["9", "S"], ["J", "H"]])
 ) == "GT");
 
+// Grouped ranks must be compared before kickers.
+assert(poker.check_win(
+    [["2", "H"], ["2", "D"], ["A", "C"], ["K", "S"], ["Q", "H"]],
+    [["3", "H"], ["3", "D"], ["5", "C"], ["4", "S"], ["2", "C"]]
+) == "LT");
+assert(poker.check_win(
+    [["K", "H"], ["K", "D"], ["2", "C"], ["2", "S"], ["A", "H"]],
+    [["K", "C"], ["K", "S"], ["Q", "H"], ["Q", "D"], ["J", "H"]]
+) == "LT");
+assert(poker.check_win(
+    [["2", "H"], ["2", "D"], ["2", "C"], ["A", "S"], ["K", "H"]],
+    [["3", "H"], ["3", "D"], ["3", "C"], ["5", "S"], ["4", "H"]]
+) == "LT");
+assert(poker.check_win(
+    [["2", "H"], ["2", "D"], ["2", "C"], ["A", "S"], ["A", "H"]],
+    [["3", "H"], ["3", "D"], ["3", "C"], ["2", "S"], ["2", "H"]]
+) == "LT");
+assert(poker.check_win(
+    [["2", "H"], ["2", "D"], ["2", "C"], ["2", "S"], ["A", "H"]],
+    [["3", "H"], ["3", "D"], ["3", "C"], ["3", "S"], ["2", "H"]]
+) == "LT");
+
 {
     const deal = poker.deal_cards([0, 0, 0, 0, 0], null);
     assert(equals(deal[0], [
