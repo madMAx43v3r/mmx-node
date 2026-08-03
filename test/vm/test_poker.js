@@ -113,6 +113,12 @@ assert(poker.compare_rank(
     poker.get_rank([["2", "H"], ["4", "D"], ["7", "C"], ["9", "S"], ["J", "H"]])
 ) == "GT");
 
+assert(poker.get_split_amount(10, 3, 0) == 4);
+assert(poker.get_split_amount(10, 3, 1) == 3);
+assert(poker.get_split_amount(10, 3, 2) == 3);
+poker.get_split_amount(10, 0, 0, {__test: 1, assert_fail: true});
+poker.get_split_amount(10, 3, 3, {__test: 1, assert_fail: true});
+
 // Grouped ranks must be compared before kickers.
 assert(poker.check_win(
     [["2", "H"], ["2", "D"], ["A", "C"], ["K", "S"], ["Q", "H"]],

@@ -240,23 +240,22 @@ function claim() public
     var amount = 0;
     
     if(winning_players) {
-        for(const player of winning_players) {
-            if(this.user == player.address) {
-                user = player;
-            }
+        const winners = get_winners();
+        const index = find_player(winners, this.user);
+        if(index != null) {
+            user = winners[index];
+            amount = get_split_amount(final_pot, size(winners), index);
         }
-        amount = final_pot / size(winning_players);
     } else {
         const active = get_active();
         const num_active = size(active);
         if(num_active > 0) {
             // nobody showed their hand, split the pot among remaining players
-            for(const player of active) {
-                if(this.user == player.address) {
-                    user = player;
-                }
+            const index = find_player(active, this.user);
+            if(index != null) {
+                user = active[index];
+                amount = get_split_amount(final_pot, num_active, index);
             }
-            amount = final_pot / num_active;
         } else {
             // everybody folded or timed out, return bets to each player
             user = get_player(this.user);
@@ -269,6 +268,45 @@ function claim() public
 
     send(this.user, amount, currency, "poker_win");
     user.claim = true;
+}
+
+function get_winners() const
+{
+    const winners = [];
+    for(const player of player_list) {
+        for(const winner of winning_players) {
+            if(player.address == winner.address) {
+                push(winners, player);
+            }
+        }
+    }
+    return winners;
+}
+
+function find_player(players, address) const
+{
+    for(var i = 0; i < size(players); i++) {
+        if(players[i].address == address) {
+            return i;
+        }
+    }
+    return null;
+}
+
+function get_split_amount(total, count, index) const public
+{
+    total = uint(total);
+    count = uint(count);
+    index = uint(index);
+
+    assert(count > 0, "invalid split count");
+    assert(index < count, "invalid split index");
+
+    var amount = total / count;
+    if(index < total % count) {
+        amount++;
+    }
+    return amount;
 }
 
 function is_timeout() const public
