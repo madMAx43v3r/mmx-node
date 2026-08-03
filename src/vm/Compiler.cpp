@@ -1860,11 +1860,14 @@ Compiler::vref_t Compiler::recurse_expr(const node_t*& p_node, size_t& expr_len,
 				}
 			}
 			else if(name == "binary") {
-				if(args.size() != 1) {
-					throw std::logic_error("expected 1 argument for binary()");
-				}
 				out.address = stack.new_addr();
-				code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BINARY, CONVTYPE_DEFAULT);
+				if(args.size() == 0) {
+					code.emplace_back(OP_COPY, 0, out.address, get_const_address(binary_t::alloc(size_t(0), TYPE_BINARY)));
+				} else if(args.size() == 1) {
+					code.emplace_back(OP_CONV, 0, out.address, get(recurse(args[0])), CONVTYPE_BINARY, CONVTYPE_DEFAULT);
+				} else {
+					throw std::logic_error("expected 0 or 1 argument for binary()");
+				}
 			}
 			else if(name == "binary_le") {
 				if(args.size() != 1) {

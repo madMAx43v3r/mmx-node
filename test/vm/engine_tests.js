@@ -352,6 +352,9 @@ if(size("123") != 3) {
 if(size(binary("123")) != 3) {
 	fail("size(binary('123'))");
 }
+if(size(binary()) != 0) {
+	fail("size(binary())");
+}
 if(min(1, 2, 3) != 1) {
 	fail("min()");
 }
@@ -375,6 +378,9 @@ if(typeof("") != 5) {
 }
 if(typeof(binary("")) != 6) {
 	fail("typeof(binary)");
+}
+if(typeof(binary()) != 6) {
+	fail("typeof(binary())");
 }
 if(typeof([]) != 7) {
 	fail("typeof([])");
@@ -725,5 +731,4 @@ if((binary_hex("F000") & binary_hex("FFF0")) != binary_hex("F000")) {
 if((binary_hex("F000") | binary_hex("FFF0")) != binary_hex("FFF0")) {
 	fail("binary | binary");
 }
-
 
