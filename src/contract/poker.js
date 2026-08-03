@@ -71,7 +71,7 @@ function join(name, commit, private_commit) public payable
     assert(size(commit) == 32, "invalid commit");
     assert(size(private_commit) == 32, "invalid private commit");
     assert(is_string(name) && size(name) > 1 && size(name) <= 24, "invalid name");
-    assert(!player_map[this.user], "already joined");
+    assert(player_map[this.user] == null, "already joined");
 
     const player = {
         name: name,

@@ -3,12 +3,13 @@ import {equals} from "std";
 interface __test;
 interface poker;
 
+const MMX = string_bech32(bech32());
 const poker_binary = __test.compile("src/contract/poker.js");
 
 const poker_addr = poker.__deploy({
 	__type: "mmx.contract.Executable",
 	binary: poker_binary,
-	init_args: [null, null, null, 2, 6]
+	init_args: [MMX, 1, 10, 3, 6]
 });
 
 function main() {
@@ -165,6 +166,17 @@ poker.deal_cards([0], [52], {__test: 1, assert_fail: true});
 
     poker.select_hand(board, pocket, [0, 1, 2, 3, 5], {__test: 1, assert_fail: true});
     poker.select_hand(board, pocket, [0, 1, 2, 3, 3], {__test: 1, assert_fail: true});
+}
+
+{
+    const user = "mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z";
+    const commit = string_hex(sha256("join_seed"));
+    const private_commit = string_hex(sha256("private_seed"));
+
+    poker.join("Alice", commit, private_commit, {__test: 1, user: user, deposit: [1, MMX]});
+    poker.join("Alice Again", commit, private_commit, {
+        __test: 1, user: user, deposit: [1, MMX], assert_fail: true
+    });
 }
 
 } // main
