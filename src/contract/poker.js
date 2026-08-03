@@ -325,7 +325,7 @@ function extend_deadline(factor = 1)
     deadline = this.height + factor * timeout_interval;
 }
 
-function get_player(address, active_only = false) const public
+function get_player(address, active_only = false) const
 {
     const index = player_map[address];
     assert(index != null, "not a player");
@@ -337,7 +337,19 @@ function get_player(address, active_only = false) const public
     return player;
 }
 
-function is_active(player) const public
+function get_player_status(address) const public
+{
+    const player = get_player(bech32(address));
+    return {
+        bet: player.bet,
+        folded: bool(player.fold),
+        revealed: size(player.seed),
+        shown: bool(player.private_seed),
+        claimed: bool(player.claim),
+    };
+}
+
+function is_active(player) const
 {
     if(player.fold) {
         return false;
@@ -349,7 +361,7 @@ function is_active(player) const public
     return size(player.seed) >= curr_round;
 }
 
-function get_active() const public
+function get_active() const
 {
     const active = [];
     for(const player of player_list) {
