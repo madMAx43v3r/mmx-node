@@ -85,13 +85,13 @@ function main()
     assert(poker.get_num_active() == 3);
     assert(__test.get_balance(poker_addr, MMX) == 60);
 
-    // Round two: Carol raises, Alice calls, and Bob auto-folds after the raise.
+    // Round two: Carol opens the betting, Alice calls, and Bob auto-folds.
     poker.reveal(string_hex(bob_seed_1), string_hex(sha256(bob_seed_2)), {__test: true, user: bob});
     poker.reveal(string_hex(carol_seed_1), string_hex(sha256(carol_seed_2)), {__test: true, user: carol});
     poker.reveal(string_hex(alice_seed_1), string_hex(sha256(alice_seed_2)), {__test: true, user: alice});
 
-    poker.bet({__test: true, user: carol, deposit: [10, MMX]});
-    poker.bet({__test: true, user: alice, deposit: [10, MMX]});
+    poker.bet({__test: true, user: carol, deposit: [20, MMX]});
+    poker.bet({__test: true, user: alice, deposit: [20, MMX]});
     poker.check(true, {__test: true, user: bob});
 
     const bob_after_fold = poker.get_player_status(bob);
@@ -99,7 +99,7 @@ function main()
     assert(bob_after_fold.folded);
     assert(bob_after_fold.revealed == 2);
     assert(poker.get_num_active() == 2);
-    assert(__test.get_balance(poker_addr, MMX) == 80);
+    assert(__test.get_balance(poker_addr, MMX) == 100);
 
     // Folded players no longer reveal or act.
     poker.reveal(string_hex(bob_seed_2), string_hex(sha256(bob_seed_3)), {
@@ -142,9 +142,9 @@ function main()
     poker.claim({__test: true, user: alice, assert_fail: true});
     poker.claim({__test: true, user: carol});
 
-    assert(__test.get_balance(alice, MMX) == 40);
+    assert(__test.get_balance(alice, MMX) == 50);
     assert(__test.get_balance(bob, MMX) == 0);
-    assert(__test.get_balance(carol, MMX) == 40);
+    assert(__test.get_balance(carol, MMX) == 50);
     assert(__test.get_balance(poker_addr, MMX) == 0);
     assert(poker.get_player_status(alice).claimed);
     assert(!poker.get_player_status(bob).claimed);

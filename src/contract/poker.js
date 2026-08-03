@@ -148,19 +148,25 @@ function bet() public payable
     assert(state == 2, "wrong state");
     assert(!is_timeout(), "too late");
     assert(this.deposit.currency == currency, "invalid currency");
+    assert(this.deposit.amount >= blind_bet, "bet below minimum");
 
     const player = get_player(this.user, true);
     assert(sequence > player.step, "duplicate action");
-    
-    player.bet += this.deposit.amount;
-    assert(player.bet <= bet_limit, "bet limit exceeded");
+
+    const next_bet = player.bet + this.deposit.amount;
+    assert(next_bet <= bet_limit, "bet limit exceeded");
+    assert(next_bet == bet_amount || next_bet >= 2 * player.bet,
+        "bet must match the current bet or double the player's bet");
+
+    player.bet = next_bet;
 
     if(player.bet > bet_amount) {
         is_raise = true;
         bet_amount = player.bet;
     }
+
     player.step = sequence;
-    
+
     check_action();
 }
 

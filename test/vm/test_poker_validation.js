@@ -4,7 +4,7 @@ interface __test;
 interface poker_bad_players;
 interface poker_bad_timeout;
 interface poker_validation;
-interface poker_reraise;
+interface poker_concurrent_bets;
 
 const MMX = string_bech32(bech32());
 const USD = string_bech32(sha256("poker_validation_USD"));
@@ -28,7 +28,7 @@ const poker_addr = poker_validation.__deploy({
     binary: poker_binary,
     init_args: [MMX, 10, 2, 3, 6]
 });
-const reraise_addr = poker_reraise.__deploy({
+const concurrent_bets_addr = poker_concurrent_bets.__deploy({
     __type: "mmx.contract.Executable",
     binary: poker_binary,
     init_args: [MMX, 10, 10, 3, 6]
@@ -103,6 +103,7 @@ function main()
     poker_validation.reveal(string_hex(carol_seed_0), string_hex(sha256(carol_seed_1)), {__test: true, user: carol});
 
     poker_validation.bet({__test: true, user: alice, deposit: [10, USD], assert_fail: true});
+    poker_validation.bet({__test: true, user: alice, deposit: [9, MMX], assert_fail: true});
     poker_validation.bet({__test: true, user: alice, deposit: [11, MMX], assert_fail: true});
     poker_validation.bet({__test: true, user: alice, deposit: [10, MMX]});
     poker_validation.check(false, {__test: true, user: alice, assert_fail: true});
@@ -128,8 +129,8 @@ function main()
     }
     poker_validation.deal_cards(too_many_seeds, {__test: true, assert_fail: true});
 
-    // A raise can be followed by a higher raise in the response sequence. All
-    // active players then receive another parallel sequence in which to call.
+    // Concurrent bets can increase the target in any arrival order. All active
+    // players then receive another parallel sequence in which to match it.
     {
         const raise_alice = string_bech32(sha256("reraise_alice"));
         const raise_bob = string_bech32(sha256("reraise_bob"));
@@ -138,35 +139,36 @@ function main()
         const raise_bob_seed = sha256("reraise_bob_seed");
         const raise_carol_seed = sha256("reraise_carol_seed");
 
-        poker_reraise.join("Alice", string_hex(sha256(raise_alice_seed)), string_hex(sha256("reraise_alice_private")), {
+        poker_concurrent_bets.join("Alice", string_hex(sha256(raise_alice_seed)), string_hex(sha256("reraise_alice_private")), {
             __test: true, user: raise_alice, deposit: [10, MMX]
         });
-        poker_reraise.join("Bob", string_hex(sha256(raise_bob_seed)), string_hex(sha256("reraise_bob_private")), {
+        poker_concurrent_bets.join("Bob", string_hex(sha256(raise_bob_seed)), string_hex(sha256("reraise_bob_private")), {
             __test: true, user: raise_bob, deposit: [10, MMX]
         });
-        poker_reraise.join("Carol", string_hex(sha256(raise_carol_seed)), string_hex(sha256("reraise_carol_private")), {
+        poker_concurrent_bets.join("Carol", string_hex(sha256(raise_carol_seed)), string_hex(sha256("reraise_carol_private")), {
             __test: true, user: raise_carol, deposit: [10, MMX]
         });
-        poker_reraise.reveal(string_hex(raise_carol_seed), string_hex(sha256("reraise_carol_seed_1")), {__test: true, user: raise_carol});
-        poker_reraise.reveal(string_hex(raise_alice_seed), string_hex(sha256("reraise_alice_seed_1")), {__test: true, user: raise_alice});
-        poker_reraise.reveal(string_hex(raise_bob_seed), string_hex(sha256("reraise_bob_seed_1")), {__test: true, user: raise_bob});
+        poker_concurrent_bets.reveal(string_hex(raise_carol_seed), string_hex(sha256("reraise_carol_seed_1")), {__test: true, user: raise_carol});
+        poker_concurrent_bets.reveal(string_hex(raise_alice_seed), string_hex(sha256("reraise_alice_seed_1")), {__test: true, user: raise_alice});
+        poker_concurrent_bets.reveal(string_hex(raise_bob_seed), string_hex(sha256("reraise_bob_seed_1")), {__test: true, user: raise_bob});
 
-        poker_reraise.check(false, {__test: true, user: raise_carol});
-        poker_reraise.bet({__test: true, user: raise_alice, deposit: [10, MMX]});
-        poker_reraise.bet({__test: true, user: raise_bob, deposit: [10, MMX]});
+        poker_concurrent_bets.check(false, {__test: true, user: raise_carol});
+        poker_concurrent_bets.bet({__test: true, user: raise_alice, deposit: [10, MMX]});
+        poker_concurrent_bets.bet({__test: true, user: raise_bob, deposit: [20, MMX]});
 
-        poker_reraise.check(false, {__test: true, user: raise_alice});
-        poker_reraise.check(false, {__test: true, user: raise_bob});
-        poker_reraise.bet({__test: true, user: raise_carol, deposit: [20, MMX]});
+        poker_concurrent_bets.check(false, {__test: true, user: raise_bob});
+        poker_concurrent_bets.bet({__test: true, user: raise_carol, deposit: [20, MMX]});
+        poker_concurrent_bets.bet({__test: true, user: raise_alice, deposit: [15, MMX], assert_fail: true});
+        poker_concurrent_bets.bet({__test: true, user: raise_alice, deposit: [20, MMX]});
 
-        poker_reraise.check(false, {__test: true, user: raise_carol});
-        poker_reraise.bet({__test: true, user: raise_bob, deposit: [10, MMX]});
-        poker_reraise.bet({__test: true, user: raise_alice, deposit: [10, MMX]});
+        poker_concurrent_bets.check(false, {__test: true, user: raise_alice});
+        poker_concurrent_bets.bet({__test: true, user: raise_bob, deposit: [10, MMX]});
+        poker_concurrent_bets.bet({__test: true, user: raise_carol, deposit: [10, MMX]});
 
-        assert(poker_reraise.get_player_status(raise_alice).bet == 30);
-        assert(poker_reraise.get_player_status(raise_bob).bet == 30);
-        assert(poker_reraise.get_player_status(raise_carol).bet == 30);
-        assert(__test.get_balance(reraise_addr, MMX) == 90);
+        assert(poker_concurrent_bets.get_player_status(raise_alice).bet == 40);
+        assert(poker_concurrent_bets.get_player_status(raise_bob).bet == 40);
+        assert(poker_concurrent_bets.get_player_status(raise_carol).bet == 40);
+        assert(__test.get_balance(concurrent_bets_addr, MMX) == 120);
     }
 }
 
