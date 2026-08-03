@@ -26,7 +26,6 @@ var max_players;
 var timeout_interval;
 
 var num_reveals = 0;
-var num_actions = 0;
 var deadline = null;
 var round = 0;
 var state = 0;          // 0 - waiting for players, 1 - revealing, 2 - betting, 3 - showdown, 4 - finished
@@ -151,7 +150,6 @@ function bet() public
         bet_amount = player.bet;
     }
     player.step = sequence;
-    num_actions++;
     
     check_action();
 }
@@ -170,7 +168,6 @@ function check(auto_fold) public
         player.fold = true;
     }
     player.step = sequence;
-    num_actions++;
 
     check_action();
 }
@@ -187,7 +184,6 @@ function fold() public
 
     player.fold = true;
     player.step = sequence;
-    num_actions++;
 
     check_action();
 }
@@ -349,7 +345,7 @@ function check_reveal()
 function check_action()
 {
     if(state == 2) {
-        if(num_actions == get_num_active() || is_timeout()) {
+        if(all_active_acted() || is_timeout()) {
             var done = true;
             if(bet_amount) {
                 for(const player of get_active()) {
@@ -373,10 +369,19 @@ function check_action()
             }
             is_raise = false;
             sequence++;
-            num_actions = 0;
             extend_deadline();
         }
     }
+}
+
+function all_active_acted() const
+{
+    for(const player of player_list) {
+        if(is_active(player) && player.step < sequence) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function check_finish()
