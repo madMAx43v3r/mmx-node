@@ -4,12 +4,13 @@ interface __test;
 interface poker;
 
 const MMX = string_bech32(bech32());
+const ZERO_SEED = "0000000000000000000000000000000000000000000000000000000000000000";
 const poker_binary = __test.compile("src/contract/poker.js");
 
 const poker_addr = poker.__deploy({
 	__type: "mmx.contract.Executable",
 	binary: poker_binary,
-	init_args: [MMX, 1, 10, 3, 6]
+	init_args: [MMX, 1, 10, 2, 6]
 });
 
 function main() {
@@ -142,20 +143,11 @@ assert(poker.check_win(
 ) == "LT");
 
 {
-    const deal = poker.deal_cards([0, 0, 0, 0, 0], null);
-    assert(equals(deal[0], [
+    const deal = poker.deal_cards([ZERO_SEED, ZERO_SEED, ZERO_SEED, ZERO_SEED, ZERO_SEED]);
+    assert(equals(deal, [
         ["2", "H"], ["3", "H"], ["4", "H"], ["5", "H"], ["6", "H"]
     ]));
-    assert(equals(deal[1], [0, 1, 2, 3, 4]));
 }
-{
-    const deal = poker.deal_cards([0, 0], [0, 1, 2, 3, 4]);
-    assert(equals(deal[0], [["7", "H"], ["8", "H"]]));
-    assert(equals(deal[1], [0, 1, 2, 3, 4, 5, 6]));
-}
-
-poker.deal_cards([0], [0, 0], {__test: 1, assert_fail: true});
-poker.deal_cards([0], [52], {__test: 1, assert_fail: true});
 
 {
     const board = [["2", "H"], ["3", "H"], ["4", "H"], ["5", "H"], ["6", "H"]];
@@ -175,14 +167,63 @@ poker.deal_cards([0], [52], {__test: 1, assert_fail: true});
 }
 
 {
-    const user = "mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z";
-    const commit = string_hex(sha256("join_seed"));
-    const private_commit = string_hex(sha256("private_seed"));
+    const alice = "mmx1kx69pm743rshqac5lgcstlr8nq4t93hzm8gumkkxmp5y9fglnkes6ve09z";
+    const bob = "mmx1e7yktu9vpeyq7hx39cmagzfp2um3kddwjf4tlt8j3kmktwc7fk6qmyc6ns";
+    const alice_seed = sha256("alice_seed");
+    const alice_seed_1 = sha256("alice_seed_1");
+    const alice_seed_2 = sha256("alice_seed_2");
+    const alice_seed_3 = sha256("alice_seed_3");
+    const alice_seed_4 = sha256("alice_seed_4");
+    const alice_private_seed = sha256("alice_private_seed");
+    const bob_seed = sha256("bob_seed");
+    const bob_seed_1 = sha256("bob_seed_1");
+    const bob_seed_2 = sha256("bob_seed_2");
+    const bob_seed_3 = sha256("bob_seed_3");
+    const bob_seed_4 = sha256("bob_seed_4");
+    const bob_private_seed = sha256("bob_private_seed");
 
-    poker.join("Alice", commit, private_commit, {__test: 1, user: user, deposit: [1, MMX]});
-    poker.join("Alice Again", commit, private_commit, {
-        __test: 1, user: user, deposit: [1, MMX], assert_fail: true
+    poker.join("Alice", string_hex(sha256(alice_seed)), string_hex(sha256(alice_private_seed)), {
+        __test: 1, user: alice, deposit: [1, MMX]
     });
+    poker.join("Alice Again", string_hex(sha256(alice_seed)), string_hex(sha256(alice_private_seed)), {
+        __test: 1, user: alice, deposit: [1, MMX], assert_fail: true
+    });
+    poker.join("Bob", string_hex(sha256(bob_seed)), string_hex(sha256(bob_private_seed)), {
+        __test: 1, user: bob, deposit: [1, MMX]
+    });
+
+    poker.reveal([0], string_hex(sha256(alice_seed_1)), {
+        __test: 1, user: alice, assert_fail: true
+    });
+    poker.reveal(string_hex(alice_seed), string_hex(sha256(alice_seed_1)), {__test: 1, user: alice});
+    poker.reveal(string_hex(bob_seed), string_hex(sha256(bob_seed_1)), {__test: 1, user: bob});
+
+    poker.check(false, {__test: 1, user: alice});
+    poker.check(false, {__test: 1, user: bob});
+    poker.reveal(string_hex(alice_seed_1), string_hex(sha256(alice_seed_2)), {__test: 1, user: alice});
+    poker.reveal(string_hex(bob_seed_1), string_hex(sha256(bob_seed_2)), {__test: 1, user: bob});
+
+    poker.check(false, {__test: 1, user: alice});
+    poker.check(false, {__test: 1, user: bob});
+    poker.reveal(string_hex(alice_seed_2), string_hex(sha256(alice_seed_3)), {__test: 1, user: alice});
+    poker.reveal(string_hex(bob_seed_2), string_hex(sha256(bob_seed_3)), {__test: 1, user: bob});
+
+    poker.check(false, {__test: 1, user: alice});
+    poker.check(false, {__test: 1, user: bob});
+    poker.reveal(string_hex(alice_seed_3), string_hex(sha256(alice_seed_4)), {__test: 1, user: alice});
+    poker.reveal(string_hex(bob_seed_3), string_hex(sha256(bob_seed_4)), {__test: 1, user: bob});
+
+    poker.check(false, {__test: 1, user: alice});
+    poker.check(false, {__test: 1, user: bob});
+
+    poker.show([0, 1, 2, 3, 4], string_hex(alice_private_seed), {__test: 1, user: alice});
+    poker.show([0, 1, 2, 3, 4], string_hex(bob_private_seed), {__test: 1, user: bob});
+
+    poker.claim({__test: 1, user: alice});
+    poker.claim({__test: 1, user: bob});
+
+    assert(__test.get_balance(alice, MMX) == 1);
+    assert(__test.get_balance(bob, MMX) == 1);
 }
 
 } // main

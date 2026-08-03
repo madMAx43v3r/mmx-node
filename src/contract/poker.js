@@ -70,7 +70,7 @@ function join(name, commit, private_commit) public payable
 
     assert(size(commit) == 32, "invalid commit");
     assert(size(private_commit) == 32, "invalid private commit");
-    assert(is_string(name) && size(name) > 1 && size(name) <= 24, "invalid name");
+    assert(is_string(name) && size(name) > 0 && size(name) <= 24, "invalid name");
     assert(player_map[this.user] == null, "already joined");
 
     const player = {
@@ -110,9 +110,11 @@ function reveal(seed, next_commit) public
     check_start();
     check_action();
 
+    seed = binary_hex(seed);
+
     assert(state == 1, "wrong state");
     assert(!is_timeout(), "too late");
-    assert(size(seed) == 32, "invalid seed length");
+    assert(size(seed) == 32, "seed must be 32 bytes");
 
     const player = get_player(this.user, true);
     assert(size(player.seed) == round, "already revealed");
@@ -192,10 +194,12 @@ function show(hand, private_seed) public
 {
     check_action();
 
+    private_seed = binary_hex(private_seed);
+
     assert(state == 3, "wrong state");
     assert(!is_timeout(), "too late");
     assert(size(hand) == 5, "invalid hand");
-    assert(size(private_seed) == 32, "invalid seed length");
+    assert(size(private_seed) == 32, "private seed must be 32 bytes");
 
     const player = get_player(this.user, true);
     assert(!player.private_seed, "already shown");
@@ -206,11 +210,10 @@ function show(hand, private_seed) public
     const source = sha256(concat(global_seed, private_seed));
     // Pocket cards must only depend on the first-round global seed and the
     // player's private seed, so the player can know them before the board.
-    const deal = deal_cards([
-        memcpy(source, 8, 0),
-        memcpy(source, 8, 8)
-    ], null);
-    const pocket = deal[0];
+    const pocket = deal_cards([
+        sha256(concat(binary_hex("A1"), source)),
+        sha256(concat(binary_hex("A2"), source))
+    ]);
     const cards = select_hand(board, pocket, hand);
     const rank = get_rank(cards);
 
@@ -601,49 +604,35 @@ function get_card(seed) const public
     return [RANK_MAP[seed % 13], SUIT_MAP[(seed / 13) % 4]];
 }
 
-// Deals cards without replacement. The returned tuple contains the cards and
-// all occupied deck indices, including the supplied exclusions.
+// Deals cards without replacement.
 
-function deal_cards(seed_list, excluded) const public
+function deal_cards(seed_list) const public
 {
     assert(is_array(seed_list), "seed list must be an array");
 
-    const used = [];
-    if(excluded) {
-        assert(is_array(excluded), "excluded cards must be an array");
-        for(const index of excluded) {
-            assert(is_uint(index) && index < 52, "invalid excluded card");
-            for(const prev of used) {
-                assert(index != prev, "duplicate excluded card");
-            }
-            push(used, index);
-        }
-    }
+    var num_used = 0;
+    const used_map = {};
 
     const cards = [];
     for(const seed of seed_list) {
-        push(cards, draw_card(seed, used));
+        push(cards, draw_card(binary_hex(seed), used_map, num_used));
+        num_used++;
     }
-    return [cards, used];
+    return cards;
 }
 
-function draw_card(seed, used) const
+function draw_card(seed, used_map, num_used) const
 {
-    assert(size(used) < 52, "deck is empty");
+    assert(is_binary(seed) && size(seed) == 32, "invalid seed");
+    assert(num_used < 52, "deck is empty");
 
-    const target = uint(seed) % (52 - size(used));
+    const target = uint(seed) % (52 - num_used);
+
     var offset = 0;
-
     for(var index = 0; index < 52; index++) {
-        var available = true;
-        for(const prev of used) {
-            if(index == prev) {
-                available = false;
-            }
-        }
-        if(available) {
+        if(used_map[index] == null) {
             if(offset == target) {
-                push(used, index);
+                used_map[index] = true;
                 return get_card(index);
             }
             offset++;
@@ -659,7 +648,7 @@ function compute() public
     }
     assert(state == 3, "wrong state");
 
-    const seed_list = ["", "", "", ""];
+    const seed_list = [binary(), binary(), binary(), binary()];
     for(const player of player_list) {
         for(var i = 0; i < size(player.seed) && i < 4; i++) {
             seed_list[i] = concat(seed_list[i], player.seed[i]);
@@ -676,12 +665,11 @@ function compute() public
     }
     global_seed = source[0];
 
-    const deal = deal_cards([
-        memcpy(source[1], 8, 0),
-        memcpy(source[1], 8, 8),
-        memcpy(source[1], 8, 16),
-        memcpy(source[2], 8, 0),
-        memcpy(source[3], 8, 0)
-    ], null);
-    board = deal[0];
+    board = deal_cards([
+        sha256(concat(binary_hex("F1"), source[1])),
+        sha256(concat(binary_hex("F2"), source[1])),
+        sha256(concat(binary_hex("F3"), source[1])),
+        source[2],
+        source[3]
+    ]);
 }
