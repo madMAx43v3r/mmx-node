@@ -123,6 +123,23 @@ assert(poker.check_win(
 poker.deal_cards([0], [0, 0], {__test: 1, assert_fail: true});
 poker.deal_cards([0], [52], {__test: 1, assert_fail: true});
 
+{
+    const board = [["2", "H"], ["3", "H"], ["4", "H"], ["5", "H"], ["6", "H"]];
+    const pocket = [["2", "H"], ["2", "D"]];
+
+    assert(equals(
+        poker.select_hand(board, pocket, [0, 1, 2, 3, 4]),
+        board
+    ));
+    assert(equals(
+        poker.select_hand(board, pocket, [0, 1, 2, 3, 6]),
+        [["2", "H"], ["3", "H"], ["4", "H"], ["5", "H"], ["2", "D"]]
+    ));
+
+    poker.select_hand(board, pocket, [0, 1, 2, 3, 5], {__test: 1, assert_fail: true});
+    poker.select_hand(board, pocket, [0, 1, 2, 3, 3], {__test: 1, assert_fail: true});
+}
+
 } // main
 
 main();

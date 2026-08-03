@@ -215,16 +215,7 @@ function show(hand, private_seed) public
         memcpy(source, 8, 8)
     ], null);
     const pocket = deal[0];
-    const all_cards = concat(board, pocket);
-
-    const cards = [];
-    const card_map = {};
-    for(const i of hand) {
-        assert(is_uint(i) && i < 7, "invalid card index");
-        assert(card_map[i] == null, "duplicate card index");
-        card_map[i] = true;
-        push(cards, all_cards[i]);
-    }
+    const cards = select_hand(board, pocket, hand);
     const rank = get_rank(cards);
 
     if(winning_hand) {
@@ -516,6 +507,34 @@ function check_win(hand, other) const public
         return compare(L[1], R[1]);
     }
     return res;
+}
+
+// Selects a five-card hand from five board cards followed by two pocket cards.
+// A pocket card that also appears on the board is unavailable to the player.
+
+function select_hand(board_, pocket, hand) const public
+{
+    assert(is_array(board_) && size(board_) == 5, "invalid board");
+    assert(is_array(pocket) && size(pocket) == 2, "invalid pocket");
+    assert(is_array(hand) && size(hand) == 5, "invalid hand");
+
+    const all_cards = concat(board_, pocket);
+    const cards = [];
+    const card_map = {};
+
+    for(const i of hand) {
+        assert(is_uint(i) && i < 7, "invalid card index");
+        assert(card_map[i] == null, "duplicate card index");
+        card_map[i] = true;
+
+        if(i >= 5) {
+            for(const board_card of board_) {
+                assert(!equals(all_cards[i], board_card), "pocket card collides with board");
+            }
+        }
+        push(cards, all_cards[i]);
+    }
+    return cards;
 }
 
 // Returns a random card based on a seed integer
