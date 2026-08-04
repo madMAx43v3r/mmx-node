@@ -178,9 +178,6 @@ function test_action_timeout()
     assert(carol_status[1] == 20 && carol_status[2] && carol_status[3] == 80);
     assert(poker2_timeout.get_table_status()[4] == 1);
 
-    poker2_timeout.claim({__test: true, user: alice});
-    poker2_timeout.claim({__test: true, user: bob});
-    poker2_timeout.claim({__test: true, user: carol});
     assert(__test.get_balance(timeout_addr, MMX) == 0);
 }
 
@@ -254,8 +251,6 @@ function test_commit_timeout()
     assert(bob_status[2] && bob_status[3] == 90);
     assert(poker2_commit_timeout.get_board() == null);
 
-    poker2_commit_timeout.claim({__test: true, user: alice});
-    poker2_commit_timeout.claim({__test: true, user: bob});
     assert(__test.get_balance(commit_timeout_addr, MMX) == 0);
 }
 

@@ -159,10 +159,6 @@ function main()
     assert(carol_status[3] == 198);
     assert(poker2.get_table_status()[4] == 2);
 
-    poker2.claim({__test: true, user: alice});
-    poker2.claim({__test: true, user: bob});
-    poker2.claim({__test: true, user: carol});
-
     assert(__test.get_balance(alice, MMX) == 100);
     assert(__test.get_balance(bob, MMX) == 60);
     assert(__test.get_balance(carol, MMX) == 198);

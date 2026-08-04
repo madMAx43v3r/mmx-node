@@ -99,7 +99,7 @@ function join(name, public_key) public payable
         bet: 0,
         folded: false,
         payout: 0,
-        claimed: false,
+        refunded: false,
     };
 
     player_map[this.user] = size(player_list);
@@ -174,13 +174,14 @@ function get_player_info(index) const public
     return [player.name, player.address, player.public_key, player.stack];
 }
 
-// Returns [stack, cumulative_bet, folded, payout, claimed].
+// Returns [stack, cumulative_bet, folded, payout, refunded]. Payout is the
+// amount transferred automatically by settle().
 
 function get_player_status(address) const public
 {
     const player = get_player(bech32(address));
     return [player.stack, player.bet, bool(player.folded),
-            player.payout, bool(player.claimed)];
+            player.payout, bool(player.refunded)];
 }
 
 function get_board() const public
@@ -337,7 +338,7 @@ function settle(commitments, commit_signatures, reveals, betting,
         player.bet = small_blind;
         player.folded = false;
         player.payout = 0;
-        player.claimed = false;
+        player.refunded = false;
         push(ranks, null);
 
         assert(is_array(reveals[i]) && size(reveals[i]) == 4,
@@ -501,6 +502,11 @@ function settle(commitments, commit_signatures, reveals, betting,
     allocate_payouts(ranks);
     state = 1;
 
+    for(const player of player_list) {
+        if(player.payout > 0) {
+            send(player.address, player.payout, currency, "poker_win");
+        }
+    }
     if(dealer_rake > 0) {
         send(dealer, dealer_rake, currency, "poker_rake");
     }
@@ -884,18 +890,6 @@ function get_split_amount(total, count, index) const public
     return amount;
 }
 
-function claim() public
-{
-    assert(state == 1, "game not settled");
-    const player = get_player(this.user);
-    assert(!player.claimed, "already claimed");
-
-    if(player.payout > 0) {
-        send(this.user, player.payout, currency, "poker_win");
-    }
-    player.claimed = true;
-}
-
 // If settlement never arrives, every player recovers the complete stack. The
 // implicit blind is only applied by settle(), so it is also fully refunded.
 
@@ -908,10 +902,10 @@ function refund() public
         state = 2;
     }
     const player = get_player(this.user);
-    assert(!player.claimed, "already refunded");
+    assert(!player.refunded, "already refunded");
 
     send(this.user, player.stack, currency, "poker_refund");
-    player.claimed = true;
+    player.refunded = true;
 }
 
 // Poker hand evaluation ----------------------------------------------------
