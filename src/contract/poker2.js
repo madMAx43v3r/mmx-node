@@ -15,8 +15,7 @@ import {equals, sort, reverse, compare} from "std";
 //                         player's complete commitment bundle
 // reveals[player][round]  four board seeds, with null for unavailable reveals
 // betting[round][epoch]   action entries [player, action, cumulative_bet, sig]
-// private_seeds[player]   pocket seed at showdown, otherwise null
-// hands[player]           five indices into board + pocket, otherwise []
+// shows                    sparse entries [player, pocket_seed, five indices]
 // timeouts                [player, phase, round, epoch]
 //
 // Timeout phases:
@@ -32,7 +31,7 @@ import {equals, sort, reverse, compare} from "std";
 //   phase 3 action: event 10 check, 11 bet, 12 fold,
 //                   20 timeout-check, 21 timeout-fold,
 //                   30 already folded, 31 all-in
-//   phase 4 show:   event 1 valid, 2 timeout, 3 already folded
+//   phase 4 show:   event 1 valid, 2 timeout, 3 already folded, 4 mucked
 
 var currency;
 var dealer;
@@ -53,7 +52,6 @@ var player_list = [];
 var board = null;
 var transcript_hash = null;
 var dealer_rake = 0;
-var rake_claimed = false;
 
 function init(currency_, dealer_, small_blind_, min_stack_blinds_, max_players_,
               start_delay_, game_timeout_, rake_bps_ = 100)
@@ -149,12 +147,12 @@ function is_expired() const public
 }
 
 // Returns [state, player_count, start_height, refund_height, dealer_rake,
-//          rake_claimed, transcript_hash].
+//          transcript_hash].
 
 function get_table_status() const public
 {
     return [state, size(player_list), start_height, refund_height,
-            dealer_rake, rake_claimed, transcript_hash];
+            dealer_rake, transcript_hash];
 }
 
 // Returns [currency, dealer, small_blind, minimum_stack, maximum_players,
@@ -311,7 +309,7 @@ function get_start_checkpoint() const public
 }
 
 function settle(commitments, commit_signatures, reveals, betting,
-                private_seeds, hands, timeouts) public
+                shows, timeouts) public
 {
     assert(state == 0, "table is closed");
     assert(this.user == dealer, "only dealer can settle");
@@ -326,12 +324,11 @@ function settle(commitments, commit_signatures, reveals, betting,
            "invalid commitment signatures");
     assert(is_array(reveals) && size(reveals) == count, "invalid reveals");
     assert(is_array(betting) && size(betting) == 4, "invalid betting transcript");
-    assert(is_array(private_seeds) && size(private_seeds) == count,
-           "invalid private seeds");
-    assert(is_array(hands) && size(hands) == count, "invalid hands");
+    assert(is_array(shows), "invalid shows");
     assert(is_array(timeouts), "invalid timeouts");
 
     const timeout_used = validate_timeouts(timeouts, count);
+    const show_used = validate_shows(shows, count);
     const commit_values = [];
     const ranks = [];
 
@@ -345,7 +342,6 @@ function settle(commitments, commit_signatures, reveals, betting,
 
         assert(is_array(reveals[i]) && size(reveals[i]) == 4,
                "invalid player reveals");
-        assert(is_array(hands[i]), "invalid player hand");
     }
 
     var checkpoint = get_start_checkpoint();
@@ -454,53 +450,60 @@ function settle(commitments, commit_signatures, reveals, betting,
         const global_seed = sources[0];
         for(var i = 0; i < count; i++) {
             const player = player_list[i];
-            const private_seed_ = private_seeds[i];
+            const show_index = find_show(shows, i);
 
             if(!player.folded) {
-                if(private_seed_ != null) {
-                    const private_seed = binary_hex(private_seed_);
+                if(show_index != null) {
+                    const show = shows[show_index];
+                    show_used[show_index] = true;
+
+                    const private_seed = binary_hex(show[1]);
+                    const hand = show[2];
                     assert(size(private_seed) == 32,
                            "private seed must be 32 bytes");
                     assert(get_seed_commit(player.address, 4, private_seed)
                            == commit_values[i][4], "invalid private seed");
-                    assert(size(hands[i]) == 5, "invalid hand");
+                    assert(is_array(hand) && size(hand) == 5, "invalid hand");
 
                     const source = sha256(concat(global_seed, private_seed));
                     const pocket = deal_cards([
                         sha256(concat(binary_hex("A1"), source)),
                         sha256(concat(binary_hex("A2"), source))
                     ]);
-                    ranks[i] = get_rank(select_hand(board, pocket, hands[i]));
+                    ranks[i] = get_rank(select_hand(board, pocket, hand));
                     checkpoint = checkpoint_step(checkpoint, 4, 4, 0,
                                                  player.address, 1, player.bet,
                                                  sha256(private_seed));
                 } else {
-                    assert(size(hands[i]) == 0, "hand without private seed");
-                    assert(use_timeout(timeouts, timeout_used, i, 3, 4, 0),
-                           "missing showdown timeout");
                     player.folded = true;
-                    checkpoint = checkpoint_step(checkpoint, 4, 4, 0,
-                                                 player.address, 2, player.bet);
+                    if(use_timeout(timeouts, timeout_used, i, 3, 4, 0)) {
+                        checkpoint = checkpoint_step(checkpoint, 4, 4, 0,
+                                                     player.address, 2, player.bet);
+                    } else {
+                        checkpoint = checkpoint_step(checkpoint, 4, 4, 0,
+                                                     player.address, 4, player.bet);
+                    }
                 }
             } else {
-                assert(private_seed_ == null, "show from folded player");
-                assert(size(hands[i]) == 0, "hand from folded player");
+                assert(show_index == null, "show from folded player");
                 checkpoint = checkpoint_step(checkpoint, 4, 4, 0,
                                              player.address, 3, player.bet);
             }
         }
     } else {
-        for(var i = 0; i < count; i++) {
-            assert(private_seeds[i] == null, "unexpected private seed");
-            assert(size(hands[i]) == 0, "unexpected hand");
-        }
+        assert(size(shows) == 0, "unexpected show");
     }
 
+    assert_all_shows_used(show_used);
     assert_all_timeouts_used(timeout_used);
 
     transcript_hash = checkpoint;
     allocate_payouts(ranks);
     state = 1;
+
+    if(dealer_rake > 0) {
+        send(dealer, dealer_rake, currency, "poker_rake");
+    }
 }
 
 function process_betting_round(round, epochs, checkpoint,
@@ -637,6 +640,37 @@ function find_action(entries, player_index) const
         }
     }
     return result;
+}
+
+function validate_shows(shows, count) const
+{
+    const used = [];
+    for(const show of shows) {
+        assert(is_array(show) && size(show) == 3, "invalid show entry");
+        assert(is_uint(show[0]) && show[0] < count, "invalid show player");
+        assert(is_array(show[2]), "invalid show hand");
+        push(used, false);
+    }
+    return used;
+}
+
+function find_show(shows, player_index) const
+{
+    var result = null;
+    for(var i = 0; i < size(shows); i++) {
+        if(shows[i][0] == player_index) {
+            assert(result == null, "duplicate player show");
+            result = i;
+        }
+    }
+    return result;
+}
+
+function assert_all_shows_used(used) const
+{
+    for(const value of used) {
+        assert(value, "unused show entry");
+    }
 }
 
 function validate_timeouts(timeouts, count) const
@@ -778,7 +812,7 @@ function allocate_payouts(ranks)
         }
     }
 
-    dealer_rake = matched_total * rake_bps / 10000;
+    dealer_rake = (matched_total * rake_bps) / 10000;
 
     var matched_seen = 0;
     var rake_seen = 0;
@@ -860,18 +894,6 @@ function claim() public
         send(this.user, player.payout, currency, "poker_win");
     }
     player.claimed = true;
-}
-
-function claim_rake() public
-{
-    assert(state == 1, "game not settled");
-    assert(this.user == dealer, "only dealer can claim rake");
-    assert(!rake_claimed, "rake already claimed");
-
-    if(dealer_rake > 0) {
-        send(dealer, dealer_rake, currency, "poker_rake");
-    }
-    rake_claimed = true;
 }
 
 // If settlement never arrives, every player recovers the complete stack. The

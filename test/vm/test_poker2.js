@@ -130,12 +130,14 @@ function main()
     ];
 
     const betting = [[first_epoch], [], [], []];
-    const private_seeds = [string_hex(alice_seeds[4]), string_hex(bob_seeds[4]),
-                           string_hex(carol_seeds[4])];
-    const hands = [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], [0, 1, 2, 3, 4]];
+    const shows = [
+        [0, string_hex(alice_seeds[4]), [0, 1, 2, 3, 4]],
+        [1, string_hex(bob_seeds[4]), [0, 1, 2, 3, 4]],
+        [2, string_hex(carol_seeds[4]), [0, 1, 2, 3, 4]],
+    ];
 
     poker2.settle(commits, commit_signatures, reveals, betting,
-                  private_seeds, hands, [], {
+                  shows, [], {
         __test: true, user: dealer
     });
 
@@ -160,7 +162,6 @@ function main()
     poker2.claim({__test: true, user: alice});
     poker2.claim({__test: true, user: bob});
     poker2.claim({__test: true, user: carol});
-    poker2.claim_rake({__test: true, user: dealer});
 
     assert(__test.get_balance(alice, MMX) == 100);
     assert(__test.get_balance(bob, MMX) == 60);

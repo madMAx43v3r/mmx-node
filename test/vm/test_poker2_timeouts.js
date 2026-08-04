@@ -148,9 +148,10 @@ function test_action_timeout()
         [0, 2, 2, 0], [1, 2, 2, 0],
         [0, 2, 3, 0], [1, 2, 3, 0],
     ];
-    const private_seeds = [string_hex(alice_seeds[4]),
-                           string_hex(bob_seeds[4]), null];
-    const hands = [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4], []];
+    const shows = [
+        [0, string_hex(alice_seeds[4]), [0, 1, 2, 3, 4]],
+        [1, string_hex(bob_seeds[4]), [0, 1, 2, 3, 4]],
+    ];
 
     // A signature from the wrong player cannot authorize Carol's action.
     const bad_epoch = [
@@ -159,12 +160,12 @@ function test_action_timeout()
     ];
     poker2_timeout.settle(commits, commit_signatures, reveals,
                           [[bad_epoch, []], [[]], [[]], [[]]],
-                          private_seeds, hands, timeouts, {
+                          shows, timeouts, {
         __test: true, user: dealer, assert_fail: true
     });
 
     poker2_timeout.settle(commits, commit_signatures, reveals, betting,
-                          private_seeds, hands, timeouts, {
+                          shows, timeouts, {
         __test: true, user: dealer
     });
 
@@ -180,7 +181,6 @@ function test_action_timeout()
     poker2_timeout.claim({__test: true, user: alice});
     poker2_timeout.claim({__test: true, user: bob});
     poker2_timeout.claim({__test: true, user: carol});
-    poker2_timeout.claim_rake({__test: true, user: dealer});
     assert(__test.get_balance(timeout_addr, MMX) == 0);
 }
 
@@ -203,7 +203,7 @@ function test_emergency_refund()
     poker2_refund.refund({__test: true, user: alice, assert_fail: true});
 
     __test.set_height(105);
-    poker2_refund.settle([], [], [], [], [], [], [], {
+    poker2_refund.settle([], [], [], [], [], [], {
         __test: true, user: dealer, assert_fail: true
     });
 
@@ -244,8 +244,8 @@ function test_commit_timeout()
     poker2_commit_timeout.settle(
         [commits, []], [signature, null],
         [[null, null, null, null], [null, null, null, null]],
-        [[], [], [], []], [null, null], [[], []],
-        [[1, 0, 0, 0]], {__test: true, user: dealer}
+        [[], [], [], []], [], [[1, 0, 0, 0]],
+        {__test: true, user: dealer}
     );
 
     const alice_status = poker2_commit_timeout.get_player_status(alice);
