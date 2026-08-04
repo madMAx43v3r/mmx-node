@@ -33,14 +33,14 @@ import {equals, sort, reverse, compare} from "std";
 //                   30 already folded, 31 all-in
 //   phase 4 show:   event 1 valid, 2 timeout, 3 already folded, 4 mucked
 
-var currency;
-var dealer;
-var small_blind;
-var min_stack;
-var max_players;
-var start_delay;
-var game_timeout;
-var rake_bps;
+var currency;               // bech32 address of the currency used for deposits and payouts
+var dealer;                 // bech32 address of the dealer, who receives the rake
+var small_blind;            // currency units, must be > 0
+var min_stack;              // minimum stack in currency units, must be a multiple of small blind
+var max_players;            // maximum number of players, must be between 2 and 10 inclusive
+var start_delay;            // blocks after second player joins before game starts
+var game_timeout;           // blocks after start before emergency refund is allowed
+var rake_bps;               // 100 bps = 1%
 
 var state = 0;              // 0 - open / playing, 1 - settled, 2 - refunding
 var start_height = null;
