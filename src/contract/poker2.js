@@ -1,11 +1,13 @@
 import {equals, sort, reverse, compare} from "std";
 
-// Dealer-settled, one-shot parallel poker table.
+// Dealer-settled, reusable parallel poker table.
 //
 // A player deposits their complete stack in join(). One small blind is treated
 // as committed by every joined player when the game is settled. The remainder
 // of the stack stays escrowed but is not part of a pot unless covered by a
-// signed cumulative bet.
+// signed cumulative bet. After each settlement, signed continuations keep the
+// resulting balances at the table for another hand. Other players become
+// inactive and may withdraw manually.
 //
 // settle() arguments are arrays in player_list order unless noted otherwise:
 //
@@ -17,6 +19,7 @@ import {equals, sort, reverse, compare} from "std";
 // betting[round][epoch]   action entries [player, action, cumulative_bet, sig]
 // shows                    sparse entries [player, pocket_seed, five indices]
 // timeouts                [player, phase, round, epoch]
+// continuations            sparse entries [player, signature]
 //
 // Timeout phases:
 //   0 - commitment, 1 - board reveal, 2 - betting action, 3 - showdown
@@ -25,8 +28,8 @@ import {equals, sort, reverse, compare} from "std";
 //   0 - check, 1 - bet / call / raise, 2 - fold
 //
 // Checkpoint phases and events:
-//   phase 0 roster: event 0
-//   phase 1 commit: event 1 valid, 2 timeout
+//   phase 0 roster: event 0 inactive, 1 active
+//   phase 1 commit: event 1 valid, 2 timeout, 3 inactive
 //   phase 2 reveal: event 1 valid, 2 timeout, 3 already folded
 //   phase 3 action: event 10 check, 11 bet, 12 fold,
 //                   20 timeout-check, 21 timeout-fold,
@@ -42,9 +45,10 @@ var start_delay;            // blocks after second player joins before game star
 var game_timeout;           // blocks after start before emergency refund is allowed
 var rake_bps;               // 100 bps = 1%
 
-var state = 0;              // 0 - open / playing, 1 - settled, 2 - refunding
+var state = 0;              // 0 - open / playing, 2 - emergency refunding
 var start_height = null;
 var refund_height = null;
+var hand_id = 0;
 
 var player_map = {};
 var player_list = [];
@@ -78,12 +82,13 @@ function init(currency_, dealer_, small_blind_, min_stack_blinds_, max_players_,
 function join(name, public_key) public payable
 {
     assert(state == 0, "table is closed");
+    assert(hand_id == 0, "initial registration is closed");
     assert(!is_started(), "game already started");
     assert(this.user, "missing user");
     assert(this.user != dealer, "dealer cannot play");
     assert(this.deposit.currency == currency, "invalid currency");
     assert(this.deposit.amount >= min_stack, "stack below minimum");
-    assert(size(player_list) < max_players, "table full");
+    assert(get_num_active() < max_players, "table full");
     assert(player_map[this.user] == null, "already joined");
     assert(is_string(name) && size(name) > 0 && size(name) <= 24, "invalid name");
 
@@ -96,21 +101,98 @@ function join(name, public_key) public payable
         address: this.user,
         public_key: public_key,
         stack: this.deposit.amount,
+        active: true,
+        next_active: false,
+        in_hand: false,
         bet: 0,
         folded: false,
         payout: 0,
-        refunded: false,
+        withdrawn: false,
     };
 
     player_map[this.user] = size(player_list);
     push(player_list, player);
 
-    if(size(player_list) == 2) {
-        start_height = this.height + start_delay;
-        assert(start_height > this.height, "start height overflow");
-        refund_height = start_height + game_timeout;
-        assert(refund_height > start_height, "refund height overflow");
+    if(get_num_active() == 2) {
+        schedule_start();
     }
+}
+
+// An inactive player with a sufficient balance may request an active seat at
+// any time. Before a hand starts this changes its roster directly. During a
+// hand it queues the player for the following hand without changing the
+// current transcript.
+
+function activate() public
+{
+    assert(state == 0, "table is closed");
+
+    const player = get_player(this.user);
+    assert(!player.active, "player already active");
+    assert(!player.next_active, "activation already requested");
+    assert(player.stack >= min_stack, "stack below minimum");
+    player.withdrawn = false;
+
+    if(is_started()) {
+        assert(get_num_active() + get_num_next_active() < max_players,
+               "next table full");
+        player.next_active = true;
+    } else {
+        assert(get_num_active() < max_players, "table full");
+        player.active = true;
+        if(get_num_active() == 2) {
+            schedule_start();
+        }
+    }
+}
+
+// An active player may back out before the next hand starts. This explicitly
+// marks them inactive, after which claim() becomes available.
+
+function deactivate() public
+{
+    assert(state == 0, "table is closed");
+
+    const player = get_player(this.user);
+    if(player.next_active) {
+        player.next_active = false;
+    } else {
+        assert(!is_started(), "current hand already started");
+        assert(player.active, "player already inactive");
+        player.active = false;
+    }
+
+    if(get_num_active() < 2) {
+        start_height = null;
+        refund_height = null;
+    }
+}
+
+// A player who withdrew or fell below the reactivation minimum can replenish
+// their inactive table balance without registering a new identity.
+
+function top_up() public payable
+{
+    assert(state == 0, "table is closed");
+    assert(this.deposit.currency == currency, "invalid currency");
+    assert(this.deposit.amount > 0, "invalid deposit amount");
+
+    const player = get_player(this.user);
+    assert(!player.active, "active stack is locked");
+
+    const next_stack = player.stack + this.deposit.amount;
+    assert(next_stack > player.stack, "stack overflow");
+    player.stack = next_stack;
+    player.withdrawn = false;
+}
+
+function schedule_start()
+{
+    assert(get_num_active() >= 2, "not enough active players");
+    start_height = this.height + start_delay;
+    assert(start_height > this.height, "start height overflow");
+    refund_height = start_height + game_timeout;
+    assert(refund_height > start_height, "refund height overflow");
 }
 
 // Before a second player joins, the first player may wait indefinitely or
@@ -147,12 +229,14 @@ function is_expired() const public
 }
 
 // Returns [state, player_count, start_height, refund_height, dealer_rake,
-//          transcript_hash].
+//          transcript_hash, hand_id, active_player_count,
+//          queued_activation_count].
 
 function get_table_status() const public
 {
     return [state, size(player_list), start_height, refund_height,
-            dealer_rake, transcript_hash];
+            dealer_rake, transcript_hash, hand_id, get_num_active(),
+            get_num_next_active()];
 }
 
 // Returns [currency, dealer, small_blind, minimum_stack, maximum_players,
@@ -174,14 +258,15 @@ function get_player_info(index) const public
     return [player.name, player.address, player.public_key, player.stack];
 }
 
-// Returns [stack, cumulative_bet, folded, payout, refunded]. Payout is the
-// amount transferred automatically by settle().
+// Returns [stack, cumulative_bet, folded, last_payout, active, withdrawn,
+//          next_active].
 
 function get_player_status(address) const public
 {
     const player = get_player(bech32(address));
     return [player.stack, player.bet, bool(player.folded),
-            player.payout, bool(player.refunded)];
+            player.payout, bool(player.active), bool(player.withdrawn),
+            bool(player.next_active)];
 }
 
 function get_board() const public
@@ -204,6 +289,7 @@ function get_seed_commit(address, seed_round, seed) const public
     return sha256(concat(
         "MMX_PARALLEL_POKER_SEED_V1/",
         string_bech32(this.address), "/",
+        string(hand_id), "/",
         string_bech32(address), "/",
         string(seed_round), "/",
         string_hex(seed)
@@ -219,6 +305,7 @@ function get_commit_hash(address, commitments) const public
     var message = concat(
         "MMX_PARALLEL_POKER_COMMIT_V1/",
         string_bech32(this.address), "/",
+        string(hand_id), "/",
         string_bech32(address)
     );
     for(const value_ of commitments) {
@@ -246,6 +333,7 @@ function get_action_hash(address, betting_round, epoch, action,
     return sha256(concat(
         "MMX_PARALLEL_POKER_ACTION_V1/",
         string_bech32(this.address), "/",
+        string(hand_id), "/",
         string_bech32(address), "/",
         string(betting_round), "/",
         string(epoch), "/",
@@ -282,6 +370,7 @@ function checkpoint_step(checkpoint, phase, event_round, epoch, address,
     return sha256(concat(
         "MMX_PARALLEL_POKER_CHECKPOINT_V1/",
         string_bech32(this.address), "/",
+        string(hand_id), "/",
         string_hex(checkpoint), "/",
         string(phase), "/",
         string(event_round), "/",
@@ -300,22 +389,45 @@ function get_start_checkpoint() const public
     var checkpoint = sha256(concat(
         "MMX_PARALLEL_POKER_START_V1/",
         string_bech32(this.address), "/",
+        string(hand_id), "/",
         string(start_height)
     ));
     for(const player of player_list) {
+        var checkpoint_stack = 0;
+        if(player.active) {
+            checkpoint_stack = player.stack;
+        }
         checkpoint = checkpoint_step(checkpoint, 0, 0, 0,
-                                     player.address, 0, player.stack);
+                                     player.address, uint(player.active), checkpoint_stack);
     }
     return checkpoint;
 }
 
+function get_continue_hash(address, result_stack, checkpoint) const public
+{
+    address = bech32(address);
+    result_stack = uint(result_stack);
+    checkpoint = binary_hex(checkpoint);
+    assert(size(checkpoint) == 32, "invalid checkpoint");
+
+    return sha256(concat(
+        "MMX_PARALLEL_POKER_CONTINUE_V1/",
+        string_bech32(this.address), "/",
+        string(hand_id), "/",
+        string_bech32(address), "/",
+        string(result_stack), "/",
+        string_hex(checkpoint)
+    ));
+}
+
 function settle(commitments, commit_signatures, reveals, betting,
-                shows, timeouts) public
+                shows, timeouts, continuations) public
 {
     assert(state == 0, "table is closed");
     assert(this.user == dealer, "only dealer can settle");
     assert(is_started(), "game not started");
     assert(!is_expired(), "game expired");
+    assert(get_num_active() >= 2, "not enough active players");
 
     const count = size(player_list);
     assert(count >= 2, "not enough players");
@@ -327,18 +439,30 @@ function settle(commitments, commit_signatures, reveals, betting,
     assert(is_array(betting) && size(betting) == 4, "invalid betting transcript");
     assert(is_array(shows), "invalid shows");
     assert(is_array(timeouts), "invalid timeouts");
+    assert(is_array(continuations), "invalid continuations");
 
     const timeout_used = validate_timeouts(timeouts, count);
     const show_used = validate_shows(shows, count);
+    const continuation_used = validate_continuations(continuations, count);
     const commit_values = [];
     const ranks = [];
 
+    board = null;
+    dealer_rake = 0;
+
     for(var i = 0; i < count; i++) {
         const player = player_list[i];
-        player.bet = small_blind;
-        player.folded = false;
-        player.payout = 0;
-        player.refunded = false;
+        player.in_hand = bool(player.active);
+        if(player.in_hand) {
+            assert(player.stack >= min_stack, "active stack below minimum");
+            player.bet = small_blind;
+            player.folded = false;
+            player.payout = 0;
+        } else {
+            player.bet = 0;
+            player.folded = true;
+            player.payout = player.stack;
+        }
         push(ranks, null);
 
         assert(is_array(reveals[i]) && size(reveals[i]) == 4,
@@ -354,32 +478,40 @@ function settle(commitments, commit_signatures, reveals, betting,
         const values = commitments[i];
         assert(is_array(values), "invalid player commitments");
 
-        if(size(values) == 5) {
-            const decoded = [];
-            for(const value_ of values) {
-                const value = binary_hex(value_);
-                assert(size(value) == 32, "invalid seed commitment");
-                push(decoded, value);
+        if(player.in_hand) {
+            if(size(values) == 5) {
+                const decoded = [];
+                for(const value_ of values) {
+                    const value = binary_hex(value_);
+                    assert(size(value) == 32, "invalid seed commitment");
+                    push(decoded, value);
+                }
+                const commit_hash = get_commit_hash(player.address, decoded);
+                const signature = binary_hex(commit_signatures[i]);
+                assert(size(signature) == 64, "invalid commitment signature");
+                assert(ecdsa_verify(commit_hash, player.public_key, signature),
+                       "commitment signature verification failed");
+                push(commit_values, decoded);
+                checkpoint = checkpoint_step(checkpoint, 1, 0, 0,
+                                             player.address, 1, player.stack,
+                                             commit_hash);
+            } else {
+                assert(size(values) == 0, "invalid player commitments");
+                assert(commit_signatures[i] == null,
+                       "signature without commitments");
+                assert(use_timeout(timeouts, timeout_used, i, 0, 0, 0),
+                       "missing commitment timeout");
+                player.folded = true;
+                push(commit_values, []);
+                checkpoint = checkpoint_step(checkpoint, 1, 0, 0,
+                                             player.address, 2, player.stack);
             }
-            const commit_hash = get_commit_hash(player.address, decoded);
-            const signature = binary_hex(commit_signatures[i]);
-            assert(size(signature) == 64, "invalid commitment signature");
-            assert(ecdsa_verify(commit_hash, player.public_key, signature),
-                   "commitment signature verification failed");
-            push(commit_values, decoded);
-            checkpoint = checkpoint_step(checkpoint, 1, 0, 0,
-                                         player.address, 1, player.stack,
-                                         commit_hash);
         } else {
             assert(size(values) == 0, "invalid player commitments");
-            assert(commit_signatures[i] == null,
-                   "signature without commitments");
-            assert(use_timeout(timeouts, timeout_used, i, 0, 0, 0),
-                   "missing commitment timeout");
-            player.folded = true;
+            assert(commit_signatures[i] == null, "inactive commitment signature");
             push(commit_values, []);
             checkpoint = checkpoint_step(checkpoint, 1, 0, 0,
-                                         player.address, 2, player.stack);
+                                         player.address, 3, 0);
         }
     }
 
@@ -387,7 +519,7 @@ function settle(commitments, commit_signatures, reveals, betting,
     var rounds_processed = 0;
 
     for(var round = 0; round < 4; round++) {
-        if(get_num_active() > 1) {
+        if(get_num_hand_active() > 1) {
 
             var seed_data = binary();
 
@@ -437,7 +569,7 @@ function settle(commitments, commit_signatures, reveals, betting,
 
     // A showdown is only needed when at least two players survive all four
     // reveal and betting rounds.
-    if(get_num_active() > 1) {
+    if(get_num_hand_active() > 1) {
         assert(rounds_processed == 4 && size(sources) == 4,
                "incomplete board transcript");
         board = deal_cards([
@@ -500,15 +632,73 @@ function settle(commitments, commit_signatures, reveals, betting,
 
     transcript_hash = checkpoint;
     allocate_payouts(ranks);
-    state = 1;
+
+    var next_active = 0;
+    for(var i = 0; i < count; i++) {
+        const player = player_list[i];
+        const continuation_index = find_continuation(continuations, i);
+
+        if(player.in_hand) {
+            assert(!player.next_active, "active player queued activation");
+            if(continuation_index != null) {
+                const signature = binary_hex(continuations[continuation_index][1]);
+                assert(size(signature) == 64, "invalid continuation signature");
+                assert(ecdsa_verify(
+                    get_continue_hash(player.address, player.payout, transcript_hash),
+                    player.public_key, signature),
+                    "continuation signature verification failed");
+                continuation_used[continuation_index] = true;
+                if(player.payout >= min_stack) {
+                    assert(next_active < max_players, "too many active players");
+                    player.active = true;
+                    next_active++;
+                } else {
+                    player.active = false;
+                }
+            } else {
+                player.active = false;
+            }
+        } else {
+            assert(continuation_index == null,
+                   "inactive player supplied continuation");
+            if(player.next_active && player.payout >= min_stack) {
+                assert(next_active < max_players, "too many active players");
+                player.active = true;
+                next_active++;
+            } else {
+                player.active = false;
+            }
+        }
+        player.next_active = false;
+    }
+
+    // A lone player cannot start another hand. Their signature does not block
+    // this settlement; they become inactive and may withdraw with everyone
+    // else who chose not to continue.
+    if(next_active < 2) {
+        for(const player of player_list) {
+            player.active = false;
+        }
+    }
+    assert_all_continuations_used(continuation_used);
 
     for(const player of player_list) {
-        if(player.payout > 0) {
-            send(player.address, player.payout, currency, "poker_win");
-        }
+        player.stack = player.payout;
+        player.in_hand = false;
     }
     if(dealer_rake > 0) {
         send(dealer, dealer_rake, currency, "poker_rake");
+    }
+
+    const next_hand_id = hand_id + 1;
+    assert(next_hand_id > hand_id, "hand id overflow");
+    hand_id = next_hand_id;
+
+    if(get_num_active() >= 2) {
+        schedule_start();
+    } else {
+        start_height = null;
+        refund_height = null;
     }
 }
 
@@ -517,7 +707,7 @@ function process_betting_round(round, epochs, checkpoint,
 {
     assert(is_array(epochs), "invalid betting round");
 
-    if(get_num_active() <= 1 || get_num_actors() == 0) {
+    if(get_num_hand_active() <= 1 || get_num_actors() == 0) {
         assert(size(epochs) == 0, "unexpected betting epoch");
         return checkpoint;
     }
@@ -617,7 +807,7 @@ function process_betting_round(round, epochs, checkpoint,
                 done = false;
             }
         }
-        if(get_num_active() <= 1) {
+        if(get_num_hand_active() <= 1) {
             done = true;
         }
     }
@@ -679,6 +869,38 @@ function assert_all_shows_used(used) const
     }
 }
 
+function validate_continuations(continuations, count) const
+{
+    const used = [];
+    for(const continuation of continuations) {
+        assert(is_array(continuation) && size(continuation) == 2,
+               "invalid continuation entry");
+        assert(is_uint(continuation[0]) && continuation[0] < count,
+               "invalid continuation player");
+        push(used, false);
+    }
+    return used;
+}
+
+function find_continuation(continuations, player_index) const
+{
+    var result = null;
+    for(var i = 0; i < size(continuations); i++) {
+        if(continuations[i][0] == player_index) {
+            assert(result == null, "duplicate player continuation");
+            result = i;
+        }
+    }
+    return result;
+}
+
+function assert_all_continuations_used(used) const
+{
+    for(const value of used) {
+        assert(value, "unused continuation entry");
+    }
+}
+
 function validate_timeouts(timeouts, count) const
 {
     const used = [];
@@ -723,7 +945,7 @@ function get_current_bet() const
 {
     var amount = 0;
     for(const player of player_list) {
-        if(!player.folded && player.bet > amount) {
+        if(player.in_hand && !player.folded && player.bet > amount) {
             amount = player.bet;
         }
     }
@@ -734,7 +956,29 @@ function get_num_active() const public
 {
     var count = 0;
     for(const player of player_list) {
-        if(!player.folded) {
+        if(player.active) {
+            count++;
+        }
+    }
+    return count;
+}
+
+function get_num_next_active() const public
+{
+    var count = 0;
+    for(const player of player_list) {
+        if(player.next_active) {
+            count++;
+        }
+    }
+    return count;
+}
+
+function get_num_hand_active() const
+{
+    var count = 0;
+    for(const player of player_list) {
+        if(player.in_hand && !player.folded) {
             count++;
         }
     }
@@ -745,7 +989,7 @@ function get_num_actors() const
 {
     var count = 0;
     for(const player of player_list) {
-        if(!player.folded && player.bet < player.stack) {
+        if(player.in_hand && !player.folded && player.bet < player.stack) {
             count++;
         }
     }
@@ -759,7 +1003,7 @@ function get_player(address) const
     return player_list[index];
 }
 
-// Initializes every claim with unused stack, then distributes standard main
+// Initializes every result with unused stack, then distributes standard main
 // and side-pot layers. A one-player layer is uncalled and returned. A layer
 // with no surviving eligible player is returned contributor-by-contributor.
 
@@ -771,9 +1015,14 @@ function allocate_payouts(ranks)
     var total_stack = 0;
 
     for(const player of player_list) {
-        assert(player.bet >= small_blind && player.bet <= player.stack,
-               "invalid final bet");
-        player.payout = player.stack - player.bet;
+        if(player.in_hand) {
+            assert(player.bet >= small_blind && player.bet <= player.stack,
+                   "invalid final bet");
+            player.payout = player.stack - player.bet;
+        } else {
+            assert(player.bet == 0, "inactive player bet");
+            player.payout = player.stack;
+        }
         total_stack += player.stack;
     }
 
@@ -797,7 +1046,7 @@ function allocate_payouts(ranks)
                 const player = player_list[i];
                 if(player.bet >= level) {
                     push(contributors, i);
-                    if(!player.folded) {
+                    if(player.in_hand && !player.folded) {
                         push(eligible, i);
                     }
                 }
@@ -890,22 +1139,47 @@ function get_split_amount(total, count, index) const public
     return amount;
 }
 
-// If settlement never arrives, every player recovers the complete stack. The
-// implicit blind is only applied by settle(), so it is also fully refunded.
+// A player may withdraw their complete table balance after a settlement in
+// which they did not sign to continue. Continuing players remain locked into
+// the next hand.
+
+function claim() public
+{
+    assert(state == 0, "table is closed");
+    const player = get_player(this.user);
+    assert(!player.active, "player chose to continue");
+    assert(!player.next_active, "player requested activation");
+    assert(player.stack > 0, "nothing to claim");
+
+    const amount = player.stack;
+    player.stack = 0;
+    player.withdrawn = true;
+    send(this.user, amount, currency, "poker_payout");
+}
+
+// If the dealer fails to settle the current hand, the emergency deadline
+// closes the table and lets every player recover their current table balance.
 
 function refund() public
 {
-    assert(state != 1, "game already settled");
     assert(is_expired(), "game not expired");
 
     if(state == 0) {
         state = 2;
+        for(const player of player_list) {
+            player.active = false;
+            player.next_active = false;
+        }
     }
-    const player = get_player(this.user);
-    assert(!player.refunded, "already refunded");
+    assert(state == 2, "table is closed");
 
-    send(this.user, player.stack, currency, "poker_refund");
-    player.refunded = true;
+    const player = get_player(this.user);
+    assert(player.stack > 0, "nothing to refund");
+
+    const amount = player.stack;
+    player.stack = 0;
+    player.withdrawn = true;
+    send(this.user, amount, currency, "poker_refund");
 }
 
 // Poker hand evaluation ----------------------------------------------------

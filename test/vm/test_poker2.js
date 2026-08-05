@@ -137,12 +137,12 @@ function main()
     ];
 
     poker2.settle(commits, commit_signatures, reveals, betting,
-                  shows, [], {
+                  shows, [], [], {
         __test: true, user: dealer
     });
 
     assert(size(poker2.get_board()) == 5);
-    assert(poker2.get_num_active() == 3);
+    assert(poker2.get_num_active() == 0);
 
     const alice_status = poker2.get_player_status(alice);
     const bob_status = poker2.get_player_status(bob);
@@ -150,7 +150,7 @@ function main()
 
     assert(alice_status[0] == 100 && alice_status[1] == 100);
     assert(bob_status[0] == 60 && bob_status[1] == 60);
-    assert(carol_status[0] == 200 && carol_status[1] == 200);
+    assert(carol_status[0] == 198 && carol_status[1] == 200);
 
     // Matched pots: 180 main + 80 side. The 1% rake is 2. The first
     // roster entries receive deterministic split remainders.
@@ -159,10 +159,16 @@ function main()
     assert(carol_status[3] == 198);
     assert(poker2.get_table_status()[4] == 2);
 
+    assert(__test.get_balance(table_addr, MMX) == 358);
+    assert(__test.get_balance(dealer, MMX) == 2);
+
+    poker2.claim({__test: true, user: alice});
+    poker2.claim({__test: true, user: bob});
+    poker2.claim({__test: true, user: carol});
+
     assert(__test.get_balance(alice, MMX) == 100);
     assert(__test.get_balance(bob, MMX) == 60);
     assert(__test.get_balance(carol, MMX) == 198);
-    assert(__test.get_balance(dealer, MMX) == 2);
     assert(__test.get_balance(table_addr, MMX) == 0);
 }
 
