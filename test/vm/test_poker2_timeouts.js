@@ -2,6 +2,8 @@ interface __test;
 interface poker2_timeout;
 interface poker2_commit_timeout;
 interface poker2_refund;
+interface poker2_deactivate;
+interface poker2_late_join;
 
 const MMX = string_bech32(bech32());
 const binary = __test.compile("src/contract/poker2.js");
@@ -32,6 +34,18 @@ const commit_timeout_addr = poker2_commit_timeout.__deploy({
 });
 
 const refund_addr = poker2_refund.__deploy({
+    __type: "mmx.contract.Executable",
+    binary: binary,
+    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100]
+});
+
+const deactivate_addr = poker2_deactivate.__deploy({
+    __type: "mmx.contract.Executable",
+    binary: binary,
+    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100]
+});
+
+const late_join_addr = poker2_late_join.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
     init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100]
@@ -173,10 +187,10 @@ function test_action_timeout()
     const bob_status = poker2_timeout.get_player_status(bob);
     const carol_status = poker2_timeout.get_player_status(carol);
 
-    assert(alice_status[1] == 40 && !alice_status[2] && alice_status[3] == 110);
-    assert(bob_status[1] == 40 && !bob_status[2] && bob_status[3] == 109);
-    assert(carol_status[1] == 20 && carol_status[2] && carol_status[3] == 80);
-    assert(poker2_timeout.get_table_status()[4] == 1);
+    assert(alice_status.bet == 40 && !alice_status.folded && alice_status.payout == 110);
+    assert(bob_status.bet == 40 && !bob_status.folded && bob_status.payout == 109);
+    assert(carol_status.bet == 20 && carol_status.folded && carol_status.payout == 80);
+    assert(poker2_timeout.get_table_status().dealer_rake == 1);
 
     assert(__test.get_balance(timeout_addr, MMX) == 299);
     poker2_timeout.claim({__test: true, user: alice});
@@ -216,9 +230,89 @@ function test_emergency_refund()
     assert(__test.get_balance(alice, MMX) == alice_before + 70);
     assert(__test.get_balance(bob, MMX) == bob_before + 130);
     assert(__test.get_balance(refund_addr, MMX) == 0);
-    assert(poker2_refund.get_table_status()[0] == 2);
-    assert(poker2_refund.get_player_status(alice)[5]);
-    assert(poker2_refund.get_player_status(bob)[5]);
+    assert(!poker2_refund.get_table_status().table_open);
+    assert(poker2_refund.get_player_status(alice).withdrawn);
+    assert(poker2_refund.get_player_status(bob).withdrawn);
+}
+
+function test_single_player_deactivate()
+{
+    __test.set_height(0);
+
+    poker2_deactivate.join("Alice", string_hex(alice_key), {
+        __test: true, user: alice, deposit: [50, MMX]
+    });
+    poker2_deactivate.deactivate({__test: true, user: alice});
+    assert(poker2_deactivate.get_num_active() == 0);
+    assert(!poker2_deactivate.get_player_status(alice).active);
+    poker2_deactivate.claim({__test: true, user: alice});
+
+    // A later sole player can also deactivate without deleting Alice's
+    // inactive record or any other table membership state.
+    poker2_deactivate.join("Bob", string_hex(bob_key), {
+        __test: true, user: bob, deposit: [50, MMX]
+    });
+    poker2_deactivate.deactivate({__test: true, user: bob});
+    assert(poker2_deactivate.get_num_active() == 0);
+    assert(poker2_deactivate.get_table_status().player_count == 2);
+    assert(poker2_deactivate.get_player_info(0).address == alice);
+    assert(poker2_deactivate.get_player_info(1).address == bob);
+    poker2_deactivate.claim({__test: true, user: bob});
+    assert(__test.get_balance(deactivate_addr, MMX) == 0);
+}
+
+function test_join_during_hand()
+{
+    __test.set_height(0);
+
+    poker2_late_join.join("Alice", string_hex(alice_key), {
+        __test: true, user: alice, deposit: [100, MMX]
+    });
+    poker2_late_join.join("Bob", string_hex(bob_key), {
+        __test: true, user: bob, deposit: [100, MMX]
+    });
+
+    __test.set_height(5);
+    const start_checkpoint = poker2_late_join.get_start_checkpoint();
+    poker2_late_join.join("Carol", string_hex(carol_key), {
+        __test: true, user: carol, deposit: [50, MMX]
+    });
+
+    // Carol is waiting for hand one and cannot change hand zero's roster or
+    // invalidate signatures made from its start checkpoint.
+    assert(poker2_late_join.get_num_active() == 2);
+    assert(poker2_late_join.get_num_waiting() == 1);
+    assert(poker2_late_join.get_table_status().player_count == 3);
+    assert(poker2_late_join.get_table_status().hand_player_count == 2);
+    assert(poker2_late_join.get_start_checkpoint() == start_checkpoint);
+    assert(!poker2_late_join.get_player_status(carol).active);
+    assert(poker2_late_join.get_player_status(carol).waiting);
+
+    var checkpoint = start_checkpoint;
+    checkpoint = poker2_late_join.checkpoint_step(
+        string_hex(checkpoint), 1, 0, 0, alice, 2, 100, null);
+    checkpoint = poker2_late_join.checkpoint_step(
+        string_hex(checkpoint), 1, 0, 0, bob, 2, 100, null);
+
+    const alice_continue = string_hex(__test.ecdsa_sign(
+        alice_skey, poker2_late_join.get_continue_hash(
+            alice, 100, string_hex(checkpoint))));
+
+    poker2_late_join.settle(
+        [[], []], [null, null],
+        [[null, null, null, null], [null, null, null, null]],
+        [[], [], [], []], [], [[0, 0, 0, 0], [1, 0, 0, 0]],
+        [[0, alice_continue]],
+        {__test: true, user: dealer}
+    );
+
+    assert(poker2_late_join.get_num_active() == 2);
+    assert(poker2_late_join.get_num_waiting() == 0);
+    assert(poker2_late_join.get_player_status(alice).active);
+    assert(!poker2_late_join.get_player_status(bob).active);
+    assert(poker2_late_join.get_player_status(carol).active);
+    assert(poker2_late_join.get_table_status().hand_player_count == 3);
+    assert(__test.get_balance(late_join_addr, MMX) == 250);
 }
 
 function test_commit_timeout()
@@ -274,14 +368,14 @@ function test_commit_timeout()
     var alice_status = poker2_commit_timeout.get_player_status(alice);
     var bob_status = poker2_commit_timeout.get_player_status(bob);
     var carol_status = poker2_commit_timeout.get_player_status(carol);
-    assert(alice_status[0] == 120 && alice_status[3] == 120 && alice_status[4]);
-    assert(bob_status[0] == 90 && bob_status[3] == 90 && bob_status[4]);
-    assert(carol_status[0] == 90 && carol_status[3] == 90 && !carol_status[4]);
+    assert(alice_status.stack == 120 && alice_status.payout == 120 && alice_status.active);
+    assert(bob_status.stack == 90 && bob_status.payout == 90 && bob_status.active);
+    assert(carol_status.stack == 90 && carol_status.payout == 90 && !carol_status.active);
     assert(poker2_commit_timeout.get_board() == null);
-    assert(poker2_commit_timeout.get_table_status()[6] == 1);
-    assert(poker2_commit_timeout.get_table_status()[7] == 2);
-    assert(poker2_commit_timeout.get_table_status()[2] == 10);
-    assert(poker2_commit_timeout.get_table_status()[3] == 110);
+    assert(poker2_commit_timeout.get_table_status().hand_id == 1);
+    assert(poker2_commit_timeout.get_table_status().active_count == 2);
+    assert(poker2_commit_timeout.get_table_status().start_height == 10);
+    assert(poker2_commit_timeout.get_table_status().refund_height == 110);
     assert(__test.get_balance(commit_timeout_addr, MMX) == 300);
 
     // A continuation signature locks the balance into the next hand.
@@ -294,9 +388,9 @@ function test_commit_timeout()
     const checkpoint_before_activation = poker2_commit_timeout.get_start_checkpoint();
     poker2_commit_timeout.activate({__test: true, user: carol});
     assert(poker2_commit_timeout.get_num_active() == 2);
-    assert(poker2_commit_timeout.get_num_next_active() == 1);
+    assert(poker2_commit_timeout.get_num_waiting() == 1);
     assert(poker2_commit_timeout.get_start_checkpoint() == checkpoint_before_activation);
-    assert(poker2_commit_timeout.get_player_status(carol)[6]);
+    assert(poker2_commit_timeout.get_player_status(carol).waiting);
     poker2_commit_timeout.claim({__test: true, user: carol, assert_fail: true});
 
     // All seed and action domains include hand_id, so the old commitment
@@ -347,21 +441,20 @@ function test_commit_timeout()
     alice_status = poker2_commit_timeout.get_player_status(alice);
     bob_status = poker2_commit_timeout.get_player_status(bob);
     carol_status = poker2_commit_timeout.get_player_status(carol);
-    assert(alice_status[0] == 130 && alice_status[3] == 130 && alice_status[4]);
-    // Bob signed continuation, but 80 is below this table's minimum stack of
-    // 90, so settlement makes him inactive. Carol's queued activation fills
-    // the second active seat.
-    assert(bob_status[0] == 80 && bob_status[3] == 80 && !bob_status[4]);
-    assert(carol_status[0] == 90 && carol_status[3] == 90 && carol_status[4]);
-    assert(poker2_commit_timeout.get_num_active() == 2);
-    assert(poker2_commit_timeout.get_num_next_active() == 0);
-    assert(poker2_commit_timeout.get_table_status()[6] == 2);
-    assert(poker2_commit_timeout.get_table_status()[2] == 15);
-    assert(poker2_commit_timeout.get_table_status()[3] == 115);
+    assert(alice_status.stack == 130 && alice_status.payout == 130 && alice_status.active);
+    // Bob's 80 is below the original buy-in minimum of 90, but still covers a
+    // small blind, so his valid continuation keeps him active.
+    assert(bob_status.stack == 80 && bob_status.payout == 80 && bob_status.active);
+    assert(carol_status.stack == 90 && carol_status.payout == 90 && carol_status.active);
+    assert(poker2_commit_timeout.get_num_active() == 3);
+    assert(poker2_commit_timeout.get_num_waiting() == 0);
+    assert(poker2_commit_timeout.get_table_status().hand_id == 2);
+    assert(poker2_commit_timeout.get_table_status().start_height == 15);
+    assert(poker2_commit_timeout.get_table_status().refund_height == 115);
 
-    // Carol now participates in hand two while underfunded Bob sits out. Carol
-    // times out during the commit phase; only Alice requests another hand, so
-    // the minimum-two rule deactivates everybody after this settlement.
+    // Carol now participates in hand two. Bob and Carol time out during the
+    // commit phase; only Alice requests another hand, so the minimum-two rule
+    // deactivates everybody after this settlement.
     __test.set_height(15);
     const seeds_2 = make_seeds("commit_timeout_alice_2");
     const commits_2 = [];
@@ -377,19 +470,19 @@ function test_commit_timeout()
         string_hex(checkpoint_2), 1, 0, 0, alice, 1, 130,
         string_hex(commit_hash_2));
     checkpoint_2 = poker2_commit_timeout.checkpoint_step(
-        string_hex(checkpoint_2), 1, 0, 0, bob, 3, 0, null);
+        string_hex(checkpoint_2), 1, 0, 0, bob, 2, 80, null);
     checkpoint_2 = poker2_commit_timeout.checkpoint_step(
         string_hex(checkpoint_2), 1, 0, 0, carol, 2, 90, null);
 
     const alice_continue_2 = string_hex(__test.ecdsa_sign(
         alice_skey, poker2_commit_timeout.get_continue_hash(
-            alice, 140, string_hex(checkpoint_2))));
+            alice, 150, string_hex(checkpoint_2))));
 
     poker2_commit_timeout.settle(
         [commits_2, [], []], [signature_2, null, null],
         [[null, null, null, null], [null, null, null, null],
          [null, null, null, null]],
-        [[], [], [], []], [], [[2, 0, 0, 0]],
+        [[], [], [], []], [], [[1, 0, 0, 0], [2, 0, 0, 0]],
         [[0, alice_continue_2]],
         {__test: true, user: dealer}
     );
@@ -397,13 +490,13 @@ function test_commit_timeout()
     alice_status = poker2_commit_timeout.get_player_status(alice);
     bob_status = poker2_commit_timeout.get_player_status(bob);
     carol_status = poker2_commit_timeout.get_player_status(carol);
-    assert(alice_status[0] == 140 && alice_status[3] == 140);
-    assert(bob_status[0] == 80 && bob_status[3] == 80);
-    assert(carol_status[0] == 80 && carol_status[3] == 80);
-    assert(!alice_status[4] && !bob_status[4] && !carol_status[4]);
+    assert(alice_status.stack == 150 && alice_status.payout == 150);
+    assert(bob_status.stack == 70 && bob_status.payout == 70);
+    assert(carol_status.stack == 80 && carol_status.payout == 80);
+    assert(!alice_status.active && !bob_status.active && !carol_status.active);
     assert(poker2_commit_timeout.get_num_active() == 0);
-    assert(poker2_commit_timeout.get_table_status()[6] == 3);
-    assert(poker2_commit_timeout.get_table_status()[3] == null);
+    assert(poker2_commit_timeout.get_table_status().hand_id == 3);
+    assert(poker2_commit_timeout.get_table_status().refund_height == null);
 
     poker2_commit_timeout.claim({__test: true, user: alice});
     poker2_commit_timeout.claim({__test: true, user: bob});

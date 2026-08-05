@@ -75,8 +75,8 @@ function main()
 
     assert(__test.get_balance(table_addr, MMX) == 360);
     assert(!poker2.is_started());
-    assert(poker2.get_table_status()[2] == 5);
-    assert(poker2.get_table_status()[3] == 105);
+    assert(poker2.get_table_status().start_height == 5);
+    assert(poker2.get_table_status().refund_height == 105);
 
     const alice_seeds = make_seeds("alice");
     const bob_seeds = make_seeds("bob");
@@ -148,16 +148,16 @@ function main()
     const bob_status = poker2.get_player_status(bob);
     const carol_status = poker2.get_player_status(carol);
 
-    assert(alice_status[0] == 100 && alice_status[1] == 100);
-    assert(bob_status[0] == 60 && bob_status[1] == 60);
-    assert(carol_status[0] == 198 && carol_status[1] == 200);
+    assert(alice_status.stack == 100 && alice_status.bet == 100);
+    assert(bob_status.stack == 60 && bob_status.bet == 60);
+    assert(carol_status.stack == 198 && carol_status.bet == 200);
 
     // Matched pots: 180 main + 80 side. The 1% rake is 2. The first
     // roster entries receive deterministic split remainders.
-    assert(alice_status[3] == 100);
-    assert(bob_status[3] == 60);
-    assert(carol_status[3] == 198);
-    assert(poker2.get_table_status()[4] == 2);
+    assert(alice_status.payout == 100);
+    assert(bob_status.payout == 60);
+    assert(carol_status.payout == 198);
+    assert(poker2.get_table_status().dealer_rake == 2);
 
     assert(__test.get_balance(table_addr, MMX) == 358);
     assert(__test.get_balance(dealer, MMX) == 2);
