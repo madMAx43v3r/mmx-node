@@ -41,4 +41,7 @@ Elements
 
 Mainnet started on 17th Jan 2025.
 
+See [Hardfork 2](../hardfork-2/) for the proof-chain, challenge-infusion, and VM consensus changes activated at block
+6,300,000.
+
 See [`#mmx-news`](https://discord.com/channels/852982773963161650/926566475249106974) and [`#mmx-general`](https://discord.com/channels/852982773963161650/925017012235817042) on [Discord](https://discord.gg/BswFhNkMzY).
