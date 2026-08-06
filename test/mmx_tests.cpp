@@ -320,7 +320,7 @@ int main(int argc, char** argv)
 		}
 		{
 			const vnx::Variant value(1.5);
-			vnx::test::expect(serialize(value, 1).empty(), false);
+			vnx::test::expect(serialize(value, 1) == serialize(value.data, 1), true);
 		}
 		{
 			auto lhs = mmx::operation::Execute::create();

@@ -157,6 +157,7 @@ inline void write_bytes(WriteBytes& out, const vnx::Variant& value)
 	} else if(value.is_object()) {
 		write_bytes(out, value.to_object());
 	} else {
+		// types outside the MMX VM value model are opaque data blobs
 		write_bytes(out, value.data);
 	}
 }
