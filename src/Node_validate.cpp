@@ -145,6 +145,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	if(block->space_fork_len > params->challenge_interval * 100) {
 		throw std::logic_error("space fork too long");
 	}
+	if(block->time_stamp < 0) {
+		throw std::logic_error("negative time stamp");
+	}
 	if(block->time_stamp - prev->time_stamp > block->vdf_count * params->block_interval_ms * 2) {
 		throw std::logic_error("time stamp delta too high");
 	}
