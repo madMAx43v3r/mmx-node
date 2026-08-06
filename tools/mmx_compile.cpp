@@ -158,7 +158,9 @@ int main(int argc, char** argv)
 				child->event_func = [&child](const std::string& name, const uint64_t data) {
 					std::cout << "EVENT[" << name << "] " << vm::read(child, data).to_string() << std::endl;
 				};
-				child->remote_call = std::bind(remote_call, child, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+				child->remote_call = std::bind(
+						remote_call, std::weak_ptr<vm::Engine>(child),
+						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				child->read_contract = [&child, &contract_map]
 					(const addr_t& address, const std::string& field, const uint64_t dst)
 				{
