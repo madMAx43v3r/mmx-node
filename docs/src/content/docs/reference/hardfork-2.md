@@ -18,6 +18,7 @@ Hardfork 2 introduces:
 - A maximum space-fork interval, after which an infusion is forced.
 - Correct map and object key handling when values cross a contract boundary.
 - Correct 256-bit multiplication overflow detection in the VM.
+- Deterministic ordering for implicit multi-currency deployment outputs.
 - Canonical type tags for variants in transaction hashes.
 - Canonical transaction solutions and stricter multi-signature validation.
 - The `SUPPORT_HARDFORK2` block support flag (`0x2`).
@@ -123,6 +124,15 @@ Starting at hardfork 2, multiplication instructions with overflow checking enabl
 operand is non-zero and the right operand exceeds `MAX_UINT256 / left`. Multiplication without overflow checking
 continues to wrap modulo `2^256`. The legacy comparison remains active below the hardfork height so historical contract
 execution is unchanged. The `mmx_compile` execution harness uses the corrected behavior.
+
+## Implicit deployment output ordering
+
+A deployment can leave input balances in multiple currencies that are implicitly deposited into the new contract.
+Before hardfork 2, these outputs were emitted by iterating an unordered map, so their order could depend on the standard
+library and platform.
+
+Starting at hardfork 2, leftover currencies are ordered by address before their implicit outputs are appended. Below the
+hardfork height, the original unordered iteration is retained for historical transaction-result compatibility.
 
 ## Transaction hash version 1
 

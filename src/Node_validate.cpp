@@ -798,20 +798,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		}
 
 		// check for left-over amounts
-		for(const auto& entry : amounts) {
-			if(entry.second) {
-				if(!tx->deploy) {
-					throw std::logic_error("implicit deposit without deploy");
-				}
-				if(const auto& amount = entry.second) {
-					txout_t out;
-					out.address = tx->id;
-					out.contract = entry.first;
-					out.amount = amount;
-					exec_outputs.push_back(out);
-				}
-			}
-		}
+		handle_implicit_deposit(
+				exec_outputs, amounts, tx->id, bool(tx->deploy), context->height >= params->hardfork2_height);
 
 		if(!tx->exec_result) {
 			for(const auto& in: exec_inputs) {

@@ -573,6 +573,45 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
+	VNX_TEST_BEGIN("implicit deployment output ordering")
+	{
+		std::unordered_map<addr_t, uint128> amounts;
+		amounts[addr_t(hash_t("currency_c"))] = 33;
+		amounts[addr_t(hash_t("currency_a"))] = 11;
+		amounts[addr_t(hash_t("currency_zero"))] = 0;
+		amounts[addr_t(hash_t("currency_b"))] = 22;
+		const addr_t deploy_address(hash_t("deploy"));
+
+		std::vector<txout_t> legacy;
+		handle_implicit_deposit(legacy, amounts, deploy_address, true, false);
+		size_t index = 0;
+		for(const auto& entry : amounts) {
+			if(entry.second) {
+				vnx::test::expect(legacy[index].contract, entry.first);
+				vnx::test::expect(legacy[index].amount, entry.second);
+				index++;
+			}
+		}
+		vnx::test::expect(index, legacy.size());
+
+		std::vector<txout_t> ordered;
+		handle_implicit_deposit(ordered, amounts, deploy_address, true, true);
+		vnx::test::expect(ordered.size(), size_t(3));
+		for(size_t i = 0; i < ordered.size(); ++i) {
+			vnx::test::expect(ordered[i].address, deploy_address);
+			vnx::test::expect(ordered[i].amount, amounts.at(ordered[i].contract));
+			if(i) {
+				vnx::test::expect(ordered[i - 1].contract < ordered[i].contract, true);
+			}
+		}
+
+		expect_throw([&]() {
+			std::vector<txout_t> outputs;
+			handle_implicit_deposit(outputs, amounts, deploy_address, false, true);
+		});
+	}
+	VNX_TEST_END()
+
 	VNX_TEST_BEGIN("proof_verify")
 	{
 		mmx::hash_t plot_id;

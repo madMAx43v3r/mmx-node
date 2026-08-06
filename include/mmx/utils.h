@@ -13,6 +13,7 @@
 #include <mmx/fixed128.hpp>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/txout_t.hxx>
 
 #include <vnx/Util.hpp>
 #include <vnx/TimeUtil.h>
@@ -21,6 +22,8 @@
 #include <uint128_t.h>
 #include <uint256_t.h>
 #include <cmath>
+#include <map>
+#include <unordered_map>
 
 
 namespace mmx {
@@ -28,11 +31,6 @@ namespace mmx {
 bool is_json(const vnx::Variant& var);
 
 uint64_t get_num_bytes(const vnx::Variant& var);
-
-inline uint32_t get_transaction_version(std::shared_ptr<const ChainParams> params, const uint32_t height)
-{
-	return height >= params->hardfork2_height ? 1 : 0;
-}
 
 inline
 std::shared_ptr<const ChainParams> get_params()
@@ -348,6 +346,38 @@ inline int64_t get_time_ms() {
 
 inline int64_t get_time_us() {
 	return vnx::get_wall_time_micros();
+}
+
+inline
+uint32_t get_transaction_version(std::shared_ptr<const ChainParams> params, const uint32_t height)
+{
+	return height >= params->hardfork2_height ? 1 : 0;
+}
+
+inline
+void handle_implicit_deposit(
+		std::vector<txout_t>& outputs, const std::unordered_map<addr_t, uint128>& amounts,
+		const addr_t& address, const bool have_deploy, const bool hardfork2)
+{
+	const auto append = [&](const auto& entries) {
+		for(const auto& entry : entries) {
+			if(const auto& amount = entry.second) {
+				if(!have_deploy) {
+					throw std::logic_error("implicit deposit without deploy");
+				}
+				txout_t out;
+				out.address = address;
+				out.contract = entry.first;
+				out.amount = amount;
+				outputs.push_back(out);
+			}
+		}
+	};
+	if(hardfork2) {
+		append(std::map<addr_t, uint128>(amounts.begin(), amounts.end()));
+	} else {
+		append(amounts);
+	}
 }
 
 template<typename error_t>
