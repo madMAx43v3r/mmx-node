@@ -279,16 +279,17 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::sha
 		return prev->space_diff;			// should only happen at genesis
 	}
 	const uint32_t expected_count = prev->space_fork_len * params->avg_proof_count;
-
 	const uint64_t new_diff = (uint128_t(diff) * prev->space_fork_proofs) / expected_count;
 
-	int64_t delta = new_diff - diff;
-	delta /= std::max((16 * params->challenge_interval) / prev->space_fork_len, 1u);
+	const bool increase = prev->space_fork_proofs > expected_count;
+	const uint64_t delta = increase ? new_diff - diff : diff - new_diff;
+	const uint64_t divider = std::max((16 * params->challenge_interval) / prev->space_fork_len, 1u);
+	const uint64_t adjustment = std::max(delta / divider, uint64_t(1));
 
-	if(delta == 0) {
-		delta = (prev->space_fork_proofs > expected_count ? 1 : -1);
+	if(increase) {
+		return diff + adjustment;
 	}
-	return std::max<int64_t>(diff + delta, 1);
+	return diff > adjustment ? diff - adjustment : 1;
 }
 
 inline

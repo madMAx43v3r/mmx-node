@@ -612,6 +612,30 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
+	VNX_TEST_BEGIN("space difficulty adjustment")
+	{
+		auto params = ChainParams::create();
+		params->challenge_interval = 256;
+		params->avg_proof_count = 4;
+
+		auto prev = BlockHeader::create();
+		prev->space_diff = 1000;
+		prev->space_fork_len = 256;
+
+		prev->space_fork_proofs = 512;
+		vnx::test::expect(calc_new_space_diff(params, prev), uint64_t(969));
+
+		prev->space_fork_proofs = 1024;
+		vnx::test::expect(calc_new_space_diff(params, prev), uint64_t(999));
+
+		prev->space_fork_proofs = 1025;
+		vnx::test::expect(calc_new_space_diff(params, prev), uint64_t(1001));
+
+		prev->space_fork_proofs = 1536;
+		vnx::test::expect(calc_new_space_diff(params, prev), uint64_t(1031));
+	}
+	VNX_TEST_END()
+
 	VNX_TEST_BEGIN("proof_verify")
 	{
 		mmx::hash_t plot_id;
