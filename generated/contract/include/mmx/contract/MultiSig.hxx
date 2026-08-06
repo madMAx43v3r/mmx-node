@@ -37,7 +37,7 @@ public:
 	virtual vnx::bool_t is_valid() const override;
 	virtual ::mmx::hash_t calc_hash(const vnx::bool_t& full_hash = 0, const uint32_t& hash_version = 0) const override;
 	virtual uint64_t num_bytes() const override;
-	virtual void validate(std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const override;
+	virtual void validate(std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t(), const uint32_t& tx_version = 0) const override;
 	virtual ::vnx::Variant read_field(const std::string& name = "") const override;
 	
 	static std::shared_ptr<MultiSig> create();

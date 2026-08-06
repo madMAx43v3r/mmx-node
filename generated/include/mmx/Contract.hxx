@@ -38,7 +38,7 @@ public:
 	virtual uint64_t num_bytes() const;
 	virtual uint64_t calc_cost(std::shared_ptr<const ::mmx::ChainParams> params = nullptr) const;
 	virtual vnx::optional<::mmx::addr_t> get_owner() const;
-	virtual void validate(std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t()) const;
+	virtual void validate(std::shared_ptr<const ::mmx::Solution> solution = nullptr, const ::mmx::hash_t& txid = ::mmx::hash_t(), const uint32_t& tx_version = 0) const;
 	virtual ::vnx::Variant read_field(const std::string& name = "") const;
 	
 	static std::shared_ptr<Contract> create();

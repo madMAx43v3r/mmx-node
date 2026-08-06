@@ -406,7 +406,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	if(op->user) {
 		const auto contract = get_contract_for_ex(*op->user, &engine->gas_used, engine->gas_limit);
-		contract->validate(tx->get_solution(op->solution), tx->id);
+		contract->validate(tx->get_solution(op->solution), tx->id, tx->version);
 
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(*op->user));
 	} else {
@@ -649,7 +649,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		// validate tx sender
 		auto pubkey = contract::PubKey::create();
 		pubkey->address = *tx->sender;
-		pubkey->validate(tx->solutions[0], tx->id);
+		pubkey->validate(tx->solutions[0], tx->id, tx->version);
 	}
 
 	const auto balance = balance_cache.find(*tx->sender, addr_t());
@@ -690,7 +690,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(!contract) {
 				throw std::logic_error("no such contract: " + in.address.to_string());
 			}
-			contract->validate(solution, tx->id);
+			contract->validate(solution, tx->id, tx->version);
 
 			*balance -= in.amount;
 			amounts[in.contract] += in.amount;

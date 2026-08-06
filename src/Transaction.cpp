@@ -11,6 +11,8 @@
 #include <mmx/write_bytes.h>
 #include <mmx/txio_t.hpp>
 
+#include <set>
+
 
 namespace mmx {
 
@@ -74,6 +76,36 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 	for(const auto& sol : solutions) {
 		if(!sol || !sol->is_valid()) {
 			return false;
+		}
+	}
+	if(version >= 1) {
+		std::set<hash_t> solution_set;
+		for(const auto& solution : solutions) {
+			if(!solution_set.insert(solution->calc_hash()).second) {
+				return false;
+			}
+		}
+		std::vector<bool> used(solutions.size(), false);
+
+		if(sender && !used.empty()) {
+			used[0] = true;
+		}
+		for(const auto& in : inputs) {
+			if(in.solution < used.size()) {
+				used[in.solution] = true;
+			}
+		}
+		for(const auto& op : execute) {
+			if(const auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+				if(exec->user && exec->solution < used.size()) {
+					used[exec->solution] = true;
+				}
+			}
+		}
+		for(const auto value : used) {
+			if(!value) {
+				return false;
+			}
 		}
 	}
 	return version <= 1 && nonce

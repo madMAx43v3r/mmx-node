@@ -18,6 +18,7 @@ Hardfork 2 introduces:
 - A maximum space-fork interval, after which an infusion is forced.
 - Correct map and object key handling when values cross a contract boundary.
 - Canonical type tags for variants in transaction hashes.
+- Canonical transaction solutions and stricter multi-signature validation.
 - The `SUPPORT_HARDFORK2` block support flag (`0x2`).
 
 ## Proof chain
@@ -125,6 +126,18 @@ preserves all historical transaction IDs.
 
 Wallets select the transaction version for the next block height. A version-0 transaction that has not been included
 before activation is no longer eligible for inclusion after hardfork 2.
+
+## Canonical transaction solutions
+
+Starting with transaction version 1, every top-level solution must be referenced by the sender, an input, or an
+authorized contract call. Top-level solutions must also have unique hashes. This prevents an otherwise unused or
+duplicate signature from being added while changing only non-cryptographic solution indexes. A single solution can
+still authorize multiple uses by sharing its index.
+
+For a version-1 multi-signature solution, every map entry must belong to an owner of the multi-signature contract and
+must contain a public-key signature for that owner. Entries from non-owners and entries of other solution types are
+rejected instead of ignored, and the solution's required-signature count must match the contract. Additional valid
+signatures from owners remain allowed. Version-0 transactions retain the legacy behavior for historical validation.
 
 ## Block format and support flag
 

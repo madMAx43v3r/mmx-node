@@ -44,7 +44,7 @@ vnx::optional<addr_t> PubKey::get_owner() const
 	return address;
 }
 
-void PubKey::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
+void PubKey::validate(std::shared_ptr<const Solution> solution, const hash_t& txid, const uint32_t& tx_version) const
 {
 	if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(solution))
 	{

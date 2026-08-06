@@ -394,6 +394,45 @@ int main(int argc, char** argv)
 		deploy_tx->id = deploy_tx->calc_hash();
 		deploy_tx->content_hash = deploy_tx->calc_hash(true);
 		vnx::test::expect(deploy_tx->is_valid(params), true);
+
+		auto make_solution_tx = [params](const uint32_t version) {
+			auto first = mmx::solution::PubKey::create();
+			auto second = mmx::solution::PubKey::create();
+			second->pubkey = pubkey_t(skey_t(hash_t("second solution")));
+			auto tx = mmx::Transaction::create();
+			tx->version = version;
+			tx->network = params->network;
+			tx->nonce = 1;
+			tx->sender = addr_t(hash_t("sender"));
+			tx->solutions = {first, second};
+			tx->static_cost = tx->calc_cost(params);
+			tx->id = tx->calc_hash();
+			tx->content_hash = tx->calc_hash(true);
+			return tx;
+		};
+		const auto unused_v0 = make_solution_tx(0);
+		const auto unused_v1 = make_solution_tx(1);
+		vnx::test::expect(unused_v0->is_valid(params), true);
+		vnx::test::expect(unused_v1->is_valid(params), false);
+
+		auto used_v1 = make_solution_tx(1);
+		auto signed_op = mmx::operation::Execute::create();
+		signed_op->method = "test";
+		signed_op->user = addr_t(hash_t("user"));
+		signed_op->solution = 1;
+		used_v1->execute.push_back(signed_op);
+		used_v1->static_cost = used_v1->calc_cost(params);
+		used_v1->id = used_v1->calc_hash();
+		used_v1->content_hash = used_v1->calc_hash(true);
+		vnx::test::expect(used_v1->is_valid(params), true);
+
+		auto duplicate_v1 = make_solution_tx(1);
+		duplicate_v1->solutions[1] = duplicate_v1->solutions[0];
+		duplicate_v1->execute.push_back(signed_op);
+		duplicate_v1->static_cost = duplicate_v1->calc_cost(params);
+		duplicate_v1->id = duplicate_v1->calc_hash();
+		duplicate_v1->content_hash = duplicate_v1->calc_hash(true);
+		vnx::test::expect(duplicate_v1->is_valid(params), false);
 	}
 	VNX_TEST_END()
 
@@ -429,6 +468,7 @@ int main(int argc, char** argv)
 					sol->solutions[tmp->pubkey.get_addr()] = tmp;
 				}
 				tmp->validate(sol, txid);
+				tmp->validate(sol, txid, 1);
 			}
 			{
 				auto sol = mmx::solution::PubKey::create();
@@ -449,6 +489,7 @@ int main(int argc, char** argv)
 			vnx::test::expect(tmp->is_valid(), true);
 			{
 				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required;
 				for(int i = 0; i < 3; ++i) {
 					auto tmp = mmx::solution::PubKey::create();
 					tmp->pubkey = keys[i].second;
@@ -456,6 +497,7 @@ int main(int argc, char** argv)
 					sol->solutions[tmp->pubkey.get_addr()] = tmp;
 				}
 				tmp->validate(sol, txid);
+				tmp->validate(sol, txid, 1);
 			}
 			{
 				auto sol = mmx::solution::MultiSig::create();
@@ -466,6 +508,53 @@ int main(int argc, char** argv)
 					sol->solutions[tmp->pubkey.get_addr()] = tmp;
 				}
 				tmp->validate(sol, txid);
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required;
+				for(int i = 0; i < 3; ++i) {
+					auto entry = mmx::solution::PubKey::create();
+					entry->pubkey = keys[i].second;
+					entry->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[entry->pubkey.get_addr()] = entry;
+				}
+				auto extra = mmx::solution::PubKey::create();
+				extra->pubkey = keys[9].second;
+				extra->signature = signature_t::sign(keys[9].first, txid);
+				sol->solutions[extra->pubkey.get_addr()] = extra;
+				tmp->validate(sol, txid);
+				expect_throw([=]() {
+					tmp->validate(sol, txid, 1);
+				});
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required - 1;
+				for(int i = 0; i < 3; ++i) {
+					auto entry = mmx::solution::PubKey::create();
+					entry->pubkey = keys[i].second;
+					entry->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[entry->pubkey.get_addr()] = entry;
+				}
+				tmp->validate(sol, txid);
+				expect_throw([=]() {
+					tmp->validate(sol, txid, 1);
+				});
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required;
+				for(int i = 0; i < 3; ++i) {
+					auto entry = mmx::solution::PubKey::create();
+					entry->pubkey = keys[i].second;
+					entry->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[entry->pubkey.get_addr()] = entry;
+				}
+				sol->solutions[keys[3].second.get_addr()] = mmx::solution::MultiSig::create();
+				tmp->validate(sol, txid);
+				expect_throw([=]() {
+					tmp->validate(sol, txid, 1);
+				});
 			}
 			{
 				auto sol = mmx::solution::MultiSig::create();

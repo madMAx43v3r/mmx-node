@@ -16,7 +16,7 @@ class MultiSig extends mmx.Contract {
 	
 	ulong num_bytes() const;
 	
-	void validate(mmx.Solution* solution, hash_t txid) const;
+	void validate(mmx.Solution* solution, hash_t txid, uint tx_version) const;
 	
 	vnx.Variant read_field(string name) const;
 	
