@@ -12,6 +12,8 @@
 #include <vnx/vnx.h>
 #include <url.h>
 
+#include <cmath>
+
 
 static bool is_expired(const std::string& file_path, const int64_t max_age_sec = 3600 * 24)
 {
@@ -217,6 +219,55 @@ void Node::update_control()
 		}
 	}
 
+	struct nonkyc_market_t {
+		std::string symbol;
+		std::string api_symbol;
+		std::string file_name;
+	};
+
+	static const nonkyc_market_t nonkyc_markets[] = {
+		{"MMX/USDT", "MMX_USDT", "nonkyc_mmx_usdt.json"},
+		{"MMX/USDC", "MMX_USDC", "nonkyc_mmx_usdc.json"},
+	};
+
+	for(const auto& market : nonkyc_markets) {
+		const std::string file_path = storage_path + market.file_name;
+
+		if(is_expired(file_path)) {
+			const std::string key = "api.nonkyc.io/" + market.api_symbol;
+			if(pending_fetch.insert(key).second) {
+				fetch_threads->add_task(std::bind(
+						fetch_func, "https://api.nonkyc.io/api/v2/market/getbysymbol/" + market.api_symbol, file_path, key, ""));
+			}
+			try_again = true;
+		} else {
+			try {
+				std::ifstream stream(file_path);
+				const auto json = vnx::read_json(stream, true);
+				if(!json) {
+					throw std::logic_error("empty file");
+				}
+				const auto object = json->to_object();
+
+				if(object["symbol"].to_string_value() != market.symbol) {
+					throw std::logic_error("expected " + market.symbol);
+				}
+				if(!object["isActive"].to<bool>() || object["isPaused"].to<bool>()) {
+					throw std::logic_error("market is not active");
+				}
+				const auto price = std::stod(object["lastPrice"].to_string_value());
+				if(!std::isfinite(price) || price <= 0) {
+					throw std::logic_error("invalid price: " + std::to_string(price));
+				}
+				mmx_price_inputs_usd.push_back(price);
+				log(INFO) << "Got nonkyc.io " << market.symbol << " price: " << price << " USD";
+			}
+			catch(const std::exception& ex) {
+				log(WARN) << "Failed to parse " << file_path << ": " << ex.what();
+			}
+		}
+	}
+
 	if(mmx_price_inputs_usd.empty()) {
 		if(!try_again) {
 			reward_vote = 0;
@@ -226,13 +277,14 @@ void Node::update_control()
 	}
 	std::sort(mmx_price_inputs_usd.begin(), mmx_price_inputs_usd.end());
 
+	const size_t begin = mmx_price_inputs_usd.size() > 2 ? 1 : 0;
+	const size_t end = mmx_price_inputs_usd.size() > 2 ? mmx_price_inputs_usd.size() - 1 : mmx_price_inputs_usd.size();
+
 	double mmx_price_usd = 0;
-	if(mmx_price_inputs_usd.size() % 2) {
-		mmx_price_usd = mmx_price_inputs_usd[mmx_price_inputs_usd.size() / 2];
-	} else {
-		const auto low = mmx_price_inputs_usd.size() / 2;
-		mmx_price_usd = (mmx_price_inputs_usd[low] + mmx_price_inputs_usd[low + 1]) / 2;
+	for(size_t i = begin; i < end; ++i) {
+		mmx_price_usd += mmx_price_inputs_usd[i];
 	}
+	mmx_price_usd /= end - begin;
 	const auto current = gold_price_usd / mmx_price_usd;
 
 	if(current > params->target_mmx_gold_price * 1.01) {
