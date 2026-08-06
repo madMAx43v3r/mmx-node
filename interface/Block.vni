@@ -5,7 +5,7 @@ class Block extends BlockHeader {
 	vector<Transaction*> tx_list;
 	
 	
-	void finalize();
+	void finalize(ChainParams* params);
 	
 	bool is_valid(ChainParams* params) const;
 	

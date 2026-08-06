@@ -343,7 +343,7 @@ void Node::init_chain()
 			throw std::logic_error("invalid genesis transaction");
 		}
 	}
-	block->finalize();
+	block->finalize(params);
 	block->content_hash = block->calc_content_hash();
 
 	if(!block->is_valid(params)) {

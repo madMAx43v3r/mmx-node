@@ -128,11 +128,11 @@ void process(std::shared_ptr<const Transaction> tx, const hash_t& tx_id, bool is
 	total_tx_count++;
 }
 
-void process(std::shared_ptr<const Block> block)
+void process(std::shared_ptr<const Block> block, std::shared_ptr<const ChainParams> params)
 {
 	const auto begin = vnx::get_wall_time_micros();
 
-	if(!block->is_valid()) {
+	if(!block->is_valid(params)) {
 		throw std::logic_error("invalid block hash");
 	}
 	if(auto tx = block->coin_base) {
@@ -158,6 +158,7 @@ void process(std::shared_ptr<const Block> block)
 int main(int argc, char** argv)
 {
 	vnx::init("test_validation", argc, argv);
+	const auto params = ChainParams::create();
 
 	int num_keys = 10;
 	int num_blocks = 10;
@@ -201,11 +202,11 @@ int main(int argc, char** argv)
 		}
 		genesis->coin_base = base;
 	}
-	genesis->finalize();
+	genesis->finalize(params);
 
 	std::cout << "Genesis block hash: " << genesis->hash << std::endl;
 
-	process(genesis);
+	process(genesis, params);
 
 	auto prev = genesis;
 	{
@@ -247,11 +248,11 @@ int main(int argc, char** argv)
 			}
 			block->tx_list.push_back(tx);
 		}
-		block->finalize();
+		block->finalize(params);
 
 		std::cout << "Block: hash=" << block->hash << " ntx=" << block->tx_list.size() << std::endl;
 
-		process(block);
+		process(block, params);
 
 		prev = block;
 	}
@@ -296,11 +297,11 @@ int main(int argc, char** argv)
 			}
 			block->tx_list.push_back(tx);
 		}
-		block->finalize();
+		block->finalize(params);
 
 		std::cout << "Block: hash=" << block->hash << " ntx=" << block->tx_list.size() << std::endl;
 
-		process(block);
+		process(block, params);
 
 		prev = block;
 	}
@@ -314,7 +315,6 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-
 
 
 

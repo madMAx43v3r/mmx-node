@@ -117,8 +117,8 @@ Hardfork-2-capable nodes set `BlockHeader.SUPPORT_HARDFORK2` (`0x2`) in `support
 Activation is determined by `hardfork2_height`; the support flag does not replace the height gate.
 
 Block header hashing now requires chain parameters so it can decide whether `proof_chain` is part of the committed
-header. Accordingly, the internal `BlockHeader::calc_hash()`, `BlockHeader::is_valid()`, and `Block::is_valid()` APIs
-receive `ChainParams`.
+header. Accordingly, the internal `BlockHeader::calc_hash()`, `BlockHeader::is_valid()`, `Block::finalize()`, and
+`Block::is_valid()` APIs receive `ChainParams`.
 
 ## Compatibility
 

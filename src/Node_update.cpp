@@ -1028,7 +1028,7 @@ std::shared_ptr<const Block> Node::make_block(
 	block->reward_amount = calc_block_reward(block, total_fees);
 	block->set_space_diff(params, prev);
 	block->set_base_reward(params, prev);
-	block->finalize();
+	block->finalize(params);
 
 	if(auto farmer_mac = proof[0].farmer_mac)
 	{

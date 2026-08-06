@@ -49,7 +49,7 @@ hash_t Block::calc_tx_hash() const
 	return calc_btree_hash(tmp);
 }
 
-void Block::finalize()
+void Block::finalize(std::shared_ptr<const ChainParams> params)
 {
 	static_cost = 0;
 	total_cost = 0;
@@ -63,7 +63,7 @@ void Block::finalize()
 	}
 	tx_count = tx_list.size();
 	tx_hash = calc_tx_hash();
-	hash = calc_hash();
+	hash = calc_hash(params);
 }
 
 std::shared_ptr<const BlockHeader> Block::get_header() const
