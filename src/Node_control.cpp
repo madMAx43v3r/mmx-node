@@ -45,21 +45,30 @@ static double get_median(std::list<double> values)
 
 namespace mmx {
 
+void Node::update_control_deferred()
+{
+	if(const auto timer = control_timer.lock()) {
+		timer->reset();
+	} else {
+		control_timer = set_timeout_millis(5000, std::bind(&Node::update_control, this));
+	}
+}
+
 void Node::update_control()
 {
 	const auto fetch_func = [this](const std::string& url, const std::string& file_path, const std::string& key, const std::string& options = "") {
 		try {
 			http_request_file(url, file_path, options);
-			if(vnx::do_run()) {
-				add_task(std::bind(&Node::update_control, this));
-			}
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "Failed to fetch " << Url::Url(url).setQuery({}).str();
 		}
 		if(vnx::do_run()) {
-			std::lock_guard<std::mutex> lock(fetch_mutex);
-			pending_fetch.erase(key);
+			{
+				std::lock_guard<std::mutex> lock(fetch_mutex);
+				pending_fetch.erase(key);
+			}
+			add_task(std::bind(&Node::update_control_deferred, this));
 		}
 	};
 

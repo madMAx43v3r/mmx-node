@@ -297,6 +297,7 @@ private:
 	void init_chain();
 	void trigger_update();
 	void update_control();
+	void update_control_deferred();
 
 	void verify_vdfs();
 	void verify_votes();
@@ -573,6 +574,7 @@ private:
 	std::shared_ptr<vnx::ThreadPool> api_threads;			// executed under shared db_mutex lock
 	std::shared_ptr<vnx::Timer> stuck_timer;
 	std::shared_ptr<vnx::Timer> update_timer;
+	std::weak_ptr<vnx::Timer> control_timer;
 
 	mutable std::mutex mutex;								// network + contract_cache + tx_pool_index
 	mutable std::shared_ptr<const NetworkInfo> network;
