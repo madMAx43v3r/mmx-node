@@ -17,6 +17,7 @@ Hardfork 2 introduces:
 - Proof-chain infusion into challenge and space-fork calculations.
 - A maximum space-fork interval, after which an infusion is forced.
 - Correct map and object key handling when values cross a contract boundary.
+- Correct 256-bit multiplication overflow detection in the VM.
 - Canonical type tags for variants in transaction hashes.
 - Canonical transaction solutions and stricter multi-signature validation.
 - The `SUPPORT_HARDFORK2` block support flag (`0x2`).
@@ -112,6 +113,16 @@ height, nodes retain the original setup-before-load order to preserve consensus 
 
 The `mmx_compile` test harness always uses the corrected load-before-arguments order; it does not emulate the pre-fork
 behavior.
+
+## Multiplication overflow detection
+
+Before hardfork 2, the VM detected unsigned 256-bit multiplication overflow by comparing the wrapped result with both
+operands. This misses some overflows, including `(2^255 + 1) * 2`, whose wrapped result is `2`.
+
+Starting at hardfork 2, multiplication instructions with overflow checking enabled reject the operation when the left
+operand is non-zero and the right operand exceeds `MAX_UINT256 / left`. Multiplication without overflow checking
+continues to wrap modulo `2^256`. The legacy comparison remains active below the hardfork height so historical contract
+execution is unchanged. The `mmx_compile` execution harness uses the corrected behavior.
 
 ## Transaction hash version 1
 

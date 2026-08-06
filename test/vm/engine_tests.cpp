@@ -146,9 +146,56 @@ int main(int argc, char** argv)
 	}
 	VNX_TEST_END()
 
+	VNX_TEST_BEGIN("multiply overflow hardfork2")
+	{
+		const auto test_multiply = [](
+				const uint32_t protocol_version, const uint256_t& lhs, const uint256_t& rhs,
+				const bool catch_overflow, const bool should_fail, const uint256_t& expected)
+		{
+			auto storage = std::make_shared<vm::StorageRAM>();
+			auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false, protocol_version);
+			engine->gas_limit = 100000;
+			const auto dst = vm::MEM_STATIC;
+			const auto lhs_addr = vm::MEM_STATIC + 1;
+			const auto rhs_addr = vm::MEM_STATIC + 2;
+			engine->write(lhs_addr, vm::uint_t(lhs));
+			engine->write(rhs_addr, vm::uint_t(rhs));
+			engine->init();
+			engine->begin(0);
+			try {
+				const uint8_t flags = catch_overflow ? vm::OPFLAG_CATCH_OVERFLOW : 0;
+				engine->exec(vm::instr_t(vm::OP_MUL, flags, dst, lhs_addr, rhs_addr));
+			} catch(const std::runtime_error& ex) {
+				if(!should_fail || std::string(ex.what()) != "integer overflow") {
+					throw;
+				}
+				return;
+			}
+			if(should_fail) {
+				throw std::logic_error("expected multiplication overflow");
+			}
+			const auto& result = engine->read_fail<vm::uint_t>(dst, vm::TYPE_UINT).value;
+			if(result != expected) {
+				throw std::logic_error("expected " + expected.str() + " but got " + result.str());
+			}
+		};
+
+		const auto missed_overflow = (uint256_t(1) << 255) + 1;
+		test_multiply(0, missed_overflow, 2, true, false, 2);
+		test_multiply(1, missed_overflow, 2, true, true, 0);
+		test_multiply(1, 2, missed_overflow, true, true, 0);
+		test_multiply(1, missed_overflow, 2, false, false, 2);
+		test_multiply(1, uint256_max / 2, 2, true, false, uint256_max - 1);
+		test_multiply(1, uint256_max, 1, true, false, uint256_max);
+		test_multiply(1, 1, uint256_max, true, false, uint256_max);
+		test_multiply(1, 0, uint256_max, true, false, 0);
+		test_multiply(0, uint256_max, uint256_max, true, true, 0);
+	}
+	VNX_TEST_END()
+
 	auto backend = std::make_shared<vm::StorageRAM>();
 	auto storage = std::make_shared<vm::StorageCache>(backend);
-	auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false);
+	auto engine = std::make_shared<vm::Engine>(addr_t(), storage, false, 1);
 	engine->gas_limit = 1000000;
 
 	VNX_TEST_BEGIN("setup")
@@ -240,7 +287,7 @@ int main(int argc, char** argv)
 
 	VNX_TEST_BEGIN("copy")
 	{
-		auto engine1 = std::make_shared<vm::Engine>(hash_t("copy:1"), storage, false);
+		auto engine1 = std::make_shared<vm::Engine>(hash_t("copy:1"), storage, false, 1);
 		engine1->gas_limit = 1000000;
 		for(size_t i = 1; i <= 16; ++i) {
 			vm::copy(engine1, engine, vm::MEM_STACK + i, vm::MEM_STATIC + i);
@@ -251,7 +298,7 @@ int main(int argc, char** argv)
 
 	VNX_TEST_BEGIN("data_recursion")
 	{
-		auto engine1 = std::make_shared<vm::Engine>(hash_t("data_recursion:1"), storage, false);
+		auto engine1 = std::make_shared<vm::Engine>(hash_t("data_recursion:1"), storage, false, 1);
 		engine1->gas_limit = 10000000;
 
 		const auto addr = engine1->alloc();
@@ -259,7 +306,7 @@ int main(int argc, char** argv)
 		engine1->write(vm::MEM_STATIC + 1, vm::ref_t(addr));
 		engine1->write_key(addr, vm::uint_t(0), vm::ref_t(addr));
 
-		auto engine2 = std::make_shared<vm::Engine>(hash_t("data_recursion:2"), storage, false);
+		auto engine2 = std::make_shared<vm::Engine>(hash_t("data_recursion:2"), storage, false, 1);
 		engine2->gas_limit = 10000000;
 
 		bool failed = false;
@@ -327,7 +374,7 @@ int main(int argc, char** argv)
 
 	VNX_TEST_BEGIN("assign")
 	{
-		auto engine = std::make_shared<vm::Engine>(addr_t(), backend, true);
+		auto engine = std::make_shared<vm::Engine>(addr_t(), backend, true, 1);
 		engine->gas_limit = 1000000;
 		check_func_1(engine, vm::MEM_STATIC);
 	}
@@ -335,7 +382,6 @@ int main(int argc, char** argv)
 
 	return vnx::test::done();
 }
-
 
 
 

@@ -397,7 +397,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(!executable) {
 		throw std::logic_error("not an executable: " + address.to_string());
 	}
-	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false);
+	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false, tx->version);
 	engine->do_profile = context->do_profile;
 	engine->do_trace = context->do_trace;
 	{
@@ -527,7 +527,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		engine->gas_used += params->min_txfee_exec;
 		engine->check_gas();
 
-		const auto child = std::make_shared<vm::Engine>(address, storage_cache, false);
+		const auto child = std::make_shared<vm::Engine>(address, storage_cache, false, tx->version);
 		child->gas_limit = engine->gas_limit - std::min(engine->gas_used, engine->gas_limit);
 
 		const auto stack_ptr = engine->get_stack_ptr();

@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 		const auto time_begin = vnx::get_wall_time_micros();
 
 		auto storage = std::make_shared<vm::StorageRAM>();
-		auto engine = std::make_shared<vm::Engine>(hash_t("__test"), storage, false);
+		auto engine = std::make_shared<vm::Engine>(hash_t("__test"), storage, false, 1);
 		engine->is_debug = verbose;
 		engine->gas_limit = gas_limit;
 
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
 
 			if(exec) {
 				const auto cache = std::make_shared<vm::StorageCache>(storage);
-				const auto child = std::make_shared<vm::Engine>(address, cache, false);
+				const auto child = std::make_shared<vm::Engine>(address, cache, false, engine->protocol_version);
 				child->gas_limit = engine->gas_limit;
 				child->log_func = [](uint32_t level, const std::string& msg) {
 					std::cout << "LOG[" << level << "] " << msg << std::endl;
