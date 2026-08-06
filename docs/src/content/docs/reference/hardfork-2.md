@@ -4,7 +4,7 @@ description: Consensus and VM changes activated by MMX hardfork 2.
 ---
 
 Hardfork 2 activates at the block height configured by `ChainParams.hardfork2_height`. On mainnet this is block
-**6,300,000**. This is a block height, not a VDF height.
+**6,000,000**, projected around 12 December 2026 (UTC). This is a block height, not a VDF height.
 
 Nodes participating at or beyond the activation height need hardfork-2-compatible software. The new rules change block
 header hashing, challenge calculation, and smart contract argument handling.
