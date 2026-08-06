@@ -9,9 +9,9 @@ import {equals, sort, reverse, compare} from "std";
 // resulting balances at the table for another hand. Other players become
 // inactive and may withdraw manually.
 //
-// settle() arguments are arrays in player_list order unless noted otherwise.
-// Players who join after a hand starts are outside its frozen
-// hand_player_count prefix and wait for the following hand:
+// settle() arguments are arrays in active_players order unless noted
+// otherwise. Players who join after a hand starts enter waiting_players and
+// do not affect the current hand's roster or transcript:
 //
 // commitments[player]     [] on commit timeout, otherwise five 32-byte hashes:
 //                         four board-seed commitments and one pocket commitment
@@ -30,8 +30,8 @@ import {equals, sort, reverse, compare} from "std";
 //   0 - check, 1 - bet / call / raise, 2 - fold
 //
 // Checkpoint phases and events:
-//   phase 0 roster: event 0 inactive, 1 active
-//   phase 1 commit: event 1 valid, 2 timeout, 3 inactive
+//   phase 0 roster: event 1 active
+//   phase 1 commit: event 1 valid, 2 timeout
 //   phase 2 reveal: event 1 valid, 2 timeout, 3 already folded
 //   phase 3 action: event 10 check, 11 bet, 12 fold,
 //                   20 timeout-check, 21 timeout-fold,
@@ -51,10 +51,11 @@ var table_open = true;
 var start_height = null;
 var refund_height = null;
 var hand_id = 0;
-var hand_player_count = 0;  // frozen player_list prefix for the current hand
 
-var player_map = {};
-var player_list = [];
+var player_map = {};        // address => persistent player state
+var player_count = 0;       // total identities registered over the table lifetime
+var active_players = [];    // bounded current / scheduled hand roster
+var waiting_players = [];   // bounded additions for the following hand
 
 var board = null;
 var transcript_hash = null;
@@ -108,7 +109,10 @@ function join(name, public_key) public payable
     assert(size(public_key) == 33, "invalid public key");
     assert(sha256(public_key) == this.user, "public key does not match user");
 
-    const player = {
+    const next_player_count = player_count + 1;
+    assert(next_player_count > player_count, "player count overflow");
+
+    player_map[this.user] = {
         name: name,
         address: this.user,
         public_key: public_key,
@@ -121,15 +125,15 @@ function join(name, public_key) public payable
         payout: 0,
         withdrawn: false,
     };
-
-    player_map[this.user] = size(player_list);
-    push(player_list, player);
+    player_count = next_player_count;
 
     if(!waiting) {
-        hand_player_count = size(player_list);
+        push(active_players, this.user);
         if(get_num_active() == 2) {
             schedule_start();
         }
+    } else {
+        push(waiting_players, this.user);
     }
 }
 
@@ -152,9 +156,11 @@ function activate() public
         assert(get_num_active() + get_num_waiting() < max_players,
                "next table full");
         player.waiting = true;
+        push(waiting_players, player.address);
     } else {
         assert(get_num_active() < max_players, "table full");
         player.active = true;
+        push(active_players, player.address);
         if(get_num_active() == 2) {
             schedule_start();
         }
@@ -172,11 +178,13 @@ function deactivate() public
     const player = get_player(this.user);
     if(player.waiting) {
         player.waiting = false;
+        waiting_players = remove_address(waiting_players, player.address);
     } else {
         assert(player.active, "player already inactive");
         assert(!is_started() || get_num_active() == 1,
                "current hand already started");
         player.active = false;
+        active_players = remove_address(active_players, player.address);
     }
 
     if(get_num_active() < 2) {
@@ -206,7 +214,6 @@ function top_up() public payable
 function schedule_start()
 {
     assert(get_num_active() >= 2, "not enough active players");
-    hand_player_count = size(player_list);
     start_height = this.height + start_delay;
     assert(start_height > this.height, "start height overflow");
     refund_height = start_height + game_timeout;
@@ -233,7 +240,7 @@ function get_table_status() const public
 {
     return {
         table_open: bool(table_open),
-        player_count: size(player_list),
+        player_count: player_count,
         start_height: start_height,
         refund_height: refund_height,
         dealer_rake: dealer_rake,
@@ -241,7 +248,6 @@ function get_table_status() const public
         hand_id: hand_id,
         active_count: get_num_active(),
         waiting_count: get_num_waiting(),
-        hand_player_count: hand_player_count,
     };
 }
 
@@ -259,17 +265,29 @@ function get_config() const public
     };
 }
 
-function get_player_info(index) const public
+function get_player_info(address) const public
 {
-    index = uint(index);
-    assert(index < size(player_list), "invalid player index");
-    const player = player_list[index];
+    const player = get_player(bech32(address));
     return {
         name: player.name,
         address: player.address,
         public_key: player.public_key,
         stack: player.stack,
     };
+}
+
+function get_active_player(index) const public
+{
+    index = uint(index);
+    assert(index < size(active_players), "invalid active player index");
+    return active_players[index];
+}
+
+function get_waiting_player(index) const public
+{
+    index = uint(index);
+    assert(index < size(waiting_players), "invalid waiting player index");
+    return waiting_players[index];
 }
 
 function get_player_status(address) const public
@@ -402,7 +420,7 @@ function checkpoint_step(checkpoint, phase, event_round, epoch, address,
 function get_start_checkpoint() const public
 {
     assert(start_height != null, "game not scheduled");
-    assert(hand_player_count <= size(player_list), "invalid hand player count");
+    assert(size(active_players) >= 2, "not enough active players");
 
     var checkpoint = sha256(concat(
         "MMX_PARALLEL_POKER_START_V1/",
@@ -410,14 +428,11 @@ function get_start_checkpoint() const public
         string(hand_id), "/",
         string(start_height)
     ));
-    for(var i = 0; i < hand_player_count; i++) {
-        const player = player_list[i];
-        var checkpoint_stack = 0;
-        if(player.active) {
-            checkpoint_stack = player.stack;
-        }
+    for(const address of active_players) {
+        const player = get_player(address);
+        assert(player.active, "inactive player in active roster");
         checkpoint = checkpoint_step(checkpoint, 0, 0, 0,
-                                     player.address, uint(player.active), checkpoint_stack);
+                                     player.address, 1, player.stack);
     }
     return checkpoint;
 }
@@ -448,9 +463,9 @@ function settle(commitments, commit_signatures, reveals, betting,
     assert(!is_expired(), "game expired");
     assert(get_num_active() >= 2, "not enough active players");
 
-    const count = hand_player_count;
+    const count = size(active_players);
     assert(count >= 2, "not enough players");
-    assert(count <= size(player_list), "invalid hand player count");
+    assert(count <= max_players, "too many active players");
     assert(is_array(commitments) && size(commitments) == count,
            "invalid commitments");
     assert(is_array(commit_signatures) && size(commit_signatures) == count,
@@ -463,8 +478,7 @@ function settle(commitments, commit_signatures, reveals, betting,
 
     const timeout_used = validate_timeouts(timeouts, count);
     const show_used = validate_shows(shows, count);
-    const continuation_used = validate_continuations(
-        continuations, size(player_list));
+    const continuation_used = validate_continuations(continuations, count);
     const commit_values = [];
     const ranks = [];
 
@@ -472,18 +486,14 @@ function settle(commitments, commit_signatures, reveals, betting,
     dealer_rake = 0;
 
     for(var i = 0; i < count; i++) {
-        const player = player_list[i];
-        player.in_hand = bool(player.active);
-        if(player.in_hand) {
-            assert(player.stack >= small_blind, "active stack below small blind");
-            player.bet = small_blind;
-            player.folded = false;
-            player.payout = 0;
-        } else {
-            player.bet = 0;
-            player.folded = true;
-            player.payout = player.stack;
-        }
+        const player = get_hand_player(i);
+        assert(player.active, "inactive player in active roster");
+        assert(!player.waiting, "active player queued activation");
+        assert(player.stack >= small_blind, "active stack below small blind");
+        player.in_hand = true;
+        player.bet = small_blind;
+        player.folded = false;
+        player.payout = 0;
         push(ranks, null);
 
         assert(is_array(reveals[i]) && size(reveals[i]) == 4,
@@ -495,44 +505,36 @@ function settle(commitments, commit_signatures, reveals, betting,
     // Every valid participant signs all five commitments as one bundle before
     // any reveal is released. A commit timeout immediately folds the player.
     for(var i = 0; i < count; i++) {
-        const player = player_list[i];
+        const player = get_hand_player(i);
         const values = commitments[i];
         assert(is_array(values), "invalid player commitments");
 
-        if(player.in_hand) {
-            if(size(values) == 5) {
-                const decoded = [];
-                for(const value_ of values) {
-                    const value = binary_hex(value_);
-                    assert(size(value) == 32, "invalid seed commitment");
-                    push(decoded, value);
-                }
-                const commit_hash = get_commit_hash(player.address, decoded);
-                const signature = binary_hex(commit_signatures[i]);
-                assert(size(signature) == 64, "invalid commitment signature");
-                assert(ecdsa_verify(commit_hash, player.public_key, signature),
-                       "commitment signature verification failed");
-                push(commit_values, decoded);
-                checkpoint = checkpoint_step(checkpoint, 1, 0, 0,
-                                             player.address, 1, player.stack,
-                                             commit_hash);
-            } else {
-                assert(size(values) == 0, "invalid player commitments");
-                assert(commit_signatures[i] == null,
-                       "signature without commitments");
-                assert(use_timeout(timeouts, timeout_used, i, 0, 0, 0),
-                       "missing commitment timeout");
-                player.folded = true;
-                push(commit_values, []);
-                checkpoint = checkpoint_step(checkpoint, 1, 0, 0,
-                                             player.address, 2, player.stack);
+        if(size(values) == 5) {
+            const decoded = [];
+            for(const value_ of values) {
+                const value = binary_hex(value_);
+                assert(size(value) == 32, "invalid seed commitment");
+                push(decoded, value);
             }
+            const commit_hash = get_commit_hash(player.address, decoded);
+            const signature = binary_hex(commit_signatures[i]);
+            assert(size(signature) == 64, "invalid commitment signature");
+            assert(ecdsa_verify(commit_hash, player.public_key, signature),
+                   "commitment signature verification failed");
+            push(commit_values, decoded);
+            checkpoint = checkpoint_step(checkpoint, 1, 0, 0,
+                                         player.address, 1, player.stack,
+                                         commit_hash);
         } else {
             assert(size(values) == 0, "invalid player commitments");
-            assert(commit_signatures[i] == null, "inactive commitment signature");
+            assert(commit_signatures[i] == null,
+                   "signature without commitments");
+            assert(use_timeout(timeouts, timeout_used, i, 0, 0, 0),
+                   "missing commitment timeout");
+            player.folded = true;
             push(commit_values, []);
             checkpoint = checkpoint_step(checkpoint, 1, 0, 0,
-                                         player.address, 3, 0);
+                                         player.address, 2, player.stack);
         }
     }
 
@@ -547,7 +549,7 @@ function settle(commitments, commit_signatures, reveals, betting,
         // Reveals are processed in roster order, after the dealer has collected
         // the full batch or recorded the corresponding timeouts.
         for(var i = 0; i < count; i++) {
-            const player = player_list[i];
+            const player = get_hand_player(i);
             const seed_ = reveals[i][round];
 
             if(!player.folded) {
@@ -603,7 +605,7 @@ function settle(commitments, commit_signatures, reveals, betting,
 
         const global_seed = sources[0];
         for(var i = 0; i < count; i++) {
-            const player = player_list[i];
+            const player = get_hand_player(i);
             const show_index = find_show(shows, i);
 
             if(!player.folded) {
@@ -654,59 +656,65 @@ function settle(commitments, commit_signatures, reveals, betting,
     transcript_hash = checkpoint;
     allocate_payouts(ranks);
 
-    var active_count = 0;
-    for(var i = 0; i < size(player_list); i++) {
-        const player = player_list[i];
+    const next_players = [];
+    for(var i = 0; i < count; i++) {
+        const player = get_hand_player(i);
         const continuation_index = find_continuation(continuations, i);
 
-        if(player.in_hand) {
-            assert(!player.waiting, "active player queued activation");
-            if(continuation_index != null) {
-                const signature = binary_hex(continuations[continuation_index][1]);
-                assert(size(signature) == 64, "invalid continuation signature");
-                assert(ecdsa_verify(
-                    get_continue_hash(player.address, player.payout, transcript_hash),
-                    player.public_key, signature),
-                    "continuation signature verification failed");
-                continuation_used[continuation_index] = true;
-                if(player.payout >= small_blind) {
-                    assert(active_count < max_players, "too many active players");
-                    player.active = true;
-                    active_count++;
-                } else {
-                    player.active = false;
-                }
+        assert(player.in_hand, "inactive player in active roster");
+        assert(!player.waiting, "active player queued activation");
+        if(continuation_index != null) {
+            const signature = binary_hex(continuations[continuation_index][1]);
+            assert(size(signature) == 64, "invalid continuation signature");
+            assert(ecdsa_verify(
+                get_continue_hash(player.address, player.payout, transcript_hash),
+                player.public_key, signature),
+                "continuation signature verification failed");
+            continuation_used[continuation_index] = true;
+            if(player.payout >= small_blind) {
+                assert(size(next_players) < max_players,
+                       "too many active players");
+                player.active = true;
+                push(next_players, player.address);
             } else {
                 player.active = false;
             }
         } else {
-            assert(continuation_index == null,
-                   "inactive player supplied continuation");
-            if(player.waiting && player.payout >= small_blind) {
-                assert(active_count < max_players, "too many active players");
-                player.active = true;
-                active_count++;
-            } else {
-                player.active = false;
-            }
+            player.active = false;
         }
+        player.stack = player.payout;
+        player.in_hand = false;
         player.waiting = false;
+    }
+
+    for(const address of waiting_players) {
+        const player = get_player(address);
+        assert(!player.active && player.waiting,
+               "invalid waiting player state");
+        player.payout = player.stack;
+        player.waiting = false;
+        if(player.stack >= small_blind) {
+            assert(size(next_players) < max_players,
+                   "too many active players");
+            player.active = true;
+            push(next_players, player.address);
+        }
     }
 
     // A lone player cannot start another hand. Their signature does not block
     // this settlement; they become inactive and may withdraw with everyone
     // else who chose not to continue.
-    if(active_count < 2) {
-        for(const player of player_list) {
-            player.active = false;
+    if(size(next_players) < 2) {
+        for(const address of next_players) {
+            get_player(address).active = false;
         }
+        active_players = [];
+    } else {
+        active_players = next_players;
     }
+    waiting_players = [];
     assert_all_continuations_used(continuation_used);
 
-    for(const player of player_list) {
-        player.stack = player.payout;
-        player.in_hand = false;
-    }
     if(dealer_rake > 0) {
         send(dealer, dealer_rake, currency, "poker_rake");
     }
@@ -744,7 +752,7 @@ function process_betting_round(round, epochs, checkpoint,
         for(var e = 0; e < size(entries); e++) {
             const entry = entries[e];
             assert(is_array(entry) && size(entry) == 4, "invalid action entry");
-            assert(is_uint(entry[0]) && entry[0] < hand_player_count,
+            assert(is_uint(entry[0]) && entry[0] < size(active_players),
                    "invalid action player");
             assert(is_uint(entry[1]) && entry[1] < 3, "invalid action type");
             assert(is_uint(entry[2]), "invalid action amount");
@@ -754,8 +762,8 @@ function process_betting_round(round, epochs, checkpoint,
         const epoch_checkpoint = checkpoint;
         const target = get_current_bet();
 
-        for(var i = 0; i < hand_player_count; i++) {
-            const player = player_list[i];
+        for(var i = 0; i < size(active_players); i++) {
+            const player = get_hand_player(i);
             const entry_index = find_action(entries, i);
             var event = 30;     // already folded / inactive
 
@@ -822,7 +830,8 @@ function process_betting_round(round, epochs, checkpoint,
 
         const next_target = get_current_bet();
         done = true;
-        for(const player of player_list) {
+        for(const address of active_players) {
+            const player = get_player(address);
             if(player.in_hand && !player.folded && player.bet < player.stack
                && player.bet < next_target) {
                 done = false;
@@ -841,7 +850,7 @@ function validate_unused_rounds(processed, reveals, betting) const
 {
     for(var round = processed; round < 4; round++) {
         assert(size(betting[round]) == 0, "unexpected betting transcript");
-        for(var i = 0; i < hand_player_count; i++) {
+        for(var i = 0; i < size(active_players); i++) {
             assert(reveals[i][round] == null, "unexpected seed reveal");
         }
     }
@@ -965,7 +974,8 @@ function assert_all_timeouts_used(used) const
 function get_current_bet() const
 {
     var amount = 0;
-    for(const player of player_list) {
+    for(const address of active_players) {
+        const player = get_player(address);
         if(player.in_hand && !player.folded && player.bet > amount) {
             amount = player.bet;
         }
@@ -973,30 +983,16 @@ function get_current_bet() const
     return amount;
 }
 
-// Returns the number of players enrolled in the next hand. During settlement,
-// this is also the fixed roster for the hand being verified. Inactive and
-// waiting players are not included.
+// Returns the number of players in the current or scheduled hand roster.
 
 function get_num_active() const public
 {
-    var count = 0;
-    for(const player of player_list) {
-        if(player.active) {
-            count++;
-        }
-    }
-    return count;
+    return size(active_players);
 }
 
 function get_num_waiting() const public
 {
-    var count = 0;
-    for(const player of player_list) {
-        if(player.waiting) {
-            count++;
-        }
-    }
-    return count;
+    return size(waiting_players);
 }
 
 // Returns the number of current-hand players who have not folded. This
@@ -1006,7 +1002,8 @@ function get_num_waiting() const public
 function get_num_hand_active() const
 {
     var count = 0;
-    for(const player of player_list) {
+    for(const address of active_players) {
+        const player = get_player(address);
         if(player.in_hand && !player.folded) {
             count++;
         }
@@ -1021,7 +1018,8 @@ function get_num_hand_active() const
 function get_num_actors() const
 {
     var count = 0;
-    for(const player of player_list) {
+    for(const address of active_players) {
+        const player = get_player(address);
         if(player.in_hand && !player.folded && player.bet < player.stack) {
             count++;
         }
@@ -1031,9 +1029,31 @@ function get_num_actors() const
 
 function get_player(address) const
 {
-    const index = player_map[address];
-    assert(index != null, "not a player");
-    return player_list[index];
+    const player = player_map[address];
+    assert(player != null, "not a player");
+    return player;
+}
+
+function get_hand_player(index) const
+{
+    assert(index < size(active_players), "invalid hand player index");
+    return get_player(active_players[index]);
+}
+
+function remove_address(list, address) const
+{
+    const result = [];
+    var found = false;
+    for(const value of list) {
+        if(value == address) {
+            assert(!found, "duplicate roster address");
+            found = true;
+        } else {
+            push(result, value);
+        }
+    }
+    assert(found, "address missing from roster");
+    return result;
 }
 
 // Initializes every result with unused stack, then distributes standard main
@@ -1047,22 +1067,20 @@ function allocate_payouts(ranks)
     var matched_total = 0;
     var total_stack = 0;
 
-    for(const player of player_list) {
-        if(player.in_hand) {
-            assert(player.bet >= small_blind && player.bet <= player.stack,
-                   "invalid final bet");
-            player.payout = player.stack - player.bet;
-        } else {
-            assert(player.bet == 0, "inactive player bet");
-            player.payout = player.stack;
-        }
+    for(const address of active_players) {
+        const player = get_player(address);
+        assert(player.in_hand, "inactive player in active roster");
+        assert(player.bet >= small_blind && player.bet <= player.stack,
+               "invalid final bet");
+        player.payout = player.stack - player.bet;
         total_stack += player.stack;
     }
 
     var previous = 0;
-    for(var layer_index = 0; layer_index < size(player_list); layer_index++) {
+    for(var layer_index = 0; layer_index < size(active_players); layer_index++) {
         var level = null;
-        for(const player of player_list) {
+        for(const address of active_players) {
+            const player = get_player(address);
             if(player.bet > previous) {
                 if(level == null) {
                     level = player.bet;
@@ -1075,8 +1093,8 @@ function allocate_payouts(ranks)
             const delta = level - previous;
             const contributors = [];
             const eligible = [];
-            for(var i = 0; i < size(player_list); i++) {
-                const player = player_list[i];
+            for(var i = 0; i < size(active_players); i++) {
+                const player = get_hand_player(i);
                 if(player.bet >= level) {
                     push(contributors, i);
                     if(player.in_hand && !player.folded) {
@@ -1087,7 +1105,7 @@ function allocate_payouts(ranks)
 
             if(size(contributors) == 1 || size(eligible) == 0) {
                 for(const index of contributors) {
-                    player_list[index].payout += delta;
+                    get_hand_player(index).payout += delta;
                 }
             } else {
                 const amount = delta * size(contributors);
@@ -1115,13 +1133,14 @@ function allocate_payouts(ranks)
 
         const net = amount - layer_rake;
         for(var i = 0; i < size(winners); i++) {
-            player_list[winners[i]].payout += get_split_amount(net, size(winners), i);
+            get_hand_player(winners[i]).payout +=
+                get_split_amount(net, size(winners), i);
         }
     }
 
     var total_payout = dealer_rake;
-    for(const player of player_list) {
-        total_payout += player.payout;
+    for(const address of active_players) {
+        total_payout += get_player(address).payout;
     }
     assert(total_payout == total_stack, "payout accounting mismatch");
 }
@@ -1199,10 +1218,14 @@ function refund() public
 
     if(table_open) {
         table_open = false;
-        for(const player of player_list) {
-            player.active = false;
-            player.waiting = false;
+        for(const address of active_players) {
+            get_player(address).active = false;
         }
+        for(const address of waiting_players) {
+            get_player(address).waiting = false;
+        }
+        active_players = [];
+        waiting_players = [];
     }
     assert(!table_open, "table is still open");
 

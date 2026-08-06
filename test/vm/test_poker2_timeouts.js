@@ -14,12 +14,15 @@ const dealer = string_bech32(sha256(dealer_key));
 const alice_skey = sha256("poker2_timeout_alice");
 const bob_skey = sha256("poker2_timeout_bob");
 const carol_skey = sha256("poker2_timeout_carol");
+const dave_skey = sha256("poker2_timeout_dave");
 const alice_key = __test.get_public_key(alice_skey);
 const bob_key = __test.get_public_key(bob_skey);
 const carol_key = __test.get_public_key(carol_skey);
+const dave_key = __test.get_public_key(dave_skey);
 const alice = string_bech32(sha256(alice_key));
 const bob = string_bech32(sha256(bob_key));
 const carol = string_bech32(sha256(carol_key));
+const dave = string_bech32(sha256(dave_key));
 
 const timeout_addr = poker2_timeout.__deploy({
     __type: "mmx.contract.Executable",
@@ -255,9 +258,35 @@ function test_single_player_deactivate()
     poker2_deactivate.deactivate({__test: true, user: bob});
     assert(poker2_deactivate.get_num_active() == 0);
     assert(poker2_deactivate.get_table_status().player_count == 2);
-    assert(poker2_deactivate.get_player_info(0).address == alice);
-    assert(poker2_deactivate.get_player_info(1).address == bob);
+    assert(string_bech32(poker2_deactivate.get_player_info(alice).address) == alice);
+    assert(string_bech32(poker2_deactivate.get_player_info(bob).address) == bob);
     poker2_deactivate.claim({__test: true, user: bob});
+    assert(__test.get_balance(deactivate_addr, MMX) == 0);
+
+    // Historical identities do not consume seats or expand the settlement
+    // transcript. This max-three table now has four registered identities but
+    // only Carol and Dave in its bounded active roster.
+    poker2_deactivate.join("Carol", string_hex(carol_key), {
+        __test: true, user: carol, deposit: [50, MMX]
+    });
+    poker2_deactivate.join("Dave", string_hex(dave_key), {
+        __test: true, user: dave, deposit: [50, MMX]
+    });
+    assert(poker2_deactivate.get_table_status().player_count == 4);
+    assert(poker2_deactivate.get_num_active() == 2);
+    assert(string_bech32(poker2_deactivate.get_active_player(0)) == carol);
+    assert(string_bech32(poker2_deactivate.get_active_player(1)) == dave);
+
+    __test.set_height(5);
+    poker2_deactivate.settle(
+        [[], []], [null, null],
+        [[null, null, null, null], [null, null, null, null]],
+        [[], [], [], []], [], [[0, 0, 0, 0], [1, 0, 0, 0]], [],
+        {__test: true, user: dealer}
+    );
+    assert(poker2_deactivate.get_num_active() == 0);
+    poker2_deactivate.claim({__test: true, user: carol});
+    poker2_deactivate.claim({__test: true, user: dave});
     assert(__test.get_balance(deactivate_addr, MMX) == 0);
 }
 
@@ -283,7 +312,9 @@ function test_join_during_hand()
     assert(poker2_late_join.get_num_active() == 2);
     assert(poker2_late_join.get_num_waiting() == 1);
     assert(poker2_late_join.get_table_status().player_count == 3);
-    assert(poker2_late_join.get_table_status().hand_player_count == 2);
+    assert(string_bech32(poker2_late_join.get_active_player(0)) == alice);
+    assert(string_bech32(poker2_late_join.get_active_player(1)) == bob);
+    assert(string_bech32(poker2_late_join.get_waiting_player(0)) == carol);
     assert(poker2_late_join.get_start_checkpoint() == start_checkpoint);
     assert(!poker2_late_join.get_player_status(carol).active);
     assert(poker2_late_join.get_player_status(carol).waiting);
@@ -311,7 +342,8 @@ function test_join_during_hand()
     assert(poker2_late_join.get_player_status(alice).active);
     assert(!poker2_late_join.get_player_status(bob).active);
     assert(poker2_late_join.get_player_status(carol).active);
-    assert(poker2_late_join.get_table_status().hand_player_count == 3);
+    assert(string_bech32(poker2_late_join.get_active_player(0)) == alice);
+    assert(string_bech32(poker2_late_join.get_active_player(1)) == carol);
     assert(__test.get_balance(late_join_addr, MMX) == 250);
 }
 
@@ -410,8 +442,6 @@ function test_commit_timeout()
         string_hex(commit_hash_1));
     checkpoint_1 = poker2_commit_timeout.checkpoint_step(
         string_hex(checkpoint_1), 1, 0, 0, bob, 2, 90, null);
-    checkpoint_1 = poker2_commit_timeout.checkpoint_step(
-        string_hex(checkpoint_1), 1, 0, 0, carol, 3, 0, null);
 
     const alice_continue_1 = string_hex(__test.ecdsa_sign(
         alice_skey, poker2_commit_timeout.get_continue_hash(
@@ -421,18 +451,16 @@ function test_commit_timeout()
             bob, 80, string_hex(checkpoint_1))));
 
     poker2_commit_timeout.settle(
-        [commits_1, [], []], [signature_0, null, null],
-        [[null, null, null, null], [null, null, null, null],
-         [null, null, null, null]],
+        [commits_1, []], [signature_0, null],
+        [[null, null, null, null], [null, null, null, null]],
         [[], [], [], []], [], [[1, 0, 0, 0]],
         [[0, alice_continue_1], [1, bob_continue_1]],
         {__test: true, user: dealer, assert_fail: true}
     );
 
     poker2_commit_timeout.settle(
-        [commits_1, [], []], [signature_1, null, null],
-        [[null, null, null, null], [null, null, null, null],
-         [null, null, null, null]],
+        [commits_1, []], [signature_1, null],
+        [[null, null, null, null], [null, null, null, null]],
         [[], [], [], []], [], [[1, 0, 0, 0]],
         [[0, alice_continue_1], [1, bob_continue_1]],
         {__test: true, user: dealer}
@@ -507,3 +535,5 @@ function test_commit_timeout()
 test_action_timeout();
 test_commit_timeout();
 test_emergency_refund();
+test_single_player_deactivate();
+test_join_during_hand();
