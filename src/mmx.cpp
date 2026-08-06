@@ -1339,7 +1339,7 @@ int main(int argc, char** argv)
 			{
 				mmx::addr_t address;
 				if(!vnx::read_config("$3", address)) {
-					vnx::log_error() << "Missing address argument! (node history <address> [since])";
+					vnx::log_error() << "Missing address argument! (node " << command << " <address> [since])";
 					goto failed;
 				}
 				mmx::query_filter_t filter;

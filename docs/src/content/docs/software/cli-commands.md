@@ -56,6 +56,8 @@ To check the balance of an address: `mmx node balance <address>`
 
 To check the history of an address since a particlar block height: `mmx node history <address> <block_height>`
 
+To csv export the history of an address since a particlar block height: `mmx node history_csv <address> <block_height>`
+
 To show all offers: `mmx node offers [open | closed]`
 
 To force a re-sync: `mmx node sync`
@@ -83,6 +85,8 @@ To get a list of all contract addresses: `mmx wallet get contracts`
 To get the mnemonic seed words of a wallet: `mmx wallet get seed`
 
 To show entire wallet activity : `mmx wallet log`
+
+To csv export entire wallet activity : `mmx wallet log_csv`
 
 To show recent wallet activity : `mmx wallet log -N <limit>`
 

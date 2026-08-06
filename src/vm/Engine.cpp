@@ -776,7 +776,8 @@ void Engine::memcpy(const uint64_t dst, const uint64_t src, const uint64_t count
 		case TYPE_STRING:
 		case TYPE_BINARY: {
 			const auto& sbin = (const binary_t&)svar;
-			if(sbin.size < offset + count) {
+			const uint64_t size = sbin.size;
+			if(offset > size || count > size - offset) {
 				throw std::logic_error("out of bounds read");
 			}
 			auto res = binary_t::unsafe_alloc(count, svar.type);

@@ -333,15 +333,19 @@ void cuda_recompute_init(bool enable, std::vector<int> device_list)
 
 	vnx::log_info() << "Using " << num_threads << " CPU threads for CUDA recompute";
 
+	int occupancy = 200;
+	vnx::read_config("cuda.occupancy", occupancy);
+
 	for(auto& info : g_device_list)
 	{
 		info.buffer_size = 256;
 		while(info.buffer_size < info.max_resident) {
 			info.buffer_size <<= 1;
 		}
-		info.buffer_size /= 2;
+		info.buffer_size /= 4;
 
-		const int num_threads = (info.max_resident * 3 + info.buffer_size - 1) / info.buffer_size;
+		const int num_threads = std::max<int>(1,
+				((info.max_resident * std::max(occupancy, 0)) / 100) / info.buffer_size);
 
 		for(int i = 0; i < num_threads; ++i) {
 			auto dev = std::make_shared<device_t>();

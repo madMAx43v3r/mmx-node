@@ -15,6 +15,7 @@
 #include <mmx/utils.h>
 
 #include <mmx/ChainParams.hxx>
+#include <mmx/Transaction.hxx>
 #include <mmx/contract/Data.hxx>
 #include <mmx/contract/Binary.hxx>
 #include <mmx/contract/MultiSig.hxx>
@@ -67,6 +68,31 @@ int main(int argc, char** argv)
 		vnx::test::expect((uint128(256) / 8).lower(), 32u);
 		vnx::test::expect((uint128(256) / 16).lower(), 16u);
 		vnx::test::expect(vnx::Variant(uint128((uint128_1 << 127) + 3)).to<uint128>(), uint128((uint128_1 << 127) + 3));
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("optional string JSON")
+	{
+		const auto output = vnx::from_string<txout_t>("{\"memo\": \"hello world\"}");
+		vnx::test::expect(bool(output.memo), true);
+		vnx::test::expect(*output.memo, "hello world");
+	}
+	{
+		const auto tx = vnx::from_string<Transaction>("{\"outputs\": [{\"memo\": \"hello world\"}]}");
+		vnx::test::expect(tx.outputs.size(), size_t(1));
+		vnx::test::expect(bool(tx.outputs[0].memo), true);
+		vnx::test::expect(*tx.outputs[0].memo, "hello world");
+	}
+	{
+		const auto params = ChainParams::create();
+		const auto without_memo = vnx::from_string<Transaction>(
+				"{\"inputs\": [{}], \"outputs\": [{}]}");
+		const auto with_memo = vnx::from_string<Transaction>(
+				"{\"inputs\": [{\"memo\": \"hello world\"}], "
+				"\"outputs\": [{\"memo\": \"hello world\"}]}");
+		vnx::test::expect(
+				with_memo.calc_cost(params) - without_memo.calc_cost(params),
+				2 * params->min_txfee_memo);
 	}
 	VNX_TEST_END()
 
@@ -438,6 +464,4 @@ int main(int argc, char** argv)
 
 	return vnx::test::done();
 }
-
-
 

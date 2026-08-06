@@ -1637,13 +1637,7 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 	else if(sub_path == "/farmer") {
 		const auto farmer_key = get_param<pubkey_t>(query, "id");
 		if(!farmer_key.is_zero()) {
-			auto since = get_param<uint32_t>(query, "since");
-			if(is_public) {
-				const auto max_delta = 3153600u;
-				if(curr_height > max_delta) {
-					since = std::max(since, curr_height - max_delta);
-				}
-			}
+			const auto since = get_param<uint32_t>(query, "since");
 			node->get_farmed_block_summary({farmer_key}, since,
 				[this, request_id, farmer_key](const farmed_block_summary_t& summary) {
 					vnx::Object out;

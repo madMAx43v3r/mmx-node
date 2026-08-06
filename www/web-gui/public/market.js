@@ -542,7 +542,7 @@ Vue.component('market-offers', {
 									</template>
 								</td>
 								<td>
-									<b>{{parseFloat((item.bid_balance_value * item.display_price).toPrecision(6))}}</b>&nbsp;
+									<b>{{item.ask_value}}</b>&nbsp;
 									<template v-if="item.ask_symbol == 'MMX'">MMX</template>
 									<template v-else>
 										<router-link :to="'/explore/address/' + item.ask_currency">
