@@ -17,6 +17,7 @@ Hardfork 2 introduces:
 - Proof-chain infusion into challenge and space-fork calculations.
 - A maximum space-fork interval, after which an infusion is forced.
 - Correct map and object key handling when values cross a contract boundary.
+- Canonical type tags for variants in transaction hashes.
 - The `SUPPORT_HARDFORK2` block support flag (`0x2`).
 
 ## Proof chain
@@ -110,6 +111,20 @@ height, nodes retain the original setup-before-load order to preserve consensus 
 
 The `mmx_compile` test harness always uses the corrected load-before-arguments order; it does not emulate the pre-fork
 behavior.
+
+## Transaction hash version 1
+
+Before hardfork 2, boolean, signed-integer, and unsigned-integer variants were written to transaction hashes without a
+type tag. Adjacent argument values could therefore have the same byte encoding despite having different VM semantics.
+For example, `[true, uint64(0)]` and `[uint64(1), false]` produced the same operation hash.
+
+Starting at hardfork 2, transactions must use version 1. Version-1 hashing prefixes boolean, signed 64-bit integer,
+and unsigned 64-bit integer variants with distinct type tags. The version is propagated recursively through arrays and
+objects and into operation and deployment hashes. Transactions below the activation height must use version 0, which
+preserves all historical transaction IDs.
+
+Wallets select the transaction version for the next block height. A version-0 transaction that has not been included
+before activation is no longer eligible for inclusion after hardfork 2.
 
 ## Block format and support flag
 

@@ -9,7 +9,7 @@ template<typename T>
 void static print_test(const std::string& testname, const T& value, const std::string& jsvalue) {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
+	WriteBytes out(&stream, 0);
 	write_field(out, "field_name", value);
 	out.flush();
 	const auto cppHex = vnx::to_hex_string(buffer.data(), buffer.size());

@@ -39,11 +39,11 @@ addr_t Executable::get_external(const std::string& name) const
 	return iter->second;
 }
 
-hash_t Executable::calc_hash(const vnx::bool_t& full_hash) const
+hash_t Executable::calc_hash(const vnx::bool_t& full_hash, const uint32_t& hash_version) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
+	WriteBytes out(&stream, hash_version);
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", 	version);

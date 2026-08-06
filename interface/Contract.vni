@@ -7,7 +7,7 @@ class Contract {
 	
 	bool is_valid() const;
 	
-	hash_t calc_hash(bool full_hash) const;
+	hash_t calc_hash(bool full_hash, uint hash_version) const;
 	
 	ulong num_bytes() const;
 	

@@ -12,7 +12,7 @@ class MultiSig extends mmx.Contract {
 	
 	bool is_valid() const;
 	
-	hash_t calc_hash(bool full_hash) const;
+	hash_t calc_hash(bool full_hash, uint hash_version) const;
 	
 	ulong num_bytes() const;
 	
@@ -21,4 +21,3 @@ class MultiSig extends mmx.Contract {
 	vnx.Variant read_field(string name) const;
 	
 }
-

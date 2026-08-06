@@ -608,6 +608,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	if(!tx->is_valid(params)) {
 		throw mmx::static_failure("invalid tx");
 	}
+	if(tx->version != get_transaction_version(params, context->height)) {
+		throw mmx::static_failure("invalid tx version");
+	}
 	if(tx->static_cost > params->max_tx_cost) {
 		throw mmx::static_failure("static_cost > max_tx_cost");
 	}

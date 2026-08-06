@@ -29,6 +29,11 @@ bool is_json(const vnx::Variant& var);
 
 uint64_t get_num_bytes(const vnx::Variant& var);
 
+inline uint32_t get_transaction_version(std::shared_ptr<const ChainParams> params, const uint32_t height)
+{
+	return height >= params->hardfork2_height ? 1 : 0;
+}
+
 inline
 std::shared_ptr<const ChainParams> get_params()
 {

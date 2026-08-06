@@ -22,6 +22,7 @@
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/WebData.hxx>
 #include <mmx/contract/MultiSig.hxx>
+#include <mmx/operation/Execute.hxx>
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/solution/PubKey.hxx>
 
@@ -33,6 +34,7 @@
 
 #include <map>
 #include <iostream>
+#include <limits>
 #include <random>
 
 void expect_throw(const std::function<void()>& code)
@@ -276,42 +278,122 @@ int main(int argc, char** argv)
 
 	VNX_TEST_BEGIN("write_bytes()")
 	{
-		{
-			const bool value = true;
+		auto serialize = [](const auto& value, const int version) {
 			std::vector<uint8_t> tmp;
 			vnx::VectorOutputStream stream(&tmp);
-			vnx::OutputBuffer out(&stream);
+			WriteBytes out(&stream, version);
 			write_bytes(out, value);
 			out.flush();
+			return tmp;
+		};
+		{
+			const bool value = true;
+			const auto tmp = serialize(value, 0);
 			vnx::test::expect(tmp.size(), 1u);
 		}
 		{
 			const vnx::Variant value(true);
-			std::vector<uint8_t> tmp;
-			vnx::VectorOutputStream stream(&tmp);
-			vnx::OutputBuffer out(&stream);
-			write_bytes(out, value);
-			out.flush();
+			const auto tmp = serialize(value, 0);
 			vnx::test::expect(tmp.size(), 1u);
 		}
 		{
 			const vnx::Variant value(1337);
-			std::vector<uint8_t> tmp;
-			vnx::VectorOutputStream stream(&tmp);
-			vnx::OutputBuffer out(&stream);
-			write_bytes(out, value);
-			out.flush();
+			const auto tmp = serialize(value, 0);
 			vnx::test::expect(tmp.size(), 8u);
 		}
 		{
 			const vnx::Variant value(-1337);
-			std::vector<uint8_t> tmp;
-			vnx::VectorOutputStream stream(&tmp);
-			vnx::OutputBuffer out(&stream);
-			write_bytes(out, value);
-			out.flush();
+			const auto tmp = serialize(value, 0);
 			vnx::test::expect(tmp.size(), 8u);
 		}
+		{
+			const std::vector<vnx::Variant> lhs = {vnx::Variant(true), vnx::Variant(uint64_t(0))};
+			const std::vector<vnx::Variant> rhs = {vnx::Variant(uint64_t(1)), vnx::Variant(false)};
+			vnx::test::expect(serialize(lhs, 0) == serialize(rhs, 0), true);
+			vnx::test::expect(serialize(lhs, 1) != serialize(rhs, 1), true);
+		}
+		{
+			const vnx::Variant lhs(int64_t(-1));
+			const vnx::Variant rhs(std::numeric_limits<uint64_t>::max());
+			vnx::test::expect(serialize(lhs, 0) == serialize(rhs, 0), true);
+			vnx::test::expect(serialize(lhs, 1) != serialize(rhs, 1), true);
+		}
+		{
+			auto lhs = mmx::operation::Execute::create();
+			auto rhs = mmx::operation::Execute::create();
+			lhs->method = rhs->method = "test";
+			lhs->args = {vnx::Variant(true), vnx::Variant(uint64_t(0))};
+			rhs->args = {vnx::Variant(uint64_t(1)), vnx::Variant(false)};
+			vnx::test::expect(lhs->calc_hash(false, 0) == rhs->calc_hash(false, 0), true);
+			vnx::test::expect(lhs->calc_hash(false, 1) != rhs->calc_hash(false, 1), true);
+		}
+		{
+			auto lhs = mmx::contract::Executable::create();
+			auto rhs = mmx::contract::Executable::create();
+			lhs->init_args = {vnx::Variant(true), vnx::Variant(uint64_t(0))};
+			rhs->init_args = {vnx::Variant(uint64_t(1)), vnx::Variant(false)};
+			vnx::test::expect(lhs->calc_hash(false, 0) == rhs->calc_hash(false, 0), true);
+			vnx::test::expect(lhs->calc_hash(false, 1) != rhs->calc_hash(false, 1), true);
+		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("transaction hash version")
+	{
+		auto params = mmx::ChainParams::create();
+		params->hardfork2_height = 100;
+		vnx::test::expect(get_transaction_version(params, 99), 0u);
+		vnx::test::expect(get_transaction_version(params, 100), 1u);
+
+		auto make_tx = [params](const uint32_t version, const std::vector<vnx::Variant>& args) {
+			auto op = mmx::operation::Execute::create();
+			op->method = "test";
+			op->args = args;
+
+			auto tx = mmx::Transaction::create();
+			tx->version = version;
+			tx->network = params->network;
+			tx->nonce = 1;
+			tx->execute.push_back(op);
+			tx->static_cost = tx->calc_cost(params);
+			tx->id = tx->calc_hash();
+			tx->content_hash = tx->calc_hash(true);
+			return tx;
+		};
+
+		const std::vector<vnx::Variant> lhs = {vnx::Variant(true), vnx::Variant(uint64_t(0))};
+		const std::vector<vnx::Variant> rhs = {vnx::Variant(uint64_t(1)), vnx::Variant(false)};
+		const auto lhs_v0 = make_tx(0, lhs);
+		const auto rhs_v0 = make_tx(0, rhs);
+		const auto lhs_v1 = make_tx(1, lhs);
+		const auto rhs_v1 = make_tx(1, rhs);
+		const std::vector<vnx::Variant> uint_args = {vnx::Variant(uint64_t(1) << 63)};
+		const std::vector<vnx::Variant> int_args = {vnx::Variant(std::numeric_limits<int64_t>::min())};
+		const auto uint_v0 = make_tx(0, uint_args);
+		const auto int_v0 = make_tx(0, int_args);
+		const auto uint_v1 = make_tx(1, uint_args);
+		const auto int_v1 = make_tx(1, int_args);
+
+		vnx::test::expect(lhs_v0->is_valid(params), true);
+		vnx::test::expect(rhs_v0->is_valid(params), true);
+		vnx::test::expect(lhs_v1->is_valid(params), true);
+		vnx::test::expect(rhs_v1->is_valid(params), true);
+		vnx::test::expect(lhs_v0->id == rhs_v0->id, true);
+		vnx::test::expect(lhs_v1->id != rhs_v1->id, true);
+		vnx::test::expect(uint_v0->id == int_v0->id, true);
+		vnx::test::expect(uint_v1->id != int_v1->id, true);
+
+		auto invalid_deploy = mmx::contract::Executable::create();
+		vnx::test::expect(invalid_deploy->is_valid(), false);
+		auto deploy_tx = mmx::Transaction::create();
+		deploy_tx->version = 1;
+		deploy_tx->network = params->network;
+		deploy_tx->nonce = 1;
+		deploy_tx->deploy = invalid_deploy;
+		deploy_tx->static_cost = deploy_tx->calc_cost(params);
+		deploy_tx->id = deploy_tx->calc_hash();
+		deploy_tx->content_hash = deploy_tx->calc_hash(true);
+		vnx::test::expect(deploy_tx->is_valid(params), true);
 	}
 	VNX_TEST_END()
 
@@ -464,4 +546,3 @@ int main(int argc, char** argv)
 
 	return vnx::test::done();
 }
-
