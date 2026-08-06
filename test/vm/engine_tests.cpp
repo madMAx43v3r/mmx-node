@@ -91,6 +91,7 @@ int main(int argc, char** argv)
 		test_serialize(std::make_unique<vm::uint_t>(uint256_t(1) << 128));
 		test_serialize(std::make_unique<vm::uint_t>(uint256_max));
 		test_serialize(vm::binary_t::alloc("test"));
+		test_serialize(vm::binary_t::alloc(0, vm::TYPE_BINARY));
 		test_serialize(vm::binary_t::alloc(10, vm::TYPE_BINARY));
 		test_serialize(std::make_unique<vm::array_t>(-1));
 		test_serialize(std::make_unique<vm::map_t>());
@@ -106,6 +107,7 @@ int main(int argc, char** argv)
 		test_clone(std::make_unique<vm::ref_t>(uint64_t(-1)));
 		test_clone(std::make_unique<vm::uint_t>(uint256_max));
 		test_clone(vm::binary_t::alloc("test"));
+		test_clone(vm::binary_t::alloc(0, vm::TYPE_BINARY));
 		test_clone(vm::binary_t::alloc(10, vm::TYPE_BINARY));
 		test_clone(std::make_unique<vm::array_t>(-1));
 		test_clone(std::make_unique<vm::map_t>());
@@ -121,6 +123,7 @@ int main(int argc, char** argv)
 		test_compare(std::make_unique<vm::uint_t>());
 		test_compare(std::make_unique<vm::uint_t>(uint256_max));
 		test_compare(vm::binary_t::alloc("test"));
+		test_compare(vm::binary_t::alloc(0, vm::TYPE_BINARY));
 		test_compare(vm::binary_t::alloc(10, vm::TYPE_BINARY));
 		test_compare(std::make_unique<vm::array_t>());
 		test_compare(std::make_unique<vm::map_t>());
@@ -138,6 +141,14 @@ int main(int argc, char** argv)
 	VNX_TEST_BEGIN("stuff")
 	{
 		vnx::test::expect(vm::to_binary(hash_t(""))->to_hash(), hash_t(""));
+		{
+			auto var = vm::binary_t::alloc(nullptr, 0);
+			vnx::test::expect(var->size, uint32_t(0));
+			vnx::test::expect(var->capacity, uint32_t(0));
+			vnx::test::expect(var->data() != nullptr, true);
+			vnx::test::expect(var->to_string(), std::string());
+			vnx::test::expect(var->to_vector(), std::vector<uint8_t>());
+		}
 		{
 			auto var = vm::binary_t::alloc("test");
 			var = vm::binary_t::alloc("test1");
@@ -382,7 +393,6 @@ int main(int argc, char** argv)
 
 	return vnx::test::done();
 }
-
 
 
 
