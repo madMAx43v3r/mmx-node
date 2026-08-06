@@ -23,7 +23,7 @@ const carol = string_bech32(sha256(carol_key));
 const table_addr = poker2.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100, 1]
 });
 
 function make_seeds(name)
@@ -149,25 +149,26 @@ function main()
     const carol_status = poker2.get_player_status(carol);
 
     assert(alice_status.stack == 100 && alice_status.bet == 100);
-    assert(bob_status.stack == 60 && bob_status.bet == 60);
+    assert(bob_status.stack == 59 && bob_status.bet == 60);
     assert(carol_status.stack == 198 && carol_status.bet == 200);
 
-    // Matched pots: 180 main + 80 side. The 1% rake is 2. The first
-    // roster entries receive deterministic split remainders.
+    // Matched pots: 180 main + 80 side. The 1% rake rounds to 2, so the
+    // three-player minimum of 3 applies. The first roster entries receive
+    // deterministic split remainders.
     assert(alice_status.payout == 100);
-    assert(bob_status.payout == 60);
+    assert(bob_status.payout == 59);
     assert(carol_status.payout == 198);
-    assert(poker2.get_table_status().dealer_rake == 2);
+    assert(poker2.get_table_status().dealer_rake == 3);
 
-    assert(__test.get_balance(table_addr, MMX) == 358);
-    assert(__test.get_balance(dealer, MMX) == 2);
+    assert(__test.get_balance(table_addr, MMX) == 357);
+    assert(__test.get_balance(dealer, MMX) == 3);
 
     poker2.claim({__test: true, user: alice});
     poker2.claim({__test: true, user: bob});
     poker2.claim({__test: true, user: carol});
 
     assert(__test.get_balance(alice, MMX) == 100);
-    assert(__test.get_balance(bob, MMX) == 60);
+    assert(__test.get_balance(bob, MMX) == 59);
     assert(__test.get_balance(carol, MMX) == 198);
     assert(__test.get_balance(table_addr, MMX) == 0);
 }

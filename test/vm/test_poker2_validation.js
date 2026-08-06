@@ -9,6 +9,7 @@ interface poker2_continue_validation;
 interface poker2_bet_validation;
 interface poker2_card_validation;
 interface poker2_refund_history_validation;
+interface poker2_large_rake_validation;
 
 const MMX = string_bech32(bech32());
 const OTHER = string_bech32(sha256("poker2_validation_other_currency"));
@@ -16,6 +17,13 @@ const binary = __test.compile("src/contract/poker2.js");
 
 const dealer_key = __test.get_public_key(sha256("poker2_validation_dealer"));
 const dealer = string_bech32(sha256(dealer_key));
+
+poker2_large_rake_validation.__deploy({
+    __type: "mmx.contract.Executable",
+    binary: binary,
+    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 11,
+                {__test: true, assert_fail: true}]
+});
 
 const alice_skey = sha256("poker2_validation_alice");
 const bob_skey = sha256("poker2_validation_bob");
@@ -30,49 +38,49 @@ const carol = string_bech32(sha256(carol_key));
 const join_addr = poker2_join_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
 });
 
 const lifecycle_addr = poker2_lifecycle_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
 });
 
 const waiting_addr = poker2_waiting_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100, 1]
 });
 
 const settle_addr = poker2_settle_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 4]
 });
 
 const continue_addr = poker2_continue_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
 });
 
 const bet_addr = poker2_bet_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
 });
 
 poker2_card_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
 });
 
 const refund_history_addr = poker2_refund_history_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100]
+    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
 });
 
 function test_join_validation()
@@ -84,6 +92,7 @@ function test_join_validation()
     assert(string_bech32(config.dealer) == dealer);
     assert(config.small_blind == 10 && config.min_stack == 50);
     assert(config.max_players == 2 && config.rake_bps == 100);
+    assert(config.min_rake == 1);
 
     poker2_join_validation.join("small", string_hex(alice_key), {
         __test: true, user: alice, deposit: [49, MMX], assert_fail: true
@@ -223,8 +232,9 @@ function test_settlement_authorization()
     );
 
     assert(poker2_settle_validation.get_num_active() == 0);
-    assert(poker2_settle_validation.get_player_status(alice).stack == 100);
-    assert(poker2_settle_validation.get_player_status(bob).stack == 100);
+    assert(poker2_settle_validation.get_player_status(alice).stack == 96);
+    assert(poker2_settle_validation.get_player_status(bob).stack == 96);
+    assert(poker2_settle_validation.get_table_status().dealer_rake == 8);
     poker2_settle_validation.claim({__test: true, user: alice});
     poker2_settle_validation.claim({__test: true, user: bob});
     assert(__test.get_balance(settle_addr, MMX) == 0);
@@ -250,13 +260,13 @@ function test_continuation_validation()
 
     const alice_continue = string_hex(__test.ecdsa_sign(
         alice_skey, poker2_continue_validation.get_continue_hash(
-            alice, 100, string_hex(checkpoint))));
+            alice, 99, string_hex(checkpoint))));
     const bad_bob_continue = string_hex(__test.ecdsa_sign(
         alice_skey, poker2_continue_validation.get_continue_hash(
-            bob, 100, string_hex(checkpoint))));
+            bob, 99, string_hex(checkpoint))));
     const bob_continue = string_hex(__test.ecdsa_sign(
         bob_skey, poker2_continue_validation.get_continue_hash(
-            bob, 100, string_hex(checkpoint))));
+            bob, 99, string_hex(checkpoint))));
 
     const commitments = [[], []];
     const signatures = [null, null];
@@ -289,7 +299,7 @@ function test_continuation_validation()
         [[0, alice_continue], [1, bob_continue]],
         {__test: true, user: dealer, assert_fail: true}
     );
-    assert(__test.get_balance(continue_addr, MMX) == 200);
+    assert(__test.get_balance(continue_addr, MMX) == 198);
 }
 
 function test_seed_and_bet_validation()

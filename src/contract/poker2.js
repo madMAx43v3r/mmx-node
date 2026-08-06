@@ -8,6 +8,9 @@ import {equals, sort, reverse, compare} from "std";
 // signed cumulative bet. After each settlement, signed continuations keep the
 // resulting balances at the table for another hand. Other players become
 // inactive and may withdraw manually.
+// The dealer receives the greater of the percentage rake and min_rake times
+// the hand's player count. If no player remains eligible to win, every hand
+// participant pays min_rake after their bets are returned.
 //
 // settle() arguments are arrays in active_players order unless noted
 // otherwise. Players who join after a hand starts enter waiting_players and
@@ -46,6 +49,7 @@ var max_players;            // maximum number of players, must be between 2 and 
 var start_delay;            // blocks after second player joins before game starts
 var game_timeout;           // blocks after start before emergency refund is allowed
 var rake_bps;               // 100 bps = 1%
+var min_rake;               // minimum currency amount paid per player and hand
 
 var table_open = true;
 var start_height = null;
@@ -62,7 +66,7 @@ var transcript_hash = null;
 var dealer_rake = 0;
 
 function init(currency_, dealer_, small_blind_, min_stack_blinds_, max_players_,
-              start_delay_, game_timeout_, rake_bps_ = 100)
+              start_delay_, game_timeout_, rake_bps_, min_rake_)
 {
     currency = bech32(currency_);
     dealer = bech32(dealer_);
@@ -71,6 +75,7 @@ function init(currency_, dealer_, small_blind_, min_stack_blinds_, max_players_,
     start_delay = uint(start_delay_);
     game_timeout = uint(game_timeout_);
     rake_bps = uint(rake_bps_);
+    min_rake = uint(min_rake_);
 
     assert(dealer != bech32(), "invalid dealer");
     assert(small_blind > 0, "invalid small blind");
@@ -81,6 +86,7 @@ function init(currency_, dealer_, small_blind_, min_stack_blinds_, max_players_,
     assert(start_delay > 0, "invalid start delay");
     assert(game_timeout > 0, "invalid game timeout");
     assert(rake_bps <= 10000, "invalid rake");
+    assert(min_rake <= small_blind, "invalid minimum rake");
 }
 
 // Registers a new player at any time. Before a hand starts they join its active
@@ -262,6 +268,7 @@ function get_config() const public
         start_delay: start_delay,
         game_timeout: game_timeout,
         rake_bps: rake_bps,
+        min_rake: min_rake,
     };
 }
 
@@ -1118,23 +1125,41 @@ function allocate_payouts(ranks)
         }
     }
 
-    dealer_rake = (matched_total * rake_bps) / 10000;
+    const minimum_rake = min_rake * size(active_players);
+    assert(minimum_rake / size(active_players) == min_rake,
+           "minimum rake overflow");
 
-    var matched_seen = 0;
-    var rake_seen = 0;
-    for(var layer = 0; layer < size(layer_amounts); layer++) {
-        const amount = layer_amounts[layer];
-        const winners = layer_winners[layer];
+    if(matched_total > 0) {
+        dealer_rake = (matched_total * rake_bps) / 10000;
+        if(dealer_rake < minimum_rake) {
+            dealer_rake = minimum_rake;
+        }
+        assert(dealer_rake <= matched_total, "minimum rake exceeds pot");
 
-        matched_seen += amount;
-        const rake_until = dealer_rake * matched_seen / matched_total;
-        const layer_rake = rake_until - rake_seen;
-        rake_seen = rake_until;
+        var matched_seen = 0;
+        var rake_seen = 0;
+        for(var layer = 0; layer < size(layer_amounts); layer++) {
+            const amount = layer_amounts[layer];
+            const winners = layer_winners[layer];
 
-        const net = amount - layer_rake;
-        for(var i = 0; i < size(winners); i++) {
-            get_hand_player(winners[i]).payout +=
-                get_split_amount(net, size(winners), i);
+            matched_seen += amount;
+            const rake_until = dealer_rake * matched_seen / matched_total;
+            const layer_rake = rake_until - rake_seen;
+            rake_seen = rake_until;
+
+            const net = amount - layer_rake;
+            for(var i = 0; i < size(winners); i++) {
+                get_hand_player(winners[i]).payout +=
+                    get_split_amount(net, size(winners), i);
+            }
+        }
+    } else {
+        assert(get_num_hand_active() == 0, "winner has no matched pot");
+        dealer_rake = minimum_rake;
+        for(var i = 0; i < size(active_players); i++) {
+            const player = get_hand_player(i);
+            assert(player.payout >= min_rake, "minimum rake exceeds stack");
+            player.payout -= min_rake;
         }
     }
 
