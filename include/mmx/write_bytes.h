@@ -157,11 +157,7 @@ inline void write_bytes(WriteBytes& out, const vnx::Variant& value)
 	} else if(value.is_object()) {
 		write_bytes(out, value.to_object());
 	} else {
-		if(out.version >= 1) {
-			throw std::logic_error("unsupported variant type");
-		} else {
-			write_bytes(out, value.data);
-		}
+		write_bytes(out, value.data);
 	}
 }
 

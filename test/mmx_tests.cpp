@@ -319,6 +319,10 @@ int main(int argc, char** argv)
 			vnx::test::expect(serialize(lhs, 1) != serialize(rhs, 1), true);
 		}
 		{
+			const vnx::Variant value(1.5);
+			vnx::test::expect(serialize(value, 1).empty(), false);
+		}
+		{
 			auto lhs = mmx::operation::Execute::create();
 			auto rhs = mmx::operation::Execute::create();
 			lhs->method = rhs->method = "test";
