@@ -8,6 +8,7 @@
 #ifndef INCLUDE_MMX_WRITE_BYTES_H_
 #define INCLUDE_MMX_WRITE_BYTES_H_
 
+#include <mmx/utils.h>
 #include <mmx/hash_t.hpp>
 #include <mmx/uint128.hpp>
 #include <mmx/txin_t.hxx>
@@ -133,6 +134,11 @@ inline void write_bytes(WriteBytes& out, const vnx::Buffer& value)
 
 inline void write_bytes(WriteBytes& out, const vnx::Variant& value)
 {
+	if(out.version >= 1 && !is_json(value)) {
+		// non-native type, preface to avoid hash collision with other types
+		write_bytes_cstr(out, "variant<>");
+	}
+
 	if(value.is_null()) {
 		write_bytes_cstr(out, "NULL");
 	} else if(value.is_bool()) {

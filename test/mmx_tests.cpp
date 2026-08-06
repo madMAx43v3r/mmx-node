@@ -320,7 +320,24 @@ int main(int argc, char** argv)
 		}
 		{
 			const vnx::Variant value(1.5);
-			vnx::test::expect(serialize(value, 1) == serialize(value.data, 1), true);
+			vnx::test::expect(is_json(value), false);
+			vnx::test::expect(serialize(value, 1).empty(), false);
+		}
+		{
+			const vnx::Variant valid("test");
+			const vnx::Variant invalid(std::vector<int8_t>{'t', 'e', 's', 't'});
+			vnx::test::expect(is_json(valid), true);
+			vnx::test::expect(is_json(invalid), false);
+			vnx::test::expect(serialize(valid, 0) == serialize(invalid, 0), true);
+			vnx::test::expect(serialize(valid, 1) != serialize(invalid, 1), true);
+		}
+		{
+			const vnx::Variant valid(std::vector<vnx::Variant>{vnx::Variant(uint64_t(1))});
+			const vnx::Variant invalid(std::vector<uint64_t>{1});
+			vnx::test::expect(is_json(valid), true);
+			vnx::test::expect(is_json(invalid), false);
+			vnx::test::expect(serialize(valid, 0) == serialize(invalid, 0), true);
+			vnx::test::expect(serialize(valid, 1) != serialize(invalid, 1), true);
 		}
 		{
 			auto lhs = mmx::operation::Execute::create();
