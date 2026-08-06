@@ -18,11 +18,19 @@ const binary = __test.compile("src/contract/poker2.js");
 const dealer_key = __test.get_public_key(sha256("poker2_validation_dealer"));
 const dealer = string_bech32(sha256(dealer_key));
 
+function make_init_args(min_stack_blinds, max_players, min_rake, assert_fail = false)
+{
+    const args = [MMX, dealer, 10, min_stack_blinds, max_players, 5, 100, 100, min_rake];
+    if(assert_fail) {
+        push(args, {__test: true, assert_fail: true});
+    }
+    return args;
+}
+
 poker2_large_rake_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 11,
-                {__test: true, assert_fail: true}]
+    init_args: make_init_args(5, 2, 11, true)
 });
 
 const alice_skey = sha256("poker2_validation_alice");
@@ -38,49 +46,49 @@ const carol = string_bech32(sha256(carol_key));
 const join_addr = poker2_join_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
+    init_args: make_init_args(5, 2, 1)
 });
 
 const lifecycle_addr = poker2_lifecycle_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
+    init_args: make_init_args(5, 2, 1)
 });
 
 const waiting_addr = poker2_waiting_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100, 1]
+    init_args: make_init_args(5, 3, 1)
 });
 
 const settle_addr = poker2_settle_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 4]
+    init_args: make_init_args(5, 2, 4)
 });
 
 const continue_addr = poker2_continue_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
+    init_args: make_init_args(5, 2, 1)
 });
 
 const bet_addr = poker2_bet_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
+    init_args: make_init_args(5, 2, 1)
 });
 
 poker2_card_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
+    init_args: make_init_args(5, 2, 1)
 });
 
 const refund_history_addr = poker2_refund_history_validation.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 2, 5, 100, 100, 1]
+    init_args: make_init_args(5, 2, 1)
 });
 
 function test_join_validation()
@@ -91,6 +99,7 @@ function test_join_validation()
     assert(string_bech32(config.currency) == MMX);
     assert(string_bech32(config.dealer) == dealer);
     assert(config.small_blind == 10 && config.min_stack == 50);
+    assert(config.min_stack_blinds == null);
     assert(config.max_players == 2 && config.rake_bps == 100);
     assert(config.min_rake == 1);
 

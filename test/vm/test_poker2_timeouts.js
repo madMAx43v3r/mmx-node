@@ -24,34 +24,39 @@ const bob = string_bech32(sha256(bob_key));
 const carol = string_bech32(sha256(carol_key));
 const dave = string_bech32(sha256(dave_key));
 
+function make_init_args(min_stack_blinds, rake_bps)
+{
+    return [MMX, dealer, 10, min_stack_blinds, 3, 5, 100, rake_bps, 1];
+}
+
 const timeout_addr = poker2_timeout.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 500, 1]
+    init_args: make_init_args(5, 500)
 });
 
 const commit_timeout_addr = poker2_commit_timeout.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 9, 3, 5, 100, 100, 1]
+    init_args: make_init_args(9, 100)
 });
 
 const refund_addr = poker2_refund.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100, 1]
+    init_args: make_init_args(5, 100)
 });
 
 const deactivate_addr = poker2_deactivate.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100, 1]
+    init_args: make_init_args(5, 100)
 });
 
 const late_join_addr = poker2_late_join.__deploy({
     __type: "mmx.contract.Executable",
     binary: binary,
-    init_args: [MMX, dealer, 10, 5, 3, 5, 100, 100, 1]
+    init_args: make_init_args(5, 100)
 });
 
 function make_seeds(name)

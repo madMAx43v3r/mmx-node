@@ -41,15 +41,16 @@ import {equals, sort, reverse, compare} from "std";
 //                   30 already folded, 31 all-in
 //   phase 4 show:   event 1 valid, 2 timeout, 3 already folded, 4 mucked
 
-var currency;               // bech32 address of the currency used for deposits and payouts
-var dealer;                 // bech32 address of the dealer, who receives the rake
-var small_blind;            // currency units, must be > 0
-var min_stack;              // initial buy-in minimum, in currency units
-var max_players;            // maximum number of players, must be between 2 and 10 inclusive
-var start_delay;            // blocks after second player joins before game starts
-var game_timeout;           // blocks after start before emergency refund is allowed
-var rake_bps;               // 100 bps = 1%
-var min_rake;               // minimum currency amount paid per player and hand
+// currency:     bech32 address of the currency used for deposits and payouts
+// dealer:       bech32 address of the dealer, who receives the rake
+// small_blind:  currency units, must be > 0
+// min_stack:    initial buy-in minimum, in currency units
+// max_players:  maximum number of players, must be between 2 and 10 inclusive
+// start_delay:  blocks after second player joins before game starts
+// game_timeout: blocks after start before emergency refund is allowed
+// rake_bps:     100 bps = 1%
+// min_rake:     minimum currency amount paid per player and hand
+var config = {};
 
 var table_open = true;
 var start_height = null;
@@ -65,28 +66,29 @@ var board = null;
 var transcript_hash = null;
 var dealer_rake = 0;
 
-function init(currency_, dealer_, small_blind_, min_stack_blinds_, max_players_,
-              start_delay_, game_timeout_, rake_bps_, min_rake_)
+function init(currency, dealer, small_blind, min_stack_blinds, max_players,
+              start_delay, game_timeout, rake_bps, min_rake)
 {
-    currency = bech32(currency_);
-    dealer = bech32(dealer_);
-    small_blind = uint(small_blind_);
-    max_players = uint(max_players_);
-    start_delay = uint(start_delay_);
-    game_timeout = uint(game_timeout_);
-    rake_bps = uint(rake_bps_);
-    min_rake = uint(min_rake_);
+    min_stack_blinds = uint(min_stack_blinds);
+    config.currency = bech32(currency);
+    config.dealer = bech32(dealer);
+    config.small_blind = uint(small_blind);
+    config.min_stack = min_stack_blinds * config.small_blind;
+    config.max_players = uint(max_players);
+    config.start_delay = uint(start_delay);
+    config.game_timeout = uint(game_timeout);
+    config.rake_bps = uint(rake_bps);
+    config.min_rake = uint(min_rake);
 
-    assert(dealer != bech32(), "invalid dealer");
-    assert(small_blind > 0, "invalid small blind");
-    assert(uint(min_stack_blinds_) >= 2, "invalid minimum stack");
-    min_stack = uint(min_stack_blinds_) * small_blind;
-    assert(min_stack / small_blind == uint(min_stack_blinds_), "minimum stack overflow");
-    assert(max_players >= 2 && max_players <= 10, "invalid player limit");
-    assert(start_delay > 0, "invalid start delay");
-    assert(game_timeout > 0, "invalid game timeout");
-    assert(rake_bps <= 10000, "invalid rake");
-    assert(min_rake <= small_blind, "invalid minimum rake");
+    assert(config.dealer != bech32(), "invalid dealer");
+    assert(config.small_blind > 0, "invalid small blind");
+    assert(min_stack_blinds >= 2, "invalid minimum stack");
+    assert(config.min_stack / config.small_blind == min_stack_blinds, "minimum stack overflow");
+    assert(config.max_players >= 2 && config.max_players <= 10, "invalid player limit");
+    assert(config.start_delay > 0, "invalid start delay");
+    assert(config.game_timeout > 0, "invalid game timeout");
+    assert(config.rake_bps <= 10000, "invalid rake");
+    assert(config.min_rake <= config.small_blind, "invalid minimum rake");
 }
 
 // Registers a new player at any time. Before a hand starts they join its active
@@ -97,18 +99,17 @@ function join(name, public_key) public payable
 {
     assert(table_open, "table is closed");
     assert(this.user, "missing user");
-    assert(this.user != dealer, "dealer cannot play");
-    assert(this.deposit.currency == currency, "invalid currency");
-    assert(this.deposit.amount >= min_stack, "stack below minimum");
+    assert(this.user != config.dealer, "dealer cannot play");
+    assert(this.deposit.currency == config.currency, "invalid currency");
+    assert(this.deposit.amount >= config.min_stack, "stack below minimum");
     assert(player_map[this.user] == null, "already joined");
     assert(is_string(name) && size(name) > 0 && size(name) <= 24, "invalid name");
 
     const waiting = is_started();
     if(waiting) {
-        assert(get_num_active() + get_num_waiting() < max_players,
-               "next table full");
+        assert(get_num_active() + get_num_waiting() < config.max_players, "next table full");
     } else {
-        assert(get_num_active() < max_players, "table full");
+        assert(get_num_active() < config.max_players, "table full");
     }
 
     public_key = binary_hex(public_key);
@@ -155,16 +156,15 @@ function activate() public
     const player = get_player(this.user);
     assert(!player.active, "player already active");
     assert(!player.waiting, "activation already requested");
-    assert(player.stack >= small_blind, "stack below small blind");
+    assert(player.stack >= config.small_blind, "stack below small blind");
     player.withdrawn = false;
 
     if(is_started()) {
-        assert(get_num_active() + get_num_waiting() < max_players,
-               "next table full");
+        assert(get_num_active() + get_num_waiting() < config.max_players, "next table full");
         player.waiting = true;
         push(waiting_players, player.address);
     } else {
-        assert(get_num_active() < max_players, "table full");
+        assert(get_num_active() < config.max_players, "table full");
         player.active = true;
         push(active_players, player.address);
         if(get_num_active() == 2) {
@@ -205,7 +205,7 @@ function deactivate() public
 function top_up() public payable
 {
     assert(table_open, "table is closed");
-    assert(this.deposit.currency == currency, "invalid currency");
+    assert(this.deposit.currency == config.currency, "invalid currency");
     assert(this.deposit.amount > 0, "invalid deposit amount");
 
     const player = get_player(this.user);
@@ -220,9 +220,9 @@ function top_up() public payable
 function schedule_start()
 {
     assert(get_num_active() >= 2, "not enough active players");
-    start_height = this.height + start_delay;
+    start_height = this.height + config.start_delay;
     assert(start_height > this.height, "start height overflow");
-    refund_height = start_height + game_timeout;
+    refund_height = start_height + config.game_timeout;
     assert(refund_height > start_height, "refund height overflow");
 }
 
@@ -260,15 +260,15 @@ function get_table_status() const public
 function get_config() const public
 {
     return {
-        currency: currency,
-        dealer: dealer,
-        small_blind: small_blind,
-        min_stack: min_stack,
-        max_players: max_players,
-        start_delay: start_delay,
-        game_timeout: game_timeout,
-        rake_bps: rake_bps,
-        min_rake: min_rake,
+        currency: config.currency,
+        dealer: config.dealer,
+        small_blind: config.small_blind,
+        min_stack: config.min_stack,
+        max_players: config.max_players,
+        start_delay: config.start_delay,
+        game_timeout: config.game_timeout,
+        rake_bps: config.rake_bps,
+        min_rake: config.min_rake,
     };
 }
 
@@ -465,14 +465,14 @@ function settle(commitments, commit_signatures, reveals, betting,
                 shows, timeouts, continuations) public
 {
     assert(table_open, "table is closed");
-    assert(this.user == dealer, "only dealer can settle");
+    assert(this.user == config.dealer, "only dealer can settle");
     assert(is_started(), "game not started");
     assert(!is_expired(), "game expired");
     assert(get_num_active() >= 2, "not enough active players");
 
     const count = size(active_players);
     assert(count >= 2, "not enough players");
-    assert(count <= max_players, "too many active players");
+    assert(count <= config.max_players, "too many active players");
     assert(is_array(commitments) && size(commitments) == count,
            "invalid commitments");
     assert(is_array(commit_signatures) && size(commit_signatures) == count,
@@ -496,9 +496,9 @@ function settle(commitments, commit_signatures, reveals, betting,
         const player = get_hand_player(i);
         assert(player.active, "inactive player in active roster");
         assert(!player.waiting, "active player queued activation");
-        assert(player.stack >= small_blind, "active stack below small blind");
+        assert(player.stack >= config.small_blind, "active stack below small blind");
         player.in_hand = true;
-        player.bet = small_blind;
+        player.bet = config.small_blind;
         player.folded = false;
         player.payout = 0;
         push(ranks, null);
@@ -678,9 +678,8 @@ function settle(commitments, commit_signatures, reveals, betting,
                 player.public_key, signature),
                 "continuation signature verification failed");
             continuation_used[continuation_index] = true;
-            if(player.payout >= small_blind) {
-                assert(size(next_players) < max_players,
-                       "too many active players");
+            if(player.payout >= config.small_blind) {
+                assert(size(next_players) < config.max_players, "too many active players");
                 player.active = true;
                 push(next_players, player.address);
             } else {
@@ -700,9 +699,8 @@ function settle(commitments, commit_signatures, reveals, betting,
                "invalid waiting player state");
         player.payout = player.stack;
         player.waiting = false;
-        if(player.stack >= small_blind) {
-            assert(size(next_players) < max_players,
-                   "too many active players");
+        if(player.stack >= config.small_blind) {
+            assert(size(next_players) < config.max_players, "too many active players");
             player.active = true;
             push(next_players, player.address);
         }
@@ -723,7 +721,7 @@ function settle(commitments, commit_signatures, reveals, betting,
     assert_all_continuations_used(continuation_used);
 
     if(dealer_rake > 0) {
-        send(dealer, dealer_rake, currency, "poker_rake");
+        send(config.dealer, dealer_rake, config.currency, "poker_rake");
     }
 
     const next_hand_id = hand_id + 1;
@@ -796,7 +794,7 @@ function process_betting_round(round, epochs, checkpoint,
                     } else if(action == 1) {
                         assert(amount > player.bet, "bet did not increase");
                         assert(amount <= player.stack, "bet exceeds stack");
-                        assert(amount - player.bet >= small_blind
+                        assert(amount - player.bet >= config.small_blind
                                || amount == player.stack,
                                "bet increment below small blind");
                         assert(amount == target
@@ -1077,8 +1075,7 @@ function allocate_payouts(ranks)
     for(const address of active_players) {
         const player = get_player(address);
         assert(player.in_hand, "inactive player in active roster");
-        assert(player.bet >= small_blind && player.bet <= player.stack,
-               "invalid final bet");
+        assert(player.bet >= config.small_blind && player.bet <= player.stack, "invalid final bet");
         player.payout = player.stack - player.bet;
         total_stack += player.stack;
     }
@@ -1125,12 +1122,11 @@ function allocate_payouts(ranks)
         }
     }
 
-    const minimum_rake = min_rake * size(active_players);
-    assert(minimum_rake / size(active_players) == min_rake,
-           "minimum rake overflow");
+    const minimum_rake = config.min_rake * size(active_players);
+    assert(minimum_rake / size(active_players) == config.min_rake, "minimum rake overflow");
 
     if(matched_total > 0) {
-        dealer_rake = (matched_total * rake_bps) / 10000;
+        dealer_rake = (matched_total * config.rake_bps) / 10000;
         if(dealer_rake < minimum_rake) {
             dealer_rake = minimum_rake;
         }
@@ -1158,8 +1154,8 @@ function allocate_payouts(ranks)
         dealer_rake = minimum_rake;
         for(var i = 0; i < size(active_players); i++) {
             const player = get_hand_player(i);
-            assert(player.payout >= min_rake, "minimum rake exceeds stack");
-            player.payout -= min_rake;
+            assert(player.payout >= config.min_rake, "minimum rake exceeds stack");
+            player.payout -= config.min_rake;
         }
     }
 
@@ -1231,7 +1227,7 @@ function claim() public
     const amount = player.stack;
     player.stack = 0;
     player.withdrawn = true;
-    send(this.user, amount, currency, "poker_payout");
+    send(this.user, amount, config.currency, "poker_payout");
 }
 
 // If the dealer fails to settle the current hand, the emergency deadline
@@ -1260,7 +1256,7 @@ function refund() public
     const amount = player.stack;
     player.stack = 0;
     player.withdrawn = true;
-    send(this.user, amount, currency, "poker_refund");
+    send(this.user, amount, config.currency, "poker_refund");
 }
 
 // Poker hand evaluation ----------------------------------------------------
