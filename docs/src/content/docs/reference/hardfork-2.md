@@ -150,6 +150,31 @@ version 0, which preserves all historical transaction IDs.
 Wallets select the transaction version for the next block height. A version-0 transaction that has not been included
 before activation is no longer eligible for inclusion after hardfork 2.
 
+## Third-party wallet and exchange integration
+
+Exchanges and other services using the official MMX node and wallet software need to upgrade those components to a
+hardfork-2-compatible release before activation. Services that construct and sign raw transactions themselves need to
+update their transaction builder:
+
+1. Select transaction version 0 when targeting a block below `hardfork2_height`, and version 1 when targeting the
+   activation block or any later block. The node requires the version matching the candidate block height.
+2. Set the transaction version before calculating the transaction ID. Do not change it after signing.
+3. Sign the resulting transaction ID, attach the solutions, and then calculate the transaction `content_hash`.
+4. Rebuild and re-sign any pending version-0 withdrawal that was not included before activation. A version-0 transaction
+   cannot be carried across the activation boundary, and a version-1 transaction cannot be included before activation.
+
+For an ordinary transfer containing only inputs and outputs, the version field is the only hardfork-2 change to the
+transaction ID calculation. Contract calls and deployments must additionally implement the version-1 variant hashing
+rules described above.
+
+Custom multi-signature builders must not include unused or duplicate top-level solutions. A version-1 multi-signature
+solution may contain signatures only from contract owners, must use the contract's `num_required` value, and must use a
+public-key signature solution for every included owner.
+
+A service using the official node API does not need to implement the new block rules itself. A service that parses or
+validates blocks independently must also support the `proof_chain` header field and all activation-height rules in this
+document.
+
 ## Canonical transaction solutions
 
 Starting with transaction version 1, every top-level solution must be referenced by the sender, an input, or an
