@@ -23,7 +23,7 @@ int main(int arcv, char** argv)
 	db->revert(0);
 	auto storage = std::make_shared<vm::StorageCache>(backend);
 	{
-		vm::Engine engine(addr_t(), storage, false);
+		vm::Engine engine(addr_t(), storage, false, 1);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
 		engine.write(vm::MEM_CONST + 1, vm::uint_t(1337));
 		engine.write(vm::MEM_CONST + 2, vm::map_t());
@@ -60,7 +60,7 @@ int main(int arcv, char** argv)
 	storage->commit();
 	db->commit(1);
 	{
-		vm::Engine engine(addr_t(), storage, false);
+		vm::Engine engine(addr_t(), storage, false, 1);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
 		engine.write(vm::MEM_CONST + 1, vm::uint_t());
 		engine.write(vm::MEM_CONST + 2, vm::uint_t(1));
@@ -85,7 +85,7 @@ int main(int arcv, char** argv)
 	storage->commit();
 	db->commit(2);
 	{
-		vm::Engine engine(addr_t(), storage, true);
+		vm::Engine engine(addr_t(), storage, true, 1);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
 		engine.write(vm::MEM_CONST + 1, vm::uint_t());
 		engine.write(vm::MEM_CONST + 2, vm::uint_t(1));
@@ -109,7 +109,7 @@ int main(int arcv, char** argv)
 		std::cout << "Cost: " << engine.gas_used << std::endl;
 	}
 	{
-		vm::Engine engine(addr_t(), storage, true);
+		vm::Engine engine(addr_t(), storage, true, 1);
 		engine.write(vm::MEM_CONST + 0, vm::var_t());
 		engine.write(vm::MEM_CONST + 1, vm::uint_t());
 		engine.write(vm::MEM_CONST + 2, vm::uint_t(1));
@@ -132,5 +132,4 @@ int main(int arcv, char** argv)
 	}
 	return 0;
 }
-
 

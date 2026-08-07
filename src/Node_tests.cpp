@@ -57,7 +57,7 @@ std::shared_ptr<Block> Node::create_test_block(std::shared_ptr<const BlockHeader
 		if(!valid) {
 			out->reward_vote = 2;
 		}
-		out->hash = out->calc_hash();
+		out->hash = out->calc_hash(params);
 		out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
 		out->content_hash = out->calc_content_hash();
 		fork_to(prev_state);

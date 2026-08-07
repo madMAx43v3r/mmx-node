@@ -35,7 +35,7 @@ void expect(const vm::var_t* got, vm::varptr_t want) {
 
 std::shared_ptr<vm::Engine> new_engine(std::shared_ptr<vm::Storage> storage, bool read_only)
 {
-	auto engine = std::make_shared<vm::Engine>(addr_t(), storage, read_only);
+	auto engine = std::make_shared<vm::Engine>(addr_t(), storage, read_only, 1);
 	engine->gas_limit = 1000000;
 	engine->init();
 	return engine;

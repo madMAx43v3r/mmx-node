@@ -63,7 +63,6 @@ module Node implements vnx.addons.HttpComponent {
 	string router_name = "Router";
 	
 	addr_t mmx_usd_swap_addr;
-	string metalsdev_api_key;
 	
 	
 	@Permission(permission_e.PUBLIC)

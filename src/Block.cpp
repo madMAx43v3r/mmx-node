@@ -15,7 +15,7 @@
 
 namespace mmx {
 
-vnx::bool_t Block::is_valid() const
+vnx::bool_t Block::is_valid(std::shared_ptr<const ChainParams> params) const
 {
 	uint64_t static_cost_sum = 0;
 	uint64_t total_cost_sum = 0;
@@ -32,7 +32,7 @@ vnx::bool_t Block::is_valid() const
 		}
 		static_cost_sum += tx->static_cost;
 	}
-	return BlockHeader::is_valid()
+	return BlockHeader::is_valid(params)
 			&& static_cost == static_cost_sum
 			&& total_cost == total_cost_sum
 			&& tx_fees == tx_fees_sum
@@ -49,7 +49,7 @@ hash_t Block::calc_tx_hash() const
 	return calc_btree_hash(tmp);
 }
 
-void Block::finalize()
+void Block::finalize(std::shared_ptr<const ChainParams> params)
 {
 	static_cost = 0;
 	total_cost = 0;
@@ -63,7 +63,7 @@ void Block::finalize()
 	}
 	tx_count = tx_list.size();
 	tx_hash = calc_tx_hash();
-	hash = calc_hash();
+	hash = calc_hash(params);
 }
 
 std::shared_ptr<const BlockHeader> Block::get_header() const

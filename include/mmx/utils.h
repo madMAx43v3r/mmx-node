@@ -13,6 +13,7 @@
 #include <mmx/fixed128.hpp>
 #include <mmx/BlockHeader.hxx>
 #include <mmx/ChainParams.hxx>
+#include <mmx/txout_t.hxx>
 
 #include <vnx/Util.hpp>
 #include <vnx/TimeUtil.h>
@@ -21,6 +22,8 @@
 #include <uint128_t.h>
 #include <uint256_t.h>
 #include <cmath>
+#include <map>
+#include <unordered_map>
 
 
 namespace mmx {
@@ -113,6 +116,7 @@ bool check_plot_filter(
 inline
 bool check_space_fork(std::shared_ptr<const ChainParams> params, const hash_t& challenge, const hash_t& proof_hash)
 {
+	// starting with hardfork2: `proof_hash` is `proof_chain`
 	const hash_t infuse_hash(std::string("proof_infusion_check") + challenge + proof_hash);
 
 	return infuse_hash.to_uint256() % params->challenge_interval == 0;
@@ -120,19 +124,38 @@ bool check_space_fork(std::shared_ptr<const ChainParams> params, const hash_t& c
 
 inline
 hash_t calc_next_challenge(
-		std::shared_ptr<const ChainParams> params, const hash_t& challenge,
-		const uint32_t vdf_count, const hash_t& proof_hash, bool& is_space_fork)
+		std::shared_ptr<const ChainParams> params,
+		std::shared_ptr<const BlockHeader> prev,
+		std::shared_ptr<const BlockHeader> block,
+		bool& is_space_fork)
 {
-	hash_t out = challenge;
-	for(uint32_t i = 0; i < vdf_count; ++i) {
+	// Note: requires `block` fields to be set: height, vdf_count, proof_hash, proof_chain
+	hash_t out = prev->challenge;
+	for(uint32_t i = 0; i < block->vdf_count; ++i) {
 		out = hash_t(std::string("next_challenge") + out);
 	}
-	is_space_fork = check_space_fork(params, out, proof_hash);
+	// starting with hardfork2 `proof_hash` is `proof_chain`
+	const auto proof_hash = (block->height >= params->hardfork2_height ? block->proof_chain : block->proof_hash);
+
+	const bool is_forced = prev->space_fork_len + block->vdf_count > params->max_space_fork_len * params->challenge_interval;
+
+	is_space_fork = check_space_fork(params, out, proof_hash)
+			|| (is_forced && prev->height + 1 >= params->hardfork2_height);
 
 	if(is_space_fork) {
 		out = hash_t(std::string("challenge_infusion") + out + proof_hash);
 	}
 	return out;
+}
+
+inline
+hash_t calc_proof_chain(std::shared_ptr<const ChainParams> params, std::shared_ptr<const BlockHeader> prev, const hash_t& proof_hash)
+{
+	if(prev->height >= params->hardfork2_height) {
+		return hash_t(std::string("proof_chain") + prev->proof_chain + proof_hash);
+	} else {
+		return proof_hash;
+	}
 }
 
 inline
@@ -256,16 +279,17 @@ uint64_t calc_new_space_diff(std::shared_ptr<const ChainParams> params, std::sha
 		return prev->space_diff;			// should only happen at genesis
 	}
 	const uint32_t expected_count = prev->space_fork_len * params->avg_proof_count;
-
 	const uint64_t new_diff = (uint128_t(diff) * prev->space_fork_proofs) / expected_count;
 
-	int64_t delta = new_diff - diff;
-	delta /= std::max((16 * params->challenge_interval) / prev->space_fork_len, 1u);
+	const bool increase = prev->space_fork_proofs > expected_count;
+	const uint64_t delta = increase ? new_diff - diff : diff - new_diff;
+	const uint64_t divider = std::max((16 * params->challenge_interval) / prev->space_fork_len, 1u);
+	const uint64_t adjustment = std::max(delta / divider, uint64_t(1));
 
-	if(delta == 0) {
-		delta = (prev->space_fork_proofs > expected_count ? 1 : -1);
+	if(increase) {
+		return diff + adjustment;
 	}
-	return std::max<int64_t>(diff + delta, 1);
+	return diff > adjustment ? diff - adjustment : 1;
 }
 
 inline
@@ -323,6 +347,38 @@ inline int64_t get_time_ms() {
 
 inline int64_t get_time_us() {
 	return vnx::get_wall_time_micros();
+}
+
+inline
+uint32_t get_transaction_version(std::shared_ptr<const ChainParams> params, const uint32_t height)
+{
+	return height >= params->hardfork2_height ? 1 : 0;
+}
+
+inline
+void handle_implicit_deposit(
+		std::vector<txout_t>& outputs, const std::unordered_map<addr_t, uint128>& amounts,
+		const addr_t& address, const bool have_deploy, const bool hardfork2)
+{
+	const auto append = [&](const auto& entries) {
+		for(const auto& entry : entries) {
+			if(const auto& amount = entry.second) {
+				if(!have_deploy) {
+					throw std::logic_error("implicit deposit without deploy");
+				}
+				txout_t out;
+				out.address = address;
+				out.contract = entry.first;
+				out.amount = amount;
+				outputs.push_back(out);
+			}
+		}
+	};
+	if(hardfork2) {
+		append(std::map<addr_t, uint128>(amounts.begin(), amounts.end()));
+	} else {
+		append(amounts);
+	}
 }
 
 template<typename error_t>

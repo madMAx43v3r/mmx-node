@@ -19,6 +19,12 @@ The MMX smart contract language is a restricted subset of JavaScript with some a
 Objects are maps with string keys.
 :::
 
+:::note[Hardfork 2]
+Starting at [hardfork 2](../../reference/hardfork-2/), a callee's binary constants are loaded before map or object
+arguments are materialized. This ensures identical string keys use the same internal key addresses across contract
+boundaries.
+:::
+
 ## Deviations from JavaScript
 
 - `var` has local scope (behaves like `let`)

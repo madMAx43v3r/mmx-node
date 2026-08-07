@@ -24,7 +24,7 @@ hash_t ProofResponse::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
+	WriteBytes out(&stream, 0);
 
 	// Note: farmer_addr, harvester and lookup_time_ms are not hashed (local info only)
 

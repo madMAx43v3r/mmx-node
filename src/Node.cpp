@@ -231,7 +231,7 @@ void Node::main()
 
 	set_timer_millis(60 * 1000, std::bind(&Node::print_stats, this));
 	set_timer_millis(30 * 1000, std::bind(&Node::purge_tx_pool, this));
-	set_timer_millis(3600 * 1000, std::bind(&Node::update_control, this));
+	set_timer_millis(3600 * 1000, std::bind(&Node::update_control_deferred, this));
 	set_timer_millis(validate_interval_ms, std::bind(&Node::validate_new, this));
 
 	update_timer = set_timer_millis(update_interval_ms, std::bind(&Node::update, this));
@@ -343,10 +343,10 @@ void Node::init_chain()
 			throw std::logic_error("invalid genesis transaction");
 		}
 	}
-	block->finalize();
+	block->finalize(params);
 	block->content_hash = block->calc_content_hash();
 
-	if(!block->is_valid()) {
+	if(!block->is_valid(params)) {
 		throw std::logic_error("invalid genesis block");
 	}
 	apply(block, nullptr);
@@ -366,7 +366,7 @@ void Node::trigger_update()
 void Node::add_block(std::shared_ptr<const Block> block)
 {
 	try {
-		if(!block->is_valid()) {
+		if(!block->is_valid(params)) {
 			throw std::logic_error("invalid block");
 		}
 		// need to verify farmer_sig before adding to fork tree
@@ -1369,7 +1369,7 @@ void Node::reset()
 		// check consistency
 		while(true) {
 			if(auto block = get_block_at(height)) {
-				if(block->is_valid() && block->height == height) {
+				if(block->is_valid(params) && block->height == height) {
 					break;
 				} else {
 					log(WARN) << "Corrupted block at height " << height << ", reverting ...";
@@ -1875,7 +1875,7 @@ void Node::write_block(std::shared_ptr<const Block> block, const bool is_main)
 
 			std::vector<int64_t> tx_offsets;
 			if(auto block = read_block(*blocks, true, &tx_offsets)) {
-				if(!block->is_valid()) {
+				if(!block->is_valid(params)) {
 					throw std::logic_error("invalid block");
 				}
 			} else {

@@ -19,8 +19,10 @@ namespace vm {
 
 static const uint64_t MEM_HEAP_NEXT_ALLOC = MEM_HEAP + GLOBAL_NEXT_ALLOC;
 
-Engine::Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only)
+Engine::Engine(
+		const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only, const uint32_t protocol_version)
 	:	contract(contract),
+		protocol_version(protocol_version),
 		storage(std::make_shared<StorageProxy>(this, backend, read_only))
 {
 }
@@ -1370,8 +1372,13 @@ void Engine::exec(const instr_t& instr)
 			gas_used += INSTR_MUL_128_COST;
 		}
 		const uint256_t D = L * R;
-		if((instr.flags & OPFLAG_CATCH_OVERFLOW) && (D < L && D < R)) {
-			throw std::runtime_error("integer overflow");
+		if(instr.flags & OPFLAG_CATCH_OVERFLOW) {
+			const bool overflow = (protocol_version >= 1)
+					? L != uint256_0 && R > uint256_max / L
+					: D < L && D < R;
+			if(overflow) {
+				throw std::runtime_error("integer overflow");
+			}
 		}
 		write(dst, uint_t(D));
 		break;

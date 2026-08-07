@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 		const auto time_begin = vnx::get_wall_time_micros();
 
 		auto storage = std::make_shared<vm::StorageRAM>();
-		auto engine = std::make_shared<vm::Engine>(hash_t("__test"), storage, false);
+		auto engine = std::make_shared<vm::Engine>(hash_t("__test"), storage, false, 1);
 		engine->is_debug = verbose;
 		engine->gas_limit = gas_limit;
 
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
 
 			if(exec) {
 				const auto cache = std::make_shared<vm::StorageCache>(storage);
-				const auto child = std::make_shared<vm::Engine>(address, cache, false);
+				const auto child = std::make_shared<vm::Engine>(address, cache, false, engine->protocol_version);
 				child->gas_limit = engine->gas_limit;
 				child->log_func = [](uint32_t level, const std::string& msg) {
 					std::cout << "LOG[" << level << "] " << msg << std::endl;
@@ -158,7 +158,9 @@ int main(int argc, char** argv)
 				child->event_func = [&child](const std::string& name, const uint64_t data) {
 					std::cout << "EVENT[" << name << "] " << vm::read(child, data).to_string() << std::endl;
 				};
-				child->remote_call = std::bind(remote_call, child, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
+				child->remote_call = std::bind(
+						remote_call, std::weak_ptr<vm::Engine>(child),
+						std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 				child->read_contract = [&child, &contract_map]
 					(const addr_t& address, const std::string& field, const uint64_t dst)
 				{
@@ -169,6 +171,22 @@ int main(int argc, char** argv)
 						throw std::logic_error("no such contract: " + address.to_string());
 					}
 				};
+				std::shared_ptr<const contract::Binary> binary;
+				{
+					auto iter = binary_map.find(exec->binary);
+					if(iter != binary_map.end()) {
+						binary = iter->second;
+					}
+				}
+				if(!binary) {
+					throw std::logic_error("no such binary: " + exec->binary.to_string());
+				}
+				const auto func = vm::find_method(binary, method);
+				if(!func) {
+					throw std::logic_error("no such method: " + method);
+				}
+				// load binary first so map keys are available
+				vm::load(child, binary);
 
 				bool assert_fail = false;
 				vnx::optional<addr_t> user = engine->contract;
@@ -225,24 +243,9 @@ int main(int argc, char** argv)
 				child->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(height));
 				child->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::to_binary(addr_t()));
 
-				std::shared_ptr<const contract::Binary> binary;
-				{
-					auto iter = binary_map.find(exec->binary);
-					if(iter != binary_map.end()) {
-						binary = iter->second;
-					}
-				}
-				if(!binary) {
-					throw std::logic_error("no such binary: " + exec->binary.to_string());
-				}
-				const auto func = vm::find_method(binary, method);
-				if(!func) {
-					throw std::logic_error("no such method: " + method);
-				}
 				if(!func->is_payable && deposit) {
 					throw std::logic_error("method does not allow deposit: " + method);
 				}
-				vm::load(child, binary);
 
 				bool did_fail = true;
 				try {
@@ -477,4 +480,3 @@ int main(int argc, char** argv)
 
 	return ret_value;
 }
-

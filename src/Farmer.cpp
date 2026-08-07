@@ -363,7 +363,7 @@ Farmer::sign_block(std::shared_ptr<const BlockHeader> block) const
 	if(out->reward_contract) {
 		out->reward_account = reward_addr;
 	}
-	out->hash = out->calc_hash();
+	out->hash = out->calc_hash(params);
 	out->farmer_sig = signature_t::sign(farmer_sk, out->hash);
 	out->content_hash = out->calc_content_hash();
 	return out;

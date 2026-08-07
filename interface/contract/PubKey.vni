@@ -10,13 +10,13 @@ class PubKey extends mmx.Contract {
 	
 	bool is_valid() const;
 	
-	hash_t calc_hash(bool full_hash) const;
+	hash_t calc_hash(bool full_hash, uint hash_version) const;
 	
 	ulong num_bytes() const;
 	
 	optional<addr_t> get_owner() const;
 	
-	void validate(mmx.Solution* solution, hash_t txid) const;
+	void validate(mmx.Solution* solution, hash_t txid, uint tx_version) const;
 	
 	vnx.Variant read_field(string name) const;
 	

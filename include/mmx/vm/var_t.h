@@ -14,6 +14,7 @@
 #include <vnx/Util.h>
 #include <uint256_t.h>
 
+#include <new>
 #include <limits>
 #include <cstdint>
 #include <cstdlib>
@@ -232,7 +233,10 @@ struct binary_t : var_t {
 		}
 		auto bin = std::make_unique<binary_t>(type);
 		bin->capacity = size;
-		bin->p_data = ::malloc(size);
+		bin->p_data = ::malloc(std::max<size_t>(size, 1));
+		if(!bin->p_data) {
+			throw std::bad_alloc();
+		}
 		return bin;
 	}
 
