@@ -141,9 +141,11 @@ type tag. Adjacent argument values could therefore have the same byte encoding d
 For example, `[true, uint64(0)]` and `[uint64(1), false]` produced the same operation hash.
 
 Starting at hardfork 2, transactions must use version 1. Version-1 hashing prefixes boolean, signed 64-bit integer,
-and unsigned 64-bit integer variants with distinct type tags. The version is propagated recursively through arrays and
-objects and into operation and deployment hashes. Transactions below the activation height must use version 0, which
-preserves all historical transaction IDs.
+and unsigned 64-bit integer variants with distinct type tags. A variant outside the accepted JSON value model is
+prefixed with `variant<>` before its opaque VNX encoding. This domain prefix prevents an unsupported encoding from
+colliding with an accepted encoding; it does not validate or reject the value. The version is propagated recursively
+through arrays and objects and into operation and deployment hashes. Transactions below the activation height must use
+version 0, which preserves all historical transaction IDs.
 
 Wallets select the transaction version for the next block height. A version-0 transaction that has not been included
 before activation is no longer eligible for inclusion after hardfork 2.
