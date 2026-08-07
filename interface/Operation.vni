@@ -13,7 +13,7 @@ class Operation {
 	
 	bool is_valid() const;
 	
-	hash_t calc_hash(bool full_hash) const;
+	hash_t calc_hash(bool full_hash, uint hash_version) const;
 	
 	ulong calc_cost(ChainParams* params) const;
 	

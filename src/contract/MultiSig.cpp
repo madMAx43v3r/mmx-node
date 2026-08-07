@@ -21,11 +21,11 @@ vnx::bool_t MultiSig::is_valid() const
 	return Super::is_valid() && num_required > 0 && owners.size() >= num_required;
 }
 
-hash_t MultiSig::calc_hash(const vnx::bool_t& full_hash) const
+hash_t MultiSig::calc_hash(const vnx::bool_t& full_hash, const uint32_t& hash_version) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
+	WriteBytes out(&stream, hash_version);
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", version);
@@ -41,7 +41,7 @@ uint64_t MultiSig::num_bytes() const
 	return Super::num_bytes() + owners.size() * 32;
 }
 
-void MultiSig::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
+void MultiSig::validate(std::shared_ptr<const Solution> solution, const hash_t& txid, const uint32_t& tx_version) const
 {
 	if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(solution))
 	{
@@ -61,22 +61,33 @@ void MultiSig::validate(std::shared_ptr<const Solution> solution, const hash_t& 
 	}
 	if(auto sol = std::dynamic_pointer_cast<const solution::MultiSig>(solution))
 	{
+		if(tx_version >= 1 && sol->num_required != num_required) {
+			throw mmx::invalid_solution("wrong num_required: " + std::to_string(sol->num_required)
+					+ " != " + std::to_string(num_required));
+		}
 		size_t count = 0;
 		for(const auto& entry : sol->solutions)
 		{
 			const auto& owner = entry.first;
+			if(tx_version >= 1 && !owners.count(owner)) {
+				throw mmx::invalid_solution("no such owner: " + owner.to_string());
+			}
 			if(owners.count(owner))
 			{
-				if(auto sol = std::dynamic_pointer_cast<const solution::PubKey>(entry.second))
-				{
-					if(sol->pubkey.get_addr() != owner) {
-						throw mmx::invalid_solution("wrong public key for " + owner.to_string());
+				const auto pubkey = std::dynamic_pointer_cast<const solution::PubKey>(entry.second);
+				if(!pubkey) {
+					if(tx_version >= 1) {
+						throw mmx::invalid_solution("invalid signature type for " + owner.to_string());
 					}
-					if(!sol->signature.verify(sol->pubkey, txid)) {
-						throw mmx::invalid_solution("invalid signature for " + owner.to_string());
-					}
-					count++;
+					continue;
 				}
+				if(pubkey->pubkey.get_addr() != owner) {
+					throw mmx::invalid_solution("wrong public key for " + owner.to_string());
+				}
+				if(!pubkey->signature.verify(pubkey->pubkey, txid)) {
+					throw mmx::invalid_solution("invalid signature for " + owner.to_string());
+				}
+				count++;
 			}
 		}
 		if(count < num_required) {

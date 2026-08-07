@@ -99,6 +99,7 @@ public:
 	uint32_t error_addr = -1;
 
 	const addr_t contract;
+	const uint32_t protocol_version;
 
 	bool is_debug = false;
 	bool do_profile = false;
@@ -113,7 +114,7 @@ public:
 
 	const std::shared_ptr<StorageProxy> storage;
 
-	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only);
+	Engine(const addr_t& contract, std::shared_ptr<Storage> backend, bool read_only, uint32_t protocol_version);
 
 	virtual ~Engine();
 

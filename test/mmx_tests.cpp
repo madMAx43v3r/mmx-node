@@ -22,6 +22,7 @@
 #include <mmx/contract/Executable.hxx>
 #include <mmx/contract/WebData.hxx>
 #include <mmx/contract/MultiSig.hxx>
+#include <mmx/operation/Execute.hxx>
 #include <mmx/solution/MultiSig.hxx>
 #include <mmx/solution/PubKey.hxx>
 
@@ -33,6 +34,7 @@
 
 #include <map>
 #include <iostream>
+#include <limits>
 #include <random>
 
 void expect_throw(const std::function<void()>& code)
@@ -276,42 +278,182 @@ int main(int argc, char** argv)
 
 	VNX_TEST_BEGIN("write_bytes()")
 	{
-		{
-			const bool value = true;
+		auto serialize = [](const auto& value, const int version) {
 			std::vector<uint8_t> tmp;
 			vnx::VectorOutputStream stream(&tmp);
-			vnx::OutputBuffer out(&stream);
+			WriteBytes out(&stream, version);
 			write_bytes(out, value);
 			out.flush();
+			return tmp;
+		};
+		{
+			const bool value = true;
+			const auto tmp = serialize(value, 0);
 			vnx::test::expect(tmp.size(), 1u);
 		}
 		{
 			const vnx::Variant value(true);
-			std::vector<uint8_t> tmp;
-			vnx::VectorOutputStream stream(&tmp);
-			vnx::OutputBuffer out(&stream);
-			write_bytes(out, value);
-			out.flush();
+			const auto tmp = serialize(value, 0);
 			vnx::test::expect(tmp.size(), 1u);
 		}
 		{
 			const vnx::Variant value(1337);
-			std::vector<uint8_t> tmp;
-			vnx::VectorOutputStream stream(&tmp);
-			vnx::OutputBuffer out(&stream);
-			write_bytes(out, value);
-			out.flush();
+			const auto tmp = serialize(value, 0);
 			vnx::test::expect(tmp.size(), 8u);
 		}
 		{
 			const vnx::Variant value(-1337);
-			std::vector<uint8_t> tmp;
-			vnx::VectorOutputStream stream(&tmp);
-			vnx::OutputBuffer out(&stream);
-			write_bytes(out, value);
-			out.flush();
+			const auto tmp = serialize(value, 0);
 			vnx::test::expect(tmp.size(), 8u);
 		}
+		{
+			const std::vector<vnx::Variant> lhs = {vnx::Variant(true), vnx::Variant(uint64_t(0))};
+			const std::vector<vnx::Variant> rhs = {vnx::Variant(uint64_t(1)), vnx::Variant(false)};
+			vnx::test::expect(serialize(lhs, 0) == serialize(rhs, 0), true);
+			vnx::test::expect(serialize(lhs, 1) != serialize(rhs, 1), true);
+		}
+		{
+			const vnx::Variant lhs(int64_t(-1));
+			const vnx::Variant rhs(std::numeric_limits<uint64_t>::max());
+			vnx::test::expect(serialize(lhs, 0) == serialize(rhs, 0), true);
+			vnx::test::expect(serialize(lhs, 1) != serialize(rhs, 1), true);
+		}
+		{
+			const vnx::Variant value(1.5);
+			vnx::test::expect(is_json(value), false);
+			vnx::test::expect(serialize(value, 1).empty(), false);
+		}
+		{
+			const vnx::Variant valid("test");
+			const vnx::Variant invalid(std::vector<int8_t>{'t', 'e', 's', 't'});
+			vnx::test::expect(is_json(valid), true);
+			vnx::test::expect(is_json(invalid), false);
+			vnx::test::expect(serialize(valid, 0) == serialize(invalid, 0), true);
+			vnx::test::expect(serialize(valid, 1) != serialize(invalid, 1), true);
+		}
+		{
+			const vnx::Variant valid(std::vector<vnx::Variant>{vnx::Variant(uint64_t(1))});
+			const vnx::Variant invalid(std::vector<uint64_t>{1});
+			vnx::test::expect(is_json(valid), true);
+			vnx::test::expect(is_json(invalid), false);
+			vnx::test::expect(serialize(valid, 0) == serialize(invalid, 0), true);
+			vnx::test::expect(serialize(valid, 1) != serialize(invalid, 1), true);
+		}
+		{
+			auto lhs = mmx::operation::Execute::create();
+			auto rhs = mmx::operation::Execute::create();
+			lhs->method = rhs->method = "test";
+			lhs->args = {vnx::Variant(true), vnx::Variant(uint64_t(0))};
+			rhs->args = {vnx::Variant(uint64_t(1)), vnx::Variant(false)};
+			vnx::test::expect(lhs->calc_hash(false, 0) == rhs->calc_hash(false, 0), true);
+			vnx::test::expect(lhs->calc_hash(false, 1) != rhs->calc_hash(false, 1), true);
+		}
+		{
+			auto lhs = mmx::contract::Executable::create();
+			auto rhs = mmx::contract::Executable::create();
+			lhs->init_args = {vnx::Variant(true), vnx::Variant(uint64_t(0))};
+			rhs->init_args = {vnx::Variant(uint64_t(1)), vnx::Variant(false)};
+			vnx::test::expect(lhs->calc_hash(false, 0) == rhs->calc_hash(false, 0), true);
+			vnx::test::expect(lhs->calc_hash(false, 1) != rhs->calc_hash(false, 1), true);
+		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("transaction hash version")
+	{
+		auto params = mmx::ChainParams::create();
+		params->hardfork2_height = 100;
+		vnx::test::expect(get_transaction_version(params, 99), 0u);
+		vnx::test::expect(get_transaction_version(params, 100), 1u);
+
+		auto make_tx = [params](const uint32_t version, const std::vector<vnx::Variant>& args) {
+			auto op = mmx::operation::Execute::create();
+			op->method = "test";
+			op->args = args;
+
+			auto tx = mmx::Transaction::create();
+			tx->version = version;
+			tx->network = params->network;
+			tx->nonce = 1;
+			tx->execute.push_back(op);
+			tx->static_cost = tx->calc_cost(params);
+			tx->id = tx->calc_hash();
+			tx->content_hash = tx->calc_hash(true);
+			return tx;
+		};
+
+		const std::vector<vnx::Variant> lhs = {vnx::Variant(true), vnx::Variant(uint64_t(0))};
+		const std::vector<vnx::Variant> rhs = {vnx::Variant(uint64_t(1)), vnx::Variant(false)};
+		const auto lhs_v0 = make_tx(0, lhs);
+		const auto rhs_v0 = make_tx(0, rhs);
+		const auto lhs_v1 = make_tx(1, lhs);
+		const auto rhs_v1 = make_tx(1, rhs);
+		const std::vector<vnx::Variant> uint_args = {vnx::Variant(uint64_t(1) << 63)};
+		const std::vector<vnx::Variant> int_args = {vnx::Variant(std::numeric_limits<int64_t>::min())};
+		const auto uint_v0 = make_tx(0, uint_args);
+		const auto int_v0 = make_tx(0, int_args);
+		const auto uint_v1 = make_tx(1, uint_args);
+		const auto int_v1 = make_tx(1, int_args);
+
+		vnx::test::expect(lhs_v0->is_valid(params), true);
+		vnx::test::expect(rhs_v0->is_valid(params), true);
+		vnx::test::expect(lhs_v1->is_valid(params), true);
+		vnx::test::expect(rhs_v1->is_valid(params), true);
+		vnx::test::expect(lhs_v0->id == rhs_v0->id, true);
+		vnx::test::expect(lhs_v1->id != rhs_v1->id, true);
+		vnx::test::expect(uint_v0->id == int_v0->id, true);
+		vnx::test::expect(uint_v1->id != int_v1->id, true);
+
+		auto invalid_deploy = mmx::contract::Executable::create();
+		vnx::test::expect(invalid_deploy->is_valid(), false);
+		auto deploy_tx = mmx::Transaction::create();
+		deploy_tx->version = 1;
+		deploy_tx->network = params->network;
+		deploy_tx->nonce = 1;
+		deploy_tx->deploy = invalid_deploy;
+		deploy_tx->static_cost = deploy_tx->calc_cost(params);
+		deploy_tx->id = deploy_tx->calc_hash();
+		deploy_tx->content_hash = deploy_tx->calc_hash(true);
+		vnx::test::expect(deploy_tx->is_valid(params), true);
+
+		auto make_solution_tx = [params](const uint32_t version) {
+			auto first = mmx::solution::PubKey::create();
+			auto second = mmx::solution::PubKey::create();
+			second->pubkey = pubkey_t(skey_t(hash_t("second solution")));
+			auto tx = mmx::Transaction::create();
+			tx->version = version;
+			tx->network = params->network;
+			tx->nonce = 1;
+			tx->sender = addr_t(hash_t("sender"));
+			tx->solutions = {first, second};
+			tx->static_cost = tx->calc_cost(params);
+			tx->id = tx->calc_hash();
+			tx->content_hash = tx->calc_hash(true);
+			return tx;
+		};
+		const auto unused_v0 = make_solution_tx(0);
+		const auto unused_v1 = make_solution_tx(1);
+		vnx::test::expect(unused_v0->is_valid(params), true);
+		vnx::test::expect(unused_v1->is_valid(params), false);
+
+		auto used_v1 = make_solution_tx(1);
+		auto signed_op = mmx::operation::Execute::create();
+		signed_op->method = "test";
+		signed_op->user = addr_t(hash_t("user"));
+		signed_op->solution = 1;
+		used_v1->execute.push_back(signed_op);
+		used_v1->static_cost = used_v1->calc_cost(params);
+		used_v1->id = used_v1->calc_hash();
+		used_v1->content_hash = used_v1->calc_hash(true);
+		vnx::test::expect(used_v1->is_valid(params), true);
+
+		auto duplicate_v1 = make_solution_tx(1);
+		duplicate_v1->solutions[1] = duplicate_v1->solutions[0];
+		duplicate_v1->execute.push_back(signed_op);
+		duplicate_v1->static_cost = duplicate_v1->calc_cost(params);
+		duplicate_v1->id = duplicate_v1->calc_hash();
+		duplicate_v1->content_hash = duplicate_v1->calc_hash(true);
+		vnx::test::expect(duplicate_v1->is_valid(params), false);
 	}
 	VNX_TEST_END()
 
@@ -347,6 +489,7 @@ int main(int argc, char** argv)
 					sol->solutions[tmp->pubkey.get_addr()] = tmp;
 				}
 				tmp->validate(sol, txid);
+				tmp->validate(sol, txid, 1);
 			}
 			{
 				auto sol = mmx::solution::PubKey::create();
@@ -367,6 +510,7 @@ int main(int argc, char** argv)
 			vnx::test::expect(tmp->is_valid(), true);
 			{
 				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required;
 				for(int i = 0; i < 3; ++i) {
 					auto tmp = mmx::solution::PubKey::create();
 					tmp->pubkey = keys[i].second;
@@ -374,6 +518,7 @@ int main(int argc, char** argv)
 					sol->solutions[tmp->pubkey.get_addr()] = tmp;
 				}
 				tmp->validate(sol, txid);
+				tmp->validate(sol, txid, 1);
 			}
 			{
 				auto sol = mmx::solution::MultiSig::create();
@@ -384,6 +529,53 @@ int main(int argc, char** argv)
 					sol->solutions[tmp->pubkey.get_addr()] = tmp;
 				}
 				tmp->validate(sol, txid);
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required;
+				for(int i = 0; i < 3; ++i) {
+					auto entry = mmx::solution::PubKey::create();
+					entry->pubkey = keys[i].second;
+					entry->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[entry->pubkey.get_addr()] = entry;
+				}
+				auto extra = mmx::solution::PubKey::create();
+				extra->pubkey = keys[9].second;
+				extra->signature = signature_t::sign(keys[9].first, txid);
+				sol->solutions[extra->pubkey.get_addr()] = extra;
+				tmp->validate(sol, txid);
+				expect_throw([=]() {
+					tmp->validate(sol, txid, 1);
+				});
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required - 1;
+				for(int i = 0; i < 3; ++i) {
+					auto entry = mmx::solution::PubKey::create();
+					entry->pubkey = keys[i].second;
+					entry->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[entry->pubkey.get_addr()] = entry;
+				}
+				tmp->validate(sol, txid);
+				expect_throw([=]() {
+					tmp->validate(sol, txid, 1);
+				});
+			}
+			{
+				auto sol = mmx::solution::MultiSig::create();
+				sol->num_required = tmp->num_required;
+				for(int i = 0; i < 3; ++i) {
+					auto entry = mmx::solution::PubKey::create();
+					entry->pubkey = keys[i].second;
+					entry->signature = signature_t::sign(keys[i].first, txid);
+					sol->solutions[entry->pubkey.get_addr()] = entry;
+				}
+				sol->solutions[keys[3].second.get_addr()] = mmx::solution::MultiSig::create();
+				tmp->validate(sol, txid);
+				expect_throw([=]() {
+					tmp->validate(sol, txid, 1);
+				});
 			}
 			{
 				auto sol = mmx::solution::MultiSig::create();
@@ -399,6 +591,69 @@ int main(int argc, char** argv)
 				});
 			}
 		}
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("implicit deployment output ordering")
+	{
+		std::unordered_map<addr_t, uint128> amounts;
+		amounts[addr_t(hash_t("currency_c"))] = 33;
+		amounts[addr_t(hash_t("currency_a"))] = 11;
+		amounts[addr_t(hash_t("currency_zero"))] = 0;
+		amounts[addr_t(hash_t("currency_b"))] = 22;
+		const addr_t deploy_address(hash_t("deploy"));
+
+		std::vector<txout_t> legacy;
+		handle_implicit_deposit(legacy, amounts, deploy_address, true, false);
+		size_t index = 0;
+		for(const auto& entry : amounts) {
+			if(entry.second) {
+				vnx::test::expect(legacy[index].contract, entry.first);
+				vnx::test::expect(legacy[index].amount, entry.second);
+				index++;
+			}
+		}
+		vnx::test::expect(index, legacy.size());
+
+		std::vector<txout_t> ordered;
+		handle_implicit_deposit(ordered, amounts, deploy_address, true, true);
+		vnx::test::expect(ordered.size(), size_t(3));
+		for(size_t i = 0; i < ordered.size(); ++i) {
+			vnx::test::expect(ordered[i].address, deploy_address);
+			vnx::test::expect(ordered[i].amount, amounts.at(ordered[i].contract));
+			if(i) {
+				vnx::test::expect(ordered[i - 1].contract < ordered[i].contract, true);
+			}
+		}
+
+		expect_throw([&]() {
+			std::vector<txout_t> outputs;
+			handle_implicit_deposit(outputs, amounts, deploy_address, false, true);
+		});
+	}
+	VNX_TEST_END()
+
+	VNX_TEST_BEGIN("space difficulty adjustment")
+	{
+		auto params = ChainParams::create();
+		params->challenge_interval = 256;
+		params->avg_proof_count = 4;
+
+		auto prev = BlockHeader::create();
+		prev->space_diff = 1000;
+		prev->space_fork_len = 256;
+
+		prev->space_fork_proofs = 512;
+		vnx::test::expect(calc_new_space_diff(params, prev), uint64_t(969));
+
+		prev->space_fork_proofs = 1024;
+		vnx::test::expect(calc_new_space_diff(params, prev), uint64_t(999));
+
+		prev->space_fork_proofs = 1025;
+		vnx::test::expect(calc_new_space_diff(params, prev), uint64_t(1001));
+
+		prev->space_fork_proofs = 1536;
+		vnx::test::expect(calc_new_space_diff(params, prev), uint64_t(1031));
 	}
 	VNX_TEST_END()
 
@@ -464,4 +719,3 @@ int main(int argc, char** argv)
 
 	return vnx::test::done();
 }
-

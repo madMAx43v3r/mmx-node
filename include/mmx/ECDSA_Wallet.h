@@ -456,6 +456,7 @@ public:
 			}
 		}
 		try {
+			tx->version = get_transaction_version(params, height + 1);
 			if(options.note) {
 				tx->note = *options.note;
 			}

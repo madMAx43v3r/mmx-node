@@ -16,6 +16,8 @@
 #include <sha256_ni.h>
 #include <sha256_arm.h>
 
+#include <atomic>
+
 
 namespace mmx {
 
@@ -107,6 +109,11 @@ void Node::verify_proof(std::shared_ptr<const BlockHeader> block) const
 			prev = hash;
 		}
 	}
+	if(block->proof_chain != calc_proof_chain(params, prev, block->proof_hash)
+		&& block->height >= params->hardfork2_height)
+	{
+		throw std::logic_error("invalid proof_chain");
+	}
 
 	uint64_t expected_iters = prev->vdf_iters;
 	for(uint32_t i = 0; i < block->vdf_count; ++i) {
@@ -124,7 +131,7 @@ void Node::verify_proof(std::shared_ptr<const BlockHeader> block) const
 
 	// need to verify challenge and space_diff update here
 	bool is_space_fork = false;
-	const auto next_challenge = calc_next_challenge(params, prev->challenge, block->vdf_count, block->proof_hash, is_space_fork);
+	const auto next_challenge = calc_next_challenge(params, prev, block, is_space_fork);
 	if(block->challenge != next_challenge) {
 		throw std::logic_error("invalid challenge");
 	}
@@ -262,8 +269,10 @@ void Node::verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const
 	static bool have_sha_arm = sha256_arm_available();
 
 	const auto& segments = proof->segments;
-	bool is_valid = !segments.empty();
-	size_t invalid_segment = -1;
+	if(segments.empty()) {
+		throw std::logic_error("VDF without segments");
+	}
+	std::atomic<uint32_t> invalid_segment(0);
 
 	constexpr uint32_t batch_size = 16;
 	const uint32_t num_iters = proof->segment_size;
@@ -272,7 +281,7 @@ void Node::verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const
 #pragma omp parallel for
 	for(int chunk = 0; chunk < int(num_chunks); ++chunk)
 	{
-		if(!is_valid) {
+		if(invalid_segment.load(std::memory_order_relaxed)) {
 			continue;
 		}
 		const auto num_lanes = std::min<uint32_t>(batch_size, segments.size() - chunk * batch_size);
@@ -326,13 +335,14 @@ void Node::verify_vdf_cpu(std::shared_ptr<const ProofOfTime> proof) const
 		{
 			const uint32_t i = chunk * batch_size + j;
 			if(point[j] != segments[i]) {
-				is_valid = false;
-				invalid_segment = i;
+				uint32_t expected = 0;
+				invalid_segment.compare_exchange_strong(expected, i + 1, std::memory_order_relaxed);
+				break;
 			}
 		}
 	}
-	if(!is_valid) {
-		throw std::logic_error("invalid output on segment " + std::to_string(invalid_segment));
+	if(const auto index = invalid_segment.load(std::memory_order_relaxed)) {
+		throw std::logic_error("invalid output on segment " + std::to_string(index - 1));
 	}
 }
 

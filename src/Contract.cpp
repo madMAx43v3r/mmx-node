@@ -16,7 +16,7 @@ vnx::bool_t Contract::is_valid() const
 	return version == 0;
 }
 
-hash_t Contract::calc_hash(const vnx::bool_t& full_hash) const
+hash_t Contract::calc_hash(const vnx::bool_t& full_hash, const uint32_t& hash_version) const
 {
 	throw std::logic_error("not implemented");
 }
@@ -36,7 +36,7 @@ vnx::optional<addr_t> Contract::get_owner() const
 	return nullptr;
 }
 
-void Contract::validate(std::shared_ptr<const Solution> solution, const hash_t& txid) const
+void Contract::validate(std::shared_ptr<const Solution> solution, const hash_t& txid, const uint32_t& tx_version) const
 {
 	throw std::logic_error("invalid operation");
 }

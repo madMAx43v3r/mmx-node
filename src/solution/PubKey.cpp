@@ -16,7 +16,7 @@ hash_t PubKey::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
+	WriteBytes out(&stream, 0);
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", 	version);

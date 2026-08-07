@@ -124,7 +124,7 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	 * - total_weight
 	 */
 
-	if(!block->is_valid()) {
+	if(!block->is_valid(params)) {
 		throw std::logic_error("static validation failed");
 	}
 	block->validate();
@@ -144,6 +144,9 @@ std::shared_ptr<Node::execution_context_t> Node::validate(std::shared_ptr<const 
 	}
 	if(block->space_fork_len > params->challenge_interval * 100) {
 		throw std::logic_error("space fork too long");
+	}
+	if(block->time_stamp < 0) {
+		throw std::logic_error("negative time stamp");
 	}
 	if(block->time_stamp - prev->time_stamp > block->vdf_count * params->block_interval_ms * 2) {
 		throw std::logic_error("time stamp delta too high");
@@ -397,7 +400,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	if(!executable) {
 		throw std::logic_error("not an executable: " + address.to_string());
 	}
-	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false);
+	auto engine = std::make_shared<vm::Engine>(address, storage_cache, false, tx->version);
 	engine->do_profile = context->do_profile;
 	engine->do_trace = context->do_trace;
 	{
@@ -406,7 +409,7 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	if(op->user) {
 		const auto contract = get_contract_for_ex(*op->user, &engine->gas_used, engine->gas_limit);
-		contract->validate(tx->get_solution(op->solution), tx->id);
+		contract->validate(tx->get_solution(op->solution), tx->id, tx->version);
 
 		engine->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(*op->user));
 	} else {
@@ -415,21 +418,27 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
 	engine->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 
-	if(auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op)) {
-		{
-			uint128 amount = deposit->amount;
-			if(auto value = storage_cache->get_balance(address, deposit->currency)) {
-				amount += *value;
-			}
-			storage_cache->set_balance(address, deposit->currency, amount);
+	const auto deposit = std::dynamic_pointer_cast<const operation::Deposit>(op);
+	if(deposit) {
+		uint128 amount = deposit->amount;
+		if(auto value = storage_cache->get_balance(address, deposit->currency)) {
+			amount += *value;
 		}
-		vm::set_deposit(engine, deposit->currency, deposit->amount);
+		storage_cache->set_balance(address, deposit->currency, amount);
 	}
-	vm::set_args(engine, op->args);
 
 	std::exception_ptr failed_ex;
+	const auto setup = [deposit, op](std::shared_ptr<vm::Engine> engine) {
+		if(deposit) {
+			vm::set_deposit(engine, deposit->currency, deposit->amount);
+		}
+		vm::set_args(engine, op->args);
+	};
+	if(context->height < params->hardfork2_height) {
+		setup(engine);
+	}
 	try {
-		execute(tx, context, executable, exec_outputs, exec_spend_map, storage_cache, engine, op->method, error, is_init);
+		execute(tx, context, executable, exec_outputs, exec_spend_map, storage_cache, engine, op->method, error, is_init, setup);
 	} catch(...) {
 		failed_ex = std::current_exception();
 	}
@@ -460,7 +469,8 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 					std::shared_ptr<vm::StorageCache> storage_cache,
 					std::shared_ptr<vm::Engine> engine,
 					const std::string& method_name,
-					exec_error_t& error, const bool is_init) const
+					exec_error_t& error, const bool is_init,
+					const std::function<void(std::shared_ptr<vm::Engine>)>& setup) const
 {
 	{
 		auto iter = context->mutate_map.find(engine->contract);
@@ -491,12 +501,22 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 	}
 	vm::load(engine, binary);
 
+	if(context->height >= params->hardfork2_height) {
+		// after vm::load() so map keys are initialized
+		setup(engine);
+	}
+	const std::weak_ptr<vm::Engine> w_engine = engine;
+
 	std::map<addr_t, std::shared_ptr<const Contract>> contract_cache;
 	contract_cache[tx->id] = tx->deploy;
 
-	engine->remote_call = [this, tx, context, executable, storage_cache, &engine, &contract_cache, &exec_outputs, &exec_spend_map, &error]
+	engine->remote_call = [this, tx, context, executable, storage_cache, w_engine, &contract_cache, &exec_outputs, &exec_spend_map, &error]
 		(const std::string& name, const std::string& method, const uint32_t nargs)
 	{
+		const auto engine = w_engine.lock();
+		if(!engine) {
+			throw std::logic_error("remote call on expired engine");
+		}
 		const auto address = executable->get_external(name);
 
 		auto& fetch = contract_cache[address];
@@ -510,18 +530,22 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		engine->gas_used += params->min_txfee_exec;
 		engine->check_gas();
 
-		const auto child = std::make_shared<vm::Engine>(address, storage_cache, false);
+		const auto child = std::make_shared<vm::Engine>(address, storage_cache, false, tx->version);
 		child->gas_limit = engine->gas_limit - std::min(engine->gas_used, engine->gas_limit);
 
 		const auto stack_ptr = engine->get_stack_ptr();
-		for(uint32_t i = 0; i < nargs; ++i) {
-			vm::copy(child, engine, vm::MEM_STACK + 1 + i, stack_ptr + 1 + i);
+		const auto setup = [this, engine, nargs, stack_ptr, address](std::shared_ptr<vm::Engine> child) {
+			for(uint32_t i = 0; i < nargs; ++i) {
+				vm::copy(child, engine, vm::MEM_STACK + 1 + i, stack_ptr + 1 + i);
+			}
+			child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(engine->contract));
+			child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
+			child->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
+		};
+		if(context->height < params->hardfork2_height) {
+			setup(child);
 		}
-		child->write(vm::MEM_EXTERN + vm::EXTERN_USER, vm::to_binary(engine->contract));
-		child->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
-		child->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
-
-		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, false);
+		execute(tx, context, contract, exec_outputs, exec_spend_map, storage_cache, child, method, error, false, setup);
 
 		vm::copy(engine, child, stack_ptr, vm::MEM_STACK);
 
@@ -529,9 +553,13 @@ void Node::execute(	std::shared_ptr<const Transaction> tx,
 		engine->check_gas();
 	};
 
-	engine->read_contract = [this, tx, executable, &engine, &contract_cache]
+	engine->read_contract = [this, tx, executable, w_engine, &contract_cache]
 		(const addr_t& address, const std::string& field, const uint64_t dst)
 	{
+		const auto engine = w_engine.lock();
+		if(!engine) {
+			throw std::logic_error("contract read on expired engine");
+		}
 		auto& contract = contract_cache[address];
 		if(!contract) {
 			contract = get_contract_ex(address, &engine->gas_used, engine->gas_limit);
@@ -583,6 +611,9 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 	if(!tx->is_valid(params)) {
 		throw mmx::static_failure("invalid tx");
 	}
+	if(tx->version != get_transaction_version(params, context->height)) {
+		throw mmx::static_failure("invalid tx version");
+	}
 	if(tx->static_cost > params->max_tx_cost) {
 		throw mmx::static_failure("static_cost > max_tx_cost");
 	}
@@ -621,7 +652,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		// validate tx sender
 		auto pubkey = contract::PubKey::create();
 		pubkey->address = *tx->sender;
-		pubkey->validate(tx->solutions[0], tx->id);
+		pubkey->validate(tx->solutions[0], tx->id, tx->version);
 	}
 
 	const auto balance = balance_cache.find(*tx->sender, addr_t());
@@ -662,7 +693,7 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 			if(!contract) {
 				throw std::logic_error("no such contract: " + in.address.to_string());
 			}
-			contract->validate(solution, tx->id);
+			contract->validate(solution, tx->id, tx->version);
 
 			*balance -= in.amount;
 			amounts[in.contract] += in.amount;
@@ -770,20 +801,8 @@ Node::validate(	std::shared_ptr<const Transaction> tx,
 		}
 
 		// check for left-over amounts
-		for(const auto& entry : amounts) {
-			if(entry.second) {
-				if(!tx->deploy) {
-					throw std::logic_error("implicit deposit without deploy");
-				}
-				if(const auto& amount = entry.second) {
-					txout_t out;
-					out.address = tx->id;
-					out.contract = entry.first;
-					out.amount = amount;
-					exec_outputs.push_back(out);
-				}
-			}
-		}
+		handle_implicit_deposit(
+				exec_outputs, amounts, tx->id, bool(tx->deploy), context->height >= params->hardfork2_height);
 
 		if(!tx->exec_result) {
 			for(const auto& in: exec_inputs) {

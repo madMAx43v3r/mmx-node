@@ -29,11 +29,11 @@ bool Binary::is_valid() const
 	return Super::is_valid();
 }
 
-hash_t Binary::calc_hash(const vnx::bool_t& full_hash) const
+hash_t Binary::calc_hash(const vnx::bool_t& full_hash, const uint32_t& hash_version) const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
+	WriteBytes out(&stream, hash_version);
 
 	write_bytes(out, get_type_hash());
 	write_field(out, "version", 	version);

@@ -16,7 +16,7 @@ vnx::bool_t Operation::is_valid() const
 	return version == 0;
 }
 
-hash_t Operation::calc_hash(const vnx::bool_t& full_hash) const
+hash_t Operation::calc_hash(const vnx::bool_t& full_hash, const uint32_t& hash_version) const
 {
 	throw std::logic_error("not implemented");
 }

@@ -13,6 +13,7 @@
 #include <mmx/vm/Engine.h>
 #include <mmx/vm_interface.h>
 #include <mmx/helpers.h>
+#include <mmx/utils.h>
 
 #include <mmx/Node_get_block.hxx>
 #include <mmx/Node_get_block_at.hxx>
@@ -862,7 +863,7 @@ std::map<vm::varptr_t, vm::varptr_t> Node::read_storage_map(const addr_t& contra
 	std::map<vm::varptr_t, vm::varptr_t> out;
 	if(auto exec = std::dynamic_pointer_cast<const contract::Executable>(get_contract(contract))) {
 		if(auto bin = std::dynamic_pointer_cast<const contract::Binary>(get_contract(exec->binary))) {
-			auto engine = std::make_shared<vm::Engine>(contract, storage, true);
+			auto engine = std::make_shared<vm::Engine>(contract, storage, true, 0);
 			engine->gas_limit = params->max_tx_cost;
 			vm::load(engine, bin);
 			for(const auto& entry : storage->find_entries(contract, address, height)) {
@@ -896,11 +897,13 @@ vnx::Variant Node::call_contract(
 			if(!func) {
 				throw std::runtime_error("no such method: " + method);
 			}
-			auto engine = std::make_shared<vm::Engine>(address, storage, func->is_const);
+			const auto height = get_height();
+			auto engine = std::make_shared<vm::Engine>(
+					address, storage, func->is_const, get_transaction_version(params, height));
 			engine->gas_limit = params->max_tx_cost;
 			vm::load(engine, bin);
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_TXID, vm::var_t());
-			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(get_height()));
+			engine->write(vm::MEM_EXTERN + vm::EXTERN_HEIGHT, vm::uint_t(height));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_ADDRESS, vm::to_binary(address));
 			engine->write(vm::MEM_EXTERN + vm::EXTERN_NETWORK, vm::to_binary(params->network));
 			if(user) {

@@ -21,7 +21,7 @@ mmx::hash_t ProofOfSpaceNFT::calc_hash() const
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
+	WriteBytes out(&stream, 0);
 
 	buffer.reserve(4 * 1024);
 

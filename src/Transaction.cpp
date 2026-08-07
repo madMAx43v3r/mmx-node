@@ -11,6 +11,8 @@
 #include <mmx/write_bytes.h>
 #include <mmx/txio_t.hpp>
 
+#include <set>
+
 
 namespace mmx {
 
@@ -76,7 +78,37 @@ vnx::bool_t Transaction::is_valid(std::shared_ptr<const ChainParams> params) con
 			return false;
 		}
 	}
-	return version == 0 && nonce
+	if(version >= 1) {
+		std::set<hash_t> solution_set;
+		for(const auto& solution : solutions) {
+			if(!solution_set.insert(solution->calc_hash()).second) {
+				return false;
+			}
+		}
+		std::vector<bool> used(solutions.size(), false);
+
+		if(sender && !used.empty()) {
+			used[0] = true;
+		}
+		for(const auto& in : inputs) {
+			if(in.solution < used.size()) {
+				used[in.solution] = true;
+			}
+		}
+		for(const auto& op : execute) {
+			if(const auto exec = std::dynamic_pointer_cast<const operation::Execute>(op)) {
+				if(exec->user && exec->solution < used.size()) {
+					used[exec->solution] = true;
+				}
+			}
+		}
+		for(const auto value : used) {
+			if(!value) {
+				return false;
+			}
+		}
+	}
+	return version <= 1 && nonce
 			&& fee_ratio >= 1024
 			&& network == params->network
 			&& solutions.size() <= MAX_SOLUTIONS
@@ -98,7 +130,7 @@ std::vector<uint8_t> Transaction::hash_serialize(const vnx::bool_t& full_hash) c
 {
 	std::vector<uint8_t> buffer;
 	vnx::VectorOutputStream stream(&buffer);
-	vnx::OutputBuffer out(&stream);
+	WriteBytes out(&stream, version);
 
 	buffer.reserve(4 * 1024);
 
@@ -111,14 +143,14 @@ std::vector<uint8_t> Transaction::hash_serialize(const vnx::bool_t& full_hash) c
 	write_field(out, "nonce", 	nonce);
 	write_field(out, "network", network);
 	write_field(out, "sender",	sender);
-	write_field(out, "inputs",	inputs, full_hash);
+	write_field_ex(out, "inputs", inputs, full_hash);
 	write_field(out, "outputs", outputs);
 	write_field(out, "execute");
 	write_bytes(out, uint32_t(execute.size()));
 	for(const auto& op : execute) {
-		write_bytes(out, op ? op->calc_hash(full_hash) : hash_t());
+		write_bytes(out, op ? op->calc_hash(full_hash, version) : hash_t());
 	}
-	write_field(out, "deploy", deploy ? deploy->calc_hash(full_hash) : hash_t());
+	write_field(out, "deploy", deploy ? deploy->calc_hash(full_hash, version) : hash_t());
 
 	if(full_hash) {
 		write_field(out, "static_cost", static_cost);
