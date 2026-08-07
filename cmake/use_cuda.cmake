@@ -1,4 +1,9 @@
 
+if(POLICY CMP0146)
+	# Keep using the legacy FindCUDA module until the CUDA build is migrated to first-class CUDA language support.
+	cmake_policy(SET CMP0146 OLD)
+endif()
+
 find_package(CUDA)
 
 if(NOT MSVC)

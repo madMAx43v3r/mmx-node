@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.13)
+
+if(POLICY CMP0177)
+	cmake_policy(SET CMP0177 NEW)
+endif()
+
 project(mmx-node C CXX ASM)
 
 include(FetchContent)
