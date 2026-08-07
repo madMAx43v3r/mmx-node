@@ -316,7 +316,7 @@ function test_seed_and_bet_validation()
     __test.set_height(0);
 
     poker2_bet_validation.join("Alice", string_hex(alice_key), {
-        __test: true, user: alice, deposit: [100, MMX]
+        __test: true, user: alice, deposit: [200, MMX]
     });
     poker2_bet_validation.join("Bob", string_hex(bob_key), {
         __test: true, user: bob, deposit: [100, MMX]
@@ -364,7 +364,7 @@ function test_seed_and_bet_validation()
 
     var checkpoint = poker2_bet_validation.get_start_checkpoint();
     checkpoint = poker2_bet_validation.checkpoint_step(
-        string_hex(checkpoint), 1, 0, 0, alice, 1, 100,
+        string_hex(checkpoint), 1, 0, 0, alice, 1, 200,
         string_hex(poker2_bet_validation.get_commit_hash(alice, alice_commits)));
     checkpoint = poker2_bet_validation.checkpoint_step(
         string_hex(checkpoint), 1, 0, 0, bob, 1, 100,
@@ -375,6 +375,7 @@ function test_seed_and_bet_validation()
     checkpoint = poker2_bet_validation.checkpoint_step(
         string_hex(checkpoint), 2, 0, 0, bob, 1, 10,
         string_hex(sha256(bob_seeds[0])));
+    const first_action_checkpoint = checkpoint;
 
     const epoch_0 = [
         [0, 1, 100, string_hex(__test.ecdsa_sign(
@@ -399,7 +400,52 @@ function test_seed_and_bet_validation()
         [], [], [],
         {__test: true, user: dealer, assert_fail: true}
     );
-    assert(__test.get_balance(bet_addr, MMX) == 200);
+    assert(__test.get_balance(bet_addr, MMX) == 300);
+
+    // Bob goes all-in at 100 while Alice concurrently commits 99. Alice must
+    // be able to call the remaining one unit even though it is below the
+    // small blind.
+    checkpoint = first_action_checkpoint;
+    const uneven_epoch = [
+        [0, 1, 99, string_hex(__test.ecdsa_sign(
+            alice_skey, poker2_bet_validation.get_action_hash(
+                alice, 0, 0, 1, 99, string_hex(checkpoint))))],
+        [1, 1, 100, string_hex(__test.ecdsa_sign(
+            bob_skey, poker2_bet_validation.get_action_hash(
+                bob, 0, 0, 1, 100, string_hex(checkpoint))))],
+    ];
+    checkpoint = poker2_bet_validation.checkpoint_step(
+        string_hex(checkpoint), 3, 0, 0, alice, 11, 99, null);
+    checkpoint = poker2_bet_validation.checkpoint_step(
+        string_hex(checkpoint), 3, 0, 0, bob, 11, 100, null);
+
+    const exact_call_epoch = [[
+        0, 1, 100, string_hex(__test.ecdsa_sign(
+            alice_skey, poker2_bet_validation.get_action_hash(
+                alice, 0, 1, 1, 100, string_hex(checkpoint))))
+    ]];
+    const full_reveals = [
+        [string_hex(alice_seeds[0]), string_hex(alice_seeds[1]),
+         string_hex(alice_seeds[2]), string_hex(alice_seeds[3])],
+        [string_hex(bob_seeds[0]), string_hex(bob_seeds[1]),
+         string_hex(bob_seeds[2]), string_hex(bob_seeds[3])],
+    ];
+    const shows = [
+        [0, string_hex(alice_seeds[4]), [0, 1, 2, 3, 4]],
+        [1, string_hex(bob_seeds[4]), [0, 1, 2, 3, 4]],
+    ];
+
+    // Bob remains all-in on later streets, so Alice is the only player who
+    // can act. No empty check epochs should be required from her.
+    poker2_bet_validation.settle(
+        commits, signatures, full_reveals,
+        [[uneven_epoch, exact_call_epoch], [], [], []],
+        shows, [], [], {__test: true, user: dealer}
+    );
+    assert(poker2_bet_validation.get_player_status(alice).stack == 199);
+    assert(poker2_bet_validation.get_player_status(bob).stack == 99);
+    assert(poker2_bet_validation.get_table_status().dealer_rake == 2);
+    assert(__test.get_balance(bet_addr, MMX) == 298);
 }
 
 function test_card_validation()

@@ -741,7 +741,7 @@ function process_betting_round(round, epochs, checkpoint,
 {
     assert(is_array(epochs), "invalid betting round");
 
-    if(get_num_hand_active() <= 1 || get_num_actors() == 0) {
+    if(get_num_hand_active() <= 1 || get_num_actors() <= 1) {
         assert(size(epochs) == 0, "unexpected betting epoch");
         return checkpoint;
     }
@@ -794,7 +794,8 @@ function process_betting_round(round, epochs, checkpoint,
                     } else if(action == 1) {
                         assert(amount > player.bet, "bet did not increase");
                         assert(amount <= player.stack, "bet exceeds stack");
-                        assert(amount - player.bet >= config.small_blind
+                        assert(amount == target
+                               || amount - player.bet >= config.small_blind
                                || amount == player.stack,
                                "bet increment below small blind");
                         assert(amount == target
