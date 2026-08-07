@@ -6,8 +6,9 @@ description: Consensus and VM changes activated by MMX hardfork 2.
 Hardfork 2 activates at the block height configured by `ChainParams.hardfork2_height`. On mainnet this is block
 **5,050,000**, projected around 25 August 2026 (UTC). This is a block height, not a VDF height.
 
-Nodes participating at or beyond the activation height need hardfork-2-compatible software. The new rules change block
-header hashing, challenge calculation, and smart contract argument handling.
+`v1.5.0` is the minimum required Node version to support hardfork 2, commit `b58fa631d034503b1a9aeb3397387b5c64374586`.
+
+The new rules change block header hashing, challenge calculation, and smart contract argument handling.
 
 ## Summary
 
