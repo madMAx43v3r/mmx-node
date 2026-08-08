@@ -38,7 +38,7 @@ jobs:
         with:
           cuda: '12.5.0'
           method: 'network'
-          sub-packages: '["nvcc", "cudart"]'
+          sub-packages: '["nvcc", "cudart", "visual_studio_integration"]'
 
       - run: |
           echo "Installed cuda version is: ${{steps.cuda-toolkit.outputs.cuda}}"
