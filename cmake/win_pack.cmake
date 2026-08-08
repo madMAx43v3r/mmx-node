@@ -133,7 +133,7 @@ install(FILES
 			$<TARGET_FILE_DIR:vnx_addons>/zstd.dll
 			$<TARGET_FILE_DIR:automy_basic_opencl>/OpenCL.dll
 			$<TARGET_FILE_DIR:mmx_node>/miniupnpc.dll
-			$<TARGET_FILE_DIR:mmx_modules>/cudart64_12.dll
+			"${MMX_CUDA_TOOLKIT_BIN_DIR}/cudart64_12.dll"
 		DESTINATION ./ COMPONENT applications)
 
 install(DIRECTORY kernel/ DESTINATION kernel COMPONENT applications)
