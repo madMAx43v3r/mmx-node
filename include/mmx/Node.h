@@ -299,6 +299,7 @@ private:
 	void trigger_update();
 	void update_control();
 	void update_control_deferred();
+	void update_control_hourly();
 
 	void verify_vdfs();
 	void verify_votes();
@@ -595,6 +596,7 @@ private:
 	std::mutex fetch_mutex;
 	int reward_vote = 0;
 	std::set<std::string> pending_fetch;
+	std::set<std::string> failed_fetch;
 	std::shared_ptr<vnx::ThreadPool> fetch_threads;
 
 	friend class vnx::addons::HttpInterface<Node>;

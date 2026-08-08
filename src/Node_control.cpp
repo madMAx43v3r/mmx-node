@@ -54,11 +54,22 @@ void Node::update_control_deferred()
 	}
 }
 
+void Node::update_control_hourly()
+{
+	{
+		std::lock_guard<std::mutex> lock(fetch_mutex);
+		failed_fetch.clear();
+	}
+	update_control_deferred();
+}
+
 void Node::update_control()
 {
 	const auto fetch_func = [this](const std::string& url, const std::string& file_path, const std::string& key, const std::string& options = "") {
+		bool success = false;
 		try {
 			http_request_file(url, file_path, options);
+			success = true;
 		}
 		catch(const std::exception& ex) {
 			log(WARN) << "Failed to fetch " << Url::Url(url).setQuery({}).str();
@@ -67,9 +78,20 @@ void Node::update_control()
 			{
 				std::lock_guard<std::mutex> lock(fetch_mutex);
 				pending_fetch.erase(key);
+				if(success) {
+					failed_fetch.erase(key);
+				} else {
+					failed_fetch.insert(key);
+				}
 			}
-			add_task(std::bind(&Node::update_control_deferred, this));
+			if(success) {
+				add_task(std::bind(&Node::update_control_deferred, this));
+			}
 		}
+	};
+
+	const auto do_fetch = [this](const std::string& key) {
+		return !failed_fetch.count(key) && pending_fetch.insert(key).second;
 	};
 
 	std::lock_guard<std::mutex> lock(fetch_mutex);
@@ -82,7 +104,7 @@ void Node::update_control()
 
 		if(is_expired(file_path)) {
 			const std::string key = "api.gold-api.com";
-			if(pending_fetch.insert(key).second) {
+			if(do_fetch(key)) {
 				fetch_threads->add_task(std::bind(
 						fetch_func, "https://api.gold-api.com/price/XAU/USD", file_path, key));
 			}
@@ -120,7 +142,7 @@ void Node::update_control()
 
 		if(is_expired(file_path)) {
 			const std::string key = "forex-data-feed.swissquote.com";
-			if(pending_fetch.insert(key).second) {
+			if(do_fetch(key)) {
 				fetch_threads->add_task(std::bind(
 						fetch_func, "https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD", file_path, key));
 			}
@@ -167,7 +189,7 @@ void Node::update_control()
 
 		if(is_expired(file_path)) {
 			const std::string key = "api.goldprice.dev";
-			if(pending_fetch.insert(key).second) {
+			if(do_fetch(key)) {
 				fetch_threads->add_task(std::bind(
 						fetch_func, "https://api.goldprice.dev/v1/spot/XAU-USD-SPOT", file_path, key));
 			}
@@ -245,7 +267,7 @@ void Node::update_control()
 
 		if(is_expired(file_path)) {
 			const std::string key = "safetrade.com";
-			if(pending_fetch.insert(key).second) {
+			if(do_fetch(key)) {
 				const auto tmp = vnx::from_hex_string("2d482022757365722d6167656e743a204d4d582d4e6f64652d313133333722");
 				const std::string options((const char*)tmp.data(), tmp.size());
 				fetch_threads->add_task(std::bind(
@@ -296,7 +318,7 @@ void Node::update_control()
 
 		if(is_expired(file_path)) {
 			const std::string key = "api.nonkyc.io/" + market.api_symbol;
-			if(pending_fetch.insert(key).second) {
+			if(do_fetch(key)) {
 				fetch_threads->add_task(std::bind(
 						fetch_func, "https://api.nonkyc.io/api/v2/market/getbysymbol/" + market.api_symbol, file_path, key, ""));
 			}
