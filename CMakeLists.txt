@@ -21,16 +21,23 @@ if(MSVC)
 	include_directories(${CMAKE_CURRENT_BINARY_DIR})
 	
 	add_compile_definitions(TARGET_FILENAME=$(TargetName)$(TargetExt))
-	add_compile_options(/openmp /EHsc /MP)
+	add_compile_options(
+		"$<$<COMPILE_LANGUAGE:C>:/openmp;/EHsc;/MP>"
+		"$<$<COMPILE_LANGUAGE:CXX>:/openmp;/EHsc;/MP>"
+	)
 
 	set(MSVC_DEBUG_OPTIONS /Od /FS)
 	set(MSVC_RELEASE_OPTIONS /W1 /O2)
 
 	add_compile_options(
-		"$<$<CONFIG:Debug>:${MSVC_DEBUG_OPTIONS}>"
-		"$<$<CONFIG:RelWithDebInfo>:${MSVC_RELEASE_OPTIONS}>"
-		"$<$<CONFIG:Release>:${MSVC_RELEASE_OPTIONS}>"
-		"$<$<CONFIG:MinSizeRel>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:Debug>>:${MSVC_DEBUG_OPTIONS}>"
+		"$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:Debug>>:${MSVC_DEBUG_OPTIONS}>"
+		"$<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:RelWithDebInfo>>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:RelWithDebInfo>>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:Release>>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:Release>>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<AND:$<COMPILE_LANGUAGE:C>,$<CONFIG:MinSizeRel>>:${MSVC_RELEASE_OPTIONS}>"
+		"$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CONFIG:MinSizeRel>>:${MSVC_RELEASE_OPTIONS}>"
 	)
 
 	set(MSVC_DEBUG_LINK_OPTIONS /NODEFAULTLIB:LIBCMT)
