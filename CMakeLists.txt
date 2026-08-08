@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.13)
 if(POLICY CMP0177)
 	cmake_policy(SET CMP0177 NEW)
 endif()
+if(POLICY CMP0104)
+	cmake_policy(SET CMP0104 NEW)
+endif()
 
 project(mmx-node C CXX ASM)
 
@@ -11,6 +14,7 @@ include(FetchContent)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CUDA_STANDARD 17)
 
 if(MSVC)
 	include(GenerateExportHeader)
@@ -309,22 +313,32 @@ if(OpenCL_FOUND)
 	target_compile_definitions(mmx_modules PUBLIC WITH_OPENCL)
 endif()
 
-if(CUDA_FOUND)
+if(MMX_CUDA_FOUND)
 	message(STATUS "Found CUDA")
 	add_compile_definitions(WITH_CUDA)
-	cuda_add_library(mmx_pos_cuda STATIC src/pos/cuda_recompute.cu)
+	add_library(mmx_pos_cuda STATIC src/pos/cuda_recompute.cu)
+	target_compile_options(mmx_pos_cuda PRIVATE -Wno-deprecated-gpu-targets -diag-suppress 611,997,68,186)
+	if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
+		set_target_properties(mmx_pos_cuda PROPERTIES CUDA_ARCHITECTURES "61-virtual;75-virtual;86-virtual")
+	else()
+		target_compile_options(mmx_pos_cuda PRIVATE
+			-gencode arch=compute_61,code=compute_61
+			-gencode arch=compute_75,code=compute_75
+			-gencode arch=compute_86,code=compute_86
+		)
+	endif()
 	target_include_directories(mmx_pos_cuda PUBLIC include)
 	target_link_libraries(mmx_pos mmx_pos_cuda)
 	target_link_libraries(mmx_pos_cuda mmx_pos_verify mmx_iface)
 	
 	if(MSVC)
-	    # Copy CUDA DLLs to the output folder
-	    add_custom_command(TARGET mmx_modules
-	        POST_BUILD
-	        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-	        "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_12.dll"
-	        $<TARGET_FILE_DIR:mmx_modules>
-	    )
+		# Copy CUDA DLLs to the output folder
+		add_custom_command(TARGET mmx_modules
+			POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			"${MMX_CUDA_TOOLKIT_BIN_DIR}/cudart64_12.dll"
+			$<TARGET_FILE_DIR:mmx_modules>
+		)
 	endif()
 endif()
 
