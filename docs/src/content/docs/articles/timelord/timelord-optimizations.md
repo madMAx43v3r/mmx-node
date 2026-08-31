@@ -5,7 +5,7 @@ prev: false
 next: false
 
 articlePublished: 2023-07-11
-articleUpdated: 2025-03-17
+articleUpdated: 2026-08-30
 
 authorName: voidxno
 authorPicture: https://avatars.githubusercontent.com/u/53347890?s=200
@@ -239,6 +239,10 @@ To illustrate, the following file [sha256_ni_rec_sample.cpp](/resources/code/tim
 End result is what counts. However you would like the code to look, and what you think works. You are a slave to compiler optimizing code presented. Unless you really want to dig into source code, use architecture edition below.
 
 ### Optimize: Source code (architecture)
+
+:::note[Note]
+Source code in this section is now implemented in mmx-node. Do not need to manually update `sha256_ni_rec.cpp` file. Leaving section as-is, for reference.
+:::
 
 Although current [sha256_ni_rec.cpp](https://raw.githubusercontent.com/madMAx43v3r/mmx-node/refs/heads/master/src/sha256_ni_rec.cpp) is very fast. Not impossible certain CPU architectures could be faster with code organized other ways. Found that out for Intel 15th-gen E-core. Such specific code will not be implemented directly in mmx-node. Making it public here for others to use.
 
