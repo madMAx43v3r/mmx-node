@@ -94,16 +94,15 @@ function generateledpoints(numcols = minledcols, numrows = minledrows)
  if(numcols < minledcols) numcols = minledcols;
  if(numrows < minledrows) numrows = minledrows;
 
- const maxempty = Math.floor((numrows - 1) / 2);
- const inoutc = Math.floor(numcols / 10);
+ const maxempty = Math.floor(numrows / 2.75);
+ const wavecy = Math.floor(numrows / 4.0);
+ const wavexshift = Math.floor(Math.random() * numcols);
+
  const points = [];
 
  for(let x = 0, lastval = -1; x < numcols; ++x){
-   let ledfloor = numrows - maxempty;
-   if(x < inoutc || x >= (numcols - inoutc)){
-     ledfloor = (Math.floor(ledfloor / inoutc) <= 0) ? 1 : Math.floor(ledfloor / inoutc);
-     ledfloor = ledfloor * ((x < inoutc) ? (x + 1) : (numcols - x));
-     }
+   let xshift = x + wavexshift - ((x + wavexshift >= numcols) ? numcols : 0);
+   let ledfloor =  Math.round(wavecy *  Math.sin((2 * Math.PI * xshift) / numcols)) + Math.floor((wavecy * 1.75));
 
    let nextval = ledfloor + Math.floor(Math.random() * (maxempty + 1));
    if(nextval === lastval) nextval += (nextval === ledfloor) ? 1 : -1;
