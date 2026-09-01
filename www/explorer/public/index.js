@@ -92,10 +92,40 @@ Vue.component('main-menu', {
 			<v-img src="assets/img/logo_text_color_cy256_square.png" class="mx-2" :max-width="100"/>
 			<v-tab to="/explore">{{ $t('main_menu.explore') }}</v-tab>
 			<v-spacer></v-spacer>
+			<node-info></node-info>
 			<v-btn icon color="info" @click="toggle_dark_mode">
 				<v-icon class="m-1">{{$vuetify.theme.dark ? 'mdi-moon-waxing-crescent' : 'mdi-white-balance-sunny'}}</v-icon>
 			</v-btn>
 		</v-tabs>
+		`
+})
+
+Vue.component('node-info', {
+	data() {
+		return {
+			data: null,
+			timer: null
+		}
+	},
+	methods: {
+		update() {
+			fetch(WAPI_URL + '/node/info')
+				.then(response => response.json())
+				.then(data => this.data = data);
+		}
+	},
+	created() {
+		this.update();
+		this.timer = setInterval(() => { this.update(); }, 60000);
+	},
+	beforeDestroy() {
+		clearInterval(this.timer);
+	},
+	template: `
+		<div class="d-flex align-center mx-2">
+			<div v-if="data" class="text--primary font-weight-medium">{{ (data.total_space / Math.pow(1000, 2)).toFixed(3) }} PB</div>
+			<v-skeleton-loader v-else type="heading" width="10ch" align="center"/>
+		</div>
 		`
 })
 
