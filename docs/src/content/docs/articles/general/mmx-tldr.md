@@ -86,7 +86,6 @@ If needed, **MMX** is a solid foundation for any L2 solution.
 - [Explorer](https://explore.mmx.network/)
 - [X Feed](https://x.com/MMX_Network_)
 - [Discord](https://discord.gg/BswFhNkMzY)
-- [MMXplorer](https://mmxplorer.com/)
 
 ## Footnotes
 

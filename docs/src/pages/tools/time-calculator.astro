@@ -117,8 +117,8 @@ import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
   <p>
     VDF height: <span id="estpvdf"></span><br>
     Timestamp: <span id="estptimestamp"></span><br>
-    <span id="estpnontx"></span>% non-TX heights, previous 500k<br>
-    <span id="estp10sdev"></span>% 10 sec deviation, previous 500k
+    <span id="estpnontx"></span>% non-TX heights, previous 2m<br>
+    <span id="estp10sdev"></span>% 10 sec deviation, previous 2m
   </p>
 </details>
 <button type="button" id="estimatebuttonupdate">Query updated estimate data</button>
@@ -520,13 +520,13 @@ function lookup_output(height = null, vdf = null, timestamp = null, localtime = 
 const estimatedata = {
   stage: 0,
 
-  paramQToHeight: 1000000,
-  paramQToVDF: 1019055,
-  paramQToTimestamp: 1747121045546,
+  paramQToHeight: 5000000,
+  paramQToVDF: 5097891,
+  paramQToTimestamp: 1787118636543,
 
-  paramQFromHeight: 500000,
-  paramQFromVDF: 509337,
-  paramQFromTimestamp: 1742121511863,
+  paramQFromHeight: 3000000,
+  paramQFromVDF: 3058215,
+  paramQFromTimestamp: 1767119724663,
 
   paramHeight: 0,
   paramVDF: 0,
@@ -666,7 +666,7 @@ function estimateupdatefunc(callback = false, jsondata = null, status = null)
    estimatedata.paramQToTimestamp = estimateupdate_getvalue(jsondata["time_stamp"]);
 
    estimateupdatedata.stage = 3;
-   rpcqueryheight(estimatedata.paramQToHeight - 500000, estimateupdatefunc);
+   rpcqueryheight(estimatedata.paramQToHeight - 2000000, estimateupdatefunc);
    return;
    }
 

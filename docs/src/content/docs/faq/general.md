@@ -27,7 +27,7 @@ Formula (expanded):\
 `(farmTB / (netspacePB * 1000)) * (8640 blocks per day * 0.5 MMX)`
 
 :::note[Note]
-Find current Netspace in [MMXplorer](https://mmxplorer.com/dashboard). Calculations above gives average blocks won per day, multiplied by 0.5 MMX. That [block reward](#how-much-mmx-per-block-reward) can vary.
+Find current Netspace in [Explorer](https://explore.mmx.network/). Calculations above gives average blocks won per day, multiplied by 0.5 MMX. That [block reward](#how-much-mmx-per-block-reward) can vary.
 :::
 
 ### Is MMX a fork of Chia?
