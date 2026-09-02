@@ -116,7 +116,7 @@ Vue.component('node-info', {
 	},
 	created() {
 		this.update();
-		this.timer = setInterval(() => { this.update(); }, 60000);
+		this.timer = setInterval(() => { this.update(); }, 300000);
 	},
 	beforeDestroy() {
 		clearInterval(this.timer);
