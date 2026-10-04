@@ -47,19 +47,22 @@ constexpr inline Int cdiv(const Int& a, const Int2& b) {
 
 inline uint32_t rotl_32(const uint32_t v, int bits)
 {
+	bits = uint32_t(bits) & 31u;
 #ifdef _MSC_VER
 	return _rotl(v, bits);
 #else
-	return (v << bits) | (v >> (32 - bits));
+	// Mask both counts so a zero rotation never shifts by the word width.
+	return (v << bits) | (v >> ((32 - bits) & 31));
 #endif
 }
 
 inline uint64_t rotl_64(const uint64_t v, int bits)
 {
+	bits = uint32_t(bits) & 63u;
 #ifdef _MSC_VER
 	return _rotl64(v, bits);
 #else
-	return (v << bits) | (v >> (64 - bits));
+	return (v << bits) | (v >> ((64 - bits) & 63));
 #endif
 }
 

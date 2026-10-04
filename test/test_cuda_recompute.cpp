@@ -46,6 +46,7 @@ int main(int argc, char** argv)
 	const auto time_begin = get_time_ms();
 
 	std::set<uint64_t> jobs;
+	bool failed = false;
 	for(int i = 0; i < count; ++i) {
 		const auto id = cuda_recompute(ksize, clevel, plot_id, x_in);
 		jobs.insert(id);
@@ -54,6 +55,7 @@ int main(int argc, char** argv)
 	while(!jobs.empty()) {
 		const auto res = cuda_recompute_poll(jobs);
 		if(res->failed) {
+			failed = true;
 			std::cout << "[" << res->id << "] failed with: " << res->error << std::endl;
 		} else {
 			for(const auto& entry : res->entries) {
@@ -74,6 +76,6 @@ int main(int argc, char** argv)
 
 	vnx::close();
 
-	return 0;
+	return failed ? 1 : 0;
 }
 

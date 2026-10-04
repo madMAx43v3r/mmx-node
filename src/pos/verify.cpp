@@ -95,7 +95,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	if(ksize < 8 || ksize > 32) {
 		throw std::logic_error("invalid ksize");
 	}
-	if(xbits < 0 || xbits > ksize) {
+	if(xbits < 0 || xbits > 30 || xbits > ksize) {
 		throw std::logic_error("invalid xbits");
 	}
 
@@ -160,7 +160,7 @@ compute(const std::vector<uint32_t>& X_values, std::vector<uint32_t>* X_out, con
 	}
 	const auto X_set = std::set<uint32_t>(X_values.begin(), X_values.end());
 
-	const uint64_t num_entries_1 = X_set.size() << xbits;
+	const uint64_t num_entries_1 = uint64_t(X_set.size()) << xbits;
 
 	std::mutex mutex;
 	std::vector<int64_t> jobs;

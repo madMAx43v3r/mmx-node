@@ -59,6 +59,20 @@ int main(int argc, char** argv)
 
 	vnx::test::init("mmx");
 
+	VNX_TEST_BEGIN("memhash xbits limit")
+	{
+		for(const int xbits : {31, 32}) {
+			std::string error;
+			try {
+				mmx::pos::compute({}, nullptr, hash_t(), 32, xbits);
+			} catch(const std::logic_error& ex) {
+				error = ex.what();
+			}
+			vnx::test::expect(error, std::string("invalid xbits"));
+		}
+	}
+	VNX_TEST_END()
+
 	VNX_TEST_BEGIN("uint128")
 	{
 		vnx::test::expect(uint128().to_double(), 0);

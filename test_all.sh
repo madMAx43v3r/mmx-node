@@ -9,6 +9,9 @@ rm -rf tmp
 echo "Unit tests [mmx_tests]"
 ./build/test/mmx_tests
 
+echo "Unit tests [test_mem_hash_shifts]"
+./build/test/test_mem_hash_shifts
+
 echo "Unit tests [test_database]"
 ./build/test/test_database
 

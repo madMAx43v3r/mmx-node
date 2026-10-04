@@ -26,7 +26,8 @@
 
 __device__ inline
 uint32_t cuda_rotl_32(const uint32_t w, const uint32_t c) {
-	return __funnelshift_l(w, w, c);
+	// Match the CPU helper's modulo-32 rotation, including a zero count.
+	return __funnelshift_l(w, w, c & 31u);
 }
 
 #define MMXPOS_HASHROUND(a, b, c, d) \
@@ -140,7 +141,7 @@ void cuda_calc_mem_hash(uint32_t* mem, uint32_t* hash, const int num_iter)
 		const uint32_t bits = (dir >> 22) % 32u;
 		const uint32_t offset = (dir >> 27);
 
-		state += cuda_rotl_32(lmem[k][offset * N + (iter + x) % N], bits) ^ sum;
+		state += cuda_rotl_32(lmem[k][offset * N + (iter % N + x) % N], bits) ^ sum;
 
 		__syncwarp();
 
@@ -551,13 +552,19 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 			x_set.clear();
 		}
 
-		cudaMemcpyAsync(dev->X_dev, dev->X_buf,   M * 256 * 4, cudaMemcpyHostToDevice, stream);
-		cudaMemcpyAsync(dev->ID_dev, dev->ID_buf, M * 32,      cudaMemcpyHostToDevice, stream);
+		cudaError_t err = cudaSuccess;
+		const auto record_error = [&err](const cudaError_t code) {
+			if(err == cudaSuccess) {
+				err = code;
+			}
+		};
+		record_error(cudaMemcpyAsync(dev->X_dev, dev->X_buf,   M * 256 * 4, cudaMemcpyHostToDevice, stream));
+		record_error(cudaMemcpyAsync(dev->ID_dev, dev->ID_buf, M * 32,      cudaMemcpyHostToDevice, stream));
 
 		for(uint32_t iter = 0; iter < num_iter; ++iter)
 		{
 			const uint64_t y_0 = iter * N;
-			{
+			if(err == cudaSuccess) {
 				dim3 block(256, 1);
 				dim3 grid(N, M);
 				cuda_gen_mem_array<<<grid, block, 0, stream>>>(
@@ -567,16 +574,18 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 						dev->X_dev,
 						dev->ID_dev,
 						xbits, y_0);
+				record_error(cudaGetLastError());
 			}
-			{
+			if(err == cudaSuccess) {
 				dim3 block(32, 4);
 				dim3 grid(1, grid_size / block.y / 64, 64);
 				cuda_calc_mem_hash<<<grid, block, 0, stream>>>(
 						dev->mem_dev,
 						dev->hash_dev,
 						MEM_HASH_ITER);
+				record_error(cudaGetLastError());
 			}
-			{
+			if(err == cudaSuccess) {
 				dim3 block(256, 1);
 				dim3 grid(N * M, 1);
 				cuda_final_mem_hash<<<grid, block, 0, stream>>>(
@@ -585,19 +594,22 @@ static void cuda_recompute_loop(std::shared_ptr<device_t> dev)
 						(uint4*)dev->hash_dev,
 						(uint4*)dev->key_dev,
 						KMASK);
+				record_error(cudaGetLastError());
 			}
-			cudaMemcpyAsync(dev->X_buf, dev->X_out, grid_size * 4,  cudaMemcpyDeviceToHost, stream);
-			cudaMemcpyAsync(dev->Y_buf, dev->Y_dev, grid_size * 4,  cudaMemcpyDeviceToHost, stream);
-			cudaMemcpyAsync(dev->M_buf, dev->M_dev, grid_size * 64, cudaMemcpyDeviceToHost, stream);
+			if(err == cudaSuccess) {
+				record_error(cudaMemcpyAsync(dev->X_buf, dev->X_out, grid_size * 4,  cudaMemcpyDeviceToHost, stream));
+				record_error(cudaMemcpyAsync(dev->Y_buf, dev->Y_dev, grid_size * 4,  cudaMemcpyDeviceToHost, stream));
+				record_error(cudaMemcpyAsync(dev->M_buf, dev->M_dev, grid_size * 64, cudaMemcpyDeviceToHost, stream));
+			}
 
-			const auto err = cudaStreamSynchronize(stream);
+			record_error(cudaStreamSynchronize(stream));
 			if(err != cudaSuccess) {
 				std::lock_guard<std::mutex> lock(g_mutex);
 				for(const auto& req : req_list) {
 					auto res = std::make_shared<cuda_result_t>();
 					res->id = req->id;
 					res->failed = true;
-					res->error = "CUDA error";
+					res->error = std::string("CUDA error: ") + cudaGetErrorString(err);
 					g_result_map[res->id] = res;
 				}
 				g_result_signal.notify_all();
