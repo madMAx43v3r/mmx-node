@@ -67,6 +67,110 @@ The optional passphrase changes key derivation; it does not encrypt the seed sto
 file and the mnemonic backup private. Only public addresses and signed transactions are sent to the RPC. `curl` is
 required for HTTPS RPC access.
 
+### Desktop and automation interface
+
+On Linux, `--json` emits one JSON object on stdout on success and one JSON error object on stderr on failure
+(exit status 1). Each object includes `schema_version: 1`, `command`, and `status`. Machine mode never prompts;
+human-readable output remains the default. Help output is intended for humans.
+
+`mmxwallet capabilities --json` reports the supported commands, schema version, secret input mechanism,
+maximum memo byte length, maximum address count, and transaction-preparation support. Wallet commands supported
+in JSON mode are `create`, `import`, `list`, `use`, `mnemonic`, `get mnemonic`, `address`, `addresses`, `balance`,
+`history`, `send`, `broadcast`, `info`, and `transaction`.
+
+Supply secrets through a private stdin pipe using `--input-stdin`. It reads one JSON line, up to 16 KiB,
+containing optional `mnemonic` and `passphrase` string fields. It accepts normal UTF-8 and JSON Unicode escapes.
+Do not put recovery words or passphrases in command arguments or environment variables. For example, a desktop
+controller starts `mmxwallet import --json --input-stdin --file /chosen/wallet.dat` and writes this shape to stdin:
+
+```json
+{"mnemonic":"<recovery words>","passphrase":"<optional derivation passphrase>"}
+```
+
+Pass `--with-passphrase` when creating/importing a wallet that should use the supplied derivation passphrase.
+For an existing passphrase wallet, `address`, `addresses`, `balance`, and `history` also need its passphrase to
+derive addresses. Missing input returns `mnemonic_required` or `passphrase_required`; wrong input returns
+`invalid_mnemonic` or `invalid_passphrase`. Malformed secret input returns `invalid_secret_input` without echoing it.
+An empty passphrase can be supplied explicitly. Passphrases affect derivation and do not encrypt the key file.
+
+`create` and `import` JSON omit recovery words unless `--show-mnemonic` is explicitly requested. The dedicated
+`mnemonic` / `get mnemonic` commands return them intentionally. Treat these outputs as secrets and exclude them
+from application logs. `--non-interactive` can also disable prompts without selecting JSON output.
+
+| Command | JSON result fields, in addition to the envelope |
+| --- | --- |
+| `create`, `import` | Absolute `wallet_file`, `fingerprint`, primary `address`, `with_passphrase`; optional `mnemonic` |
+| `list` | Absolute `wallet_directory`, `wallets` array with `index`, `fingerprint`, absolute `wallet_file`, `with_passphrase`, `active` |
+| `use` | Selected `fingerprint` and absolute `wallet_file` |
+| `address`, `addresses` | Absolute `wallet_file`, `address` or `addresses` array |
+| `mnemonic`, `get mnemonic` | `mnemonic`, absolute `wallet_file`, `fingerprint` |
+| `balance` | `network`, `current_height`, `balances` array with `currency_address`, `symbol`, `decimals`, decimal-string `amount`, integer-string `amount_atomic` |
+| `history` | `network`, `current_height`, newest-first `history` array; RPC entry fields preserved, `amount` formatted as a decimal string and `amount_atomic` as an integer string |
+| `info` | `rpc`, `network`, `height`, `is_synced` |
+| `send` | Existing transfer fields, plus `network`, `decimals`, integer-string `max_fee_atomic`, `transaction_file` |
+| `broadcast` | `transaction_id`, `broadcast: true`, `status: "broadcast"` |
+| `transaction` | `transaction_id`, `network`, `current_height`, `confirmations`, `status`, raw `transaction` or null |
+
+Keep amounts as strings or arbitrary-precision integers. Payment amounts are converted directly from decimal
+argument digits to atomic units, including scientific notation; overflow and fractional atomic units are
+rejected with `invalid_amount` instead of being rounded. Memo limits are **64 UTF-8 bytes**, not 64 characters.
+
+### Prepare, review, and broadcast
+
+A GUI should use two separate operations:
+
+```sh
+mmxwallet send --json --file /chosen/wallet.dat --target <address> --amount 1.234567 --memo "optional memo" --transaction /private/new-transaction.json
+mmxwallet broadcast --json --transaction /private/new-transaction.json
+```
+
+Without `--yes`, JSON/noninteractive send signs and validates but does not broadcast. It returns `status: "validated"`,
+`broadcast: false`, the transaction ID, exact amount/fee, signed maximum fee, and expiry/current heights.
+Save the transaction before presenting its review. `broadcast` validates and submits the same saved bytes;
+it refuses an expired transaction or a validation fee above its signed maximum. Linux saves wallet and
+transaction files privately, syncs their contents/directory, and refuses to overwrite an existing file.
+Use a fresh transaction path for each preparation; an existing path returns `transaction_exists`.
+A failed save does not broadcast, including when `--yes` was supplied.
+
+`--yes` retains the direct-send behavior for callers that explicitly want it. No automatic payment retry is
+performed. If the RPC times out or fails during submission, it may have accepted the transaction already.
+Check the saved transaction ID before deciding whether to rebroadcast the same bytes.
+
+```sh
+mmxwallet transaction <64-character-hex-txid> --json
+```
+
+Statuses are `unknown`, `pending`, `expired`, `included`, or `failed`. Included/failed transactions include a
+confirmation count. `unknown` means the selected RPC does not currently know the transaction; it does not
+prove that the transaction failed or expired. Poll again to observe confirmation changes or reorganizations.
+The command needs no wallet key or passphrase.
+
+### External curl on Linux
+
+`curl` remains the HTTP transport. Use `--curl /absolute/path/to/curl` for a packaged desktop application;
+otherwise the CLI discovers it in `PATH`. Linux invokes curl directly with argument arrays, ignores `.curlrc`,
+retains TLS certificate verification and request/connection timeouts, and uses private temporary directories.
+Curl does not inherit the wallet's stdin pipe. Package its libraries and ensure CA certificates are available.
+Errors include `curl_unavailable`, `rpc_timeout`, `rpc_transport_error`, `rpc_http_error`, `rpc_response_invalid`,
+`rpc_not_synced`, and `rpc_network_mismatch`. `insufficient_funds` remains the wallet liquidity error.
+
+Wallet location defaults remain `$MMX_HOME` or `$HOME/.mmx`. Empty environment values are ignored. If neither
+is available, directory-based operations fail with `wallet_directory_unavailable` instead of writing to the
+current directory. An explicit `--file` and wallet-independent RPC commands do not need either variable.
+
+### Linux contract tests
+
+After building the standalone target, run:
+
+```sh
+python3 test/test_mmxwallet_cli.py --binary build/mmxwallet -v
+```
+
+The tests use disposable keys, a localhost mock RPC, and Python's standard library. They cover machine output,
+private stdin input, Unicode, custom key/curl paths, exact amounts, memo boundaries, file protection/no overwrite,
+RPC errors, transaction status, and preparation/broadcast of identical bytes. They do not contact the public
+RPC or spend real funds. Windows and macOS are not yet qualified by this test suite.
+
 ## Node CLI
 
 To check on the node: `mmx node info`

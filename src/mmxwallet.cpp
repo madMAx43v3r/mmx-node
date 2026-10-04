@@ -14,9 +14,12 @@
 #include <mmx/utils.h>
 
 #include <vnx/vnx.h>
+#include <vnx/JSON.h>
 
 #include <algorithm>
 #include <cctype>
+#include <cerrno>
+#include <cmath>
 #include <cstring>
 #include <cstdio>
 #include <filesystem>
@@ -37,16 +40,164 @@
 #define MMX_POPEN _popen
 #define MMX_PCLOSE _pclose
 #else
+#include <fcntl.h>
+#include <spawn.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #define MMX_POPEN popen
 #define MMX_PCLOSE pclose
 #endif
 
+#ifndef _WIN32
+extern char** environ;
+#endif
 
 namespace {
 
 constexpr uint32_t MAX_NUM_ADDRESSES = 10;
+constexpr uint32_t JSON_SCHEMA_VERSION = 1;
+
+class wallet_error : public std::runtime_error {
+public:
+	wallet_error(const std::string& code, const std::string& message)
+		: std::runtime_error(message), code(code) {}
+	std::string code;
+};
+
+std::string curl_executable;
+bool non_interactive = false;
+vnx::optional<std::string> input_mnemonic;
+vnx::optional<std::string> input_passphrase;
+
+std::string encode_json(const vnx::Object& object)
+{
+	// VNX escapes common controls, but not every byte below 0x20.
+	// Keep machine output valid JSON for arbitrary memo/error text.
+	const auto text = vnx::to_string(vnx::Variant(object));
+	std::string encoded;
+	const char* hex = "0123456789abcdef";
+	for(const unsigned char ch : text) {
+		if(ch < 0x20) {
+			encoded += "\\u00"; encoded += hex[ch >> 4]; encoded += hex[ch & 15];
+		} else encoded += ch;
+	}
+	return encoded;
+}
+
+void print_json(const std::string& command, vnx::Object result = {})
+{
+	result["schema_version"] = JSON_SCHEMA_VERSION;
+	result["command"] = command;
+	if(result["status"].is_null()) result["status"] = "ok";
+	std::cout << encode_json(result) << "\n";
+}
+
+// VNX's JSON reader does not decode \u escapes. Normalize them locally so
+// Unicode memos and passphrases work with ordinary JSON encoders, without
+// changing the shared node serialization code.
+std::string decode_json_unicode(const std::string& input)
+{
+	std::string output;
+	bool in_string = false;
+	auto hex4 = [&](size_t& index) {
+		uint32_t value = 0;
+		for(size_t n = 0; n < 4; ++n) {
+			if(++index >= input.size()) throw std::logic_error("incomplete Unicode escape");
+			const auto ch = input[index];
+			const int digit = ch >= '0' && ch <= '9' ? ch - '0' : ch >= 'a' && ch <= 'f' ? ch - 'a' + 10 : ch >= 'A' && ch <= 'F' ? ch - 'A' + 10 : -1;
+			if(digit < 0) throw std::logic_error("invalid Unicode escape");
+			value = value * 16 + digit;
+		}
+		return value;
+	};
+	for(size_t i = 0; i < input.size(); ++i) {
+		const auto ch = input[i];
+		if(ch == '"') in_string = !in_string;
+		if(in_string && ch == '\\') {
+			if(++i >= input.size()) throw std::logic_error("incomplete JSON escape");
+			if(input[i] == 'u') {
+				auto code = hex4(i);
+				if(code >= 0xD800 && code <= 0xDBFF) {
+					if(i + 2 >= input.size() || input[i + 1] != '\\' || input[i + 2] != 'u') throw std::logic_error("missing low surrogate");
+					i += 2;
+					const auto low = hex4(i);
+					if(low < 0xDC00 || low > 0xDFFF) throw std::logic_error("invalid low surrogate");
+					code = 0x10000 + ((code - 0xD800) << 10) + low - 0xDC00;
+				} else if(code >= 0xDC00 && code <= 0xDFFF) throw std::logic_error("unexpected low surrogate");
+				if(code < 0x80) {
+					if(code == '"' || code == '\\') output += '\\';
+					output += char(code);
+				} else if(code < 0x800) {
+					output += char(0xC0 | (code >> 6)); output += char(0x80 | (code & 63));
+				} else if(code < 0x10000) {
+					output += char(0xE0 | (code >> 12)); output += char(0x80 | ((code >> 6) & 63)); output += char(0x80 | (code & 63));
+				} else {
+					output += char(0xF0 | (code >> 18)); output += char(0x80 | ((code >> 12) & 63));
+					output += char(0x80 | ((code >> 6) & 63)); output += char(0x80 | (code & 63));
+				}
+			} else {
+				if(std::string("\"\\/bfnrt").find(input[i]) == std::string::npos) throw std::logic_error("invalid JSON escape");
+				output += '\\'; output += input[i];
+			}
+		} else output += ch;
+	}
+	if(in_string) throw std::logic_error("unterminated JSON string");
+	return output;
+}
+
+vnx::Variant read_json_document(const std::string& encoded)
+{
+	std::istringstream input(decode_json_unicode(encoded));
+	const auto json = vnx::read_json(input);
+	input >> std::ws;
+	if(!json || !input.eof()) throw std::logic_error("expected one JSON value");
+	return json->to_variant();
+}
+
+void read_secret_input()
+{
+#ifndef _WIN32
+	if(::isatty(STDIN_FILENO)) {
+		throw wallet_error("invalid_secret_input", "--input-stdin requires a private pipe or redirected input");
+	}
+#endif
+	std::string encoded;
+	char ch;
+	while(std::cin.get(ch) && ch != '\n') {
+		if(encoded.size() >= 16384) {
+			throw wallet_error("invalid_secret_input", "secret input exceeds 16384 bytes");
+		}
+		encoded += ch;
+	}
+	try {
+		const auto parsed = read_json_document(encoded);
+		if(!parsed.is_object()) throw std::logic_error("secret input must be an object");
+		const auto object = parsed.to_object();
+		if(!object["mnemonic"].is_null()) {
+			if(!object["mnemonic"].is_string()) throw std::logic_error("mnemonic must be a string");
+			input_mnemonic = object["mnemonic"].to<std::string>();
+		}
+		if(!object["passphrase"].is_null()) {
+			if(!object["passphrase"].is_string()) throw std::logic_error("passphrase must be a string");
+			input_passphrase = object["passphrase"].to<std::string>();
+		}
+	} catch(...) {
+		std::fill(encoded.begin(), encoded.end(), '\0');
+		throw wallet_error("invalid_secret_input", "expected one JSON object containing mnemonic and/or passphrase strings");
+	}
+	std::fill(encoded.begin(), encoded.end(), '\0');
+}
+
+std::string secret_value(const vnx::optional<std::string>& supplied,
+		const std::string& prompt, const std::string& name)
+{
+	if(supplied) return *supplied;
+	if(non_interactive) {
+		throw wallet_error(name + "_required", name + " must be supplied through --input-stdin");
+	}
+	return vnx::input_password(prompt);
+}
 
 std::string trim(std::string value)
 {
@@ -122,39 +273,154 @@ std::optional<std::filesystem::path> find_curl()
 	return {};
 }
 
+// Each request gets an atomically created private directory. No predictable
+// shared-directory files or check-then-create races are used on Linux.
 class temp_file_t {
 public:
-	explicit temp_file_t(const std::string& suffix)
+	explicit temp_file_t(const std::string& suffix,
+			const std::filesystem::path& base = std::filesystem::temp_directory_path())
 	{
+#ifndef _WIN32
+		std::string pattern = (base / "mmxwallet-XXXXXX").string();
+		const auto made = ::mkdtemp(pattern.data());
+		if(!made) throw wallet_error("io_error", "failed to create private temporary directory");
+		directory = made;
+#else
 		std::random_device random;
 		for(size_t attempt = 0; attempt < 100; ++attempt) {
 			std::ostringstream name;
-			name << "mmxwallet-" << std::hex << random() << random() << suffix;
-			path = std::filesystem::temp_directory_path() / name.str();
-			if(!std::filesystem::exists(path)) {
-				return;
+			name << "mmxwallet-" << std::hex << random() << random();
+			const auto candidate = base / name.str();
+			if(std::filesystem::create_directory(candidate)) {
+				directory = candidate;
+				break;
 			}
 		}
-		throw std::runtime_error("failed to allocate temporary file name");
+		if(directory.empty()) throw wallet_error("io_error", "failed to create temporary directory");
+#endif
+		path = directory / ("data" + suffix);
 	}
 
 	~temp_file_t()
 	{
 		std::error_code error;
 		std::filesystem::remove(path, error);
+		std::filesystem::remove(directory, error);
 	}
 
+	temp_file_t(const temp_file_t&) = delete;
+	temp_file_t& operator=(const temp_file_t&) = delete;
 	std::filesystem::path path;
+private:
+	std::filesystem::path directory;
 };
+
+#ifndef _WIN32
+void install_private_file(const std::filesystem::path& source,
+		const std::filesystem::path& destination, const std::string& exists_code)
+{
+	const auto file = ::open(source.c_str(), O_RDONLY | O_CLOEXEC);
+	if(file < 0) throw wallet_error("io_error", "failed to open file for durable save");
+	const auto synced = ::fsync(file);
+	::close(file);
+	if(synced != 0) throw wallet_error("io_error", "failed to sync saved file");
+	if(::link(source.c_str(), destination.c_str()) != 0) {
+		throw wallet_error(errno == EEXIST ? exists_code : "io_error", "failed to save file without overwriting; choose a new path");
+	}
+	const auto parent = destination.parent_path().empty() ? std::filesystem::path(".") : destination.parent_path();
+	const auto directory = ::open(parent.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+	if(directory < 0) throw wallet_error("io_error", "failed to open saved file directory");
+	const auto directory_synced = ::fsync(directory);
+	::close(directory);
+	if(directory_synced != 0) throw wallet_error("io_error", "failed to sync saved file directory");
+}
+#endif
+
+std::string run_curl(const std::vector<std::string>& arguments)
+{
+#ifdef _WIN32
+	std::string command;
+	for(const auto& argument : arguments) {
+		if(!command.empty()) command += " ";
+		command += shell_quote(argument);
+	}
+	auto pipe = MMX_POPEN(command.c_str(), "r");
+	if(!pipe) throw wallet_error("rpc_transport_error", "failed to execute curl");
+	std::string output;
+	char buffer[64];
+	while(std::fgets(buffer, sizeof(buffer), pipe)) output += buffer;
+	const auto status = MMX_PCLOSE(pipe);
+	if(status != 0) throw wallet_error("rpc_transport_error", "curl RPC request failed");
+	return output;
+#else
+	int descriptors[2];
+	if(::pipe2(descriptors, O_CLOEXEC) != 0) {
+		throw wallet_error("rpc_transport_error", "failed to create curl status pipe");
+	}
+	posix_spawn_file_actions_t actions;
+	const auto initialized = ::posix_spawn_file_actions_init(&actions);
+	if(initialized != 0) {
+		::close(descriptors[0]); ::close(descriptors[1]);
+		throw wallet_error("rpc_transport_error", "failed to initialize curl process");
+	}
+	// Keep curl diagnostics out of the JSON error channel. Exit status is
+	// reported below, including the ambiguous outcome of a timed-out POST.
+	int error = ::posix_spawn_file_actions_adddup2(&actions, descriptors[1], STDOUT_FILENO);
+	if(!error) error = ::posix_spawn_file_actions_addclose(&actions, descriptors[0]);
+	if(!error) error = ::posix_spawn_file_actions_addclose(&actions, descriptors[1]);
+	if(!error) error = ::posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0);
+	if(!error) error = ::posix_spawn_file_actions_addopen(&actions, STDIN_FILENO, "/dev/null", O_RDONLY, 0);
+	std::vector<char*> argv;
+	for(const auto& argument : arguments) argv.push_back(const_cast<char*>(argument.c_str()));
+	argv.push_back(nullptr);
+	pid_t child = 0;
+	if(!error) error = ::posix_spawn(&child, argv[0], &actions, nullptr, argv.data(), environ);
+	::posix_spawn_file_actions_destroy(&actions);
+	::close(descriptors[1]);
+	if(error) {
+		::close(descriptors[0]);
+		throw wallet_error("rpc_transport_error", "failed to execute curl: " + std::string(std::strerror(error)));
+	}
+	std::string output;
+	char buffer[64];
+	bool read_failed = false;
+	while(true) {
+		const auto count = ::read(descriptors[0], buffer, sizeof(buffer));
+		if(count < 0 && errno == EINTR) continue;
+		if(count < 0) { read_failed = true; break; }
+		if(!count) break;
+		if(output.size() < 4096) output.append(buffer, std::min<size_t>(count, 4096 - output.size()));
+	}
+	::close(descriptors[0]);
+	int status = 0;
+	pid_t waited;
+	do { waited = ::waitpid(child, &status, 0); } while(waited < 0 && errno == EINTR);
+	if(waited < 0 || read_failed || !WIFEXITED(status)) {
+		throw wallet_error("rpc_transport_error", "curl RPC process did not complete normally");
+	}
+	if(WEXITSTATUS(status) != 0) {
+		throw wallet_error(WEXITSTATUS(status) == 28 ? "rpc_timeout" : "rpc_transport_error",
+				"curl RPC request failed (exit " + std::to_string(WEXITSTATUS(status))
+				+ "); a submitted transaction may still have been accepted; check its ID before retrying");
+	}
+	return output;
+#endif
+}
 
 class rpc_client_t {
 public:
 	explicit rpc_client_t(std::string url)
 	{
-		const auto curl = find_curl();
-		if(!curl) {
-			throw std::runtime_error("curl was not found in PATH; install curl or add it to PATH to use the RPC");
+		const auto curl = curl_executable.empty() ? find_curl()
+				: std::optional<std::filesystem::path>(std::filesystem::absolute(curl_executable));
+		if(!curl || !std::filesystem::is_regular_file(*curl)) {
+			throw wallet_error("curl_unavailable", "curl was not found; use --curl PATH or install curl");
 		}
+#ifndef _WIN32
+		if(::access(curl->c_str(), X_OK) != 0) {
+			throw wallet_error("curl_unavailable", "configured curl executable is not executable");
+		}
+#endif
 		curl_path = curl->string();
 
 		url = trim(url);
@@ -177,7 +443,8 @@ public:
 
 	vnx::Variant get_json(const std::string& path) const
 	{
-		return parse_json(request("GET", path, {}));
+		const auto content = request("GET", path, {});
+		return content.empty() ? vnx::Variant() : parse_json(content);
 	}
 
 	vnx::Variant post_json(const std::string& path, const std::string& body) const
@@ -199,51 +466,41 @@ private:
 		temp_file_t response_file(".response");
 		temp_file_t request_file(".request");
 
-		std::string command = shell_quote(curl_path)
-				+ " --silent --show-error --max-time 30 --connect-timeout 10 --max-filesize 16777216 --proto "
-				+ shell_quote("=http,https") + " --output " + shell_quote(response_file.path.string())
-				+ " --write-out " + shell_quote("%{http_code}");
+		std::vector<std::string> arguments = {curl_path, "--disable", "--silent", "--show-error",
+			"--max-time", "30", "--connect-timeout", "10", "--max-filesize", "16777216",
+			"--proto", "=http,https", "--output", response_file.path.string(), "--write-out", "%{http_code}"};
 		if(method == "POST") {
-			{
-				std::ofstream stream(request_file.path, std::ios::binary | std::ios::trunc);
-				if(!stream) {
-					throw std::runtime_error("failed to create temporary request file");
-				}
-				stream << body;
+			std::ofstream stream(request_file.path, std::ios::binary | std::ios::trunc);
+			if(!stream || !(stream << body)) {
+				throw wallet_error("io_error", "failed to write temporary RPC request");
 			}
-			std::filesystem::permissions(request_file.path,
-					std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
-					std::filesystem::perm_options::replace);
-			command += " --header " + shell_quote("Content-Type: application/json")
-					+ " --data-binary " + shell_quote("@" + request_file.path.string());
+			stream.close();
+			arguments.insert(arguments.end(), {"--header", "Content-Type: application/json",
+				"--data-binary", "@" + request_file.path.string()});
 		}
-		command += " " + shell_quote(base_url + path);
+		arguments.insert(arguments.end(), {"--url", base_url + path});
+		const auto status_text = run_curl(arguments);
 
-		std::string status_text;
-		if(auto pipe = MMX_POPEN(command.c_str(), "r")) {
-			char buffer[64];
-			while(std::fgets(buffer, sizeof(buffer), pipe)) {
-				status_text += buffer;
-			}
-			const auto exit_code = MMX_PCLOSE(pipe);
-			if(exit_code != 0) {
-				throw std::runtime_error("RPC request failed: " + base_url);
-			}
-		} else {
-			throw std::runtime_error("failed to execute curl");
+		if(std::filesystem::file_size(response_file.path) > 16777216) {
+			throw wallet_error("rpc_response_invalid", "RPC response exceeds size limit");
 		}
-
 		std::ifstream stream(response_file.path, std::ios::binary);
+		if(!stream) throw wallet_error("io_error", "failed to read RPC response");
 		std::ostringstream response;
 		response << stream.rdbuf();
 		const auto content = response.str();
-		const auto status = std::stoi(trim(status_text));
+		const auto status_value = trim(status_text);
+		if(status_value.size() != 3 || !std::all_of(status_value.begin(), status_value.end(),
+				[](unsigned char ch) { return std::isdigit(ch); })) {
+			throw wallet_error("rpc_response_invalid", "curl returned an invalid HTTP status");
+		}
+		const auto status = std::stoi(status_value);
 		if(status < 200 || status >= 300) {
 			auto message = trim(content);
 			if(message.size() > 500) {
 				message.resize(500);
 			}
-			throw std::runtime_error("RPC returned HTTP " + std::to_string(status)
+			throw wallet_error("rpc_http_error", "RPC returned HTTP " + std::to_string(status)
 					+ (message.empty() ? std::string() : ": " + message));
 		}
 		return content;
@@ -252,9 +509,9 @@ private:
 	static vnx::Variant parse_json(const std::string& content)
 	{
 		try {
-			return vnx::from_string<vnx::Variant>(content);
+			return read_json_document(content);
 		} catch(const std::exception& ex) {
-			throw std::runtime_error(std::string("invalid JSON response from RPC: ") + ex.what());
+			throw wallet_error("rpc_response_invalid", "invalid JSON response from RPC");
 		}
 	}
 
@@ -288,13 +545,13 @@ struct wallet_entry_t {
 
 std::filesystem::path get_wallet_directory()
 {
-	if(const auto path = std::getenv("MMX_HOME")) {
+	if(const auto path = std::getenv("MMX_HOME"); path && *path) {
 		return path;
 	}
-	if(const auto path = std::getenv("HOME")) {
+	if(const auto path = std::getenv("HOME"); path && *path) {
 		return std::filesystem::path(path) / ".mmx";
 	}
-	return ".";
+	throw wallet_error("wallet_directory_unavailable", "set MMX_HOME or HOME, or select a wallet with --file");
 }
 
 std::string get_finger_print(const mmx::KeyFile& key)
@@ -483,7 +740,10 @@ std::shared_ptr<mmx::ECDSA_Wallet> load_wallet(
 	auto wallet = std::make_shared<mmx::ECDSA_Wallet>(
 			key->seed_value, make_account(*key, account_index, num_addresses), params);
 	if(requires_passphrase(*key)) {
-		wallet->unlock(vnx::input_password("Passphrase: "));
+		try {
+			wallet->unlock(secret_value(input_passphrase, "Passphrase: ", "passphrase"));
+		} catch(const wallet_error&) { throw; }
+		catch(const std::exception&) { throw wallet_error("invalid_passphrase", "invalid wallet passphrase"); }
 	} else {
 		wallet->unlock();
 	}
@@ -493,13 +753,20 @@ std::shared_ptr<mmx::ECDSA_Wallet> load_wallet(
 void write_wallet(const std::filesystem::path& path, const mmx::KeyFile& key)
 {
 	if(std::filesystem::exists(path)) {
-		throw std::logic_error("wallet already exists: " + path.string());
+		throw wallet_error("wallet_exists", "wallet already exists: " + path.string());
 	}
 	if(!path.parent_path().empty() && std::filesystem::create_directories(path.parent_path())) {
 		std::filesystem::permissions(path.parent_path(), std::filesystem::perms::owner_all,
 				std::filesystem::perm_options::replace);
 	}
+#ifndef _WIN32
+	const auto parent = path.parent_path().empty() ? std::filesystem::path(".") : path.parent_path();
+	temp_file_t temporary(".wallet", parent);
+	vnx::write_to_file(temporary.path.string(), key);
+	install_private_file(temporary.path, path, "wallet_exists");
+#else
 	vnx::write_to_file(path.string(), key);
+#endif
 	std::filesystem::permissions(path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
 			std::filesystem::perm_options::replace);
 }
@@ -521,10 +788,10 @@ uint32_t check_rpc_state(const rpc_client_t& rpc, const std::shared_ptr<const mm
 {
 	const auto node_info = rpc.get_json("/node/info").to_object();
 	if(!node_info["is_synced"].to<bool>()) {
-		throw std::runtime_error("RPC node is not synced");
+		throw wallet_error("rpc_not_synced", "RPC node is not synced");
 	}
 	if(node_info["name"].to_string_value() != params->network) {
-		throw std::runtime_error("RPC network does not match chain parameters");
+		throw wallet_error("rpc_network_mismatch", "RPC network does not match chain parameters");
 	}
 	return node_info["height"].to<uint32_t>();
 }
@@ -577,7 +844,61 @@ uint64_t make_nonce()
 
 std::string format_amount(const mmx::uint128& amount, const int32_t decimals)
 {
-	return mmx::fixed128(amount, decimals).to_string();
+	if(decimals < 0 || decimals > 18) throw wallet_error("rpc_response_invalid", "invalid currency decimals");
+	auto digits = amount.to_string();
+	if(decimals == 0) return digits;
+	if(digits.size() <= size_t(decimals)) digits.insert(0, size_t(decimals) + 1 - digits.size(), '0');
+	digits.insert(digits.size() - decimals, 1, '.');
+	while(digits.back() == '0') digits.pop_back();
+	if(digits.back() == '.') digits.pop_back();
+	return digits;
+}
+
+// Capture the original amount argument before VNX turns JSON numbers into
+// doubles. Convert decimal digits directly into atomic units, rejecting
+// overflow or a fractional atomic unit rather than rounding a payment.
+mmx::uint128 parse_payment_amount(std::string text, const int32_t decimals)
+{
+	if(text.empty() || text.size() > 128 || decimals < 0 || decimals > 18) {
+		throw wallet_error("invalid_amount", "invalid payment amount");
+	}
+	int exponent = 0;
+	const auto exp_pos = text.find_first_of("eE");
+	if(exp_pos != std::string::npos) {
+		const auto exp = text.substr(exp_pos + 1);
+		size_t end = 0;
+		try { exponent = std::stoi(exp, &end); }
+		catch(...) { throw wallet_error("invalid_amount", "invalid amount exponent"); }
+		if(end != exp.size() || exponent < -128 || exponent > 128) {
+			throw wallet_error("invalid_amount", "amount exponent is out of range");
+		}
+		text.resize(exp_pos);
+	}
+	const auto point = text.find_first_of(".,");
+	const auto fractional = point == std::string::npos ? 0 : int(text.size() - point - 1);
+	if(point != std::string::npos) text.erase(point, 1);
+	if(text.empty() || text.find_first_not_of("0123456789") != std::string::npos) {
+		throw wallet_error("invalid_amount", "amount must be a positive decimal number");
+	}
+	const auto nonzero = text.find_first_not_of('0');
+	if(nonzero == std::string::npos) return {};
+	text.erase(0, nonzero);
+	const int power = decimals + exponent - fractional;
+	if(power < 0) {
+		const auto remove = size_t(-power);
+		if(remove >= text.size() || text.find_last_not_of('0') >= text.size() - remove) {
+			throw wallet_error("invalid_amount", "amount contains a fractional atomic unit");
+		}
+		text.resize(text.size() - remove);
+	} else {
+		if(text.size() + size_t(power) > 39) throw wallet_error("invalid_amount", "amount exceeds 128-bit atomic units");
+		text.append(power, '0');
+	}
+	const std::string maximum = "340282366920938463463374607431768211455";
+	if(text.size() > maximum.size() || (text.size() == maximum.size() && text > maximum)) {
+		throw wallet_error("invalid_amount", "amount exceeds 128-bit atomic units");
+	}
+	return mmx::uint128(text);
 }
 
 mmx::addr_t parse_currency(const std::string& value)
@@ -785,7 +1106,15 @@ void print_help()
 		<< "                 [--currency ADDRESS] [--memo TEXT] [--transaction PATH]\n"
 		<< "                 [--yes] [--json]\n"
 		<< "  mmxwallet broadcast --transaction PATH [--rpc URL] [--json]\n"
-		<< "  mmxwallet info [--rpc URL]\n\n"
+		<< "  mmxwallet info [--rpc URL]\n"
+		<< "  mmxwallet transaction <TXID> [--rpc URL]\n"
+		<< "  mmxwallet capabilities [--json]\n\n"
+		<< "Desktop / automation options:\n"
+		<< "  --json             Versioned JSON output; never prompt\n"
+		<< "  --input-stdin      Read one JSON line with mnemonic/passphrase; never prompt\n"
+		<< "  --non-interactive  Fail instead of prompting\n"
+		<< "  --show-mnemonic    Include recovery words in create/import JSON\n"
+		<< "  --curl PATH        Use this curl executable instead of PATH discovery\n\n"
 		<< "Defaults:\n"
 		<< "  RPC: rpc.mmx.network\n"
 		<< "  Wallet directory: $MMX_HOME or $HOME/.mmx\n";
@@ -800,6 +1129,10 @@ int main(int argc, char** argv)
 	::umask(0077);
 #endif
 	mmx::secp256k1_init();
+	std::string amount_text;
+	for(int i = 1; i + 1 < argc; ++i) {
+		if(std::string(argv[i]) == "--amount" || std::string(argv[i]) == "-a") amount_text = argv[i + 1];
+	}
 
 	std::map<std::string, std::string> options;
 	options["r"] = "rpc";
@@ -813,6 +1146,11 @@ int main(int argc, char** argv)
 	options["w"] = "wallet";
 	options["y"] = "yes";
 	options["json"] = "";
+	options["input-stdin"] = "";
+	options["non-interactive"] = "";
+	options["show-mnemonic"] = "";
+	options["with-passphrase"] = "";
+	options["curl"] = "PATH";
 	options["rpc"] = "URL";
 	options["file"] = "PATH";
 	options["amount"] = "VALUE";
@@ -830,7 +1168,18 @@ int main(int argc, char** argv)
 
 	vnx::write_config("log_level", 2);
 	vnx::write_config("rpc", "rpc.mmx.network");
-	vnx::init("mmxwallet", argc, argv, options);
+	// VNX's option reader parses bare numbers as doubles/uint64. Quote the
+	// amount lexeme for initialization so large/exact amounts reach our parser.
+	std::vector<std::string> initialization_arguments;
+	std::vector<char*> initialization_argv;
+	for(int i = 0; i < argc; ++i) {
+		const bool amount_argument = i > 0 && (std::string(argv[i - 1]) == "--amount" || std::string(argv[i - 1]) == "-a");
+		const bool txid_argument = i > 1 && std::string(argv[i - 1]) == "transaction";
+		initialization_arguments.push_back(amount_argument || txid_argument ? vnx::to_string(std::string(argv[i])) : argv[i]);
+	}
+	for(auto& argument : initialization_arguments) initialization_argv.push_back(argument.data());
+	initialization_argv.push_back(nullptr);
+	vnx::init("mmxwallet", argc, initialization_argv.data(), options);
 
 	int exit_code = 0;
 	try {
@@ -851,6 +1200,8 @@ int main(int argc, char** argv)
 		bool with_passphrase = false;
 		bool pre_accept = false;
 		bool json_output = false;
+		bool input_stdin = false;
+		bool show_mnemonic = false;
 		mmx::fixed128 value;
 
 		vnx::read_config("$1", command);
@@ -870,16 +1221,34 @@ int main(int argc, char** argv)
 		vnx::read_config("with-passphrase", with_passphrase);
 		vnx::read_config("yes", pre_accept);
 		vnx::read_config("json", json_output);
-		const auto have_amount = vnx::read_config("amount", value);
+		vnx::read_config("input-stdin", input_stdin);
+		vnx::read_config("non-interactive", non_interactive);
+		vnx::read_config("show-mnemonic", show_mnemonic);
+		vnx::read_config("curl", curl_executable);
+		non_interactive = non_interactive || json_output || input_stdin;
+		if(input_stdin) read_secret_input();
+		const auto have_amount = !amount_text.empty() || vnx::read_config("amount", value);
 
 		if(command.empty() || command == "help" || command == "--help") {
 			print_help();
+		} else if(command == "capabilities") {
+			vnx::Object result;
+			result["commands"] = std::vector<std::string>{"create", "import", "list", "use", "mnemonic",
+				"get", "address", "addresses", "balance", "history", "send", "broadcast", "info", "transaction", "capabilities"};
+			result["secret_input"] = "stdin-json-line";
+			result["memo_max_bytes"] = 64;
+			result["max_num_addresses"] = MAX_NUM_ADDRESSES;
+			result["curl_override"] = true;
+			result["prepare_transaction"] = true;
+			result["key_file_encrypted"] = false;
+			print_json(command, result);
 		} else if(!num_addresses || num_addresses > MAX_NUM_ADDRESSES) {
 			throw std::logic_error("num-addresses needs to be between 1 and " + std::to_string(MAX_NUM_ADDRESSES));
 		} else if(command == "history" && (!history_limit || history_limit > 1000)) {
 			throw std::logic_error("limit needs to be between 1 and 1000");
 		} else {
-			const auto wallet_directory = get_wallet_directory();
+			const bool needs_directory = file_name.empty() && command != "info" && command != "broadcast" && command != "transaction";
+			const auto wallet_directory = needs_directory ? get_wallet_directory() : std::filesystem::path();
 
 			if(command == "create" || command == "import") {
 				if(!wallet_selector.empty()) {
@@ -889,14 +1258,15 @@ int main(int argc, char** argv)
 				if(command == "create") {
 					key.seed_value = mmx::hash_t::secure_random();
 				} else {
-					const auto words = trim(vnx::input_password("Mnemonic: "));
-					key.seed_value = mmx::mnemonic::words_to_seed(mmx::mnemonic::string_to_words(words));
+					const auto words = trim(secret_value(input_mnemonic, "Mnemonic: ", "mnemonic"));
+					try { key.seed_value = mmx::mnemonic::words_to_seed(mmx::mnemonic::string_to_words(words)); }
+					catch(const std::exception&) { throw wallet_error("invalid_mnemonic", "invalid mnemonic recovery words"); }
 				}
 
 				vnx::optional<std::string> passphrase;
 				if(with_passphrase) {
-					passphrase = vnx::input_password("Passphrase: ");
-					if(*passphrase != vnx::input_password("Passphrase (again): ")) {
+					passphrase = secret_value(input_passphrase, "Passphrase: ", "passphrase");
+					if(!non_interactive && !input_passphrase && *passphrase != vnx::input_password("Passphrase (again): ")) {
 						throw std::logic_error("passphrase mismatch");
 					}
 					key.finger_print = mmx::get_finger_print(key.seed_value, passphrase);
@@ -919,13 +1289,23 @@ int main(int argc, char** argv)
 				if(file_name.empty()) {
 					set_active_wallet(wallet_directory, wallet_path.filename().string());
 				}
-				std::cout << (command == "create" ? "Created" : "Imported") << " wallet: " << wallet_path.string() << "\n";
-				std::cout << "Fingerprint: " << finger_print << "\n";
-				if(command == "create") {
-					std::cout << "Mnemonic: "
-							<< mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(key.seed_value)) << "\n";
+				if(json_output) {
+					vnx::Object result;
+					result["wallet_file"] = std::filesystem::absolute(wallet_path).string();
+					result["fingerprint"] = finger_print;
+					result["address"] = wallet.get_address(0).to_string();
+					result["with_passphrase"] = requires_passphrase(key);
+					if(show_mnemonic) result["mnemonic"] = mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(key.seed_value));
+					print_json(command, result);
+				} else {
+					std::cout << (command == "create" ? "Created" : "Imported") << " wallet: " << wallet_path.string() << "\n";
+					std::cout << "Fingerprint: " << finger_print << "\n";
+					if(command == "create") {
+						std::cout << "Mnemonic: "
+								<< mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(key.seed_value)) << "\n";
+					}
+					std::cout << "Address: " << wallet.get_address(0) << "\n";
 				}
-				std::cout << "Address: " << wallet.get_address(0) << "\n";
 			}
 			else if(command == "list") {
 				if(!file_name.empty() || !wallet_selector.empty()) {
@@ -955,14 +1335,31 @@ int main(int argc, char** argv)
 						}
 					}
 				}
-				if(wallets.empty()) {
-					std::cout << "No wallets found in " << wallet_directory.string() << "\n";
-				}
-				for(size_t i = 0; i < wallets.size(); ++i) {
-					const bool is_active = active ? wallets[i].path.filename() == active_file : wallets.size() == 1;
-					std::cout << (is_active ? "* " : "  ") << "[" << i << "] " << wallets[i].finger_print << "  "
-							<< wallets[i].path.filename().string()
-							<< (wallets[i].with_passphrase ? "  (passphrase)" : "") << "\n";
+				if(json_output) {
+					std::vector<vnx::Object> entries;
+					for(size_t i = 0; i < wallets.size(); ++i) {
+						vnx::Object entry;
+						entry["index"] = uint32_t(i);
+						entry["fingerprint"] = wallets[i].finger_print;
+						entry["wallet_file"] = std::filesystem::absolute(wallets[i].path).string();
+						entry["with_passphrase"] = wallets[i].with_passphrase;
+						entry["active"] = active ? wallets[i].path.filename() == active_file : wallets.size() == 1;
+						entries.push_back(entry);
+					}
+					vnx::Object result;
+					result["wallet_directory"] = std::filesystem::absolute(wallet_directory).string();
+					result["wallets"] = entries;
+					print_json(command, result);
+				} else {
+					if(wallets.empty()) {
+						std::cout << "No wallets found in " << wallet_directory.string() << "\n";
+					}
+					for(size_t i = 0; i < wallets.size(); ++i) {
+						const bool is_active = active ? wallets[i].path.filename() == active_file : wallets.size() == 1;
+						std::cout << (is_active ? "* " : "  ") << "[" << i << "] " << wallets[i].finger_print << "  "
+								<< wallets[i].path.filename().string()
+								<< (wallets[i].with_passphrase ? "  (passphrase)" : "") << "\n";
+					}
 				}
 			}
 			else if(command == "use") {
@@ -976,15 +1373,69 @@ int main(int argc, char** argv)
 				}
 				const auto wallet = select_wallet(find_wallets(wallet_directory), positional_selector, {});
 				set_active_wallet(wallet_directory, wallet.path.filename().string());
-				std::cout << "Active wallet: " << wallet.finger_print << " (" << wallet.path.filename().string() << ")\n";
+				if(json_output) {
+					vnx::Object result;
+					result["fingerprint"] = wallet.finger_print;
+					result["wallet_file"] = std::filesystem::absolute(wallet.path).string();
+					print_json(command, result);
+				} else {
+					std::cout << "Active wallet: " << wallet.finger_print << " (" << wallet.path.filename().string() << ")\n";
+				}
 			}
 			else if(command == "info") {
 				const rpc_client_t rpc(rpc_url);
 				const auto info = rpc.get_json("/node/info").to_object();
-				std::cout << "RPC: " << rpc_url << "\n";
-				std::cout << "Network: " << info["name"].to_string_value() << "\n";
-				std::cout << "Height: " << info["height"].to_string_value() << "\n";
-				std::cout << "Synced: " << (info["is_synced"].to<bool>() ? "yes" : "no") << "\n";
+				if(json_output) {
+					vnx::Object result;
+					result["rpc"] = rpc_url;
+					result["network"] = info["name"];
+					result["height"] = info["height"];
+					result["is_synced"] = info["is_synced"];
+					print_json(command, result);
+				} else {
+					std::cout << "RPC: " << rpc_url << "\n";
+					std::cout << "Network: " << info["name"].to_string_value() << "\n";
+					std::cout << "Height: " << info["height"].to_string_value() << "\n";
+					std::cout << "Synced: " << (info["is_synced"].to<bool>() ? "yes" : "no") << "\n";
+				}
+			}
+			else if(command == "transaction") {
+				std::string id;
+				vnx::read_config("$2", id);
+				if(id.size() != 64 || id.find_first_not_of("0123456789abcdefABCDEF") != std::string::npos) {
+					throw wallet_error("invalid_argument", "transaction requires a 64-character hexadecimal transaction ID");
+				}
+				mmx::hash_t txid; txid.from_string(id);
+				const rpc_client_t rpc(rpc_url);
+				const auto params = fetch_params(rpc);
+				const auto height = check_rpc_state(rpc, params);
+				const auto transaction = rpc.get_json("/transaction?id=" + txid.to_string());
+				vnx::Object result;
+				result["transaction_id"] = txid.to_string();
+				result["current_height"] = height;
+				result["network"] = params->network;
+				result["transaction"] = transaction;
+				result["confirmations"] = uint32_t(0);
+				if(transaction.is_null()) {
+					result["status"] = "unknown";
+				} else {
+					const auto info = transaction.to_object();
+					mmx::hash_t returned_id; returned_id.from_string(info["id"].to_string_value());
+					if(returned_id != txid) {
+						throw wallet_error("rpc_response_invalid", "RPC returned a different transaction ID");
+					}
+					if(!info["height"].is_null()) {
+						const auto included = info["height"].to<uint32_t>();
+						if(included > height) throw wallet_error("rpc_response_invalid", "transaction height exceeds RPC height");
+						result["confirmations"] = uint64_t(height) - included + 1;
+						result["status"] = info["did_fail"].to<bool>() ? "failed" : "included";
+					} else {
+						result["status"] = info["expires"].to<uint32_t>() < height ? "expired" : "pending";
+					}
+				}
+				if(json_output) print_json(command, result);
+				else std::cout << "Transaction ID: " << txid << "\nStatus: " << result["status"].to_string_value()
+					<< "\nConfirmations: " << result["confirmations"].to_string_value() << "\n";
 			}
 			else if(command == "broadcast") {
 				if(transaction_file.empty()) {
@@ -1000,7 +1451,8 @@ int main(int argc, char** argv)
 				const auto tx = vnx::from_string<mmx::Transaction>(tx_json);
 				const rpc_client_t rpc(rpc_url);
 				const auto params = fetch_params(rpc);
-				check_rpc_state(rpc, params);
+				const auto height = check_rpc_state(rpc, params);
+				if(tx.expires < height) throw wallet_error("transaction_expired", "saved transaction has expired; prepare and review a new transaction");
 				if(!tx.is_signed() || !tx.is_valid(params)) {
 					throw std::runtime_error("transaction file does not contain a valid signed transaction");
 				}
@@ -1009,6 +1461,9 @@ int main(int argc, char** argv)
 					throw std::runtime_error("transaction execution would fail: "
 							+ vnx::to_string(validation["error"]));
 				}
+				if(mmx::uint128(validation["total_fee"].to_string_value()) > tx.max_fee_amount) {
+					throw wallet_error("rpc_response_invalid", "RPC returned a fee above the signed maximum");
+				}
 				rpc.post("/transaction/broadcast", tx_json);
 				if(json_output) {
 					vnx::Object result;
@@ -1016,7 +1471,7 @@ int main(int argc, char** argv)
 					result["status"] = "broadcast";
 					result["transaction_id"] = tx.id.to_string();
 					result["broadcast"] = true;
-					std::cout << vnx::to_string(vnx::Variant(result)) << "\n";
+					print_json(command, result);
 				} else {
 					std::cout << "Transaction ID: " << tx.id << "\n";
 					std::cout << "Transaction broadcast successfully.\n";
@@ -1050,7 +1505,13 @@ int main(int argc, char** argv)
 						throw std::runtime_error("failed to read wallet: " + wallet_path.string());
 					}
 					const auto words = mmx::mnemonic::words_to_string(mmx::mnemonic::seed_to_words(key->seed_value));
-					if(command == "get") {
+					if(json_output) {
+						vnx::Object result;
+						result["mnemonic"] = words;
+						result["wallet_file"] = std::filesystem::absolute(wallet_path).string();
+						result["fingerprint"] = get_finger_print(*key);
+						print_json(command, result);
+					} else if(command == "get") {
 						std::cout << words << "\n";
 					} else {
 						auto params = mmx::ChainParams::create();
@@ -1064,7 +1525,18 @@ int main(int argc, char** argv)
 					auto params = mmx::ChainParams::create();
 					params->network = "mainnet";
 					const auto wallet = load_wallet(wallet_path, account_index, num_addresses, params);
-					if(command == "address") {
+					if(command == "address" && offset >= num_addresses) throw wallet_error("invalid_argument", "address offset exceeds num-addresses");
+					if(json_output) {
+						vnx::Object result;
+						result["wallet_file"] = std::filesystem::absolute(wallet_path).string();
+						if(command == "address") result["address"] = wallet->get_address(offset).to_string();
+						else {
+							std::vector<std::string> addresses;
+							for(const auto& address : wallet->get_all_addresses()) addresses.push_back(address.to_string());
+							result["addresses"] = addresses;
+						}
+						print_json(command, result);
+					} else if(command == "address") {
 						std::cout << wallet->get_address(offset) << "\n";
 					} else {
 						for(size_t i = 0; i < wallet->get_all_addresses().size(); ++i) {
@@ -1075,9 +1547,27 @@ int main(int argc, char** argv)
 				else if(command == "history") {
 					const rpc_client_t rpc(rpc_url);
 					const auto params = fetch_params(rpc);
-					check_rpc_state(rpc, params);
+					const auto height = check_rpc_state(rpc, params);
 					const auto wallet = load_wallet(wallet_path, account_index, num_addresses, params);
-					print_history(fetch_history(rpc, *wallet, parse_currency_filter(currency_string), history_limit), params);
+					const auto history = fetch_history(rpc, *wallet, parse_currency_filter(currency_string), history_limit);
+					if(json_output) {
+						std::vector<vnx::Object> entries;
+						for(auto row : history) {
+							const auto decimals = row["decimals"].to<int32_t>();
+							if(decimals < 0 || decimals > 18 || (mmx::addr_t(row["contract"].to_string_value()) == mmx::addr_t() && decimals != params->decimals)) {
+								throw wallet_error("rpc_response_invalid", "RPC returned invalid history decimals");
+							}
+							const mmx::uint128 amount(row["amount"].to_string_value());
+							row["amount_atomic"] = amount.to_string();
+							row["amount"] = format_amount(amount, decimals);
+							entries.push_back(row);
+						}
+						vnx::Object result;
+						result["network"] = params->network;
+						result["current_height"] = height;
+						result["history"] = entries;
+						print_json(command, result);
+					} else print_history(history, params);
 				}
 				else {
 					const rpc_client_t rpc(rpc_url);
@@ -1086,22 +1576,49 @@ int main(int argc, char** argv)
 					const auto state = update_wallet(rpc, *wallet, params);
 
 					if(command == "balance") {
-						print_balances(state, currency_string);
+						if(json_output) {
+							const auto filter = parse_currency_filter(currency_string);
+							std::vector<vnx::Object> balances;
+							for(const auto& entry : state.totals) {
+								if((filter.address && entry.first != *filter.address) || (filter.symbol && entry.second.symbol != *filter.symbol)) continue;
+								vnx::Object row;
+								row["currency_address"] = entry.first.to_string();
+								row["symbol"] = entry.second.symbol;
+								row["decimals"] = entry.second.decimals;
+								row["amount_atomic"] = entry.second.amount.to_string();
+								row["amount"] = format_amount(entry.second.amount, entry.second.decimals);
+								balances.push_back(row);
+							}
+							if(balances.empty() && filter.symbol) throw std::logic_error("no currencies match symbol: " + *filter.symbol);
+							if(balances.empty() && (!filter.address || *filter.address == mmx::addr_t())) {
+								vnx::Object row;
+								row["currency_address"] = mmx::addr_t().to_string(); row["symbol"] = "MMX";
+								row["decimals"] = params->decimals; row["amount_atomic"] = "0"; row["amount"] = "0";
+								balances.push_back(row);
+							}
+							vnx::Object result;
+							result["network"] = params->network; result["current_height"] = state.height;
+							result["balances"] = balances;
+							print_json(command, result);
+						} else print_balances(state, currency_string);
 					}
 					else {
-						if(!have_amount || !value) {
+						if(!have_amount || (amount_text.empty() && !value)) {
 							throw std::logic_error("amount must be greater than zero");
 						}
 						if(target_string.empty()) {
 							throw std::logic_error("missing target address");
 						}
 						if(memo && memo->size() > 64) {
-							throw std::logic_error("memo exceeds 64 characters");
+							throw std::logic_error("memo exceeds 64 UTF-8 bytes");
 						}
-						if(fee_ratio <= 0 || fee_ratio > std::numeric_limits<uint32_t>::max() / 1024.) {
+						if(!std::isfinite(fee_ratio) || fee_ratio <= 0 || fee_ratio > std::numeric_limits<uint32_t>::max() / 1024.) {
 							throw std::logic_error("invalid fee ratio");
 						}
 
+						if(!expire_delta || expire_delta > std::numeric_limits<uint32_t>::max() - state.height) {
+							throw wallet_error("invalid_argument", "invalid transaction expiry delta");
+						}
 						const mmx::addr_t target(target_string);
 						if(target == mmx::addr_t()) {
 							throw std::logic_error("target address cannot be zero");
@@ -1117,7 +1634,7 @@ int main(int argc, char** argv)
 							decimals = iter->second.decimals;
 							symbol = iter->second.symbol;
 						}
-						const auto amount = mmx::to_amount(value, decimals);
+						const auto amount = amount_text.empty() ? mmx::to_amount(value, decimals) : parse_payment_amount(amount_text, decimals);
 						if(!amount) {
 							throw std::logic_error("amount is below the smallest currency unit");
 						}
@@ -1148,19 +1665,28 @@ int main(int argc, char** argv)
 							throw std::runtime_error("RPC returned a transaction fee above the signed maximum");
 						}
 						if(!transaction_file.empty()) {
-							std::ofstream transaction_stream(transaction_file,
-									std::ios::binary | std::ios::trunc);
-							if(!transaction_stream) {
-								throw std::runtime_error("failed to write transaction: " + transaction_file);
+#ifndef _WIN32
+							const std::filesystem::path destination(transaction_file);
+							const auto parent = destination.parent_path().empty() ? std::filesystem::path(".") : destination.parent_path();
+							temp_file_t temporary(".transaction", parent);
+							std::ofstream transaction_stream(temporary.path, std::ios::binary);
+#else
+							std::ofstream transaction_stream(transaction_file, std::ios::binary | std::ios::trunc);
+#endif
+							if(!transaction_stream || !(transaction_stream << tx_json)) {
+								throw wallet_error("io_error", "failed to write signed transaction");
 							}
-							transaction_stream << tx_json;
 							transaction_stream.close();
+							if(!transaction_stream) throw wallet_error("io_error", "failed to save signed transaction");
+#ifndef _WIN32
+							install_private_file(temporary.path, destination, "transaction_exists");
+#endif
 							std::filesystem::permissions(transaction_file,
 									std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
 									std::filesystem::perm_options::replace);
 						}
 
-						const bool broadcast = pre_accept || (!json_output && accept_prompt());
+						const bool broadcast = pre_accept || (!non_interactive && accept_prompt());
 						if(broadcast) {
 							rpc.post("/transaction/broadcast", tx_json);
 						}
@@ -1176,13 +1702,17 @@ int main(int argc, char** argv)
 							result["target"] = target.to_string();
 							result["fee"] = format_amount(total_fee, params->decimals);
 							result["fee_atomic"] = total_fee.to_string();
+							result["max_fee_atomic"] = mmx::uint128(tx->max_fee_amount).to_string();
+							result["network"] = params->network;
+							result["transaction_file"] = transaction_file;
+							result["decimals"] = decimals;
 							result["expires_height"] = tx->expires;
 							result["current_height"] = state.height;
 							result["broadcast"] = broadcast;
 							if(memo) {
 								result["memo"] = *memo;
 							}
-							std::cout << vnx::to_string(vnx::Variant(result)) << "\n";
+							print_json(command, result);
 						} else {
 							std::cout << "Amount: " << format_amount(amount, decimals) << " " << symbol << "\n";
 							std::cout << "Target: " << target << "\n";
@@ -1208,11 +1738,15 @@ int main(int argc, char** argv)
 		vnx::read_config("json", json_output);
 		if(json_output) {
 			vnx::Object error;
+			error["schema_version"] = JSON_SCHEMA_VERSION;
+			std::string command; vnx::read_config("$1", command);
+			error["command"] = command;
 			error["status"] = "error";
 			error["error"] = ex.what();
-			error["code"] = dynamic_cast<const mmx::insufficient_funds*>(&ex)
-					? "insufficient_funds" : "wallet_error";
-			std::cerr << vnx::to_string(vnx::Variant(error)) << "\n";
+			const auto typed = dynamic_cast<const wallet_error*>(&ex);
+			error["code"] = typed ? typed->code : dynamic_cast<const mmx::insufficient_funds*>(&ex)
+					? "insufficient_funds" : dynamic_cast<const std::logic_error*>(&ex) ? "invalid_argument" : "wallet_error";
+			std::cerr << encode_json(error) << "\n";
 		} else {
 			std::cerr << "Error: " << ex.what() << "\n";
 		}
