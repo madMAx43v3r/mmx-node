@@ -1,0 +1,16 @@
+[package]
+name = "mmxwallet"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+mmx-wallet = { path = "../mmx-wallet" }
+serde.workspace = true
+serde_json.workspace = true
+zeroize.workspace = true
+clap = { version = "4", features = ["derive"] }
+ureq = { version = "=3.3.0", default-features = false, features = ["rustls"] }
+tempfile = "3"
+libc = "0.2"

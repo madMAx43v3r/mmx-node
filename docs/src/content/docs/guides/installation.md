@@ -54,6 +54,10 @@ sudo yum install qt5-qtwebengine-devel  # for native GUI
 To enable CUDA support, CUDA needs to be installed: [CUDA Toolkit Downloads](https://developer.nvidia.com/cuda-downloads).
 :::
 
+The standalone `mmxwallet` target requires Rust and Cargo 1.85 or newer. CMake skips this target when Rust or Cargo
+is missing or the toolchain is unavailable; the node build can continue. To include it, install a current stable
+toolchain with [rustup](https://rust-lang.org/tools/install/) and make sure `cargo` and `rustc` are in your `PATH`.
+
 ### Building from Source
 
 ```bash frame="none"

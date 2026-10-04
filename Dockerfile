@@ -4,6 +4,8 @@ RUN apt-get update && apt-get -y upgrade \
 		&& apt-get install -y \
 			apt-utils \
 			git \
+			curl \
+			ca-certificates \
 			cmake \
 			automake \
 			libtool \
@@ -15,6 +17,11 @@ RUN apt-get update && apt-get -y upgrade \
 			ocl-icd-opencl-dev \
 			ccache \
 			&& rm -rf /var/lib/apt/lists/*
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o /tmp/rustup-init.sh \
+	&& sh /tmp/rustup-init.sh -y --profile minimal --default-toolchain stable \
+	&& rm /tmp/rustup-init.sh
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /app
 COPY . .

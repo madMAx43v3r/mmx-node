@@ -25,6 +25,9 @@ jobs:
           fetch-tags: true
           submodules: "recursive"
 
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Set up build environment
         run: |
           sudo apt-get update
@@ -36,6 +39,12 @@ jobs:
           cuda: ${{ matrix.ubuntu-version == '24.04' && '12.5.0' || '11.8.0' }}
           method: network
           sub-packages: '["nvcc"]'
+
+      - name: Test Rust wallet
+        run: |
+          cargo test --locked --workspace
+          cargo build --locked --release -p mmxwallet
+          python3 test/test_mmxwallet_cli.py --binary target/release/mmxwallet -v
 
       - name: Build Debian package
         run: |

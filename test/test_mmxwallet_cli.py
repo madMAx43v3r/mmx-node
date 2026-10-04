@@ -146,7 +146,12 @@ class WalletCLI(unittest.TestCase):
         self.assertEqual(len(addresses), 3)
         self.assertEqual(addresses[0], created['address'])
         self.assertEqual(self.run_cli('address', '--num-addresses', '3', '--offset', '2')['address'], addresses[2])
-        self.assertEqual(self.run_cli('list')['wallets'][0]['active'], True)
+        listed = self.run_cli('list')['wallets'][0]
+        self.assertEqual(listed['active'], True)
+        self.assertEqual(listed['address'], created['address'])
+        self.assertIn(created['address'], self.run_cli('list', json_mode=False))
+        account_address = self.run_cli('address', '--account', '7')['address']
+        self.assertEqual(self.run_cli('list', '--account', '7')['wallets'][0]['address'], account_address)
 
     def test_existing_wallet_not_overwritten(self):
         before = self.file.read_bytes()
@@ -157,6 +162,8 @@ class WalletCLI(unittest.TestCase):
         created = self.run_cli('create')
         second = self.run_cli('create')
         wallets = self.run_cli('list')['wallets']
+        self.assertEqual({w['fingerprint']: w['address'] for w in wallets},
+                         {created['fingerprint']: created['address'], second['fingerprint']: second['address']})
         index = next(w['index'] for w in wallets if w['fingerprint'] == created['fingerprint'])
         self.run_cli('use', str(index))
         self.assertEqual(self.run_cli('address')['address'], created['address'])
@@ -168,6 +175,10 @@ class WalletCLI(unittest.TestCase):
     def test_passphrase_input_never_prompts(self):
         created = self.run_cli('create', '--with-passphrase', secret={'passphrase': 'temporary test secret 世界 🔑 \\u1234'})
         self.assertTrue(created['with_passphrase'])
+        self.assertIsNone(self.run_cli('list')['wallets'][0]['address'])
+        self.assertIn('[passphrase required]', self.run_cli('list', json_mode=False))
+        self.assertIsNone(self.run_cli('list', secret={'passphrase': 'wrong'})['wallets'][0]['address'])
+        self.assertEqual(self.run_cli('list', secret={'passphrase': 'temporary test secret 世界 🔑 \\u1234'})['wallets'][0]['address'], created['address'])
         empty = self.run_cli('create', '--with-passphrase', '--file', str(self.root / 'empty-passphrase.dat'), secret={'passphrase': ''})
         self.assertTrue(empty['with_passphrase'])
         self.assertEqual(self.run_cli('address', '--file', empty['wallet_file'], secret={'passphrase': ''})['address'], empty['address'])
@@ -213,36 +224,25 @@ class WalletCLI(unittest.TestCase):
         self.assertEqual(row['amount_atomic'], self.server.amount)
         self.assertEqual(row['amount'], '340282366920938463463374607431768.211455')
 
-    def test_explicit_curl_without_path_and_ignore_curlrc(self):
-        curl = shutil.which('curl')
-        self.assertIsNotNone(curl)
+    def test_native_http_without_path_and_ignore_curlrc(self):
         env = dict(self.env, PATH='')
         (self.root / '.curlrc').write_text('url = "http://127.0.0.1:1"\noutput = "injected"\n')
-        self.run_cli('info', '--curl', curl, '--rpc', self.url, env=env)
+        self.run_cli('info', '--rpc', self.url, env=env)
         self.assertFalse((self.root / 'injected').exists())
-        self.run_cli('info', '--curl', str(self.root / 'missing'), '--rpc', self.url, error='curl_unavailable')
+        caps = self.run_cli('capabilities')
+        self.assertFalse(caps['curl_override'])
+        self.assertEqual(caps['http_transport'], 'native-rust')
+        self.run_cli('info', '--curl', '/missing/curl', '--rpc', self.url, error='invalid_argument')
 
-    def test_curl_argv_private_files_and_structured_failure(self):
-        fake = self.root / "curl '$(touch injected)' 世界"
-        capture = self.root / 'curl-args.json'
-        fake.write_text("#!/usr/bin/python3\nimport json,os,pathlib,sys\n"
-                        "args=sys.argv[1:]\n"
-                        "out=pathlib.Path(args[args.index('--output')+1])\n"
-                        "private=oct(out.parent.stat().st_mode & 0o777)\n"
-                        "pathlib.Path(os.environ['CAPTURE']).write_text(json.dumps({'args':args,'private':private}))\n"
-                        "out.write_text(json.dumps({'name':'mainnet','height':1000,'is_synced':True}))\n"
-                        "print('200',end='')\n")
+    def test_native_http_never_starts_curl_or_uses_request_files(self):
+        fake = self.root / 'curl'
+        fake.write_text('#!/bin/sh\ntouch "' + str(self.root / 'injected') + '"\nexit 1\n')
         fake.chmod(0o700)
-        env = dict(self.env, CAPTURE=str(capture), PATH='')
-        self.run_cli('info', '--curl', str(fake), '--rpc', self.url, env=env)
-        called = json.loads(capture.read_text())
-        self.assertEqual(called['args'][0], '--disable')
-        self.assertEqual(called['private'], '0o700')
-        self.assertEqual(called['args'][-2:], ['--url', self.url + '/node/info'])
-        self.assertFalse(Path(called['args'][called['args'].index('--output') + 1]).exists())
+        env = dict(self.env, PATH=str(self.root), TMPDIR=str(self.root))
+        self.run_cli('info', '--rpc', self.url, env=env)
         self.assertFalse((self.root / 'injected').exists())
-        fake.write_text('#!/usr/bin/python3\nimport sys\nsys.exit(28)\n')
-        self.run_cli('info', '--curl', str(fake), '--rpc', self.url, env=env, error='rpc_timeout')
+        self.assertFalse(any(self.root.glob('mmxwallet-*')))
+        self.run_cli('info', '--rpc', 'ftp://127.0.0.1', error='invalid_argument')
 
     def test_rpc_errors_are_structured(self):
         self.server.responses['/node/info'] = ({'error': 'busy'}, 503)
@@ -326,6 +326,31 @@ class WalletCLI(unittest.TestCase):
         self.server.height = 1101
         self.run_cli('broadcast', '--transaction', str(path), '--rpc', self.url, error='transaction_expired')
         self.assertFalse(any(endpoint.endswith('/broadcast') for endpoint, _ in self.server.posts))
+
+    def test_tampered_signature_and_old_transaction_are_rejected(self):
+        _, path = self.prepare()
+        original = json.loads(path.read_bytes())
+        self.assertEqual(original['version'], 1)
+        for field in ['signature', 'pubkey']:
+            changed = json.loads(json.dumps(original))
+            value = changed['solutions'][0][field]
+            changed['solutions'][0][field] = ('0' if value[0] != '0' else '1') + value[1:]
+            path.write_text(json.dumps(changed))
+            self.run_cli('broadcast', '--transaction', str(path), '--rpc', self.url, error='wallet_error')
+        original['version'] = 0
+        path.write_text(json.dumps(original))
+        self.run_cli('broadcast', '--transaction', str(path), '--rpc', self.url, error='wallet_error')
+        self.assertFalse(any(endpoint.endswith('/broadcast') for endpoint, _ in self.server.posts))
+
+    def test_insufficient_funds_is_structured(self):
+        self.server.amount = '1'
+        self.run_cli('send', '--file', str(self.file), '--rpc', self.url,
+                     '--target', self.wallet['address'], '--amount', '1', error='insufficient_funds')
+        self.assertEqual(self.server.posts, [])
+
+    def test_rpc_redirect_is_not_followed(self):
+        self.server.responses['/node/info'] = ({}, 302)
+        self.run_cli('info', '--rpc', self.url, error='rpc_http_error')
 
     def test_transaction_status_unknown_pending_included_failed(self):
         txid = 'a' * 64

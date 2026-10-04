@@ -27,6 +27,10 @@ Creating or importing a wallet makes it active. List wallets with `mmxwallet lis
 wallet by list index or fingerprint with `mmxwallet use <index|fingerprint>`. The selection is stored in
 `mmxwallet.json`.
 
+`list` also shows each wallet's first address for the selected `--account` (default 0). Passphrase wallets show
+`[passphrase required]` in text output, or `address: null` in JSON, until a matching passphrase is supplied with
+`--input-stdin`. Listing never prompts, and wallets with other passphrases remain listed with unavailable addresses.
+
 Use `--wallet <fingerprint>` with any wallet command to select a wallet for that invocation without changing the active
 wallet. One-shot selection deliberately does not accept list indices. For example:
 `mmxwallet send --wallet <fingerprint> --target <address> --amount <value>`.
@@ -64,8 +68,8 @@ By default wallets are stored in `$MMX_HOME`, or `$HOME/.mmx` when `MMX_HOME` is
 with the existing MMX wallet and GUI.
 
 The optional passphrase changes key derivation; it does not encrypt the seed stored in the wallet file. Keep the key
-file and the mnemonic backup private. Only public addresses and signed transactions are sent to the RPC. `curl` is
-required for HTTPS RPC access.
+file and the mnemonic backup private. Only public addresses and signed transactions are sent to the RPC. HTTP(S)
+uses an in-process Rust client with certificate verification; curl is not required.
 
 ### Desktop and automation interface
 
@@ -100,7 +104,7 @@ from application logs. `--non-interactive` can also disable prompts without sele
 | Command | JSON result fields, in addition to the envelope |
 | --- | --- |
 | `create`, `import` | Absolute `wallet_file`, `fingerprint`, primary `address`, `with_passphrase`; optional `mnemonic` |
-| `list` | Absolute `wallet_directory`, `wallets` array with `index`, `fingerprint`, absolute `wallet_file`, `with_passphrase`, `active` |
+| `list` | Absolute `wallet_directory`, `wallets` array with `index`, `fingerprint`, absolute `wallet_file`, `with_passphrase`, `active`, first `address` (null when the passphrase is unavailable) |
 | `use` | Selected `fingerprint` and absolute `wallet_file` |
 | `address`, `addresses` | Absolute `wallet_file`, `address` or `addresses` array |
 | `mnemonic`, `get mnemonic` | `mnemonic`, absolute `wallet_file`, `fingerprint` |
@@ -145,18 +149,53 @@ confirmation count. `unknown` means the selected RPC does not currently know the
 prove that the transaction failed or expired. Poll again to observe confirmation changes or reorganizations.
 The command needs no wallet key or passphrase.
 
-### External curl on Linux
+### Native HTTP(S) transport
 
-`curl` remains the HTTP transport. Use `--curl /absolute/path/to/curl` for a packaged desktop application;
-otherwise the CLI discovers it in `PATH`. Linux invokes curl directly with argument arrays, ignores `.curlrc`,
-retains TLS certificate verification and request/connection timeouts, and uses private temporary directories.
-Curl does not inherit the wallet's stdin pipe. Package its libraries and ensure CA certificates are available.
-Errors include `curl_unavailable`, `rpc_timeout`, `rpc_transport_error`, `rpc_http_error`, `rpc_response_invalid`,
+The CLI uses ureq and rustls for HTTP(S), with bundled CA roots, a 30-second request timeout, a 10-second
+connection timeout, a 16 MiB response limit, and no redirects or automatic payment retries. No external process
+or temporary request/response files are used. `--curl` has been removed; capabilities now reports
+`curl_override: false` and `http_transport: "native-rust"`.
+Errors include `rpc_timeout`, `rpc_transport_error`, `rpc_http_error`, `rpc_response_invalid`,
 `rpc_not_synced`, and `rpc_network_mismatch`. `insufficient_funds` remains the wallet liquidity error.
 
 Wallet location defaults remain `$MMX_HOME` or `$HOME/.mmx`. Empty environment values are ignored. If neither
 is available, directory-based operations fail with `wallet_directory_unavailable` instead of writing to the
 current directory. An explicit `--file` and wallet-independent RPC commands do not need either variable.
+
+### Rust crates and builds
+
+The root Cargo workspace contains two packages:
+
+- `rust/mmx-wallet` (`mmx-wallet`): reusable wallet library with key-file encoding/decoding, mnemonic conversion,
+  fingerprinting, account/address derivation, exact amounts, and offline transfer signing/verification.
+  It has no filesystem policy, CLI state, HTTP client, or C++ bindings.
+- `rust/mmxwallet` (`mmxwallet`): CLI arguments, secret prompts/stdin input, wallet discovery/selection,
+  durable private saves, and HTTP RPC operations.
+
+Transactions use hardfork2 version 1 only. Version 0 saved transactions are rejected. Existing MMX seeds,
+mnemonics, and VNX `.dat` key files remain compatible. The wallet supports simple MMX/token transfers;
+contract deployment and execution are outside this CLI.
+
+Build and test with Rust 1.85 or newer:
+
+```sh
+cargo build --locked --release -p mmxwallet
+cargo test --locked --workspace
+python3 test/test_mmxwallet_cli.py --binary target/release/mmxwallet -v
+```
+
+CMake detects Rust and Cargo, adds the `mmxwallet` target when both are usable, and installs the resulting binary
+into `bin`. If either is missing or the toolchain is unavailable, CMake skips the wallet build and installation
+with a status message. There is no C++ wallet fallback. To build it without
+configuring or compiling the C++ node and its dependencies:
+
+```sh
+cmake -S . -B build-wallet -DMMX_WALLET_ONLY=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build-wallet --target mmxwallet
+```
+
+The Rust compatibility tests use fixed, disposable-seed vectors captured from the existing node implementation;
+no C++ code is needed to build or run the Rust tests.
 
 ### Linux contract tests
 
@@ -167,7 +206,7 @@ python3 test/test_mmxwallet_cli.py --binary build/mmxwallet -v
 ```
 
 The tests use disposable keys, a localhost mock RPC, and Python's standard library. They cover machine output,
-private stdin input, Unicode, custom key/curl paths, exact amounts, memo boundaries, file protection/no overwrite,
+private stdin input, Unicode, custom key paths, operation without curl/PATH, exact amounts, memo boundaries, file protection/no overwrite,
 RPC errors, transaction status, and preparation/broadcast of identical bytes. They do not contact the public
 RPC or spend real funds. Windows and macOS are not yet qualified by this test suite.
 

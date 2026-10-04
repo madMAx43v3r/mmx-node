@@ -33,6 +33,9 @@ jobs:
           fetch-tags: true
           submodules: "recursive"
 
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
       - uses: Jimver/cuda-toolkit@v0.2.35
         id: cuda-toolkit
         with:

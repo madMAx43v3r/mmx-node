@@ -35,6 +35,7 @@
 CMakeUserPresets.json
 
 /build
+/target
 /.settings
 /.project
 /.cproject
