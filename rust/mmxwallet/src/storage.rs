@@ -16,6 +16,7 @@ pub fn directory() -> Result<PathBuf> {
                 .filter(|s| !s.is_empty())
                 .map(|p| PathBuf::from(p).join(".mmx"))
         })
+        .map(|p| p.join("wallet"))
         .ok_or_else(|| {
             Error::new(
                 "wallet_directory_unavailable",

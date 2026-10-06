@@ -229,6 +229,9 @@ impl Transaction {
         hex::encode(self.id)
     }
     pub fn calc_cost(&self, params: &ChainParams) -> Result<u32> {
+        self.calc_cost_with_signatures(params, self.solutions.len())
+    }
+    fn calc_cost_with_signatures(&self, params: &ChainParams, signatures: usize) -> Result<u32> {
         let mut cost = params.min_txfee as u128;
         for memo in self
             .inputs
@@ -241,7 +244,7 @@ impl Transaction {
                 cost += (memo.len().div_ceil(32).max(1) as u128) * params.min_txfee_memo as u128;
             }
         }
-        cost += self.solutions.len() as u128 * params.min_txfee_sign as u128;
+        cost += signatures as u128 * params.min_txfee_sign as u128;
         cost.try_into()
             .map_err(|_| Error::InvalidTransaction("static cost overflow"))
     }
@@ -270,6 +273,10 @@ impl Transaction {
                 .any(|o| o.amount == 0 || o.memo.as_ref().is_some_and(|m| m.len() > 64))
         {
             return Err(bad("invalid input/output"));
+        }
+        if (self.static_cost as u128 * self.fee_ratio as u128) / 1024 > self.max_fee_amount as u128
+        {
+            return Err(bad("maximum fee is below the static fee"));
         }
         if self.id != self.calc_hash(false)?
             || self.content_hash != self.calc_hash(true)?
@@ -387,28 +394,21 @@ impl Wallet {
         if left != 0 {
             return Err(Error::InsufficientFunds("not enough funds"));
         }
-        let cost = tx.calc_cost(params)? as u128;
-        let static_fee = cost * options.fee_ratio as u128 / 1024;
-        tx.max_fee_amount = ((cost + options.gas_limit as u128) * options.fee_ratio as u128 / 1024)
-            .try_into()
-            .map_err(|_| Error::InvalidArgument("maximum fee exceeds 32 bits".into()))?;
-        let mut sender = None;
+        // Prefer the largest remaining native balance, but leave fee-payer
+        // affordability to RPC validation, including when no MMX remains.
+        let mut sender = self.addresses[0];
         let mut max_amount = 0;
         for ((a, c), balance) in balances {
             if *c == Address::default() && self.addresses.contains(a) {
                 let balance = balance.saturating_sub(*spent.get(&(*a, *c)).unwrap_or(&0));
                 if balance > max_amount {
                     max_amount = balance;
-                    sender = Some(*a);
+                    sender = *a;
                 }
             }
         }
-        if sender.is_none() || max_amount < static_fee {
-            return Err(Error::InsufficientFunds("insufficient funds for tx fee"));
-        }
-        tx.sender = sender;
-        tx.id = tx.calc_hash(false)?;
-        let mut owners = vec![sender.unwrap()];
+        tx.sender = Some(sender);
+        let mut owners = vec![sender];
         for i in &mut tx.inputs {
             let index = if let Some(index) = owners.iter().position(|a| *a == i.address) {
                 index
@@ -418,6 +418,15 @@ impl Wallet {
             };
             i.solution = index as u16;
         }
+        // The signed maximum is part of the transaction ID. Count the unique
+        // sender/input signatures before hashing, without signing a provisional ID.
+        tx.static_cost = tx.calc_cost_with_signatures(params, owners.len())?;
+        tx.max_fee_amount = ((tx.static_cost as u128 + options.gas_limit as u128)
+            * options.fee_ratio as u128
+            / 1024)
+            .try_into()
+            .map_err(|_| Error::InvalidArgument("maximum fee exceeds 32 bits".into()))?;
+        tx.id = tx.calc_hash(false)?;
         for owner in owners {
             let i = self
                 .addresses
@@ -440,7 +449,6 @@ impl Wallet {
                 signature: sig.to_bytes().into(),
             });
         }
-        tx.static_cost = tx.calc_cost(params)?;
         tx.content_hash = tx.calc_hash(true)?;
         tx.verify(params)?;
         Ok(tx)

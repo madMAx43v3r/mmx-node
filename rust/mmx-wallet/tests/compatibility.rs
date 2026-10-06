@@ -2,6 +2,9 @@ use mmx_wallet::*;
 use serde_json::Value;
 use std::collections::BTreeMap;
 fn reference() -> Value {
+    // Generated with ECDSA_Wallet::complete(), then re-signed via sign_off()
+    // after setting max_fee_amount = cost_to_fee(static_cost + gas_limit,
+    // fee_ratio), so the C++ reference includes the final signature cost.
     serde_json::from_str(include_str!("fixtures/reference.json")).unwrap()
 }
 fn seed() -> [u8; 32] {
@@ -205,14 +208,96 @@ fn token_transfer_uses_a_separate_native_fee_payer() {
     assert_eq!(tx.solutions.len(), 2);
     tx.verify(&params).unwrap();
     let no_fee = BTreeMap::from([((wallet.addresses[0], token), 1000)]);
-    assert!(matches!(
-        wallet.transfer(
+    let no_fee_tx = wallet
+        .transfer(
             &no_fee,
             &params,
             5050000,
             tx.outputs[0].clone(),
-            &TransferOptions::default()
-        ),
-        Err(Error::InsufficientFunds(_))
-    ));
+            &TransferOptions::default(),
+        )
+        .unwrap();
+    assert_eq!(no_fee_tx.sender, Some(wallet.addresses[0]));
+    no_fee_tx.verify(&params).unwrap();
+}
+
+#[test]
+fn zero_gas_fee_includes_signature_and_leaves_affordability_to_rpc() {
+    let wallet = Wallet::derive(&seed(), "", 0, 1).unwrap();
+    let params = ChainParams::default();
+    let output = Output {
+        address: wallet.addresses[0],
+        contract: Address::default(),
+        amount: 1_000_000,
+        memo: None,
+    };
+    // Include zero and insufficient remaining fee balances: these still sign,
+    // since RPC validation is responsible for fee-payer affordability.
+    for remaining in [0, 300, 1299, 1300] {
+        let balances = BTreeMap::from([(
+            (wallet.addresses[0], Address::default()),
+            output.amount + remaining,
+        )]);
+        let mut tx = wallet
+            .transfer(
+                &balances,
+                &params,
+                5050000,
+                output.clone(),
+                &TransferOptions {
+                    gas_limit: 0,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(tx.solutions.len(), 1);
+        assert_eq!(tx.static_cost, 1300);
+        assert_eq!(tx.max_fee_amount, 1300);
+        tx.verify(&params).unwrap();
+        tx.max_fee_amount = 300;
+        assert!(matches!(
+            tx.verify(&params),
+            Err(Error::InvalidTransaction(
+                "maximum fee is below the static fee"
+            ))
+        ));
+    }
+}
+
+#[test]
+fn fee_counts_distinct_input_and_sender_signatures() {
+    let wallet = Wallet::derive(&seed(), "", 0, 3).unwrap();
+    let params = ChainParams::default();
+    let token = Address([1; 32]);
+    let output = Output {
+        address: wallet.addresses[0],
+        contract: token,
+        amount: 1500,
+        memo: None,
+    };
+    for (payer, signatures, expected_cost) in [(1, 2, 2400), (2, 3, 3400)] {
+        let balances = BTreeMap::from([
+            ((wallet.addresses[0], token), 1000),
+            ((wallet.addresses[1], token), 900),
+            ((wallet.addresses[payer], Address::default()), 1),
+        ]);
+        let tx = wallet
+            .transfer(
+                &balances,
+                &params,
+                5050000,
+                output.clone(),
+                &TransferOptions {
+                    fee_ratio: 1536,
+                    gas_limit: 99,
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(tx.sender, Some(wallet.addresses[payer]));
+        assert_eq!(tx.solutions.len(), signatures);
+        assert_eq!(tx.static_cost, expected_cost);
+        assert_eq!(tx.max_fee_amount, (expected_cost + 99) * 1536 / 1024);
+        tx.verify(&params).unwrap();
+    }
 }

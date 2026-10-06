@@ -28,6 +28,11 @@ impl State {
                 .ok_or_else(|| rpc_invalid("invalid balances response"))?
             {
                 let currency = rpc::address(row, "contract")?;
+                // NFT holdings have no fungible currency metadata in the node
+                // response and are not part of this CLI's currency balances.
+                if row["is_nft"].as_bool() == Some(true) {
+                    continue;
+                }
                 let amount = rpc::atomic(&row["amount"])?;
                 let decimals = rpc::decimals(row, currency, params)?;
                 let symbol = rpc::text(row, "symbol")?.to_owned();

@@ -24,7 +24,7 @@ use zeroize::Zeroizing;
 #[derive(Parser)]
 #[command(
     version,
-    after_help = "Commands: create, import, list, use <INDEX|FINGERPRINT>, mnemonic, get mnemonic,\naddress, addresses, balance, history, send, broadcast, info, transaction <TXID>, capabilities\n\nWallet directory: $MMX_HOME or $HOME/.mmx"
+    after_help = "Commands: create, import, list, use <INDEX|FINGERPRINT>, mnemonic, get mnemonic,\naddress, addresses, balance, history, send, broadcast, info, transaction <TXID>, capabilities\n\nWallet directory: $MMX_HOME/wallet or $HOME/.mmx/wallet"
 )]
 struct Args {
     #[arg(default_value = "help")]
@@ -186,7 +186,7 @@ fn run(a: &Args) -> Result<()> {
             let path = a.file.clone().unwrap_or_else(|| {
                 dir.as_ref()
                     .unwrap()
-                    .join(format!("mmxwallet_{fingerprint}.dat"))
+                    .join(format!("wallet_{fingerprint}.dat"))
             });
             if let Some(dir) = &dir {
                 if storage::wallets(dir)?

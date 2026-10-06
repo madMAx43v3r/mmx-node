@@ -22,7 +22,7 @@ To create a wallet: `mmxwallet create [--with-passphrase]`
 
 To import a wallet from its mnemonic seed phrase: `mmxwallet import [--with-passphrase]`
 
-Wallet files use the `mmxwallet_<fingerprint>.dat` naming convention so they do not collide with node-wallet files.
+Wallet files use the standard `wallet_<fingerprint>.dat` naming convention.
 Creating or importing a wallet makes it active. List wallets with `mmxwallet list`, then persistently select the active
 wallet by list index or fingerprint with `mmxwallet use <index|fingerprint>`. The selection is stored in
 `mmxwallet.json`.
@@ -47,7 +47,9 @@ To show the MMX balance: `mmxwallet balance`
 
 To show a token balance: `mmxwallet balance --currency <token_address|symbol>`
 
-To show all currency balances: `mmxwallet balance --currency all`
+To show all fungible currency balances: `mmxwallet balance --currency all`
+
+NFT holdings are excluded from these currency balances and do not block MMX or token operations.
 
 To show recent transaction history: `mmxwallet history [--limit <count>]`
 
@@ -62,9 +64,9 @@ To transfer a token: `mmxwallet send --target <address> --amount <value> --curre
 
 To check the configured public RPC: `mmxwallet info`
 
-By default wallets are stored in `$MMX_HOME`, or `$HOME/.mmx` when `MMX_HOME` is not set. Existing `wallet.dat` and
-`wallet_<fingerprint>.dat` node-wallet files are also discovered, but new files are always created with the distinct
-`mmxwallet_` prefix. Use `--file <path>` to select another key file directly. The key file format remains compatible
+By default wallets are stored in `~/.mmx/wallet/`, or `$MMX_HOME/wallet/` when `MMX_HOME` is set. Existing `wallet.dat` and
+`wallet_<fingerprint>.dat` node-wallet files are also discovered, and new files use `wallet_<fingerprint>.dat`.
+Use `--file <path>` to select another key file directly. The key file format remains compatible
 with the existing MMX wallet and GUI.
 
 The optional passphrase changes key derivation; it does not encrypt the seed stored in the wallet file. Keep the key
@@ -118,6 +120,8 @@ from application logs. `--non-interactive` can also disable prompts without sele
 Keep amounts as strings or arbitrary-precision integers. Payment amounts are converted directly from decimal
 argument digits to atomic units, including scientific notation; overflow and fractional atomic units are
 rejected with `invalid_amount` instead of being rounded. Memo limits are **64 UTF-8 bytes**, not 64 characters.
+The signed maximum fee includes all distinct sender/input signatures plus the requested gas allowance.
+Fee-payer affordability is checked by RPC validation; the local wallet still checks funds for transfer inputs.
 
 ### Prepare, review, and broadcast
 
@@ -158,7 +162,7 @@ or temporary request/response files are used. `--curl` has been removed; capabil
 Errors include `rpc_timeout`, `rpc_transport_error`, `rpc_http_error`, `rpc_response_invalid`,
 `rpc_not_synced`, and `rpc_network_mismatch`. `insufficient_funds` remains the wallet liquidity error.
 
-Wallet location defaults remain `$MMX_HOME` or `$HOME/.mmx`. Empty environment values are ignored. If neither
+Wallet location defaults are `$MMX_HOME/wallet/` or `$HOME/.mmx/wallet/`. Empty environment values are ignored. If neither
 is available, directory-based operations fail with `wallet_directory_unavailable` instead of writing to the
 current directory. An explicit `--file` and wallet-independent RPC commands do not need either variable.
 

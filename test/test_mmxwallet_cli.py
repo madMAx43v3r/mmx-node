@@ -55,6 +55,9 @@ class RPC(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         body = self.rfile.read(int(self.headers['Content-Length']))
         self.server.posts.append((self.path, body))
+        if self.path in self.server.responses:
+            response, status = self.server.responses[self.path]
+            return self.reply(response, status)
         if self.path == '/transaction/validate':
             self.reply({'did_fail': False, 'total_fee': str(self.server.fee)})
         elif self.path == '/transaction/broadcast':
@@ -347,6 +350,42 @@ class WalletCLI(unittest.TestCase):
         self.run_cli('send', '--file', str(self.file), '--rpc', self.url,
                      '--target', self.wallet['address'], '--amount', '1', error='insufficient_funds')
         self.assertEqual(self.server.posts, [])
+
+    def test_nft_holdings_do_not_block_fungible_balance_or_send(self):
+        token = self.wallet['address']
+        nft = self.run_cli('create', '--file', str(self.root / 'nft-key.dat'))['address']
+        self.server.responses['/address'] = ({'balances': [
+            {'contract': self.server.currency, 'amount': '2000000', 'decimals': 6, 'symbol': 'MMX'},
+            {'contract': token, 'amount': '1000', 'decimals': 2, 'symbol': 'TOKEN'},
+            {'contract': nft, 'amount': '1', 'is_nft': True, 'is_native': False},
+        ]}, 200)
+        native = self.run_cli('balance', '--file', str(self.file), '--rpc', self.url)['balances']
+        self.assertEqual([(r['symbol'], r['amount_atomic']) for r in native], [('MMX', '2000000')])
+        all_balances = self.run_cli('balance', '--file', str(self.file), '--rpc', self.url,
+                                    '--currency', 'all')['balances']
+        self.assertEqual({r['currency_address'] for r in all_balances}, {self.server.currency, token})
+        self.assertEqual(self.run_cli('send', '--file', str(self.file), '--rpc', self.url,
+                         '--target', self.wallet['address'], '--amount', '1')['status'], 'validated')
+        self.assertEqual(self.run_cli('send', '--file', str(self.file), '--rpc', self.url,
+                         '--target', self.wallet['address'], '--amount', '1', '--currency', token)['status'], 'validated')
+
+    def test_missing_fungible_metadata_remains_an_rpc_error(self):
+        for missing in ['decimals', 'symbol']:
+            with self.subTest(missing=missing):
+                row = {'contract': self.server.currency, 'amount': '2000000', 'decimals': 6, 'symbol': 'MMX'}
+                row.pop(missing)
+                self.server.responses['/address'] = ({'balances': [row]}, 200)
+                self.run_cli('balance', '--file', str(self.file), '--rpc', self.url, error='rpc_response_invalid')
+
+    def test_fee_payer_affordability_is_checked_by_rpc(self):
+        self.server.amount = '1000000'
+        self.server.responses['/transaction/validate'] = ({'did_fail': True, 'error': 'insufficient fee payer balance'}, 200)
+        self.run_cli('send', '--file', str(self.file), '--rpc', self.url,
+                     '--target', self.wallet['address'], '--amount', '1', error='wallet_error')
+        self.assertEqual([path for path, _ in self.server.posts], ['/transaction/validate'])
+        tx = json.loads(self.server.posts[0][1])
+        self.assertEqual(tx['static_cost'], 1300)
+        self.assertEqual(tx['max_fee_amount'], 5001300)
 
     def test_rpc_redirect_is_not_followed(self):
         self.server.responses['/node/info'] = ({}, 302)
