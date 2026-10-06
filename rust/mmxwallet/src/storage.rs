@@ -8,19 +8,19 @@ use std::{
 use zeroize::Zeroizing;
 
 pub fn directory() -> Result<PathBuf> {
+    let home_var = if cfg!(windows) { "USERPROFILE" } else { "HOME" };
     std::env::var_os("MMX_HOME")
         .filter(|s| !s.is_empty())
         .map(PathBuf::from)
         .or_else(|| {
-            std::env::var_os("HOME")
+            std::env::var_os(home_var)
                 .filter(|s| !s.is_empty())
                 .map(|p| PathBuf::from(p).join(".mmx"))
         })
-        .map(|p| p.join("wallet"))
         .ok_or_else(|| {
             Error::new(
                 "wallet_directory_unavailable",
-                "set MMX_HOME or HOME, or select a wallet with --file",
+                format!("set MMX_HOME or {home_var}, or select a wallet with --file"),
             )
         })
 }

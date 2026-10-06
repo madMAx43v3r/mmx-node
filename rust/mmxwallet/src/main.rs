@@ -24,7 +24,7 @@ use zeroize::Zeroizing;
 #[derive(Parser)]
 #[command(
     version,
-    after_help = "Commands: create, import, list, use <INDEX|FINGERPRINT>, mnemonic, get mnemonic,\naddress, addresses, balance, history, send, broadcast, info, transaction <TXID>, capabilities\n\nWallet directory: $MMX_HOME/wallet or $HOME/.mmx/wallet"
+    after_help = "Commands: create, import, list, use <INDEX|FINGERPRINT>, mnemonic, get mnemonic,\naddress, addresses, balance, history, send, broadcast, info, transaction <TXID>, capabilities\n\nWallet directory: $MMX_HOME or ~/.mmx (Windows: %USERPROFILE%\\.mmx)"
 )]
 struct Args {
     #[arg(default_value = "help")]

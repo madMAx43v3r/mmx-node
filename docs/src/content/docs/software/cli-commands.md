@@ -64,7 +64,8 @@ To transfer a token: `mmxwallet send --target <address> --amount <value> --curre
 
 To check the configured public RPC: `mmxwallet info`
 
-By default wallets are stored in `~/.mmx/wallet/`, or `$MMX_HOME/wallet/` when `MMX_HOME` is set. Existing `wallet.dat` and
+By default wallets are stored in `~/.mmx/` on Linux and `%USERPROFILE%\.mmx\` on Windows, matching the GUI apps.
+When `MMX_HOME` is set, wallets are stored directly in that directory. Existing `wallet.dat` and
 `wallet_<fingerprint>.dat` node-wallet files are also discovered, and new files use `wallet_<fingerprint>.dat`.
 Use `--file <path>` to select another key file directly. The key file format remains compatible
 with the existing MMX wallet and GUI.
@@ -162,7 +163,7 @@ or temporary request/response files are used. `--curl` has been removed; capabil
 Errors include `rpc_timeout`, `rpc_transport_error`, `rpc_http_error`, `rpc_response_invalid`,
 `rpc_not_synced`, and `rpc_network_mismatch`. `insufficient_funds` remains the wallet liquidity error.
 
-Wallet location defaults are `$MMX_HOME/wallet/` or `$HOME/.mmx/wallet/`. Empty environment values are ignored. If neither
+Wallet location defaults are `$MMX_HOME` or `$HOME/.mmx` (`%USERPROFILE%\.mmx` on Windows). Empty environment values are ignored. If neither
 is available, directory-based operations fail with `wallet_directory_unavailable` instead of writing to the
 current directory. An explicit `--file` and wallet-independent RPC commands do not need either variable.
 
