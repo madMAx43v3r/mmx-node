@@ -7,9 +7,10 @@ const error_timeout_ms = 3 * check_interval_ms;
 
 const express = require('express');
 const axios = require("axios");
-const https = require('https');
 const http = require('http');
-const fs = require('fs');
+
+const listen_host = process.env.RPC_HOST || '127.0.0.1';
+const listen_port = Number(process.env.RPC_PORT || 8081);
 
 const remotes = require('./remotes.json');
 
@@ -120,24 +121,6 @@ health_check();
 setInterval(health_check, check_interval_ms);
 setInterval(reset_pending, load_balance_tick);
 
-{
-	http.createServer(app).listen(80);
-	
-	console.log("Listening on port 80 ...");
-}
-
-const cert_path = '/root/.acme.sh/rpc.mmx.network_ecc/';
-
-if(fs.existsSync(cert_path))
-{
-	var options = {
-		key: fs.readFileSync(cert_path + 'rpc.mmx.network.key'),
-		cert: fs.readFileSync(cert_path + 'fullchain.cer'),
-		ca: fs.readFileSync(cert_path + 'ca.cer')
-	};
-
-	https.createServer(options, app).listen(443);
-	
-	console.log("Listening on port 443 ...");
-}
-
+http.createServer(app).listen(listen_port, listen_host, () => {
+	console.log(`Listening on http://${listen_host}:${listen_port} ...`);
+});

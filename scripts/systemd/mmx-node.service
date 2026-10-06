@@ -1,0 +1,20 @@
+[Unit]
+Description=MMX node for the RPC server
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=@MMX_USER@
+WorkingDirectory=@MMX_DIR@
+ExecStart=@MMX_DIR@/run_node.sh -c config/server/
+Restart=always
+RestartSec=10
+TimeoutStopSec=300
+LimitNOFILE=65536
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

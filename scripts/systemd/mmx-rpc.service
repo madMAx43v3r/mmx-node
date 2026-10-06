@@ -1,0 +1,23 @@
+[Unit]
+Description=MMX RPC proxy behind Caddy
+Wants=network-online.target mmx-node.service
+After=network-online.target mmx-node.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=@MMX_USER@
+WorkingDirectory=@MMX_DIR@/www/rpc-server
+Environment=NODE_ENV=production
+Environment=RPC_HOST=127.0.0.1
+Environment=RPC_PORT=8081
+ExecStart=@NODE_BIN@ index.js
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+LimitNOFILE=65536
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
