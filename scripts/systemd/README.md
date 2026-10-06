@@ -75,4 +75,4 @@ CUDA proof recomputation and OpenCL VDF verification, both restricted to the
 deployment notes for the CMake flag.
 
 See [dualv4 deployment](dualv4.md) for the deployed routing, verification results,
-and the prepared gateway configuration to load once the node is synced.
+and gateway rollback instructions.

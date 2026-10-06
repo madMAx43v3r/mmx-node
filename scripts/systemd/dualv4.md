@@ -8,16 +8,18 @@ is enabled, with visibility restricted to that GPU's UUID.
 The RPC proxy listens on `127.0.0.1:8081`. Caddy has obtained a valid certificate
 for `rpc.mmx.network`.
 
-The gateway is `ubuntu@15.235.186.10`. HAProxy continues to serve production RPC
-requests through t320. HTTP requests for `rpc.mmx.network` under
-`/.well-known/acme-challenge/` go to dualv4 (`10.10.10.4:80`) so Caddy can obtain
-and renew certificates while t320 serves production. Other HTTP requests and
-HTTPS still use t320.
+The gateway is `ubuntu@15.235.186.10`. HAProxy routes production requests for
+`rpc.mmx.network` to Caddy on dualv4 (`10.10.10.4:80/443`). HTTP routes by Host
+and HTTPS passes TLS through by SNI. Caddy handles HTTP redirects, certificate
+validation, and HTTPS termination. Other hostnames retain their existing t320
+backends, as does the existing node peer forwarding on port 11337.
 
-The short public HTTPS test against dualv4 returned `200` for `/server/status`,
-verified its certificate, and returned the expected `503` for `/node/info` while
-the node was unsynced. Production routing was restored and `/node/info` returned
-`200` with `is_synced: true` from t320.
+Production cutover completed on 2026-10-06 at 12:21 UTC after dualv4's synced
+height matched t320. Public `/node/info` returned `200`, `is_synced: true`, and
+the expected dualv4 build `v1.5.3-13-g41f2e4ed`. The HTTPS certificate verified
+successfully, `/server/status` showed no backend errors, and HTTP redirected to
+HTTPS. The previous gateway configuration was saved to
+`/etc/haproxy/haproxy.cfg.before-dualv4-cutover-20261006T122142Z`.
 
 The existing node database began at height 208266. Its stale seed configuration
 was updated from this repository's mainnet seed list, with the reachable gateway
@@ -71,23 +73,23 @@ curl --fail --resolve rpc.mmx.network:443:10.10.10.4 \
     https://rpc.mmx.network/node/info
 ```
 
-Leave production on t320 until this returns `200`, reports `is_synced: true`, and
-its height is current compared with `https://rpc.mmx.network/node/info`.
+Before restoring dualv4 routing after maintenance, require this to return `200`,
+report `is_synced: true`, and have a current height compared with the serving node.
 
-## Prepared gateway configuration
+## Gateway routing and rollback
 
 The gateway has these root-owned files:
 
-- `/etc/haproxy/haproxy.cfg`: live configuration serving t320.
-- `/etc/haproxy/haproxy.cfg.t320-staging`: the same routing, including Caddy's
-  certificate validation path.
-- `/etc/haproxy/haproxy.cfg.dualv4-ready`: the tested configuration routing
+- `/etc/haproxy/haproxy.cfg`: live configuration serving dualv4.
+- `/etc/haproxy/haproxy.cfg.t320-staging`: rollback routing to t320, including
+  Caddy's certificate validation path on dualv4.
+- `/etc/haproxy/haproxy.cfg.dualv4-ready`: the validated configuration routing
   `rpc.mmx.network` to dualv4. HTTP routes by Host and HTTPS passes TLS through
   by SNI, leaving other hostnames and the existing 11337/7777 forwarding intact.
 - `/etc/haproxy/haproxy.cfg.before-dualv4-20261004`: the original configuration.
 
-After verifying dualv4 is synced, validate and load the prepared configuration
-on the gateway:
+To restore dualv4 routing after a rollback, verify it is synced, then validate
+and load the configuration on the gateway:
 
 ```sh
 sudo haproxy -c -f /etc/haproxy/haproxy.cfg.dualv4-ready
