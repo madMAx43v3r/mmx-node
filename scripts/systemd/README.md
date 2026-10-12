@@ -76,3 +76,6 @@ deployment notes for the CMake flag.
 
 See [dualv4 deployment](dualv4.md) for the deployed routing, verification results,
 and gateway rollback instructions.
+
+See [second RPC VM](vm-rpc.md) for the deployment at `64.176.84.253` and checks
+to run before updating DNS.
