@@ -79,3 +79,6 @@ and gateway rollback instructions.
 
 See [second RPC VM](vm-rpc.md) for the deployment at `64.176.84.253` and checks
 to run before updating DNS.
+
+See [EU public RPC](eu-rpc.md) for `80.47.12.16`, including Ubuntu 26.04
+compatibility and genesis sync readiness checks.
