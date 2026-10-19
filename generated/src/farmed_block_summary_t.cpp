@@ -12,7 +12,7 @@ namespace mmx {
 
 
 const vnx::Hash64 farmed_block_summary_t::VNX_TYPE_HASH(0x9fe2bac01782721dull);
-const vnx::Hash64 farmed_block_summary_t::VNX_CODE_HASH(0x8349f56d71a75ef6ull);
+const vnx::Hash64 farmed_block_summary_t::VNX_CODE_HASH(0xe78bb0337067a7beull);
 
 vnx::Hash64 farmed_block_summary_t::get_type_hash() const {
 	return VNX_TYPE_HASH;
@@ -49,6 +49,7 @@ void farmed_block_summary_t::accept(vnx::Visitor& _visitor) const {
 	_visitor.type_field(_type_code->fields[1], 1); vnx::accept(_visitor, last_height);
 	_visitor.type_field(_type_code->fields[2], 2); vnx::accept(_visitor, total_rewards);
 	_visitor.type_field(_type_code->fields[3], 3); vnx::accept(_visitor, reward_map);
+	_visitor.type_field(_type_code->fields[4], 4); vnx::accept(_visitor, total_rewards_24h);
 	_visitor.type_end(*_type_code);
 }
 
@@ -58,6 +59,7 @@ void farmed_block_summary_t::write(std::ostream& _out) const {
 	_out << ", \"last_height\": "; vnx::write(_out, last_height);
 	_out << ", \"total_rewards\": "; vnx::write(_out, total_rewards);
 	_out << ", \"reward_map\": "; vnx::write(_out, reward_map);
+	_out << ", \"total_rewards_24h\": "; vnx::write(_out, total_rewards_24h);
 	_out << "}";
 }
 
@@ -74,6 +76,7 @@ vnx::Object farmed_block_summary_t::to_object() const {
 	_object["last_height"] = last_height;
 	_object["total_rewards"] = total_rewards;
 	_object["reward_map"] = reward_map;
+	_object["total_rewards_24h"] = total_rewards_24h;
 	return _object;
 }
 
@@ -87,6 +90,8 @@ void farmed_block_summary_t::from_object(const vnx::Object& _object) {
 			_entry.second.to(reward_map);
 		} else if(_entry.first == "total_rewards") {
 			_entry.second.to(total_rewards);
+		} else if(_entry.first == "total_rewards_24h") {
+			_entry.second.to(total_rewards_24h);
 		}
 	}
 }
@@ -104,6 +109,9 @@ vnx::Variant farmed_block_summary_t::get_field(const std::string& _name) const {
 	if(_name == "reward_map") {
 		return vnx::Variant(reward_map);
 	}
+	if(_name == "total_rewards_24h") {
+		return vnx::Variant(total_rewards_24h);
+	}
 	return vnx::Variant();
 }
 
@@ -116,6 +124,8 @@ void farmed_block_summary_t::set_field(const std::string& _name, const vnx::Vari
 		_value.to(total_rewards);
 	} else if(_name == "reward_map") {
 		_value.to(reward_map);
+	} else if(_name == "total_rewards_24h") {
+		_value.to(total_rewards_24h);
 	}
 }
 
@@ -143,11 +153,11 @@ std::shared_ptr<vnx::TypeCode> farmed_block_summary_t::static_create_type_code()
 	auto type_code = std::make_shared<vnx::TypeCode>();
 	type_code->name = "mmx.farmed_block_summary_t";
 	type_code->type_hash = vnx::Hash64(0x9fe2bac01782721dull);
-	type_code->code_hash = vnx::Hash64(0x8349f56d71a75ef6ull);
+	type_code->code_hash = vnx::Hash64(0xe78bb0337067a7beull);
 	type_code->is_native = true;
 	type_code->native_size = sizeof(::mmx::farmed_block_summary_t);
 	type_code->create_value = []() -> std::shared_ptr<vnx::Value> { return std::make_shared<vnx::Struct<farmed_block_summary_t>>(); };
-	type_code->fields.resize(4);
+	type_code->fields.resize(5);
 	{
 		auto& field = type_code->fields[0];
 		field.data_size = 4;
@@ -171,6 +181,12 @@ std::shared_ptr<vnx::TypeCode> farmed_block_summary_t::static_create_type_code()
 		field.is_extended = true;
 		field.name = "reward_map";
 		field.code = {13, 5, 11, 32, 1, 4};
+	}
+	{
+		auto& field = type_code->fields[4];
+		field.data_size = 8;
+		field.name = "total_rewards_24h";
+		field.code = {4};
 	}
 	type_code->build();
 	return type_code;
@@ -224,6 +240,9 @@ void read(TypeInput& in, ::mmx::farmed_block_summary_t& value, const TypeCode* t
 		if(const auto* const _field = type_code->field_map[2]) {
 			vnx::read_value(_buf + _field->offset, value.total_rewards, _field->code.data());
 		}
+		if(const auto* const _field = type_code->field_map[4]) {
+			vnx::read_value(_buf + _field->offset, value.total_rewards_24h, _field->code.data());
+		}
 	}
 	for(const auto* _field : type_code->ext_fields) {
 		switch(_field->native_index) {
@@ -246,10 +265,11 @@ void write(TypeOutput& out, const ::mmx::farmed_block_summary_t& value, const Ty
 	else if(code && code[0] == CODE_STRUCT) {
 		type_code = type_code->depends[code[1]];
 	}
-	auto* const _buf = out.write(16);
+	auto* const _buf = out.write(24);
 	vnx::write_value(_buf + 0, value.num_blocks);
 	vnx::write_value(_buf + 4, value.last_height);
 	vnx::write_value(_buf + 8, value.total_rewards);
+	vnx::write_value(_buf + 16, value.total_rewards_24h);
 	vnx::write(out, value.reward_map, type_code, type_code->fields[3].code.data());
 }
 

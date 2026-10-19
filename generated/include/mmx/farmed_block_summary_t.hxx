@@ -18,6 +18,7 @@ struct MMX_EXPORT farmed_block_summary_t : vnx::struct_t {
 	uint32_t last_height = 0;
 	uint64_t total_rewards = 0;
 	std::map<::mmx::addr_t, uint64_t> reward_map;
+	uint64_t total_rewards_24h = 0;
 	
 	static const vnx::Hash64 VNX_TYPE_HASH;
 	static const vnx::Hash64 VNX_CODE_HASH;
@@ -59,12 +60,13 @@ struct MMX_EXPORT farmed_block_summary_t : vnx::struct_t {
 
 template<typename T>
 void farmed_block_summary_t::accept_generic(T& _visitor) const {
-	_visitor.template type_begin<farmed_block_summary_t>(4);
+	_visitor.template type_begin<farmed_block_summary_t>(5);
 	_visitor.type_field("num_blocks", 0); _visitor.accept(num_blocks);
 	_visitor.type_field("last_height", 1); _visitor.accept(last_height);
 	_visitor.type_field("total_rewards", 2); _visitor.accept(total_rewards);
 	_visitor.type_field("reward_map", 3); _visitor.accept(reward_map);
-	_visitor.template type_end<farmed_block_summary_t>(4);
+	_visitor.type_field("total_rewards_24h", 4); _visitor.accept(total_rewards_24h);
+	_visitor.template type_end<farmed_block_summary_t>(5);
 }
 
 

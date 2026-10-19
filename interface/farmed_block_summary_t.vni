@@ -8,5 +8,7 @@ struct farmed_block_summary_t {
 	ulong total_rewards;
 	
 	map<mmx.addr_t, ulong> reward_map;
+
+	ulong total_rewards_24h;		// rolling 24 hours, independent of since height
 	
 }

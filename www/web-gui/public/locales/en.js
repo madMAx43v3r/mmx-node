@@ -92,7 +92,8 @@ const enLocale = {
         "virtual_balance": "Virtual Balance",
         "virtual_size": "Virtual Size",
         "physical_size": "Physical Size",
-        "total_farm_size": "Total Farm Size"
+        "total_farm_size": "Total Farm Size",
+        "coins_mined_24h": "Mined 24h"
     },
 
     "node_log": {

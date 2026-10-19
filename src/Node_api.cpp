@@ -1482,14 +1482,34 @@ std::vector<std::shared_ptr<const BlockHeader>> Node::get_farmed_blocks(
 farmed_block_summary_t Node::get_farmed_block_summary(const std::vector<pubkey_t>& farmer_keys, const uint32_t& since) const
 {
 	farmed_block_summary_t out;
+	const auto now = get_time_ms();
+	const auto since_24h = now - int64_t(24 * 60 * 60) * 1000;
 	for(const auto& key : farmer_keys) {
 		std::vector<farmed_block_info_t> tmp;
-		farmer_block_map.find_range(std::make_pair(key, since), std::make_pair(key, -1), tmp);
+		farmer_block_map.find_range(std::make_pair(key, 0), std::make_pair(key, -1), tmp);
 		for(const auto& entry : tmp) {
+			if(entry.height < since) {
+				continue;
+			}
 			out.num_blocks++;
 			out.last_height = std::max(entry.height, out.last_height);
 			out.total_rewards += entry.reward;
 			out.reward_map[entry.reward_addr] += entry.reward;
+		}
+		// Block timestamps increase with height. Only read headers at the window boundaries.
+		const auto find_since = [this, &tmp](const int64_t time_stamp) {
+			return std::lower_bound(tmp.begin(), tmp.end(), time_stamp,
+				[this](const farmed_block_info_t& entry, const int64_t time_stamp) {
+					const auto block = get_header_at(entry.height);
+					if(!block) {
+						throw std::logic_error("missing farmed block header at height " + std::to_string(entry.height));
+					}
+					return block->time_stamp < time_stamp;
+				});
+		};
+		const auto end = find_since(now + 1);
+		for(auto iter = find_since(since_24h); iter != end; ++iter) {
+			out.total_rewards_24h += iter->reward;
 		}
 	}
 	return out;

@@ -42,7 +42,7 @@ Vue.component('farmer-info', {
 						<v-card-title>
 							<v-row align="center" justify="space-around">
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
+								<v-col cols="12" sm="6" md class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="info">{{ (info.total_bytes / Math.pow(1000, 4)).toFixed(3) }} TB</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
@@ -52,7 +52,7 @@ Vue.component('farmer-info', {
 									</v-row>
 								</v-col>
 								
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">
+								<v-col cols="12" sm="6" md class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="info">{{ (info.total_bytes_effective / Math.pow(1000, 4)).toFixed(3) }} TBe</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
@@ -62,7 +62,7 @@ Vue.component('farmer-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+								<v-col cols="12" sm="6" md class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="summary">{{ summary.num_blocks }}</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
@@ -72,13 +72,24 @@ Vue.component('farmer-info', {
 									</v-row>
 								</v-col>
 
-								<v-col cols="12" xl="3" md="3" sm="6" class="text-center my-2">					
+								<v-col cols="12" sm="6" md class="text-center my-2">
 									<v-row align="center" justify="space-around">
 										<div v-if="summary">{{ (summary.total_rewards_value).toFixed(3) }} MMX</div>
 										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
 									</v-row>
 									<v-row align="center" justify="space-around" class="subtitle-1">
 										Total Rewards
+									</v-row>
+								</v-col>
+
+								<v-col cols="12" sm="6" md class="text-center my-2">
+									<v-row align="center" justify="space-around">
+										<div v-if="summary && summary.total_rewards_24h_value != null">{{ summary.total_rewards_24h_value.toFixed(3) }} MMX</div>
+										<div v-else-if="summary">N/A</div>
+										<v-skeleton-loader v-else type="heading" width="50%" align="center"></v-skeleton-loader>
+									</v-row>
+									<v-row align="center" justify="space-around" class="subtitle-1">
+										{{ $t('farmer_info.coins_mined_24h') }}
 									</v-row>
 								</v-col>
 
@@ -154,6 +165,11 @@ Vue.component('farmer-rewards', {
 						<tr>
 							<td class="key-cell">Total Rewards</td>
 							<td><b>{{data.total_rewards_value}}</b>&nbsp; MMX</td>
+						</tr>
+						<tr>
+							<td class="key-cell">{{ $t('farmer_info.coins_mined_24h') }}</td>
+							<td v-if="data.total_rewards_24h_value != null"><b>{{data.total_rewards_24h_value}}</b>&nbsp; MMX</td>
+							<td v-else>N/A</td>
 						</tr>
 						<tr>
 							<td class="key-cell">Time to win</td>

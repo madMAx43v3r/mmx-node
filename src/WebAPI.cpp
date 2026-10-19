@@ -2389,6 +2389,8 @@ void WebAPI::http_request_async(std::shared_ptr<const vnx::addons::HttpRequest> 
 						out["last_height"] = summary.last_height;
 						out["total_rewards"] = summary.total_rewards;
 						out["total_rewards_value"] = to_value(summary.total_rewards, params->decimals);
+						out["total_rewards_24h"] = summary.total_rewards_24h;
+						out["total_rewards_24h_value"] = to_value(summary.total_rewards_24h, params->decimals);
 						{
 							std::vector<vnx::Object> rewards;
 							for(const auto& entry : summary.reward_map) {
