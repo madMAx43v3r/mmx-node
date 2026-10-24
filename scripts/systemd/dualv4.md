@@ -21,6 +21,48 @@ successfully, `/server/status` showed no backend errors, and HTTP redirected to
 HTTPS. The previous gateway configuration was saved to
 `/etc/haproxy/haproxy.cfg.before-dualv4-cutover-20261006T122142Z`.
 
+On 2026-10-24, the gateway's HTTP DNS health check was corrected. Bunny DNS
+probes the configured IP on port 80. Requests to `http://15.235.186.10/`
+previously used the default t320 HTTP backend because the Host header contained
+the IP rather than `rpc.mmx.network`; that backend returned `500`, although
+hostname-based HTTPS RPC requests to dualv4 succeeded.
+
+HAProxy now routes GET/HEAD requests for `/` with Host `15.235.186.10` (with
+or without `:80`) to a dedicated `dualv4_rpc_health` backend. That backend
+rewrites Host to `rpc.mmx.network` and the path to `/node/info`, then connects
+to Caddy at `10.10.10.4:443` using SNI and full certificate/hostname verification.
+The response reflects public WebAPI readiness, including `503` during loss
+of sync, rather than returning a static success response. Other HTTP routes
+and HTTPS SNI forwarding retain their existing behavior.
+
+The frontend additions, before the existing hostname-based routing rule, are:
+
+```haproxy
+acl mmx_rpc_ip_host hdr(host) -i 15.235.186.10 15.235.186.10:80
+acl mmx_rpc_health_root path -m str /
+acl mmx_rpc_health_method method GET HEAD
+use_backend dualv4_rpc_health if mmx_rpc_ip_host mmx_rpc_health_root mmx_rpc_health_method
+```
+
+The dedicated backend is:
+
+```haproxy
+backend dualv4_rpc_health
+    mode http
+    http-request set-header Host rpc.mmx.network
+    http-request set-path /node/info
+    server dualv4 10.10.10.4:443 ssl verify required ca-file /etc/ssl/certs/ca-certificates.crt verifyhost rpc.mmx.network sni str(rpc.mmx.network) check check-sni rpc.mmx.network
+```
+
+The configuration was validated before a graceful reload. External checks then
+confirmed the gateway IP's HTTP root returned `200` with `is_synced: true`,
+hostname-based HTTPS RPC through the gateway returned `200` with a valid
+certificate, and hostname-based HTTP still redirected with `308`.
+Both the live configuration and `haproxy.cfg.dualv4-ready` include this fix.
+The previous configurations were saved as
+`/etc/haproxy/haproxy.cfg.before-rpc-health-20261024T161731Z` and the same path
+with `.dualv4-ready` appended. The t320 rollback file was left unchanged.
+
 The existing node database began at height 208266. Its stale seed configuration
 was updated from this repository's mainnet seed list, with the reachable gateway
 added as a fixed peer. The node then connected to current peers and started
