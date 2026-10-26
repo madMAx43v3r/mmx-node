@@ -1,0 +1,10 @@
+# dualv4 is the only ACME issuer for this hostname.
+rpc.mmx.network {
+	tls {
+		issuer acme {
+			dir https://acme-v02.api.letsencrypt.org/directory
+			disable_tlsalpn_challenge
+		}
+	}
+	reverse_proxy 127.0.0.1:8081
+}

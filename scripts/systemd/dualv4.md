@@ -8,6 +8,12 @@ is enabled, with visibility restricted to that GPU's UUID.
 The RPC proxy listens on `127.0.0.1:8081`. Caddy has obtained a valid certificate
 for `rpc.mmx.network`.
 
+Since 2026-10-26 dualv4 is the sole certificate issuer in the
+[coordinated certificate setup](certificates/README.md). It uses HTTP-01 only,
+with challenge requests from every RPC IP forwarded to it. A restricted
+systemd job distributes the certificate to both VM replicas every five minutes
+and reloads Caddy only as needed.
+
 The gateway is `ubuntu@15.235.186.10`. HAProxy routes production requests for
 `rpc.mmx.network` to Caddy on dualv4 (`10.10.10.4:80/443`). HTTP routes by Host
 and HTTPS passes TLS through by SNI. Caddy handles HTTP redirects, certificate

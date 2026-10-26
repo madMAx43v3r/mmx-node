@@ -1,0 +1,15 @@
+rpc.mmx.network {
+	tls /etc/caddy/rpc-certs/current/fullchain.pem /etc/caddy/rpc-certs/current/privkey.pem
+	reverse_proxy 127.0.0.1:8081
+}
+
+http://rpc.mmx.network {
+	handle /.well-known/acme-challenge/* {
+		reverse_proxy http://15.235.186.10 {
+			header_up Host rpc.mmx.network
+		}
+	}
+	handle {
+		redir https://rpc.mmx.network{uri} permanent
+	}
+}

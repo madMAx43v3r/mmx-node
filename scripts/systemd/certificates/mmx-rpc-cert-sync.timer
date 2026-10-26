@@ -1,0 +1,11 @@
+[Unit]
+Description=Check MMX RPC certificate distribution every five minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+AccuracySec=15s
+RandomizedDelaySec=15s
+
+[Install]
+WantedBy=timers.target

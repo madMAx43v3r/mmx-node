@@ -56,8 +56,11 @@ Caddy `2.11.7` was installed from its official stable apt repository.
 `/etc/caddy/Caddyfile` serves `rpc.mmx.network`, proxies to `127.0.0.1:8081`,
 and redirects HTTP to HTTPS. The existing managed certificate was securely
 copied from dualv4 into Caddy's storage, allowing verified HTTPS before DNS
-changes. It expires on 2027-01-02; automatic certificate management is enabled.
-Future ACME validation must reach the Caddy instance renewing the certificate.
+changes. It expires on 2027-01-02. On 2026-10-26 this was replaced by the
+[coordinated certificate setup](certificates/README.md): dualv4 alone renews,
+this VM forwards ACME requests to it, and certificates are installed under
+`/etc/caddy/rpc-certs/current/` by a restricted SSH receiver. The distribution
+timer runs on dualv4; this VM no longer renews certificates independently.
 
 UFW allows SSH on TCP 22, node peers on TCP 11337, HTTP on TCP 80, and HTTPS
 on TCP/UDP 443. Caddy's admin API and the internal HTTP services use loopback.

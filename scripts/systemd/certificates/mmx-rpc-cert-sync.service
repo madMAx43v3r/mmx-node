@@ -1,0 +1,17 @@
+[Unit]
+Description=Distribute the MMX RPC HTTPS certificate from dualv4
+Wants=network-online.target
+After=network-online.target caddy.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mmx-sync-rpc-certificates
+UMask=0077
+TimeoutStartSec=150
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+ReadWritePaths=/run/lock

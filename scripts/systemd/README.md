@@ -5,6 +5,12 @@ without PM2. They restart on exit and write output to the journal. Caddy manages
 certificate renewal without scheduled RPC restarts. The installer removes the
 obsolete RPC restart timer from earlier installations.
 
+For multiple RPC IPs sharing `rpc.mmx.network`, use the
+[coordinated certificate setup](certificates/README.md). Dualv4 issues the
+certificate, the other IPs forward validation requests to it, and a restricted
+systemd job distributes updates to the replicas. The generic Caddyfile below
+is for a single independent instance.
+
 Install a supported Node.js runtime and
 [Caddy](https://caddyserver.com/docs/install#debian-ubuntu-raspbian), then install
 the RPC dependencies:
