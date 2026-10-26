@@ -1,5 +1,5 @@
 [Unit]
-Description=Distribute the MMX RPC HTTPS certificate from dualv4
+Description=Distribute the MMX RPC HTTPS certificate from 64.176.84.253
 Wants=network-online.target
 After=network-online.target caddy.service
 

@@ -5,7 +5,7 @@ rpc.mmx.network {
 
 http://rpc.mmx.network {
 	handle /.well-known/acme-challenge/* {
-		reverse_proxy http://15.235.186.10 {
+		reverse_proxy http://64.176.84.253 {
 			header_up Host rpc.mmx.network
 		}
 	}

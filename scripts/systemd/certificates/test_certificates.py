@@ -5,6 +5,7 @@ import importlib.util
 import io
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import tarfile
 import tempfile
@@ -14,6 +15,10 @@ spec = importlib.util.spec_from_file_location(
     "receiver", Path(__file__).with_name("install-rpc-certificate.py"))
 receiver = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(receiver)
+sender_spec = importlib.util.spec_from_file_location(
+    "sender", Path(__file__).with_name("sync-rpc-certificates.py"))
+sender = importlib.util.module_from_spec(sender_spec)
+sender_spec.loader.exec_module(sender)
 
 
 def archive(entries):
@@ -29,6 +34,23 @@ def archive(entries):
 
 
 class Certificates(unittest.TestCase):
+    def test_direct_and_relay_ssh_commands(self):
+        config = {"identity_file": "/key with spaces", "known_hosts_file": "/known hosts"}
+        address, direct = sender.ssh_command(config, "80.47.12.16")
+        self.assertEqual(address, "80.47.12.16")
+        self.assertEqual(direct[-1], "root@80.47.12.16")
+        self.assertFalse(any(arg.startswith("ProxyCommand=") for arg in direct))
+        address, command = sender.ssh_command(config, {
+            "host": "10.10.10.4", "relay": "ubuntu@15.235.186.10"})
+        self.assertEqual(address, "10.10.10.4")
+        self.assertEqual(command[-1], "root@10.10.10.4")
+        proxy = next(arg.removeprefix("ProxyCommand=") for arg in command
+                     if arg.startswith("ProxyCommand="))
+        relay = shlex.split(proxy)
+        self.assertEqual(relay[:-2], direct[:-1])
+        self.assertEqual(relay[-2:], ["ubuntu@15.235.186.10", "mmx-certificate-relay"])
+        self.assertIn("StrictHostKeyChecking=yes", relay)
+
     def test_archive_restrictions(self):
         regular = tarfile.REGTYPE
         good = [("fullchain.pem", b"cert", regular), ("privkey.pem", b"key", regular)]

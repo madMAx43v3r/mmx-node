@@ -2,5 +2,8 @@
   "certificate_directory": "/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/rpc.mmx.network",
   "identity_file": "/var/lib/mmx-rpc-cert-sync/id_ed25519",
   "known_hosts_file": "/var/lib/mmx-rpc-cert-sync/known_hosts",
-  "targets": ["64.176.84.253", "80.47.12.16"]
+  "targets": [
+    {"host": "10.10.10.4", "relay": "ubuntu@15.235.186.10"},
+    "80.47.12.16"
+  ]
 }

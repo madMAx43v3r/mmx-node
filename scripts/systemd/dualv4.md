@@ -1,18 +1,21 @@
 # dualv4 deployment
 
-The node, RPC proxy, and Caddy are installed and enabled on dualv4. Caddy handles
-certificate renewal, and the obsolete daily RPC restart timer has been removed.
+The node, RPC proxy, and Caddy are installed and enabled on dualv4. Caddy serves
+HTTPS using the certificate renewed on `64.176.84.253`; the obsolete daily RPC
+restart timer has been removed.
 Both MMX services run as `mad` from `/home/mad/mmx-node`. The node uses
 `config/server/` and the RTX 4060 Ti by name for OpenCL. CUDA proof recomputation
 is enabled, with visibility restricted to that GPU's UUID.
 The RPC proxy listens on `127.0.0.1:8081`. Caddy has obtained a valid certificate
 for `rpc.mmx.network`.
 
-Since 2026-10-26 dualv4 is the sole certificate issuer in the
-[coordinated certificate setup](certificates/README.md). It uses HTTP-01 only,
-with challenge requests from every RPC IP forwarded to it. A restricted
-systemd job distributes the certificate to both VM replicas every five minutes
-and reloads Caddy only as needed.
+Since 2026-10-26 `64.176.84.253` is the sole certificate issuer in the
+[coordinated certificate setup](certificates/README.md), replacing the initial
+dualv4 issuer. Dualv4 loads the distributed certificate from
+`/etc/caddy/rpc-certs/current/` and forwards ACME requests directly to that VM.
+The VM's restricted systemd job distributes certificates to dualv4 through a
+fixed SSH relay on the gateway, and directly to `80.47.12.16`. Dualv4's former
+distribution timer and key grants have been retired.
 
 The gateway is `ubuntu@15.235.186.10`. HAProxy routes production requests for
 `rpc.mmx.network` to Caddy on dualv4 (`10.10.10.4:80/443`). HTTP routes by Host

@@ -6,9 +6,29 @@ import io
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import tarfile
+
+
+def ssh_command(config, target):
+    address = target if isinstance(target, str) else target["host"]
+    base = ["/usr/bin/ssh", "-F", "/dev/null", "-T",
+            "-i", config["identity_file"],
+            "-o", "BatchMode=yes", "-o", "IdentitiesOnly=yes",
+            "-o", "StrictHostKeyChecking=yes",
+            "-o", "UserKnownHostsFile=" + config["known_hosts_file"],
+            "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=10",
+            "-o", "ServerAliveCountMax=2"]
+    command = list(base)
+    if isinstance(target, dict) and target.get("relay"):
+        # The relay's restricted key runs only nc to dualv4:22. No SSH
+        # forwarding or unrestricted remote command is enabled for this key.
+        relay = base + [target["relay"], "mmx-certificate-relay"]
+        command += ["-o", "ProxyCommand=" + shlex.join(relay)]
+    command.append("root@" + address)
+    return address, command
 
 
 def main():
@@ -30,22 +50,16 @@ def main():
                 archive.addfile(entry, io.BytesIO(content))
         failed = False
         for target in config["targets"]:
-            command = ["/usr/bin/ssh", "-F", "/dev/null", "-T",
-                       "-i", config["identity_file"],
-                       "-o", "BatchMode=yes", "-o", "IdentitiesOnly=yes",
-                       "-o", "StrictHostKeyChecking=yes",
-                       "-o", "UserKnownHostsFile=" + config["known_hosts_file"],
-                       "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=10",
-                       "-o", "ServerAliveCountMax=2", "root@" + target]
+            address, command = ssh_command(config, target)
             try:
                 result = subprocess.run(command, input=payload.getvalue(),
                                         capture_output=True, timeout=60)
-                print(target + ": " + result.stdout.decode().strip(), flush=True)
+                print(address + ": " + result.stdout.decode().strip(), flush=True)
                 if result.returncode:
-                    print(target + ": " + result.stderr.decode().strip(), file=sys.stderr)
+                    print(address + ": " + result.stderr.decode().strip(), file=sys.stderr)
                     failed = True
             except (OSError, subprocess.TimeoutExpired) as error:
-                print(f"{target}: {error}", file=sys.stderr)
+                print(f"{address}: {error}", file=sys.stderr)
                 failed = True
         return 1 if failed else 0
 

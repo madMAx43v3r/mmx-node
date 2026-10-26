@@ -33,10 +33,11 @@ configuration at `/etc/caddy/Caddyfile` proxies `rpc.mmx.network` to
 for that hostname was securely copied from dualv4 into Caddy's certificate
 storage, allowing verified HTTPS before DNS changes. It expires on
 2027-01-02. On 2026-10-26 this was replaced by the
-[coordinated certificate setup](certificates/README.md): dualv4 alone renews,
-this VM forwards ACME requests to it, and certificates are installed under
-`/etc/caddy/rpc-certs/current/` by a restricted SSH receiver. The distribution
-timer runs on dualv4; this VM no longer renews certificates independently.
+[coordinated certificate setup](certificates/README.md). This VM is now the
+sole renewer, using the existing Caddy-managed certificate and ACME account.
+Its five-minute distribution timer pushes certificates to `80.47.12.16` and
+to dualv4 through a restricted SSH relay on the WireGuard gateway. Every public
+RPC IP forwards ACME validation requests to this VM.
 
 UFW allows TCP 80/443 and UDP 443, in addition to the existing SSH and node
 peer ports. Caddy's admin API and both internal HTTP services remain on
