@@ -32,7 +32,13 @@ jobs:
         run: |
           sudo sh scripts/ci/configure-ubuntu-mirrors.sh
           sudo apt-get update
-          sudo apt-get install -y git cmake build-essential automake libtool pkg-config curl libminiupnpc-dev libjemalloc-dev libzstd-dev zlib1g-dev ocl-icd-opencl-dev qtwebengine5-dev fakeroot devscripts debhelper dpkg-dev
+          if ! sudo apt-get -o Debug::pkgCacheGen=true install -y git cmake build-essential automake libtool pkg-config curl libminiupnpc-dev libjemalloc-dev libzstd-dev zlib1g-dev ocl-icd-opencl-dev qtwebengine5-dev fakeroot devscripts debhelper dpkg-dev; then
+            sudo apt-cache policy cmake build-essential
+            sudo apt-get indextargets --format '$(FILENAME)'
+            sudo ls -lh /var/lib/apt/lists
+            sudo cat /etc/apt/sources.list.d/ubuntu.sources
+            exit 1
+          fi
 
       - name: Install CUDA Toolkit
         uses: Jimver/cuda-toolkit@v0.2.21
