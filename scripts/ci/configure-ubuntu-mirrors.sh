@@ -3,13 +3,12 @@ set -eu
 
 # Handle both Ubuntu's source formats and the GitHub runner's mirror list.
 script_dir=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
-cp "$script_dir/ubuntu-mirrors.txt" /etc/apt/mmx-ubuntu-mirrors.txt
+cp "$script_dir/ubuntu-mirrors.txt" /etc/apt/apt-mirrors.txt
 for source in /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
 	[ -f "$source" ] || continue
 	sed -E -i \
-		-e 's#https?://([[:alnum:].-]+\.)?archive\.ubuntu\.com/ubuntu/?#mirror+file:/etc/apt/mmx-ubuntu-mirrors.txt#g' \
-		-e 's#https?://security\.ubuntu\.com/ubuntu/?#mirror+file:/etc/apt/mmx-ubuntu-mirrors.txt#g' \
-		-e 's#mirror\+file:/etc/apt/apt-mirrors\.txt#mirror+file:/etc/apt/mmx-ubuntu-mirrors.txt#g' \
+		-e 's#https?://([[:alnum:].-]+\.)?archive\.ubuntu\.com/ubuntu/?#mirror+file:/etc/apt/apt-mirrors.txt#g' \
+		-e 's#https?://security\.ubuntu\.com/ubuntu/?#mirror+file:/etc/apt/apt-mirrors.txt#g' \
 		"$source"
 done
 
