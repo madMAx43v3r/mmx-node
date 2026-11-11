@@ -288,12 +288,13 @@ class IntegrationTest(unittest.TestCase):
             for port in (stack.https, stack.plain):
                 sockets.append(socket.create_connection(("127.0.0.1", port), timeout=2))
             time.sleep(.1)
-            with socket.create_connection(("127.0.0.1", stack.plain), timeout=2) as excess:
-                excess.sendall(b"GET /node/info HTTP/1.1\r\nHost: rpc.mmx.network\r\n\r\n")
-                try:
+            try:
+                with socket.create_connection(("127.0.0.1", stack.plain), timeout=2) as excess:
+                    excess.sendall(b"GET /node/info HTTP/1.1\r\nHost: rpc.mmx.network\r\n\r\n")
                     self.assertEqual(excess.recv(1024), b"")
-                except ConnectionResetError:
-                    pass
+            except ConnectionResetError:
+                # Admission may reset during connect, send, or receive.
+                pass
         finally:
             for connection in sockets:
                 connection.close()

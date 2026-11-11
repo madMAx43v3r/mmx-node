@@ -2,8 +2,8 @@
   "domain": "rpc.mmx.network",
   "limits": {
     "total_connections": 4096,
-    "visitor_connections": 32,
-    "prefix48_connections": 256,
+    "visitor_connections": 10,
+    "prefix48_connections": 100,
     "visitor_requests_10s": 100,
     "prefix48_requests_10s": 1000,
     "idle_seconds": 15

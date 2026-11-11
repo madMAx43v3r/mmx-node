@@ -27,9 +27,9 @@ public TCP ports:
 | Scope | Concurrent client connections | Requests per 10 seconds |
 | --- | ---: | ---: |
 | Entire node | 4,096 | — |
-| IPv4 address | 32 | 100 |
-| IPv6 /64 | 32 | 100 |
-| IPv6 /48, in addition to its /64 limits | 256 | 1,000 |
+| IPv4 address | 10 | 100 |
+| IPv6 /64 | 10 | 100 |
+| IPv6 /48, in addition to its /64 limits | 100 | 1,000 |
 
 The public connection counters include sockets before TLS handshakes and count
 actual clients, independently of Caddy's HTTP/2 streams or upstream pooling.
