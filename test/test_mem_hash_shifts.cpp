@@ -4,6 +4,7 @@
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <string>
 
 // Rotate one bit at a time as an independent reference for arbitrary counts.
 template<typename T>
