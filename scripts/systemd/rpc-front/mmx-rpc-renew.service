@@ -1,0 +1,15 @@
+[Unit]
+Description=Renew this node's independent MMX RPC certificate
+Wants=network-online.target
+After=network-online.target haproxy.service caddy.service mmx-rpc-acme.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mmx-rpc-front renew
+TimeoutStartSec=15min
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/mmx-rpc-front /etc/letsencrypt /var/lib/letsencrypt /var/log/letsencrypt /etc/caddy/rpc-front
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX

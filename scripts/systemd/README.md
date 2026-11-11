@@ -5,11 +5,13 @@ without PM2. They restart on exit and write output to the journal. Caddy manages
 certificate renewal without scheduled RPC restarts. The installer removes the
 obsolete RPC restart timer from earlier installations.
 
-For multiple RPC IPs sharing `rpc.mmx.network`, use the
-[coordinated certificate setup](certificates/README.md). `64.176.84.253` issues the
-certificate, the other IPs forward validation requests to it, and a restricted
-systemd job distributes updates to the replicas. The generic Caddyfile below
-is for a single independent instance.
+For public RPC nodes sharing `rpc.mmx.network`, use the repeatable
+[HAProxy/Caddy frontend deployment](rpc-front/README.md). It applies connection
+and request limits, keeps Caddy TLS termination, and gives each node independent
+certificate issuance with per-token challenge forwarding. The old
+[certificate copying setup](certificates/README.md) is retained as historical
+documentation for legacy hosts. The generic Caddyfile below is for a single
+independent instance without the public frontend limits.
 
 Install a supported Node.js runtime and
 [Caddy](https://caddyserver.com/docs/install#debian-ubuntu-raspbian), then install

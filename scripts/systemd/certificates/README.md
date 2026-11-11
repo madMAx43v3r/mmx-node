@@ -1,5 +1,10 @@
 # Coordinated RPC certificates
 
+This is the historical certificate-copying setup. New eu1/th1 deployments use
+[independent certificates and token-specific challenge forwarding](../rpc-front/README.md),
+with no certificate or private-key distribution. Legacy gateway changes are
+outside that deployment.
+
 Deployed on 2026-10-26 for `rpc.mmx.network` across these public addresses:
 
 | Address | HTTPS server | Certificate role |

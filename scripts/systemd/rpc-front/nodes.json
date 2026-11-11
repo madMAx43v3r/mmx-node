@@ -1,0 +1,15 @@
+{
+  "domain": "rpc.mmx.network",
+  "limits": {
+    "total_connections": 4096,
+    "visitor_connections": 32,
+    "prefix48_connections": 256,
+    "visitor_requests_10s": 100,
+    "prefix48_requests_10s": 1000,
+    "idle_seconds": 15
+  },
+  "nodes": [
+    {"id": "eu1", "address": "80.47.12.16", "ssh": "root@80.47.12.16"},
+    {"id": "th1", "address": "64.176.84.253", "ssh": "root@64.176.84.253"}
+  ]
+}

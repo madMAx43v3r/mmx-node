@@ -1,0 +1,17 @@
+[Unit]
+Description=MMX RPC local HTTP-01 challenge responder
+After=network.target
+
+[Service]
+User=www-data
+ExecStart=/usr/local/sbin/mmx-rpc-front serve
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target

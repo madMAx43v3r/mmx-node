@@ -1,0 +1,12 @@
+[Unit]
+Description=Expire abandoned MMX RPC challenge routes
+After=haproxy.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/mmx-rpc-front prune
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/mmx-rpc-front
+ProtectHome=yes

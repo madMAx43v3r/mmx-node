@@ -1,5 +1,9 @@
 # Second RPC VM
 
+Since 2026-11-11, th1 uses the [repeatable HAProxy/Caddy frontend](rpc-front/README.md)
+with per-source connection/request limits and its own independently issued
+certificate. Its former role as the sole certificate issuer has been retired.
+
 The VM at `64.176.84.253` was configured on 2026-10-12 to serve
 `rpc.mmx.network` through Caddy. DNS and the existing gateway routing were left
 unchanged. All three services (`mmx-node`, `mmx-rpc`, and `caddy`) are enabled

@@ -1,5 +1,9 @@
 # Public RPC on 80.47.12.16
 
+Since 2026-11-11, eu1 uses the [repeatable HAProxy/Caddy frontend](rpc-front/README.md)
+with per-source connection/request limits and its own independently issued
+certificate. The certificate-copying setup described below is historical.
+
 The fresh VM `80.47.12.16` (`mmx-node-eu-1`) was configured on 2026-10-13
 with the same systemd node, RPC proxy, and Caddy setup as `64.176.84.253`.
 All three services are enabled at boot. Both MMX services restart on exit;
