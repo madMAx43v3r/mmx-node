@@ -1,6 +1,8 @@
 FROM nvidia/cuda:12.9.1-devel-ubuntu22.04 AS builder
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get -y upgrade \
+COPY scripts/ci/configure-ubuntu-mirrors.sh scripts/ci/ubuntu-mirrors.txt /tmp/mmx-apt/
+RUN sh /tmp/mmx-apt/configure-ubuntu-mirrors.sh && rm -rf /tmp/mmx-apt \
+		&& apt-get update && apt-get -y upgrade \
 		&& apt-get install -y \
 			apt-utils \
 			git \
@@ -30,7 +32,9 @@ RUN --mount=type=cache,target=/root/.cache/ccache sh make_release.sh "-DCMAKE_CX
 
 FROM ubuntu:22.04 AS base
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get -y upgrade \
+COPY scripts/ci/configure-ubuntu-mirrors.sh scripts/ci/ubuntu-mirrors.txt /tmp/mmx-apt/
+RUN sh /tmp/mmx-apt/configure-ubuntu-mirrors.sh && rm -rf /tmp/mmx-apt \
+		&& apt-get update && apt-get -y upgrade \
 		&& apt-get install -y \
 			apt-utils \
 			curl \

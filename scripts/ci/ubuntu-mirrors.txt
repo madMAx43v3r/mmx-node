@@ -1,0 +1,5 @@
+# Independent mirrors first; Ubuntu still verifies signed indexes and packages.
+http://mirrors.edge.kernel.org/ubuntu/	priority:1
+http://mirrors.mit.edu/ubuntu/	priority:2
+http://archive.ubuntu.com/ubuntu/	priority:3
+http://security.ubuntu.com/ubuntu/	priority:4
