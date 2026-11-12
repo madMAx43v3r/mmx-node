@@ -470,17 +470,36 @@ class IntegrationTest(unittest.TestCase):
         stack = self.stack
         opened = []
 
+        def wait_for_count(expected):
+            # TCP EOF can arrive before HAProxy has released the session's
+            # tracked counters. Observe cleanup before admitting the next
+            # synthetic address, rather than racing it on faster CI runners.
+            deadline = time.monotonic() + 2
+            with mock.patch.object(frontend, "SOCKET", str(stack.root / "admin.sock")):
+                while time.monotonic() < deadline:
+                    report = frontend.runtime("show table node_total")
+                    counts = [int(word.split("=", 1)[1]) for word in report.split() if word.startswith("conn_cur=")]
+                    if counts == [expected]:
+                        return
+                    time.sleep(.01)
+            self.fail(f"expected {expected} live client connections: {report}")
+
         def accepted(address):
             connection = socket.create_connection(("127.0.0.1", stack.https), timeout=2)
-            opened.append(connection)
             connection.sendall(f"PROXY TCP6 {address} ::1 12345 443\r\n".encode())
             connection.settimeout(.15)
             try:
-                return bool(connection.recv(1))
+                admitted = bool(connection.recv(1))
             except socket.timeout:
-                return True
+                admitted = True
             except ConnectionResetError:
-                return False
+                admitted = False
+            if admitted:
+                opened.append(connection)
+            else:
+                connection.close()
+            wait_for_count(len(opened))
+            return admitted
 
         try:
             self.assertTrue(accepted("2001:db8:1:1::1"))
