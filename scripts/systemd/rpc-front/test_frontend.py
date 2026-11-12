@@ -16,6 +16,7 @@ import unittest
 from unittest import mock
 
 import frontend
+import verify_http2
 
 HERE = Path(__file__).resolve().parent
 
@@ -87,6 +88,11 @@ class ClaimsTest(unittest.TestCase):
         value["nodes"].append(value["nodes"][0])
         with self.assertRaises(ValueError):
             frontend.validate_config(value)
+        for streams in (True, 0, -1, 4294967296, "32"):
+            value = config()
+            value["limits"]["http2_streams_per_connection"] = streams
+            with self.assertRaises(ValueError):
+                frontend.validate_config(value)
         value = config()
         value["limits"]["visitor_connections"] = True
         with self.assertRaises(ValueError):
@@ -123,18 +129,36 @@ class Stack:
         self.logs = []
         self.processes = []
         self.seen = []
+        self.release = threading.Event()
+        self.entered = threading.Condition()
+        self.held = 0
+        fixture = self
         seen = self.seen
 
         class Handler(http.server.BaseHTTPRequestHandler):
             protocol_version = "HTTP/1.1"
 
+            def handle(self):
+                try:
+                    super().handle()
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
+
             def do_GET(self):
+                if self.path == "/hold":
+                    with fixture.entered:
+                        fixture.held += 1
+                        fixture.entered.notify_all()
+                    fixture.release.wait(12)
                 seen.append(dict(self.headers))
                 data = json.dumps(dict(self.headers)).encode()
                 self.send_response(200)
                 self.send_header("Content-Length", str(len(data)))
                 self.end_headers()
-                self.wfile.write(data)
+                try:
+                    self.wfile.write(data)
+                except (BrokenPipeError, ConnectionResetError):
+                    pass
 
             def do_POST(self):
                 try:
@@ -149,7 +173,10 @@ class Stack:
             def log_message(self, *args):
                 pass
 
-        self.backend = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        class Server(http.server.ThreadingHTTPServer):
+            request_queue_size = 128
+
+        self.backend = Server(("127.0.0.1", 0), Handler)
         self.backend.daemon_threads = True
         threading.Thread(target=self.backend.serve_forever, daemon=True).start()
         subprocess.run(["openssl", "req", "-x509", "-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:P-256",
@@ -225,6 +252,7 @@ class Stack:
         return result
 
     def close(self):
+        self.release.set()
         for process in self.processes:
             process.terminate()
         for process in self.processes:
@@ -249,6 +277,66 @@ class IntegrationTest(unittest.TestCase):
     def start(self):
         self.stack = Stack(self.config)
         return self.stack
+
+    def test_http2_advertises_32_and_rejects_the_33rd_active_stream(self):
+        # Isolate the protocol cap from the separate visitor request budget.
+        self.config["limits"]["visitor_connections"] = 64
+        stack = self.start()
+        verify_http2.verify(stack.domain, "127.0.0.1", stack.https, 32, str(stack.root / "fullchain.pem"))
+        with self.assertRaisesRegex(ValueError, "expected 31"):
+            verify_http2.verify(stack.domain, "127.0.0.1", stack.https, 31, str(stack.root / "fullchain.pem"))
+        stack.context.set_alpn_protocols(["h2"])
+
+        def frame(kind, flags, stream, payload=b""):
+            return len(payload).to_bytes(3, "big") + bytes((kind, flags)) + stream.to_bytes(4, "big") + payload
+
+        with socket.create_connection(("127.0.0.1", stack.https), timeout=5) as raw:
+            with stack.context.wrap_socket(raw, server_hostname=stack.domain) as connection:
+                self.assertEqual(connection.selected_alpn_protocol(), "h2")
+                connection.sendall(b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n" + frame(4, 0, 0))
+
+                def read(count):
+                    result = b""
+                    while len(result) < count:
+                        part = connection.recv(count - len(result))
+                        self.assertTrue(part, "HTTP/2 closed before its protocol response")
+                        result += part
+                    return result
+
+                def receive():
+                    header = read(9)
+                    return header[3], header[4], int.from_bytes(header[5:], "big"), read(int.from_bytes(header[:3], "big"))
+
+                while True:
+                    kind, flags, _, payload = receive()
+                    if kind == 4 and not flags & 1:
+                        settings = {int.from_bytes(payload[i:i+2], "big"): int.from_bytes(payload[i+2:i+6], "big")
+                                    for i in range(0, len(payload), 6)}
+                        self.assertEqual(settings.get(3), 32)
+                        break
+                connection.sendall(frame(4, 1, 0))
+                # HPACK: indexed GET/https, literal /hold and authority without
+                # dynamic-table mutation, so all requests use the same block.
+                authority = stack.domain.encode()
+                headers = b"\x82\x87\x04\x05/hold\x01" + bytes((len(authority),)) + authority
+                connection.sendall(b"".join(frame(1, 5, stream, headers) for stream in range(1, 64, 2)))
+                with stack.entered:
+                    self.assertTrue(stack.entered.wait_for(lambda: stack.held == 32, timeout=5), stack.held)
+                # Deliberately violate SETTINGS, rather than letting a client
+                # library queue the 33rd stream and hide missing enforcement.
+                connection.sendall(frame(1, 5, 65, headers))
+                connection.settimeout(3)
+                while True:
+                    kind, _, stream, payload = receive()
+                    if kind == 3 and stream == 65:
+                        self.assertIn(int.from_bytes(payload, "big"), (1, 7))  # PROTOCOL_ERROR / REFUSED_STREAM
+                        break
+                    if kind == 7:
+                        self.assertEqual(int.from_bytes(payload[4:8], "big"), 1)  # PROTOCOL_ERROR
+                        break
+                self.assertEqual(stack.held, 32)
+        stack.release.set()
+        self.assertEqual(stack.request()[0], 200)
 
     def test_tls_plain_close_and_spoofed_headers(self):
         stack = self.start()

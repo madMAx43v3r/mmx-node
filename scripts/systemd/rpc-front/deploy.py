@@ -11,6 +11,7 @@ import subprocess
 import tarfile
 
 import frontend
+import build_caddy
 
 HERE = Path(__file__).resolve().parent
 
@@ -24,12 +25,13 @@ def ssh(node, command, payload=None, timeout=900):
     return result.stdout.decode()
 
 
-def upload(node):
+def upload(node, caddy_binary):
     archive = io.BytesIO()
     with tarfile.open(fileobj=archive, mode="w:gz") as tar:
         for path in sorted(HERE.iterdir()):
             if path.suffix in (".py", ".sh", ".service", ".timer"):
                 tar.add(path, arcname=path.name)
+        tar.add(caddy_binary, arcname="caddy")
     # A fixed root-owned staging directory is never writable by service users.
     ssh(node, "install -d -m 0700 /var/lib/mmx-rpc-front-source && tar -xzf - -C /var/lib/mmx-rpc-front-source", archive.getvalue())
 
@@ -77,6 +79,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--inventory", type=Path, default=HERE / "nodes.json")
     parser.add_argument("--stage", choices=["prepare", "activate", "staging", "issue", "renewal", "all"], default="all")
+    parser.add_argument("--caddy-binary", type=Path, help="Prebuilt pinned Caddy with HTTP/2 stream configuration")
     args = parser.parse_args()
     inventory = json.loads(args.inventory.read_text())
     for node in inventory["nodes"]:
@@ -85,9 +88,16 @@ def main():
             raise ValueError("only explicit root SSH targets are supported")
     if args.stage in ("prepare", "all"):
         identities = {}
+        binary = args.caddy_binary
+        if binary is None:
+            cache = Path.home() / ".cache/mmx-rpc-caddy"
+            binary = cache / "caddy"
+            build_caddy.build(binary, cache / "build")
+        if "v2.11.7-mmx-http2" not in subprocess.check_output([str(binary.resolve()), "version"], text=True):
+            raise ValueError("Caddy binary lacks the pinned HTTP/2 configuration patch")
         for node in inventory["nodes"]:
             print(node["id"] + ": preparing packages and local keys", flush=True)
-            upload(node)
+            upload(node, binary)
             ssh(node, "bash /var/lib/mmx-rpc-front-source/install.sh prepare")
             keys = ssh(node, "cat /var/lib/mmx-rpc-front/id_ed25519.pub /etc/ssh/ssh_host_ed25519_key.pub").splitlines()
             if len(keys) != 2:

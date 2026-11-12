@@ -4,6 +4,8 @@ set -euo pipefail
 (( EUID == 0 )) || { echo 'Run as root' >&2; exit 1; }
 source_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 state=/var/lib/mmx-rpc-front
+caddy=/usr/local/lib/mmx-rpc-front/caddy
+override=/etc/systemd/system/caddy.service.d/mmx-http2.conf
 
 case ${1:-} in
 prepare)
@@ -17,9 +19,19 @@ prepare)
         systemctl unmask haproxy.service
         trap - EXIT
     fi
-    command -v caddy >/dev/null
-    caddy list-modules | grep -qx caddy.listeners.proxy_protocol
     install -d -m 0755 "$state" "$state/challenges" /etc/mmx-rpc-front
+    test -x "$source_dir/caddy"
+    "$source_dir/caddy" version | grep -q '^v2.11.7-mmx-http2 '
+    "$source_dir/caddy" list-modules | grep -qx caddy.listeners.proxy_protocol
+    install -d -m 0755 /usr/local/lib/mmx-rpc-front
+    if ! cmp -s "$source_dir/caddy" "$caddy"; then
+        if [[ -f $caddy && ! -f $state/caddy-restart-required ]]; then
+            cp -a "$caddy" "$state/caddy-before-update"
+        fi
+        install -m 0755 "$source_dir/caddy" "$caddy.next"
+        mv -f "$caddy.next" "$caddy"
+        touch "$state/caddy-restart-required"
+    fi
     install -m 0755 "$source_dir/frontend.py" /usr/local/sbin/mmx-rpc-front
     install -m 0644 "$source_dir"/*.service "$source_dir"/*.timer /etc/systemd/system/
     if [[ ! -f $state/id_ed25519 ]]; then
@@ -33,14 +45,25 @@ activate)
     domain=$(python3 -c 'import json; print(json.load(open("/etc/mmx-rpc-front/config.json"))["domain"])')
     backup=$(mktemp -d "$state/backup.XXXXXXXX")
     cp -a /etc/caddy/Caddyfile "$backup/Caddyfile"
+    if [[ -f $override ]]; then cp -a "$override" "$backup/caddy-override"; fi
     if [[ -f /etc/haproxy/haproxy.cfg ]]; then cp -a /etc/haproxy/haproxy.cfg "$backup/haproxy.cfg"; fi
     was_active=$(systemctl is-active haproxy || true)
     rollback() {
         trap - ERR
         cp -a "$backup/Caddyfile" /etc/caddy/Caddyfile
         if [[ -f $backup/haproxy.cfg ]]; then cp -a "$backup/haproxy.cfg" /etc/haproxy/haproxy.cfg; fi
+        if [[ -f $backup/caddy-override ]]; then
+            cp -a "$backup/caddy-override" "$override"
+        else
+            rm -f "$override"
+        fi
+        if [[ -f $state/caddy-before-update && -f $state/caddy-restart-required ]]; then
+            install -m 0755 "$state/caddy-before-update" "$caddy.next"
+            mv -f "$caddy.next" "$caddy"
+        fi
+        systemctl daemon-reload
         if [[ $was_active == active ]]; then systemctl reload haproxy || true; else systemctl stop haproxy || true; fi
-        systemctl reload caddy || true
+        systemctl restart caddy || true
         echo "Activation failed; restored configuration from $backup" >&2
         exit 1
     }
@@ -74,12 +97,25 @@ activate)
     /usr/local/sbin/mmx-rpc-front render > /etc/mmx-rpc-front/haproxy.next
     /usr/local/sbin/mmx-rpc-front render-caddy > /etc/mmx-rpc-front/Caddyfile.next
     haproxy -c -f /etc/mmx-rpc-front/haproxy.next
-    caddy validate --adapter caddyfile --config /etc/mmx-rpc-front/Caddyfile.next
+    "$caddy" validate --adapter caddyfile --config /etc/mmx-rpc-front/Caddyfile.next
     systemctl enable --now mmx-rpc-acme.service
     install -m 0644 /etc/mmx-rpc-front/haproxy.next /etc/haproxy/haproxy.cfg
     install -m 0644 /etc/mmx-rpc-front/Caddyfile.next /etc/caddy/Caddyfile
-    # A graceful Caddy reload releases public ports and starts the loopback sites.
-    systemctl reload caddy
+    install -d -m 0755 "$(dirname "$override")"
+    cat >"$override" <<EOF
+[Service]
+ExecStart=
+ExecStart=$caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=
+ExecReload=$caddy reload --config /etc/caddy/Caddyfile --force
+EOF
+    systemctl daemon-reload
+    # A new executable must be started; reloading would keep the old process.
+    if [[ -f $state/caddy-restart-required || ! -f $backup/caddy-override ]]; then
+        systemctl restart caddy
+    else
+        systemctl reload caddy
+    fi
     systemctl enable haproxy
     if [[ $was_active == active ]]; then systemctl reload haproxy; else systemctl start haproxy; fi
     curl --fail --silent --max-time 10 -H "Host: $domain" http://127.0.0.1:8080/server/status >/dev/null
@@ -94,14 +130,17 @@ activate)
     # Caddy 2.11 can evict the shared cache entry when managed -> file-loaded
     # activation removes the old server. A second forced reload restores it.
     if ! verify_tls; then
-        caddy reload --config /etc/caddy/Caddyfile --force
+        "$caddy" reload --config /etc/caddy/Caddyfile --force
         verify_tls
     fi
+    streams=$(python3 -c 'import json; print(json.load(open("/etc/mmx-rpc-front/config.json"))["limits"].get("http2_streams_per_connection", 32))')
+    python3 "$source_dir/verify_http2.py" "$domain" --address 127.0.0.1 --expected "$streams" "${tls_options[@]}"
     systemctl enable --now mmx-rpc-acme-prune.timer
     # Retire copying only on this node. Do not contact any legacy gateway.
     systemctl disable --now mmx-rpc-cert-sync.timer 2>/dev/null || true
     systemctl stop mmx-rpc-cert-sync.service 2>/dev/null || true
     trap - ERR
+    rm -f "$state/caddy-restart-required" "$state/caddy-before-update"
     echo "Activated RPC frontend; configuration rollback: $backup"
     ;;
 enable-renewal)

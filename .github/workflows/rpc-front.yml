@@ -1,0 +1,23 @@
+name: RPC frontend
+on:
+  push:
+    paths:
+      - 'scripts/systemd/rpc-front/**'
+      - '.github/workflows/rpc-front.yml'
+  pull_request:
+    paths:
+      - 'scripts/systemd/rpc-front/**'
+      - '.github/workflows/rpc-front.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frontend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y haproxy golang-go shellcheck
+      - run: shellcheck scripts/systemd/rpc-front/install.sh
+      - run: nice -n 19 ionice -c 3 python3 scripts/systemd/rpc-front/build_caddy.py /tmp/mmx-rpc-caddy
+      - run: CADDY=/tmp/mmx-rpc-caddy nice -n 19 ionice -c 3 python3 scripts/systemd/rpc-front/test_frontend.py -v

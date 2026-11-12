@@ -6,7 +6,8 @@
     "prefix48_connections": 100,
     "visitor_requests_10s": 100,
     "prefix48_requests_10s": 1000,
-    "idle_seconds": 15
+    "idle_seconds": 15,
+    "http2_streams_per_connection": 32
   },
   "nodes": [
     {"id": "eu1", "address": "80.47.12.16", "ssh": "root@80.47.12.16"},

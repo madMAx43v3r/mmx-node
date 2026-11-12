@@ -33,6 +33,13 @@ public TCP ports:
 
 The public connection counters include sockets before TLS handshakes and count
 actual clients, independently of Caddy's HTTP/2 streams or upstream pooling.
+
+Each HTTP/2 connection additionally permits **32 concurrent streams**. This is
+advertised and enforced at Caddy's TLS frontend, independently of connection
+and request-rate budgets. A client violating the stream limit is refused at
+the protocol layer before that stream reaches the backend. Change
+`limits.http2_streams_per_connection` in the inventory to configure new nodes
+and existing nodes together; older inventories default to 32.
 An over-limit connection is closed immediately. HTTP request rates use
 HAProxy's rolling `http_req_rate(10s)` counters; excess requests receive `429`
 and `Retry-After: 10`. These are per-node budgets, not a shared cluster quota.
@@ -95,14 +102,32 @@ also handles a renewer disappearing midway through validation.
 
 ## Deployment and new nodes
 
-Requirements: dedicated Debian/Ubuntu RPC hosts, Caddy with the standard
-`caddy.listeners.proxy_protocol` module (2.11.7 is verified), Python 3, the
+Requirements: dedicated Debian/Ubuntu RPC hosts with the Caddy systemd service,
+Python 3, the
 existing RPC proxy on loopback port 8081, and root SSH access. The installer
 adds the distribution HAProxy and Certbot packages. Establish and independently
 verify the administrator's SSH host keys first: deployment refuses unknown keys.
+The operator machine also needs Go with toolchain download support. Preparation
+builds Caddy 2.11.7 with Go 1.26.8, verifies its pinned Go-module checksum and
+adds the small server-scoped `http2_max_concurrent_streams` setting. Upstream
+Caddy 2.11.7 does not expose that setting. Builds use two jobs and a locked
+cache; no Go toolchain or compiler is installed on RPC hosts.
+
+The custom executable lives under `/usr/local/lib/mmx-rpc-front`, selected by
+a systemd drop-in, so distribution package updates cannot overwrite it. Caddy
+continues running as its existing service user. Activation validates the new
+config and restarts Caddy when its executable changes; rollback restores the
+previous config and systemd override. The existing certificate/key stay local.
 
 ```sh
 python3 scripts/systemd/rpc-front/deploy.py
+```
+
+To build/test once and reuse the binary explicitly:
+
+```sh
+nice -n 19 ionice -c 3 python3 scripts/systemd/rpc-front/build_caddy.py /tmp/mmx-rpc-caddy
+python3 scripts/systemd/rpc-front/deploy.py --stage prepare --caddy-binary /tmp/mmx-rpc-caddy
 ```
 
 This prepares **all** nodes and their restricted peer access before activating
@@ -155,9 +180,16 @@ minutes of jitter; a failed run is retried at the next scheduled check.
 
 ```sh
 python3 scripts/systemd/rpc-front/test_frontend.py
-# Include isolated high-port tests with the installed modern Caddy executable:
-CADDY=/usr/bin/caddy python3 scripts/systemd/rpc-front/test_frontend.py
+# Include high-port tests with the pinned Caddy build:
+CADDY=/usr/local/lib/mmx-rpc-front/caddy python3 scripts/systemd/rpc-front/test_frontend.py
 ```
+
+The RPC frontend workflow builds this same binary and runs all 14 regressions.
+The HTTP/2 boundary fixture keeps 32 real backend requests active, checks the
+advertised SETTINGS limit, deliberately opens a 33rd stream without client-side
+queuing, verifies protocol rejection before backend admission, and checks that
+ordinary requests still work. Other checks retain the body/idle deadlines,
+IPv4/IPv6 aggregation, rate limits, source spoofing and ACME coordination.
 
 On either node:
 
@@ -168,7 +200,11 @@ systemctl start mmx-rpc-renew.service
 journalctl -u mmx-rpc-renew.service --no-pager -n 30
 curl --fail --resolve rpc.mmx.network:443:127.0.0.1 https://rpc.mmx.network/node/info
 curl --include http://127.0.0.1:8080/node/info
+python3 /var/lib/mmx-rpc-front-source/verify_http2.py rpc.mmx.network --address 127.0.0.1
 ```
+
+Activation runs the same authenticated SETTINGS check and rolls back if the
+live endpoint does not advertise the inventory's stream limit.
 
 Sources: [Certbot validation hooks](https://eff-certbot.readthedocs.io/en/stable/using.html#pre-and-post-validation-hooks),
 [HAProxy stick tables](https://www.haproxy.com/documentation/haproxy-configuration-tutorials/proxying-essentials/custom-rules/stick-tables/),

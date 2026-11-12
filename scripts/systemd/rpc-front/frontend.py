@@ -21,6 +21,7 @@ import urllib.error
 import urllib.request
 
 CONFIG = Path("/etc/mmx-rpc-front/config.json")
+CADDY = "/usr/local/lib/mmx-rpc-front/caddy"
 STATE = Path("/var/lib/mmx-rpc-front")
 MAP = STATE / "acme.map"
 SOCKET = "/run/haproxy/admin.sock"
@@ -67,6 +68,9 @@ def validate_config(config):
         value = config["limits"][key]
         if type(value) is not int or not 1 <= value <= 1000000:
             raise ValueError("invalid limit: " + key)
+    streams = config["limits"].get("http2_streams_per_connection", 32)
+    if type(streams) is not int or not 1 <= streams <= 4294967295:
+        raise ValueError("invalid limit: http2_streams_per_connection")
     return config
 
 
@@ -165,6 +169,7 @@ def render_caddy(config, certificate_directory="/etc/caddy/rpc-front/current",
     default_bind 127.0.0.1
     servers {
         protocols h1 h2
+        http2_max_concurrent_streams %d
         max_header_size 64KB
         listener_wrappers {
             proxy_protocol {
@@ -198,7 +203,8 @@ https://%s:%d {
 http://:%d {
     import rpc_backend
 }
-""" % (admin, config["limits"]["idle_seconds"], request_port, config["domain"], tls_port,
+""" % (admin, config["limits"].get("http2_streams_per_connection", 32),
+       config["limits"]["idle_seconds"], request_port, config["domain"], tls_port,
        certificate_directory, certificate_directory, plain_port)
 
 
@@ -413,12 +419,12 @@ def install_certificate(config, directory, reload=True):
         os.replace(pending, current)
         try:
             if reload:
-                run("caddy", "validate", "--config", "/etc/caddy/Caddyfile")
-                run("caddy", "reload", "--config", "/etc/caddy/Caddyfile", "--force")
+                run(CADDY, "validate", "--config", "/etc/caddy/Caddyfile")
+                run(CADDY, "reload", "--config", "/etc/caddy/Caddyfile", "--force")
                 try:
                     check_tls(config["domain"], expected)
                 except RuntimeError:
-                    run("caddy", "reload", "--config", "/etc/caddy/Caddyfile", "--force")
+                    run(CADDY, "reload", "--config", "/etc/caddy/Caddyfile", "--force")
                     check_tls(config["domain"], expected)
         except Exception:
             if previous is not None:
