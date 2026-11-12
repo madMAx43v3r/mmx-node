@@ -57,6 +57,9 @@ def validate_config(config):
         if not re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", node["id"]):
             raise ValueError("invalid node ID")
         ipaddress.ip_address(node["address"])
+        for key in ("ssh_port", "http_port", "https_port"):
+            if key in node and (type(node[key]) is not int or not 1 <= node[key] <= 65535):
+                raise ValueError("invalid node port: " + key)
         if node["id"] in ids or node["address"] in addresses:
             raise ValueError("duplicate node")
         ids.add(node["id"])
@@ -155,7 +158,7 @@ def render_haproxy(config, map_path=MAP, http_port=80, https_port=443, plain_por
     for node in config["nodes"]:
         if node["id"] != config["node_id"]:
             lines += ["backend acme_" + node["id"], "    timeout server 5s",
-                      f"    server owner {endpoint(node['address'], 80)}", ""]
+                      f"    server owner {endpoint(node['address'], node.get('http_port', 80))}", ""]
     return "\n".join(lines)
 
 
@@ -286,6 +289,7 @@ def peer_command(peer):
             "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes",
             "-o", "StrictHostKeyChecking=yes", "-o", "UserKnownHostsFile=" + str(STATE / "known_hosts"),
             "-o", "ConnectTimeout=5", "-o", "ServerAliveInterval=5", "-o", "ServerAliveCountMax=1",
+            "-p", str(peer.get("ssh_port", 22)),
             "root@" + peer["address"]]
 
 
@@ -293,8 +297,8 @@ def tell_peer(peer, action, token):
     return run(*peer_command(peer), input=json.dumps({"action": action, "token": token}).encode(), timeout=15)
 
 
-def challenge_get(address, domain, token):
-    request = urllib.request.Request("http://" + endpoint(address, 80) + PREFIX + token,
+def challenge_get(address, domain, token, port=80):
+    request = urllib.request.Request("http://" + endpoint(address, port) + PREFIX + token,
                                      headers={"Host": domain})
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
     with opener.open(request, timeout=5) as response:
@@ -316,7 +320,7 @@ def auth(config, token, validation):
             except (subprocess.SubprocessError, OSError) as failure:
                 error = failure
             try:
-                body = challenge_get(peer["address"], config["domain"], token)
+                body = challenge_get(peer["address"], config["domain"], token, peer.get("http_port", 80))
             except urllib.error.HTTPError:
                 raise RuntimeError(peer["id"] + " is reachable but its challenge route is not ready") from error
             except (urllib.error.URLError, TimeoutError, OSError):

@@ -11,6 +11,7 @@
   },
   "nodes": [
     {"id": "eu1", "address": "80.47.12.16", "ssh": "root@80.47.12.16"},
-    {"id": "th1", "address": "64.176.84.253", "ssh": "root@64.176.84.253"}
+    {"id": "th1", "address": "64.176.84.253", "ssh": "root@64.176.84.253"},
+    {"id": "eu2", "address": "80.47.12.14", "ssh": "root@80.47.12.14", "ssh_port": 1160, "http_port": 1161, "https_port": 1162}
   ]
 }

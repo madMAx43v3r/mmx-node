@@ -16,6 +16,7 @@ import unittest
 from unittest import mock
 
 import frontend
+import deploy
 import verify_http2
 
 HERE = Path(__file__).resolve().parent
@@ -74,7 +75,7 @@ class ClaimsTest(unittest.TestCase):
         self.assertFalse((self.state / "challenges" / ("a" * 32)).exists())
 
     def test_unreachable_peer_does_not_block_healthy_issuance(self):
-        def get(address, domain, token):
+        def get(address, domain, token, port=80):
             if address != "127.0.0.1":
                 raise OSError("offline")
             return "v" * 48
@@ -82,6 +83,39 @@ class ClaimsTest(unittest.TestCase):
                 mock.patch.object(frontend, "challenge_get", side_effect=get):
             frontend.auth(self.config, "a" * 32, "v" * 48)
         self.assertTrue((self.state / "challenges" / ("a" * 32)).exists())
+
+    def test_forwarded_peer_ports_and_authentication(self):
+        peer = next(node for node in self.config["nodes"] if node["id"] == "eu2")
+        command = frontend.peer_command(peer)
+        self.assertEqual(command[command.index("-p") + 1], "1160")
+        self.assertIn("StrictHostKeyChecking=yes", command)
+        rendered = frontend.render_haproxy(self.config)
+        self.assertIn("server owner 80.47.12.14:1161", rendered)
+        with mock.patch.object(frontend, "change_claim"), mock.patch.object(frontend, "tell_peer"), \
+                mock.patch.object(frontend, "challenge_get", return_value="v" * 48) as get:
+            frontend.auth(self.config, "a" * 32, "v" * 48)
+        get.assert_any_call(peer["address"], self.config["domain"], "a" * 32, 1161)
+
+    def test_invalid_forwarded_ports_are_rejected(self):
+        for key in ("ssh_port", "http_port", "https_port"):
+            for port in (True, 0, -1, 65536, "1160"):
+                value = config()
+                value["nodes"][-1][key] = port
+                with self.assertRaisesRegex(ValueError, "invalid node port"):
+                    frontend.validate_config(value)
+
+    def test_deployment_pins_forwarded_ssh_host_key(self):
+        peer = next(node for node in self.config["nodes"] if node["id"] == "eu2")
+        with mock.patch.object(deploy.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, b"", b"")) as run:
+            deploy.ssh(peer, "true")
+        command = run.call_args.args[0]
+        self.assertEqual(command[command.index("-p") + 1], "1160")
+        identities = {node["id"]: ("ssh-ed25519 AAAA", "ssh-ed25519 BBBB") for node in self.config["nodes"]}
+        with mock.patch.object(deploy, "ssh") as ssh:
+            deploy.configure(self.config["nodes"][0], self.config, identities)
+        payload = json.loads(ssh.call_args.args[2])
+        self.assertIn("[80.47.12.14]:1160 ssh-ed25519 BBBB", payload["hosts"])
+        self.assertIn("64.176.84.253 ssh-ed25519 BBBB", payload["hosts"])
 
     def test_config_rejects_duplicate_nodes_and_boolean_limits(self):
         value = config()
@@ -355,6 +389,36 @@ class IntegrationTest(unittest.TestCase):
             while chunk := connection.recv(65536):
                 response += chunk
             self.assertIn(b"200 OK", response)
+
+    def test_acme_routes_to_peer_on_forwarded_http_port(self):
+        token, validation = "e" * 32, b"v" * 48
+        domain = self.config["domain"]
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path != frontend.PREFIX + token or self.headers.get("Host") != domain:
+                    self.send_error(404)
+                    return
+                self.send_response(200)
+                self.send_header("Content-Length", str(len(validation)))
+                self.end_headers()
+                self.wfile.write(validation)
+
+            def log_message(self, *args):
+                pass
+
+        owner = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=owner.serve_forever, daemon=True).start()
+        try:
+            peer = next(node for node in self.config["nodes"] if node["id"] == "eu2")
+            peer.update(address="127.0.0.1", http_port=owner.server_port)
+            stack = self.start()
+            with mock.patch.object(frontend, "SOCKET", str(stack.root / "admin.sock")):
+                frontend.checked_runtime(f"add map {stack.root / 'acme.map'} {frontend.PREFIX}{token} acme_eu2")
+            self.assertEqual(frontend.challenge_get("127.0.0.1", domain, token, stack.http), validation.decode())
+        finally:
+            owner.shutdown()
+            owner.server_close()
 
     def test_rate_limits_share_ipv6_prefixes_and_return_retry_after(self):
         self.config["limits"].update(visitor_requests_10s=3, prefix48_requests_10s=5)

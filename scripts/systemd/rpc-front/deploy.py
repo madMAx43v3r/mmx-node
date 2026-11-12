@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Repeatable eu1/th1/new-node rollout; TLS private keys never leave their host."""
+"""Repeatable RPC rollout, including forwarded ports; TLS keys stay on their host."""
 
 import argparse
 import io
@@ -12,13 +12,14 @@ import tarfile
 
 import frontend
 import build_caddy
+import verify_http2
 
 HERE = Path(__file__).resolve().parent
 
 
 def ssh(node, command, payload=None, timeout=900):
     result = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
-                             "-o", "ConnectTimeout=10", node["ssh"], command],
+                             "-o", "ConnectTimeout=10", "-p", str(node.get("ssh_port", 22)), node["ssh"], command],
                             input=payload, capture_output=True, timeout=timeout)
     if result.returncode:
         raise RuntimeError(f"{node['id']}: {command}\n" + result.stdout.decode()[-6000:] + result.stderr.decode()[-6000:])
@@ -52,7 +53,8 @@ def configure(node, inventory, identities):
                 raise ValueError("invalid public key")
         key = " ".join(public_key.split()[:2])
         entries.append(f'restrict,command="/usr/local/sbin/mmx-rpc-front peer {peer["id"]}" {key}')
-        hosts.append(peer["address"] + " " + " ".join(host_key.split()[:2]))
+        host = peer["address"] if peer.get("ssh_port", 22) == 22 else f'[{peer["address"]}]:{peer["ssh_port"]}'
+        hosts.append(host + " " + " ".join(host_key.split()[:2]))
     payload = json.dumps({"keys": entries, "hosts": hosts}).encode()
     script = r'''
 import json, os, pathlib, sys, tempfile
@@ -120,6 +122,13 @@ def main():
         for node in inventory["nodes"]:
             domain = inventory["domain"]
             print(ssh(node, "curl --fail --silent --max-time 10 --resolve " + domain + ":443:127.0.0.1 https://" + domain + "/node/info"), flush=True)
+            port = node.get("https_port", 443)
+            verify_http2.verify(domain, node["address"], port,
+                                inventory["limits"].get("http2_streams_per_connection", 32))
+            address = "[" + node["address"] + "]" if ":" in node["address"] else node["address"]
+            subprocess.run(["curl", "--fail", "--silent", "--show-error", "--noproxy", "*", "--max-time", "10",
+                            "--resolve", f"{domain}:{port}:{address}", f"https://{domain}:{port}/node/info"], check=True)
+            print(f"\n{node['id']}: public HTTPS and HTTP/2 stream limit verified", flush=True)
 
 
 if __name__ == "__main__":

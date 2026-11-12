@@ -1,7 +1,9 @@
 # Public RPC frontend
 
-The inventory in [nodes.json](nodes.json) manages eu1 (`80.47.12.16`) and th1
-(`64.176.84.253`). The legacy gateway is outside this deployment.
+The inventory in [nodes.json](nodes.json) manages eu1 (`80.47.12.16`), th1
+(`64.176.84.253`) and eu2 (`80.47.12.14`). The legacy gateway is outside this deployment.
+Eu2 uses forwarded public ports: SSH 1160 → 22, HTTP 1161 → 8080 and
+HTTPS 1162 → 443. It runs the same frontend and limits inside the VM.
 
 ```text
 HTTPS client -> HAProxy :443 (TCP admission, PROXY v2)
@@ -85,7 +87,7 @@ renewal timer. Certbot uses its documented automated manual HTTP-01 hooks:
 
 Only public keys and routing requests move between nodes. TLS certificates,
 ACME account keys, and TLS private keys stay on their issuing host. The old
-certificate-copy timer and restricted receiver grant are retired on eu1/th1.
+certificate-copy timer and restricted receiver grant are retired on managed nodes.
 Legacy machines are not modified and do not receive these new certificates.
 
 The forced SSH command accepts only a bounded JSON `claim`/`release` message
@@ -150,6 +152,14 @@ To add a node, install its MMX node/RPC proxy and Caddy first, add its ID,
 literal public IP, and root SSH destination to the inventory, then rerun the
 deployment for the full inventory. Permit TCP 22/80/443/8080 as required by the
 deployment network. Loopback ports 8888/9080/18080/18443 must stay private.
+For NAT hosts, set `ssh_port`, `http_port` and `https_port` to the public mapped
+ports (defaults 22, 80 and 443). Guest listeners remain unchanged. The HTTP
+mapping must reach guest port 80 or 8080; peer challenge forwarding and probes
+use that mapping, and peer SSH host keys are pinned with their mapped port.
+The HTTPS mapping must reach guest port 443. HTTP-01 still requires the shared
+domain's public port 80 to reach a participating peer; a high-port mapping alone
+cannot satisfy the CA. Do not add a NAT address directly to shared DNS without
+an appropriate port-80/443 gateway.
 Add the new node to DNS only after staging, production issuance, trusted HTTPS,
 and synchronization checks pass. A brand-new node without a local certificate
 uses a temporary self-signed bootstrap certificate until production issuance;
@@ -184,7 +194,7 @@ python3 scripts/systemd/rpc-front/test_frontend.py
 CADDY=/usr/local/lib/mmx-rpc-front/caddy python3 scripts/systemd/rpc-front/test_frontend.py
 ```
 
-The RPC frontend workflow builds this same binary and runs all 14 regressions.
+The RPC frontend workflow builds this same binary and runs all 18 regressions.
 The HTTP/2 boundary fixture keeps 32 real backend requests active, checks the
 advertised SETTINGS limit, deliberately opens a 33rd stream without client-side
 queuing, verifies protocol rejection before backend admission, and checks that
