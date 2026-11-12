@@ -176,6 +176,7 @@ class Stack:
         self.logs = []
         self.processes = []
         self.seen = []
+        self.paths = []
         self.release = threading.Event()
         self.entered = threading.Condition()
         self.held = 0
@@ -192,6 +193,7 @@ class Stack:
                     pass
 
             def do_GET(self):
+                fixture.paths.append(self.path)
                 if self.path == "/hold":
                     with fixture.entered:
                         fixture.held += 1
@@ -396,6 +398,10 @@ class IntegrationTest(unittest.TestCase):
             self.assertNotIn("x-mmx-client", received)
             if not secure:
                 self.assertEqual(headers.get("Connection", headers.get("connection", "")).lower(), "close")
+        peer = next(node for node in self.config["nodes"] if node["id"] == "eu2")
+        status, _, _ = stack.request(path="/", headers={"Host": f"{peer['address']}:{peer['http_port']}"})
+        self.assertEqual(status, 200)
+        self.assertEqual(stack.paths[-1], "/node/info")
         with socket.create_connection(("127.0.0.1", stack.plain), timeout=3) as connection:
             connection.sendall(b"GET /node/info HTTP/1.1\r\nHost: rpc.mmx.network\r\n\r\n")
             response = b""
