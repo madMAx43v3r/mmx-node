@@ -21,8 +21,10 @@ prepare)
     fi
     install -d -m 0755 "$state" "$state/challenges" /etc/mmx-rpc-front
     test -x "$source_dir/caddy"
-    "$source_dir/caddy" version | grep -q '^v2.11.7-mmx-http2 '
-    "$source_dir/caddy" list-modules | grep -qx caddy.listeners.proxy_protocol
+    # Consume all output: grep -q can SIGPIPE Caddy under pipefail, making
+    # a valid prerequisite check fail depending on process scheduling.
+    "$source_dir/caddy" version | grep '^v2.11.7-mmx-http2 ' >/dev/null
+    "$source_dir/caddy" list-modules | grep -x caddy.listeners.proxy_protocol >/dev/null
     install -d -m 0755 /usr/local/lib/mmx-rpc-front
     if ! cmp -s "$source_dir/caddy" "$caddy"; then
         if [[ -f $caddy && ! -f $state/caddy-restart-required ]]; then

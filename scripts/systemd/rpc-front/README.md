@@ -194,7 +194,7 @@ python3 scripts/systemd/rpc-front/test_frontend.py
 CADDY=/usr/local/lib/mmx-rpc-front/caddy python3 scripts/systemd/rpc-front/test_frontend.py
 ```
 
-The RPC frontend workflow builds this same binary and runs all 18 regressions.
+The RPC frontend workflow builds this same binary and runs all 19 regressions.
 The HTTP/2 boundary fixture keeps 32 real backend requests active, checks the
 advertised SETTINGS limit, deliberately opens a 33rd stream without client-side
 queuing, verifies protocol rejection before backend admission, and checks that

@@ -117,6 +117,19 @@ class ClaimsTest(unittest.TestCase):
         self.assertIn("[80.47.12.14]:1160 ssh-ed25519 BBBB", payload["hosts"])
         self.assertIn("64.176.84.253 ssh-ed25519 BBBB", payload["hosts"])
 
+    def test_installer_prerequisite_checks_consume_caddy_output(self):
+        fake = self.state / "caddy"
+        fake.write_text("#!/usr/bin/env python3\nimport sys,time\n"
+                        "if sys.argv[1] == 'version':\n print('v2.11.7-mmx-http2 test')\n"
+                        "else:\n print('caddy.listeners.proxy_protocol', flush=True)\n"
+                        " time.sleep(.05)\n print('x' * 131072)\n")
+        fake.chmod(0o755)
+        checks = [line.strip() for line in (HERE / "install.sh").read_text().splitlines()
+                  if line.strip().startswith('"$source_dir/caddy"')]
+        self.assertEqual(len(checks), 2)
+        subprocess.run(["bash", "-e", "-o", "pipefail", "-c", "\n".join(checks)],
+                       env=dict(os.environ, source_dir=str(self.state)), check=True, capture_output=True)
+
     def test_config_rejects_duplicate_nodes_and_boolean_limits(self):
         value = config()
         value["nodes"].append(value["nodes"][0])
