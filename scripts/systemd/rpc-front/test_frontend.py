@@ -242,7 +242,7 @@ class Stack:
             # Test-only PROXY input lets real HAProxy admission rules see many
             # IPv6 client addresses without changing the machine's interfaces.
             for port in (self.http, self.https, self.plain):
-                haproxy = haproxy.replace(f"bind 127.0.0.1:{port}\n", f"bind 127.0.0.1:{port} accept-proxy\n")
+                haproxy = haproxy.replace(f"bind 127.0.0.1:{port}", f"bind 127.0.0.1:{port} accept-proxy")
             # Connection rules run before a test PROXY header is decoded. The
             # same admission expressions run at session time in this fixture.
             haproxy = haproxy.replace("tcp-request connection", "tcp-request session")
@@ -408,6 +408,13 @@ class IntegrationTest(unittest.TestCase):
             while chunk := connection.recv(65536):
                 response += chunk
             self.assertIn(b"200 OK", response)
+        for port in (stack.http, stack.plain):
+            with socket.create_connection(("127.0.0.1", port), timeout=3) as connection:
+                connection.sendall(b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n" + bytes.fromhex("000000040000000000"))
+                response = b""
+                while chunk := connection.recv(65536):
+                    response += chunk
+                self.assertTrue(not response or response.startswith(b"HTTP/1.1 400"), response)
 
     def test_acme_routes_to_peer_on_forwarded_http_port(self):
         token, validation = "e" * 32, b"v" * 48

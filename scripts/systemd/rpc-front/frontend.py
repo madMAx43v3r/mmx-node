@@ -116,9 +116,12 @@ def render_haproxy(config, map_path=MAP, http_port=80, https_port=443, plain_por
         if secure:
             lines += ["    mode tcp"]
         for port in ([https_port] if secure else [http_port, plain_port]):
-            lines += [f"    bind 0.0.0.0:{port}"]
+            # HTTP/2 ignores Connection: close. Keep cleartext HTTP/1-only
+            # so option httpclose cannot be bypassed by an h2c preface.
+            protocol = "" if secure else " proto h1"
+            lines += [f"    bind 0.0.0.0:{port}{protocol}"]
             if ipv6:
-                lines += [f"    bind [::]:{port} v6only"]
+                lines += [f"    bind [::]:{port} v6only{protocol}"]
         lines += [f"    maxconn {2 * total}",
                   "    tcp-request connection track-sc0 src,ipmask(32,64) table visitors",
                   "    tcp-request connection track-sc1 src,ipmask(32,48) table prefixes48 unless { src -m ip 0.0.0.0/0 }",

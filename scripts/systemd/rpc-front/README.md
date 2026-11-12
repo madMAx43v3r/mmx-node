@@ -54,7 +54,9 @@ when bytes keep trickling in. Every plain HTTP response closes its connection;
 this is verified by reading the socket to EOF, in addition to checking its
 `Connection: close` header. Port 8080 retains the existing plain HTTP RPC and
 cross-node fallback URLs. Port 80 redirects normal hostname requests to HTTPS;
-IP readiness probes at `/` reach `/node/info`.
+IP readiness probes at `/` reach `/node/info`. Plain listeners explicitly use
+HTTP/1; cleartext HTTP/2 is rejected because it cannot honor `Connection: close`.
+All accepted HTTP/2 connections terminate at the capped Caddy TLS listener.
 
 HAProxy's internal `maxconn` is twice the public client budget because each
 active Caddy request can occupy a second loopback HAProxy connection. The
