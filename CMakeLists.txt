@@ -7,13 +7,6 @@ if(POLICY CMP0104)
 	cmake_policy(SET CMP0104 NEW)
 endif()
 
-option(MMX_WALLET_ONLY "Build the Rust standalone wallet without the C++ node" OFF)
-if(MMX_WALLET_ONLY)
-	project(mmxwallet NONE)
-	include(cmake/mmxwallet.cmake)
-	return()
-endif()
-
 project(mmx-node C CXX ASM)
 
 include(FetchContent)
@@ -385,7 +378,6 @@ if(Qt5_FOUND)
 endif()
 
 add_executable(mmx src/mmx.cpp)
-include(cmake/mmxwallet.cmake)
 add_executable(mmx_node src/mmx_node.cpp)
 add_executable(mmx_farmer src/mmx_farmer.cpp)
 add_executable(mmx_wallet src/mmx_wallet.cpp)
